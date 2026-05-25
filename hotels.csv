@@ -1,0 +1,46 @@
+id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng
+1,Four Seasons Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Luxury,Four Seasons,Four Seasons Hotels & Resorts,186,2015,Operating,33.586,-7.601
+2,Hyatt Regency Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,255,1993,Operating,33.580,-7.595
+3,Sofitel Casablanca Tour Blanche,Casablanca,Grand Casablanca-Settat,Luxury,Sofitel,Accor,252,1999,Operating,33.578,-7.600
+4,Novotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upscale,Novotel,Accor,258,2007,Operating,33.572,-7.586
+5,Kenzi Tower Hotel,Casablanca,Grand Casablanca-Settat,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,234,2010,Operating,33.583,-7.593
+6,Radisson Blu Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upper Upscale,Radisson Blu,Radisson Hotel Group,212,2012,Operating,33.575,-7.581
+7,Ibis Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,175,2005,Operating,33.566,-7.576
+8,Movenpick Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Mövenpick,Accor,268,2014,Operating,33.588,-7.603
+9,Golden Tulip Farah Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Golden Tulip,Louvre Hotels Group,275,1990,Operating,33.570,-7.598
+10,Barceló Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Barceló,Barceló Hotel Group,222,2008,Operating,33.561,-7.583
+11,Four Seasons Resort Marrakech,Marrakech,Marrakech-Safi,Luxury,Four Seasons,Four Seasons Hotels & Resorts,141,2011,Operating,31.637,-7.992
+12,Mandarin Oriental Marrakech,Marrakech,Marrakech-Safi,Luxury,Mandarin Oriental,Mandarin Oriental Hotel Group,54,2015,Operating,31.643,-7.988
+13,Royal Mansour Marrakech,Marrakech,Marrakech-Safi,Luxury,Royal Mansour,Royal Mansour Collection,53,2010,Operating,31.623,-7.990
+14,Sofitel Marrakech Lounge & Spa,Marrakech,Marrakech-Safi,Luxury,Sofitel,Accor,331,2006,Operating,31.633,-7.969
+15,Fairmont Royal Palm Marrakech,Marrakech,Marrakech-Safi,Luxury,Fairmont,Accor,134,2015,Operating,31.641,-7.996
+16,Novotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Novotel,Accor,179,2010,Operating,31.620,-7.974
+17,Pullman Marrakech Palmeraie Resort & Spa,Marrakech,Marrakech-Safi,Upper Upscale,Pullman,Accor,213,2009,Operating,31.644,-7.985
+18,JW Marriott Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,JW Marriott,Marriott International,244,2015,Operating,31.635,-7.972
+19,Radisson Blu Hotel & Conference Center Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,296,2014,Operating,31.639,-7.994
+20,Ibis Marrakech Centre Gare,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,250,2009,Operating,31.625,-7.967
+21,Sofitel Agadir Royal Bay Resort,Agadir,Souss-Massa,Luxury,Sofitel,Accor,275,2013,Operating,30.415,-9.606
+22,Riu Tikida Palace Agadir,Agadir,Souss-Massa,Upper Upscale,Riu,Riu Hotels & Resorts,336,2000,Operating,30.421,-9.612
+23,Radisson Blu Hotel Agadir,Agadir,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,312,2017,Operating,30.436,-9.593
+24,Hyatt Place Agadir,Agadir,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,197,2020,Operating,30.440,-9.601
+25,Kenzi Europa Agadir,Agadir,Souss-Massa,Upscale,Kenzi Hotels,Kenzi Hotels Group,196,1985,Operating,30.418,-9.588
+26,Club Med Agadir,Agadir,Souss-Massa,Upper Upscale,Club Med,Accor,302,1990,Operating,30.433,-9.609
+27,Iberostar Founty Beach Agadir,Agadir,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,318,2001,Operating,30.412,-9.604
+28,Hilton Tanger City Center Hotel & Residences,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hilton,Hilton Hotels & Resorts,180,2019,Operating,35.776,-5.808
+29,Mövenpick Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mövenpick,Accor,163,2016,Operating,35.759,-5.788
+30,Ibis Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,108,2012,Operating,35.781,-5.805
+31,Barceló Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Barceló,Barceló Hotel Group,168,2010,Operating,35.764,-5.793
+32,Banyan Tree Tamouda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Banyan Tree,Banyan Tree Hotels & Resorts,76,2017,Operating,35.699,-5.382
+33,Marriott Tanger Golf & Beach Resort,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Marriott,Marriott International,188,2019,Operating,35.696,-5.377
+34,Sofitel Tamuda Bay Beach & Spa,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,165,2020,Operating,35.683,-5.361
+35,Sofitel Rabat Jardin des Roses,Rabat,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,293,2004,Operating,34.012,-6.854
+36,Kenzi Basma Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,211,1990,Operating,34.026,-6.848
+37,Hilton Garden Inn Rabat,Rabat,Rabat-Salé-Kénitra,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,137,2015,Operating,34.031,-6.832
+38,Ibis Rabat Agdal,Rabat,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,168,2010,Operating,34.007,-6.830
+39,Novotel Rabat,Rabat,Rabat-Salé-Kénitra,Upscale,Novotel,Accor,170,2012,Operating,34.023,-6.844
+40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,200,2008,Operating,34.047,-5.011
+41,Ibis Fes,Fes,Fès-Meknès,Midscale,Ibis,Accor,102,2011,Operating,34.030,-5.006
+42,Mövenpick Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Mövenpick,Accor,186,2018,Operating,34.051,-4.989
+43,Kenzi Zalagh Parc Palace Fes,Fes,Fès-Meknès,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,270,2010,Operating,34.025,-4.987
+44,Radisson Blu Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Radisson Blu,Radisson Hotel Group,224,2014,Operating,34.042,-5.013
+45,Sheraton Fes Hotel,Fes,Fès-Meknès,Upper Upscale,Sheraton,Marriott International,288,2012,Operating,34.052,-4.992

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospitality IQ — Morocco Market Intelligence</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="navbar-logo">
+      <span class="logo-mark">H</span>
+      <span class="logo-text">Hospitality <strong>IQ</strong></span>
+    </div>
+    <nav class="navbar-links">
+      <a href="#" class="nav-link active" data-screen="dashboard">Dashboard</a>
+      <a href="#" class="nav-link" data-screen="map">Map</a>
+      <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
+      <a href="#" class="nav-link" data-screen="ai">AI Analyst</a>
+    </nav>
+    <div class="navbar-meta">
+      <span class="badge">2025 FY · HIQ Estimates</span>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <p class="sidebar-label">Destination</p>
+        <ul class="sidebar-list" id="city-filter">
+          <li class="sidebar-item active" data-city="all">All Morocco</li>
+          <li class="sidebar-item" data-city="Casablanca">Casablanca</li>
+          <li class="sidebar-item" data-city="Marrakech">Marrakech</li>
+          <li class="sidebar-item" data-city="Agadir">Agadir</li>
+          <li class="sidebar-item" data-city="Tanger">Tanger</li>
+          <li class="sidebar-item" data-city="Tamuda Bay">Tamuda Bay</li>
+          <li class="sidebar-item" data-city="Rabat">Rabat</li>
+          <li class="sidebar-item" data-city="Fes">Fes</li>
+        </ul>
+      </div>
+      <div class="sidebar-section">
+        <p class="sidebar-label">Segment</p>
+        <ul class="sidebar-list" id="segment-sidebar">
+          <li class="sidebar-item active" data-seg="all">All Segments</li>
+          <li class="sidebar-item" data-seg="Luxury">
+            <span class="seg-pip" style="background:#1e40af"></span>Luxury
+          </li>
+          <li class="sidebar-item" data-seg="Upper Upscale">
+            <span class="seg-pip" style="background:#4f7ef8"></span>Upper Upscale
+          </li>
+          <li class="sidebar-item" data-seg="Upscale">
+            <span class="seg-pip" style="background:#60a5fa"></span>Upscale
+          </li>
+          <li class="sidebar-item" data-seg="Midscale">
+            <span class="seg-pip" style="background:#6b7280"></span>Midscale
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- ── Dashboard ── -->
+      <section class="screen active" id="screen-dashboard">
+        <div class="screen-header">
+          <h1>Market Overview</h1>
+          <p class="screen-sub" id="dashboard-sub">Morocco branded hotel market · 2025 FY estimates</p>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card loading" id="kpi-keys">
+            <span class="kpi-label">Total Keys</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta" id="kpi-keys-meta">&nbsp;</span>
+            <span class="kpi-delta up" id="kpi-keys-delta"></span>
+          </div>
+          <div class="kpi-card loading" id="kpi-occ">
+            <span class="kpi-label">Occupancy</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta" id="kpi-occ-meta">&nbsp;</span>
+            <span class="kpi-delta up" id="kpi-occ-delta"></span>
+          </div>
+          <div class="kpi-card loading" id="kpi-adr">
+            <span class="kpi-label">Avg ADR</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">MAD</span>
+            <span class="kpi-delta up" id="kpi-adr-delta"></span>
+          </div>
+          <div class="kpi-card loading" id="kpi-revpar">
+            <span class="kpi-label">RevPAR</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">MAD</span>
+            <span class="kpi-delta up" id="kpi-revpar-delta"></span>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">RevPAR by Destination</span>
+              <span class="chart-unit">MAD · keys-weighted</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chart-revpar"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Occupancy by Destination</span>
+              <span class="chart-unit">% · keys-weighted</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chart-occ"></canvas></div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-title">Brand Group Performance</span>
+            <span class="table-subtitle" id="brand-table-sub">All destinations · 14 groups</span>
+          </div>
+          <table class="data-table" id="brand-table">
+            <thead>
+              <tr>
+                <th style="width:32px"></th>
+                <th>Brand Group</th>
+                <th>Hotels</th>
+                <th>Keys</th>
+                <th>Occ %</th>
+                <th>ADR (MAD)</th>
+                <th>RevPAR (MAD)</th>
+                <th>GOP %</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Map ── -->
+      <section class="screen" id="screen-map">
+        <div class="screen-header">
+          <h1>Hotel Map</h1>
+          <p class="screen-sub">Circle size = room count · click any marker for details</p>
+        </div>
+        <div class="map-seg-bar" id="map-seg-bar">
+          <button class="seg-btn active" data-map-seg="all">All</button>
+          <button class="seg-btn" data-map-seg="Luxury">
+            <span class="seg-dot" style="background:#1e40af"></span>Luxury
+          </button>
+          <button class="seg-btn" data-map-seg="Upper Upscale">
+            <span class="seg-dot" style="background:#4f7ef8"></span>Upper Upscale
+          </button>
+          <button class="seg-btn" data-map-seg="Upscale">
+            <span class="seg-dot" style="background:#60a5fa"></span>Upscale
+          </button>
+          <button class="seg-btn" data-map-seg="Midscale">
+            <span class="seg-dot" style="background:#6b7280"></span>Midscale
+          </button>
+          <span class="map-count" id="map-count"></span>
+        </div>
+        <div id="map-container"></div>
+      </section>
+
+      <!-- ── Hotels ── -->
+      <section class="screen" id="screen-hotels">
+        <div class="screen-header">
+          <h1>Hotel Directory</h1>
+          <p class="screen-sub" id="hotels-sub">45 branded hotels · Morocco 2025 FY</p>
+        </div>
+
+        <div class="hotels-controls">
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
+            </svg>
+            <input type="text" id="hotels-search" class="search-input"
+                   placeholder="Search by hotel name, city, or brand…" autocomplete="off" />
+          </div>
+          <div class="controls-row">
+            <div class="filter-pills" id="hotels-city-pills">
+              <span class="filter-pills-label">City</span>
+              <button class="pill active" data-hcity="all">All</button>
+              <button class="pill" data-hcity="Casablanca">Casablanca</button>
+              <button class="pill" data-hcity="Marrakech">Marrakech</button>
+              <button class="pill" data-hcity="Agadir">Agadir</button>
+              <button class="pill" data-hcity="Tanger">Tanger</button>
+              <button class="pill" data-hcity="Tamuda Bay">Tamuda Bay</button>
+              <button class="pill" data-hcity="Rabat">Rabat</button>
+              <button class="pill" data-hcity="Fes">Fes</button>
+            </div>
+            <div class="filter-pills" id="hotels-seg-pills">
+              <span class="filter-pills-label">Segment</span>
+              <button class="pill active" data-hseg="all">All</button>
+              <button class="pill" data-hseg="Luxury">Luxury</button>
+              <button class="pill" data-hseg="Upper Upscale">Upper Upscale</button>
+              <button class="pill" data-hseg="Upscale">Upscale</button>
+              <button class="pill" data-hseg="Midscale">Midscale</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table" id="hotels-table">
+            <thead>
+              <tr>
+                <th class="sortable-col sort-asc" data-col="name">Hotel Name <span class="sort-icon">↑</span></th>
+                <th class="sortable-col" data-col="city">City <span class="sort-icon">↕</span></th>
+                <th class="sortable-col" data-col="category">Segment <span class="sort-icon">↕</span></th>
+                <th class="sortable-col" data-col="brand_group">Brand Group <span class="sort-icon">↕</span></th>
+                <th class="sortable-col" data-col="keys">Keys <span class="sort-icon">↕</span></th>
+                <th class="sortable-col" data-col="occupancy">Occ % <span class="sort-icon">↕</span></th>
+                <th class="sortable-col" data-col="adr_mad">ADR (MAD) <span class="sort-icon">↕</span></th>
+                <th class="sortable-col" data-col="revpar_mad">RevPAR (MAD) <span class="sort-icon">↕</span></th>
+                <th class="sortable-col" data-col="gop_margin">GOP % <span class="sort-icon">↕</span></th>
+              </tr>
+            </thead>
+            <tbody id="hotels-tbody"></tbody>
+          </table>
+          <div class="table-footer" id="hotels-footer">Showing 45 of 45 hotels</div>
+        </div>
+      </section>
+
+      <!-- ── AI Analyst ── -->
+      <section class="screen" id="screen-ai">
+        <div class="screen-header">
+          <h1>AI Analyst</h1>
+          <p class="screen-sub">Powered by Claude · HIQ proprietary database · 2025 FY estimates</p>
+        </div>
+
+        <div class="chat-outer">
+          <div class="chat-thread" id="chat-thread">
+            <!-- Welcome state (hidden once conversation starts) -->
+            <div class="chat-welcome" id="chat-welcome">
+              <div class="chat-welcome-mark">H</div>
+              <div class="chat-welcome-title">HIQ Market Intelligence</div>
+              <div class="chat-welcome-sub">Ask any question about Morocco's branded hotel market</div>
+              <div class="chat-chips" id="chat-chips">
+                <button class="chat-chip" data-q="Which city has the highest RevPAR?">Which city has the highest RevPAR?</button>
+                <button class="chat-chip" data-q="How does Accor perform vs Marriott International in Morocco?">How does Accor perform vs Marriott?</button>
+                <button class="chat-chip" data-q="What is the occupancy gap between the Luxury and Upscale segments?">Luxury vs Upscale occupancy gap?</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Typing indicator -->
+          <div class="chat-typing" id="chat-typing" style="display:none">
+            <span class="typing-label">HIQ Analyst</span>
+            <div class="typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="chat-input" class="chat-input"
+                   placeholder="Ask about Morocco's hotel market…" autocomplete="off" />
+            <button id="chat-send" class="chat-send-btn">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M1 8l13-7-5 7 5 7z"/>
+              </svg>
+              Send
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/js/main.js"></script>
+</body>
+</html>
