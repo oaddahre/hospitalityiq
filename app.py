@@ -249,12 +249,26 @@ def api_chat():
             messages=messages,
         )
         return jsonify({"response": response.content[0].text})
-    except anthropic.AuthenticationError:
+    except anthropic.AuthenticationError as e:
+        print(f"[ERROR] AuthenticationError — status={e.status_code} body={e.body}")
         return jsonify({"error": "Invalid API key — check ANTHROPIC_API_KEY in your .env file."}), 401
-    except anthropic.RateLimitError:
+    except anthropic.RateLimitError as e:
+        print(f"[ERROR] RateLimitError — status={e.status_code} body={e.body}")
         return jsonify({"error": "Rate limit reached. Please wait a moment and try again."}), 429
+    except anthropic.APIStatusError as e:
+        print(f"[ERROR] APIStatusError — type={type(e).__name__} status={e.status_code} body={e.body}")
+        return jsonify({"error": f"Anthropic API error {e.status_code}: {e.message}"}), 502
     except Exception as e:
+        print(f"[ERROR] Unexpected error — type={type(e).__name__} detail={e}")
         return jsonify({"error": f"API error: {str(e)}"}), 500
+
+
+@app.route("/api/test-key")
+def api_test_key():
+    api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        return jsonify({"set": False, "preview": None})
+    return jsonify({"set": True, "preview": api_key[:10] + "..."})
 
 
 if __name__ == "__main__":
