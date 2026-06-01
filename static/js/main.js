@@ -694,6 +694,39 @@ function renderTourismEvents() {
     `).join('');
 }
 
+const TOUR_NIGHTS_DATA = {
+  labels: ['Other','Essaouira','Tanger','Fes','Casablanca','Agadir','Marrakech'],
+  years: {
+    2021: [2.8, 0.6, 1.1, 1.4, 2.8, 6.2, 8.1],
+    2022: [4.8, 1.0, 1.8, 2.2, 4.2, 9.1, 12.4],
+    2023: [6.1, 1.2, 2.2, 2.9, 5.1, 10.8, 15.2],
+    2024: [6.8, 1.4, 2.5, 3.2, 5.7, 11.6, 16.8],
+    2025: [7.3, 1.6, 2.8, 3.6, 6.2, 12.4, 18.2],
+  },
+};
+
+const TOUR_AIRPORT_DATA = {
+  labels: ['Nador NDR','Oujda OUD','Rabat RBA','Fes FEZ','Tanger TNG','Agadir AGA','Marrakech RAK','Casablanca CMN'],
+  years: {
+    2021: [0.2, 0.3, 0.4, 0.6, 0.8, 1.2, 2.1, 4.2],
+    2022: [0.4, 0.5, 0.7, 1.1, 1.4, 2.1, 4.2, 7.8],
+    2023: [0.5, 0.6, 0.9, 1.4, 1.7, 2.8, 5.6, 9.4],
+    2024: [0.55, 0.7, 1.0, 1.6, 1.9, 3.1, 6.2, 10.6],
+    2025: [0.6, 0.8, 1.1, 1.8, 2.1, 3.4, 6.8, 11.2],
+  },
+};
+
+const TOUR_ORIGINS_DATA = {
+  labels: ['France','MRE','Spain','UK','Germany','Gulf States','USA','Italy','Other'],
+  years: {
+    2021: [24, 20, 12, 9, 7, 5, 4, 3, 16],
+    2022: [23, 19, 13, 10, 7, 6, 4, 3, 15],
+    2023: [23, 18, 14, 10, 8, 6, 5, 4, 12],
+    2024: [22, 18, 14, 10, 8, 7, 5, 4, 12],
+    2025: [22, 18, 14, 10, 8, 7, 5, 4, 12],
+  },
+};
+
 function initTourismCharts() {
   if (tourismInited) return;
 
@@ -705,6 +738,26 @@ function initTourismCharts() {
   };
 
   const FC = '#f59e0b'; // forecast amber
+
+  const addYearTabs = (canvasId, data) => {
+    const canvas = document.getElementById(canvasId);
+    const wrap = canvas.closest('.chart-wrap');
+    const tabsDiv = document.createElement('div');
+    tabsDiv.className = 'chart-year-tabs';
+    [2021, 2022, 2023, 2024, 2025].forEach(yr => {
+      const btn = document.createElement('button');
+      btn.className = 'chart-year-tab' + (yr === 2025 ? ' active' : '');
+      btn.textContent = yr;
+      btn.addEventListener('click', () => {
+        tabsDiv.querySelectorAll('.chart-year-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const chart = Chart.getChart(canvas);
+        if (chart) { chart.data.datasets[0].data = data.years[yr]; chart.update(); }
+      });
+      tabsDiv.appendChild(btn);
+    });
+    wrap.parentNode.insertBefore(tabsDiv, wrap);
+  };
 
   // ── Helper for vertical bar charts ──────────────────────────────
   function vBar(labels, values, bgColors, lblFmt, tipFmt) {
@@ -775,29 +828,32 @@ function initTourismCharts() {
     },
   });
 
-  // 3. Origin Markets (horizontal)
-  const origLbls = ['France','MRE','Spain','UK','Germany','Gulf States','USA','Italy','Other'];
-  const origVals = [22, 18, 14, 10, 8, 7, 5, 4, 12];
+  // 3. Origin Markets (horizontal, with year tabs)
+  const origLbls = TOUR_ORIGINS_DATA.labels;
+  const origVals = TOUR_ORIGINS_DATA.years[2025];
   setH('twrap-origins', Math.max(260, origLbls.length * 34 + 50));
   const origCfg = chartConfig(origLbls, origVals, '%', origLbls.map(() => CHART_ACCENT), v => v + '%');
   origCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + '%';
   new Chart(document.getElementById('chart-tour-origins'), origCfg);
+  addYearTabs('chart-tour-origins', TOUR_ORIGINS_DATA);
 
-  // 4. Tourist Nights by Destination (horizontal, sorted asc so Marrakech is top)
-  const nightsLbls = ['Other','Essaouira','Tanger','Fes','Casablanca','Agadir','Marrakech'];
-  const nightsVals = [7.3, 1.6, 2.8, 3.6, 6.2, 12.4, 18.2];
+  // 4. Tourist Nights by Destination (horizontal, sorted asc so Marrakech is top, with year tabs)
+  const nightsLbls = TOUR_NIGHTS_DATA.labels;
+  const nightsVals = TOUR_NIGHTS_DATA.years[2025];
   setH('twrap-nights', Math.max(240, nightsLbls.length * 34 + 50));
   const nightsCfg = chartConfig(nightsLbls, nightsVals, 'M', nightsLbls.map(() => CHART_ACCENT), v => v + 'M');
   nightsCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M nights';
   new Chart(document.getElementById('chart-tour-nights'), nightsCfg);
+  addYearTabs('chart-tour-nights', TOUR_NIGHTS_DATA);
 
-  // 5. Airport Traffic (horizontal, sorted asc so CMN is top)
-  const airLbls = ['Nador NDR','Oujda OUD','Rabat RBA','Fes FEZ','Tanger TNG','Agadir AGA','Marrakech RAK','Casablanca CMN'];
-  const airVals  = [0.6, 0.8, 1.1, 1.8, 2.1, 3.4, 6.8, 11.2];
+  // 5. Airport Traffic (horizontal, sorted asc so CMN is top, with year tabs)
+  const airLbls = TOUR_AIRPORT_DATA.labels;
+  const airVals  = TOUR_AIRPORT_DATA.years[2025];
   setH('twrap-airports', Math.max(260, airLbls.length * 34 + 50));
   const airCfg = chartConfig(airLbls, airVals, 'M pax', airLbls.map(() => '#60a5fa'), v => v + 'M');
   airCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M passengers';
   new Chart(document.getElementById('chart-tour-airports'), airCfg);
+  addYearTabs('chart-tour-airports', TOUR_AIRPORT_DATA);
 
   // 6. Tourism Revenue Trend
   setH('twrap-revenue', 290);
