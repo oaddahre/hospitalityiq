@@ -46,7 +46,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 48,Mercure Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Upscale,Mercure,Accor,172,2015,Operating,33.544,-7.639,Risma
 49,DoubleTree by Hilton Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,DoubleTree,Hilton Hotels & Resorts,198,2016,Operating,33.567,-7.592,Undisclosed
 50,ibis Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Midscale,ibis,Accor,199,2012,Operating,33.543,-7.636,Risma
-51,Crowne Plaza Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Crowne Plaza,IHG Hotels & Resorts,230,2006,Operating,33.575,-7.616,Undisclosed
 52,ibis Styles Casablanca Centre,Casablanca,Grand Casablanca-Settat,Midscale,ibis Styles,Accor,120,2018,Operating,33.564,-7.587,Risma
 53,Marriott Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Marriott,Marriott International,180,2019,Operating,33.578,-7.606,Undisclosed
 54,Holiday Inn Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Holiday Inn,IHG Hotels & Resorts,150,2017,Operating,33.561,-7.594,Undisclosed
@@ -81,7 +80,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 84,Kenzi Beach Agadir,Agadir,Souss-Massa,Upscale,Kenzi Hotels,Kenzi Hotels Group,360,1980,Operating,30.403,-9.597,Kenzi Hotels Group
 85,Iberostar Agadir,Agadir,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,392,2006,Operating,30.408,-9.604,Undisclosed
 86,Radisson Blu Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,225,2013,Operating,35.771,-5.801,Undisclosed
-87,Crowne Plaza Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Crowne Plaza,IHG Hotels & Resorts,189,2017,Operating,35.776,-5.796,Undisclosed
 88,ibis Styles Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,ibis Styles,Accor,105,2019,Operating,35.769,-5.799,Risma
 89,Kenzi Solazur Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Kenzi Hotels,Kenzi Hotels Group,330,1969,Operating,35.783,-5.794,Kenzi Hotels Group
 90,Holiday Inn Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Holiday Inn,IHG Hotels & Resorts,156,2018,Operating,35.775,-5.806,Undisclosed
@@ -249,3 +247,5 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 253,Sofitel Al Hoceima Salam,Al Hoceima,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,168,2005,Operating,35.2534,-3.9289,Risma
 254,Riad Madu Merzouga,Merzouga,Drâa-Tafilalet,Upscale,Riad Madu,Independent,22,2012,Operating,31.0967,-4.0089,Undisclosed
 255,ibis Styles Ouarzazate,Ouarzazate,Drâa-Tafilalet,Midscale,ibis Styles,Accor,70,2022,Operating,30.9156,-6.8956,Risma
+256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,168,2019,Open,33.5834,-7.6234,Undisclosed
+257,Hilton Garden Inn Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,145,2021,Open,35.7589,-5.8334,Undisclosed
