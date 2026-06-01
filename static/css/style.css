@@ -670,6 +670,56 @@ body {
   font-weight: 500;
 }
 
+/* ─── Brand detail ──────────────────────────── */
+.brand-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.brand-top .screen-header { margin-bottom: 0; flex: 1; }
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: color 0.14s, border-color 0.14s;
+}
+.back-btn:hover { color: var(--text); border-color: var(--accent); }
+
+.brand-owner-badge {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.brand-kpi-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.brand-link {
+  cursor: pointer;
+}
+.brand-link:hover {
+  color: var(--accent) !important;
+  text-decoration: underline;
+}
+
+.brand-hotel-row { cursor: pointer; }
+
 /* ─── AI Chat ────────────────────────────────── */
 #screen-ai.active {
   display: flex;

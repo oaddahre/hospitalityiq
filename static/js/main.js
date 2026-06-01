@@ -47,6 +47,10 @@ let hotels   = null;   // /api/hotels response (flat, merged)
 let revChart = null;
 let occChart = null;
 let leaflet  = null;   // { map, markers, tileLayer }
+let brandChart      = null;
+let brandHotelsData = [];
+const brandState    = { col: 'name', dir: 1 };
+const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner']);
 
 // ─── Theme ────────────────────────────────────────────────────────
 
@@ -304,7 +308,7 @@ function renderBrandTable() {
   tbody.innerHTML = rows.map((r, i) => `
     <tr>
       <td class="rank-cell">${i + 1}</td>
-      <td>${fmt.esc(r.brand_group)}</td>
+      <td class="brand-link" data-brand="${fmt.esc(r.brand_group)}">${fmt.esc(r.brand_group)}</td>
       <td>${r.hotel_count}</td>
       <td>${fmt.num(r.total_keys)}</td>
       <td>${fmt.pct(r.occupancy)}</td>
@@ -317,6 +321,115 @@ function renderBrandTable() {
   const sub = document.getElementById('brand-table-sub');
   const dest = state.city === 'all' ? 'All destinations' : state.city;
   sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''}`;
+}
+
+// ─── Brand detail ─────────────────────────────────────────────────
+
+function showBrandDetail(brandGroup) {
+  brandHotelsData = hotels.filter(h => h.brand_group === brandGroup);
+
+  const tk    = brandHotelsData.reduce((s, h) => s + h.keys, 0);
+  const ok    = brandHotelsData.reduce((s, h) => s + h.keys * h.occupancy, 0);
+  const occ   = ok / tk;
+  const adr   = brandHotelsData.reduce((s, h) => s + h.adr_mad * h.keys * h.occupancy, 0) / ok;
+  const revpar= brandHotelsData.reduce((s, h) => s + h.revpar_mad * h.keys, 0) / tk;
+  const gop   = brandHotelsData.reduce((s, h) => s + h.gop_margin * h.keys, 0) / tk;
+
+  const cities      = [...new Set(brandHotelsData.map(h => h.city))].sort();
+  const ownerValues = [...new Set(brandHotelsData.map(h => h.owner).filter(Boolean))];
+  const distinctOwners = ownerValues.filter(o => o !== 'Undisclosed');
+
+  // Header
+  document.getElementById('brand-detail-name').textContent = brandGroup;
+  document.getElementById('brand-detail-sub').textContent =
+    `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''} · ${fmt.num(tk)} keys · ${cities.join(', ')}`;
+
+  const ownerBadge = document.getElementById('brand-owner-badge');
+  if (distinctOwners.length === 1) {
+    ownerBadge.textContent = `Owned by ${distinctOwners[0]}`;
+    ownerBadge.style.display = '';
+  } else {
+    ownerBadge.style.display = 'none';
+  }
+
+  // KPI cards
+  const setKpi = (id, val) => {
+    const el = document.getElementById(id);
+    el.querySelector('.kpi-value').textContent = val;
+  };
+  setKpi('bkpi-keys',   fmt.num(tk));
+  setKpi('bkpi-occ',    fmt.pct(occ));
+  setKpi('bkpi-adr',    fmt.mad(adr));
+  setKpi('bkpi-revpar', fmt.mad(revpar));
+  setKpi('bkpi-gop',    fmt.pct(gop));
+
+  // City RevPAR chart
+  const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
+  const chartH   = Math.max(240, cityData.length * 38 + 50);
+  document.getElementById('brand-chart-wrap').style.height = chartH + 'px';
+
+  const labels = cityData.map(c => c.city);
+  const values = cityData.map(c => c.revpar_mad);
+  const colors = labels.map(() => CHART_ACCENT);
+
+  if (brandChart) {
+    brandChart.data.labels                          = labels;
+    brandChart.data.datasets[0].data               = values;
+    brandChart.data.datasets[0].backgroundColor    = colors;
+    brandChart.update();
+  } else {
+    brandChart = new Chart(
+      document.getElementById('chart-brand-revpar'),
+      chartConfig(labels, values, ' MAD', colors, v => Math.round(v).toLocaleString('en'))
+    );
+  }
+
+  // Hotel table
+  document.getElementById('brand-hotels-title').textContent =
+    `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
+  brandState.col = 'name';
+  brandState.dir = 1;
+  renderBrandHotelsTable();
+
+  // Switch to brand screen
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-brand').classList.add('active');
+}
+
+function renderBrandHotelsTable() {
+  const { col, dir } = brandState;
+  const sorted = [...brandHotelsData].sort((a, b) => {
+    const va = a[col], vb = b[col];
+    if (BRAND_STR_COLS.has(col)) return dir * String(va).localeCompare(String(vb));
+    return dir * (va - vb);
+  });
+
+  document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
+    const segColor = SEG_COLORS[h.category] || '#6b7280';
+    return `<tr class="brand-hotel-row">
+      <td class="hotel-name-cell">${fmt.esc(h.name)}</td>
+      <td>${fmt.esc(h.city)}</td>
+      <td><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
+      <td>${fmt.num(h.keys)}</td>
+      <td>${fmt.pct(h.occupancy)}</td>
+      <td>${fmt.mad(h.adr_mad)}</td>
+      <td>${fmt.mad(h.revpar_mad)}</td>
+      <td class="${gopClass(h.gop_margin)}">${fmt.pct(h.gop_margin)}</td>
+      <td>${fmt.esc(h.owner || '—')}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#brand-hotels-table .sortable-col').forEach(th => {
+    const icon = th.querySelector('.sort-icon');
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.bcol === col) {
+      th.classList.add(dir === 1 ? 'sort-asc' : 'sort-desc');
+      icon.textContent = dir === 1 ? '↑' : '↓';
+    } else {
+      icon.textContent = '↕';
+    }
+  });
 }
 
 // ─── Map ──────────────────────────────────────────────────────────
@@ -607,6 +720,36 @@ document.getElementById('hotels-table').addEventListener('click', e => {
     hotelsState.dir = STRING_COLS.has(col) ? 1 : -1; // strings default asc, numbers default desc
   }
   renderHotelsTable();
+});
+
+// Brand table — click brand group name → brand detail
+document.querySelector('#brand-table tbody').addEventListener('click', e => {
+  const cell = e.target.closest('.brand-link');
+  if (!cell) return;
+  showBrandDetail(cell.dataset.brand);
+});
+
+// Brand detail — back to dashboard
+document.getElementById('brand-back-btn').addEventListener('click', () => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l =>
+    l.classList.toggle('active', l.dataset.screen === 'dashboard')
+  );
+  document.getElementById('screen-dashboard').classList.add('active');
+});
+
+// Brand detail — hotel table column sort
+document.getElementById('brand-hotels-table').addEventListener('click', e => {
+  const th = e.target.closest('.sortable-col[data-bcol]');
+  if (!th) return;
+  const col = th.dataset.bcol;
+  if (col === brandState.col) {
+    brandState.dir *= -1;
+  } else {
+    brandState.col = col;
+    brandState.dir = BRAND_STR_COLS.has(col) ? 1 : -1;
+  }
+  renderBrandHotelsTable();
 });
 
 // ─── AI Chat ──────────────────────────────────────────────────────
