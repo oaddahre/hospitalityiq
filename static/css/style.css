@@ -294,7 +294,7 @@ body {
 /* ─── Charts row ─────────────────────────────── */
 .charts-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -326,7 +326,7 @@ body {
 }
 
 .chart-wrap {
-  height: 248px;
+  min-height: 360px;
   position: relative;
 }
 

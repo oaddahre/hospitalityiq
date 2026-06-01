@@ -49,6 +49,7 @@ function applyTheme(mode) {
     document.body.classList.remove('light');
     icon.innerHTML = ICON_MOON;
   }
+  swapMapTiles(mode);
 }
 
 document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -247,8 +248,12 @@ function barColors(labels) {
 }
 
 function renderCharts() {
-  // Always show all 7 cities, sorted by their own metric; highlight selected city
   const allCityData = cityAggs(hotels);
+
+  // Set chart container heights based on city count (30px per bar + padding)
+  const chartH = Math.max(400, allCityData.length * 30 + 60);
+  document.getElementById('chart-revpar').closest('.chart-wrap').style.height = chartH + 'px';
+  document.getElementById('chart-occ').closest('.chart-wrap').style.height = chartH + 'px';
 
   // RevPAR chart — sorted high→low
   const revSorted = [...allCityData].sort((a, b) => b.revpar_mad - a.revpar_mad);
@@ -348,13 +353,23 @@ function popupHTML(h) {
     </div>`;
 }
 
+const TILE_DARK  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const TILE_LIGHT = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+const TILE_ATTR  = '&copy; <a href="https://carto.com/">CARTO</a>';
+
+function swapMapTiles(mode) {
+  if (!leaflet) return;
+  leaflet.tileLayer.remove();
+  leaflet.tileLayer = L.tileLayer(mode === 'light' ? TILE_LIGHT : TILE_DARK, {
+    attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 18,
+  }).addTo(leaflet.map);
+}
+
 function initMap() {
   const map = L.map('map-container', { zoomControl: true }).setView(MOROCCO_CENTER, MOROCCO_ZOOM);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 18,
+  const isDark = !document.body.classList.contains('light');
+  const tileLayer = L.tileLayer(isDark ? TILE_DARK : TILE_LIGHT, {
+    attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 18,
   }).addTo(map);
 
   const markers = hotels.map(h => {
@@ -372,7 +387,7 @@ function initMap() {
     return { marker, hotel: h };
   });
 
-  leaflet = { map, markers };
+  leaflet = { map, markers, tileLayer };
   updateMapMarkers();
 }
 
