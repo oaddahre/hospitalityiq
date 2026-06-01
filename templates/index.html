@@ -18,6 +18,7 @@
       <a href="#" class="nav-link active" data-screen="dashboard">Dashboard</a>
       <a href="#" class="nav-link" data-screen="map">Map</a>
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
+      <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
       <a href="#" class="nav-link" data-screen="ai">AI Analyst</a>
     </nav>
     <div class="navbar-meta">
@@ -208,6 +209,157 @@
           </table>
           <div class="table-footer" id="hotels-footer">Showing 45 of 45 hotels</div>
         </div>
+      </section>
+
+      <!-- ── Tourism ── -->
+      <section class="screen" id="screen-tourism">
+        <div class="screen-header">
+          <h1>Morocco — Tourism Intelligence</h1>
+          <p class="screen-sub">Source: ONMT, Ministère du Tourisme, ONDA · 2020–2025 official data · 2026E HIQ forecast</p>
+        </div>
+
+        <!-- KPI cards -->
+        <div class="kpi-grid brand-kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Int'l Arrivals 2025</span>
+            <span class="kpi-value">20.1M</span>
+            <span class="kpi-meta">tourists</span>
+            <span class="kpi-delta up">+16% vs 2024</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Tourist Nights 2025</span>
+            <span class="kpi-value">52.1M</span>
+            <span class="kpi-meta">nights</span>
+            <span class="kpi-delta up">+14% vs 2024</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Tourism Revenue 2025</span>
+            <span class="kpi-value">MAD 118B</span>
+            <span class="kpi-meta">Moroccan Dirhams</span>
+            <span class="kpi-delta up">+12% vs 2024</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Avg Length of Stay</span>
+            <span class="kpi-value">6.2</span>
+            <span class="kpi-meta">nights per visitor</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Top Origin Market</span>
+            <span class="kpi-value">France</span>
+            <span class="kpi-meta">22% of arrivals</span>
+          </div>
+        </div>
+
+        <!-- Arrivals trend — full width -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">International Arrivals Trend</span>
+              <span class="chart-unit">millions · amber bar = 2026E HIQ forecast</span>
+            </div>
+            <div class="chart-wrap" id="twrap-arrivals"><canvas id="chart-tour-arrivals"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Transport mode + Origin markets — 2-col -->
+        <div class="charts-row tour-2col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Arrivals by Mode of Transport</span>
+              <span class="chart-unit">millions per year</span>
+            </div>
+            <div class="chart-wrap" id="twrap-transport"><canvas id="chart-tour-transport"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Top Origin Markets</span>
+              <span class="chart-unit">2025 · share of arrivals</span>
+            </div>
+            <div class="chart-wrap" id="twrap-origins"><canvas id="chart-tour-origins"></canvas></div>
+            <p class="tour-note">MRE arrivals primarily via Tanger Med ferry — peak July/August</p>
+          </div>
+        </div>
+
+        <!-- Tourist nights + Airport traffic — 2-col -->
+        <div class="charts-row tour-2col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Tourist Nights by Destination</span>
+              <span class="chart-unit">2025 · millions</span>
+            </div>
+            <div class="chart-wrap" id="twrap-nights"><canvas id="chart-tour-nights"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Airport Traffic — Top Gateways</span>
+              <span class="chart-unit">2025 · millions passengers</span>
+            </div>
+            <div class="chart-wrap" id="twrap-airports"><canvas id="chart-tour-airports"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Revenue trend + Seasonality — 2-col -->
+        <div class="charts-row tour-2col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Tourism Revenue Trend</span>
+              <span class="chart-unit">MAD billions · amber bar = 2026E HIQ forecast</span>
+            </div>
+            <div class="chart-wrap" id="twrap-revenue"><canvas id="chart-tour-revenue"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Seasonality Index</span>
+              <span class="chart-unit">relative demand · July = 100</span>
+            </div>
+            <div class="chart-wrap" id="twrap-season"><canvas id="chart-tour-season"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Demand catalysts -->
+        <div class="table-card" style="margin-bottom:20px">
+          <div class="table-card-header">
+            <span class="table-title">Key Demand Catalysts</span>
+          </div>
+          <div class="catalyst-grid">
+            <div class="catalyst-card">
+              <div class="catalyst-card-title">AFCON 2025 — Morocco Host</div>
+              <div class="catalyst-card-desc">+2.1M estimated incremental international visitors generated by the tournament</div>
+            </div>
+            <div class="catalyst-card">
+              <div class="catalyst-card-title">FIFA World Cup 2030</div>
+              <div class="catalyst-card-desc">Co-host with Spain &amp; Portugal · projected +4–6M visitor uplift for Morocco</div>
+            </div>
+            <div class="catalyst-card">
+              <div class="catalyst-card-title">Vision Maroc 2030</div>
+              <div class="catalyst-card-desc">National tourism strategy targeting 26M annual arrivals and MAD 200B revenue by 2030</div>
+            </div>
+            <div class="catalyst-card">
+              <div class="catalyst-card-title">Tanger Med Port Expansion</div>
+              <div class="catalyst-card-desc">Largest port in Africa — expanding MRE ferry capacity and cruise terminal operations</div>
+            </div>
+            <div class="catalyst-card">
+              <div class="catalyst-card-title">Air Connectivity Growth</div>
+              <div class="catalyst-card-desc">180+ new direct air routes launched 2023–2025, including Gulf and North American connections</div>
+            </div>
+            <div class="catalyst-card">
+              <div class="catalyst-card-title">Hotel Development Pipeline</div>
+              <div class="catalyst-card-desc">45+ luxury and upscale hotel projects under development across Marrakech, Agadir, and emerging destinations</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events calendar -->
+        <div class="table-card" style="margin-bottom:20px">
+          <div class="table-card-header">
+            <span class="table-title">Upcoming Events Driving Visitor Demand — 2026</span>
+            <span class="table-subtitle">Publicly announced programmes · dates subject to change</span>
+          </div>
+          <div id="events-container" class="events-container"></div>
+        </div>
+
+        <!-- Disclaimer -->
+        <p class="tour-disclaimer">Tourism statistics: ONMT official publications 2020–2025. 2026E: HIQ estimates based on YTD trends and forward bookings. Airport data: ONDA. Events: publicly announced programmes — dates subject to change.</p>
       </section>
 
       <!-- ── Brand Detail ── -->

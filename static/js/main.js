@@ -51,6 +51,7 @@ let brandChart      = null;
 let brandHotelsData = [];
 const brandState    = { col: 'name', dir: 1 };
 const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner']);
+let tourismInited   = false;
 
 // ─── Theme ────────────────────────────────────────────────────────
 
@@ -623,6 +624,230 @@ function render() {
   }
 }
 
+// ─── Tourism screen ───────────────────────────────────────────────
+
+const TOUR_EVENTS = [
+  // Marrakech
+  { city:'Marrakech',  name:'Marrakech Marathon',                    date:'January 2026',    attendance:'10,000+ runners',    type:'Sport'     },
+  { city:'Marrakech',  name:'Oasis Festival',                        date:'October 2026',    attendance:'25,000',             type:'Music'     },
+  { city:'Marrakech',  name:'Atlas Weekend',                         date:'July 2026',        attendance:'30,000',             type:'Music'     },
+  { city:'Marrakech',  name:'Marrakech Airshow',                     date:'2026 (TBC)',       attendance:'TBC',                type:'Business'  },
+  { city:'Marrakech',  name:'Marrakech International Film Festival', date:'November 2026',   attendance:'50,000+',            type:'Culture'   },
+  // Casablanca
+  { city:'Casablanca', name:'Morocco Traders Summit',                date:'March 2026',      attendance:'5,000 delegates',    type:'Business'  },
+  { city:'Casablanca', name:'Casablanca Finance City Forum',         date:'April 2026',      attendance:'3,000 delegates',    type:'Business'  },
+  // Agadir
+  { city:'Agadir',     name:'International Agadir Fishing Festival', date:'April 2026',      attendance:'',                   type:'Culture'   },
+  { city:'Agadir',     name:'Agadir Beach Soccer World Cup',         date:'May 2026',        attendance:'',                   type:'Sport'     },
+  { city:'Agadir',     name:'Timitar Festival',                      date:'July 2026',        attendance:'300,000+',           type:'Music'     },
+  // Fes
+  { city:'Fes',        name:'Fes Festival of World Sacred Music',    date:'June 2026',       attendance:'80,000',             type:'Music'     },
+  { city:'Fes',        name:'SIAM International Agriculture Fair',   date:'April 2026',      attendance:'1M+ visitors',       type:'Business'  },
+  // Tanger
+  { city:'Tanger',     name:'Tanger International Festival',         date:'August 2026',     attendance:'',                   type:'Culture'   },
+  { city:'Tanger',     name:'Tanger Med Business Forum',             date:'September 2026',  attendance:'',                   type:'Business'  },
+  // Essaouira
+  { city:'Essaouira',  name:'Gnaoua World Music Festival',           date:'June 2026',       attendance:'450,000+ over 4 days', type:'Music'   },
+  // Rabat
+  { city:'Rabat',      name:'Mawazine Festival',                     date:'May–June 2026',   attendance:'2M+ total',          type:'Music'     },
+  { city:'Rabat',      name:'Rabat International Fashion Week',      date:'March 2026',      attendance:'',                   type:'Culture'   },
+  // Dakhla
+  { city:'Dakhla',     name:'Dakhla Kitesurfing World Cup',          date:'August 2026',     attendance:'5,000+',             type:'Sport'     },
+  { city:'Dakhla',     name:'Dakhla Atlantic Festival',              date:'July 2026',        attendance:'',                   type:'Culture'   },
+  // National / Religious
+  { city:'National',   name:'Eid Al Fitr 2026',                      date:'c. 30 March 2026', attendance:'National',          type:'Religious' },
+  { city:'National',   name:'Eid Al Adha 2026',                      date:'c. 6–7 June 2026', attendance:'National',          type:'Religious' },
+  { city:'National',   name:'Aid Al Mawlid 2026',                    date:'September 2026',  attendance:'National',           type:'Religious' },
+];
+
+const EVENT_TYPE_CLASS = {
+  Sport: 'etype-sport', Culture: 'etype-culture', Music: 'etype-music',
+  Business: 'etype-business', Religious: 'etype-religious',
+};
+
+function renderTourismEvents() {
+  const cityOrder = ['Marrakech','Casablanca','Agadir','Fes','Tanger','Essaouira','Rabat','Dakhla','National'];
+  const byCity = {};
+  TOUR_EVENTS.forEach(ev => {
+    if (!byCity[ev.city]) byCity[ev.city] = [];
+    byCity[ev.city].push(ev);
+  });
+
+  document.getElementById('events-container').innerHTML = cityOrder
+    .filter(c => byCity[c])
+    .map(city => `
+      <div class="events-city-group">
+        <div class="events-city-header">${city === 'National' ? 'National / Religious' : city}</div>
+        <div class="events-city-cards">
+          ${byCity[city].map(ev => `
+            <div class="event-card">
+              <div class="event-card-top">
+                <span class="event-type-pill ${EVENT_TYPE_CLASS[ev.type] || ''}">${fmt.esc(ev.type)}</span>
+              </div>
+              <div class="event-name">${fmt.esc(ev.name)}</div>
+              <div class="event-meta">${fmt.esc(ev.date)}${ev.attendance ? ' · ' + fmt.esc(ev.attendance) : ''}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+}
+
+function initTourismCharts() {
+  if (tourismInited) return;
+
+  // Set chart-wrap height: also zeroes min-height so CSS 360px default doesn't interfere
+  const setH = (id, h) => {
+    const el = document.getElementById(id);
+    el.style.minHeight = '0';
+    el.style.height = h + 'px';
+  };
+
+  const FC = '#f59e0b'; // forecast amber
+
+  // ── Helper for vertical bar charts ──────────────────────────────
+  function vBar(labels, values, bgColors, lblFmt, tipFmt) {
+    return {
+      type: 'bar',
+      data: { labels, datasets: [{ data: values, backgroundColor: bgColors, borderRadius: 4, borderSkipped: false }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+        layout: { padding: { top: 28 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#2d3449', borderColor: '#3a4258', borderWidth: 1,
+            titleColor: '#eceef4', bodyColor: '#8a96b0',
+            padding: { top: 8, bottom: 8, left: 12, right: 12 },
+            callbacks: { label: ctx => '  ' + tipFmt(ctx.raw) },
+          },
+          datalabels: {
+            anchor: 'end', align: 'top', clip: false,
+            color: '#8a96b0', font: { size: 11, weight: '600' },
+            padding: { bottom: 2 }, formatter: lblFmt,
+          },
+        },
+        scales: {
+          x: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+          y: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+        },
+      },
+    };
+  }
+
+  // 1. International Arrivals Trend
+  setH('twrap-arrivals', 290);
+  const arrLbls = ['2020','2021','2022','2023','2024','2025','2026E'];
+  const arrVals = [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5];
+  new Chart(document.getElementById('chart-tour-arrivals'),
+    vBar(arrLbls, arrVals, arrLbls.map(l => l.endsWith('E') ? FC : CHART_ACCENT),
+      v => v + 'M', v => v + 'M arrivals'));
+
+  // 2. Arrivals by Mode of Transport (grouped)
+  setH('twrap-transport', 290);
+  new Chart(document.getElementById('chart-tour-transport'), {
+    type: 'bar',
+    data: {
+      labels: ['2022','2023','2024','2025','2026E'],
+      datasets: [
+        { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: CHART_ACCENT, borderRadius: 3, borderSkipped: false },
+        { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: '#22c55e',    borderRadius: 3, borderSkipped: false },
+        { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: FC,           borderRadius: 3, borderSkipped: false },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+      layout: { padding: { top: 12 } },
+      plugins: {
+        legend: { display: true, labels: { color: CHART_TICK, font: { size: 11 }, boxWidth: 10, padding: 14 } },
+        datalabels: { display: false },
+        tooltip: {
+          backgroundColor: '#2d3449', borderColor: '#3a4258', borderWidth: 1,
+          titleColor: '#eceef4', bodyColor: '#8a96b0',
+          callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}M` },
+        },
+      },
+      scales: {
+        x: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+        y: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+      },
+    },
+  });
+
+  // 3. Origin Markets (horizontal)
+  const origLbls = ['France','MRE','Spain','UK','Germany','Gulf States','USA','Italy','Other'];
+  const origVals = [22, 18, 14, 10, 8, 7, 5, 4, 12];
+  setH('twrap-origins', Math.max(260, origLbls.length * 34 + 50));
+  const origCfg = chartConfig(origLbls, origVals, '%', origLbls.map(() => CHART_ACCENT), v => v + '%');
+  origCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + '%';
+  new Chart(document.getElementById('chart-tour-origins'), origCfg);
+
+  // 4. Tourist Nights by Destination (horizontal, sorted asc so Marrakech is top)
+  const nightsLbls = ['Other','Essaouira','Tanger','Fes','Casablanca','Agadir','Marrakech'];
+  const nightsVals = [7.3, 1.6, 2.8, 3.6, 6.2, 12.4, 18.2];
+  setH('twrap-nights', Math.max(240, nightsLbls.length * 34 + 50));
+  const nightsCfg = chartConfig(nightsLbls, nightsVals, 'M', nightsLbls.map(() => CHART_ACCENT), v => v + 'M');
+  nightsCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M nights';
+  new Chart(document.getElementById('chart-tour-nights'), nightsCfg);
+
+  // 5. Airport Traffic (horizontal, sorted asc so CMN is top)
+  const airLbls = ['Nador NDR','Oujda OUD','Rabat RBA','Fes FEZ','Tanger TNG','Agadir AGA','Marrakech RAK','Casablanca CMN'];
+  const airVals  = [0.6, 0.8, 1.1, 1.8, 2.1, 3.4, 6.8, 11.2];
+  setH('twrap-airports', Math.max(260, airLbls.length * 34 + 50));
+  const airCfg = chartConfig(airLbls, airVals, 'M pax', airLbls.map(() => '#60a5fa'), v => v + 'M');
+  airCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M passengers';
+  new Chart(document.getElementById('chart-tour-airports'), airCfg);
+
+  // 6. Tourism Revenue Trend
+  setH('twrap-revenue', 290);
+  const revLbls = ['2020','2021','2022','2023','2024','2025','2026E'];
+  const revVals = [34, 44, 76, 89, 105, 118, 132];
+  new Chart(document.getElementById('chart-tour-revenue'),
+    vBar(revLbls, revVals, revLbls.map(l => l.endsWith('E') ? FC : CHART_ACCENT),
+      v => v + 'B', v => 'MAD ' + v + 'B'));
+
+  // 7. Seasonality Index (line)
+  setH('twrap-season', 220);
+  new Chart(document.getElementById('chart-tour-season'), {
+    type: 'line',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets: [{
+        data: [55, 58, 72, 88, 95, 92, 100, 98, 82, 75, 60, 58],
+        borderColor: CHART_ACCENT,
+        backgroundColor: 'rgba(79,126,248,0.12)',
+        fill: true, tension: 0.4,
+        pointRadius: 4, pointBackgroundColor: CHART_ACCENT,
+        pointBorderColor: '#1a1f2e', pointBorderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+      layout: { padding: { top: 20 } },
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          anchor: 'top', align: 'top', clip: false,
+          color: '#8a96b0', font: { size: 10, weight: '600' },
+          formatter: v => v,
+        },
+        tooltip: {
+          backgroundColor: '#2d3449', borderColor: '#3a4258', borderWidth: 1,
+          titleColor: '#eceef4', bodyColor: '#8a96b0',
+          callbacks: { label: ctx => '  Index: ' + ctx.raw },
+        },
+      },
+      scales: {
+        x: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+        y: { min: 0, max: 115, border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+      },
+    },
+  });
+
+  renderTourismEvents();
+  tourismInited = true;
+}
+
 // ─── Events ───────────────────────────────────────────────────────
 
 // Screen nav
@@ -644,7 +869,8 @@ document.querySelectorAll('.nav-link').forEach(link => {
         panMap();
       }
     }
-    if (screen === 'hotels') renderHotelsTable();
+    if (screen === 'hotels')  renderHotelsTable();
+    if (screen === 'tourism') initTourismCharts();
   });
 });
 
