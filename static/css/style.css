@@ -329,6 +329,11 @@ body {
   min-height: 360px;
   position: relative;
 }
+.chart-wrap canvas {
+  background: transparent;
+  border: none;
+  outline: none;
+}
 
 /* ─── Brand table ────────────────────────────── */
 .table-card {

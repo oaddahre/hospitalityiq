@@ -35,6 +35,11 @@ const KPI_DELTAS = {
 
 Chart.register(ChartDataLabels);
 
+// Global: no grid lines, tick marks or axis borders on any chart
+Chart.defaults.scale.grid.display   = false;
+Chart.defaults.scale.grid.drawTicks = false;
+Chart.defaults.scale.border.display = false;
+
 // ─── State & cache (must precede theme setup — swapMapTiles reads leaflet) ──
 
 const state = {
@@ -230,14 +235,10 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
       scales: {
         x: {
           min: 0,
-          border: { display: false },
-          grid:   { color: CHART_GRID },
-          ticks:  { color: CHART_TICK, font: { size: 11 } }
+          ticks: { color: CHART_TICK, font: { size: 11 } }
         },
         y: {
-          border: { display: false },
-          grid:   { display: false },
-          ticks:  { color: '#c5cbdb', font: { size: 12, weight: '500' } }
+          ticks: { color: '#c5cbdb', font: { size: 12, weight: '500' } }
         }
       }
     }
@@ -728,8 +729,8 @@ function initTourismCharts() {
           },
         },
         scales: {
-          x: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
-          y: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+          x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+          y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
         },
       },
     };
@@ -768,8 +769,8 @@ function initTourismCharts() {
         },
       },
       scales: {
-        x: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
-        y: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+        x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+        y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
       },
     },
   });
@@ -838,8 +839,8 @@ function initTourismCharts() {
         },
       },
       scales: {
-        x: { border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
-        y: { min: 0, max: 115, border: { display: false }, grid: { color: CHART_GRID }, ticks: { color: CHART_TICK, font: { size: 11 } } },
+        x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+        y: { min: 0, max: 115, ticks: { color: CHART_TICK, font: { size: 11 } } },
       },
     },
   });
