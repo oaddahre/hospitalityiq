@@ -827,9 +827,10 @@ body {
 
 .brand-link {
   cursor: pointer;
+  transition: opacity 150ms ease;
 }
 .brand-link:hover {
-  color: var(--accent) !important;
+  opacity: 0.6;
   text-decoration: underline;
 }
 
