@@ -35,6 +35,19 @@ const KPI_DELTAS = {
 
 Chart.register(ChartDataLabels);
 
+// ─── State & cache (must precede theme setup — swapMapTiles reads leaflet) ──
+
+const state = {
+  city:    'all',
+  mapSeg:  'all',
+};
+
+let apiData  = null;   // /api/data response
+let hotels   = null;   // /api/hotels response (flat, merged)
+let revChart = null;
+let occChart = null;
+let leaflet  = null;   // { map, markers, tileLayer }
+
 // ─── Theme ────────────────────────────────────────────────────────
 
 const ICON_MOON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
@@ -59,21 +72,6 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 });
 
 applyTheme(localStorage.getItem('hiq-theme') || 'dark');
-
-// ─── State ────────────────────────────────────────────────────────
-
-const state = {
-  city:    'all',
-  mapSeg:  'all',
-};
-
-// ─── Cache ────────────────────────────────────────────────────────
-
-let apiData  = null;   // /api/data response
-let hotels   = null;   // /api/hotels response (flat, merged)
-let revChart = null;
-let occChart = null;
-let leaflet  = null;   // { map, markers: [{marker, hotel}] }
 
 // ─── Formatters ───────────────────────────────────────────────────
 
