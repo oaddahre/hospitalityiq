@@ -30,7 +30,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 29,Mövenpick Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mövenpick,Accor,163,2016,Operating,35.7712,-5.8241,Undisclosed
 30,Ibis Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,ibis,Accor,108,2012,Operating,35.781,-5.805,Risma
 31,Barceló Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Barceló,Barceló Hotel Group,168,2010,Operating,35.7634,-5.8289,Undisclosed
-32,Banyan Tree Tamouda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Banyan Tree,Banyan Tree Hotels & Resorts,76,2017,Operating,35.699,-5.382,Undisclosed
+32,Banyan Tree Tamouda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Banyan Tree,Banyan Tree Hotels & Resorts,92,2017,Operating,35.699,-5.382,Undisclosed
 33,Marriott Tanger Golf & Beach Resort,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Marriott,Marriott International,188,2019,Operating,35.6956,-5.3312,Madaëf
 34,Sofitel Tamuda Bay Beach & Spa,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,165,2020,Operating,35.6912,-5.3389,Madaëf
 35,Sofitel Rabat Jardin des Roses,Rabat,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,293,2004,Operating,33.9989,-6.8456,Risma
@@ -121,13 +121,11 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 127,Mercure Meknes,Meknes,Fès-Meknès,Upscale,Mercure,Accor,129,2009,Operating,33.8894,-5.5449,Risma
 128,Zalagh Parc Palace Meknes,Meknes,Fès-Meknès,Upper Upscale,Zalagh Hotels,Zalagh Hotels Group,210,2014,Operating,33.8934,-5.5529,Undisclosed
 129,Atlas Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hotels Group,100,1990,Operating,33.8934,-5.5489,Undisclosed
-130,Golden Tulip Nador,Nador,Oriental,Upscale,Golden Tulip,Louvre Hotels Group,138,2011,Operating,35.1672,-2.9329,Undisclosed
 131,ibis Nador,Nador,Oriental,Midscale,ibis,Accor,89,2014,Operating,35.1672,-2.9289,Risma
 132,Mogador Nador,Nador,Oriental,Upscale,Mogador Hotels,Mogador Hotels Group,110,2016,Operating,35.1672,-2.9249,Undisclosed
 133,Le Zaki Hotel Oujda,Oujda,Oriental,Upper Upscale,Le Zaki,Independent,135,1978,Operating,34.6827,-1.9154,Undisclosed
 134,ibis Oujda,Oujda,Oriental,Midscale,ibis,Accor,90,2013,Operating,34.6827,-1.9114,Risma
 135,Mercure Oujda,Oujda,Oriental,Upscale,Mercure,Accor,118,2015,Operating,34.6827,-1.9074,Risma
-136,Golden Tulip Oujda,Oujda,Oriental,Upscale,Golden Tulip,Louvre Hotels Group,130,2009,Operating,34.6867,-1.9154,Undisclosed
 137,Iberostar Saidia,Saidia,Oriental,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,464,2009,Operating,35.0849,-2.2294,Undisclosed
 138,Riu Palace Saidia,Saidia,Oriental,Upper Upscale,Riu,Riu Hotels & Resorts,428,2010,Operating,35.0849,-2.2254,Undisclosed
 139,Barceló Saidia,Saidia,Oriental,Upper Upscale,Barceló,Barceló Hotel Group,396,2011,Operating,35.0849,-2.2214,Undisclosed
@@ -136,7 +134,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 142,Royal Decameron Tafoukt Saidia,Saidia,Oriental,Upscale,Royal Decameron,Decameron Hotels & Resorts,390,2013,Operating,35.0889,-2.2254,Undisclosed
 143,Radisson Blu Resort Saidia Beach,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,380,2014,Operating,35.0889,-2.2214,Undisclosed
 144,ibis Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,ibis,Accor,78,2016,Operating,32.3314,-6.3529,Risma
-145,Golden Tulip Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Golden Tulip,Louvre Hotels Group,100,2013,Operating,32.3314,-6.3489,Undisclosed
 146,Atlas Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Atlas Hotels,Atlas Hotels Group,85,2009,Operating,32.3314,-6.3449,Undisclosed
 147,Kenzi Marina Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,128,2012,Operating,35.575,-5.373,Kenzi Hotels Group
 148,ibis Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Midscale,ibis,Accor,85,2016,Operating,35.569,-5.365,Risma
@@ -177,7 +174,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,96,1970,Operating,34.0678,-5.0034,Undisclosed
 184,Zahra Hotel Fes,Fes,Fès-Meknès,Upscale,Zahra,Independent,55,2009,Operating,34.0423,-4.9967,Undisclosed
 185,Hotel Farah Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Farah Hotels,Farah Hotels Group,208,1971,Operating,34.0156,-6.8378,Farah Hotels Group
-186,Golden Tulip Terminus Rabat,Rabat,Rabat-Salé-Kénitra,Upscale,Golden Tulip,Louvre Hotels Group,111,1980,Operating,34.0234,-6.8423,Undisclosed
 187,Fairmont Rabat Sale,Rabat,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,183,2024,Operating,34.0289,-6.8489,Undisclosed
 188,Fairmont Taghazout Bay,Taghazout Bay,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed
 189,Robinson Club Taghazout Bay,Taghazout Bay,Souss-Massa,Upscale,Robinson,TUI Hotels & Resorts,360,2022,Operating,30.5278,-9.7123,Undisclosed
@@ -210,7 +206,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 216,Atlas Oujda,Oujda,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,80,2005,Operating,34.6867,-1.9074,Undisclosed
 217,Hotel Rif Nador,Nador,Oriental,Upscale,Hotel Rif,Independent,100,1995,Operating,35.1712,-2.9329,Undisclosed
 218,Atlas Nador,Nador,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,85,2010,Operating,35.1712,-2.9289,Undisclosed
-219,Golden Tulip El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Golden Tulip,Louvre Hotels Group,118,2010,Operating,33.2567,-8.5034,Undisclosed
 220,Mercure Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Mercure,Accor,95,2020,Operating,32.3354,-6.3529,Risma
 221,Hotel Chams Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hotel Chams,Independent,195,2004,Operating,35.5756,-5.3756,Undisclosed
 222,InterContinental Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,InterContinental,IHG Hotels & Resorts,210,2021,Operating,35.6934,-5.3423,Undisclosed
@@ -249,3 +244,5 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 255,ibis Styles Ouarzazate,Ouarzazate,Drâa-Tafilalet,Midscale,ibis Styles,Accor,70,2022,Operating,30.9156,-6.8956,Risma
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,168,2019,Open,33.5834,-7.6234,Undisclosed
 257,Hilton Garden Inn Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,145,2021,Open,35.7589,-5.8334,Undisclosed
+258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,53,2019,Open,33.5934,-7.6234,Royal (State)
+259,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,60,2023,Open,35.6934,-5.3312,Royal (State)
