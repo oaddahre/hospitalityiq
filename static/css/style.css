@@ -37,16 +37,18 @@ body.light {
   --text-dim:   #9CA3AF;
 }
 
-/* Keep navbar dark in light mode */
+/* Navbar in light mode */
 body.light .navbar {
-  background: #0D1B2A;
-  border-bottom-color: #162032;
+  background: #FFFFFF;
+  border-bottom-color: #E2E0DA;
 }
-body.light .logo-text            { color: #eceef4; }
-body.light .nav-link             { color: #8a96b0; }
-body.light .nav-link:hover,
-body.light .nav-link.active      { color: #eceef4; background: rgba(255,255,255,0.10); }
-body.light .badge                { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); color: #8a96b0; }
+body.light .logo-text            { color: #0D1B2A; }
+body.light .nav-link             { color: #5A5A5A; }
+body.light .nav-link:hover       { color: #0D1B2A; background: #F4F3F0; }
+body.light .nav-link.active      { color: #0D1B2A; background: #F4F3F0; }
+body.light .badge                { background: #F4F3F0; border-color: #E2E0DA; color: #5A5A5A; }
+body.light .theme-toggle         { color: #5A5A5A; }
+body.light .theme-toggle:hover   { color: #0D1B2A; background: #F4F3F0; }
 
 body {
   background: var(--bg);
