@@ -35,6 +35,30 @@ const KPI_DELTAS = {
 
 Chart.register(ChartDataLabels);
 
+// ─── Theme ────────────────────────────────────────────────────────
+
+const ICON_MOON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+const ICON_SUN  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+
+function applyTheme(mode) {
+  const icon = document.getElementById('theme-icon');
+  if (mode === 'light') {
+    document.body.classList.add('light');
+    icon.innerHTML = ICON_SUN;
+  } else {
+    document.body.classList.remove('light');
+    icon.innerHTML = ICON_MOON;
+  }
+}
+
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const next = document.body.classList.contains('light') ? 'dark' : 'light';
+  localStorage.setItem('hiq-theme', next);
+  applyTheme(next);
+});
+
+applyTheme(localStorage.getItem('hiq-theme') || 'dark');
+
 // ─── State ────────────────────────────────────────────────────────
 
 const state = {
@@ -377,8 +401,12 @@ function panMap() {
   if (state.city === 'all') {
     leaflet.map.setView(MOROCCO_CENTER, MOROCCO_ZOOM, { animate: true });
   } else {
-    const coords = CITY_COORDS[state.city];
-    if (coords) leaflet.map.setView(coords, CITY_ZOOM, { animate: true });
+    const cityHotels = hotels.filter(h => h.city === state.city);
+    if (cityHotels.length) {
+      const lat = cityHotels.reduce((s, h) => s + h.lat, 0) / cityHotels.length;
+      const lng = cityHotels.reduce((s, h) => s + h.lng, 0) / cityHotels.length;
+      leaflet.map.setView([lat, lng], CITY_ZOOM, { animate: true });
+    }
   }
 }
 
@@ -672,6 +700,34 @@ document.getElementById('chat-chips').addEventListener('click', e => {
   sendChat(chip.dataset.q);
 });
 
+// ─── Dynamic filters ──────────────────────────────────────────────
+
+function buildCityFilter() {
+  const cities = [...new Set(hotels.map(h => h.city))].sort();
+  const list = document.getElementById('city-filter');
+  list.querySelectorAll('[data-city]:not([data-city="all"])').forEach(el => el.remove());
+  cities.forEach(city => {
+    const li = document.createElement('li');
+    li.className = 'sidebar-item';
+    li.dataset.city = city;
+    li.textContent = city;
+    list.appendChild(li);
+  });
+}
+
+function buildCityPills() {
+  const cities = [...new Set(hotels.map(h => h.city))].sort();
+  const bar = document.getElementById('hotels-city-pills');
+  bar.querySelectorAll('[data-hcity]:not([data-hcity="all"])').forEach(el => el.remove());
+  cities.forEach(city => {
+    const btn = document.createElement('button');
+    btn.className = 'pill';
+    btn.dataset.hcity = city;
+    btn.textContent = city;
+    bar.appendChild(btn);
+  });
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────
 
 async function boot() {
@@ -679,6 +735,8 @@ async function boot() {
     fetch('/api/data').then(r => r.json()),
     fetch('/api/hotels').then(r => r.json()),
   ]);
+  buildCityFilter();
+  buildCityPills();
   render();
 }
 

@@ -24,6 +24,30 @@
   --font:        'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* ─── Light mode overrides ──────────────────────── */
+body.light {
+  --bg:         #F4F3F0;
+  --surface:    #FFFFFF;
+  --surface2:   #F4F3F0;
+  --surface3:   #ECEAE5;
+  --border:     #E2E0DA;
+  --border2:    #E2E0DA;
+  --text:       #1C1C1C;
+  --text-muted: #5A6070;
+  --text-dim:   #9CA3AF;
+}
+
+/* Keep navbar dark in light mode */
+body.light .navbar {
+  background: #0D1B2A;
+  border-bottom-color: #162032;
+}
+body.light .logo-text            { color: #eceef4; }
+body.light .nav-link             { color: #8a96b0; }
+body.light .nav-link:hover,
+body.light .nav-link.active      { color: #eceef4; background: rgba(255,255,255,0.10); }
+body.light .badge                { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); color: #8a96b0; }
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -33,6 +57,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: background 0.2s, color 0.2s;
 }
 
 /* ─── Navbar ─────────────────────────────────── */
@@ -90,7 +115,21 @@ body {
 .nav-link:hover  { color: var(--text); background: var(--surface2); }
 .nav-link.active { color: var(--text); background: var(--surface2); }
 
-.navbar-meta { margin-left: auto; }
+.navbar-meta { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8a96b0;
+  padding: 5px 6px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+.theme-toggle:hover { color: #eceef4; background: rgba(255,255,255,0.10); }
 
 .badge {
   background: var(--surface2);
