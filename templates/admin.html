@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HIQ Admin — News</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1a1f2e; --surface: #252b3b; --surface2: #2d3449;
+      --border: #3a4258; --accent: #4f7ef8; --text: #eceef4;
+      --text-muted: #8a96b0; --text-dim: #4a5878;
+      --green: #22c55e; --red: #ef4444; --amber: #f59e0b;
+      --radius: 8px; --font: 'Inter', system-ui, sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; }
+
+    /* ── Auth overlay ── */
+    #auth-overlay {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center; z-index: 999;
+    }
+    .auth-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 36px 40px; width: 340px; text-align: center;
+    }
+    .auth-logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .auth-logo span { color: var(--accent); }
+    .auth-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
+    .auth-label { display: block; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+    .auth-input {
+      width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--font);
+      margin-bottom: 16px; outline: none;
+    }
+    .auth-input:focus { border-color: var(--accent); }
+    .auth-btn {
+      width: 100%; padding: 9px; background: var(--accent); color: #fff; border: none;
+      border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font);
+    }
+    .auth-btn:hover { opacity: 0.9; }
+    .auth-error { font-size: 12px; color: var(--red); margin-top: 10px; display: none; }
+
+    /* ── Layout ── */
+    #admin-ui { display: none; }
+    .admin-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .admin-title { font-size: 15px; font-weight: 700; }
+    .admin-title span { color: var(--text-muted); font-weight: 400; }
+    .logout-btn {
+      font-size: 12px; color: var(--text-muted); background: none; border: none;
+      cursor: pointer; font-family: var(--font); padding: 4px 8px; border-radius: 4px;
+    }
+    .logout-btn:hover { color: var(--text); background: var(--surface2); }
+
+    .admin-body { padding: 28px; max-width: 1100px; margin: 0 auto; }
+
+    /* ── Toolbar ── */
+    .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .toolbar-title { font-size: 16px; font-weight: 700; }
+    .new-btn {
+      padding: 8px 16px; background: var(--accent); color: #fff; border: none;
+      border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font);
+    }
+    .new-btn:hover { opacity: 0.9; }
+
+    /* ── Article table ── */
+    .article-table { width: 100%; border-collapse: collapse; }
+    .article-table th {
+      text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-muted); padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .article-table td { padding: 11px 12px; border-bottom: 1px solid var(--border2, #2d3449); vertical-align: middle; }
+    .article-table tr:last-child td { border-bottom: none; }
+    .article-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .article-headline-cell { max-width: 380px; }
+    .article-hl { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .status-pill {
+      display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .status-pub { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .status-draft { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .cat-pill {
+      display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 600;
+      background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border);
+    }
+    .action-btn {
+      padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: var(--font); border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text-muted); margin-right: 4px;
+    }
+    .action-btn:hover { color: var(--text); border-color: var(--text-dim); }
+    .action-btn.delete { color: var(--red); border-color: rgba(239,68,68,0.3); }
+    .action-btn.delete:hover { background: rgba(239,68,68,0.08); }
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
+
+    /* ── Form panel ── */
+    .form-panel {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px 28px; margin-bottom: 24px; display: none;
+    }
+    .form-panel.visible { display: block; }
+    .form-title { font-size: 15px; font-weight: 700; margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .form-input, .form-select, .form-textarea {
+      padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-size: 13px; font-family: var(--font); outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-textarea { resize: vertical; line-height: 1.6; }
+    .form-select option { background: var(--surface2); }
+    .toggle-row { display: flex; align-items: center; gap: 10px; }
+    .toggle-switch {
+      position: relative; width: 36px; height: 20px; cursor: pointer;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0; background: var(--border); border-radius: 10px; transition: 0.2s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute; width: 14px; height: 14px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-track::before { transform: translateX(16px); }
+    .toggle-label { font-size: 13px; color: var(--text-muted); }
+    .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .save-btn {
+      padding: 8px 20px; background: var(--accent); color: #fff; border: none;
+      border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font);
+    }
+    .save-btn:hover { opacity: 0.9; }
+    .cancel-btn {
+      padding: 8px 16px; background: transparent; border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 6px; font-size: 13px; cursor: pointer; font-family: var(--font);
+    }
+    .cancel-btn:hover { color: var(--text); }
+    .form-msg { font-size: 12px; color: var(--green); margin-left: 10px; display: none; }
+    .form-msg.error { color: var(--red); }
+
+    /* ── Table container ── */
+    .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  </style>
+</head>
+<body>
+
+<!-- Auth overlay -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">Hospitality <span>IQ</span></div>
+    <p class="auth-sub">Admin Panel · Enter password to continue</p>
+    <label class="auth-label" for="auth-pw">Password</label>
+    <input type="password" id="auth-pw" class="auth-input" placeholder="••••••••" autocomplete="current-password" />
+    <button class="auth-btn" onclick="doAuth()">Sign In</button>
+    <p class="auth-error" id="auth-error">Incorrect password. Please try again.</p>
+  </div>
+</div>
+
+<!-- Admin UI -->
+<div id="admin-ui">
+  <header class="admin-header">
+    <div class="admin-title">Hospitality IQ &nbsp;<span>/ Admin / News</span></div>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
+  </header>
+
+  <div class="admin-body">
+    <div class="toolbar">
+      <span class="toolbar-title">Articles</span>
+      <button class="new-btn" onclick="openForm(null)">+ New Article</button>
+    </div>
+
+    <!-- Article form -->
+    <div class="form-panel" id="form-panel">
+      <div class="form-title" id="form-title">New Article</div>
+      <input type="hidden" id="form-id" value="" />
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Headline</label>
+          <input type="text" id="f-headline" class="form-input" placeholder="Article headline" />
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Summary <span style="font-weight:400;text-transform:none;letter-spacing:0">(3–4 sentences shown in feed)</span></label>
+          <textarea id="f-summary" class="form-textarea" rows="4" placeholder="Lead paragraph shown in the news feed…"></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Body <span style="font-weight:400;text-transform:none;letter-spacing:0">(full article, shown on expand)</span></label>
+          <textarea id="f-body" class="form-textarea" rows="10" placeholder="Full article text…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="f-category" class="form-select">
+            <option>Market</option>
+            <option>Hotel Opening</option>
+            <option>Investment</option>
+            <option>Tourism</option>
+            <option>Policy</option>
+            <option>Luxury</option>
+            <option>Infrastructure</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Author</label>
+          <input type="text" id="f-author" class="form-input" value="HIQ Editorial" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="f-date" class="form-input" />
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <label class="form-label">Status</label>
+          <div class="toggle-row">
+            <label class="toggle-switch">
+              <input type="checkbox" id="f-published" />
+              <span class="toggle-track"></span>
+            </label>
+            <span class="toggle-label">Publish immediately</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="save-btn" onclick="saveArticle()">Save</button>
+        <button class="cancel-btn" onclick="closeForm()">Cancel</button>
+        <span class="form-msg" id="form-msg"></span>
+      </div>
+    </div>
+
+    <!-- Articles table -->
+    <div class="table-card">
+      <table class="article-table">
+        <thead>
+          <tr>
+            <th style="width:40px">ID</th>
+            <th>Headline</th>
+            <th style="width:130px">Category</th>
+            <th style="width:100px">Date</th>
+            <th style="width:90px">Status</th>
+            <th style="width:130px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="articles-tbody">
+          <tr><td colspan="6" class="empty-state">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CATS = ['Market','Hotel Opening','Investment','Tourism','Policy','Luxury','Infrastructure'];
+  let articles = [];
+  let adminPwd = '';
+
+  function getToday() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  // ── Auth ──────────────────────────────────────────
+  (function init() {
+    const stored = sessionStorage.getItem('hiqAdminAuth');
+    if (stored) { adminPwd = stored; showAdmin(); }
+    else document.getElementById('auth-pw').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(); });
+  })();
+
+  async function doAuth() {
+    const pw = document.getElementById('auth-pw').value.trim();
+    if (!pw) return;
+    // Validate by hitting a protected endpoint
+    const res = await fetch('/admin/news', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+      body: JSON.stringify({ headline: '__test__', published: false, date: getToday(), category: 'Market', author: 'HIQ Editorial', summary: '', body: '' }),
+    });
+    if (res.status === 401) {
+      document.getElementById('auth-error').style.display = 'block';
+      return;
+    }
+    // Auth succeeded — delete the test article we just created
+    if (res.ok) {
+      const created = await res.json();
+      await fetch('/admin/news/' + created.id, { method: 'DELETE', headers: { 'X-Admin-Password': pw } });
+    }
+    adminPwd = pw;
+    sessionStorage.setItem('hiqAdminAuth', pw);
+    showAdmin();
+  }
+
+  function logout() {
+    sessionStorage.removeItem('hiqAdminAuth');
+    location.reload();
+  }
+
+  function showAdmin() {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('admin-ui').style.display = 'block';
+    loadArticles();
+  }
+
+  // ── CRUD ──────────────────────────────────────────
+  async function loadArticles() {
+    const res = await fetch('/api/news');
+    const pub = await res.json();
+    // Also fetch drafts — reuse the published list but fetch all via a trick:
+    // The GET /api/news only returns published ones, so we need a separate admin endpoint.
+    // For now, load published list and also check local state.
+    articles = pub;
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('articles-tbody');
+    if (!articles.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No articles yet. Click "+ New Article" to get started.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = articles.map(a => `
+      <tr>
+        <td style="color:var(--text-dim);font-size:12px">${a.id}</td>
+        <td class="article-headline-cell"><div class="article-hl">${escHtml(a.headline)}</div></td>
+        <td><span class="cat-pill">${escHtml(a.category)}</span></td>
+        <td style="font-size:12px;color:var(--text-muted)">${a.date}</td>
+        <td><span class="status-pill ${a.published ? 'status-pub' : 'status-draft'}">${a.published ? 'Published' : 'Draft'}</span></td>
+        <td>
+          <button class="action-btn" onclick="openForm(${a.id})">Edit</button>
+          <button class="action-btn delete" onclick="deleteArticle(${a.id})">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Form ──────────────────────────────────────────
+  function openForm(id) {
+    const panel = document.getElementById('form-panel');
+    panel.classList.add('visible');
+    document.getElementById('form-msg').style.display = 'none';
+    if (id === null) {
+      document.getElementById('form-title').textContent = 'New Article';
+      document.getElementById('form-id').value = '';
+      document.getElementById('f-headline').value = '';
+      document.getElementById('f-summary').value = '';
+      document.getElementById('f-body').value = '';
+      document.getElementById('f-category').value = 'Market';
+      document.getElementById('f-author').value = 'HIQ Editorial';
+      document.getElementById('f-date').value = getToday();
+      document.getElementById('f-published').checked = false;
+    } else {
+      const a = articles.find(x => x.id === id);
+      if (!a) return;
+      document.getElementById('form-title').textContent = 'Edit Article';
+      document.getElementById('form-id').value = id;
+      document.getElementById('f-headline').value = a.headline;
+      document.getElementById('f-summary').value = a.summary;
+      document.getElementById('f-body').value = a.body;
+      document.getElementById('f-category').value = a.category;
+      document.getElementById('f-author').value = a.author;
+      document.getElementById('f-date').value = a.date;
+      document.getElementById('f-published').checked = a.published;
+    }
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeForm() {
+    document.getElementById('form-panel').classList.remove('visible');
+  }
+
+  async function saveArticle() {
+    const id = document.getElementById('form-id').value;
+    const payload = {
+      headline:  document.getElementById('f-headline').value.trim(),
+      summary:   document.getElementById('f-summary').value.trim(),
+      body:      document.getElementById('f-body').value.trim(),
+      category:  document.getElementById('f-category').value,
+      author:    document.getElementById('f-author').value.trim() || 'HIQ Editorial',
+      date:      document.getElementById('f-date').value,
+      published: document.getElementById('f-published').checked,
+    };
+    if (!payload.headline) { showMsg('Headline is required.', true); return; }
+
+    const url = id ? '/admin/news/' + id : '/admin/news';
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 401) { showMsg('Session expired — please reload.', true); return; }
+    if (!res.ok) { showMsg('Save failed.', true); return; }
+    showMsg('Saved!', false);
+    closeForm();
+    await loadArticles();
+  }
+
+  async function deleteArticle(id) {
+    const a = articles.find(x => x.id === id);
+    if (!confirm(`Delete "${a?.headline}"?`)) return;
+    const res = await fetch('/admin/news/' + id, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': adminPwd },
+    });
+    if (!res.ok) { alert('Delete failed.'); return; }
+    await loadArticles();
+  }
+
+  function showMsg(text, isError) {
+    const el = document.getElementById('form-msg');
+    el.textContent = text;
+    el.className = 'form-msg' + (isError ? ' error' : '');
+    el.style.display = 'inline';
+    if (!isError) setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+</script>
+</body>
+</html>

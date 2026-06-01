@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import anthropic
+import json
 import os
 from dotenv import load_dotenv
 
@@ -9,6 +10,24 @@ load_dotenv()
 app = Flask(__name__)
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
+NEWS_FILE = os.path.join(DATA_DIR, "news.json")
+
+
+def load_news():
+    if not os.path.exists(NEWS_FILE):
+        return []
+    with open(NEWS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_news(articles):
+    with open(NEWS_FILE, "w", encoding="utf-8") as f:
+        json.dump(articles, f, indent=2, ensure_ascii=False)
+
+
+def admin_ok():
+    expected = os.getenv("ADMIN_PASSWORD", "hiq2026")
+    return request.headers.get("X-Admin-Password", "") == expected
 
 
 def load_data():
@@ -269,6 +288,74 @@ def api_test_key():
     if not api_key:
         return jsonify({"set": False, "preview": None})
     return jsonify({"set": True, "preview": api_key[:10] + "..."})
+
+
+@app.route("/api/news")
+def api_news():
+    articles = [a for a in load_news() if a.get("published")]
+    articles.sort(key=lambda a: a.get("date", ""), reverse=True)
+    return jsonify(articles)
+
+
+@app.route("/admin")
+def admin_page():
+    return render_template("admin.html")
+
+
+@app.route("/admin/news", methods=["POST"])
+def admin_news_create():
+    if not admin_ok():
+        return jsonify({"error": "Unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    articles = load_news()
+    new_id = max((a["id"] for a in articles), default=0) + 1
+    article = {
+        "id": new_id,
+        "headline": data.get("headline", ""),
+        "summary": data.get("summary", ""),
+        "body": data.get("body", ""),
+        "category": data.get("category", "Market"),
+        "author": data.get("author", "HIQ Editorial"),
+        "date": data.get("date", ""),
+        "published": bool(data.get("published", False)),
+    }
+    articles.append(article)
+    save_news(articles)
+    return jsonify(article), 201
+
+
+@app.route("/admin/news/<int:article_id>", methods=["PUT"])
+def admin_news_update(article_id):
+    if not admin_ok():
+        return jsonify({"error": "Unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    articles = load_news()
+    for i, a in enumerate(articles):
+        if a["id"] == article_id:
+            articles[i].update({
+                "headline":  data.get("headline",  a["headline"]),
+                "summary":   data.get("summary",   a["summary"]),
+                "body":      data.get("body",       a["body"]),
+                "category":  data.get("category",  a["category"]),
+                "author":    data.get("author",     a["author"]),
+                "date":      data.get("date",       a["date"]),
+                "published": bool(data.get("published", a["published"])),
+            })
+            save_news(articles)
+            return jsonify(articles[i])
+    return jsonify({"error": "Not found"}), 404
+
+
+@app.route("/admin/news/<int:article_id>", methods=["DELETE"])
+def admin_news_delete(article_id):
+    if not admin_ok():
+        return jsonify({"error": "Unauthorized"}), 401
+    articles = load_news()
+    filtered = [a for a in articles if a["id"] != article_id]
+    if len(filtered) == len(articles):
+        return jsonify({"error": "Not found"}), 404
+    save_news(filtered)
+    return jsonify({"ok": True})
 
 
 if __name__ == "__main__":

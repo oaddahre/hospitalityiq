@@ -19,6 +19,7 @@
       <a href="#" class="nav-link" data-screen="map">Map</a>
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
       <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
+      <a href="#" class="nav-link" data-screen="news">News</a>
       <a href="#" class="nav-link" data-screen="ai">AI Analyst</a>
     </nav>
     <div class="navbar-meta">
@@ -429,6 +430,19 @@
             <tbody id="brand-hotels-tbody"></tbody>
           </table>
         </div>
+      </section>
+
+      <!-- ── News ── -->
+      <section class="screen" id="screen-news">
+        <div class="screen-header">
+          <h1>Market Intelligence</h1>
+          <p class="screen-sub">Original research &amp; analysis from HIQ Editorial</p>
+          <button class="news-pdf-btn noprint" onclick="window.print()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Download PDF
+          </button>
+        </div>
+        <div id="news-feed" class="news-feed"></div>
       </section>
 
       <!-- ── AI Analyst ── -->

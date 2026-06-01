@@ -1149,3 +1149,82 @@ body {
   color: var(--text-muted);
   font-size: 14px;
 }
+
+/* ─── News screen ────────────────────────────── */
+.screen-header { position: relative; }
+.news-pdf-btn {
+  position: absolute; top: 0; right: 0;
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-muted); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); transition: color 0.15s, border-color 0.15s;
+}
+.news-pdf-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+.news-feed { display: flex; flex-direction: column; gap: 14px; max-width: 820px; }
+.news-loading { color: var(--text-muted); font-size: 13px; padding: 20px 0; }
+
+.news-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 24px;
+}
+.news-card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.news-sep { color: var(--text-dim); font-size: 11px; }
+.news-date { font-size: 11px; color: var(--text-muted); }
+.news-author { font-size: 11px; color: var(--text-dim); }
+
+.news-cat {
+  display: inline-block; padding: 2px 8px; border-radius: 3px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; border: 1px solid;
+}
+.news-cat-market        { background: rgba(245,158,11,0.12); color: #f59e0b; border-color: rgba(245,158,11,0.30); }
+.news-cat-hotel-opening { background: rgba(79,126,248,0.12);  color: #4f7ef8; border-color: rgba(79,126,248,0.30); }
+.news-cat-investment    { background: rgba(34,197,94,0.12);   color: #22c55e; border-color: rgba(34,197,94,0.30); }
+.news-cat-tourism       { background: rgba(20,184,166,0.12);  color: #14b8a6; border-color: rgba(20,184,166,0.30); }
+.news-cat-policy        { background: rgba(139,92,246,0.12);  color: #8b5cf6; border-color: rgba(139,92,246,0.30); }
+.news-cat-luxury        { background: rgba(234,179,8,0.12);   color: #eab308; border-color: rgba(234,179,8,0.30); }
+.news-cat-infrastructure{ background: rgba(100,116,139,0.12); color: #94a3b8; border-color: rgba(100,116,139,0.30); }
+
+.news-headline {
+  font-size: 17px; font-weight: 700; color: var(--text);
+  line-height: 1.35; margin-bottom: 10px;
+}
+.news-summary { font-size: 13px; color: var(--text-muted); line-height: 1.75; margin-bottom: 12px; }
+.news-body {
+  font-size: 13px; color: var(--text-muted); line-height: 1.8;
+  margin-bottom: 14px; display: none; white-space: pre-line;
+  border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px;
+}
+.news-body.expanded { display: block; }
+.news-read-btn {
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  background: none; border: none; cursor: pointer; padding: 0;
+  font-family: var(--font); letter-spacing: 0.1px;
+}
+.news-read-btn:hover { text-decoration: underline; }
+
+/* ─── Print styles ───────────────────────────── */
+@media print {
+  .navbar, .sidebar, .noprint,
+  #screen-dashboard, #screen-map, #screen-hotels, #screen-tourism,
+  #screen-brand, #screen-ai { display: none !important; }
+
+  body { background: #fff !important; color: #000 !important; font-family: Georgia, serif; }
+  .app-body { display: block !important; }
+  .main-content { margin: 0 !important; padding: 20px !important; max-width: 100% !important; }
+  #screen-news { display: block !important; padding: 0 !important; }
+  .screen-header h1 { font-size: 22px; color: #000; margin-bottom: 4px; }
+  .screen-header p { font-size: 11px; color: #555; margin-bottom: 20px; }
+  .news-feed { max-width: 100%; }
+  .news-card {
+    background: #fff !important; border: 1px solid #ccc !important;
+    padding: 16px 0 !important; border-left: none !important; border-right: none !important;
+    border-radius: 0 !important; page-break-inside: avoid;
+  }
+  .news-body { display: block !important; color: #333 !important; }
+  .news-headline { color: #000 !important; font-size: 16px; }
+  .news-summary { color: #333 !important; }
+  .news-cat { border: 1px solid #999 !important; color: #333 !important; background: #f5f5f5 !important; }
+  .news-read-btn { display: none !important; }
+}

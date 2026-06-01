@@ -905,6 +905,61 @@ function initTourismCharts() {
   tourismInited = true;
 }
 
+// ─── News screen ──────────────────────────────────────────────────
+let newsInited = false;
+
+function newsCatClass(cat) {
+  return 'news-cat-' + (cat || '').toLowerCase().replace(/\s+/g, '-');
+}
+
+function newsDateFmt(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function toggleArticle(id) {
+  const body = document.getElementById('news-body-' + id);
+  const btn  = document.getElementById('news-btn-' + id);
+  const open = body.classList.toggle('expanded');
+  btn.textContent = open ? '← Show less' : 'Read full article →';
+}
+
+async function initNews() {
+  if (newsInited) return;
+  newsInited = true;
+  const feed = document.getElementById('news-feed');
+  feed.innerHTML = '<p class="news-loading">Loading…</p>';
+  try {
+    const res = await fetch('/api/news');
+    const articles = await res.json();
+    if (!articles.length) {
+      feed.innerHTML = '<p class="news-loading">No articles published yet.</p>';
+      return;
+    }
+    const shown = articles.slice(0, 7);
+    feed.innerHTML = shown.map(a => {
+      const bodyBlock = a.body
+        ? `<div class="news-body" id="news-body-${a.id}">${a.body}</div>
+           <button class="news-read-btn noprint" id="news-btn-${a.id}" onclick="toggleArticle(${a.id})">Read full article →</button>`
+        : '';
+      return `<div class="news-card">
+        <div class="news-card-meta">
+          <span class="news-cat ${newsCatClass(a.category)}">${a.category}</span>
+          <span class="news-date">${newsDateFmt(a.date)}</span>
+          <span class="news-sep">·</span>
+          <span class="news-author">${a.author}</span>
+        </div>
+        <div class="news-headline">${a.headline}</div>
+        <div class="news-summary">${a.summary}</div>
+        ${bodyBlock}
+      </div>`;
+    }).join('');
+  } catch {
+    feed.innerHTML = '<p class="news-loading">Failed to load articles.</p>';
+  }
+}
+
 // ─── Events ───────────────────────────────────────────────────────
 
 // Screen nav
@@ -928,6 +983,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
     }
     if (screen === 'hotels')  renderHotelsTable();
     if (screen === 'tourism') initTourismCharts();
+    if (screen === 'news')    initNews();
   });
 });
 
