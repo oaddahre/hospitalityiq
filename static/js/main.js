@@ -1990,29 +1990,113 @@ function renderBenchMonthlyTable() {
 
 // ── AI Insights ───────────────────────────────────────────────────
 
-async function renderBenchAIInsights() {
-  const box = document.getElementById('bench-ai-insights');
-  box.innerHTML = '<p class="bench-loading">Generating insights…</p>';
+const DOW_NAMES_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DOW_NAMES_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-  const myH   = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
-  const compNames = [...benchState.compSet]
-    .map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
+function renderBenchInsightCards() {
+  const box    = document.getElementById('bench-ai-insights');
+  const my     = aggDaily(getMyDaily());
+  const comp   = aggDaily(getCompDaily());
+  const noComp = !benchState.compSet.size;
+  const myDailyData = getMyDaily();
 
+  // ── Card 1: ADR ──────────────────────────────────────────────
+  const adrDiff  = noComp ? 0 : (my.adr - comp.adr) / comp.adr * 100;
+  const card1 = {
+    icon: '📈',
+    headline: noComp ? 'ADR Snapshot' : adrDiff >= 0 ? 'ADR Leadership' : 'ADR Gap',
+    body: noComp
+      ? `Your ADR stands at MAD ${Math.round(my.adr).toLocaleString('en')}. Select a comp set to benchmark against the market.`
+      : adrDiff >= 0
+        ? `Your ADR leads the comp set by ${adrDiff.toFixed(1)}% — MAD ${Math.round(my.adr).toLocaleString('en')} vs comp avg MAD ${Math.round(comp.adr).toLocaleString('en')}.`
+        : `Your ADR trails the comp set by ${Math.abs(adrDiff).toFixed(1)}% — MAD ${Math.round(my.adr).toLocaleString('en')} vs comp avg MAD ${Math.round(comp.adr).toLocaleString('en')}.`,
+    badge: noComp ? `MAD ${Math.round(my.adr).toLocaleString('en')}` : (adrDiff >= 0 ? '+' : '') + adrDiff.toFixed(1) + '% vs comp',
+    cls: noComp ? 'bib-amber' : adrDiff >= 2 ? 'bib-green' : adrDiff > -2 ? 'bib-amber' : 'bib-red',
+  };
+
+  // ── Card 2: Occupancy ────────────────────────────────────────
+  const occDiff = noComp ? 0 : (my.occupancy - comp.occupancy) * 100;
+  const card2 = {
+    icon: '🏨',
+    headline: noComp ? 'Occupancy Snapshot' : occDiff >= 0 ? 'Occupancy Advantage' : 'Occupancy Gap',
+    body: noComp
+      ? `Running at ${(my.occupancy * 100).toFixed(1)}% occupancy. Add a comp set to see relative performance.`
+      : occDiff >= 0
+        ? `Occupancy leads comp by ${occDiff.toFixed(1)} pts (${(my.occupancy*100).toFixed(1)}% vs ${(comp.occupancy*100).toFixed(1)}%), indicating stronger demand capture.`
+        : `Occupancy trails comp by ${Math.abs(occDiff).toFixed(1)} pts (${(my.occupancy*100).toFixed(1)}% vs ${(comp.occupancy*100).toFixed(1)}%) — review pricing and distribution mix.`,
+    badge: noComp ? `${(my.occupancy*100).toFixed(1)}%` : (occDiff >= 0 ? '+' : '') + occDiff.toFixed(1) + ' pts vs comp',
+    cls: noComp ? 'bib-amber' : occDiff >= 2 ? 'bib-green' : occDiff > -2 ? 'bib-amber' : 'bib-red',
+  };
+
+  // ── Card 3: Best day of week ─────────────────────────────────
+  const dowBuckets = Array(7).fill(null).map(() => []);
+  myDailyData.forEach(d => {
+    const dow = (new Date(d.date + 'T00:00:00').getDay() + 6) % 7;
+    dowBuckets[dow].push(d.occupancy * 100);
+  });
+  const dowAvg     = dowBuckets.map(arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0);
+  const validDows  = dowAvg.map((v, i) => ({ v, i })).filter(x => x.v > 0);
+  const bestDow    = validDows.reduce((a, b) => b.v > a.v ? b : a, { v: 0, i: 0 });
+  const worstDow   = validDows.reduce((a, b) => b.v < a.v ? b : a, { v: 100, i: 0 });
+  const spread     = bestDow.v - worstDow.v;
+  const isWkndPeak = bestDow.i >= 4;
+  const card3 = {
+    icon: '📅',
+    headline: isWkndPeak ? 'Weekend Strength' : 'Midweek Leader',
+    body: `${DOW_NAMES_FULL[bestDow.i]} is your strongest day at ${bestDow.v.toFixed(1)}% vs ${DOW_NAMES_SHORT[worstDow.i]} at ${worstDow.v.toFixed(1)}%. ${spread > 15 ? 'Wide spread — targeted midweek promotions could close the gap.' : 'Consistent demand across the week.'}`,
+    badge: `${DOW_NAMES_SHORT[bestDow.i]} peaks at ${bestDow.v.toFixed(0)}%`,
+    cls: 'bib-amber',
+  };
+
+  // ── Card 4: RevPAR trend ─────────────────────────────────────
+  const sorted  = [...myDailyData].sort((a, b) => a.date.localeCompare(b.date));
+  const half    = Math.floor(sorted.length / 2);
+  const firstH  = sorted.slice(0, half);
+  const secondH = sorted.slice(half);
+  const rev1    = firstH.length  ? firstH.reduce((s,d)=>s+d.revpar,0)/firstH.length   : 0;
+  const rev2    = secondH.length ? secondH.reduce((s,d)=>s+d.revpar,0)/secondH.length  : 0;
+  const trendPct = rev1 > 0 ? (rev2 - rev1) / rev1 * 100 : 0;
+  const improving = trendPct >= 0;
+  const card4 = {
+    icon: improving ? '💡' : '⚠️',
+    headline: improving ? 'Improving Momentum' : 'Declining Trend',
+    body: `RevPAR ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixed(1)}% from the first to second half of the selected period (MAD ${Math.round(rev1).toLocaleString('en')} → MAD ${Math.round(rev2).toLocaleString('en')}).`,
+    badge: (improving ? '+' : '') + trendPct.toFixed(1) + '% vs prior period',
+    cls: improving ? 'bib-green' : 'bib-red',
+  };
+
+  const cards = [card1, card2, card3, card4];
+  box.innerHTML = `
+    <div class="bench-insight-grid">
+      ${cards.map(c => `
+        <div class="bench-insight-card">
+          <div class="bench-insight-icon">${c.icon}</div>
+          <div class="bench-insight-headline">${fmt.esc(c.headline)}</div>
+          <div class="bench-insight-body">${fmt.esc(c.body)}</div>
+          <span class="bench-insight-badge ${c.cls}">${fmt.esc(c.badge)}</span>
+        </div>`).join('')}
+    </div>
+    <div id="bench-ai-commentary" class="bench-ai-commentary" style="display:none">
+      <div class="bench-ai-commentary-label">✦ AI Commentary</div>
+      <div id="bench-ai-commentary-body" class="bench-loading">Generating…</div>
+    </div>`;
+}
+
+async function fetchBenchAICommentary() {
+  const box  = document.getElementById('bench-ai-commentary');
+  const body = document.getElementById('bench-ai-commentary-body');
+  if (!box || !body) return;
+  box.style.display = 'block';
+
+  const myH      = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
+  const compNames = [...benchState.compSet].map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
   const my   = aggDaily(getMyDaily());
   const comp = aggDaily(getCompDaily());
-  const noComp = !benchState.compSet.size;
 
-  const oIdx = (!noComp && comp.occupancy > 0) ? Math.round(my.occupancy / comp.occupancy * 100) : 'N/A';
-  const aIdx = (!noComp && comp.adr > 0) ? Math.round(my.adr / comp.adr * 100) : 'N/A';
-  const rIdx = (!noComp && comp.revpar > 0) ? Math.round(my.revpar / comp.revpar * 100) : 'N/A';
-
-  const prompt = `Analyze hotel benchmarking for ${myH?.name} vs comp set (${compNames || 'none'}) — Marrakech Luxury, last ${benchState.dateRange} days.
-
-MY PROPERTY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
+  const prompt = `Brief strategic commentary on ${myH?.name} vs comp set (${compNames || 'none'}) — Marrakech Luxury, last ${benchState.dateRange} days.
+MY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
 COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}
-INDEX: Occ ${oIdx} | ADR ${aIdx} | RevPAR ${rIdx}
-
-Give 3-4 bullet-point insights on competitive position, key gaps, and specific actionable recommendations. Use numbers. Be concise.`;
+2-3 sentences of strategic commentary. Cite specific numbers. Be direct.`;
 
   try {
     const res = await fetch('/api/chat', {
@@ -2022,13 +2106,19 @@ Give 3-4 bullet-point insights on competitive position, key gaps, and specific a
     });
     const data = await res.json();
     if (data.response) {
-      box.innerHTML = `<div class="bench-ai-content">${mdRender(data.response)}</div>`;
+      body.className = 'bench-ai-content';
+      body.innerHTML = mdRender(data.response);
     } else {
-      box.innerHTML = `<p class="bench-loading">${fmt.esc(data.error || 'Could not generate insights.')}</p>`;
+      box.style.display = 'none';
     }
   } catch {
-    box.innerHTML = '<p class="bench-loading">Could not connect to AI Analyst.</p>';
+    box.style.display = 'none';
   }
+}
+
+function renderBenchAIInsights() {
+  renderBenchInsightCards();
+  fetchBenchAICommentary();
 }
 
 // Date range pill events
