@@ -1,3 +1,8 @@
+window.showBrandDetail = function(brandGroup) {
+  console.log('showBrandDetail called with:', brandGroup);
+  alert('Brand clicked: ' + brandGroup);
+};
+
 // ─── Constants ────────────────────────────────────────────────────
 
 const SEG_COLORS = {
