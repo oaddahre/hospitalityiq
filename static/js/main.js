@@ -316,7 +316,7 @@ function renderBrandTable() {
   tbody.innerHTML = rows.map((r, i) => `
     <tr>
       <td class="rank-cell">${i + 1}</td>
-      <td class="brand-link" data-brand="${fmt.esc(r.brand_group)}">${fmt.esc(r.brand_group)}</td>
+      <td><button class="brand-link" data-brand="${fmt.esc(r.brand_group)}">${fmt.esc(r.brand_group)}</button></td>
       <td>${r.hotel_count}</td>
       <td>${fmt.num(r.total_keys)}</td>
       <td>${fmt.pct(r.occupancy)}</td>
@@ -371,6 +371,11 @@ function showBrandDetail(brandGroup) {
   setKpi('bkpi-revpar', fmt.mad(revpar));
   setKpi('bkpi-gop',    fmt.pct(gop));
 
+  // Switch to brand screen FIRST so the canvas has visible dimensions for Chart.js
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-brand').classList.add('active');
+
   // City RevPAR chart
   const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
   const chartH   = Math.max(240, cityData.length * 38 + 50);
@@ -399,10 +404,6 @@ function showBrandDetail(brandGroup) {
   brandState.dir = 1;
   renderBrandHotelsTable();
 
-  // Switch to brand screen
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-brand').classList.add('active');
 }
 
 function renderBrandHotelsTable() {

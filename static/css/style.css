@@ -856,10 +856,17 @@ body {
 
 .brand-link {
   cursor: pointer;
-  transition: opacity 150ms ease;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: inherit;
+  color: var(--text);
+  padding: 0;
+  text-align: left;
+  transition: color 150ms ease;
 }
 .brand-link:hover {
-  opacity: 0.6;
+  color: var(--accent);
   text-decoration: underline;
 }
 
