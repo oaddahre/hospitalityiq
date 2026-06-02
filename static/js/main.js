@@ -376,6 +376,7 @@ function showBrandDetail(brandGroup) {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-brand').classList.add('active');
+  setSidebar('brand');
 
   // City RevPAR chart
   const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
@@ -1216,6 +1217,13 @@ async function initNews() {
   }
 }
 
+// ─── Sidebar visibility ───────────────────────────────────────────
+
+const SIDEBAR_SCREENS = new Set(['dashboard', 'map']);
+function setSidebar(screen) {
+  document.querySelector('.app-body').classList.toggle('no-sidebar', !SIDEBAR_SCREENS.has(screen));
+}
+
 // ─── Events ───────────────────────────────────────────────────────
 
 // Screen nav
@@ -1227,6 +1235,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     link.classList.add('active');
     document.getElementById('screen-' + screen).classList.add('active');
+    setSidebar(screen);
 
     if (screen === 'map') {
       if (!leaflet) {
@@ -1337,6 +1346,7 @@ document.getElementById('brand-back-btn').addEventListener('click', () => {
     l.classList.toggle('active', l.dataset.screen === 'dashboard')
   );
   document.getElementById('screen-dashboard').classList.add('active');
+  setSidebar('dashboard');
 });
 
 // Brand detail — hotel table column sort

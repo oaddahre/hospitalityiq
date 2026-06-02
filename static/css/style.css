@@ -166,6 +166,8 @@ body {
   flex-shrink: 0;
 }
 
+.app-body.no-sidebar .sidebar { display: none; }
+
 .sidebar-section {}
 
 .sidebar-label {
