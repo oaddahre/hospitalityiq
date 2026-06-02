@@ -1150,6 +1150,49 @@ body {
   font-size: 14px;
 }
 
+/* ─── Pipeline screen ───────────────────────── */
+.pipe-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+
+.pipe-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.pipe-status-pills { display: flex; gap: 6px; }
+.pipe-select {
+  padding: 6px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.pipe-select:hover, .pipe-select:focus { color: var(--text); border-color: var(--text-dim); }
+.pipe-count { margin-left: auto; font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+#pipeline-map-container {
+  width: 100%;
+  height: 360px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.pipe-status-uc {
+  display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10.5px; font-weight: 700;
+  background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.30);
+}
+.pipe-status-pl {
+  display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10.5px; font-weight: 700;
+  background: rgba(79,126,248,0.12); color: #4f7ef8; border: 1px solid rgba(79,126,248,0.30);
+}
+
 /* ─── News screen ────────────────────────────── */
 .screen-header { position: relative; }
 .news-pdf-btn {
@@ -1208,7 +1251,7 @@ body {
 @media print {
   .navbar, .sidebar, .noprint,
   #screen-dashboard, #screen-map, #screen-hotels, #screen-tourism,
-  #screen-brand, #screen-ai { display: none !important; }
+  #screen-brand, #screen-pipeline, #screen-ai { display: none !important; }
 
   body { background: #fff !important; color: #000 !important; font-family: Georgia, serif; }
   .app-body { display: block !important; }

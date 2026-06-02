@@ -57,6 +57,12 @@ let brandHotelsData = [];
 const brandState    = { col: 'name', dir: 1 };
 const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner']);
 let tourismInited   = false;
+let pipelineInited  = false;
+let pipelineData    = null;
+let pipelineLeaflet = null;
+const pipelineState = { status: 'all', city: 'all', category: 'all' };
+const pipelineSort  = { col: 'expected_opening', dir: 1 };
+const PIPE_STR_COLS = new Set(['name', 'city', 'category', 'brand', 'status']);
 
 // ─── Theme ────────────────────────────────────────────────────────
 
@@ -476,6 +482,12 @@ function swapMapTiles(mode) {
   leaflet.tileLayer = L.tileLayer(mode === 'light' ? TILE_LIGHT : TILE_DARK, {
     attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 18,
   }).addTo(leaflet.map);
+  if (pipelineLeaflet) {
+    pipelineLeaflet.tileLayer.remove();
+    pipelineLeaflet.tileLayer = L.tileLayer(mode === 'light' ? TILE_LIGHT : TILE_DARK, {
+      attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 18,
+    }).addTo(pipelineLeaflet.map);
+  }
 }
 
 function initMap() {
@@ -905,6 +917,224 @@ function initTourismCharts() {
   tourismInited = true;
 }
 
+// ─── Pipeline screen ──────────────────────────────────────────────
+
+async function initPipeline() {
+  if (pipelineInited) {
+    if (pipelineLeaflet) setTimeout(() => pipelineLeaflet.map.invalidateSize(), 60);
+    return;
+  }
+  pipelineInited = true;
+
+  const res = await fetch('/api/pipeline');
+  pipelineData = await res.json();
+
+  // Populate filter dropdowns
+  const cities = [...new Set(pipelineData.map(p => p.city))].sort();
+  const cats   = [...new Set(pipelineData.map(p => p.category))].sort();
+  const cityEl = document.getElementById('pipe-city-filter');
+  const catEl  = document.getElementById('pipe-cat-filter');
+  cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cityEl.appendChild(o); });
+  cats.forEach(c   => { const o = document.createElement('option'); o.value = c; o.textContent = c; catEl.appendChild(o); });
+
+  renderPipelineKPIs();
+  renderPipelineTable();
+  renderPipelineCharts();
+  setTimeout(initPipelineMap, 120);
+}
+
+function filteredPipeline() {
+  return pipelineData.filter(p =>
+    (pipelineState.status === 'all'   || p.status   === pipelineState.status) &&
+    (pipelineState.city   === 'all'   || p.city     === pipelineState.city)   &&
+    (pipelineState.category === 'all' || p.category === pipelineState.category)
+  );
+}
+
+function renderPipelineKPIs() {
+  const all = pipelineData;
+  const totalKeys = all.reduce((s, p) => s + p.keys, 0);
+  const totalInv  = all.reduce((s, p) => s + p.investment_mad, 0);
+  const by2027    = all.filter(p => p.expected_opening <= 2027).length;
+
+  const setKpi = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.querySelector('.kpi-value').textContent = val;
+  };
+  setKpi('pkpi-total', all.length);
+  setKpi('pkpi-keys',  totalKeys.toLocaleString('en'));
+  setKpi('pkpi-inv',   (totalInv / 1e9).toFixed(1) + 'B');
+  setKpi('pkpi-2027',  by2027);
+}
+
+function renderPipelineTable() {
+  const data = filteredPipeline();
+  const tbody = document.getElementById('pipeline-tbody');
+  const countEl = document.getElementById('pipe-count');
+  if (countEl) countEl.textContent = data.length + ' project' + (data.length !== 1 ? 's' : '');
+
+  // Sort
+  data.sort((a, b) => {
+    const av = a[pipelineSort.col], bv = b[pipelineSort.col];
+    if (PIPE_STR_COLS.has(pipelineSort.col)) return pipelineSort.dir * String(av).localeCompare(String(bv));
+    return pipelineSort.dir * (av - bv);
+  });
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted)">No projects match the selected filters.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(p => {
+    const statusPill = p.status === 'Under Construction'
+      ? `<span class="pipe-status-uc">${p.status}</span>`
+      : `<span class="pipe-status-pl">${p.status}</span>`;
+    const invM = Math.round(p.investment_mad / 1e6).toLocaleString('en');
+    return `<tr>
+      <td style="font-weight:600">${fmt.esc(p.name)}</td>
+      <td>${fmt.esc(p.city)}</td>
+      <td>${fmt.esc(p.category)}</td>
+      <td>${fmt.esc(p.brand)}</td>
+      <td class="num-col">${p.keys.toLocaleString('en')}</td>
+      <td class="num-col">${p.expected_opening}</td>
+      <td>${statusPill}</td>
+      <td class="num-col">${invM}</td>
+    </tr>`;
+  }).join('');
+}
+
+function initPipelineMap() {
+  const container = document.getElementById('pipeline-map-container');
+  if (!container) return;
+  const isDark = !document.body.classList.contains('light');
+  const map = L.map('pipeline-map-container', { zoomControl: true }).setView(MOROCCO_CENTER, 6);
+  const tileLayer = L.tileLayer(isDark ? TILE_DARK : TILE_LIGHT, {
+    attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 18,
+  }).addTo(map);
+
+  const markers = pipelineData.map(p => {
+    const color = p.status === 'Under Construction' ? '#f59e0b' : '#4f7ef8';
+    const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
+    const marker = L.circleMarker([p.lat, p.lng], {
+      radius, fillColor: color, color: '#fff',
+      weight: 1.5, opacity: 0.9, fillOpacity: 0.85,
+    }).addTo(map).bindPopup(pipelinePopupHTML(p), { maxWidth: 280, minWidth: 240 });
+    return { marker, project: p };
+  });
+
+  pipelineLeaflet = { map, markers, tileLayer };
+}
+
+function pipelinePopupHTML(p) {
+  const invB = (p.investment_mad / 1e9).toFixed(2);
+  const statusPill = p.status === 'Under Construction'
+    ? `<span style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.4);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700">${p.status}</span>`
+    : `<span style="background:rgba(79,126,248,0.15);color:#4f7ef8;border:1px solid rgba(79,126,248,0.4);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700">${p.status}</span>`;
+  return `<div class="hiq-popup">
+    <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
+    <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${fmt.esc(p.category)}</div>
+    <div class="hiq-popup-grid">
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.expected_opening}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">MAD ${invB}B</div><div class="hiq-popup-stat-lbl">Investment</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${statusPill}</div><div class="hiq-popup-stat-lbl">Status</div></div>
+    </div>
+  </div>`;
+}
+
+function renderPipelineCharts() {
+  // City investment chart (horizontal bar, sorted asc so largest city at top)
+  const cityTotals = {};
+  pipelineData.forEach(p => { cityTotals[p.city] = (cityTotals[p.city] || 0) + p.investment_mad; });
+  const cityEntries = Object.entries(cityTotals).sort((a, b) => a[1] - b[1]);
+  const cityLabels = cityEntries.map(e => e[0]);
+  const cityVals   = cityEntries.map(e => parseFloat((e[1] / 1e9).toFixed(2)));
+
+  const cityWrap = document.getElementById('pwrap-city');
+  if (cityWrap) {
+    cityWrap.style.minHeight = '0';
+    cityWrap.style.height = Math.max(220, cityLabels.length * 38 + 50) + 'px';
+  }
+  const cityCfg = chartConfig(cityLabels, cityVals, 'B MAD', cityLabels.map(() => '#f59e0b'), v => v + 'B');
+  cityCfg.options.plugins.tooltip.callbacks.label = ctx => '  MAD ' + ctx.raw + 'B';
+  new Chart(document.getElementById('chart-pipeline-city'), cityCfg);
+
+  // Year chart (vertical bar)
+  const yearTotals = {};
+  pipelineData.forEach(p => { yearTotals[p.expected_opening] = (yearTotals[p.expected_opening] || 0) + p.keys; });
+  const yearLabels = Object.keys(yearTotals).sort();
+  const yearVals   = yearLabels.map(y => yearTotals[y]);
+
+  const yearWrap = document.getElementById('pwrap-year');
+  if (yearWrap) { yearWrap.style.minHeight = '0'; yearWrap.style.height = '240px'; }
+  new Chart(document.getElementById('chart-pipeline-year'), {
+    type: 'bar',
+    data: { labels: yearLabels, datasets: [{ data: yearVals, backgroundColor: yearLabels.map(() => '#f59e0b'), borderRadius: 4, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+      layout: { padding: { top: 28 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#2d3449', borderColor: '#3a4258', borderWidth: 1,
+          titleColor: '#eceef4', bodyColor: '#8a96b0',
+          callbacks: { label: ctx => '  ' + ctx.raw + ' keys' },
+        },
+        datalabels: {
+          anchor: 'end', align: 'top', clip: false,
+          color: '#8a96b0', font: { size: 12, weight: '600' },
+          formatter: v => v,
+        },
+      },
+      scales: {
+        x: { ticks: { color: CHART_TICK, font: { size: 12 } } },
+        y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+function applyPipelineFilter() {
+  renderPipelineTable();
+  if (pipelineLeaflet) {
+    const { map, markers } = pipelineLeaflet;
+    markers.forEach(({ marker, project: p }) => {
+      const show = (pipelineState.status   === 'all' || p.status   === pipelineState.status) &&
+                   (pipelineState.city     === 'all' || p.city     === pipelineState.city)   &&
+                   (pipelineState.category === 'all' || p.category === pipelineState.category);
+      if (show) marker.addTo(map); else marker.remove();
+    });
+  }
+}
+
+// Pipeline filter events (event delegation on the screen)
+document.getElementById('screen-pipeline').addEventListener('click', e => {
+  const btn = e.target.closest('[data-pstatus]');
+  if (btn) {
+    document.querySelectorAll('[data-pstatus]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pipelineState.status = btn.dataset.pstatus;
+    applyPipelineFilter();
+  }
+  const th = e.target.closest('th[data-pcol]');
+  if (th) {
+    const col = th.dataset.pcol;
+    pipelineSort.dir = pipelineSort.col === col ? -pipelineSort.dir : 1;
+    pipelineSort.col = col;
+    document.querySelectorAll('#pipeline-table th').forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
+    th.classList.add(pipelineSort.dir === 1 ? 'sort-asc' : 'sort-desc');
+    renderPipelineTable();
+  }
+});
+document.getElementById('pipe-city-filter').addEventListener('change', e => {
+  pipelineState.city = e.target.value;
+  applyPipelineFilter();
+});
+document.getElementById('pipe-cat-filter').addEventListener('change', e => {
+  pipelineState.category = e.target.value;
+  applyPipelineFilter();
+});
+
 // ─── News screen ──────────────────────────────────────────────────
 let newsInited = false;
 
@@ -981,9 +1211,10 @@ document.querySelectorAll('.nav-link').forEach(link => {
         panMap();
       }
     }
-    if (screen === 'hotels')  renderHotelsTable();
-    if (screen === 'tourism') initTourismCharts();
-    if (screen === 'news')    initNews();
+    if (screen === 'hotels')   renderHotelsTable();
+    if (screen === 'tourism')  initTourismCharts();
+    if (screen === 'pipeline') initPipeline();
+    if (screen === 'news')     initNews();
   });
 });
 

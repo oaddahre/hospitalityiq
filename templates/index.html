@@ -17,6 +17,7 @@
     <nav class="navbar-links">
       <a href="#" class="nav-link active" data-screen="dashboard">Dashboard</a>
       <a href="#" class="nav-link" data-screen="map">Map</a>
+      <a href="#" class="nav-link" data-screen="pipeline">Pipeline</a>
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
       <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
       <a href="#" class="nav-link" data-screen="news">News</a>
@@ -158,6 +159,104 @@
           <span class="map-count" id="map-count"></span>
         </div>
         <div id="map-container"></div>
+      </section>
+
+      <!-- ── Pipeline ── -->
+      <section class="screen" id="screen-pipeline">
+        <div class="screen-header">
+          <h1>Morocco Hotel Pipeline</h1>
+          <p class="screen-sub">Confirmed and announced development projects · HIQ proprietary tracking</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid pipe-kpi-grid">
+          <div class="kpi-card" id="pkpi-total">
+            <span class="kpi-label">Projects Tracked</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">all pipeline</span>
+          </div>
+          <div class="kpi-card" id="pkpi-keys">
+            <span class="kpi-label">Keys in Pipeline</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">new rooms</span>
+          </div>
+          <div class="kpi-card" id="pkpi-inv">
+            <span class="kpi-label">Est. Investment</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">MAD billions</span>
+          </div>
+          <div class="kpi-card" id="pkpi-2027">
+            <span class="kpi-label">Opening by 2027</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">projects</span>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="pipe-filter-bar">
+          <div class="pipe-status-pills" id="pipe-status-pills">
+            <button class="seg-btn active" data-pstatus="all">All</button>
+            <button class="seg-btn" data-pstatus="Under Construction">
+              <span class="seg-dot" style="background:#f59e0b"></span>Under Construction
+            </button>
+            <button class="seg-btn" data-pstatus="Planning">
+              <span class="seg-dot" style="background:#4f7ef8"></span>Planning
+            </button>
+          </div>
+          <select id="pipe-city-filter" class="pipe-select">
+            <option value="all">All Cities</option>
+          </select>
+          <select id="pipe-cat-filter" class="pipe-select">
+            <option value="all">All Categories</option>
+          </select>
+          <span class="pipe-count" id="pipe-count"></span>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap" style="margin-bottom:24px">
+          <table class="hotels-table" id="pipeline-table">
+            <thead>
+              <tr>
+                <th data-pcol="name">Project Name</th>
+                <th data-pcol="city">City</th>
+                <th data-pcol="category">Category</th>
+                <th data-pcol="brand">Brand</th>
+                <th data-pcol="keys" class="num-col">Keys</th>
+                <th data-pcol="expected_opening" class="num-col">Opening</th>
+                <th data-pcol="status">Status</th>
+                <th data-pcol="investment_mad" class="num-col">Inv. (MAD M)</th>
+              </tr>
+            </thead>
+            <tbody id="pipeline-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pipeline map -->
+        <div class="chart-card" style="margin-bottom:24px">
+          <div class="chart-card-header">
+            <span class="chart-title">Pipeline Map</span>
+            <span class="chart-unit">Marker size = keys · amber = Under Construction · blue = Planning</span>
+          </div>
+          <div id="pipeline-map-container"></div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="charts-row tour-2col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Investment by City</span>
+              <span class="chart-unit">MAD billions · total pipeline</span>
+            </div>
+            <div class="chart-wrap" id="pwrap-city"><canvas id="chart-pipeline-city"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Keys by Opening Year</span>
+              <span class="chart-unit">New supply entering market</span>
+            </div>
+            <div class="chart-wrap" id="pwrap-year"><canvas id="chart-pipeline-year"></canvas></div>
+          </div>
+        </div>
       </section>
 
       <!-- ── Hotels ── -->

@@ -1,0 +1,9 @@
+id,name,city,region,category,brand,brand_group,owner,keys,expected_opening,status,investment_mad,lat,lng,notes
+1,Ritz Carlton Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Luxury,Ritz Carlton,Marriott International,Undisclosed,150,2026,Under Construction,920000000,35.6889,-5.3456,Under construction on the Mediterranean coast
+2,Ritz Carlton Marrakech,Marrakech,Marrakech-Safi,Luxury,Ritz Carlton,Marriott International,Undisclosed,130,2028,Planning,1100000000,31.5934,-8.0456,Confirmed Marriott luxury flagship in Marrakech
+3,Waldorf Astoria Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,Undisclosed,120,2028,Planning,1400000000,31.6056,-8.0312,Hilton ultra luxury brand entry Morocco
+4,Mama Shelter Casablanca,Casablanca,Casablanca-Settat,Upscale,Mama Shelter,Accor,Undisclosed,95,2026,Under Construction,180000000,33.5934,-7.6289,Lifestyle brand Accor expansion
+5,Pullman Agadir,Agadir,Souss-Massa,Upper Upscale,Pullman,Accor,Undisclosed,250,2027,Planning,550000000,30.4234,-9.5867,New Pullman beach resort Agadir
+6,Hilton Tanger City,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Hilton,Hilton Hotels & Resorts,Undisclosed,195,2026,Under Construction,420000000,35.7756,-5.8145,Full service Hilton Tanger city center
+7,25hours Hotel Casablanca,Casablanca,Casablanca-Settat,Upscale,25hours,Accor,Undisclosed,110,2027,Planning,220000000,33.5812,-7.6178,Lifestyle design hotel concept Casablanca
+8,Dakhla Luxury Eco Resort,Dakhla,Laâyoune-Sakia El Hamra,Luxury,Independent,Independent,Undisclosed,45,2026,Under Construction,280000000,23.6934,-15.9456,Luxury kite and wind sports destination

@@ -290,6 +290,18 @@ def api_test_key():
     return jsonify({"set": True, "preview": api_key[:10] + "..."})
 
 
+@app.route("/api/pipeline")
+def api_pipeline():
+    pipeline_file = os.path.join(DATA_DIR, "pipeline.csv")
+    df = pd.read_csv(pipeline_file)
+    df["keys"] = df["keys"].astype(int)
+    df["expected_opening"] = df["expected_opening"].astype(int)
+    df["investment_mad"] = df["investment_mad"].astype(int)
+    df["lat"] = df["lat"].astype(float)
+    df["lng"] = df["lng"].astype(float)
+    return jsonify(df.to_dict(orient="records"))
+
+
 @app.route("/api/news")
 def api_news():
     articles = [a for a in load_news() if a.get("published")]

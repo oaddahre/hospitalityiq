@@ -247,3 +247,10 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,53,2019,Open,33.5934,-7.6234,Royal (State)
 259,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,60,2023,Open,35.6934,-5.3312,Royal (State)
 260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,420,1999,Open,35.2456,-3.9289,Club Med (Fosun)
+261,Waldorf Astoria Rabat,Rabat,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,187,2019,Operating,33.9889,-6.8512,Undisclosed
+262,Fairmont Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Fairmont,Accor,220,2025,Operating,35.7698,-5.8234,Undisclosed
+263,Hyatt Regency Casablanca,Casablanca,Casablanca-Settat,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,255,2023,Operating,33.5889,-7.6123,Undisclosed
+264,Nobu Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Nobu Hospitality,Nobu Hospitality,71,2024,Operating,31.6423,-8.0178,Undisclosed
+265,Oberoi Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Oberoi,Oberoi Hotels & Resorts,69,2023,Operating,31.6089,-8.0389,Undisclosed
+266,Marchica Lagoon Resort,Nador,Oriental,Upscale,Independent,Independent Luxury,188,2018,Operating,35.1589,-2.9234,Marchica Med (State)
+267,Hotel Marchica,Nador,Oriental,Upscale,Independent,Independent,96,2015,Operating,35.1612,-2.9256,Marchica Med (State)
