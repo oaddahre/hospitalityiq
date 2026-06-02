@@ -938,7 +938,7 @@ async function initPipeline() {
   cats.forEach(c   => { const o = document.createElement('option'); o.value = c; o.textContent = c; catEl.appendChild(o); });
 
   renderPipelineKPIs();
-  renderPipelineTable();
+  renderPipelineCards();
   renderPipelineCharts();
   setTimeout(initPipelineMap, 120);
 }
@@ -965,42 +965,6 @@ function renderPipelineKPIs() {
   setKpi('pkpi-keys',  totalKeys.toLocaleString('en'));
   setKpi('pkpi-inv',   (totalInv / 1e9).toFixed(1) + 'B');
   setKpi('pkpi-2027',  by2027);
-}
-
-function renderPipelineTable() {
-  const data = filteredPipeline();
-  const tbody = document.getElementById('pipeline-tbody');
-  const countEl = document.getElementById('pipe-count');
-  if (countEl) countEl.textContent = data.length + ' project' + (data.length !== 1 ? 's' : '');
-
-  // Sort
-  data.sort((a, b) => {
-    const av = a[pipelineSort.col], bv = b[pipelineSort.col];
-    if (PIPE_STR_COLS.has(pipelineSort.col)) return pipelineSort.dir * String(av).localeCompare(String(bv));
-    return pipelineSort.dir * (av - bv);
-  });
-
-  if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted)">No projects match the selected filters.</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = data.map(p => {
-    const statusPill = p.status === 'Under Construction'
-      ? `<span class="pipe-status-uc">${p.status}</span>`
-      : `<span class="pipe-status-pl">${p.status}</span>`;
-    const invM = Math.round(p.investment_mad / 1e6).toLocaleString('en');
-    return `<tr>
-      <td style="font-weight:600">${fmt.esc(p.name)}</td>
-      <td>${fmt.esc(p.city)}</td>
-      <td>${fmt.esc(p.category)}</td>
-      <td>${fmt.esc(p.brand)}</td>
-      <td class="num-col">${p.keys.toLocaleString('en')}</td>
-      <td class="num-col">${p.expected_opening}</td>
-      <td>${statusPill}</td>
-      <td class="num-col">${invM}</td>
-    </tr>`;
-  }).join('');
 }
 
 function initPipelineMap() {
@@ -1042,60 +1006,118 @@ function pipelinePopupHTML(p) {
   </div>`;
 }
 
+let pipelineChartProj = null;
+let pipelineChartCity = null;
+
+function renderPipelineCards() {
+  const data = filteredPipeline();
+  const grid = document.getElementById('pipe-cards-grid');
+  const countEl = document.getElementById('pipe-count');
+  if (countEl) countEl.textContent = data.length + ' project' + (data.length !== 1 ? 's' : '');
+
+  if (!data.length) {
+    grid.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:8px 0">No projects match the selected filters.</p>';
+    return;
+  }
+  grid.innerHTML = data.map(p => {
+    const isUC = p.status === 'Under Construction';
+    const pill  = isUC ? `<span class="pipe-status-uc">${p.status}</span>` : `<span class="pipe-status-pl">${p.status}</span>`;
+    const invM  = Math.round(p.investment_mad / 1e6).toLocaleString('en');
+    return `<div class="pipe-card ${isUC ? 'pipe-card-uc' : 'pipe-card-pl'}">
+      <div>
+        <div class="pipe-card-header-row">
+          <div class="pipe-card-name">${fmt.esc(p.name)}</div>
+          ${pill}
+        </div>
+        <div class="pipe-card-location">${fmt.esc(p.city)} · ${fmt.esc(p.category)}</div>
+        <div class="pipe-card-brand">${fmt.esc(p.brand)}</div>
+      </div>
+      <div class="pipe-card-year">${p.expected_opening}</div>
+      <div class="pipe-card-metrics">
+        <div>
+          <div class="pipe-card-metric-val">${p.keys.toLocaleString('en')}</div>
+          <div class="pipe-card-metric-lbl">Keys</div>
+        </div>
+        <div>
+          <div class="pipe-card-metric-val">${invM}</div>
+          <div class="pipe-card-metric-lbl">MAD M</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPipelineTableView() {
+  const data = filteredPipeline();
+  const tbody = document.getElementById('pipeline-tbody');
+  data.sort((a, b) => {
+    const av = a[pipelineSort.col], bv = b[pipelineSort.col];
+    if (PIPE_STR_COLS.has(pipelineSort.col)) return pipelineSort.dir * String(av).localeCompare(String(bv));
+    return pipelineSort.dir * (av - bv);
+  });
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">No projects match filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(p => {
+    const pill  = p.status === 'Under Construction' ? `<span class="pipe-status-uc">${p.status}</span>` : `<span class="pipe-status-pl">${p.status}</span>`;
+    const invM  = Math.round(p.investment_mad / 1e6).toLocaleString('en');
+    return `<tr>
+      <td style="font-weight:600">${fmt.esc(p.name)}</td>
+      <td>${fmt.esc(p.city)}</td>
+      <td>${fmt.esc(p.brand)}</td>
+      <td class="num-col">${p.expected_opening}</td>
+      <td>${pill}</td>
+      <td class="num-col">${p.keys.toLocaleString('en')}</td>
+      <td class="num-col">${invM}</td>
+    </tr>`;
+  }).join('');
+}
+
+function togglePipelineTable() {
+  const wrap = document.getElementById('pipe-table-wrap');
+  const btn  = document.getElementById('pipe-table-toggle');
+  const open = wrap.classList.toggle('open');
+  btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke-linecap="round"/></svg> ${open ? 'Hide table view' : 'Show table view'}`;
+  if (open) renderPipelineTableView();
+}
+
 function renderPipelineCharts() {
-  // City investment chart (horizontal bar, sorted asc so largest city at top)
+  const data = filteredPipeline();
+
+  // Keys by project (horizontal bar, sorted asc so largest at top)
+  const sorted = [...data].sort((a, b) => a.keys - b.keys);
+  const projLabels = sorted.map(p => p.name);
+  const projVals   = sorted.map(p => p.keys);
+  const projColors = sorted.map(p => p.status === 'Under Construction' ? '#f59e0b' : '#4f7ef8');
+
+  const projWrap = document.getElementById('pwrap-proj');
+  if (projWrap) { projWrap.style.minHeight = '0'; projWrap.style.height = Math.max(220, projLabels.length * 36 + 50) + 'px'; }
+  if (pipelineChartProj) { pipelineChartProj.destroy(); pipelineChartProj = null; }
+  const projCfg = chartConfig(projLabels, projVals, ' keys', projColors, v => v);
+  projCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + ' keys';
+  pipelineChartProj = new Chart(document.getElementById('chart-pipeline-proj'), projCfg);
+
+  // Investment by city (horizontal bar, sorted asc)
   const cityTotals = {};
-  pipelineData.forEach(p => { cityTotals[p.city] = (cityTotals[p.city] || 0) + p.investment_mad; });
+  data.forEach(p => { cityTotals[p.city] = (cityTotals[p.city] || 0) + p.investment_mad; });
   const cityEntries = Object.entries(cityTotals).sort((a, b) => a[1] - b[1]);
-  const cityLabels = cityEntries.map(e => e[0]);
-  const cityVals   = cityEntries.map(e => parseFloat((e[1] / 1e9).toFixed(2)));
+  const cityLabels  = cityEntries.map(e => e[0]);
+  const cityVals    = cityEntries.map(e => parseFloat((e[1] / 1e9).toFixed(2)));
 
   const cityWrap = document.getElementById('pwrap-city');
-  if (cityWrap) {
-    cityWrap.style.minHeight = '0';
-    cityWrap.style.height = Math.max(220, cityLabels.length * 38 + 50) + 'px';
-  }
-  const cityCfg = chartConfig(cityLabels, cityVals, 'B MAD', cityLabels.map(() => '#f59e0b'), v => v + 'B');
+  if (cityWrap) { cityWrap.style.minHeight = '0'; cityWrap.style.height = Math.max(200, cityLabels.length * 38 + 50) + 'px'; }
+  if (pipelineChartCity) { pipelineChartCity.destroy(); pipelineChartCity = null; }
+  const cityCfg = chartConfig(cityLabels, cityVals, 'B', cityLabels.map(() => CHART_ACCENT), v => v + 'B');
   cityCfg.options.plugins.tooltip.callbacks.label = ctx => '  MAD ' + ctx.raw + 'B';
-  new Chart(document.getElementById('chart-pipeline-city'), cityCfg);
-
-  // Year chart (vertical bar)
-  const yearTotals = {};
-  pipelineData.forEach(p => { yearTotals[p.expected_opening] = (yearTotals[p.expected_opening] || 0) + p.keys; });
-  const yearLabels = Object.keys(yearTotals).sort();
-  const yearVals   = yearLabels.map(y => yearTotals[y]);
-
-  const yearWrap = document.getElementById('pwrap-year');
-  if (yearWrap) { yearWrap.style.minHeight = '0'; yearWrap.style.height = '240px'; }
-  new Chart(document.getElementById('chart-pipeline-year'), {
-    type: 'bar',
-    data: { labels: yearLabels, datasets: [{ data: yearVals, backgroundColor: yearLabels.map(() => '#f59e0b'), borderRadius: 4, borderSkipped: false }] },
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
-      layout: { padding: { top: 28 } },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#2d3449', borderColor: '#3a4258', borderWidth: 1,
-          titleColor: '#eceef4', bodyColor: '#8a96b0',
-          callbacks: { label: ctx => '  ' + ctx.raw + ' keys' },
-        },
-        datalabels: {
-          anchor: 'end', align: 'top', clip: false,
-          color: '#8a96b0', font: { size: 12, weight: '600' },
-          formatter: v => v,
-        },
-      },
-      scales: {
-        x: { ticks: { color: CHART_TICK, font: { size: 12 } } },
-        y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
-      },
-    },
-  });
+  pipelineChartCity = new Chart(document.getElementById('chart-pipeline-city'), cityCfg);
 }
 
 function applyPipelineFilter() {
-  renderPipelineTable();
+  renderPipelineCards();
+  renderPipelineCharts();
+  const tableOpen = document.getElementById('pipe-table-wrap').classList.contains('open');
+  if (tableOpen) renderPipelineTableView();
   if (pipelineLeaflet) {
     const { map, markers } = pipelineLeaflet;
     markers.forEach(({ marker, project: p }) => {
@@ -1116,6 +1138,8 @@ document.getElementById('screen-pipeline').addEventListener('click', e => {
     pipelineState.status = btn.dataset.pstatus;
     applyPipelineFilter();
   }
+  const tBtn = e.target.closest('#pipe-table-toggle');
+  if (tBtn) togglePipelineTable();
   const th = e.target.closest('th[data-pcol]');
   if (th) {
     const col = th.dataset.pcol;
@@ -1123,7 +1147,7 @@ document.getElementById('screen-pipeline').addEventListener('click', e => {
     pipelineSort.col = col;
     document.querySelectorAll('#pipeline-table th').forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
     th.classList.add(pipelineSort.dir === 1 ? 'sort-asc' : 'sort-desc');
-    renderPipelineTable();
+    renderPipelineTableView();
   }
 });
 document.getElementById('pipe-city-filter').addEventListener('change', e => {
