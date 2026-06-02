@@ -2,7 +2,10 @@ from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import anthropic
 import json
+import csv
+import io
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,7 +13,10 @@ load_dotenv()
 app = Flask(__name__)
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
-NEWS_FILE = os.path.join(DATA_DIR, "news.json")
+NEWS_FILE            = os.path.join(DATA_DIR, "news.json")
+BENCH_FILE           = os.path.join(DATA_DIR, "demo_benchmarking.json")
+DAILY_PERF_FILE      = os.path.join(DATA_DIR, "daily_performance.csv")
+UPLOAD_LOG_FILE      = os.path.join(DATA_DIR, "upload_log.json")
 
 
 def load_news():
@@ -309,6 +315,27 @@ def api_news():
     return jsonify(articles)
 
 
+@app.route("/api/benchmarking")
+def api_benchmarking():
+    if not os.path.exists(BENCH_FILE):
+        return jsonify({"error": "Benchmark data not found"}), 404
+    with open(BENCH_FILE, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify(data)
+
+
+def load_upload_log():
+    if not os.path.exists(UPLOAD_LOG_FILE):
+        return []
+    with open(UPLOAD_LOG_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_upload_log(log):
+    with open(UPLOAD_LOG_FILE, "w", encoding="utf-8") as f:
+        json.dump(log, f, indent=2)
+
+
 @app.route("/admin")
 def admin_page():
     return render_template("admin.html")
@@ -368,6 +395,82 @@ def admin_news_delete(article_id):
         return jsonify({"error": "Not found"}), 404
     save_news(filtered)
     return jsonify({"ok": True})
+
+
+@app.route("/admin/upload-performance", methods=["POST"])
+def admin_upload_performance():
+    if not admin_ok():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    hotel_id   = data.get("hotel_id", "").strip()
+    hotel_name = data.get("hotel_name", hotel_id)
+    rows_raw   = data.get("rows", [])
+
+    if not hotel_id:
+        return jsonify({"error": "hotel_id required"}), 400
+    if not rows_raw:
+        return jsonify({"error": "No rows provided"}), 400
+
+    required = {"date", "occupancy", "adr", "rooms_sold", "rooms_revenue"}
+    validated = []
+    errors = []
+    for i, row in enumerate(rows_raw):
+        missing = required - set(row.keys())
+        if missing:
+            errors.append(f"Row {i+1}: missing {', '.join(missing)}")
+            continue
+        try:
+            validated.append({
+                "hotel_id":      hotel_id,
+                "date":          row["date"],
+                "occupancy":     float(row["occupancy"]),
+                "adr":           float(row["adr"]),
+                "rooms_sold":    int(row["rooms_sold"]),
+                "rooms_revenue": float(row["rooms_revenue"]),
+            })
+        except (ValueError, TypeError) as e:
+            errors.append(f"Row {i+1}: {e}")
+
+    if not validated:
+        return jsonify({"error": "No valid rows", "details": errors}), 400
+
+    # Write to daily_performance.csv
+    file_exists = os.path.exists(DAILY_PERF_FILE)
+    with open(DAILY_PERF_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["hotel_id","date","occupancy","adr","rooms_sold","rooms_revenue"])
+        if not file_exists:
+            writer.writeheader()
+        writer.writerows(validated)
+
+    # Log the upload
+    dates = sorted(r["date"] for r in validated)
+    log = load_upload_log()
+    log.insert(0, {
+        "id":          len(log) + 1,
+        "hotel_id":    hotel_id,
+        "hotel_name":  hotel_name,
+        "date_from":   dates[0],
+        "date_to":     dates[-1],
+        "rows":        len(validated),
+        "uploaded_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        "errors":      errors,
+    })
+    save_upload_log(log[:50])  # keep last 50
+
+    return jsonify({
+        "ok": True,
+        "rows_ingested": len(validated),
+        "errors": errors,
+        "date_range": f"{dates[0]} → {dates[-1]}",
+    }), 201
+
+
+@app.route("/admin/recent-uploads")
+def admin_recent_uploads():
+    if not admin_ok():
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify(load_upload_log()[:20])
 
 
 if __name__ == "__main__":

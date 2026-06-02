@@ -19,6 +19,7 @@
       <a href="#" class="nav-link" data-screen="map">Map</a>
       <a href="#" class="nav-link" data-screen="pipeline">Pipeline</a>
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
+      <a href="#" class="nav-link" data-screen="benchmarking">Benchmarking</a>
       <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
       <a href="#" class="nav-link" data-screen="news">News</a>
       <a href="#" class="nav-link" data-screen="ai">AI Analyst</a>
@@ -316,6 +317,184 @@
             <tbody id="hotels-tbody"></tbody>
           </table>
           <div class="table-footer" id="hotels-footer">Showing 45 of 45 hotels</div>
+        </div>
+      </section>
+
+      <!-- ── Benchmarking ── -->
+      <section class="screen" id="screen-benchmarking">
+        <div class="screen-header">
+          <h1>Benchmarking</h1>
+          <p class="screen-sub">Your performance vs competitive set · Powered by HIQ</p>
+          <span class="bench-demo-badge">Demo mode — sample Marrakech luxury comp set</span>
+        </div>
+
+        <!-- Controls row: property selector + comp set builder -->
+        <div class="bench-controls-row">
+          <!-- My Property -->
+          <div class="bench-card bench-property-card">
+            <div class="bench-card-label">MY PROPERTY</div>
+            <select class="bench-select" id="bench-my-hotel"></select>
+            <div class="bench-prop-info" id="bench-prop-info"></div>
+          </div>
+          <!-- Comp Set Builder -->
+          <div class="bench-card bench-comp-card">
+            <div class="bench-card-label">COMPETITIVE SET</div>
+            <div class="bench-comp-checks" id="bench-comp-checks"></div>
+            <div class="bench-comp-pills" id="bench-comp-pills"></div>
+          </div>
+        </div>
+
+        <!-- Date range pills -->
+        <div class="bench-date-bar" id="bench-date-bar">
+          <span class="bench-date-label">Period</span>
+          <button class="bench-date-pill" data-brange="7">Last 7 days</button>
+          <button class="bench-date-pill active" data-brange="30">Last 30 days</button>
+          <button class="bench-date-pill" data-brange="90">Last 90 days</button>
+          <button class="bench-date-pill" data-brange="ytd">YTD</button>
+        </div>
+
+        <!-- KPI comparison cards -->
+        <div class="bench-kpi-grid" id="bench-kpi-grid">
+          <div class="bench-kpi-card" id="bkpi-occ">
+            <div class="bench-kpi-title">Occupancy</div>
+            <div class="bench-kpi-body">
+              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl">My Property</div></div>
+              <div class="bench-kpi-sep">vs</div>
+              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
+              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
+            </div>
+          </div>
+          <div class="bench-kpi-card" id="bkpi-adr">
+            <div class="bench-kpi-title">ADR</div>
+            <div class="bench-kpi-body">
+              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl">My Property</div></div>
+              <div class="bench-kpi-sep">vs</div>
+              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
+              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
+            </div>
+          </div>
+          <div class="bench-kpi-card" id="bkpi-revpar">
+            <div class="bench-kpi-title">RevPAR</div>
+            <div class="bench-kpi-body">
+              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl">My Property</div></div>
+              <div class="bench-kpi-sep">vs</div>
+              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
+              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
+            </div>
+          </div>
+          <div class="bench-kpi-card" id="bkpi-rev">
+            <div class="bench-kpi-title">Rooms Revenue / Night</div>
+            <div class="bench-kpi-body">
+              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl">My Property</div></div>
+              <div class="bench-kpi-sep">vs</div>
+              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
+              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADR Calendar -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div class="chart-card-header">
+            <span class="chart-title">ADR Calendar</span>
+            <span class="chart-unit">MAD per night · dark = higher rate</span>
+          </div>
+          <div class="bench-cal-topbar">
+            <div class="bench-cal-nav-row">
+              <button class="bench-cal-nav-btn" id="bench-adr-prev">&#8592;</button>
+              <span class="bench-cal-month-label" id="bench-adr-month-label">May 2026</span>
+              <button class="bench-cal-nav-btn" id="bench-adr-next">&#8594;</button>
+            </div>
+            <div class="bench-cal-view-toggle">
+              <button class="bench-cal-view-btn active" data-ctype="adr" data-cview="mine">My Property</button>
+              <button class="bench-cal-view-btn" data-ctype="adr" data-cview="comp">Comp Set Avg</button>
+            </div>
+          </div>
+          <div class="bench-cal-wrap" id="bench-adr-grid"></div>
+        </div>
+
+        <!-- Occupancy Calendar -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div class="chart-card-header">
+            <span class="chart-title">Occupancy Calendar</span>
+            <span class="chart-unit">% · green = high · amber = mid · red = low</span>
+          </div>
+          <div class="bench-cal-topbar">
+            <div class="bench-cal-nav-row">
+              <button class="bench-cal-nav-btn" id="bench-occ-prev">&#8592;</button>
+              <span class="bench-cal-month-label" id="bench-occ-month-label">May 2026</span>
+              <button class="bench-cal-nav-btn" id="bench-occ-next">&#8594;</button>
+            </div>
+            <div class="bench-cal-view-toggle">
+              <button class="bench-cal-view-btn active" data-ctype="occ" data-cview="mine">My Property</button>
+              <button class="bench-cal-view-btn" data-ctype="occ" data-cview="comp">Comp Set Avg</button>
+            </div>
+          </div>
+          <div class="bench-cal-wrap" id="bench-occ-grid"></div>
+        </div>
+
+        <!-- Tooltip (shared for both calendars) -->
+        <div class="bench-cal-tooltip" id="bench-cal-tooltip" style="display:none"></div>
+
+        <!-- Trend charts -->
+        <div class="charts-row tour-2col" style="margin-bottom:20px">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">RevPAR Trend</span>
+              <span class="chart-unit">daily · My Property vs Comp Set Avg</span>
+            </div>
+            <div class="chart-wrap" id="bench-trend-revpar-wrap"><canvas id="bench-trend-revpar"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Occupancy Trend</span>
+              <span class="chart-unit">daily % · My Property vs Comp Set Avg</span>
+            </div>
+            <div class="chart-wrap" id="bench-trend-occ-wrap"><canvas id="bench-trend-occ"></canvas></div>
+          </div>
+        </div>
+
+        <!-- DOW + Monthly summary row -->
+        <div class="charts-row tour-2col" style="margin-bottom:20px">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Day of Week Analysis</span>
+              <span class="chart-unit">avg occupancy % · My Property vs Comp</span>
+            </div>
+            <div class="chart-wrap" id="bench-dow-wrap"><canvas id="bench-dow-chart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Monthly Summary</span>
+              <span class="chart-unit">RevPAR Index = My RevPAR ÷ Comp RevPAR × 100</span>
+            </div>
+            <div class="bench-monthly-table-wrap">
+              <table class="data-table" id="bench-monthly-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>My Occ</th><th>Comp Occ</th>
+                    <th>My ADR</th><th>Comp ADR</th>
+                    <th>My RevPAR</th><th>Comp RevPAR</th>
+                    <th>Index</th>
+                  </tr>
+                </thead>
+                <tbody id="bench-monthly-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div class="chart-card-header">
+            <span class="chart-title">AI Insights</span>
+            <span class="chart-unit">Powered by Claude · auto-generated from current selection</span>
+            <button class="bench-refresh-btn" id="bench-ai-refresh">↻ Refresh</button>
+          </div>
+          <div class="bench-ai-box" id="bench-ai-insights">
+            <p class="bench-loading">Insights will appear here after data loads…</p>
+          </div>
         </div>
       </section>
 

@@ -232,6 +232,67 @@
       </div>
     </div>
 
+    <!-- ── Data Ingestion section ── -->
+    <div style="margin-bottom:32px">
+      <div class="toolbar">
+        <span class="toolbar-title">Data Ingestion</span>
+        <span style="font-size:12px;color:var(--text-muted)">Upload daily hotel performance data (CSV)</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <!-- Upload form -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px">
+          <div class="form-grid" style="margin-bottom:16px">
+            <div class="form-group full">
+              <label class="form-label">Hotel</label>
+              <select id="di-hotel" class="form-select">
+                <option value="">Loading hotels…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date From</label>
+              <input type="date" id="di-from" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date To</label>
+              <input type="date" id="di-to" class="form-input" />
+            </div>
+          </div>
+
+          <!-- Drop zone -->
+          <div id="di-dropzone" style="border:2px dashed var(--border);border-radius:6px;padding:28px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Drag &amp; drop CSV file here</div>
+            <div style="font-size:11px;color:var(--text-dim)">or click to browse</div>
+            <input type="file" id="di-file" accept=".csv,.txt" style="display:none" />
+          </div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:8px">
+            Required columns: <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:10px">date, occupancy, adr, rooms_sold, rooms_revenue</code>
+          </div>
+
+          <!-- Preview table -->
+          <div id="di-preview" style="display:none;margin-top:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Preview (first 5 rows)</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px" id="di-preview-table"></table>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+            <button class="save-btn" id="di-submit" disabled onclick="submitUpload()">Upload Data</button>
+            <span id="di-msg" style="font-size:12px;display:none"></span>
+          </div>
+        </div>
+
+        <!-- Recent uploads -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px">Recent Uploads</div>
+          <div id="di-recent">
+            <div style="color:var(--text-muted);font-size:12px">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:28px">
+
     <!-- Articles table -->
     <div class="table-card">
       <table class="article-table">
@@ -301,6 +362,8 @@
     document.getElementById('auth-overlay').style.display = 'none';
     document.getElementById('admin-ui').style.display = 'block';
     loadArticles();
+    loadHotelsForDI();
+    loadRecentUploads();
   }
 
   // ── CRUD ──────────────────────────────────────────
@@ -419,6 +482,127 @@
     el.style.display = 'inline';
     if (!isError) setTimeout(() => { el.style.display = 'none'; }, 3000);
   }
+
+  // ── Data Ingestion ────────────────────────────────
+  let diParsed = [];
+
+  async function loadHotelsForDI() {
+    try {
+      const res = await fetch('/api/hotels');
+      const hs  = await res.json();
+      const sel = document.getElementById('di-hotel');
+      const uniq = [];
+      const seen = new Set();
+      hs.forEach(h => { if (!seen.has(h.id)) { seen.add(h.id); uniq.push(h); } });
+      sel.innerHTML = '<option value="">Select hotel…</option>' +
+        uniq.map(h => `<option value="${h.id}" data-name="${escHtml(h.name)}">${escHtml(h.name)} (${escHtml(h.city)})</option>`).join('');
+    } catch {}
+  }
+
+  // Drop zone
+  const dz   = document.getElementById('di-dropzone');
+  const finp = document.getElementById('di-file');
+  dz.addEventListener('click', () => finp.click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--accent)'; dz.style.background = 'rgba(79,126,248,0.06)'; });
+  dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; dz.style.background = ''; });
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.style.borderColor = ''; dz.style.background = ''; if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+  finp.addEventListener('change', () => { if (finp.files[0]) handleFile(finp.files[0]); });
+
+  function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = ev => parseCSV(ev.target.result, file.name);
+    reader.readAsText(file);
+  }
+
+  function parseCSV(text, filename) {
+    const lines = text.trim().split(/\r?\n/).filter(Boolean);
+    if (!lines.length) { diMsg('Empty file.', true); return; }
+    const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    const required = ['date','occupancy','adr','rooms_sold','rooms_revenue'];
+    const missing  = required.filter(c => !header.includes(c));
+    if (missing.length) { diMsg('Missing columns: ' + missing.join(', '), true); return; }
+
+    diParsed = [];
+    for (let i = 1; i < lines.length; i++) {
+      const vals = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      const row  = {};
+      header.forEach((h, j) => { row[h] = vals[j] ?? ''; });
+      if (row.date) diParsed.push(row);
+    }
+
+    // Preview
+    const preview = document.getElementById('di-preview');
+    const tbl     = document.getElementById('di-preview-table');
+    const cols = ['date','occupancy','adr','rooms_sold','rooms_revenue'];
+    tbl.innerHTML = `<thead><tr style="border-bottom:1px solid var(--border)">${cols.map(c => `<th style="text-align:left;padding:4px 8px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase">${c}</th>`).join('')}</tr></thead>` +
+      `<tbody>${diParsed.slice(0,5).map(r =>
+        `<tr style="border-bottom:1px solid var(--border)">${cols.map(c => `<td style="padding:4px 8px;color:var(--text-muted)">${escHtml(r[c]||'')}</td>`).join('')}</tr>`
+      ).join('')}</tbody>`;
+    preview.style.display = 'block';
+
+    // Auto-fill date range
+    const dates = diParsed.map(r => r.date).sort();
+    if (dates.length) {
+      document.getElementById('di-from').value = dates[0];
+      document.getElementById('di-to').value   = dates[dates.length-1];
+    }
+
+    dz.querySelector('div').textContent = `${filename} · ${diParsed.length} rows`;
+    document.getElementById('di-submit').disabled = false;
+    diMsg(`${diParsed.length} rows parsed from ${filename}`, false);
+  }
+
+  async function submitUpload() {
+    const sel = document.getElementById('di-hotel');
+    const hotelId   = sel.value;
+    const hotelName = sel.options[sel.selectedIndex]?.dataset?.name || hotelId;
+    if (!hotelId) { diMsg('Select a hotel.', true); return; }
+    if (!diParsed.length) { diMsg('No data to upload.', true); return; }
+
+    document.getElementById('di-submit').disabled = true;
+    diMsg('Uploading…', false);
+
+    const res = await fetch('/admin/upload-performance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      body: JSON.stringify({ hotel_id: hotelId, hotel_name: hotelName, rows: diParsed }),
+    });
+    const data = await res.json();
+    if (!res.ok) { diMsg(data.error || 'Upload failed.', true); document.getElementById('di-submit').disabled = false; return; }
+    diMsg(`✓ ${data.rows_ingested} rows ingested · ${data.date_range}`, false);
+    document.getElementById('di-submit').disabled = false;
+    diParsed = [];
+    document.getElementById('di-preview').style.display = 'none';
+    dz.querySelector('div').textContent = 'Drag & drop CSV file here';
+    loadRecentUploads();
+  }
+
+  async function loadRecentUploads() {
+    const container = document.getElementById('di-recent');
+    try {
+      const res  = await fetch('/admin/recent-uploads', { headers: { 'X-Admin-Password': adminPwd } });
+      const logs = await res.json();
+      if (!logs.length) { container.innerHTML = '<div style="color:var(--text-muted);font-size:12px">No uploads yet.</div>'; return; }
+      container.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:11.5px">
+        <thead><tr style="border-bottom:1px solid var(--border)">${['Hotel','From','To','Rows','Uploaded'].map(h=>`<th style="text-align:left;padding:5px 8px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase">${h}</th>`).join('')}</tr></thead>
+        <tbody>${logs.map(l=>`<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:5px 8px;color:var(--text)">${escHtml(l.hotel_name||l.hotel_id)}</td>
+          <td style="padding:5px 8px;color:var(--text-muted)">${escHtml(l.date_from)}</td>
+          <td style="padding:5px 8px;color:var(--text-muted)">${escHtml(l.date_to)}</td>
+          <td style="padding:5px 8px;color:var(--text-muted)">${l.rows}</td>
+          <td style="padding:5px 8px;color:var(--text-dim)">${escHtml(l.uploaded_at)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+    } catch { container.innerHTML = '<div style="color:var(--text-muted);font-size:12px">Could not load.</div>'; }
+  }
+
+  function diMsg(text, isError) {
+    const el = document.getElementById('di-msg');
+    el.textContent = text;
+    el.style.color = isError ? 'var(--red)' : 'var(--green)';
+    el.style.display = 'inline';
+  }
+
 </script>
 </body>
 </html>

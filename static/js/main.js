@@ -1238,7 +1238,12 @@ document.querySelectorAll('.nav-link').forEach(link => {
     if (screen === 'hotels')   renderHotelsTable();
     if (screen === 'tourism')  initTourismCharts();
     if (screen === 'pipeline') initPipeline();
-    if (screen === 'news')     initNews();
+    if (screen === 'news')         initNews();
+    if (screen === 'benchmarking') {
+      initBenchmarking().then(() => {
+        if (benchmarkInited && benchmarkData) renderBenchAIInsights();
+      });
+    }
   });
 });
 
@@ -1477,6 +1482,568 @@ function buildCityPills() {
     bar.appendChild(btn);
   });
 }
+
+// ─── Benchmarking screen ──────────────────────────────────────────
+
+let benchmarkInited = false;
+let benchmarkData   = null;
+let benchTrendRevpar = null;
+let benchTrendOcc    = null;
+let benchDOWChart    = null;
+
+const benchState = {
+  myHotelId:  'demo_1',
+  compSet:    new Set(['demo_2', 'demo_3', 'demo_4']),
+  dateRange:  30,
+  adrCalYear: 2026, adrCalMonth: 5, adrCalView: 'mine',
+  occCalYear: 2026, occCalMonth: 5, occCalView: 'mine',
+};
+
+async function initBenchmarking() {
+  if (benchmarkInited) return;
+  benchmarkInited = true;
+  const res = await fetch('/api/benchmarking');
+  benchmarkData = await res.json();
+  renderBenchPropertySelector();
+  renderBenchCompSetBuilder();
+  renderBenchAll();
+}
+
+// ── Selectors ────────────────────────────────────────────────────
+
+function renderBenchPropertySelector() {
+  const sel = document.getElementById('bench-my-hotel');
+  sel.innerHTML = benchmarkData.hotels.map(h =>
+    `<option value="${h.id}"${h.id === benchState.myHotelId ? ' selected' : ''}>${fmt.esc(h.name)}</option>`
+  ).join('');
+  updateBenchPropInfo();
+  sel.addEventListener('change', () => {
+    benchState.myHotelId = sel.value;
+    updateBenchPropInfo();
+    renderBenchCompSetBuilder();
+    renderBenchAll();
+  });
+}
+
+function updateBenchPropInfo() {
+  const h = benchmarkData.hotels.find(x => x.id === benchState.myHotelId);
+  if (!h) return;
+  document.getElementById('bench-prop-info').innerHTML =
+    `<div class="bench-prop-name">${fmt.esc(h.name)}</div>
+     <div class="bench-prop-meta">${fmt.esc(h.city)} · ${fmt.esc(h.category)} · ${h.keys} keys</div>`;
+}
+
+function renderBenchCompSetBuilder() {
+  const container = document.getElementById('bench-comp-checks');
+  const others = benchmarkData.hotels.filter(h => h.id !== benchState.myHotelId);
+  // remove any comp set entry that is now my property
+  benchState.compSet.delete(benchState.myHotelId);
+
+  container.innerHTML = others.map(h => {
+    const checked = benchState.compSet.has(h.id);
+    return `<label class="bench-comp-check-label${checked ? ' active' : ''}">
+      <input type="checkbox" class="bench-comp-cb" value="${h.id}"${checked ? ' checked' : ''}>
+      ${fmt.esc(h.name)}<span class="bench-comp-keys">${h.keys} keys</span>
+    </label>`;
+  }).join('');
+
+  container.querySelectorAll('.bench-comp-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) benchState.compSet.add(cb.value);
+      else benchState.compSet.delete(cb.value);
+      cb.closest('.bench-comp-check-label').classList.toggle('active', cb.checked);
+      renderCompPills();
+      renderBenchAll();
+    });
+  });
+
+  renderCompPills();
+}
+
+function renderCompPills() {
+  const c = document.getElementById('bench-comp-pills');
+  c.innerHTML = [...benchState.compSet].map(id => {
+    const h = benchmarkData.hotels.find(x => x.id === id);
+    if (!h) return '';
+    return `<span class="bench-comp-pill">${fmt.esc(h.name)}
+      <button class="bench-comp-pill-rm" data-compid="${h.id}">×</button></span>`;
+  }).join('');
+  c.querySelectorAll('.bench-comp-pill-rm').forEach(btn => {
+    btn.addEventListener('click', () => {
+      benchState.compSet.delete(btn.dataset.compid);
+      const cb = document.querySelector(`.bench-comp-cb[value="${btn.dataset.compid}"]`);
+      if (cb) { cb.checked = false; cb.closest('.bench-comp-check-label').classList.remove('active'); }
+      renderCompPills();
+      renderBenchAll();
+    });
+  });
+}
+
+// ── Date range ───────────────────────────────────────────────────
+
+function getBenchDateRange() {
+  const end = new Date('2026-06-01');
+  const start = new Date(end);
+  if (benchState.dateRange === 7)        start.setDate(end.getDate() - 6);
+  else if (benchState.dateRange === 30)  start.setDate(end.getDate() - 29);
+  else if (benchState.dateRange === 90)  start.setDate(end.getDate() - 89);
+  else if (benchState.dateRange === 'ytd') { start.setFullYear(end.getFullYear()); start.setMonth(0); start.setDate(1); }
+  return [start, end];
+}
+
+function dateInRange(dateStr, start, end) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d >= start && d <= end;
+}
+
+// ── Data helpers ─────────────────────────────────────────────────
+
+function getMyDaily() {
+  const [s, e] = getBenchDateRange();
+  return benchmarkData.daily.filter(d =>
+    d.hotel_id === benchState.myHotelId && dateInRange(d.date, s, e)
+  ).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function getCompDaily() {
+  if (!benchState.compSet.size) return [];
+  const [s, e] = getBenchDateRange();
+  const byDate = {};
+  benchmarkData.daily.forEach(d => {
+    if (!benchState.compSet.has(d.hotel_id)) return;
+    if (!dateInRange(d.date, s, e)) return;
+    if (!byDate[d.date]) byDate[d.date] = [];
+    byDate[d.date].push(d);
+  });
+  return Object.entries(byDate).map(([date, recs]) => ({
+    date,
+    occupancy:     recs.reduce((s, r) => s + r.occupancy, 0) / recs.length,
+    adr:           recs.reduce((s, r) => s + r.adr, 0) / recs.length,
+    revpar:        recs.reduce((s, r) => s + r.revpar, 0) / recs.length,
+    rooms_revenue: recs.reduce((s, r) => s + r.rooms_revenue, 0) / recs.length,
+  })).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function aggDaily(records) {
+  if (!records.length) return { occupancy: 0, adr: 0, revpar: 0, rooms_revenue: 0 };
+  const n = records.length;
+  return {
+    occupancy:     records.reduce((s, r) => s + r.occupancy, 0) / n,
+    adr:           records.reduce((s, r) => s + r.adr, 0) / n,
+    revpar:        records.reduce((s, r) => s + r.revpar, 0) / n,
+    rooms_revenue: records.reduce((s, r) => s + r.rooms_revenue, 0) / n,
+  };
+}
+
+// ── Master render ─────────────────────────────────────────────────
+
+function renderBenchAll() {
+  renderBenchKPIs();
+  renderBenchCalendar('adr');
+  renderBenchCalendar('occ');
+  renderBenchTrends();
+  renderBenchDOW();
+  renderBenchMonthlyTable();
+}
+
+// ── KPI cards ────────────────────────────────────────────────────
+
+function renderBenchKPIs() {
+  const my   = aggDaily(getMyDaily());
+  const comp = aggDaily(getCompDaily());
+
+  const noComp = !benchState.compSet.size;
+
+  function setCard(id, myVal, compVal, myFmt, compFmt) {
+    const card = document.getElementById(id);
+    card.querySelector('.bench-kpi-mine-val').textContent = myFmt(myVal);
+    card.querySelector('.bench-kpi-comp-val').textContent = noComp ? '—' : compFmt(compVal);
+    const idx = (!noComp && compVal > 0) ? Math.round(myVal / compVal * 100) : null;
+    const idxEl   = card.querySelector('.bench-kpi-index');
+    const idxVal  = card.querySelector('.bench-kpi-idx-val');
+    idxVal.textContent = idx !== null ? idx : '—';
+    idxEl.className = 'bench-kpi-index' + (idx === null ? ' bench-idx-neutral' : idx >= 100 ? ' bench-idx-green' : ' bench-idx-red');
+  }
+
+  setCard('bkpi-occ',    my.occupancy,     comp.occupancy,     v => (v*100).toFixed(1)+'%',         v => (v*100).toFixed(1)+'%');
+  setCard('bkpi-adr',    my.adr,           comp.adr,           v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
+  setCard('bkpi-revpar', my.revpar,        comp.revpar,        v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
+  setCard('bkpi-rev',    my.rooms_revenue, comp.rooms_revenue, v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
+}
+
+// ── Calendar ──────────────────────────────────────────────────────
+
+function benchCalDataMap(type, year, month) {
+  const prefix = `${year}-${String(month).padStart(2,'0')}`;
+  const map = {};
+
+  if (type === 'adr') {
+    // buildForHotel (mine) or comp average
+    const view = benchState.adrCalView;
+    buildCalMap(view, prefix, map);
+  } else {
+    const view = benchState.occCalView;
+    buildCalMap(view, prefix, map);
+  }
+  return map;
+}
+
+function buildCalMap(view, prefix, map) {
+  if (view === 'mine') {
+    benchmarkData.daily.forEach(d => {
+      if (d.hotel_id !== benchState.myHotelId) return;
+      if (!d.date.startsWith(prefix)) return;
+      map[d.date] = { adr: d.adr, occupancy: d.occupancy, revpar: d.revpar };
+    });
+  } else {
+    const byDate = {};
+    benchmarkData.daily.forEach(d => {
+      if (!benchState.compSet.has(d.hotel_id)) return;
+      if (!d.date.startsWith(prefix)) return;
+      if (!byDate[d.date]) byDate[d.date] = [];
+      byDate[d.date].push(d);
+    });
+    Object.entries(byDate).forEach(([date, recs]) => {
+      map[date] = {
+        adr:       recs.reduce((s, r) => s + r.adr, 0) / recs.length,
+        occupancy: recs.reduce((s, r) => s + r.occupancy, 0) / recs.length,
+        revpar:    recs.reduce((s, r) => s + r.revpar, 0) / recs.length,
+      };
+    });
+  }
+}
+
+function adrCellStyle(adr) {
+  const dark = !document.body.classList.contains('light');
+  if (adr < 4000) return dark ? {bg:'rgba(59,130,246,0.18)',col:'#93c5fd'} : {bg:'#dbeafe',col:'#1e40af'};
+  if (adr < 6000) return dark ? {bg:'rgba(59,130,246,0.45)',col:'#bfdbfe'} : {bg:'#93c5fd',col:'#1e3a8a'};
+  return dark ? {bg:'rgba(30,58,138,0.80)',col:'#e0f2fe'} : {bg:'#1d4ed8',col:'#ffffff'};
+}
+
+function occCellStyle(occ) {
+  const dark = !document.body.classList.contains('light');
+  const p = occ * 100;
+  if (p < 60) return dark ? {bg:'rgba(239,68,68,0.22)',col:'#fca5a5'} : {bg:'#fee2e2',col:'#991b1b'};
+  if (p < 80) return dark ? {bg:'rgba(245,158,11,0.28)',col:'#fcd34d'} : {bg:'#fef3c7',col:'#92400e'};
+  return dark ? {bg:'rgba(34,197,94,0.28)',col:'#86efac'} : {bg:'#dcfce7',col:'#166534'};
+}
+
+function renderBenchCalendar(calType) {
+  const yr  = calType === 'adr' ? benchState.adrCalYear  : benchState.occCalYear;
+  const mo  = calType === 'adr' ? benchState.adrCalMonth : benchState.occCalMonth;
+  const view = calType === 'adr' ? benchState.adrCalView : benchState.occCalView;
+
+  const MON_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById(`bench-${calType}-month-label`).textContent = `${MON_NAMES[mo-1]} ${yr}`;
+
+  // Update toggle button active state
+  document.querySelectorAll(`[data-ctype="${calType}"]`).forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cview === view);
+  });
+
+  const dataMap = benchCalDataMap(calType, yr, mo);
+  const firstDow = (new Date(yr, mo - 1, 1).getDay() + 6) % 7; // Mon=0
+  const totalDays = new Date(yr, mo, 0).getDate();
+
+  let html = '<div class="bench-cal-dow-row">';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => { html += `<div class="bench-cal-dow">${d}</div>`; });
+  html += '</div><div class="bench-cal-days">';
+  for (let i = 0; i < firstDow; i++) html += '<div class="bench-cal-day bench-cal-empty"></div>';
+
+  for (let day = 1; day <= totalDays; day++) {
+    const dateStr = `${yr}-${String(mo).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isWknd = [0,6].includes((new Date(yr, mo-1, day).getDay()));
+    const d = dataMap[dateStr];
+    if (d) {
+      const sty = calType === 'adr' ? adrCellStyle(d.adr) : occCellStyle(d.occupancy);
+      const dispVal = calType === 'adr'
+        ? Math.round(d.adr).toLocaleString('en')
+        : (d.occupancy * 100).toFixed(0) + '%';
+      const tip = `${dateStr}|${Math.round(d.adr)}|${(d.occupancy*100).toFixed(1)}|${Math.round(d.revpar)}`;
+      html += `<div class="bench-cal-day${isWknd ? ' bench-cal-weekend' : ''}"
+        style="background:${sty.bg};color:${sty.col}"
+        data-btip="${tip}">
+        <span class="bench-cal-daynum">${day}</span>
+        <span class="bench-cal-dayval">${dispVal}</span>
+      </div>`;
+    } else {
+      html += `<div class="bench-cal-day bench-cal-nodata${isWknd ? ' bench-cal-weekend' : ''}">
+        <span class="bench-cal-daynum">${day}</span>
+      </div>`;
+    }
+  }
+  html += '</div>';
+  document.getElementById(`bench-${calType}-grid`).innerHTML = html;
+}
+
+// Tooltip shared between both calendars
+const benchTip = document.getElementById('bench-cal-tooltip');
+
+document.addEventListener('mousemove', e => {
+  if (benchTip && benchTip.style.display !== 'none') {
+    benchTip.style.left = (e.clientX + 14) + 'px';
+    benchTip.style.top  = (e.clientY - 10) + 'px';
+  }
+});
+
+document.getElementById('screen-benchmarking').addEventListener('mouseover', e => {
+  const cell = e.target.closest('[data-btip]');
+  if (!cell) { benchTip.style.display = 'none'; return; }
+  const [dt, adr, occ, rev] = cell.dataset.btip.split('|');
+  benchTip.innerHTML = `
+    <div class="bct-date">${dt}</div>
+    <div class="bct-row"><span>ADR</span><span>MAD ${Number(adr).toLocaleString('en')}</span></div>
+    <div class="bct-row"><span>Occupancy</span><span>${occ}%</span></div>
+    <div class="bct-row"><span>RevPAR</span><span>MAD ${Number(rev).toLocaleString('en')}</span></div>`;
+  benchTip.style.display = 'block';
+});
+document.getElementById('screen-benchmarking').addEventListener('mouseout', e => {
+  if (!e.target.closest('[data-btip]')) benchTip.style.display = 'none';
+});
+
+// Calendar nav + view toggle events
+document.getElementById('bench-adr-prev').addEventListener('click', () => {
+  benchState.adrCalMonth--; if (benchState.adrCalMonth < 1) { benchState.adrCalMonth = 12; benchState.adrCalYear--; }
+  renderBenchCalendar('adr');
+});
+document.getElementById('bench-adr-next').addEventListener('click', () => {
+  benchState.adrCalMonth++; if (benchState.adrCalMonth > 12) { benchState.adrCalMonth = 1; benchState.adrCalYear++; }
+  renderBenchCalendar('adr');
+});
+document.getElementById('bench-occ-prev').addEventListener('click', () => {
+  benchState.occCalMonth--; if (benchState.occCalMonth < 1) { benchState.occCalMonth = 12; benchState.occCalYear--; }
+  renderBenchCalendar('occ');
+});
+document.getElementById('bench-occ-next').addEventListener('click', () => {
+  benchState.occCalMonth++; if (benchState.occCalMonth > 12) { benchState.occCalMonth = 1; benchState.occCalYear++; }
+  renderBenchCalendar('occ');
+});
+
+document.getElementById('screen-benchmarking').addEventListener('click', e => {
+  const btn = e.target.closest('.bench-cal-view-btn');
+  if (!btn) return;
+  const ctype = btn.dataset.ctype;
+  const cview = btn.dataset.cview;
+  if (ctype === 'adr') benchState.adrCalView = cview;
+  else benchState.occCalView = cview;
+  renderBenchCalendar(ctype);
+});
+
+// ── Trend charts ──────────────────────────────────────────────────
+
+function renderBenchTrends() {
+  const myD   = getMyDaily();
+  const compD = getCompDaily();
+
+  const labels = myD.map(d => {
+    const dt = new Date(d.date + 'T00:00:00');
+    return dt.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+  });
+
+  const compByDate = {};
+  compD.forEach(d => { compByDate[d.date] = d; });
+
+  const myRevpar  = myD.map(d => Math.round(d.revpar));
+  const myOcc     = myD.map(d => parseFloat((d.occupancy * 100).toFixed(1)));
+  const cRevpar   = myD.map(d => { const c = compByDate[d.date]; return c ? Math.round(c.revpar) : null; });
+  const cOcc      = myD.map(d => { const c = compByDate[d.date]; return c ? parseFloat((c.occupancy * 100).toFixed(1)) : null; });
+
+  const dense = labels.length > 50;
+
+  function mkTrend(myData, compData, suffix) {
+    return {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'My Property', data: myData, borderColor: CHART_ACCENT,
+            backgroundColor: 'rgba(79,126,248,0.07)', borderWidth: 2, fill: false,
+            tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: CHART_ACCENT },
+          { label: 'Comp Set Avg', data: compData, borderColor: '#6b7280',
+            borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.3, pointRadius: 0 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+        layout: { padding: { top: 14 } },
+        plugins: {
+          legend: { display: true, labels: { color: CHART_TICK, font: { size: 11 }, boxWidth: 22, padding: 14 } },
+          datalabels: { display: false },
+          tooltip: {
+            backgroundColor: '#2d3449', borderColor: '#3a4258', borderWidth: 1,
+            titleColor: '#eceef4', bodyColor: '#8a96b0',
+            mode: 'index', intersect: false,
+            callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}${suffix}` },
+          },
+        },
+        scales: {
+          x: { ticks: { color: CHART_TICK, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
+          y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+        },
+      },
+    };
+  }
+
+  const rWrap = document.getElementById('bench-trend-revpar-wrap');
+  rWrap.style.minHeight = '0'; rWrap.style.height = '230px';
+  if (benchTrendRevpar) { benchTrendRevpar.destroy(); benchTrendRevpar = null; }
+  benchTrendRevpar = new Chart(document.getElementById('bench-trend-revpar'), mkTrend(myRevpar, cRevpar, ' MAD'));
+
+  const oWrap = document.getElementById('bench-trend-occ-wrap');
+  oWrap.style.minHeight = '0'; oWrap.style.height = '230px';
+  if (benchTrendOcc) { benchTrendOcc.destroy(); benchTrendOcc = null; }
+  benchTrendOcc = new Chart(document.getElementById('bench-trend-occ'), mkTrend(myOcc, cOcc, '%'));
+}
+
+// ── DOW chart ─────────────────────────────────────────────────────
+
+function renderBenchDOW() {
+  const myD   = getMyDaily();
+  const compD = getCompDaily();
+
+  const myDOW   = Array(7).fill(null).map(() => []);
+  const compDOW = Array(7).fill(null).map(() => []);
+
+  myD.forEach(d => {
+    const dow = (new Date(d.date + 'T00:00:00').getDay() + 6) % 7;
+    myDOW[dow].push(d.occupancy * 100);
+  });
+  compD.forEach(d => {
+    const dow = (new Date(d.date + 'T00:00:00').getDay() + 6) % 7;
+    compDOW[dow].push(d.occupancy * 100);
+  });
+
+  const avg = arr => arr.length ? parseFloat((arr.reduce((s,v) => s+v, 0) / arr.length).toFixed(1)) : 0;
+
+  const dWrap = document.getElementById('bench-dow-wrap');
+  dWrap.style.minHeight = '0'; dWrap.style.height = '230px';
+  if (benchDOWChart) { benchDOWChart.destroy(); benchDOWChart = null; }
+
+  benchDOWChart = new Chart(document.getElementById('bench-dow-chart'), {
+    type: 'bar',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [
+        { label: 'My Property', data: myDOW.map(avg), backgroundColor: CHART_ACCENT, borderRadius: 4, borderSkipped: false },
+        { label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(107,114,128,0.45)', borderRadius: 4, borderSkipped: false },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      layout: { padding: { top: 14 } },
+      plugins: {
+        legend: { display: true, labels: { color: CHART_TICK, font: { size: 11 }, boxWidth: 10, padding: 14 } },
+        datalabels: { display: false },
+        tooltip: {
+          backgroundColor: '#2d3449', borderColor: '#3a4258', borderWidth: 1,
+          titleColor: '#eceef4', bodyColor: '#8a96b0',
+          callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}%` },
+        },
+      },
+      scales: {
+        x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+        y: { suggestedMin: 0, suggestedMax: 100, ticks: { color: CHART_TICK, font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+// ── Monthly summary table ─────────────────────────────────────────
+
+function renderBenchMonthlyTable() {
+  const months = {};
+  benchmarkData.daily.forEach(d => {
+    const mk = d.date.substring(0, 7);
+    if (!months[mk]) months[mk] = { my: [], compByDate: {} };
+    if (d.hotel_id === benchState.myHotelId) {
+      months[mk].my.push(d);
+    } else if (benchState.compSet.has(d.hotel_id)) {
+      if (!months[mk].compByDate[d.date]) months[mk].compByDate[d.date] = [];
+      months[mk].compByDate[d.date].push(d);
+    }
+  });
+
+  const MON_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const tbody = document.getElementById('bench-monthly-tbody');
+  tbody.innerHTML = Object.keys(months).sort().map(mk => {
+    const { my, compByDate } = months[mk];
+    const myAgg = aggDaily(my);
+    const compDailyAvg = Object.values(compByDate).map(recs => aggDaily(recs));
+    const compAgg = aggDaily(compDailyAvg);
+    const noComp = !benchState.compSet.size || !compDailyAvg.length;
+    const revIdx = (!noComp && compAgg.revpar > 0) ? Math.round(myAgg.revpar / compAgg.revpar * 100) : null;
+    const [yr, mo] = mk.split('-');
+    const label = `${MON_NAMES[Number(mo)-1]} ${yr}`;
+    const idxCls = revIdx === null ? 'bench-idx-neutral' : revIdx >= 100 ? 'bench-idx-green' : 'bench-idx-red';
+    return `<tr>
+      <td><strong>${label}</strong></td>
+      <td>${(myAgg.occupancy*100).toFixed(1)}%</td>
+      <td>${noComp ? '—' : (compAgg.occupancy*100).toFixed(1)+'%'}</td>
+      <td>${Math.round(myAgg.adr).toLocaleString('en')}</td>
+      <td>${noComp ? '—' : Math.round(compAgg.adr).toLocaleString('en')}</td>
+      <td>${Math.round(myAgg.revpar).toLocaleString('en')}</td>
+      <td>${noComp ? '—' : Math.round(compAgg.revpar).toLocaleString('en')}</td>
+      <td><span class="bench-idx-badge ${idxCls}">${revIdx !== null ? revIdx : '—'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── AI Insights ───────────────────────────────────────────────────
+
+async function renderBenchAIInsights() {
+  const box = document.getElementById('bench-ai-insights');
+  box.innerHTML = '<p class="bench-loading">Generating insights…</p>';
+
+  const myH   = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
+  const compNames = [...benchState.compSet]
+    .map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
+
+  const my   = aggDaily(getMyDaily());
+  const comp = aggDaily(getCompDaily());
+  const noComp = !benchState.compSet.size;
+
+  const oIdx = (!noComp && comp.occupancy > 0) ? Math.round(my.occupancy / comp.occupancy * 100) : 'N/A';
+  const aIdx = (!noComp && comp.adr > 0) ? Math.round(my.adr / comp.adr * 100) : 'N/A';
+  const rIdx = (!noComp && comp.revpar > 0) ? Math.round(my.revpar / comp.revpar * 100) : 'N/A';
+
+  const prompt = `Analyze hotel benchmarking for ${myH?.name} vs comp set (${compNames || 'none'}) — Marrakech Luxury, last ${benchState.dateRange} days.
+
+MY PROPERTY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
+COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}
+INDEX: Occ ${oIdx} | ADR ${aIdx} | RevPAR ${rIdx}
+
+Give 3-4 bullet-point insights on competitive position, key gaps, and specific actionable recommendations. Use numbers. Be concise.`;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+    });
+    const data = await res.json();
+    if (data.response) {
+      box.innerHTML = `<div class="bench-ai-content">${mdRender(data.response)}</div>`;
+    } else {
+      box.innerHTML = `<p class="bench-loading">${fmt.esc(data.error || 'Could not generate insights.')}</p>`;
+    }
+  } catch {
+    box.innerHTML = '<p class="bench-loading">Could not connect to AI Analyst.</p>';
+  }
+}
+
+// Date range pill events
+document.getElementById('bench-date-bar').addEventListener('click', e => {
+  const btn = e.target.closest('.bench-date-pill');
+  if (!btn) return;
+  document.querySelectorAll('.bench-date-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const v = btn.dataset.brange;
+  benchState.dateRange = isNaN(Number(v)) ? v : Number(v);
+  renderBenchAll();
+});
+
+// AI refresh button
+document.getElementById('bench-ai-refresh').addEventListener('click', renderBenchAIInsights);
 
 // ─── Boot ─────────────────────────────────────────────────────────
 
