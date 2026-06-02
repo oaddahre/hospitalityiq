@@ -236,8 +236,10 @@ body {
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  align-items: stretch;
   gap: 10px;
   margin-bottom: 22px;
+  max-width: 700px;
 }
 
 .kpi-card {
@@ -249,6 +251,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   position: relative;
   cursor: default;
@@ -260,35 +263,39 @@ body {
 .kpi-card.loading { opacity: 0.35; }
 
 .kpi-label {
-  font-size: 10.5px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
   margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .kpi-value {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   line-height: 1;
   margin-bottom: 3px;
+  white-space: nowrap;
 }
 
 .kpi-meta {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dim);
   font-weight: 500;
   margin-bottom: 3px;
+  white-space: nowrap;
 }
 
 .kpi-delta {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.1px;
+  white-space: nowrap;
 }
 .kpi-delta.up   { color: #6DBE8C; }
 .kpi-delta.down { color: #e57373; }
@@ -850,6 +857,7 @@ body {
 
 .brand-kpi-grid {
   grid-template-columns: repeat(5, 1fr);
+  max-width: 880px;
 }
 
 .brand-link {
@@ -1151,7 +1159,15 @@ body {
 }
 
 /* ─── Pipeline screen ───────────────────────── */
-.pipe-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+/* Pipeline KPI grid — intentionally not inheriting max-width or style changes from .kpi-grid */
+.pipe-kpi-grid {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: none;
+}
+.pipe-kpi-grid .kpi-card   { justify-content: flex-start; }
+.pipe-kpi-grid .kpi-label  { font-size: 10.5px; letter-spacing: 0.6px; white-space: normal; }
+.pipe-kpi-grid .kpi-value  { font-size: 26px; font-weight: 800; white-space: normal; }
+.pipe-kpi-grid .kpi-meta   { font-size: 11px; white-space: normal; }
 
 .pipe-filter-bar {
   display: flex;
@@ -1180,8 +1196,8 @@ body {
 /* ── Project cards ── */
 .pipe-cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 480px));
+  gap: 20px;
   margin-bottom: 24px;
 }
 
