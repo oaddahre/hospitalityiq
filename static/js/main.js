@@ -1,8 +1,3 @@
-window.showBrandDetail = function(brandGroup) {
-  console.log('showBrandDetail called with:', brandGroup);
-  alert('Brand clicked: ' + brandGroup);
-};
-
 // ─── Constants ────────────────────────────────────────────────────
 
 const SEG_COLORS = {
@@ -371,11 +366,11 @@ function showBrandDetail(brandGroup) {
     const el = document.getElementById(id);
     el.querySelector('.kpi-value').textContent = val;
   };
-  setKpi('bkpi-keys',   fmt.num(tk));
-  setKpi('bkpi-occ',    fmt.pct(occ));
-  setKpi('bkpi-adr',    fmt.mad(adr));
-  setKpi('bkpi-revpar', fmt.mad(revpar));
-  setKpi('bkpi-gop',    fmt.pct(gop));
+  setKpi('brand-bkpi-keys',   fmt.num(tk));
+  setKpi('brand-bkpi-occ',    fmt.pct(occ));
+  setKpi('brand-bkpi-adr',    fmt.mad(adr));
+  setKpi('brand-bkpi-revpar', fmt.mad(revpar));
+  setKpi('brand-bkpi-gop',    fmt.pct(gop));
 
   // Switch to brand screen FIRST so the canvas has visible dimensions for Chart.js
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
