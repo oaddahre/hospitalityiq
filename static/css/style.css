@@ -866,7 +866,7 @@ body {
   transition: color 150ms ease;
 }
 .brand-link:hover {
-  color: var(--accent);
+  opacity: 0.6;
   text-decoration: underline;
 }
 

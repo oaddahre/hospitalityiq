@@ -316,7 +316,7 @@ function renderBrandTable() {
   tbody.innerHTML = rows.map((r, i) => `
     <tr>
       <td class="rank-cell">${i + 1}</td>
-      <td><button class="brand-link" data-brand="${fmt.esc(r.brand_group)}">${fmt.esc(r.brand_group)}</button></td>
+      <td><button class="brand-link" data-brand="${fmt.esc(r.brand_group)}" onclick="showBrandDetail(this.dataset.brand)">${fmt.esc(r.brand_group)}</button></td>
       <td>${r.hotel_count}</td>
       <td>${fmt.num(r.total_keys)}</td>
       <td>${fmt.pct(r.occupancy)}</td>
@@ -334,6 +334,7 @@ function renderBrandTable() {
 // ─── Brand detail ─────────────────────────────────────────────────
 
 function showBrandDetail(brandGroup) {
+  console.log('clicked brand:', brandGroup);
   brandHotelsData = hotels.filter(h => h.brand_group === brandGroup);
 
   const tk    = brandHotelsData.reduce((s, h) => s + h.keys, 0);
