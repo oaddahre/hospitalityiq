@@ -862,14 +862,16 @@ body {
   border: none;
   font-family: var(--font);
   font-size: inherit;
-  color: var(--text);
+  color: inherit;
   padding: 0;
   text-align: left;
-  transition: color 150ms ease;
+  text-decoration: none;
+  transition: opacity 150ms ease;
 }
 .brand-link:hover {
   opacity: 0.6;
-  text-decoration: underline;
+  text-decoration: none;
+  color: inherit;
 }
 
 .brand-hotel-row { cursor: pointer; }
@@ -1126,18 +1128,19 @@ body {
   cursor: pointer;
   font-family: var(--font);
   font-size: inherit;
-  color: var(--text);
+  color: inherit;
   padding: 0;
   text-align: left;
   font-weight: 500;
-  transition: color 0.14s;
+  text-decoration: none;
+  transition: opacity 150ms ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 280px;
   display: block;
 }
-.hotel-name-btn:hover { color: var(--accent); text-decoration: underline; }
+.hotel-name-btn:hover { opacity: 0.6; text-decoration: none; color: inherit; }
 
 /* Map popup: clickable name + profile button */
 .hiq-popup-name-btn {
@@ -1147,7 +1150,7 @@ body {
   font-family: var(--font);
   font-size: 13px;
   font-weight: 700;
-  color: var(--text);
+  color: inherit;
   padding: 0;
   padding-right: 16px;
   text-align: left;
@@ -1155,9 +1158,10 @@ body {
   margin-bottom: 3px;
   display: block;
   width: 100%;
-  transition: color 0.14s;
+  text-decoration: none;
+  transition: opacity 150ms ease;
 }
-.hiq-popup-name-btn:hover { color: var(--accent); text-decoration: underline; }
+.hiq-popup-name-btn:hover { opacity: 0.6; text-decoration: none; color: inherit; }
 .hiq-popup-profile-btn {
   display: block;
   width: 100%;
