@@ -743,6 +743,132 @@
         </div>
       </section>
 
+      <!-- ── Hotel Detail ── -->
+      <section class="screen" id="screen-hotel">
+
+        <!-- Header -->
+        <div class="hotel-hd">
+          <button class="back-btn" id="hotel-back-btn">← Back</button>
+          <div class="hotel-hd-body">
+            <div class="hotel-hd-row1">
+              <h1 id="hotel-hd-name">—</h1>
+              <div class="hotel-hd-badges">
+                <span class="hotel-status-badge" id="hotel-hd-status">Open</span>
+                <span class="hotel-dq-badge dq-estimate" id="hotel-hd-dq">HIQ Estimate</span>
+              </div>
+            </div>
+            <p class="screen-sub" id="hotel-hd-sub">—</p>
+            <p class="hotel-hd-owner" id="hotel-hd-owner" style="display:none">—</p>
+            <p class="hotel-hd-year" id="hotel-hd-year">—</p>
+          </div>
+        </div>
+
+        <!-- KPI cards -->
+        <div class="kpi-grid brand-kpi-grid" style="margin-bottom:22px">
+          <div class="kpi-card" id="hkpi-keys">
+            <span class="kpi-label">Total Keys</span>
+            <span class="kpi-value">—</span>
+          </div>
+          <div class="kpi-card" id="hkpi-occ">
+            <span class="kpi-label">Occupancy</span>
+            <span class="kpi-value">—</span>
+          </div>
+          <div class="kpi-card" id="hkpi-adr">
+            <span class="kpi-label">ADR</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">MAD</span>
+          </div>
+          <div class="kpi-card" id="hkpi-revpar">
+            <span class="kpi-label">RevPAR</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta">MAD</span>
+          </div>
+          <div class="kpi-card" id="hkpi-gop">
+            <span class="kpi-label">GOP Margin</span>
+            <span class="kpi-value">—</span>
+          </div>
+        </div>
+
+        <!-- Estimated financials -->
+        <div class="table-card" style="margin-bottom:20px">
+          <div class="table-card-header">
+            <span class="table-title">Estimated annual financials · HIQ model</span>
+          </div>
+          <div class="hotel-fin-grid">
+            <div class="hotel-fin-card">
+              <div class="hotel-fin-val" id="hfin-rooms">—</div>
+              <div class="hotel-fin-lbl">Rooms Revenue</div>
+            </div>
+            <div class="hotel-fin-card">
+              <div class="hotel-fin-val" id="hfin-total">—</div>
+              <div class="hotel-fin-lbl">Total Revenue</div>
+            </div>
+            <div class="hotel-fin-card">
+              <div class="hotel-fin-val" id="hfin-gop">—</div>
+              <div class="hotel-fin-lbl">GOP</div>
+            </div>
+            <div class="hotel-fin-card">
+              <div class="hotel-fin-val" id="hfin-asset">—</div>
+              <div class="hotel-fin-lbl">Est. Asset Value</div>
+            </div>
+          </div>
+          <p class="hotel-fin-disc">Indicative only — based on HIQ estimates. Not for investment decisions.</p>
+        </div>
+
+        <!-- Market context chart -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div class="chart-card-header">
+            <span class="chart-title">Market positioning — <span id="hotel-ctx-city">—</span></span>
+            <span class="chart-unit">RevPAR MAD · all hotels in city · sorted high to low</span>
+          </div>
+          <div class="chart-wrap" id="hotel-city-chart-wrap"><canvas id="chart-hotel-city"></canvas></div>
+        </div>
+
+        <!-- Segment benchmarks -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div class="chart-card-header">
+            <span class="chart-title">Segment benchmarks</span>
+            <span class="chart-unit" id="hotel-bench-ctx">vs city average in same segment</span>
+          </div>
+          <div id="hotel-seg-bench"></div>
+        </div>
+
+        <!-- Brand group -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div class="chart-card-header">
+            <span class="chart-title">Brand group</span>
+          </div>
+          <div class="hotel-brand-row">
+            <div>
+              <div class="hotel-brand-name" id="hotel-brand-name">—</div>
+              <div class="hotel-brand-meta"><span id="hotel-brand-count">—</span> hotels in Morocco under this group</div>
+            </div>
+            <button class="hotel-brand-link" id="hotel-brand-link" onclick="showBrandDetail(this.dataset.brand)">—</button>
+          </div>
+        </div>
+
+        <!-- Nearby pipeline -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div class="chart-card-header">
+            <span class="chart-title">Upcoming supply — <span id="hotel-pipe-city">—</span></span>
+            <span class="chart-unit">confirmed pipeline projects</span>
+          </div>
+          <div id="hotel-pipe-content"><p class="hpipe-empty">Loading…</p></div>
+        </div>
+
+        <!-- Owner (hidden if Undisclosed) -->
+        <div class="chart-card" id="hotel-owner-section" style="margin-bottom:20px;display:none">
+          <div class="chart-card-header">
+            <span class="chart-title">Owner</span>
+          </div>
+          <div class="hotel-owner-content">
+            <div class="hotel-owner-name" id="hotel-owner-name">—</div>
+            <div class="hotel-owner-ctx" id="hotel-owner-ctx" style="display:none">—</div>
+          </div>
+        </div>
+
+      </section>
+
       <!-- ── News ── -->
       <section class="screen" id="screen-news">
         <div class="screen-header">

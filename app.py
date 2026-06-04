@@ -134,7 +134,7 @@ def api_hotels():
     _, _, merged = load_data()
     cols = [
         "id", "name", "city", "region", "category", "brand", "brand_group",
-        "keys", "year_opened", "status", "lat", "lng", "owner",
+        "keys", "year_opened", "status", "lat", "lng", "owner", "data_quality",
         "period", "occupancy", "adr_mad", "revpar_mad", "trevpar_mad", "gop_margin", "source",
     ]
     records = merged[cols].to_dict(orient="records")

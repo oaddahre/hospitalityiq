@@ -64,6 +64,9 @@ const pipelineState = { status: 'all', city: 'all', category: 'all' };
 const pipelineSort  = { col: 'expected_opening', dir: 1 };
 const PIPE_STR_COLS = new Set(['name', 'city', 'category', 'brand', 'status']);
 
+let hotelDetailPrevScreen = 'hotels';
+let hotelCityChart        = null;
+
 // ─── Theme ────────────────────────────────────────────────────────
 
 const ICON_MOON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
@@ -419,7 +422,7 @@ function renderBrandHotelsTable() {
   document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
     const segColor = SEG_COLORS[h.category] || '#6b7280';
     return `<tr class="brand-hotel-row">
-      <td class="hotel-name-cell">${fmt.esc(h.name)}</td>
+      <td class="hotel-name-cell"><button class="hotel-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
       <td><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
       <td>${fmt.num(h.keys)}</td>
@@ -443,6 +446,247 @@ function renderBrandHotelsTable() {
   });
 }
 
+// ─── Hotel detail ─────────────────────────────────────────────────
+
+const OWNER_CONTEXT = {
+  'Risma':        'Accor Morocco listed subsidiary (Bourse de Casablanca)',
+  'Madaëf':       'CDG Group hospitality arm',
+  'Royal':        'Royal Mansour Collection — Royal hospitality group',
+  'Marchica Med': 'State-owned development agency',
+  'Club Med':     'Club Med — owned by Fosun International',
+};
+
+async function showHotelDetail(id) {
+  const h = hotels.find(x => +x.id === +id);
+  if (!h) return;
+
+  // Remember which screen we came from
+  const active = document.querySelector('.screen.active');
+  hotelDetailPrevScreen = active ? active.id.replace('screen-', '') : 'hotels';
+
+  // Switch screen first so Chart.js canvas has visible dimensions
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-hotel').classList.add('active');
+  setSidebar('hotel');
+
+  // ── 1. Header ──
+  document.getElementById('hotel-hd-name').textContent = h.name;
+  document.getElementById('hotel-hd-sub').textContent =
+    `${h.brand} · ${h.city} · ${h.category}`;
+
+  const ownerLine = document.getElementById('hotel-hd-owner');
+  if (h.owner && h.owner !== 'Undisclosed') {
+    ownerLine.textContent = `Owner: ${h.owner}`;
+    ownerLine.style.display = '';
+  } else {
+    ownerLine.style.display = 'none';
+  }
+
+  document.getElementById('hotel-hd-year').textContent =
+    h.year_opened ? `Opened ${h.year_opened}` : '';
+
+  const dqEl = document.getElementById('hotel-hd-dq');
+  if ((h.data_quality || '').toLowerCase().startsWith('verified')) {
+    dqEl.textContent = 'Verified';
+    dqEl.className   = 'hotel-dq-badge dq-verified';
+  } else {
+    dqEl.textContent = 'HIQ Estimate';
+    dqEl.className   = 'hotel-dq-badge dq-estimate';
+  }
+
+  // ── 2. KPI cards ──
+  const setKv = (id, v) => document.getElementById(id).querySelector('.kpi-value').textContent = v;
+  setKv('hkpi-keys',   fmt.num(h.keys));
+  setKv('hkpi-occ',    fmt.pct(h.occupancy));
+  setKv('hkpi-adr',    fmt.mad(h.adr_mad));
+  setKv('hkpi-revpar', fmt.mad(h.revpar_mad));
+  setKv('hkpi-gop',    fmt.pct(h.gop_margin));
+
+  // ── 3. Estimated financials ──
+  const roomsRev = h.adr_mad * h.occupancy * h.keys * 365 / 1e6;
+  const totalRev = (h.trevpar_mad || h.revpar_mad / h.occupancy * 1.35) * h.keys * 365 / 1e6;
+  const gopMad   = totalRev * h.gop_margin;
+  const assetVal = gopMad * 0.85 / 0.072;
+
+  const madM = v => `MAD ${v < 1000 ? v.toFixed(0) : (v / 1000).toFixed(1) + 'B'}M`.replace('BMM', 'B');
+  document.getElementById('hfin-rooms').textContent  = `MAD ${roomsRev.toFixed(0)}M`;
+  document.getElementById('hfin-total').textContent  = `MAD ${totalRev.toFixed(0)}M`;
+  document.getElementById('hfin-gop').textContent    = `MAD ${gopMad.toFixed(0)}M`;
+  document.getElementById('hfin-asset').textContent  = assetVal >= 1000
+    ? `MAD ${(assetVal / 1000).toFixed(1)}B`
+    : `MAD ${assetVal.toFixed(0)}M`;
+
+  // ── 4. Market context chart ──
+  document.getElementById('hotel-ctx-city').textContent = h.city;
+  renderHotelCityChart(h);
+
+  // ── 5. Segment benchmarks ──
+  renderHotelSegBench(h);
+
+  // ── 6. Brand info ──
+  const brandCount = hotels.filter(x => x.brand_group === h.brand_group).length;
+  document.getElementById('hotel-brand-name').textContent  = h.brand_group;
+  document.getElementById('hotel-brand-count').textContent = brandCount;
+  const brandBtn = document.getElementById('hotel-brand-link');
+  brandBtn.textContent     = `View all ${h.brand_group} properties →`;
+  brandBtn.dataset.brand   = h.brand_group;
+
+  // ── 7. Pipeline ──
+  document.getElementById('hotel-pipe-city').textContent = h.city;
+  await renderHotelPipeline(h);
+
+  // ── 8. Owner section ──
+  renderOwnerSection(h);
+}
+
+function renderHotelCityChart(h) {
+  const cityHotels = hotels
+    .filter(x => x.city === h.city)
+    .sort((a, b) => b.revpar_mad - a.revpar_mad);
+
+  const labels = cityHotels.map(x =>
+    +x.id === +h.id ? `▶ ${x.name}` : x.name
+  );
+  const values = cityHotels.map(x => x.revpar_mad);
+  const colors = cityHotels.map(x => +x.id === +h.id ? CHART_ACCENT : CHART_DIM);
+
+  const chartH = Math.max(200, cityHotels.length * 30 + 50);
+  document.getElementById('hotel-city-chart-wrap').style.height = chartH + 'px';
+
+  if (hotelCityChart) {
+    hotelCityChart.data.labels                       = labels;
+    hotelCityChart.data.datasets[0].data             = values;
+    hotelCityChart.data.datasets[0].backgroundColor  = colors;
+    hotelCityChart.update();
+  } else {
+    hotelCityChart = new Chart(
+      document.getElementById('chart-hotel-city'),
+      chartConfig(labels, values, ' MAD', colors, v => Math.round(v).toLocaleString('en'))
+    );
+  }
+}
+
+function renderHotelSegBench(h) {
+  const peers = hotels.filter(x => x.city === h.city && x.category === h.category && +x.id !== +h.id);
+  const bench  = document.getElementById('hotel-seg-bench');
+  const ctxEl  = document.getElementById('hotel-bench-ctx');
+
+  ctxEl.textContent = `${h.category} · ${h.city} average (${peers.length} peer${peers.length !== 1 ? 's' : ''})`;
+
+  if (!peers.length) {
+    bench.innerHTML = `<p class="hbench-no-peers">No comparable ${h.category} hotels in ${h.city}.</p>`;
+    return;
+  }
+
+  const tk     = peers.reduce((s, x) => s + x.keys, 0);
+  const ok     = peers.reduce((s, x) => s + x.keys * x.occupancy, 0);
+  const avgOcc = ok / tk;
+  const avgAdr = peers.reduce((s, x) => s + x.adr_mad * x.keys * x.occupancy, 0) / ok;
+  const avgRev = peers.reduce((s, x) => s + x.revpar_mad * x.keys, 0) / tk;
+
+  const metrics = [
+    {
+      label: 'Occupancy',
+      mine: h.occupancy,     avg: avgOcc,
+      fmtVal: v => fmt.pct(v),
+      fmtDiff: d => (d >= 0 ? '+' : '') + (d * 100).toFixed(1) + ' pts',
+      isPos: h.occupancy >= avgOcc,
+    },
+    {
+      label: 'ADR (MAD)',
+      mine: h.adr_mad,       avg: avgAdr,
+      fmtVal: v => fmt.mad(v),
+      fmtDiff: d => (d >= 0 ? '+' : '−') + 'MAD ' + fmt.mad(Math.abs(d)),
+      isPos: h.adr_mad >= avgAdr,
+    },
+    {
+      label: 'RevPAR (MAD)',
+      mine: h.revpar_mad,    avg: avgRev,
+      fmtVal: v => fmt.mad(v),
+      fmtDiff: d => (d >= 0 ? '+' : '−') + 'MAD ' + fmt.mad(Math.abs(d)),
+      isPos: h.revpar_mad >= avgRev,
+    },
+  ];
+
+  bench.innerHTML = metrics.map(m => {
+    const top      = Math.max(m.mine, m.avg) * 1.12 || 1;
+    const mineW    = Math.round((m.mine / top) * 100);
+    const avgW     = Math.round((m.avg  / top) * 100);
+    const diff     = m.mine - m.avg;
+    return `<div class="hbench-row">
+      <div class="hbench-label">${m.label}</div>
+      <div class="hbench-bars">
+        <div class="hbench-bar-row">
+          <span class="hbench-bar-lbl">This hotel</span>
+          <div class="hbench-bar-track"><div class="hbench-bar-fill accent" style="width:${mineW}%"></div></div>
+          <span class="hbench-val">${m.fmtVal(m.mine)}</span>
+        </div>
+        <div class="hbench-bar-row">
+          <span class="hbench-bar-lbl">Peers avg</span>
+          <div class="hbench-bar-track"><div class="hbench-bar-fill muted" style="width:${avgW}%"></div></div>
+          <span class="hbench-val">${m.fmtVal(m.avg)}</span>
+        </div>
+      </div>
+      <span class="hbench-diff ${m.isPos ? 'up' : 'down'}">${m.fmtDiff(diff)}</span>
+    </div>`;
+  }).join('');
+}
+
+async function renderHotelPipeline(h) {
+  const content = document.getElementById('hotel-pipe-content');
+  if (!pipelineData) {
+    content.innerHTML = '<p class="hpipe-empty">Loading pipeline data…</p>';
+    try {
+      pipelineData = await fetch('/api/pipeline').then(r => r.json());
+    } catch {
+      content.innerHTML = '<p class="hpipe-empty">Pipeline data unavailable.</p>';
+      return;
+    }
+  }
+
+  const cityPipe = pipelineData.filter(p => p.city === h.city);
+  if (!cityPipe.length) {
+    content.innerHTML = `<p class="hpipe-empty">No confirmed pipeline in ${fmt.esc(h.city)}.</p>`;
+    return;
+  }
+
+  const totalKeys = cityPipe.reduce((s, p) => s + p.keys, 0);
+  const lastYear  = Math.max(...cityPipe.map(p => p.expected_opening));
+  const items = cityPipe.map(p => `
+    <div class="hpipe-item">
+      <div class="hpipe-item-name">${fmt.esc(p.name)}</div>
+      <span class="hpipe-item-meta">${fmt.esc(p.brand)} · ${p.keys} keys · ${p.expected_opening}</span>
+      <span class="${p.status === 'Under Construction' ? 'pipe-status-uc' : 'pipe-status-pl'}">${fmt.esc(p.status)}</span>
+    </div>`).join('');
+
+  content.innerHTML = `
+    <p class="hpipe-summary">${totalKeys.toLocaleString('en')} new keys entering ${fmt.esc(h.city)} by ${lastYear}</p>
+    <div class="hpipe-list">${items}</div>`;
+}
+
+function renderOwnerSection(h) {
+  const section = document.getElementById('hotel-owner-section');
+  if (!h.owner || h.owner === 'Undisclosed') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  document.getElementById('hotel-owner-name').textContent = h.owner;
+
+  let ctx = '';
+  for (const [key, val] of Object.entries(OWNER_CONTEXT)) {
+    if (h.owner.includes(key)) { ctx = val; break; }
+  }
+  const ctxEl = document.getElementById('hotel-owner-ctx');
+  if (ctx) {
+    ctxEl.textContent     = ctx;
+    ctxEl.style.display   = '';
+  } else {
+    ctxEl.style.display   = 'none';
+  }
+}
+
 // ─── Map ──────────────────────────────────────────────────────────
 
 function markerRadius(h) {
@@ -452,7 +696,7 @@ function markerRadius(h) {
 function popupHTML(h) {
   return `
     <div class="hiq-popup">
-      <div class="hiq-popup-name">${fmt.esc(h.name)}</div>
+      <button class="hiq-popup-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button>
       <div class="hiq-popup-meta">${fmt.esc(h.brand)} · ${fmt.esc(h.category)} · ${h.year_opened}</div>
       <div class="hiq-popup-grid">
         <div class="hiq-popup-stat">
@@ -472,6 +716,7 @@ function popupHTML(h) {
           <div class="hiq-popup-stat-lbl">RevPAR MAD</div>
         </div>
       </div>
+      <button class="hiq-popup-profile-btn" onclick="showHotelDetail(${h.id})">View full profile →</button>
     </div>`;
 }
 
@@ -609,8 +854,8 @@ function renderHotelsTable() {
   const tbody = document.getElementById('hotels-tbody');
   tbody.innerHTML = sorted.map(h => {
     const segColor = SEG_COLORS[h.category] || '#6b7280';
-    return `<tr>
-      <td class="hotel-name-cell">${fmt.esc(h.name)}</td>
+    return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
+      <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
       <td><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
       <td>${fmt.esc(h.brand_group)}</td>
@@ -1375,6 +1620,23 @@ document.getElementById('brand-back-btn').addEventListener('click', () => {
   document.getElementById('screen-dashboard').classList.add('active');
   setSidebar('dashboard');
   syncMobileNav('dashboard');
+});
+
+// Hotel detail — back button
+document.getElementById('hotel-back-btn').addEventListener('click', () => {
+  const prev = hotelDetailPrevScreen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l =>
+    l.classList.toggle('active', l.dataset.screen === prev)
+  );
+  const prevScreen = document.getElementById('screen-' + prev);
+  if (prevScreen) prevScreen.classList.add('active');
+  setSidebar(prev);
+  syncMobileNav(prev);
+  if (prev === 'map') {
+    if (!leaflet) initMap();
+    else setTimeout(() => leaflet.map.invalidateSize(), 60);
+  }
 });
 
 // Brand detail — hotel table column sort
