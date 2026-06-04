@@ -443,36 +443,6 @@ function renderBrandHotelsTable() {
   });
 }
 
-// ─── Hotel detail ─────────────────────────────────────────────────
-
-function showHotelDetail(id) {
-  const h = hotels.find(h => +h.id === +id);
-  if (!h) return;
-
-  document.getElementById('hotel-detail-name').textContent = h.name;
-  document.getElementById('hotel-detail-sub').textContent =
-    `${h.brand} · ${h.category} · ${h.city}`;
-
-  const setVal = (elId, val) => {
-    document.getElementById(elId).querySelector('.kpi-value').textContent = val;
-  };
-  setVal('hotel-bkpi-keys',   fmt.num(h.keys));
-  setVal('hotel-bkpi-occ',    fmt.pct(h.occupancy));
-  setVal('hotel-bkpi-adr',    fmt.mad(h.adr_mad));
-  setVal('hotel-bkpi-revpar', fmt.mad(h.revpar_mad));
-  setVal('hotel-bkpi-gop',    fmt.pct(h.gop_margin));
-
-  document.getElementById('hotel-info-brand-group').textContent = h.brand_group || '—';
-  document.getElementById('hotel-info-owner').textContent       = h.owner || '—';
-  document.getElementById('hotel-info-region').textContent      = h.region || '—';
-  document.getElementById('hotel-info-opened').textContent      = h.year_opened || '—';
-
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-hotel-detail').classList.add('active');
-  setSidebar('hotel-detail');
-}
-
 // ─── Map ──────────────────────────────────────────────────────────
 
 function markerRadius(h) {
@@ -482,7 +452,7 @@ function markerRadius(h) {
 function popupHTML(h) {
   return `
     <div class="hiq-popup">
-      <button class="hiq-popup-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button>
+      <div class="hiq-popup-name">${fmt.esc(h.name)}</div>
       <div class="hiq-popup-meta">${fmt.esc(h.brand)} · ${fmt.esc(h.category)} · ${h.year_opened}</div>
       <div class="hiq-popup-grid">
         <div class="hiq-popup-stat">
@@ -502,7 +472,6 @@ function popupHTML(h) {
           <div class="hiq-popup-stat-lbl">RevPAR MAD</div>
         </div>
       </div>
-      <button class="hiq-popup-profile-btn" onclick="showHotelDetail(${h.id})">View full profile →</button>
     </div>`;
 }
 
@@ -1406,22 +1375,6 @@ document.getElementById('brand-back-btn').addEventListener('click', () => {
   document.getElementById('screen-dashboard').classList.add('active');
   setSidebar('dashboard');
   syncMobileNav('dashboard');
-});
-
-// Hotel detail — back to map
-document.getElementById('hotel-detail-back-btn').addEventListener('click', () => {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(l =>
-    l.classList.toggle('active', l.dataset.screen === 'map')
-  );
-  document.getElementById('screen-map').classList.add('active');
-  setSidebar('map');
-  syncMobileNav('map');
-  if (!leaflet) {
-    initMap();
-  } else {
-    setTimeout(() => leaflet.map.invalidateSize(), 60);
-  }
 });
 
 // Brand detail — hotel table column sort
