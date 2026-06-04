@@ -26,11 +26,24 @@
     </nav>
     <div class="navbar-meta">
       <span class="badge">2025 FY · HIQ Estimates</span>
+      <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu" aria-expanded="false">☰</button>
       <button id="theme-toggle" class="theme-toggle" title="Toggle light/dark mode">
         <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
     </div>
   </header>
+
+  <!-- Mobile nav dropdown -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay" role="navigation" aria-label="Mobile navigation">
+    <a href="#" class="nav-link mobile-nav-link active" data-screen="dashboard">Dashboard</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="map">Map</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="pipeline">Pipeline</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="hotels">Hotels</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="benchmarking">Benchmarking</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="tourism">Tourism</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="news">News</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="ai">AI Analyst</a>
+  </div>
 
   <div class="app-body">
 
@@ -68,6 +81,18 @@
         <div class="screen-header">
           <h1>Market Overview</h1>
           <p class="screen-sub" id="dashboard-sub">Morocco branded hotel market · 2025 FY estimates</p>
+        </div>
+
+        <!-- Mobile-only city + segment filter pills (replaces sidebar) -->
+        <div class="mobile-filter-bar" id="mobile-city-pills">
+          <button class="pill active" data-mcity="all">All Morocco</button>
+        </div>
+        <div class="mobile-filter-bar" id="mobile-seg-pills">
+          <button class="pill active" data-mseg="all">All Segments</button>
+          <button class="pill" data-mseg="Luxury">Luxury</button>
+          <button class="pill" data-mseg="Upper Upscale">Upper Upscale</button>
+          <button class="pill" data-mseg="Upscale">Upscale</button>
+          <button class="pill" data-mseg="Midscale">Midscale</button>
         </div>
 
         <div class="kpi-grid">

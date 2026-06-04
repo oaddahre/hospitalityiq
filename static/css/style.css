@@ -1568,6 +1568,232 @@ body {
 }
 .bench-refresh-btn:hover { color: var(--text); border-color: var(--accent); }
 
+/* ─── Hamburger button ───────────────────────── */
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 22px;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.hamburger-btn:hover { background: var(--surface2); }
+body.light .hamburger-btn:hover { background: #F4F3F0; }
+
+/* ─── Mobile nav overlay ──────────────────────── */
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  top: var(--nav-h);
+  left: 0; right: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 190;
+  padding: 8px 12px 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  flex-direction: column;
+  gap: 2px;
+}
+.mobile-nav-overlay.open { display: flex; }
+
+.mobile-nav-link {
+  display: block;
+  padding: 14px 14px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--border2);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  transition: background 0.14s, color 0.14s;
+}
+.mobile-nav-link:last-child { border-bottom: none; }
+.mobile-nav-link:hover  { color: var(--text); background: var(--surface2); }
+.mobile-nav-link.active { color: var(--text); font-weight: 700; background: var(--surface2); }
+
+/* ─── Mobile filter bar ───────────────────────── */
+.mobile-filter-bar {
+  display: none;
+  overflow-x: auto;
+  gap: 6px;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.mobile-filter-bar::-webkit-scrollbar { display: none; }
+.mobile-filter-bar .pill { flex-shrink: 0; }
+
+/* ─── Mobile (< 768px) ───────────────────────── */
+@media (max-width: 767px) {
+
+  /* Layout shell */
+  .app-body { flex-direction: column; overflow-x: hidden; }
+  .main-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100vw;
+    padding: 12px 12px 50px;
+  }
+
+  /* Navbar */
+  .navbar { padding: 0 12px; gap: 8px; overflow: hidden; }
+  .navbar-links { display: none !important; }
+  .badge { display: none; }
+  .hamburger-btn { display: flex; }
+
+  /* Sidebar: always hidden — filter pills replace it */
+  .sidebar { display: none !important; width: 0 !important; min-width: 0 !important; }
+
+  /* Mobile filter bars: show */
+  .mobile-filter-bar { display: flex; }
+
+  /* Screen header */
+  .screen-header h1 { font-size: 17px; }
+  .screen-header { margin-bottom: 12px; }
+  .screen-sub { font-size: 12px; }
+
+  /* KPI grid: 2-col */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .kpi-value { font-size: 20px; }
+  .kpi-card { padding: 10px 10px; }
+
+  /* Brand KPIs: 2-col */
+  .brand-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Charts: single column */
+  .charts-row.tour-2col { grid-template-columns: 1fr; }
+  .chart-wrap { min-height: 220px; }
+  .chart-card { padding: 14px 14px 12px; }
+
+  /* Tables: horizontal scroll container */
+  .table-card { overflow-x: auto; }
+
+  /* Hotels table: hide Brand Group, Keys, Occ, ADR, GOP (keep Name/City/Segment/RevPAR) */
+  #hotels-table th:nth-child(4),
+  #hotels-table th:nth-child(5),
+  #hotels-table th:nth-child(6),
+  #hotels-table th:nth-child(7),
+  #hotels-table th:nth-child(9),
+  #hotels-tbody td:nth-child(4),
+  #hotels-tbody td:nth-child(5),
+  #hotels-tbody td:nth-child(6),
+  #hotels-tbody td:nth-child(7),
+  #hotels-tbody td:nth-child(9) { display: none; }
+
+  /* Hotels search: full width */
+  .search-wrap { max-width: 100%; }
+
+  /* Filter pills: horizontal scroll */
+  .filter-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-pills::-webkit-scrollbar { display: none; }
+
+  /* Map */
+  #map-container { height: 350px !important; min-height: 350px !important; }
+  .map-seg-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .map-seg-bar::-webkit-scrollbar { display: none; }
+  .map-count { display: none; }
+
+  /* Pipeline */
+  .pipe-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .pipe-cards-grid { grid-template-columns: 1fr; }
+  .pipe-filter-bar { flex-wrap: wrap; gap: 6px; }
+  .pipe-status-pills { flex-wrap: wrap; gap: 4px; }
+  #pipeline-map-container { height: 240px; }
+
+  /* Tourism */
+  .catalyst-grid { grid-template-columns: 1fr; gap: 8px; }
+  .events-city-cards { grid-template-columns: 1fr; }
+  .tour-disclaimer { font-size: 10.5px; }
+
+  /* Benchmarking */
+  .bench-controls-row { grid-template-columns: 1fr; }
+  .bench-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .bench-insight-grid { grid-template-columns: 1fr; }
+  .bench-date-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .bench-date-bar::-webkit-scrollbar { display: none; }
+  .bench-cal-day { min-height: 38px; }
+  .bench-cal-dayval { font-size: 10px; }
+  .bench-cal-dow { font-size: 9px; }
+
+  /* AI Chat */
+  .chat-outer { height: calc(100vh - var(--nav-h) - 80px); }
+  .chat-input-bar {
+    position: sticky;
+    bottom: 0;
+    padding: 10px 0 6px;
+    background: var(--bg);
+    z-index: 10;
+  }
+  .chat-msg-user .msg-bubble { max-width: 90%; }
+
+  /* News */
+  .news-feed { max-width: 100%; }
+  .news-card { padding: 16px 16px; }
+  .news-headline { font-size: 15px; }
+  .news-pdf-btn { position: relative; top: auto; right: auto; margin-bottom: 10px; display: inline-flex; }
+
+  /* Brand detail */
+  .brand-top { flex-direction: column; gap: 8px; }
+
+  /* Touch targets: min 44px */
+  .seg-btn,
+  .pill,
+  .back-btn,
+  .chat-chip,
+  .pipe-select,
+  .bench-date-pill { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .seg-btn { padding: 6px 14px; }
+
+  /* Reduce font sizes slightly */
+  body { font-size: 13px; }
+  .data-table { font-size: 12px; }
+  .data-table tbody td { padding: 10px 10px; }
+  .data-table thead th { padding: 8px 10px; }
+}
+
+/* ─── Tablet (768px – 1024px) ─────────────────── */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .main-content { padding: 20px 22px 40px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-value { font-size: 22px; }
+  .charts-row.tour-2col { grid-template-columns: 1fr; }
+  .pipe-cards-grid { grid-template-columns: 1fr; }
+  .bench-controls-row { grid-template-columns: 1fr; }
+  .bench-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .catalyst-grid { grid-template-columns: repeat(2, 1fr); }
+  .brand-kpi-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
 /* ─── Print styles ───────────────────────────── */
 @media print {
   .navbar, .sidebar, .noprint,
