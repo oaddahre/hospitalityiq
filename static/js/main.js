@@ -86,11 +86,11 @@ function applyTheme(mode) {
 
 document.getElementById('theme-toggle').addEventListener('click', () => {
   const next = document.body.classList.contains('light') ? 'dark' : 'light';
-  localStorage.setItem('hiq-theme', next);
+  localStorage.setItem('kodo-theme', next);
   applyTheme(next);
 });
 
-applyTheme(localStorage.getItem('hiq-theme') || 'dark');
+applyTheme(localStorage.getItem('kodo-theme') || 'dark');
 
 // ─── Formatters ───────────────────────────────────────────────────
 
@@ -491,7 +491,7 @@ async function showHotelDetail(id) {
     dqEl.textContent = 'Verified';
     dqEl.className   = 'hotel-dq-badge dq-verified';
   } else {
-    dqEl.textContent = 'HIQ Estimate';
+    dqEl.textContent = 'Kōdō Estimate';
     dqEl.className   = 'hotel-dq-badge dq-estimate';
   }
 
@@ -1679,7 +1679,7 @@ function appendMessage(role, content) {
   if (role === 'assistant' || role === 'error') {
     const label = document.createElement('div');
     label.className = 'msg-label';
-    label.textContent = 'HIQ Analyst';
+    label.textContent = 'Kōdō Analyst';
     wrap.appendChild(label);
   }
 

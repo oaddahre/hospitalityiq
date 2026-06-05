@@ -2117,6 +2117,17 @@ body.light .hamburger-btn:hover { background: #F4F3F0; }
   .brand-kpi-grid { grid-template-columns: repeat(3, 1fr) !important; }
 }
 
+/* ─── Platform footer ────────────────────────── */
+.platform-footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  letter-spacing: 0.2px;
+}
+
 /* ─── Print styles ───────────────────────────── */
 @media print {
   .navbar, .sidebar, .noprint,

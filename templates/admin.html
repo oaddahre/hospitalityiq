@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HIQ Admin — News</title>
+  <title>Kōdō Admin — News</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -167,7 +167,7 @@
 <!-- Admin UI -->
 <div id="admin-ui">
   <header class="admin-header">
-    <div class="admin-title">Hospitality IQ &nbsp;<span>/ Admin / News</span></div>
+    <div class="admin-title">Kōdō &nbsp;<span>/ Admin / News</span></div>
     <button class="logout-btn" onclick="logout()">Sign out</button>
   </header>
 
@@ -208,7 +208,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Author</label>
-          <input type="text" id="f-author" class="form-input" value="HIQ Editorial" />
+          <input type="text" id="f-author" class="form-input" value="Kōdō Editorial" />
         </div>
         <div class="form-group">
           <label class="form-label">Date</label>
@@ -337,7 +337,7 @@
     const res = await fetch('/admin/news', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
-      body: JSON.stringify({ headline: '__test__', published: false, date: getToday(), category: 'Market', author: 'HIQ Editorial', summary: '', body: '' }),
+      body: JSON.stringify({ headline: '__test__', published: false, date: getToday(), category: 'Market', author: 'Kōdō Editorial', summary: '', body: '' }),
     });
     if (res.status === 401) {
       document.getElementById('auth-error').style.display = 'block';
@@ -414,7 +414,7 @@
       document.getElementById('f-summary').value = '';
       document.getElementById('f-body').value = '';
       document.getElementById('f-category').value = 'Market';
-      document.getElementById('f-author').value = 'HIQ Editorial';
+      document.getElementById('f-author').value = 'Kōdō Editorial';
       document.getElementById('f-date').value = getToday();
       document.getElementById('f-published').checked = false;
     } else {
@@ -444,7 +444,7 @@
       summary:   document.getElementById('f-summary').value.trim(),
       body:      document.getElementById('f-body').value.trim(),
       category:  document.getElementById('f-category').value,
-      author:    document.getElementById('f-author').value.trim() || 'HIQ Editorial',
+      author:    document.getElementById('f-author').value.trim() || 'Kōdō Editorial',
       date:      document.getElementById('f-date').value,
       published: document.getElementById('f-published').checked,
     };

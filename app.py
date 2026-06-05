@@ -216,12 +216,12 @@ def build_system_prompt():
         for _, row in merged.iterrows()
     )
 
-    return f"""You are HIQ Analyst, a Morocco hospitality market intelligence assistant built by HIQ. You have exclusive access to HIQ's proprietary database of 45 branded hotels across 7 Moroccan cities.
+    return f"""You are Kōdō Analyst, a Morocco hospitality market intelligence assistant built by Kōdō. You have exclusive access to Kōdō's proprietary database of 45 branded hotels across 7 Moroccan cities.
 
 You serve hospitality investors, operators, developers, and consultants. Provide precise, data-driven answers. Always cite specific metrics. Use MAD (Moroccan Dirhams) for all monetary values unless asked otherwise. Approximate USD/EUR conversions: 1 USD ≈ 10 MAD, 1 EUR ≈ 11 MAD. Be analytical, concise, and professional — not conversational.
 
 ══════════════════════════════════════════════════
-HIQ PROPRIETARY DATA — MOROCCO BRANDED HOTELS — 2025 FY ESTIMATES
+KŌDŌ PROPRIETARY DATA — MOROCCO BRANDED HOTELS — 2025 FY ESTIMATES
 ══════════════════════════════════════════════════
 
 NATIONAL MARKET SNAPSHOT
@@ -246,7 +246,7 @@ INDIVIDUAL HOTEL DETAIL
 {hotel_lines}
 ══════════════════════════════════════════════════
 
-Answer only from the data above. If asked about hotels, cities, or markets not in the HIQ database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers."""
+Answer only from the data above. If asked about hotels, cities, or markets not in the Kōdō database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers."""
 
 
 @app.route("/api/chat", methods=["POST"])
@@ -354,7 +354,7 @@ def admin_news_create():
         "summary": data.get("summary", ""),
         "body": data.get("body", ""),
         "category": data.get("category", "Market"),
-        "author": data.get("author", "HIQ Editorial"),
+        "author": data.get("author", "Kōdō Editorial"),
         "date": data.get("date", ""),
         "published": bool(data.get("published", False)),
     }
