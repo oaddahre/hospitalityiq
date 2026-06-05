@@ -17,6 +17,7 @@ NEWS_FILE            = os.path.join(DATA_DIR, "news.json")
 BENCH_FILE           = os.path.join(DATA_DIR, "demo_benchmarking.json")
 DAILY_PERF_FILE      = os.path.join(DATA_DIR, "daily_performance.csv")
 UPLOAD_LOG_FILE      = os.path.join(DATA_DIR, "upload_log.json")
+CONTACT_FILE         = os.path.join(DATA_DIR, "contact_submissions.json")
 
 
 def load_news():
@@ -29,6 +30,18 @@ def load_news():
 def save_news(articles):
     with open(NEWS_FILE, "w", encoding="utf-8") as f:
         json.dump(articles, f, indent=2, ensure_ascii=False)
+
+
+def load_contacts():
+    if not os.path.exists(CONTACT_FILE):
+        return []
+    with open(CONTACT_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_contacts(contacts):
+    with open(CONTACT_FILE, "w", encoding="utf-8") as f:
+        json.dump(contacts, f, indent=2, ensure_ascii=False)
 
 
 def admin_ok():
@@ -44,8 +57,38 @@ def load_data():
 
 
 @app.route("/")
+def landing():
+    return render_template("landing.html")
+
+
+@app.route("/dashboard")
 def index():
     return render_template("index.html")
+
+
+@app.route("/team")
+def team():
+    return render_template("team.html")
+
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        contacts = load_contacts()
+        submission = {
+            "id": len(contacts) + 1,
+            "name": data.get("name", ""),
+            "email": data.get("email", ""),
+            "organisation": data.get("organisation", ""),
+            "role": data.get("role", ""),
+            "message": data.get("message", ""),
+            "submitted_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        }
+        contacts.insert(0, submission)
+        save_contacts(contacts)
+        return jsonify({"ok": True}), 201
+    return render_template("contact.html")
 
 
 @app.route("/api/data")
