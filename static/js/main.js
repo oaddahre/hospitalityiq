@@ -851,6 +851,10 @@ function renderHotelsTable() {
   const sorted   = sortHotels(filtered);
   const total    = hotels.length;
 
+  const filteredCities = new Set(filtered.map(h => h.city)).size;
+  document.getElementById('hotels-sub').textContent =
+    `${filtered.length} hotel${filtered.length !== 1 ? 's' : ''} · ${filteredCities} ${filteredCities !== 1 ? 'cities' : 'city'} · All performance: Kōdō estimates 2025`;
+
   const tbody = document.getElementById('hotels-tbody');
   tbody.innerHTML = sorted.map(h => {
     const segColor = SEG_COLORS[h.category] || '#6b7280';
