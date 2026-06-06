@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Your Subscription — Kōdō</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F4F3F0;
+      color: #111110;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-bar__logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: #111110;
+    }
+    .logo-mark {
+      width: 30px;
+      height: 30px;
+      background: #0A4A5A;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.01em;
+    }
+
+    .main-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #D4D0C8;
+      width: 100%;
+      max-width: 480px;
+      padding: 48px 40px;
+      text-align: center;
+    }
+
+    /* ── Check icon ── */
+    .check-icon {
+      width: 52px;
+      height: 52px;
+      background: #F0FAF7;
+      border: 1px solid #C6E8DF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 22px;
+      color: #0A7A58;
+    }
+
+    .eyebrow {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #0A4A5A;
+      margin-bottom: 10px;
+    }
+    .heading {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #111110;
+      margin-bottom: 12px;
+    }
+    .body-text {
+      font-size: 0.9375rem;
+      color: #6B6860;
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+
+    /* ── Features list ── */
+    .features {
+      list-style: none;
+      text-align: left;
+      background: #F9F8F5;
+      border: 1px solid #E2E0DA;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    .features li {
+      font-size: 0.875rem;
+      color: #444340;
+      padding: 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .features li::before {
+      content: "✓";
+      color: #0A4A5A;
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    /* ── Coming soon box ── */
+    .coming-soon {
+      background: #0A4A5A;
+      color: #FFFFFF;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .coming-soon__label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.625rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7EC8D8;
+      margin-bottom: 6px;
+    }
+    .coming-soon__title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .coming-soon__text {
+      font-size: 0.8125rem;
+      color: #A8C8D0;
+      line-height: 1.5;
+    }
+
+    .btn-disabled {
+      width: 100%;
+      padding: 12px;
+      background: #C8D0C8;
+      color: #FFFFFF;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: none;
+      cursor: not-allowed;
+      margin-bottom: 10px;
+    }
+
+    .help-text {
+      font-size: 0.8125rem;
+      color: #6B6860;
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+    .help-text a {
+      color: #0A4A5A;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .help-text a:hover { text-decoration: underline; }
+
+    .auth-note {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.75rem;
+      color: #A8A49C;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/" class="top-bar__logo">
+    <div class="logo-mark">K</div>
+    <span class="logo-text">Kōdō</span>
+  </a>
+</div>
+
+<div class="main-wrap">
+  <div class="card">
+    <div class="check-icon">✓</div>
+    <p class="eyebrow">Account Created</p>
+    <h1 class="heading">Almost there.</h1>
+    <p class="body-text">
+      Your Kōdō Observer account has been created. Complete your subscription to activate platform access.
+    </p>
+
+    <ul class="features">
+      <li>45 branded hotels tracked across 7 Moroccan cities</li>
+      <li>National KPIs, city and segment breakdowns</li>
+      <li>Full hotel directory with performance data</li>
+      <li>Morocco hospitality market news</li>
+      <li>10 AI Analyst queries per month</li>
+    </ul>
+
+    <div class="coming-soon">
+      <p class="coming-soon__label">Stripe Payment · Coming Soon</p>
+      <p class="coming-soon__title">Set up payment → MAD 990/month</p>
+      <p class="coming-soon__text">Secure card billing via Stripe is being integrated. In the meantime, contact us to activate your account manually.</p>
+    </div>
+
+    <button class="btn-disabled" disabled>Set up payment (coming soon)</button>
+
+    <p class="help-text">
+      To activate your account now, email us at <a href="mailto:hello@kodo.ma">hello@kodo.ma</a> with your registration email. We'll activate your account within one business day.<br><br>
+      Already have an account? <a href="/login">Sign in →</a>
+    </p>
+  </div>
+</div>
+
+<p class="auth-note">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</p>
+
+</body>
+</html>

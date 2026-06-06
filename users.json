@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "id": "09aecfc0-f165-479d-bb19-d974bf344541",
+      "email": "oaddahre@outlook.com",
+      "password_hash": "scrypt:32768:8:1$7bbnJccTNzQ0pjY6$e60dfc3fc1a10c265b6686e9edcbe39b7c6c8a9a6091730acae073f9316167c9771f6ad6f3715439e05212384c7fc271974d5b8373fac3c35765ce92fa4984e7",
+      "name": "Othmane Addahre",
+      "organisation": "Kōdō Hospitality",
+      "tier": "advisory",
+      "status": "active",
+      "created_at": "2026-01-01",
+      "approved_at": "2026-01-01",
+      "invited_by": "admin",
+      "ai_queries_used": 0,
+      "ai_queries_reset": "2026-01"
+    }
+  ]
+}

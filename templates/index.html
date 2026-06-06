@@ -30,6 +30,8 @@
     </nav>
     <div class="navbar-meta">
       <span class="badge">2025 FY · Kōdō Estimates</span>
+      <span class="tier-badge" id="tier-badge" style="display:none"></span>
+      <a href="/logout" class="nav-logout" title="Sign out">↩</a>
       <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu" aria-expanded="false">☰</button>
       <button id="theme-toggle" class="theme-toggle" title="Toggle light/dark mode">
         <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -942,5 +944,43 @@
   <script src="/static/js/main.js"></script>
 
   <footer class="platform-footer">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</footer>
+
+  <!-- Upgrade modal -->
+  <div id="upgrade-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;padding:20px">
+    <div id="upgrade-card" style="background:var(--surface);border:1px solid var(--border);max-width:420px;width:100%;padding:36px;position:relative">
+      <button onclick="closeUpgradeModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);line-height:1">×</button>
+      <p style="font-family:'Syne',sans-serif;font-size:0.6875rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px">Upgrade Required</p>
+      <h2 id="upgrade-title" style="font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;letter-spacing:-0.01em;margin-bottom:10px">This feature requires Benchmarker</h2>
+      <p id="upgrade-body" style="font-size:0.875rem;color:var(--muted);line-height:1.6;margin-bottom:20px">Upgrade to unlock pipeline data, benchmarking comparisons, and hotel financial details.</p>
+      <div style="background:var(--surface2,#f4f3f0);border:1px solid var(--border);padding:16px;margin-bottom:20px">
+        <p style="font-family:'Syne',sans-serif;font-size:0.6875rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Benchmarker includes</p>
+        <ul style="list-style:none;font-size:0.8125rem;color:var(--muted);line-height:1.9">
+          <li>✓ &nbsp;Development pipeline — 50+ projects</li>
+          <li>✓ &nbsp;Benchmarking comparisons and trend data</li>
+          <li>✓ &nbsp;Hotel-level financial details (ADR, GOP, TRevPAR)</li>
+          <li>✓ &nbsp;Unlimited AI Analyst queries</li>
+        </ul>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="/#pricing" style="flex:1;display:block;padding:11px;background:var(--accent,#0A4A5A);color:#fff;text-align:center;font-family:'Syne',sans-serif;font-size:0.8125rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;text-decoration:none">Upgrade now →</a>
+        <button onclick="closeUpgradeModal()" style="flex:0 0 auto;padding:11px 18px;background:none;border:1px solid var(--border);font-family:'Syne',sans-serif;font-size:0.8125rem;color:var(--muted);cursor:pointer">Maybe later</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  function showUpgradeModal(title, body) {
+    if (title) document.getElementById('upgrade-title').textContent = title;
+    if (body)  document.getElementById('upgrade-body').textContent  = body;
+    const m = document.getElementById('upgrade-modal');
+    m.style.display = 'flex';
+  }
+  function closeUpgradeModal() {
+    document.getElementById('upgrade-modal').style.display = 'none';
+  }
+  document.getElementById('upgrade-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeUpgradeModal();
+  });
+  </script>
 </body>
 </html>

@@ -2140,3 +2140,33 @@ body.light .bench-ai-commentary { background: #E8F4F6; border-color: rgba(10,74,
   .news-cat { border: 1px solid #999 !important; color: #333 !important; background: #f5f5f5 !important; }
   .news-read-btn { display: none !important; }
 }
+
+/* ── Tier badge ── */
+.tier-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.tier-badge--observer    { background: rgba(136,133,128,0.15); color: #888580; border: 1px solid rgba(136,133,128,0.3); }
+.tier-badge--benchmarker { background: rgba(10,74,90,0.12);   color: #0A4A5A; border: 1px solid rgba(10,74,90,0.25); }
+.tier-badge--advisory    { background: rgba(184,134,11,0.12);  color: #8A6800; border: 1px solid rgba(184,134,11,0.3); }
+body.light .tier-badge--observer    { color: #666360; }
+body.light .tier-badge--benchmarker { color: #0A4A5A; }
+body.light .tier-badge--advisory    { color: #7A5800; }
+
+/* ── Nav logout ── */
+.nav-logout {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.nav-logout:hover { color: var(--text); background: var(--surface2); }

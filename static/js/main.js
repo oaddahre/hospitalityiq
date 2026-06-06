@@ -1256,6 +1256,14 @@ async function initPipeline() {
   pipelineInited = true;
 
   const res = await fetch('/api/pipeline');
+  if (res.status === 403) {
+    const err = await res.json().catch(() => ({}));
+    if (err.error === 'upgrade_required') {
+      pipelineInited = false;
+      if (typeof showUpgradeModal === 'function') showUpgradeModal('Pipeline requires Benchmarker', err.message);
+      return;
+    }
+  }
   pipelineData = await res.json();
 
   // Populate filter dropdowns
@@ -1806,7 +1814,9 @@ async function sendChat(text) {
     });
     const data = await res.json();
 
-    if (data.error) {
+    if (res.status === 403 && data.error === 'upgrade_required') {
+      if (typeof showUpgradeModal === 'function') showUpgradeModal('AI Analyst limit reached', data.message);
+    } else if (data.error) {
       appendMessage('error', data.error);
     } else {
       chatHistory.push({ role: 'assistant', content: data.response });
@@ -1929,6 +1939,14 @@ async function initBenchmarking() {
   if (benchmarkInited) return;
   benchmarkInited = true;
   const res = await fetch('/api/benchmarking');
+  if (res.status === 403) {
+    const err = await res.json().catch(() => ({}));
+    if (err.error === 'upgrade_required') {
+      benchmarkInited = false;
+      if (typeof showUpgradeModal === 'function') showUpgradeModal('Benchmarking requires Benchmarker', err.message);
+      return;
+    }
+  }
   benchmarkData = await res.json();
   renderBenchPropertySelector();
   renderBenchCompSetBuilder();
@@ -2577,5 +2595,17 @@ async function boot() {
   buildMobileCityPills();
   render();
 }
+
+// Fetch current user info and populate tier badge
+fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
+  if (!me) return;
+  const badge = document.getElementById('tier-badge');
+  if (!badge) return;
+  const label = { observer: 'Observer', benchmarker: 'Benchmarker', advisory: 'Advisory' }[me.tier] || me.tier;
+  badge.textContent = label;
+  badge.className = `tier-badge tier-badge--${me.tier}`;
+  badge.style.display = '';
+  window._kodoUser = me;
+});
 
 boot();
