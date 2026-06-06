@@ -82,6 +82,7 @@ function applyTheme(mode) {
     icon.innerHTML = ICON_MOON;
   }
   swapMapTiles(mode);
+  redrawChartsForTheme();
 }
 
 document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -200,7 +201,21 @@ function renderKPIs() {
 
 // ─── Charts ───────────────────────────────────────────────────────
 
+function getChartColors() {
+  const dark = !document.body.classList.contains('light');
+  return {
+    tick:       dark ? '#6A7A88' : '#888580',
+    label:      dark ? '#C8D0D8' : '#111111',
+    catLabel:   dark ? '#C8D0D8' : '#111111',
+    tooltipBg:  dark ? '#1A2430' : '#FFFFFF',
+    tooltipBdr: dark ? '#1E2D3A' : '#E2E0DA',
+    tooltipTtl: dark ? '#E8EAE8' : '#111111',
+    tooltipBdy: dark ? '#6A7A88' : '#888580',
+  };
+}
+
 function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
+  const cc = getChartColors();
   return {
     type: 'bar',
     data: {
@@ -221,11 +236,11 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#FFFFFF',
-          borderColor: '#E2E0DA',
+          backgroundColor: cc.tooltipBg,
+          borderColor: cc.tooltipBdr,
           borderWidth: 1,
-          titleColor: '#111111',
-          bodyColor: '#888580',
+          titleColor: cc.tooltipTtl,
+          bodyColor: cc.tooltipBdy,
           padding: { top: 8, bottom: 8, left: 12, right: 12 },
           callbacks: {
             label: ctx => '  ' + Math.round(ctx.raw).toLocaleString('en') + tooltipSuffix,
@@ -235,7 +250,7 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
           anchor: 'end',
           align: 'right',
           clip: false,
-          color: '#111111',
+          color: cc.label,
           font: { size: 11, weight: '600' },
           padding: { left: 5 },
           formatter: labelFmt,
@@ -244,10 +259,10 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
       scales: {
         x: {
           min: 0,
-          ticks: { color: CHART_TICK, font: { size: 11 } }
+          ticks: { color: cc.tick, font: { size: 11 } }
         },
         y: {
-          ticks: { color: '#111111', font: { size: 12, weight: '500' } }
+          ticks: { color: cc.catLabel, font: { size: 12, weight: '500' } }
         }
       }
     }
@@ -889,6 +904,58 @@ function render() {
   }
 }
 
+// ─── Redraw all charts on theme change ────────────────────────────
+
+function redrawChartsForTheme() {
+  // Dashboard bar charts
+  if (revChart) { revChart.destroy(); revChart = null; }
+  if (occChart)  { occChart.destroy();  occChart = null; }
+  if (hotels) renderCharts();
+
+  // Pipeline charts
+  if (pipelineChartProj) { pipelineChartProj.destroy(); pipelineChartProj = null; }
+  if (pipelineChartCity) { pipelineChartCity.destroy(); pipelineChartCity = null; }
+  if (pipelineInited && pipelineData) renderPipelineCharts();
+
+  // Tourism charts — destroy and reset flag; reinit if screen is active
+  if (tourismInited) {
+    ['chart-tour-arrivals','chart-tour-transport','chart-tour-origins',
+     'chart-tour-nights','chart-tour-airports','chart-tour-revenue','chart-tour-season',
+    ].forEach(id => { const c = Chart.getChart(id); if (c) c.destroy(); });
+    tourismInited = false;
+    if (document.getElementById('screen-tourism').classList.contains('active')) {
+      initTourismCharts();
+    }
+  }
+
+  // Benchmarking trend + DOW charts
+  if (benchTrendRevpar) { benchTrendRevpar.destroy(); benchTrendRevpar = null; }
+  if (benchTrendOcc)    { benchTrendOcc.destroy();    benchTrendOcc    = null; }
+  if (benchDOWChart)    { benchDOWChart.destroy();     benchDOWChart    = null; }
+  if (benchmarkInited && benchmarkData) { renderBenchTrends(); renderBenchDOW(); }
+
+  // Brand detail chart — recreate if screen is currently visible
+  if (brandChart) { brandChart.destroy(); brandChart = null; }
+  if (document.getElementById('screen-brand').classList.contains('active') && brandHotelsData.length) {
+    const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
+    const labels = cityData.map(c => c.city);
+    const values = cityData.map(c => c.revpar_mad);
+    document.getElementById('brand-chart-wrap').style.height = Math.max(240, labels.length * 38 + 50) + 'px';
+    brandChart = new Chart(
+      document.getElementById('chart-brand-revpar'),
+      chartConfig(labels, values, ' MAD', labels.map(() => CHART_ACCENT), v => Math.round(v).toLocaleString('en'))
+    );
+  }
+
+  // Hotel city chart — recreate if screen is currently visible
+  if (hotelCityChart) { hotelCityChart.destroy(); hotelCityChart = null; }
+  if (document.getElementById('screen-hotel').classList.contains('active') && hotels) {
+    const name = document.getElementById('hotel-hd-name').textContent;
+    const h = hotels.find(x => x.name === name);
+    if (h) renderHotelCityChart(h);
+  }
+}
+
 // ─── Tourism screen ───────────────────────────────────────────────
 
 const TOUR_EVENTS = [
@@ -1025,6 +1092,7 @@ function initTourismCharts() {
 
   // ── Helper for vertical bar charts ──────────────────────────────
   function vBar(labels, values, bgColors, lblFmt, tipFmt) {
+    const cc = getChartColors();
     return {
       type: 'bar',
       data: { labels, datasets: [{ data: values, backgroundColor: bgColors, borderRadius: 4, borderSkipped: false }] },
@@ -1034,20 +1102,20 @@ function initTourismCharts() {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#FFFFFF', borderColor: '#E2E0DA', borderWidth: 1,
-            titleColor: '#111111', bodyColor: '#888580',
+            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
+            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
             padding: { top: 8, bottom: 8, left: 12, right: 12 },
             callbacks: { label: ctx => '  ' + tipFmt(ctx.raw) },
           },
           datalabels: {
             anchor: 'end', align: 'top', clip: false,
-            color: '#111111', font: { size: 11, weight: '600' },
+            color: cc.label, font: { size: 11, weight: '600' },
             padding: { bottom: 2 }, formatter: lblFmt,
           },
         },
         scales: {
-          x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
-          y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+          x: { ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
     };
@@ -1063,34 +1131,37 @@ function initTourismCharts() {
 
   // 2. Arrivals by Mode of Transport (grouped)
   setH('twrap-transport', 290);
-  new Chart(document.getElementById('chart-tour-transport'), {
-    type: 'bar',
-    data: {
-      labels: ['2022','2023','2024','2025','2026E'],
-      datasets: [
-        { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: CHART_ACCENT, borderRadius: 3, borderSkipped: false },
-        { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: '#1A6B3C',    borderRadius: 3, borderSkipped: false },
-        { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: FC,            borderRadius: 3, borderSkipped: false },
-      ],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
-      layout: { padding: { top: 12 } },
-      plugins: {
-        legend: { display: true, labels: { color: CHART_TICK, font: { size: 11 }, boxWidth: 10, padding: 14 } },
-        datalabels: { display: false },
-        tooltip: {
-          backgroundColor: '#FFFFFF', borderColor: '#E2E0DA', borderWidth: 1,
-          titleColor: '#111111', bodyColor: '#888580',
-          callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}M` },
+  {
+    const cc = getChartColors();
+    new Chart(document.getElementById('chart-tour-transport'), {
+      type: 'bar',
+      data: {
+        labels: ['2022','2023','2024','2025','2026E'],
+        datasets: [
+          { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: CHART_ACCENT, borderRadius: 3, borderSkipped: false },
+          { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: '#1A6B3C',    borderRadius: 3, borderSkipped: false },
+          { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: FC,            borderRadius: 3, borderSkipped: false },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+        layout: { padding: { top: 12 } },
+        plugins: {
+          legend: { display: true, labels: { color: cc.tick, font: { size: 11 }, boxWidth: 10, padding: 14 } },
+          datalabels: { display: false },
+          tooltip: {
+            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
+            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
+            callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}M` },
+          },
+        },
+        scales: {
+          x: { ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
-      scales: {
-        x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
-        y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
-      },
-    },
-  });
+    });
+  }
 
   // 3. Origin Markets (horizontal, with year tabs)
   const origLbls = TOUR_ORIGINS_DATA.labels;
@@ -1129,41 +1200,44 @@ function initTourismCharts() {
 
   // 7. Seasonality Index (line)
   setH('twrap-season', 220);
-  new Chart(document.getElementById('chart-tour-season'), {
-    type: 'line',
-    data: {
-      labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-      datasets: [{
-        data: [55, 58, 72, 88, 95, 92, 100, 98, 82, 75, 60, 58],
-        borderColor: CHART_ACCENT,
-        backgroundColor: 'rgba(10,74,90,0.08)',
-        fill: false, tension: 0.4,
-        pointRadius: 4, pointBackgroundColor: CHART_ACCENT,
-        pointBorderColor: '#F4F3F0', pointBorderWidth: 2,
-      }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
-      layout: { padding: { top: 20 } },
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          anchor: 'top', align: 'top', clip: false,
-          color: '#111111', font: { size: 10, weight: '600' },
-          formatter: v => v,
+  {
+    const cc = getChartColors();
+    new Chart(document.getElementById('chart-tour-season'), {
+      type: 'line',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        datasets: [{
+          data: [55, 58, 72, 88, 95, 92, 100, 98, 82, 75, 60, 58],
+          borderColor: CHART_ACCENT,
+          backgroundColor: 'rgba(10,74,90,0.08)',
+          fill: false, tension: 0.4,
+          pointRadius: 4, pointBackgroundColor: CHART_ACCENT,
+          pointBorderColor: '#F4F3F0', pointBorderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+        layout: { padding: { top: 20 } },
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            anchor: 'top', align: 'top', clip: false,
+            color: cc.label, font: { size: 10, weight: '600' },
+            formatter: v => v,
+          },
+          tooltip: {
+            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
+            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
+            callbacks: { label: ctx => '  Index: ' + ctx.raw },
+          },
         },
-        tooltip: {
-          backgroundColor: '#FFFFFF', borderColor: '#E2E0DA', borderWidth: 1,
-          titleColor: '#111111', bodyColor: '#888580',
-          callbacks: { label: ctx => '  Index: ' + ctx.raw },
+        scales: {
+          x: { ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { min: 0, max: 115, ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
-      scales: {
-        x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
-        y: { min: 0, max: 115, ticks: { color: CHART_TICK, font: { size: 11 } } },
-      },
-    },
-  });
+    });
+  }
 
   renderTourismEvents();
   tourismInited = true;
@@ -2200,6 +2274,7 @@ function renderBenchTrends() {
   const dense = labels.length > 50;
 
   function mkTrend(myData, compData, suffix) {
+    const cc = getChartColors();
     return {
       type: 'line',
       data: {
@@ -2216,18 +2291,18 @@ function renderBenchTrends() {
         responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
         layout: { padding: { top: 14 } },
         plugins: {
-          legend: { display: true, labels: { color: CHART_TICK, font: { size: 11 }, boxWidth: 22, padding: 14 } },
+          legend: { display: true, labels: { color: cc.tick, font: { size: 11 }, boxWidth: 22, padding: 14 } },
           datalabels: { display: false },
           tooltip: {
-            backgroundColor: '#FFFFFF', borderColor: '#E2E0DA', borderWidth: 1,
-            titleColor: '#111111', bodyColor: '#888580',
+            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
+            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
             mode: 'index', intersect: false,
             callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}${suffix}` },
           },
         },
         scales: {
-          x: { ticks: { color: CHART_TICK, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
-          y: { ticks: { color: CHART_TICK, font: { size: 11 } } },
+          x: { ticks: { color: cc.tick, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
+          y: { ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
     };
@@ -2268,33 +2343,36 @@ function renderBenchDOW() {
   dWrap.style.minHeight = '0'; dWrap.style.height = '230px';
   if (benchDOWChart) { benchDOWChart.destroy(); benchDOWChart = null; }
 
-  benchDOWChart = new Chart(document.getElementById('bench-dow-chart'), {
-    type: 'bar',
-    data: {
-      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-      datasets: [
-        { label: 'My Property', data: myDOW.map(avg), backgroundColor: CHART_ACCENT, borderRadius: 4, borderSkipped: false },
-        { label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(184,146,42,0.35)', borderRadius: 4, borderSkipped: false },
-      ],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
-      layout: { padding: { top: 14 } },
-      plugins: {
-        legend: { display: true, labels: { color: CHART_TICK, font: { size: 11 }, boxWidth: 10, padding: 14 } },
-        datalabels: { display: false },
-        tooltip: {
-          backgroundColor: '#FFFFFF', borderColor: '#E2E0DA', borderWidth: 1,
-          titleColor: '#111111', bodyColor: '#888580',
-          callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}%` },
+  {
+    const cc = getChartColors();
+    benchDOWChart = new Chart(document.getElementById('bench-dow-chart'), {
+      type: 'bar',
+      data: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [
+          { label: 'My Property', data: myDOW.map(avg), backgroundColor: CHART_ACCENT, borderRadius: 4, borderSkipped: false },
+          { label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(184,146,42,0.35)', borderRadius: 4, borderSkipped: false },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+        layout: { padding: { top: 14 } },
+        plugins: {
+          legend: { display: true, labels: { color: cc.tick, font: { size: 11 }, boxWidth: 10, padding: 14 } },
+          datalabels: { display: false },
+          tooltip: {
+            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
+            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
+            callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}%` },
+          },
+        },
+        scales: {
+          x: { ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { suggestedMin: 0, suggestedMax: 100, ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
-      scales: {
-        x: { ticks: { color: CHART_TICK, font: { size: 11 } } },
-        y: { suggestedMin: 0, suggestedMax: 100, ticks: { color: CHART_TICK, font: { size: 11 } } },
-      },
-    },
-  });
+    });
+  }
 }
 
 // ── Monthly summary table ─────────────────────────────────────────
