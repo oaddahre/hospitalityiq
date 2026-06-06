@@ -82,13 +82,13 @@ function applyTheme(mode) {
     icon.innerHTML = ICON_MOON;
   }
   swapMapTiles(mode);
-  redrawChartsForTheme();
 }
 
 document.getElementById('theme-toggle').addEventListener('click', () => {
   const next = document.body.classList.contains('light') ? 'dark' : 'light';
   localStorage.setItem('kodo-theme', next);
   applyTheme(next);
+  redrawChartsForTheme();
 });
 
 applyTheme(localStorage.getItem('kodo-theme') || 'light');
@@ -923,7 +923,8 @@ function redrawChartsForTheme() {
      'chart-tour-nights','chart-tour-airports','chart-tour-revenue','chart-tour-season',
     ].forEach(id => { const c = Chart.getChart(id); if (c) c.destroy(); });
     tourismInited = false;
-    if (document.getElementById('screen-tourism').classList.contains('active')) {
+    const tourismEl = document.getElementById('screen-tourism');
+    if (tourismEl && tourismEl.classList.contains('active')) {
       initTourismCharts();
     }
   }
@@ -936,7 +937,8 @@ function redrawChartsForTheme() {
 
   // Brand detail chart — recreate if screen is currently visible
   if (brandChart) { brandChart.destroy(); brandChart = null; }
-  if (document.getElementById('screen-brand').classList.contains('active') && brandHotelsData.length) {
+  const brandScreen = document.getElementById('screen-brand');
+  if (brandScreen && brandScreen.classList.contains('active') && brandHotelsData.length) {
     const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
     const labels = cityData.map(c => c.city);
     const values = cityData.map(c => c.revpar_mad);
@@ -949,9 +951,10 @@ function redrawChartsForTheme() {
 
   // Hotel city chart — recreate if screen is currently visible
   if (hotelCityChart) { hotelCityChart.destroy(); hotelCityChart = null; }
-  if (document.getElementById('screen-hotel').classList.contains('active') && hotels) {
-    const name = document.getElementById('hotel-hd-name').textContent;
-    const h = hotels.find(x => x.name === name);
+  const hotelScreen = document.getElementById('screen-hotel');
+  if (hotelScreen && hotelScreen.classList.contains('active') && hotels) {
+    const nameEl = document.getElementById('hotel-hd-name');
+    const h = nameEl && hotels.find(x => x.name === nameEl.textContent);
     if (h) renderHotelCityChart(h);
   }
 }
