@@ -285,22 +285,30 @@ def register_page():
         elif find_user_by_email(email):
             error = "An account with this email already exists."
         else:
-            db = load_users_db()
-            db["users"].append({
+            reg_tier = request.form.get("tier", "observer")
+            if reg_tier not in ("observer", "benchmarker"):
+                reg_tier = "observer"
+            is_observer = reg_tier == "observer"
+            new_user_data = {
                 "id":               str(uuid.uuid4()),
                 "email":            email,
                 "password_hash":    generate_password_hash(password),
                 "name":             name,
                 "organisation":     org,
-                "tier":             "observer",
-                "status":           "pending_payment",
+                "tier":             reg_tier,
+                "status":           "active" if is_observer else "pending_approval",
                 "created_at":       datetime.utcnow().strftime("%Y-%m-%d"),
-                "approved_at":      None,
+                "approved_at":      datetime.utcnow().strftime("%Y-%m-%d") if is_observer else None,
                 "invited_by":       "self",
                 "ai_queries_used":  0,
                 "ai_queries_reset": datetime.utcnow().strftime("%Y-%m"),
-            })
+            }
+            db = load_users_db()
+            db["users"].append(new_user_data)
             save_users_db(db)
+            if is_observer:
+                login_user(User(new_user_data), remember=True)
+                return redirect(url_for("index"))
             return redirect(url_for("payment_pending"))
 
     return render_template("register.html", error=error)
@@ -743,10 +751,8 @@ def admin_users_list():
     if not admin_ok():
         return jsonify({"error": "Unauthorized"}), 401
     db = load_users_db()
-    # Strip password hashes before returning
-    safe = []
-    for u in db["users"]:
-        safe.append({k: v for k, v in u.items() if k != "password_hash"})
+    safe = [{k: v for k, v in u.items() if k != "password_hash"} for u in db["users"]]
+    safe.sort(key=lambda u: u.get("created_at") or "", reverse=True)
     return jsonify(safe)
 
 
@@ -801,12 +807,27 @@ def admin_users_update(uid):
         if u["id"] == uid:
             if "tier" in data and data["tier"] in TIER_ORDER:
                 u["tier"] = data["tier"]
-            if "status" in data and data["status"] in ("active", "suspended", "pending_payment", "pending"):
+            if "status" in data and data["status"] in ("active", "suspended", "pending_payment", "pending", "pending_approval", "rejected"):
                 u["status"] = data["status"]
                 if data["status"] == "active" and not u.get("approved_at"):
                     u["approved_at"] = datetime.utcnow().strftime("%Y-%m-%d")
             save_users_db(db)
             return jsonify({k: v for k, v in u.items() if k != "password_hash"})
+    return jsonify({"error": "Not found"}), 404
+
+
+@app.route("/admin/users/<uid>/reset-password", methods=["POST"])
+def admin_users_reset_password(uid):
+    if not admin_ok():
+        return jsonify({"error": "Unauthorized"}), 401
+    db = load_users_db()
+    for u in db["users"]:
+        if u["id"] == uid:
+            temp_password = f"Kodo{uuid.uuid4().hex[:8]}!"
+            u["password_hash"] = generate_password_hash(temp_password)
+            save_users_db(db)
+            print(f"[ADMIN] Password reset for {u['email']}")
+            return jsonify({"temp_password": temp_password})
     return jsonify({"error": "Not found"}), 404
 
 

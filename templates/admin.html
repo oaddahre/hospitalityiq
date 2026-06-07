@@ -148,6 +148,69 @@
 
     /* ── Table container ── */
     .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+
+    /* ── User stats bar ── */
+    .user-stats { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+    .user-stat { flex: 1; padding: 12px 14px; background: var(--surface); border-right: 1px solid var(--border); text-align: center; min-width: 0; }
+    .user-stat:last-child { border-right: none; }
+    .user-stat__val { display: block; font-size: 20px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .user-stat__label { display: block; font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .c-green  { color: var(--green);  }
+    .c-amber  { color: var(--amber);  }
+    .c-accent { color: var(--accent); }
+    .c-gold   { color: #f59e0b; }
+    .c-red    { color: var(--red);    }
+    .c-dim    { color: var(--text-dim); }
+
+    /* ── Action button variants ── */
+    .action-btn.approve { color: var(--green); border-color: rgba(34,197,94,0.35); }
+    .action-btn.approve:hover { background: rgba(34,197,94,0.1); }
+    .action-btn.reject  { color: var(--red);   border-color: rgba(239,68,68,0.35); }
+    .action-btn.reject:hover  { background: rgba(239,68,68,0.08); }
+    .action-btn.suspend { color: var(--red);   border-color: rgba(239,68,68,0.35); }
+    .action-btn.suspend:hover { background: rgba(239,68,68,0.08); }
+    .action-btn.reactivate { color: var(--green); border-color: rgba(34,197,94,0.35); }
+    .action-btn.reactivate:hover { background: rgba(34,197,94,0.1); }
+    .action-btn.reset-pw { color: var(--text-muted); }
+
+    /* ── Tier select in table ── */
+    .tier-select {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text-muted); font-size: 11px; padding: 3px 5px; font-family: var(--font);
+      cursor: pointer; outline: none; max-width: 100px;
+    }
+    .tier-select:focus { border-color: var(--accent); }
+    .tier-select option { background: var(--surface2); }
+
+    /* ── Temp-password modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      display: flex; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 28px 32px; width: 420px; max-width: 92vw;
+    }
+    .modal-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .modal-sub   { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.55; }
+    .modal-pw    {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      padding: 12px 16px; font-family: monospace; font-size: 15px; color: var(--green);
+      letter-spacing: 0.04em; word-break: break-all; user-select: all;
+    }
+    .modal-for   { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .modal-copy-btn  { padding: 7px 18px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .modal-copy-btn:hover { opacity: 0.9; }
+    .modal-close-btn { padding: 7px 16px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; font-size: 12px; cursor: pointer; font-family: var(--font); }
+    .modal-close-btn:hover { color: var(--text); }
+
+    /* ── Status pills for users ── */
+    .upill { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; border: 1px solid; }
+    .upill-active    { color: #22c55e; background: rgba(34,197,94,0.1);  border-color: rgba(34,197,94,0.3); }
+    .upill-pending   { color: #f59e0b; background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); }
+    .upill-suspended { color: #ef4444; background: rgba(239,68,68,0.1);  border-color: rgba(239,68,68,0.3); }
+    .upill-rejected  { color: #6b7280; background: rgba(107,114,128,0.1);border-color: rgba(107,114,128,0.3); }
   </style>
 </head>
 <body>
@@ -297,16 +360,46 @@
     <div style="margin-bottom:32px">
       <div class="toolbar">
         <span class="toolbar-title">User Management</span>
-        <button class="new-btn" onclick="openUserForm()">+ Create Advisory User</button>
+        <button class="new-btn" onclick="openUserForm()">+ Create User</button>
       </div>
 
-      <!-- Create user form -->
-      <div class="form-panel" id="user-form-panel">
-        <div class="form-title">Create Advisory User</div>
+      <!-- Stats bar -->
+      <div class="user-stats" id="user-stats">
+        <div class="user-stat"><span class="user-stat__val"         id="stat-total">—</span><span class="user-stat__label">Total</span></div>
+        <div class="user-stat"><span class="user-stat__val c-green" id="stat-active">—</span><span class="user-stat__label">Active</span></div>
+        <div class="user-stat"><span class="user-stat__val c-amber" id="stat-pending">—</span><span class="user-stat__label">Pending Approval</span></div>
+        <div class="user-stat"><span class="user-stat__val c-dim"   id="stat-observer">—</span><span class="user-stat__label">Observer</span></div>
+        <div class="user-stat"><span class="user-stat__val c-accent" id="stat-benchmarker">—</span><span class="user-stat__label">Benchmarker</span></div>
+        <div class="user-stat"><span class="user-stat__val c-gold"  id="stat-advisory">—</span><span class="user-stat__label">Advisory</span></div>
+      </div>
+
+      <!-- Users table -->
+      <div class="table-card">
+        <table class="article-table">
+          <thead>
+            <tr>
+              <th>Name / Email</th>
+              <th>Organisation</th>
+              <th style="width:115px">Tier</th>
+              <th style="width:120px">Status</th>
+              <th style="width:88px">Created</th>
+              <th style="width:62px;text-align:center">AI / mo</th>
+              <th style="width:240px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="7" class="empty-state">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Create user form (below table) -->
+      <div class="form-panel" id="user-form-panel" style="margin-top:20px">
+        <div class="form-title">Create User</div>
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Full Name</label>
-            <input type="text" id="uf-name" class="form-input" placeholder="Name" />
+            <input type="text" id="uf-name" class="form-input" placeholder="Youssef Benali" />
           </div>
           <div class="form-group">
             <label class="form-label">Email</label>
@@ -326,33 +419,10 @@
           </div>
         </div>
         <div class="form-actions">
-          <button class="save-btn" onclick="createUser()">Create User</button>
+          <button class="save-btn" onclick="createUser()">Create &amp; Generate Password</button>
           <button class="cancel-btn" onclick="closeUserForm()">Cancel</button>
           <span class="form-msg" id="user-form-msg"></span>
         </div>
-        <div id="temp-pw-box" style="display:none;margin-top:14px;padding:12px 14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:6px;font-size:12px;color:var(--green)">
-          <strong>Temporary password (shown once):</strong> <code id="temp-pw-value" style="font-family:monospace;margin-left:8px;background:var(--surface2);padding:2px 6px;border-radius:3px"></code>
-        </div>
-      </div>
-
-      <!-- Users table -->
-      <div class="table-card">
-        <table class="article-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th style="width:110px">Tier</th>
-              <th style="width:110px">Status</th>
-              <th style="width:90px">Created</th>
-              <th style="width:70px">AI Queries</th>
-              <th style="width:160px">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="users-tbody">
-            <tr><td colspan="7" class="empty-state">Loading…</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
 
@@ -375,6 +445,20 @@
           <tr><td colspan="6" class="empty-state">Loading…</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- Temp-password modal -->
+<div class="modal-overlay" id="pw-modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Temporary Password</div>
+    <p class="modal-sub" id="pw-modal-sub">Share this with the user — it will not be shown again.</p>
+    <div class="modal-pw" id="pw-modal-value"></div>
+    <p class="modal-for" id="pw-modal-for"></p>
+    <div class="modal-actions">
+      <button class="modal-copy-btn" onclick="copyPw()">Copy password</button>
+      <button class="modal-close-btn" onclick="closePwModal()">Done</button>
     </div>
   </div>
 </div>
@@ -679,40 +763,88 @@
       if (!res.ok) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Could not load users.</td></tr>'; return; }
       usersData = await res.json();
       renderUsersTable();
+      updateUserStats();
     } catch { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Error loading users.</td></tr>'; }
   }
 
-  const TIER_COLORS = { observer: '#8a96b0', benchmarker: 'var(--accent)', advisory: '#f59e0b' };
-  const STATUS_COLORS = { active: 'var(--green)', suspended: 'var(--red)', pending: 'var(--amber)', pending_payment: 'var(--amber)' };
+  function updateUserStats() {
+    const total      = usersData.length;
+    const active     = usersData.filter(u => u.status === 'active').length;
+    const pending    = usersData.filter(u => u.status === 'pending_approval').length;
+    const observer   = usersData.filter(u => u.tier === 'observer').length;
+    const benchmarker= usersData.filter(u => u.tier === 'benchmarker').length;
+    const advisory   = usersData.filter(u => u.tier === 'advisory').length;
+    document.getElementById('stat-total').textContent       = total;
+    document.getElementById('stat-active').textContent      = active;
+    document.getElementById('stat-pending').textContent     = pending;
+    document.getElementById('stat-observer').textContent    = observer;
+    document.getElementById('stat-benchmarker').textContent = benchmarker;
+    document.getElementById('stat-advisory').textContent    = advisory;
+  }
+
+  const TIER_COLORS = { observer: 'var(--text-dim)', benchmarker: 'var(--accent)', advisory: '#f59e0b' };
+
+  function statusPill(status) {
+    const map = {
+      active:           ['upill upill-active',    'Active'],
+      pending_approval: ['upill upill-pending',    'Pending Approval'],
+      pending_payment:  ['upill upill-pending',    'Pending Payment'],
+      pending:          ['upill upill-pending',    'Pending'],
+      suspended:        ['upill upill-suspended',  'Suspended'],
+      rejected:         ['upill upill-rejected',   'Rejected'],
+    };
+    const [cls, label] = map[status] || ['upill upill-rejected', status];
+    return `<span class="${cls}">${label}</span>`;
+  }
+
+  function tierSelect(uid, currentTier) {
+    return `<select class="tier-select" style="color:${TIER_COLORS[currentTier]||'var(--text-muted)'}"
+      onchange="changeUserTier('${uid}', this.value)">
+      ${['observer','benchmarker','advisory'].map(t =>
+        `<option value="${t}"${currentTier===t?' selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`
+      ).join('')}
+    </select>`;
+  }
+
+  function actionButtons(u) {
+    const parts = [];
+    const isPending = u.status === 'pending_approval' || u.status === 'pending' || u.status === 'pending_payment';
+
+    if (isPending && u.tier === 'benchmarker') {
+      parts.push(`<button class="action-btn approve" onclick="approveUser('${u.id}')">Approve</button>`);
+      parts.push(`<button class="action-btn reject"  onclick="rejectUser('${u.id}')">Reject</button>`);
+    } else if (isPending) {
+      parts.push(`<button class="action-btn approve" onclick="approveUser('${u.id}')">Approve</button>`);
+    }
+
+    if (u.status === 'active') {
+      parts.push(`<button class="action-btn suspend" onclick="suspendUser('${u.id}')">Suspend</button>`);
+    } else if (u.status === 'suspended' || u.status === 'rejected') {
+      parts.push(`<button class="action-btn reactivate" onclick="reactivateUser('${u.id}')">Reactivate</button>`);
+    }
+
+    parts.push(`<button class="action-btn reset-pw" onclick="resetPassword('${u.id}', ${JSON.stringify(u.email)})" title="Reset password">↺ Reset PW</button>`);
+    return parts.join('');
+  }
 
   function renderUsersTable() {
     const tbody = document.getElementById('users-tbody');
     if (!usersData.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No users found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No users yet.</td></tr>';
       return;
     }
     tbody.innerHTML = usersData.map(u => `
       <tr>
-        <td style="font-size:13px;font-weight:600">${escHtml(u.name||'—')}</td>
-        <td style="font-size:12px;color:var(--text-muted)">${escHtml(u.email)}</td>
         <td>
-          <select onchange="changeUserTier('${u.id}', this.value)" style="background:var(--surface2);border:1px solid var(--border);color:${TIER_COLORS[u.tier]||'var(--text)'};font-size:11px;padding:3px 6px;border-radius:4px;font-family:var(--font)">
-            ${['observer','benchmarker','advisory'].map(t => `<option value="${t}"${u.tier===t?' selected':''}>${t}</option>`).join('')}
-          </select>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${escHtml(u.name||'—')}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:1px">${escHtml(u.email)}</div>
         </td>
-        <td><span class="status-pill" style="color:${STATUS_COLORS[u.status]||'var(--text-muted)'};background:transparent;border:1px solid ${STATUS_COLORS[u.status]||'var(--border)'}20">${u.status}</span></td>
+        <td style="font-size:12px;color:var(--text-muted)">${escHtml(u.organisation||'—')}</td>
+        <td>${tierSelect(u.id, u.tier)}</td>
+        <td>${statusPill(u.status)}</td>
         <td style="font-size:11px;color:var(--text-dim)">${u.created_at||'—'}</td>
         <td style="font-size:12px;color:var(--text-muted);text-align:center">${u.ai_queries_used||0}</td>
-        <td>
-          ${u.status === 'pending' || u.status === 'pending_payment'
-            ? `<button class="action-btn" onclick="approveUser('${u.id}')">Approve</button>`
-            : ''}
-          ${u.status === 'active'
-            ? `<button class="action-btn delete" onclick="suspendUser('${u.id}')">Suspend</button>`
-            : u.status === 'suspended'
-              ? `<button class="action-btn" onclick="reactivateUser('${u.id}')">Reactivate</button>`
-              : ''}
-        </td>
+        <td style="white-space:nowrap">${actionButtons(u)}</td>
       </tr>
     `).join('');
   }
@@ -731,6 +863,16 @@
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
       body: JSON.stringify({ status: 'active' }),
+    });
+    await loadUsers();
+  }
+
+  async function rejectUser(uid) {
+    if (!confirm('Reject this user? They will not be able to log in.')) return;
+    await fetch('/admin/users/' + uid, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      body: JSON.stringify({ status: 'rejected' }),
     });
     await loadUsers();
   }
@@ -754,10 +896,43 @@
     await loadUsers();
   }
 
+  async function resetPassword(uid, email) {
+    if (!confirm(`Reset password for ${email}? A new temporary password will be generated.`)) return;
+    const res = await fetch(`/admin/users/${uid}/reset-password`, {
+      method: 'POST',
+      headers: { 'X-Admin-Password': adminPwd },
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to reset password.'); return; }
+    showPwModal(data.temp_password, email, 'Password reset for');
+  }
+
+  // ── Temp-password modal ────────────────────────────
+  function showPwModal(pw, email, label) {
+    document.getElementById('pw-modal-value').textContent = pw;
+    document.getElementById('pw-modal-for').textContent   = email ? `${label||'Created for'}: ${email}` : '';
+    document.getElementById('pw-modal').style.display     = 'flex';
+  }
+
+  function closePwModal() {
+    document.getElementById('pw-modal').style.display = 'none';
+  }
+
+  async function copyPw() {
+    const pw = document.getElementById('pw-modal-value').textContent;
+    try {
+      await navigator.clipboard.writeText(pw);
+      const btn = document.querySelector('.modal-copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy password'; }, 2000);
+    } catch { alert('Copy failed — select the password manually.'); }
+  }
+
+  // ── Create user form ───────────────────────────────
   function openUserForm() {
     document.getElementById('user-form-panel').classList.add('visible');
-    document.getElementById('temp-pw-box').style.display = 'none';
     document.getElementById('user-form-msg').style.display = 'none';
+    document.getElementById('user-form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   function closeUserForm() { document.getElementById('user-form-panel').classList.remove('visible'); }
 
@@ -766,7 +941,7 @@
     const email = document.getElementById('uf-email').value.trim();
     const org   = document.getElementById('uf-org').value.trim();
     const tier  = document.getElementById('uf-tier').value;
-    if (!name || !email) { userFormMsg('Name and email required.', true); return; }
+    if (!name || !email) { userFormMsg('Name and email are required.', true); return; }
 
     const res = await fetch('/admin/users', {
       method: 'POST',
@@ -775,13 +950,13 @@
     });
     const data = await res.json();
     if (!res.ok) { userFormMsg(data.error || 'Failed.', true); return; }
-    userFormMsg('User created!', false);
-    document.getElementById('temp-pw-value').textContent = data.temp_password;
-    document.getElementById('temp-pw-box').style.display = 'block';
+
     document.getElementById('uf-name').value  = '';
     document.getElementById('uf-email').value = '';
     document.getElementById('uf-org').value   = '';
+    closeUserForm();
     await loadUsers();
+    showPwModal(data.temp_password, email, 'Created for');
   }
 
   function userFormMsg(text, isError) {
