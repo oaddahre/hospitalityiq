@@ -160,8 +160,24 @@ def save_contacts(contacts):
 
 
 def admin_ok():
-    expected = os.getenv("ADMIN_PASSWORD", "hiq2026")
-    return request.headers.get("X-Admin-Password", "") == expected
+    expected = (os.getenv("ADMIN_PASSWORD") or "hiq2026").strip()
+    provided = request.headers.get("X-Admin-Password", "").strip()
+    return bool(provided) and provided == expected
+
+
+# TEMPORARY DEBUG — remove after confirming Railway env var is correct
+@app.route("/api/check-admin-password")
+def debug_admin_password():
+    raw = os.getenv("ADMIN_PASSWORD")
+    if raw is None:
+        return jsonify({"set": False, "note": "ADMIN_PASSWORD not found in environment — falling back to default 'hiq2026'"})
+    stripped = raw.strip()
+    return jsonify({
+        "set": True,
+        "length": len(stripped),
+        "preview": stripped[:3] + "***",
+        "had_whitespace": raw != stripped,
+    })
 
 
 def load_data():
