@@ -99,6 +99,37 @@ def update_user_field(uid: str, fields: dict):
     save_users_db(db)
 
 
+def ensure_seed_user():
+    """Create the admin user from env vars if users.json doesn't exist or is empty."""
+    email    = os.getenv("SEED_ADMIN_EMAIL", "").strip()
+    password = os.getenv("SEED_ADMIN_PASS",  "").strip()
+    name     = os.getenv("SEED_ADMIN_NAME",  "Admin").strip()
+    if not email or not password:
+        return
+    db = load_users_db()
+    if any(u["email"].lower() == email.lower() for u in db["users"]):
+        return
+    db["users"].append({
+        "id":               str(uuid.uuid4()),
+        "email":            email,
+        "password_hash":    generate_password_hash(password),
+        "name":             name,
+        "organisation":     "Kōdō Hospitality",
+        "tier":             "advisory",
+        "status":           "active",
+        "created_at":       datetime.utcnow().strftime("%Y-%m-%d"),
+        "approved_at":      datetime.utcnow().strftime("%Y-%m-%d"),
+        "invited_by":       "seed",
+        "ai_queries_used":  0,
+        "ai_queries_reset": datetime.utcnow().strftime("%Y-%m"),
+    })
+    save_users_db(db)
+    print(f"[SEED] Created admin user: {email}")
+
+
+ensure_seed_user()
+
+
 @login_manager.user_loader
 def load_user(uid):
     return find_user_by_id(uid)
