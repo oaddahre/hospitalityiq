@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -22,7 +22,7 @@
   --sidebar-w:    208px;
   --radius:       8px;
   --radius-sm:    6px;
-  --font:         'Inter', system-ui, -apple-system, sans-serif;
+  --font:         'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --heading:      'Syne', system-ui, sans-serif;
 }
 

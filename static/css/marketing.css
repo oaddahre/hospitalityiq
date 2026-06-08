@@ -1,12 +1,12 @@
 /* ── Kōdō Modern Intelligence Platform — Marketing CSS ── */
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@400;500;600;700&display=swap');
 
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   background: #F4F3F0;
   color: #111111;
   min-height: 100vh;
@@ -27,7 +27,7 @@ img { display: block; max-width: 100%; }
   --gold:     #B8922A;
   --positive: #1A6B3C;
   --font-h:   'Syne', sans-serif;
-  --font-b:   'Inter', sans-serif;
+  --font-b:   'Plus Jakarta Sans', sans-serif;
   --radius:   8px;
   --sp:       80px;
 }
