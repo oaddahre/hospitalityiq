@@ -6,7 +6,7 @@
   <title>Account — Kōdō</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
   <style>
     body { display: flex; flex-direction: column; min-height: 100vh; }
@@ -48,8 +48,8 @@
 
     /* ── Welcome banner ── */
     .acc-welcome {
-      background: rgba(14,143,173,0.1);
-      border: 1px solid rgba(14,143,173,0.28);
+      background: rgba(184,120,96,0.1);
+      border: 1px solid rgba(184,120,96,0.28);
       border-radius: var(--radius);
       padding: 14px 18px;
       margin-bottom: 24px;
@@ -58,9 +58,9 @@
       line-height: 1.55;
     }
     body.light .acc-welcome {
-      background: rgba(10,74,90,0.06);
-      border-color: rgba(10,74,90,0.2);
-      color: #0A4A5A;
+      background: rgba(160,104,72,0.06);
+      border-color: rgba(160,104,72,0.2);
+      color: #A06848;
     }
     .acc-welcome strong { font-weight: 600; display: block; margin-bottom: 2px; }
 
@@ -364,10 +364,10 @@
 
   function memberRow(m, isOwner) {
     const statusDot = {
-      active:   '#4CAF72',
-      invited:  '#C4A040',
-      suspended:'#ef4444',
-    }[m.status] || '#888';
+      active:   '#5A8A5A',
+      invited:  '#B87860',
+      suspended:'#C86060',
+    }[m.status] || '#888888';
     const joined = m.approved_at || m.created_at || '—';
     const removeBtn = (!isOwner && m.status !== 'removed')
       ? `<button onclick="removeMember('${escJ(m.id)}', '${escJ(m.name || m.email)}')"
@@ -396,7 +396,7 @@
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:8px 0;
                   border-bottom:1px solid var(--border)">
-        <span style="width:7px;height:7px;border-radius:50%;background:#C4A040;flex-shrink:0"></span>
+        <span style="width:7px;height:7px;border-radius:50%;background:#B87860;flex-shrink:0"></span>
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;color:var(--text-muted);
                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.email)}</div>

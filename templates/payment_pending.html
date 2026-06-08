@@ -6,17 +6,18 @@
   <title>Complete Your Subscription — Kōdō</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #F4F3F0;
-      color: #111110;
+      background: #0A0A0A;
+      color: #F0F0EE;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
     }
     .top-bar {
       padding: 20px 32px;
@@ -29,25 +30,26 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      color: #111110;
+      color: #F0F0EE;
     }
     .logo-mark {
       width: 30px;
       height: 30px;
-      background: #0A4A5A;
-      color: #fff;
+      background: #B87860;
+      color: #0A0A0A;
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 6px;
     }
     .logo-text {
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 17px;
-      letter-spacing: -0.01em;
+      letter-spacing: 0.12em;
     }
 
     .main-wrap {
@@ -58,49 +60,50 @@
       padding: 40px 20px;
     }
     .card {
-      background: #FFFFFF;
-      border: 1px solid #D4D0C8;
+      background: #141414;
+      border: 1px solid #242424;
       width: 100%;
       max-width: 480px;
       padding: 48px 40px;
       text-align: center;
+      border-radius: 8px;
     }
 
     /* ── Check icon ── */
     .check-icon {
       width: 52px;
       height: 52px;
-      background: #F0FAF7;
-      border: 1px solid #C6E8DF;
+      background: rgba(90,138,90,0.12);
+      border: 1px solid rgba(90,138,90,0.30);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 24px;
       font-size: 22px;
-      color: #0A7A58;
+      color: #5A8A5A;
     }
 
     .eyebrow {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.6875rem;
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #0A4A5A;
+      color: #B87860;
       margin-bottom: 10px;
     }
     .heading {
       font-family: 'Syne', sans-serif;
-      font-size: 1.5rem;
+      font-size: 1.625rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
-      color: #111110;
+      letter-spacing: -0.01em;
+      color: #F0F0EE;
       margin-bottom: 12px;
     }
     .body-text {
       font-size: 0.9375rem;
-      color: #6B6860;
+      color: #888888;
       line-height: 1.65;
       margin-bottom: 28px;
     }
@@ -109,14 +112,15 @@
     .features {
       list-style: none;
       text-align: left;
-      background: #F9F8F5;
-      border: 1px solid #E2E0DA;
+      background: #1C1C1C;
+      border: 1px solid #242424;
+      border-radius: 6px;
       padding: 20px 24px;
       margin-bottom: 28px;
     }
     .features li {
       font-size: 0.875rem;
-      color: #444340;
+      color: #888888;
       padding: 5px 0;
       display: flex;
       align-items: center;
@@ -124,7 +128,7 @@
     }
     .features li::before {
       content: "✓";
-      color: #0A4A5A;
+      color: #5A8A5A;
       font-weight: 700;
       font-size: 13px;
       flex-shrink: 0;
@@ -132,56 +136,59 @@
 
     /* ── Coming soon box ── */
     .coming-soon {
-      background: #0A4A5A;
-      color: #FFFFFF;
+      background: #1E1210;
+      border: 1px solid rgba(184,120,96,0.25);
+      border-radius: 6px;
       padding: 20px 24px;
       margin-bottom: 20px;
       text-align: left;
     }
     .coming-soon__label {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.625rem;
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #7EC8D8;
+      color: #B87860;
       margin-bottom: 6px;
     }
     .coming-soon__title {
       font-family: 'Syne', sans-serif;
       font-size: 1rem;
       font-weight: 600;
+      color: #F0F0EE;
       margin-bottom: 6px;
     }
     .coming-soon__text {
       font-size: 0.8125rem;
-      color: #A8C8D0;
+      color: #888888;
       line-height: 1.5;
     }
 
     .btn-disabled {
       width: 100%;
       padding: 12px;
-      background: #C8D0C8;
-      color: #FFFFFF;
-      font-family: 'Syne', sans-serif;
+      background: #242424;
+      color: #444444;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.875rem;
       font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
       border: none;
+      border-radius: 6px;
       cursor: not-allowed;
       margin-bottom: 10px;
     }
 
     .help-text {
       font-size: 0.8125rem;
-      color: #6B6860;
+      color: #888888;
       margin-top: 16px;
       line-height: 1.6;
     }
     .help-text a {
-      color: #0A4A5A;
+      color: #B87860;
       text-decoration: none;
       font-weight: 500;
     }
@@ -191,7 +198,7 @@
       text-align: center;
       padding: 20px;
       font-size: 0.75rem;
-      color: #A8A49C;
+      color: #444444;
     }
   </style>
 </head>

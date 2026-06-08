@@ -6,17 +6,18 @@
   <title>Sign In — Kōdō</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #F4F3F0;
-      color: #111110;
+      background: #0A0A0A;
+      color: #F0F0EE;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ── Top bar ── */
@@ -31,32 +32,33 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      color: #111110;
+      color: #F0F0EE;
     }
     .logo-mark {
       width: 30px;
       height: 30px;
-      background: #0A4A5A;
-      color: #fff;
+      background: #B87860;
+      color: #0A0A0A;
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 6px;
     }
     .logo-text {
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 17px;
-      letter-spacing: -0.01em;
+      letter-spacing: 0.12em;
     }
     .top-bar__back {
       font-size: 13px;
-      color: #6B6860;
+      color: #888888;
       text-decoration: none;
     }
-    .top-bar__back:hover { color: #111110; }
+    .top-bar__back:hover { color: #F0F0EE; }
 
     /* ── Main ── */
     .auth-wrap {
@@ -67,27 +69,28 @@
       padding: 40px 20px;
     }
     .auth-card {
-      background: #FFFFFF;
-      border: 1px solid #D4D0C8;
+      background: #141414;
+      border: 1px solid #242424;
       width: 100%;
       max-width: 400px;
       padding: 40px;
+      border-radius: 8px;
     }
     .auth-eyebrow {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.6875rem;
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #0A4A5A;
+      color: #B87860;
       margin-bottom: 12px;
     }
     .auth-heading {
       font-family: 'Syne', sans-serif;
-      font-size: 1.625rem;
+      font-size: 1.75rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
-      color: #111110;
+      letter-spacing: -0.01em;
+      color: #F0F0EE;
       margin-bottom: 28px;
     }
 
@@ -98,10 +101,10 @@
     .form-label {
       display: block;
       font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
+      font-weight: 500;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #6B6860;
+      color: #888888;
       margin-bottom: 6px;
     }
     .form-input {
@@ -109,26 +112,28 @@
       padding: 10px 12px;
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.9375rem;
-      color: #111110;
-      background: #F9F8F5;
-      border: 1px solid #D4D0C8;
+      color: #F0F0EE;
+      background: #1C1C1C;
+      border: 1px solid #242424;
+      border-radius: 6px;
       outline: none;
       transition: border-color 0.15s;
       -webkit-appearance: none;
     }
     .form-input:focus {
-      border-color: #0A4A5A;
-      background: #FFFFFF;
+      border-color: #B87860;
+      background: #1C1C1C;
     }
-    .form-input::placeholder { color: #A8A49C; }
+    .form-input::placeholder { color: #444444; }
 
     /* ── Error ── */
     .auth-error {
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
-      color: #B91C1C;
+      background: rgba(200,90,90,0.10);
+      border: 1px solid rgba(200,90,90,0.30);
+      color: #E07070;
       font-size: 0.8125rem;
       padding: 10px 12px;
+      border-radius: 6px;
       margin-bottom: 18px;
       line-height: 1.5;
     }
@@ -137,46 +142,47 @@
     .btn-primary {
       width: 100%;
       padding: 12px;
-      background: #0A4A5A;
-      color: #FFFFFF;
-      font-family: 'Syne', sans-serif;
+      background: transparent;
+      color: #B87860;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.875rem;
       font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      border: none;
+      border: 1px solid #B87860;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, color 0.15s;
       margin-top: 4px;
     }
-    .btn-primary:hover { background: #0c5a6e; }
-    .btn-primary:active { background: #083d4a; }
+    .btn-primary:hover { background: #B87860; color: #0A0A0A; }
+    .btn-primary:active { background: #A06848; border-color: #A06848; color: #0A0A0A; }
 
     /* ── Footer links ── */
     .auth-footer {
       margin-top: 24px;
       padding-top: 20px;
-      border-top: 1px solid #E8E6E1;
+      border-top: 1px solid #242424;
     }
     .auth-footer p {
       font-size: 0.8125rem;
-      color: #6B6860;
+      color: #888888;
       line-height: 1.6;
     }
     .auth-footer a {
-      color: #0A4A5A;
+      color: #B87860;
       text-decoration: none;
       font-weight: 500;
     }
     .auth-footer a:hover { text-decoration: underline; }
-    .auth-footer .divider { margin: 10px 0; border: none; border-top: 1px solid #E8E6E1; }
+    .auth-footer .divider { margin: 10px 0; border: none; border-top: 1px solid #242424; }
 
     /* ── Bottom note ── */
     .auth-note {
       text-align: center;
       padding: 20px;
       font-size: 0.75rem;
-      color: #A8A49C;
+      color: #444444;
     }
   </style>
 </head>

@@ -1,10 +1,12 @@
 // ─── Constants ────────────────────────────────────────────────────
 
 const SEG_COLORS = {
-  'Luxury':        '#7B52CC',
-  'Upper Upscale': '#6A6258',
-  'Upscale':       '#8A8070',
-  'Midscale':      '#C8BEB0',
+  'Ultra Luxury': '#B87860',
+  'Luxury':       '#A06848',
+  'Upper Upscale':'#886050',
+  'Upscale':      '#705040',
+  'Midscale':     '#584038',
+  'Economy':      '#403028',
 };
 
 const CITY_COORDS = {
@@ -21,18 +23,6 @@ const MOROCCO_CENTER = [31.5, -7.0];
 const MOROCCO_ZOOM   = 7;
 const CITY_ZOOM      = 13;
 
-const CHART_GRID = '#E2E0DA';
-const CHART_TICK = '#8A8070';
-
-function getChartAccent() {
-  return document.body.classList.contains('light') ? '#3D3228' : '#C8BEB0';
-}
-function getChartHover() {
-  return document.body.classList.contains('light') ? '#2A2018' : '#E8E4DC';
-}
-function getChartFill() {
-  return document.body.classList.contains('light') ? 'rgba(61,50,40,0.07)' : 'rgba(200,190,176,0.07)';
-}
 
 const KPI_DELTAS = {
   'kpi-keys':   { text: '+6.2% YoY',    up: true },
@@ -213,13 +203,17 @@ function renderKPIs() {
 function getChartColors() {
   const dark = !document.body.classList.contains('light');
   return {
-    tick:       dark ? '#6A6258' : '#8A8070',
-    label:      dark ? '#E8E4DC' : '#1C1810',
-    catLabel:   dark ? '#C8BEB0' : '#8A8070',
-    tooltipBg:  dark ? '#1A1A1A' : '#FFFFFF',
-    tooltipBdr: dark ? '#2A2A2A' : '#E0D8CC',
-    tooltipTtl: dark ? '#E8E4DC' : '#1C1810',
-    tooltipBdy: dark ? '#6A6258' : '#8A8070',
+    barColor:   dark ? '#B87860' : '#A06848',
+    hoverColor: dark ? '#C98870' : '#B07858',
+    fillColor:  dark ? 'rgba(184,120,96,0.08)' : 'rgba(160,104,72,0.08)',
+    gridColor:  'transparent',
+    tick:       dark ? '#888888' : '#888888',
+    label:      dark ? '#888888' : '#888888',
+    catLabel:   dark ? '#AAAAAA' : '#555555',
+    tooltipBg:  dark ? '#141414' : '#FFFFFF',
+    tooltipBdr: dark ? '#242424' : '#E4E4E4',
+    tooltipTtl: dark ? '#F0F0EE' : '#1A1A1A',
+    tooltipBdy: dark ? '#888888' : '#888888',
   };
 }
 
@@ -232,7 +226,7 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
       datasets: [{
         data: values,
         backgroundColor: bgColors,
-        hoverBackgroundColor: getChartHover(),
+        hoverBackgroundColor: cc.hoverColor,
         borderRadius: 4,
         borderSkipped: false,
       }]
@@ -280,7 +274,7 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
 }
 
 function barColors(labels) {
-  const color = getChartAccent();
+  const color = getChartColors().barColor;
   return labels.map(() => color);
 }
 
@@ -412,7 +406,7 @@ function showBrandDetail(brandGroup) {
 
   const labels = cityData.map(c => c.city);
   const values = cityData.map(c => c.revpar_mad);
-  const colors = labels.map(() => getChartAccent());
+  const colors = labels.map(() => getChartColors().barColor);
 
   if (brandChart) {
     brandChart.data.labels                          = labels;
@@ -444,7 +438,7 @@ function renderBrandHotelsTable() {
   });
 
   document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
-    const segColor = SEG_COLORS[h.category] || '#8A8070';
+    const segColor = SEG_COLORS[h.category] || '#888888';
     return `<tr class="brand-hotel-row">
       <td class="hotel-name-cell"><button class="hotel-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
@@ -573,7 +567,7 @@ function renderHotelCityChart(h) {
     +x.id === +h.id ? `▶ ${x.name}` : x.name
   );
   const values = cityHotels.map(x => x.revpar_mad);
-  const colors = cityHotels.map(() => getChartAccent());
+  const colors = cityHotels.map(() => getChartColors().barColor);
 
   const chartH = Math.max(200, cityHotels.length * 30 + 50);
   document.getElementById('hotel-city-chart-wrap').style.height = chartH + 'px';
@@ -772,7 +766,7 @@ function initMap() {
   const markers = hotels.map(h => {
     const marker = L.circleMarker([h.lat, h.lng], {
       radius:      markerRadius(h),
-      fillColor:   SEG_COLORS[h.category] || '#8A8070',  // map marker
+      fillColor:   SEG_COLORS[h.category] || '#888888',  // map marker
       color:       '#fff',
       weight:      1.2,
       opacity:     0.9,
@@ -881,7 +875,7 @@ function renderHotelsTable() {
 
   const tbody = document.getElementById('hotels-tbody');
   tbody.innerHTML = sorted.map(h => {
-    const segColor = SEG_COLORS[h.category] || '#8A8070';
+    const segColor = SEG_COLORS[h.category] || '#888888';
     return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
       <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
@@ -954,7 +948,7 @@ function redrawChartsForTheme() {
     document.getElementById('brand-chart-wrap').style.height = Math.max(240, labels.length * 38 + 50) + 'px';
     brandChart = new Chart(
       document.getElementById('chart-brand-revpar'),
-      chartConfig(labels, values, ' MAD', labels.map(() => getChartAccent()), v => Math.round(v).toLocaleString('en'))
+      chartConfig(labels, values, ' MAD', labels.map(() => getChartColors().barColor), v => Math.round(v).toLocaleString('en'))
     );
   }
 
@@ -1105,7 +1099,7 @@ function initTourismCharts() {
     const cc = getChartColors();
     return {
       type: 'bar',
-      data: { labels, datasets: [{ data: values, backgroundColor: bgColors, hoverBackgroundColor: getChartHover(), borderRadius: 4, borderSkipped: false }] },
+      data: { labels, datasets: [{ data: values, backgroundColor: bgColors, hoverBackgroundColor: getChartColors().hoverColor, borderRadius: 4, borderSkipped: false }] },
       options: {
         responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
         layout: { padding: { top: 28 } },
@@ -1136,7 +1130,7 @@ function initTourismCharts() {
   const arrLbls = ['2020','2021','2022','2023','2024','2025','2026E'];
   const arrVals = [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5];
   new Chart(document.getElementById('chart-tour-arrivals'),
-    vBar(arrLbls, arrVals, arrLbls.map(() => getChartAccent()),
+    vBar(arrLbls, arrVals, arrLbls.map(() => getChartColors().barColor),
       v => v + 'M', v => v + 'M arrivals'));
 
   // 2. Arrivals by Mode of Transport (grouped)
@@ -1148,9 +1142,9 @@ function initTourismCharts() {
       data: {
         labels: ['2022','2023','2024','2025','2026E'],
         datasets: [
-          { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: getChartAccent(), borderRadius: 3, borderSkipped: false },
+          { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: getChartColors().barColor, borderRadius: 3, borderSkipped: false },
           { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: '#456B38',         borderRadius: 3, borderSkipped: false },
-          { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: '#B8922A',          borderRadius: 3, borderSkipped: false },
+          { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: '#705040',          borderRadius: 3, borderSkipped: false },
         ],
       },
       options: {
@@ -1177,7 +1171,7 @@ function initTourismCharts() {
   const origLbls = TOUR_ORIGINS_DATA.labels;
   const origVals = TOUR_ORIGINS_DATA.years[2025];
   setH('twrap-origins', Math.max(260, origLbls.length * 34 + 50));
-  const origCfg = chartConfig(origLbls, origVals, '%', origLbls.map(() => getChartAccent()), v => v + '%');
+  const origCfg = chartConfig(origLbls, origVals, '%', origLbls.map(() => getChartColors().barColor), v => v + '%');
   origCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + '%';
   new Chart(document.getElementById('chart-tour-origins'), origCfg);
   addYearTabs('chart-tour-origins', TOUR_ORIGINS_DATA);
@@ -1186,7 +1180,7 @@ function initTourismCharts() {
   const nightsLbls = TOUR_NIGHTS_DATA.labels;
   const nightsVals = TOUR_NIGHTS_DATA.years[2025];
   setH('twrap-nights', Math.max(240, nightsLbls.length * 34 + 50));
-  const nightsCfg = chartConfig(nightsLbls, nightsVals, 'M', nightsLbls.map(() => getChartAccent()), v => v + 'M');
+  const nightsCfg = chartConfig(nightsLbls, nightsVals, 'M', nightsLbls.map(() => getChartColors().barColor), v => v + 'M');
   nightsCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M nights';
   new Chart(document.getElementById('chart-tour-nights'), nightsCfg);
   addYearTabs('chart-tour-nights', TOUR_NIGHTS_DATA);
@@ -1195,7 +1189,7 @@ function initTourismCharts() {
   const airLbls = TOUR_AIRPORT_DATA.labels;
   const airVals  = TOUR_AIRPORT_DATA.years[2025];
   setH('twrap-airports', Math.max(260, airLbls.length * 34 + 50));
-  const airCfg = chartConfig(airLbls, airVals, 'M pax', airLbls.map(() => getChartAccent()), v => v + 'M');
+  const airCfg = chartConfig(airLbls, airVals, 'M pax', airLbls.map(() => getChartColors().barColor), v => v + 'M');
   airCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M passengers';
   new Chart(document.getElementById('chart-tour-airports'), airCfg);
   addYearTabs('chart-tour-airports', TOUR_AIRPORT_DATA);
@@ -1205,7 +1199,7 @@ function initTourismCharts() {
   const revLbls = ['2020','2021','2022','2023','2024','2025','2026E'];
   const revVals = [34, 44, 76, 89, 105, 118, 132];
   new Chart(document.getElementById('chart-tour-revenue'),
-    vBar(revLbls, revVals, revLbls.map(() => getChartAccent()),
+    vBar(revLbls, revVals, revLbls.map(() => getChartColors().barColor),
       v => v + 'B', v => 'MAD ' + v + 'B'));
 
   // 7. Seasonality Index (line)
@@ -1218,10 +1212,10 @@ function initTourismCharts() {
         labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
         datasets: [{
           data: [55, 58, 72, 88, 95, 92, 100, 98, 82, 75, 60, 58],
-          borderColor: getChartAccent(),
-          backgroundColor: getChartFill(),
+          borderColor: getChartColors().barColor,
+          backgroundColor: getChartColors().fillColor,
           fill: false, tension: 0.4,
-          pointRadius: 4, pointBackgroundColor: getChartAccent(),
+          pointRadius: 4, pointBackgroundColor: getChartColors().barColor,
           pointBorderColor: '#F9F6F0', pointBorderWidth: 2,
         }],
       },
@@ -1321,7 +1315,7 @@ function initPipelineMap() {
   }).addTo(map);
 
   const markers = pipelineData.map(p => {
-    const color = p.status === 'Under Construction' ? '#B8922A' : '#8A8070';
+    const color = p.status === 'Under Construction' ? '#B87860' : '#888888';
     const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
     const marker = L.circleMarker([p.lat, p.lng], {
       radius, fillColor: color, color: '#fff',
@@ -1336,8 +1330,8 @@ function initPipelineMap() {
 function pipelinePopupHTML(p) {
   const invB = (p.investment_mad / 1e9).toFixed(2);
   const statusPill = p.status === 'Under Construction'
-    ? `<span style="background:transparent;color:#B8922A;border:1px solid #B8922A;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`
-    : `<span style="background:transparent;color:#3D3228;border:1px solid #3D3228;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`;
+    ? `<span style="background:transparent;color:#B87860;border:1px solid #B87860;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`
+    : `<span style="background:transparent;color:#888888;border:1px solid #444444;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${fmt.esc(p.category)}</div>
@@ -1433,7 +1427,7 @@ function renderPipelineCharts() {
   const sorted = [...data].sort((a, b) => a.keys - b.keys);
   const projLabels = sorted.map(p => p.name);
   const projVals   = sorted.map(p => p.keys);
-  const projColors = sorted.map(() => getChartAccent());
+  const projColors = sorted.map(() => getChartColors().barColor);
 
   const projWrap = document.getElementById('pwrap-proj');
   if (projWrap) { projWrap.style.minHeight = '0'; projWrap.style.height = Math.max(220, projLabels.length * 36 + 50) + 'px'; }
@@ -1452,7 +1446,7 @@ function renderPipelineCharts() {
   const cityWrap = document.getElementById('pwrap-city');
   if (cityWrap) { cityWrap.style.minHeight = '0'; cityWrap.style.height = Math.max(200, cityLabels.length * 38 + 50) + 'px'; }
   if (pipelineChartCity) { pipelineChartCity.destroy(); pipelineChartCity = null; }
-  const cityCfg = chartConfig(cityLabels, cityVals, 'B', cityLabels.map(() => getChartAccent()), v => v + 'B');
+  const cityCfg = chartConfig(cityLabels, cityVals, 'B', cityLabels.map(() => getChartColors().barColor), v => v + 'B');
   cityCfg.options.plugins.tooltip.callbacks.label = ctx => '  MAD ' + ctx.raw + 'B';
   pipelineChartCity = new Chart(document.getElementById('chart-pipeline-city'), cityCfg);
 }
@@ -2166,17 +2160,17 @@ function buildCalMap(view, prefix, map) {
 
 function adrCellStyle(adr) {
   const dark = !document.body.classList.contains('light');
-  if (adr < 4000) return dark ? {bg:'#222222',col:'#8A8070'} : {bg:'#EDE8DF',col:'#1C1810'};
-  if (adr < 6000) return dark ? {bg:'#8A8070',col:'#FFFFFF'} : {bg:'#6A6258',col:'#FFFFFF'};
-  return dark ? {bg:'#E8E4DC',col:'#111111'} : {bg:'#1C1810',col:'#F9F6F0'};
+  if (adr < 4000) return dark ? {bg:'#141414',col:'#888888'} : {bg:'#FFFFFF',col:'#888888'};
+  if (adr < 6000) return dark ? {bg:'#1E1210',col:'#B87860'} : {bg:'#FAF0EC',col:'#A06848'};
+  return dark ? {bg:'#261510',col:'#B87860'} : {bg:'#F5E8E0',col:'#804030'};
 }
 
 function occCellStyle(occ) {
   const dark = !document.body.classList.contains('light');
   const p = occ * 100;
-  if (p < 60) return dark ? {bg:'#1A1010',col:'#E05A5A'} : {bg:'#F5F0E8',col:'#8B3A3A'};
-  if (p < 80) return dark ? {bg:'#1A3020',col:'#4CAF72'} : {bg:'#8AAA78',col:'#FFFFFF'};
-  return dark ? {bg:'#456B38',col:'#FFFFFF'} : {bg:'#456B38',col:'#FFFFFF'};
+  if (p < 60) return dark ? {bg:'#141414',col:'#888888'} : {bg:'#FFFFFF',col:'#888888'};
+  if (p < 80) return dark ? {bg:'#101810',col:'#5A8A5A'} : {bg:'#F2F8EC',col:'#3D6B2A'};
+  return dark ? {bg:'#142014',col:'#5A8A5A'} : {bg:'#EAF3E0',col:'#2A4A1A'};
 }
 
 function renderBenchCalendar(calType) {
@@ -2308,10 +2302,10 @@ function renderBenchTrends() {
       data: {
         labels,
         datasets: [
-          { label: 'My Property', data: myData, borderColor: getChartAccent(),
-            backgroundColor: getChartFill(), borderWidth: 2, fill: false,
-            tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: getChartAccent() },
-          { label: 'Comp Set Avg', data: compData, borderColor: '#B8922A',
+          { label: 'My Property', data: myData, borderColor: getChartColors().barColor,
+            backgroundColor: getChartColors().fillColor, borderWidth: 2, fill: false,
+            tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: getChartColors().barColor },
+          { label: 'Comp Set Avg', data: compData, borderColor: '#444444',
             borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.3, pointRadius: 0 },
         ],
       },
@@ -2378,8 +2372,8 @@ function renderBenchDOW() {
       data: {
         labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
         datasets: [
-          { label: 'My Property', data: myDOW.map(avg), backgroundColor: getChartAccent(), hoverBackgroundColor: getChartHover(), borderRadius: 4, borderSkipped: false },
-          { label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(184,146,42,0.35)', borderRadius: 4, borderSkipped: false },
+          { label: 'My Property', data: myDOW.map(avg), backgroundColor: getChartColors().barColor, hoverBackgroundColor: getChartColors().hoverColor, borderRadius: 4, borderSkipped: false },
+          { label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(68,68,68,0.35)', borderRadius: 4, borderSkipped: false },
         ],
       },
       options: {

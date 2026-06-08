@@ -6,17 +6,18 @@
   <title>Create Account — Kōdō</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #F4F3F0;
-      color: #111110;
+      background: #0A0A0A;
+      color: #F0F0EE;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
     }
 
     .top-bar {
@@ -30,32 +31,33 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      color: #111110;
+      color: #F0F0EE;
     }
     .logo-mark {
       width: 30px;
       height: 30px;
-      background: #0A4A5A;
-      color: #fff;
+      background: #B87860;
+      color: #0A0A0A;
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 6px;
     }
     .logo-text {
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 17px;
-      letter-spacing: -0.01em;
+      letter-spacing: 0.12em;
     }
     .top-bar__back {
       font-size: 13px;
-      color: #6B6860;
+      color: #888888;
       text-decoration: none;
     }
-    .top-bar__back:hover { color: #111110; }
+    .top-bar__back:hover { color: #F0F0EE; }
 
     .auth-wrap {
       flex: 1;
@@ -65,32 +67,33 @@
       padding: 32px 20px 60px;
     }
     .auth-card {
-      background: #FFFFFF;
-      border: 1px solid #D4D0C8;
+      background: #141414;
+      border: 1px solid #242424;
       width: 100%;
       max-width: 460px;
       padding: 40px;
+      border-radius: 8px;
     }
     .auth-eyebrow {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.6875rem;
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #0A4A5A;
+      color: #B87860;
       margin-bottom: 10px;
     }
     .auth-heading {
       font-family: 'Syne', sans-serif;
-      font-size: 1.5rem;
+      font-size: 1.625rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
-      color: #111110;
+      letter-spacing: -0.01em;
+      color: #F0F0EE;
       margin-bottom: 6px;
     }
     .auth-sub {
       font-size: 0.875rem;
-      color: #6B6860;
+      color: #888888;
       margin-bottom: 28px;
       line-height: 1.5;
     }
@@ -107,10 +110,10 @@
     .form-label {
       display: block;
       font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
+      font-weight: 500;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #6B6860;
+      color: #888888;
       margin-bottom: 6px;
     }
     .form-input {
@@ -118,25 +121,27 @@
       padding: 10px 12px;
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.9375rem;
-      color: #111110;
-      background: #F9F8F5;
-      border: 1px solid #D4D0C8;
+      color: #F0F0EE;
+      background: #1C1C1C;
+      border: 1px solid #242424;
+      border-radius: 6px;
       outline: none;
       transition: border-color 0.15s;
       -webkit-appearance: none;
     }
     .form-input:focus {
-      border-color: #0A4A5A;
-      background: #FFFFFF;
+      border-color: #B87860;
+      background: #1C1C1C;
     }
-    .form-input::placeholder { color: #A8A49C; }
+    .form-input::placeholder { color: #444444; }
 
     .auth-error {
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
-      color: #B91C1C;
+      background: rgba(200,90,90,0.10);
+      border: 1px solid rgba(200,90,90,0.30);
+      color: #E07070;
       font-size: 0.8125rem;
       padding: 10px 12px;
+      border-radius: 6px;
       margin-bottom: 18px;
       line-height: 1.5;
     }
@@ -152,87 +157,89 @@
       width: 16px;
       height: 16px;
       margin-top: 2px;
-      accent-color: #0A4A5A;
+      accent-color: #B87860;
       flex-shrink: 0;
       cursor: pointer;
     }
     .checkbox-row label {
       font-size: 0.8125rem;
-      color: #6B6860;
+      color: #888888;
       line-height: 1.5;
       cursor: pointer;
     }
-    .checkbox-row a { color: #0A4A5A; text-decoration: none; }
+    .checkbox-row a { color: #B87860; text-decoration: none; }
     .checkbox-row a:hover { text-decoration: underline; }
 
     /* ── Plan info box ── */
     .plan-box {
-      background: #F9F8F5;
-      border: 1px solid #E2E0DA;
+      background: #1C1C1C;
+      border: 1px solid #242424;
       padding: 16px;
+      border-radius: 6px;
       margin-bottom: 20px;
     }
     .plan-box__name {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.6875rem;
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #0A4A5A;
+      color: #B87860;
       margin-bottom: 4px;
     }
     .plan-box__price {
       font-family: 'Syne', sans-serif;
       font-size: 1.125rem;
-      font-weight: 700;
-      color: #111110;
+      font-weight: 600;
+      color: #F0F0EE;
       margin-bottom: 8px;
     }
     .plan-box__items {
       list-style: none;
       font-size: 0.8125rem;
-      color: #6B6860;
+      color: #888888;
       line-height: 1.8;
     }
     .plan-box__items li::before {
       content: "✓ ";
-      color: #0A4A5A;
+      color: #5A8A5A;
       font-weight: 600;
     }
 
     .btn-primary {
       width: 100%;
       padding: 12px;
-      background: #0A4A5A;
-      color: #FFFFFF;
-      font-family: 'Syne', sans-serif;
+      background: transparent;
+      color: #B87860;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.875rem;
       font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      border: none;
+      border: 1px solid #B87860;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, color 0.15s;
     }
-    .btn-primary:hover { background: #0c5a6e; }
+    .btn-primary:hover { background: #B87860; color: #0A0A0A; }
     .btn-note {
       text-align: center;
       font-size: 0.75rem;
-      color: #A8A49C;
+      color: #444444;
       margin-top: 8px;
     }
 
     .auth-footer {
       margin-top: 20px;
       padding-top: 16px;
-      border-top: 1px solid #E8E6E1;
+      border-top: 1px solid #242424;
     }
     .auth-footer p {
       font-size: 0.8125rem;
-      color: #6B6860;
+      color: #888888;
     }
     .auth-footer a {
-      color: #0A4A5A;
+      color: #B87860;
       text-decoration: none;
       font-weight: 500;
     }
@@ -242,7 +249,7 @@
       text-align: center;
       padding: 20px;
       font-size: 0.75rem;
-      color: #A8A49C;
+      color: #444444;
     }
 
     @media (max-width: 480px) {
@@ -273,7 +280,7 @@
 
     <div class="plan-box">
       <p class="plan-box__name">Observer</p>
-      <p class="plan-box__price">MAD 990 <span style="font-size:0.875rem;font-weight:400;color:#6B6860;">/ month</span></p>
+      <p class="plan-box__price">MAD 990 <span style="font-size:0.875rem;font-weight:400;color:#888888;">/ month</span></p>
       <ul class="plan-box__items">
         <li>250+ hotels · 18+ destinations</li>
         <li>National KPIs, city and segment data</li>
