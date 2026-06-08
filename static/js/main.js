@@ -1624,6 +1624,11 @@ document.querySelectorAll('.nav-link').forEach(link => {
   });
 });
 
+// Logo click → navigate to Dashboard
+document.getElementById('navbar-logo').addEventListener('click', () => {
+  document.querySelector('.nav-link[data-screen="dashboard"]').click();
+});
+
 // City filter (sidebar)
 document.getElementById('city-filter').addEventListener('click', e => {
   const item = e.target.closest('.sidebar-item');
