@@ -18,13 +18,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "kodo-secret-2026")
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
-app.config["REMEMBER_COOKIE_DURATION"]   = timedelta(days=7)
+app.config['SECRET_KEY']                = os.environ.get('SECRET_KEY', 'kodo-dev-fallback-key-2026')
+app.config['SESSION_PERMANENT']         = True
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+app.config['REMEMBER_COOKIE_DURATION']  = timedelta(days=30)
+app.config['SESSION_COOKIE_SECURE']     = True
+app.config['SESSION_COOKIE_HTTPONLY']   = True
+app.config['SESSION_COOKIE_SAMESITE']   = 'Lax'
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login_page"
 login_manager.login_message = ""
+login_manager.remember_cookie_duration = timedelta(days=30)
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 NEWS_FILE            = os.path.join(DATA_DIR, "news.json")
