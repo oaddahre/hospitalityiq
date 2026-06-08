@@ -25,13 +25,13 @@ const CHART_GRID = '#E2E0DA';
 const CHART_TICK = '#888580';
 
 function getChartAccent() {
-  return document.body.classList.contains('light') ? '#0A4A5A' : '#0E8FAD';
+  return document.body.classList.contains('light') ? '#4A4A4A' : '#8A8A8A';
 }
 function getChartHover() {
-  return document.body.classList.contains('light') ? '#1A6B80' : '#3AAFC8';
+  return document.body.classList.contains('light') ? '#333333' : '#AAAAAA';
 }
 function getChartFill() {
-  return document.body.classList.contains('light') ? 'rgba(10,74,90,0.07)' : 'rgba(14,143,173,0.07)';
+  return document.body.classList.contains('light') ? 'rgba(74,74,74,0.07)' : 'rgba(138,138,138,0.07)';
 }
 
 const KPI_DELTAS = {
