@@ -2,9 +2,9 @@
 
 const SEG_COLORS = {
   'Luxury':        '#7B52CC',
-  'Upper Upscale': '#0A4A5A',
-  'Upscale':       '#185FA5',
-  'Midscale':      '#888580',
+  'Upper Upscale': '#555555',
+  'Upscale':       '#888888',
+  'Midscale':      '#AAAAAA',
 };
 
 const CITY_COORDS = {
@@ -22,16 +22,16 @@ const MOROCCO_ZOOM   = 7;
 const CITY_ZOOM      = 13;
 
 const CHART_GRID = '#E2E0DA';
-const CHART_TICK = '#888580';
+const CHART_TICK = '#888888';
 
 function getChartAccent() {
-  return document.body.classList.contains('light') ? '#4A4A4A' : '#8A8A8A';
+  return document.body.classList.contains('light') ? '#3D3D3D' : '#888888';
 }
 function getChartHover() {
-  return document.body.classList.contains('light') ? '#333333' : '#AAAAAA';
+  return document.body.classList.contains('light') ? '#222222' : '#AAAAAA';
 }
 function getChartFill() {
-  return document.body.classList.contains('light') ? 'rgba(74,74,74,0.07)' : 'rgba(138,138,138,0.07)';
+  return document.body.classList.contains('light') ? 'rgba(61,61,61,0.07)' : 'rgba(136,136,136,0.07)';
 }
 
 const KPI_DELTAS = {
@@ -213,13 +213,13 @@ function renderKPIs() {
 function getChartColors() {
   const dark = !document.body.classList.contains('light');
   return {
-    tick:       dark ? '#6A7A88' : '#888580',
-    label:      dark ? '#C8D0D8' : '#111111',
-    catLabel:   dark ? '#C8D0D8' : '#111111',
-    tooltipBg:  dark ? '#1A2430' : '#FFFFFF',
-    tooltipBdr: dark ? '#1E2D3A' : '#E2E0DA',
-    tooltipTtl: dark ? '#E8EAE8' : '#111111',
-    tooltipBdy: dark ? '#6A7A88' : '#888580',
+    tick:       dark ? '#555555' : '#888888',
+    label:      dark ? '#888888' : '#1C1C1C',
+    catLabel:   dark ? '#888888' : '#1C1C1C',
+    tooltipBg:  dark ? '#1A1A1A' : '#FFFFFF',
+    tooltipBdr: dark ? '#2A2A2A' : '#E0E0DE',
+    tooltipTtl: dark ? '#E8E8E8' : '#1C1C1C',
+    tooltipBdy: dark ? '#666666' : '#888888',
   };
 }
 
@@ -444,7 +444,7 @@ function renderBrandHotelsTable() {
   });
 
   document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
-    const segColor = SEG_COLORS[h.category] || '#888580';
+    const segColor = SEG_COLORS[h.category] || '#888888';
     return `<tr class="brand-hotel-row">
       <td class="hotel-name-cell"><button class="hotel-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
@@ -772,7 +772,7 @@ function initMap() {
   const markers = hotels.map(h => {
     const marker = L.circleMarker([h.lat, h.lng], {
       radius:      markerRadius(h),
-      fillColor:   SEG_COLORS[h.category] || '#888580',  // map marker
+      fillColor:   SEG_COLORS[h.category] || '#888888',  // map marker
       color:       '#fff',
       weight:      1.2,
       opacity:     0.9,
@@ -881,7 +881,7 @@ function renderHotelsTable() {
 
   const tbody = document.getElementById('hotels-tbody');
   tbody.innerHTML = sorted.map(h => {
-    const segColor = SEG_COLORS[h.category] || '#888580';
+    const segColor = SEG_COLORS[h.category] || '#888888';
     return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
       <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
@@ -1149,7 +1149,7 @@ function initTourismCharts() {
         labels: ['2022','2023','2024','2025','2026E'],
         datasets: [
           { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: getChartAccent(), borderRadius: 3, borderSkipped: false },
-          { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: '#1A6B3C',         borderRadius: 3, borderSkipped: false },
+          { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: '#3D6B4A',         borderRadius: 3, borderSkipped: false },
           { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: '#B8922A',          borderRadius: 3, borderSkipped: false },
         ],
       },
@@ -1321,7 +1321,7 @@ function initPipelineMap() {
   }).addTo(map);
 
   const markers = pipelineData.map(p => {
-    const color = p.status === 'Under Construction' ? '#B8922A' : '#0A4A5A';
+    const color = p.status === 'Under Construction' ? '#B8922A' : '#888888';
     const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
     const marker = L.circleMarker([p.lat, p.lng], {
       radius, fillColor: color, color: '#fff',
@@ -1337,7 +1337,7 @@ function pipelinePopupHTML(p) {
   const invB = (p.investment_mad / 1e9).toFixed(2);
   const statusPill = p.status === 'Under Construction'
     ? `<span style="background:transparent;color:#B8922A;border:1px solid #B8922A;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`
-    : `<span style="background:transparent;color:#0A4A5A;border:1px solid #0A4A5A;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`;
+    : `<span style="background:transparent;color:#3D3D3D;border:1px solid #3D3D3D;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${fmt.esc(p.category)}</div>
@@ -2166,17 +2166,17 @@ function buildCalMap(view, prefix, map) {
 
 function adrCellStyle(adr) {
   const dark = !document.body.classList.contains('light');
-  if (adr < 4000) return dark ? {bg:'#0A2030',col:'#0E8FAD'} : {bg:'#D8EEF2',col:'#0A4A5A'};
-  if (adr < 6000) return dark ? {bg:'#0A4A5A',col:'#FFFFFF'} : {bg:'#3D7A8A',col:'#FFFFFF'};
-  return dark ? {bg:'#0E8FAD',col:'#0A0F14'} : {bg:'#0A4A5A',col:'#FFFFFF'};
+  if (adr < 4000) return dark ? {bg:'#222222',col:'#888888'} : {bg:'#EEEEEE',col:'#1C1C1C'};
+  if (adr < 6000) return dark ? {bg:'#888888',col:'#FFFFFF'} : {bg:'#555555',col:'#FFFFFF'};
+  return dark ? {bg:'#E8E8E8',col:'#111111'} : {bg:'#1C1C1C',col:'#FFFFFF'};
 }
 
 function occCellStyle(occ) {
   const dark = !document.body.classList.contains('light');
   const p = occ * 100;
-  if (p < 60) return dark ? {bg:'#1A0F0F',col:'#E05A5A'} : {bg:'#F0F8F2',col:'#1A6B3C'};
-  if (p < 80) return dark ? {bg:'#0F3D22',col:'#4CAF72'} : {bg:'#5A9E6C',col:'#FFFFFF'};
-  return dark ? {bg:'#1A6B3C',col:'#FFFFFF'} : {bg:'#1A6B3C',col:'#FFFFFF'};
+  if (p < 60) return dark ? {bg:'#1A1A1A',col:'#E05A5A'} : {bg:'#F5F0EC',col:'#8B3A3A'};
+  if (p < 80) return dark ? {bg:'#2A3D2E',col:'#4CAF72'} : {bg:'#7AAA88',col:'#FFFFFF'};
+  return dark ? {bg:'#2D4A33',col:'#4CAF72'} : {bg:'#3D6B4A',col:'#FFFFFF'};
 }
 
 function renderBenchCalendar(calType) {
