@@ -293,11 +293,12 @@ body.light .kpi-card:hover { border-top-color: #E2E0DA; box-shadow: 0 2px 8px rg
 }
 
 .kpi-value {
-  font-family: var(--heading);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 26px;
   font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   line-height: 1;
   margin-bottom: 3px;
   text-align: center;
@@ -588,11 +589,12 @@ body.light .data-table tbody td:nth-child(n+3) { color: #111111; }
   padding: 8px 10px;
 }
 .hiq-popup-stat-val {
-  font-family: var(--heading);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 .hiq-popup-stat-lbl {
   font-family: var(--font);
@@ -994,11 +996,12 @@ body.light .dq-estimate { color: #B8922A; }
   padding: 14px 16px;
 }
 .hotel-fin-val {
-  font-family: var(--heading);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 18px;
   font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   margin-bottom: 5px;
   line-height: 1;
 }
@@ -1583,11 +1586,13 @@ body.light .pipe-card-pl { border-left-color: #B0ACA4; }
   font-weight: 400;
 }
 .pipe-card-year {
-  font-family: var(--heading);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 28px;
   font-weight: 600;
   color: var(--text-muted);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 .pipe-card-metrics {
   display: grid;
@@ -1598,11 +1603,12 @@ body.light .pipe-card-pl { border-left-color: #B0ACA4; }
   margin-top: 2px;
 }
 .pipe-card-metric-val {
-  font-family: var(--heading);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   line-height: 1;
   margin-bottom: 3px;
 }
@@ -1798,14 +1804,14 @@ body.light .bench-kpi-card { border-top: 2px solid #E2E0DA; }
 .bench-kpi-title { font-family: var(--font); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 12px; }
 .bench-kpi-body { display: flex; align-items: center; gap: 8px; }
 .bench-kpi-mine { text-align: center; flex: 1; }
-.bench-kpi-mine-val { font-family: var(--heading); font-size: 20px; font-weight: 600; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
+.bench-kpi-mine-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 600; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-mine-lbl { font-family: var(--font); font-size: 9px; color: var(--accent); font-weight: 400; margin-top: 3px; }
 .bench-kpi-sep { font-family: var(--font); font-size: 10px; font-weight: 400; color: var(--text-dim); flex-shrink: 0; }
 .bench-kpi-comp-blk { text-align: center; flex: 1; }
-.bench-kpi-comp-val { font-family: var(--heading); font-size: 15px; font-weight: 500; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; }
+.bench-kpi-comp-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-comp-lbl { font-family: var(--font); font-size: 9px; color: var(--text-dim); font-weight: 400; margin-top: 3px; }
 .bench-kpi-index { text-align: center; padding: 6px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); flex-shrink: 0; min-width: 48px; }
-.bench-kpi-idx-val { font-family: var(--heading); font-size: 17px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.bench-kpi-idx-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-idx-lbl { font-family: var(--font); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 2px; }
 .bench-idx-green { background: rgba(26,107,60,0.10); border-color: rgba(26,107,60,0.25); }
 .bench-idx-green .bench-kpi-idx-val { color: var(--green); }

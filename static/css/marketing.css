@@ -319,12 +319,13 @@ img { display: block; max-width: 100%; }
   gap: 5px;
 }
 .hero__stat-value {
-  font-family: var(--font-h);
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 26px;
   font-weight: 600;
   color: var(--ink);
-  letter-spacing: -0.02em;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 .hero__stat-label {
   font-family: var(--font-b);
