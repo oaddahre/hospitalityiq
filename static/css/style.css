@@ -122,6 +122,8 @@ h1, h2, h3, .ph h1, .screen-header h1, .ct, .card-title, .kpi-label-title {
   color: #666666;
   width: 30px;
   height: 30px;
+  padding: 0;
+  line-height: 1;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -130,10 +132,12 @@ h1, h2, h3, .ph h1, .screen-header h1, .ct, .card-title, .kpi-label-title {
   transition: 150ms;
 }
 .theme-toggle:hover { border-color: #B87860; color: #B87860; }
+.theme-toggle svg, #theme-btn svg { display: block; }
 
 /* Alias for #theme-btn */
 #theme-btn {
   width: 30px; height: 30px;
+  padding: 0; line-height: 1;
   display: flex; align-items: center; justify-content: center;
   background: transparent;
   border: 1px solid #242424;
