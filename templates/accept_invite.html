@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accept Invitation — Kōdō</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F4F3F0;
+      color: #111110;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-bar__logo {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; color: #111110;
+    }
+    .logo-mark {
+      width: 30px; height: 30px;
+      background: #0A4A5A; color: #fff;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 17px; letter-spacing: -0.01em;
+    }
+
+    .auth-wrap {
+      flex: 1;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 32px 20px 80px;
+    }
+    .auth-card {
+      background: #FFFFFF;
+      border: 1px solid #D4D0C8;
+      width: 100%; max-width: 460px;
+      padding: 40px;
+    }
+    .auth-eyebrow {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6875rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: #0A4A5A; margin-bottom: 10px;
+    }
+    .auth-heading {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.375rem; font-weight: 700;
+      letter-spacing: -0.02em; color: #111110; margin-bottom: 6px;
+    }
+    .auth-sub {
+      font-size: 0.875rem; color: #6B6860;
+      margin-bottom: 24px; line-height: 1.55;
+    }
+
+    .plan-box {
+      background: #F9F8F5; border: 1px solid #E2E0DA;
+      padding: 14px 16px; margin-bottom: 22px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .plan-box__label { font-size: 12px; color: #6B6860; }
+    .plan-badge {
+      display: inline-block; padding: 3px 10px;
+      font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      border-radius: 3px;
+    }
+    .plan-badge--observer    { background: rgba(136,133,128,0.12); color: #555; border: 1px solid rgba(136,133,128,0.3); }
+    .plan-badge--benchmarker { background: rgba(10,74,90,0.1);     color: #0A4A5A; border: 1px solid rgba(10,74,90,0.25); }
+    .plan-badge--advisory    { background: rgba(184,134,11,0.1);   color: #7A5800; border: 1px solid rgba(184,134,11,0.3); }
+
+    .auth-error {
+      background: #FEF2F2; border: 1px solid #FECACA;
+      color: #B91C1C; font-size: 0.8125rem;
+      padding: 10px 12px; margin-bottom: 20px; line-height: 1.5;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-size: 0.75rem; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      color: #6B6860; margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%; padding: 10px 12px;
+      font-family: 'Inter', sans-serif; font-size: 0.9375rem;
+      color: #111110; background: #F9F8F5; border: 1px solid #D4D0C8;
+      outline: none; transition: border-color 0.15s; -webkit-appearance: none;
+    }
+    .form-input:focus { border-color: #0A4A5A; background: #FFFFFF; }
+    .form-input::placeholder { color: #A8A49C; }
+
+    .email-locked {
+      width: 100%; padding: 10px 12px;
+      font-family: 'Inter', sans-serif; font-size: 0.9375rem;
+      color: #6B6860; background: #EEECEA; border: 1px solid #D4D0C8;
+    }
+
+    .btn-primary {
+      width: 100%; padding: 12px;
+      background: #0A4A5A; color: #FFFFFF;
+      font-family: 'Syne', sans-serif; font-size: 0.875rem; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border: none; cursor: pointer; transition: background 0.15s;
+      margin-top: 4px;
+    }
+    .btn-primary:hover { background: #0c5a6e; }
+    .btn-primary:disabled { opacity: 0.5; cursor: default; }
+
+    .inline-error {
+      font-size: 0.8125rem; color: #B91C1C;
+      margin-top: 10px; display: none;
+    }
+
+    .auth-note { text-align: center; padding: 20px; font-size: 0.75rem; color: #A8A49C; }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 28px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/" class="top-bar__logo">
+    <div class="logo-mark">K</div>
+    <span class="logo-text">Kōdō</span>
+  </a>
+</div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    {% if error %}
+      <!-- Error state -->
+      <p class="auth-eyebrow">Invitation</p>
+      <h1 class="auth-heading">This invite isn't valid.</h1>
+      <div class="auth-error" style="margin-top:16px">{{ error }}</div>
+      <p style="font-size:13px;color:#6B6860;margin-top:8px">
+        Need help? Email us at <a href="mailto:hello@kodo.ma" style="color:#0A4A5A">hello@kodo.ma</a>
+      </p>
+
+    {% else %}
+      <!-- Invite form -->
+      <p class="auth-eyebrow">You've been invited</p>
+      <h1 class="auth-heading">Join {{ org.name }} on Kōdō.</h1>
+      <p class="auth-sub">Set your name and password to activate your account and access the platform.</p>
+
+      <div class="plan-box">
+        <span class="plan-box__label">Plan access</span>
+        <span class="plan-badge plan-badge--{{ org.plan }}">
+          {{ {'observer':'Observer','benchmarker':'Benchmarker','advisory':'Advisory'}.get(org.plan, org.plan) }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="email-locked">{{ invited_email }}</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="inv-name">Full Name *</label>
+        <input class="form-input" type="text" id="inv-name" placeholder="Youssef Benali" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="inv-pw">Password *</label>
+        <input class="form-input" type="password" id="inv-pw" placeholder="Min. 8 characters" required autocomplete="new-password">
+      </div>
+      <div class="form-group" style="margin-bottom:20px">
+        <label class="form-label" for="inv-conf">Confirm Password *</label>
+        <input class="form-input" type="password" id="inv-conf" placeholder="Repeat password" required autocomplete="new-password">
+      </div>
+
+      <button class="btn-primary" id="accept-btn" onclick="acceptInvite()">Accept invitation</button>
+      <p class="inline-error" id="inv-error"></p>
+    {% endif %}
+
+  </div>
+</div>
+
+<p class="auth-note">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</p>
+
+{% if not error %}
+<script>
+  const TOKEN = {{ token | tojson }};
+
+  async function acceptInvite() {
+    const name   = document.getElementById('inv-name').value.trim();
+    const pw     = document.getElementById('inv-pw').value;
+    const conf   = document.getElementById('inv-conf').value;
+    const errEl  = document.getElementById('inv-error');
+    const btn    = document.getElementById('accept-btn');
+
+    errEl.style.display = 'none';
+    if (!name || !pw || !conf) { showErr('All fields are required.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Activating…';
+
+    try {
+      const res  = await fetch('/accept-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: TOKEN, name, password: pw, confirm_password: conf }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showErr(data.error || 'Something went wrong.'); }
+      else         { window.location.href = '/dashboard'; }
+    } catch { showErr('Request failed — please try again.'); }
+    finally  { btn.disabled = false; btn.textContent = 'Accept invitation'; }
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById('inv-error');
+    el.textContent = msg; el.style.display = 'block';
+  }
+
+  ['inv-name','inv-pw','inv-conf'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') acceptInvite();
+    });
+  });
+</script>
+{% endif %}
+
+</body>
+</html>

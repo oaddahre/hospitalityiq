@@ -225,10 +225,47 @@
     </div>
   </div>
 
+  {% if user.role == 'owner' and user.organisation_id %}
+  <!-- Team section — org owners only -->
+  <div class="acc-card" id="team-card">
+    <div class="acc-card__title" id="team-card-title">Team · loading…</div>
+    <div id="team-members-list" style="min-height:40px"></div>
+    <div class="acc-footer-row" style="margin-top:16px">
+      <button class="acc-btn" onclick="openInviteModal()">+ Invite member</button>
+    </div>
+  </div>
+
+  <!-- Pending invites sub-section (rendered inside team-card dynamically) -->
+  {% endif %}
+
 </div>
+
+<!-- Invite modal -->
+{% if user.role == 'owner' and user.organisation_id %}
+<div id="invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
+     align-items:center;justify-content:center;z-index:500">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+              padding:28px 28px;width:400px;max-width:92vw">
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">Invite a member</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.5">
+      They'll receive a link to set their name and password.
+    </p>
+    <label class="acc-pw-label" style="display:block;margin-bottom:5px">Email Address</label>
+    <input type="email" id="invite-email" class="acc-input" placeholder="colleague@company.com" autocomplete="email">
+    <div id="invite-msg" style="font-size:12px;margin-top:8px;display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="acc-btn" id="invite-btn" onclick="sendInvite()">Send invite</button>
+      <button style="padding:9px 18px;background:transparent;border:1px solid var(--border);
+                     color:var(--text-muted);border-radius:var(--radius-sm);font-size:13px;
+                     cursor:pointer;font-family:var(--font)" onclick="closeInviteModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <script>
   const FORCE_CHANGE = {{ 'true' if user.force_password_change else 'false' }};
+  const IS_OWNER     = {{ 'true' if user.role == 'owner' else 'false' }};
 
   async function changePassword() {
     const curr   = document.getElementById('curr-pw').value;
@@ -284,6 +321,157 @@
       if (e.key === 'Enter') changePassword();
     });
   });
+
+  // ── Team section ──────────────────────────────────
+  if (IS_OWNER) loadTeam();
+
+  async function loadTeam() {
+    try {
+      const res  = await fetch('/api/organisation');
+      if (!res.ok) return;
+      const data = await res.json();
+      const org  = data.organisation;
+      const members = data.members || [];
+
+      const seatsUsed  = org.seats_used  ?? members.filter(m => ['active','invited'].includes(m.status)).length;
+      const seatsTotal = org.seats_total ?? 1;
+      document.getElementById('team-card-title').textContent =
+        `Team · ${seatsUsed} of ${seatsTotal} seat${seatsTotal > 1 ? 's' : ''} used`;
+
+      const active  = members.filter(m => m.status === 'active'  && m.role !== 'owner');
+      const invited = members.filter(m => m.status === 'invited');
+      const owner   = members.find(m => m.role === 'owner');
+
+      let html = '';
+
+      if (owner) {
+        html += memberRow(owner, true);
+      }
+      active.forEach(m  => { html += memberRow(m,  false); });
+      if (invited.length) {
+        html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+                              color:var(--text-dim);margin:12px 0 6px">Pending invites</div>`;
+        invited.forEach(m => { html += inviteRow(m); });
+      }
+      if (!html) html = `<p style="font-size:13px;color:var(--text-muted)">No members yet.</p>`;
+
+      document.getElementById('team-members-list').innerHTML = html;
+    } catch(e) {
+      document.getElementById('team-members-list').innerHTML =
+        '<p style="font-size:12px;color:var(--text-muted)">Could not load team.</p>';
+    }
+  }
+
+  function memberRow(m, isOwner) {
+    const statusDot = {
+      active:   '#4CAF72',
+      invited:  '#C4A040',
+      suspended:'#ef4444',
+    }[m.status] || '#888';
+    const joined = m.approved_at || m.created_at || '—';
+    const removeBtn = (!isOwner && m.status !== 'removed')
+      ? `<button onclick="removeMember('${escJ(m.id)}', '${escJ(m.name || m.email)}')"
+           style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;
+                  padding:2px 6px;border-radius:4px;transition:color 0.15s"
+           title="Remove member"
+           onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--text-dim)'">✕</button>`
+      : '';
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;
+                  border-bottom:1px solid var(--border)">
+        <span style="width:7px;height:7px;border-radius:50%;background:${statusDot};flex-shrink:0"></span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text);
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${esc(m.name || '—')}${isOwner ? ' <span style="font-size:10px;color:var(--text-muted);font-weight:400">(you)</span>' : ''}
+          </div>
+          <div style="font-size:11px;color:var(--text-muted)">${esc(m.email)}</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);flex-shrink:0">${joined}</div>
+        ${removeBtn}
+      </div>`;
+  }
+
+  function inviteRow(m) {
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;
+                  border-bottom:1px solid var(--border)">
+        <span style="width:7px;height:7px;border-radius:50%;background:#C4A040;flex-shrink:0"></span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;color:var(--text-muted);
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.email)}</div>
+        </div>
+        <button onclick="cancelInvite('${escJ(m.id)}')"
+          style="font-size:11px;color:var(--text-muted);background:none;border:1px solid var(--border);
+                 border-radius:4px;padding:3px 8px;cursor:pointer">Cancel</button>
+      </div>`;
+  }
+
+  async function removeMember(uid, label) {
+    if (!confirm(`Remove ${label} from the organisation?`)) return;
+    const res = await fetch(`/api/organisation/members/${uid}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Failed to remove member.'); return; }
+    await loadTeam();
+  }
+
+  async function cancelInvite(uid) {
+    if (!confirm('Cancel this invite?')) return;
+    const res = await fetch(`/api/organisation/members/${uid}`, { method: 'DELETE' });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Failed.'); return; }
+    await loadTeam();
+  }
+
+  function openInviteModal() {
+    document.getElementById('invite-email').value = '';
+    document.getElementById('invite-msg').style.display = 'none';
+    document.getElementById('invite-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('invite-email').focus(), 50);
+  }
+  function closeInviteModal() { document.getElementById('invite-modal').style.display = 'none'; }
+
+  async function sendInvite() {
+    const email  = document.getElementById('invite-email').value.trim();
+    const msgEl  = document.getElementById('invite-msg');
+    const btn    = document.getElementById('invite-btn');
+    msgEl.style.display = 'none';
+    if (!email) { showInvMsg('Email is required.', false); return; }
+
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const res  = await fetch('/api/organisation/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showInvMsg(data.error || 'Failed.', false); }
+      else {
+        showInvMsg(`Invite sent to ${data.email}. Link: ${location.origin}${data.invite_url}`, true);
+        await loadTeam();
+      }
+    } catch { showInvMsg('Request failed.', false); }
+    finally  { btn.disabled = false; btn.textContent = 'Send invite'; }
+  }
+
+  function showInvMsg(text, ok) {
+    const el = document.getElementById('invite-msg');
+    el.textContent = text;
+    el.style.color  = ok ? 'var(--green)' : '#ef4444';
+    el.style.display = 'block';
+  }
+
+  document.getElementById('invite-email')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendInvite();
+  });
+
+  // Close modal on backdrop click
+  document.getElementById('invite-modal')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeInviteModal();
+  });
+
+  function esc(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escJ(s) { return String(s||'').replace(/'/g,"\\'"); }
 </script>
 
 </body>
