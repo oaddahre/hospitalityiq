@@ -7,3 +7,5 @@ id,name,city,region,category,brand,brand_group,owner,keys,expected_opening,statu
 6,Hilton Tanger City,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Hilton,Hilton Hotels & Resorts,Undisclosed,195,2026,Under Construction,420000000,35.7756,-5.8145,Full service Hilton Tanger city center
 7,25hours Hotel Casablanca,Casablanca,Casablanca-Settat,Upscale,25hours,Accor,Undisclosed,110,2027,Planning,220000000,33.5812,-7.6178,Lifestyle design hotel concept Casablanca
 8,Dakhla Luxury Eco Resort,Dakhla,Laâyoune-Sakia El Hamra,Luxury,Independent,Independent,Undisclosed,45,2026,Under Construction,280000000,23.6934,-15.9456,Luxury kite and wind sports destination
+9,Pullman Bouskoura Casablanca,Casablanca,Casablanca-Settat,Upper Upscale,Pullman,Accor,Risma,200,2026,Under Construction,350000000,33.4234,-7.6589,New Pullman resort at Bouskoura Golf City
+10,Four Points by Sheraton Casablanca,Casablanca,Casablanca-Settat,Upscale,Four Points by Sheraton,Marriott International,Undisclosed,195,2026,Planning,280000000,33.5550,-7.5990,Four Points by Sheraton confirmed for Casablanca

@@ -1,14 +1,13 @@
 id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,owner,data_quality
-1,Four Seasons Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Luxury,Four Seasons,Four Seasons Hotels & Resorts,186,2015,Operating,33.5955,-7.6308,Undisclosed,verified
-2,Hyatt Regency Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,255,1993,Operating,33.5731,-7.6534,Undisclosed,verified
-3,Sofitel Casablanca Tour Blanche,Casablanca,Grand Casablanca-Settat,Luxury,Sofitel,Accor,254,1999,Operating,33.5869,-7.6192,Risma,estimated — key count uncertain
-4,Novotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upscale,Novotel,Accor,258,2007,Operating,33.5848,-7.6334,Risma,verified
-5,Kenzi Tower Hotel,Casablanca,Grand Casablanca-Settat,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,234,2010,Operating,33.5755,-7.6289,Kenzi Hotels Group,verified
-6,Radisson Blu Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upper Upscale,Radisson Blu,Radisson Hotel Group,212,2012,Operating,33.575,-7.581,Undisclosed,verified
-7,Ibis Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,175,2005,Operating,33.566,-7.576,Risma,verified
-8,Movenpick Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Mövenpick,Accor,268,2014,Operating,33.5874,-7.6078,Undisclosed,verified
-9,Golden Tulip Farah Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Golden Tulip,Louvre Hotels Group,275,1990,Operating,33.57,-7.598,Undisclosed,verified
-10,Barceló Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Barceló,Barceló Hotel Group,222,2008,Operating,33.5921,-7.6198,Undisclosed,verified
+1,Four Seasons Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Luxury,Four Seasons,Four Seasons Hotels & Resorts,184,2015,Operating,33.5955,-7.6308,Undisclosed,verified
+2,Hyatt Regency Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,255,2023,Operating,33.5731,-7.6534,Undisclosed,verified
+3,Sofitel Casablanca Tour Blanche,Casablanca,Grand Casablanca-Settat,Luxury,Sofitel,Accor,171,1999,Operating,33.5869,-7.6192,Risma,verified
+4,Novotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upscale,Novotel,Accor,281,2007,Operating,33.5848,-7.6334,Risma,verified
+5,Kenzi Tower Hotel,Casablanca,Grand Casablanca-Settat,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,237,2010,Operating,33.5755,-7.6289,Kenzi Hotels Group,verified
+6,Radisson Blu Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upper Upscale,Radisson Blu,Radisson Hotel Group,120,2012,Operating,33.575,-7.581,Undisclosed,verified
+7,Ibis Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,266,2005,Operating,33.566,-7.576,Risma,verified
+8,Movenpick Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Mövenpick,Accor,184,2014,Operating,33.5874,-7.6078,Undisclosed,verified
+10,Barceló Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Barceló,Barceló Hotel Group,85,2008,Operating,33.5921,-7.6198,Undisclosed,verified
 11,Four Seasons Resort Marrakech,Marrakech,Marrakech-Safi,Luxury,Four Seasons,Four Seasons Hotels & Resorts,141,2011,Operating,31.6178,-8.0201,Undisclosed,verified
 12,Mandarin Oriental Marrakech,Marrakech,Marrakech-Safi,Luxury,Mandarin Oriental,Mandarin Oriental Hotel Group,55,2015,Operating,31.6089,-8.0312,Undisclosed,estimated — key count uncertain
 13,Royal Mansour Marrakech,Marrakech,Marrakech-Safi,Luxury,Royal Mansour,Royal Mansour Collection,53,2010,Operating,31.6244,-7.9992,Royal (State),verified
@@ -41,17 +40,12 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 43,Kenzi Zalagh Parc Palace Fes,Fes,Fès-Meknès,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,270,2010,Operating,34.025,-4.987,Kenzi Hotels Group,verified
 44,Radisson Blu Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Radisson Blu,Radisson Hotel Group,224,2014,Operating,34.042,-5.013,Undisclosed,verified
 45,Sheraton Fes Hotel,Fes,Fès-Meknès,Upper Upscale,Sheraton,Marriott International,288,2012,Operating,34.052,-4.992,Undisclosed,verified
-46,Sheraton Casablanca Hotel & Towers,Casablanca,Grand Casablanca-Settat,Upper Upscale,Sheraton,Marriott International,309,1985,Operating,33.59,-7.603,Undisclosed,verified
-47,Pullman Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upper Upscale,Pullman,Accor,200,2010,Operating,33.585,-7.598,Risma,verified
-48,Mercure Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Upscale,Mercure,Accor,172,2015,Operating,33.544,-7.639,Risma,verified
-49,DoubleTree by Hilton Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,DoubleTree,Hilton Hotels & Resorts,198,2016,Operating,33.567,-7.592,Undisclosed,verified
-50,Ibis Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,199,2012,Operating,33.543,-7.636,Risma,verified
+49,DoubleTree by Hilton Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,DoubleTree,Hilton Hotels & Resorts,306,2016,Operating,33.567,-7.592,Undisclosed,verified
+50,Ibis Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,85,2012,Operating,33.543,-7.636,Risma,verified
 52,Ibis Styles Casablanca Centre,Casablanca,Grand Casablanca-Settat,Midscale,Ibis Styles,Accor,120,2018,Operating,33.564,-7.587,Risma,verified
-53,Marriott Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Marriott,Marriott International,180,2019,Operating,33.578,-7.606,Undisclosed,verified
-54,Holiday Inn Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Holiday Inn,IHG Hotels & Resorts,150,2017,Operating,33.561,-7.594,Undisclosed,verified
+53,Marriott Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Marriott,Marriott International,305,2019,Operating,33.578,-7.606,Undisclosed,verified
 55,Four Points by Sheraton Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Four Points,Marriott International,195,2014,Operating,33.555,-7.599,Undisclosed,verified
-56,Courtyard by Marriott Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Courtyard,Marriott International,185,2020,Operating,33.582,-7.589,Undisclosed,verified
-57,Park Inn by Radisson Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Park Inn,Radisson Hotel Group,160,2020,Operating,33.56,-7.598,Undisclosed,verified
+56,Courtyard by Marriott Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Courtyard,Marriott International,109,2020,Operating,33.582,-7.589,Undisclosed,verified
 58,La Mamounia,Marrakech,Marrakech-Safi,Luxury,La Mamounia,Independent Luxury,209,1923,Operating,31.6234,-8.0089,Société Anonyme Royale (State),verified
 59,Amanjena,Marrakech,Marrakech-Safi,Luxury,Amanjena,Aman Resorts,40,2000,Operating,31.5934,-8.0423,Undisclosed,verified
 60,Es Saadi Marrakech Resort,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,150,1952,Operating,31.636,-7.981,Undisclosed,verified
@@ -156,9 +150,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 165,Tikida Palmeraie Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Tikida,Mogador Hotels Group,247,2006,Operating,31.647,-7.999,Undisclosed,verified
 166,Atlas Targa Marrakech,Marrakech,Marrakech-Safi,Upscale,Atlas Hotels,Atlas Hotels Group,225,2000,Operating,31.621,-7.963,Undisclosed,verified
 167,Domaine des Remparts Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Domaine des Remparts,Independent,31,2012,Operating,31.618,-7.996,Undisclosed,verified
-168,Adagio Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Adagio,Accor,100,2016,Operating,33.568,-7.594,Risma,verified
-169,Onomo Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Midscale,Onomo,Onomo Hotels,148,2015,Operating,33.58,-7.605,Undisclosed,verified
-170,Atlas Almohades Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Atlas Hotels,Atlas Hotels Group,185,1993,Operating,33.582,-7.613,Undisclosed,verified
+168,Adagio Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Adagio,Accor,96,2016,Operating,33.568,-7.594,Risma,verified
+169,Onomo Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Onomo,Onomo Hotels,201,2015,Operating,33.58,-7.605,Undisclosed,verified
 171,Sofitel Agadir Thalassa Sea & Spa,Agadir,Souss-Massa,Luxury,Sofitel,Accor,275,2008,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
 172,Tikida Golf Palace Agadir,Agadir,Souss-Massa,Upper Upscale,Tikida,Mogador Hotels Group,228,2006,Operating,30.4234,-9.5823,Undisclosed,verified
 173,Tildi Hotel & Spa Agadir,Agadir,Souss-Massa,Upscale,Tildi,Independent,180,2001,Operating,30.4167,-9.5889,Undisclosed,verified
@@ -220,8 +213,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 231,Dar Zitoune Taroudant,Taroudant,Souss-Massa,Upscale,Dar Zitoune,Independent,24,2005,Operating,30.4712,-8.8734,Undisclosed,verified
 232,Kasbah Bab Ourika Marrakech,Marrakech,Marrakech-Safi,Luxury,Kasbah Bab Ourika,Independent Luxury,15,2010,Operating,31.4601,-7.7001,Undisclosed,verified
 233,Zalagh City Hotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Zalagh Hotels,Zalagh Hotels Group,136,2015,Operating,31.6234,-7.9678,Undisclosed,verified
-234,Hotel Mogador Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Mogador Hotels,Mogador Hotels Group,120,2017,Operating,33.5712,-7.6067,Undisclosed,verified
-235,Ibis budget Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Ibis Budget,Accor,116,2019,Operating,33.5623,-7.5801,Risma,verified
 236,Novotel Agadir,Agadir,Souss-Massa,Upscale,Novotel,Accor,182,2021,Operating,30.4312,-9.5956,Risma,verified
 237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
 238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
@@ -242,9 +233,9 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 253,Sofitel Al Hoceima Salam,Al Hoceima,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,168,2005,Operating,35.2534,-3.9289,Risma,estimated — key count uncertain
 254,Riad Madu Merzouga,Merzouga,Drâa-Tafilalet,Upscale,Riad Madu,Independent,22,2012,Operating,31.0967,-4.0089,Undisclosed,verified
 255,Ibis Styles Ouarzazate,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis Styles,Accor,70,2022,Operating,30.9156,-6.8956,Risma,verified
-256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,168,2019,Open,33.5834,-7.6234,Undisclosed,verified
+256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
 257,Hilton Garden Inn Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,145,2021,Open,35.7589,-5.8334,Undisclosed,verified
-258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,53,2019,Open,33.5934,-7.6234,Royal (State),verified
+258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2019,Open,33.5934,-7.6234,Royal (State),verified
 259,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,60,2023,Open,35.6934,-5.3312,Royal (State),estimated — key count uncertain
 260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,420,1999,Open,35.2456,-3.9289,Club Med (Fosun),estimated — key count uncertain
 261,Waldorf Astoria Rabat,Rabat,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,187,2019,Operating,33.9889,-6.8512,Undisclosed,verified
@@ -254,3 +245,9 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 266,Marchica Lagoon Resort,Nador,Oriental,Upscale,Independent,Independent Luxury,188,2018,Operating,35.1589,-2.9234,Marchica Med (State),estimated — key count uncertain
 267,Hotel Marchica,Nador,Oriental,Upscale,Independent,Independent,96,2015,Operating,35.1612,-2.9256,Marchica Med (State),estimated — key count uncertain
 268,Marriott Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Marriott,Marriott International,191,2021,Operating,34.0089,-6.8423,Madaëf,verified
+269,Royal Hideaway Casablanca,Casablanca,Casablanca-Settat,Luxury,Royal Hideaway,Barceló Hotel Group,310,2010,Open,33.5921,-7.6198,Undisclosed,verified
+270,Barceló Anfa Casablanca,Casablanca,Casablanca-Settat,Upper Upscale,Barceló,Barceló Hotel Group,206,2012,Open,33.5934,-7.6212,Undisclosed,verified
+271,Onomo Hotel Casablanca Airport,Casablanca,Casablanca-Settat,Midscale,Onomo,Onomo Hotels,135,2018,Open,33.3731,-7.5898,Undisclosed,verified
+272,Onomo Hotel Casablanca Sidi Maarouf,Casablanca,Casablanca-Settat,Midscale,Onomo,Onomo Hotels,120,2019,Open,33.5440,-7.6390,Undisclosed,verified
+273,Le Square by Onomo Collection,Casablanca,Casablanca-Settat,Upscale,Onomo Collection,Onomo Hotels,60,2020,Open,33.5890,-7.6120,Undisclosed,verified
+274,Mogador Casa Marina,Casablanca,Casablanca-Settat,Upscale,Mogador Hotels,Mogador Hotels Group,176,2021,Open,33.6012,-7.6234,Undisclosed,verified
