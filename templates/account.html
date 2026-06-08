@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account — Kōdō</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── Minimal account nav ── */
+    .acc-nav {
+      height: var(--nav-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+    .acc-nav__logo {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; color: var(--text);
+    }
+    .acc-nav__logo-text {
+      font-family: var(--heading);
+      font-size: 15px; font-weight: 700; letter-spacing: 0.05em;
+    }
+    .acc-nav__right { display: flex; align-items: center; gap: 16px; }
+    .acc-nav__back {
+      font-size: 12px; color: var(--text-muted); text-decoration: none;
+      padding: 4px 8px; border-radius: var(--radius-sm);
+      transition: color 0.15s, background 0.15s;
+    }
+    .acc-nav__back:hover { color: var(--text); background: var(--surface2); }
+
+    /* ── Page body ── */
+    .acc-body {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+      width: 100%;
+    }
+
+    /* ── Welcome banner ── */
+    .acc-welcome {
+      background: rgba(14,143,173,0.1);
+      border: 1px solid rgba(14,143,173,0.28);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--accent);
+      line-height: 1.55;
+    }
+    body.light .acc-welcome {
+      background: rgba(10,74,90,0.06);
+      border-color: rgba(10,74,90,0.2);
+      color: #0A4A5A;
+    }
+    .acc-welcome strong { font-weight: 600; display: block; margin-bottom: 2px; }
+
+    /* ── Section heading ── */
+    .acc-heading {
+      font-family: var(--heading);
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Card ── */
+    .acc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    .acc-card__title {
+      font-size: 10.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Profile fields (read-only) ── */
+    .acc-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .acc-field {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .acc-field:nth-last-child(-n+2) { border-bottom: none; }
+    .acc-field__label {
+      font-size: 10.5px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted); margin-bottom: 4px;
+    }
+    .acc-field__value { font-size: 13px; color: var(--text); }
+
+    /* ── Password form ── */
+    .acc-pw-fields { display: flex; flex-direction: column; gap: 14px; }
+    .acc-pw-group { display: flex; flex-direction: column; gap: 5px; }
+    .acc-pw-label {
+      font-size: 10.5px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .acc-input {
+      width: 100%; padding: 9px 11px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text);
+      font-size: 13px; font-family: var(--font); outline: none;
+      transition: border-color 0.15s;
+    }
+    .acc-input:focus { border-color: var(--accent); }
+    .acc-input::placeholder { color: var(--text-dim); }
+
+    .acc-footer-row { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+    .acc-btn {
+      padding: 9px 22px;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: var(--font);
+      transition: opacity 0.15s;
+    }
+    .acc-btn:hover { opacity: 0.88; }
+    .acc-btn:disabled { opacity: 0.45; cursor: default; }
+    .acc-msg { font-size: 12px; }
+    .acc-msg--ok  { color: var(--green); }
+    .acc-msg--err { color: #ef4444; }
+
+    @media (max-width: 500px) {
+      .acc-fields { grid-template-columns: 1fr; }
+      .acc-field:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
+      .acc-field:last-child { border-bottom: none; }
+      .acc-body { padding: 24px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Apply theme before first paint -->
+<script>
+  (function() {
+    if ((localStorage.getItem('kodo-theme') || 'light') === 'light')
+      document.body.classList.add('light');
+  })();
+</script>
+
+<!-- Nav -->
+<nav class="acc-nav">
+  <a href="/dashboard" class="acc-nav__logo">
+    <span class="acc-nav__logo-text">Kōdō</span>
+  </a>
+  <div class="acc-nav__right">
+    <a href="/dashboard" class="acc-nav__back">← Back to platform</a>
+  </div>
+</nav>
+
+<div class="acc-body">
+
+  {% if user.force_password_change %}
+  <div class="acc-welcome">
+    <strong>Welcome — please set your own password before continuing.</strong>
+    Your account was created by an administrator with a temporary password. Set a new one below to access the platform.
+  </div>
+  {% endif %}
+
+  <h1 class="acc-heading">Account</h1>
+
+  <!-- Profile -->
+  <div class="acc-card">
+    <div class="acc-card__title">Profile</div>
+    <div class="acc-fields">
+      <div class="acc-field">
+        <div class="acc-field__label">Name</div>
+        <div class="acc-field__value">{{ user.name or '—' }}</div>
+      </div>
+      <div class="acc-field">
+        <div class="acc-field__label">Email</div>
+        <div class="acc-field__value">{{ user.email }}</div>
+      </div>
+      <div class="acc-field">
+        <div class="acc-field__label">Organisation</div>
+        <div class="acc-field__value">{{ user.organisation or '—' }}</div>
+      </div>
+      <div class="acc-field">
+        <div class="acc-field__label">Plan</div>
+        <div class="acc-field__value">
+          <span class="tier-badge tier-badge--{{ user.tier }}" style="display:inline-block">
+            {{ {'observer': 'Observer', 'benchmarker': 'Benchmarker', 'advisory': 'Advisory'}.get(user.tier, user.tier) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change password -->
+  <div class="acc-card">
+    <div class="acc-card__title">Change Password</div>
+    <div class="acc-pw-fields">
+      <div class="acc-pw-group">
+        <label class="acc-pw-label" for="curr-pw">Current Password</label>
+        <input type="password" id="curr-pw" class="acc-input" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="acc-pw-group">
+        <label class="acc-pw-label" for="new-pw">New Password</label>
+        <input type="password" id="new-pw" class="acc-input" placeholder="Min. 8 characters" autocomplete="new-password">
+      </div>
+      <div class="acc-pw-group">
+        <label class="acc-pw-label" for="conf-pw">Confirm New Password</label>
+        <input type="password" id="conf-pw" class="acc-input" placeholder="Repeat new password" autocomplete="new-password">
+      </div>
+    </div>
+    <div class="acc-footer-row">
+      <button class="acc-btn" id="save-btn" onclick="changePassword()">Save password</button>
+      <span id="pw-msg" class="acc-msg" style="display:none"></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const FORCE_CHANGE = {{ 'true' if user.force_password_change else 'false' }};
+
+  async function changePassword() {
+    const curr   = document.getElementById('curr-pw').value;
+    const newPw  = document.getElementById('new-pw').value;
+    const confPw = document.getElementById('conf-pw').value;
+    const btn    = document.getElementById('save-btn');
+
+    hideMsg();
+    if (!curr || !newPw || !confPw) { showMsg('All fields are required.', false); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      const res  = await fetch('/account/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_password: curr, new_password: newPw, confirm_password: confPw }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showMsg(data.error || 'Something went wrong.', false);
+      } else {
+        showMsg('Password updated.', true);
+        document.getElementById('curr-pw').value = '';
+        document.getElementById('new-pw').value  = '';
+        document.getElementById('conf-pw').value = '';
+        if (FORCE_CHANGE) {
+          setTimeout(() => { window.location.href = '/dashboard'; }, 1400);
+        }
+      }
+    } catch {
+      showMsg('Request failed — please try again.', false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save password';
+    }
+  }
+
+  function showMsg(text, ok) {
+    const el = document.getElementById('pw-msg');
+    el.textContent = text;
+    el.className = 'acc-msg ' + (ok ? 'acc-msg--ok' : 'acc-msg--err');
+    el.style.display = 'inline';
+    if (ok && !FORCE_CHANGE) setTimeout(hideMsg, 3000);
+  }
+  function hideMsg() { document.getElementById('pw-msg').style.display = 'none'; }
+
+  // Allow Enter key in any field to submit
+  ['curr-pw','new-pw','conf-pw'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') changePassword();
+    });
+  });
+</script>
+
+</body>
+</html>

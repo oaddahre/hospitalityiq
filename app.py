@@ -50,8 +50,9 @@ class User(UserMixin):
         self.organisation     = data.get("organisation", "")
         self.tier             = data.get("tier", "observer")
         self.status           = data.get("status", "pending")
-        self.ai_queries_used  = data.get("ai_queries_used", 0)
-        self.ai_queries_reset = data.get("ai_queries_reset", "")
+        self.ai_queries_used       = data.get("ai_queries_used", 0)
+        self.ai_queries_reset      = data.get("ai_queries_reset", "")
+        self.force_password_change = data.get("force_password_change", False)
 
     def get_id(self):
         return self.id
@@ -133,6 +134,14 @@ ensure_seed_user()
 @login_manager.user_loader
 def load_user(uid):
     return find_user_by_id(uid)
+
+
+@app.before_request
+def enforce_password_change():
+    if current_user.is_authenticated and getattr(current_user, "force_password_change", False):
+        allowed = {"account_page", "account_change_password", "logout", "static"}
+        if request.endpoint and request.endpoint not in allowed:
+            return redirect(url_for("account_page"))
 
 
 # ─── Tier access ──────────────────────────────────────────────────────────────
@@ -242,6 +251,8 @@ def login_page():
                 else:
                     _login_failures.pop(email, None)
                     login_user(user, remember=True)
+                    if user.force_password_change:
+                        return redirect(url_for("account_page"))
                     next_url = request.args.get("next") or url_for("index")
                     return redirect(next_url)
             else:
@@ -330,6 +341,34 @@ def landing():
 @login_required
 def index():
     return render_template("index.html")
+
+
+@app.route("/account")
+@login_required
+def account_page():
+    return render_template("account.html", user=current_user)
+
+
+@app.route("/account/change-password", methods=["POST"])
+@login_required
+def account_change_password():
+    data       = request.get_json(silent=True) or {}
+    current_pw = data.get("current_password", "")
+    new_pw     = data.get("new_password", "")
+    confirm_pw = data.get("confirm_password", "")
+
+    if not check_password_hash(current_user.password_hash, current_pw):
+        return jsonify({"error": "Current password is incorrect."}), 400
+    if len(new_pw) < 8:
+        return jsonify({"error": "New password must be at least 8 characters."}), 400
+    if new_pw != confirm_pw:
+        return jsonify({"error": "Passwords do not match."}), 400
+
+    update_user_field(current_user.id, {
+        "password_hash":         generate_password_hash(new_pw),
+        "force_password_change": False,
+    })
+    return jsonify({"ok": True})
 
 
 @app.route("/team")
@@ -776,18 +815,19 @@ def admin_users_create():
 
     db = load_users_db()
     new_user = {
-        "id":               str(uuid.uuid4()),
-        "email":            email,
-        "password_hash":    generate_password_hash(temp_password),
-        "name":             name,
-        "organisation":     org,
-        "tier":             tier,
-        "status":           "active",
-        "created_at":       datetime.utcnow().strftime("%Y-%m-%d"),
-        "approved_at":      datetime.utcnow().strftime("%Y-%m-%d"),
-        "invited_by":       "admin",
-        "ai_queries_used":  0,
-        "ai_queries_reset": datetime.utcnow().strftime("%Y-%m"),
+        "id":                    str(uuid.uuid4()),
+        "email":                 email,
+        "password_hash":         generate_password_hash(temp_password),
+        "name":                  name,
+        "organisation":          org,
+        "tier":                  tier,
+        "status":                "active",
+        "created_at":            datetime.utcnow().strftime("%Y-%m-%d"),
+        "approved_at":           datetime.utcnow().strftime("%Y-%m-%d"),
+        "invited_by":            "admin",
+        "ai_queries_used":       0,
+        "ai_queries_reset":      datetime.utcnow().strftime("%Y-%m"),
+        "force_password_change": True,
     }
     db["users"].append(new_user)
     save_users_db(db)
