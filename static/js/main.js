@@ -1156,7 +1156,7 @@ function initTourismCharts() {
         responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
         layout: { padding: { top: 12 } },
         plugins: {
-          legend: { display: true, labels: { color: cc.tick, font: { size: 11 }, boxWidth: 10, padding: 14 } },
+          legend: { display: false },
           datalabels: { display: false },
           tooltip: {
             backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
@@ -2385,7 +2385,7 @@ function renderBenchDOW() {
         responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
         layout: { padding: { top: 14 } },
         plugins: {
-          legend: { display: true, labels: { color: cc.tick, font: { size: 11 }, boxWidth: 10, padding: 14 } },
+          legend: { display: false },
           datalabels: { display: false },
           tooltip: {
             backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
