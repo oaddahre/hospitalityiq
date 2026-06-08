@@ -1318,8 +1318,12 @@ function initPipelineMap() {
     const color = p.status === 'Under Construction' ? '#B87860' : '#888888';
     const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
     const marker = L.circleMarker([p.lat, p.lng], {
-      radius, fillColor: color, color: '#fff',
-      weight: 1.5, opacity: 0.9, fillOpacity: 0.85,
+      radius,
+      fillColor: color,
+      color: color,
+      weight: 1.5,
+      opacity: 1,
+      fillOpacity: 0.8,
     }).addTo(map).bindPopup(pipelinePopupHTML(p), { maxWidth: 280, minWidth: 240 });
     return { marker, project: p };
   });

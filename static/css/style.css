@@ -42,7 +42,7 @@ body.light {
   --accent-hover:  #B87860;
   --positive:      #3D6B3D;
   --negative:      #8B3A3A;
-  --nav-bg:        #050505;
+  --nav-bg:        #FFFFFF;
   --sidebar-bg:    #F5F5F5;
 }
 
@@ -142,6 +142,19 @@ h1, h2, h3, .ph h1, .screen-header h1, .ct, .card-title, .kpi-label-title {
   transition: 150ms;
 }
 #theme-btn:hover { border-color: #B87860; color: #B87860; }
+
+/* ─── Nav light mode overrides ───────────────────── */
+body.light .navbar { border-bottom-color: #ECECEC; }
+body.light .logo-text { color: #0A0A0A; }
+body.light .nav-link { color: #8A8A8A; }
+body.light .nav-link:hover  { color: #0A0A0A; }
+body.light .nav-link.active { color: #0A0A0A; font-weight: 600; }
+body.light .theme-toggle { border-color: #ECECEC; color: #8A8A8A; }
+body.light .theme-toggle:hover { border-color: #A06848; color: #A06848; }
+body.light #theme-btn { border-color: #ECECEC; color: #8A8A8A; }
+body.light #theme-btn:hover { border-color: #A06848; color: #A06848; }
+body.light .nav-account { color: #8A8A8A; }
+body.light .nav-logout  { color: #8A8A8A; }
 
 .badge {
   background: transparent;
