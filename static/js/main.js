@@ -1336,8 +1336,8 @@ function initPipelineMap() {
 function pipelinePopupHTML(p) {
   const invB = (p.investment_mad / 1e9).toFixed(2);
   const statusPill = p.status === 'Under Construction'
-    ? `<span style="background:rgba(184,146,42,0.15);color:#854F0B;border:1px solid rgba(184,146,42,0.4);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700">${p.status}</span>`
-    : `<span style="background:rgba(10,74,90,0.12);color:#0A4A5A;border:1px solid rgba(10,74,90,0.35);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700">${p.status}</span>`;
+    ? `<span style="background:transparent;color:#B8922A;border:1px solid #B8922A;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`
+    : `<span style="background:transparent;color:#0A4A5A;border:1px solid #0A4A5A;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">${p.status}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${fmt.esc(p.category)}</div>

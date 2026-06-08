@@ -128,14 +128,14 @@ img { display: block; max-width: 100%; }
   letter-spacing: 0.04em;
   padding: 3px 8px;
   border-radius: 4px;
-  background: rgba(10,74,90,0.08);
-  color: var(--accent);
-  border: 1px solid rgba(10,74,90,0.18);
+  background: transparent;
+  color: #4A4A4A;
+  border: 1px solid #C8C4BC;
 }
 .tag--gold {
-  background: rgba(184,146,42,0.1);
-  color: var(--gold);
-  border-color: rgba(184,146,42,0.25);
+  background: transparent;
+  color: #4A4A4A;
+  border-color: #C8C4BC;
 }
 
 /* ── Nav ── */
@@ -541,9 +541,9 @@ img { display: block; max-width: 100%; }
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(10,74,90,0.08);
-  color: var(--accent);
-  border: 1px solid rgba(10,74,90,0.18);
+  background: transparent;
+  color: #4A4A4A;
+  border: 1px solid #C8C4BC;
   padding: 2px 8px;
   border-radius: 4px;
   margin-bottom: 4px;
