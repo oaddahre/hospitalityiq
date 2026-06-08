@@ -734,32 +734,68 @@ body {
 .contact-info {
   display: flex;
   flex-direction: column;
-  border: 1px solid #ECECEC;
-  border-radius: 6px;
-  overflow: hidden;
 }
 .contact-item {
-  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 0;
   border-bottom: 1px solid #ECECEC;
 }
 .contact-item:last-child { border-bottom: none; }
 .contact-item__label {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #AAAAAA;
-  display: block;
-  margin-bottom: 4px;
+  letter-spacing: 0.08em;
+  color: #8A8A8A;
+  flex-shrink: 0;
+  padding-top: 1px;
 }
 .contact-item__value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  color: #0A0A0A;
+  text-align: right;
+  line-height: 1.5;
+}
+.contact-item__value--muted {
+  color: #8A8A8A;
+  line-height: 1.6;
+}
+.contact-platform-card {
+  background: #FFFFFF;
+  border: 1px solid #ECECEC;
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-top: 20px;
+}
+.contact-platform-card__title {
   font-family: 'Syne', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #0A0A0A;
-  display: block;
+  margin-bottom: 8px;
 }
+.contact-platform-card__body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  color: #8A8A8A;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.contact-platform-card__link {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #A06848;
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 150ms;
+}
+.contact-platform-card__link:hover { opacity: 0.7; }
 
 /* ── Footer ────────────────────────────────────────────────── */
 .mk-footer {
