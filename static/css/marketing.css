@@ -132,11 +132,11 @@ body {
 
 /* ── Navigation ────────────────────────────────────────────── */
 .mk-nav {
-  background: #050505;
+  background: #FAFAFA;
   height: 56px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid #ECECEC;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -157,7 +157,7 @@ body {
   font-size: 15px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #F0F0EE;
+  color: #0A0A0A;
 }
 .mk-nav__links {
   display: flex;
@@ -170,14 +170,14 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #888888;
+  color: #8A8A8A;
   text-decoration: none;
   padding: 6px 12px;
   border-radius: 4px;
   transition: color 150ms;
 }
 .mk-nav__links a:hover,
-.mk-nav__links a.active { color: #F0F0EE; }
+.mk-nav__links a.active { color: #0A0A0A; }
 .mk-nav__cta {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
