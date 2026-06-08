@@ -319,9 +319,9 @@ img { display: block; max-width: 100%; }
   gap: 5px;
 }
 .hero__stat-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
   line-height: 1;
   font-variant-numeric: tabular-nums;

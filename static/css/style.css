@@ -293,9 +293,9 @@ body.light .kpi-card:hover { border-top-color: #E2E0DA; box-shadow: 0 2px 8px rg
 }
 
 .kpi-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -450,12 +450,14 @@ body.light .data-table tbody tr:hover { background: #F9F8F5; }
 }
 .data-table tbody td:nth-child(n+3) {
   text-align: right;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 body.light .data-table tbody td:nth-child(n+3) { color: #111111; }
 
 .rank-cell {
-  font-family: var(--font);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 10px;
   font-weight: 400;
   color: var(--text-dim);
@@ -589,9 +591,9 @@ body.light .data-table tbody td:nth-child(n+3) { color: #111111; }
   padding: 8px 10px;
 }
 .hiq-popup-stat-val {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -996,9 +998,9 @@ body.light .dq-estimate { color: #B8922A; }
   padding: 14px 16px;
 }
 .hotel-fin-val {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -1059,7 +1061,7 @@ body.light .dq-estimate { color: #B8922A; }
 .hbench-bar-fill.accent { background: var(--accent); }
 .hbench-bar-fill.muted  { background: var(--text-dim); }
 .hbench-val {
-  font-family: var(--font);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--text);
@@ -1586,9 +1588,9 @@ body.light .pipe-card-pl { border-left-color: #B0ACA4; }
   font-weight: 400;
 }
 .pipe-card-year {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-muted);
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -1603,9 +1605,9 @@ body.light .pipe-card-pl { border-left-color: #B0ACA4; }
   margin-top: 2px;
 }
 .pipe-card-metric-val {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -1804,14 +1806,14 @@ body.light .bench-kpi-card { border-top: 2px solid #E2E0DA; }
 .bench-kpi-title { font-family: var(--font); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 12px; }
 .bench-kpi-body { display: flex; align-items: center; gap: 8px; }
 .bench-kpi-mine { text-align: center; flex: 1; }
-.bench-kpi-mine-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 600; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-mine-val { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 500; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-mine-lbl { font-family: var(--font); font-size: 9px; color: var(--accent); font-weight: 400; margin-top: 3px; }
 .bench-kpi-sep { font-family: var(--font); font-size: 10px; font-weight: 400; color: var(--text-dim); flex-shrink: 0; }
 .bench-kpi-comp-blk { text-align: center; flex: 1; }
-.bench-kpi-comp-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-comp-val { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 500; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-comp-lbl { font-family: var(--font); font-size: 9px; color: var(--text-dim); font-weight: 400; margin-top: 3px; }
 .bench-kpi-index { text-align: center; padding: 6px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); flex-shrink: 0; min-width: 48px; }
-.bench-kpi-idx-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-idx-val { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-idx-lbl { font-family: var(--font); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 2px; }
 .bench-idx-green { background: rgba(26,107,60,0.10); border-color: rgba(26,107,60,0.25); }
 .bench-idx-green .bench-kpi-idx-val { color: var(--green); }
@@ -1855,7 +1857,7 @@ body.light .bench-idx-red .bench-kpi-idx-val { color: #A32D2D; }
 .bench-cal-day.bench-cal-empty   { background: transparent; border-color: transparent; }
 .bench-cal-day.bench-cal-nodata  { background: var(--surface2); opacity: 0.4; }
 .bench-cal-daynum { font-family: var(--font); font-size: 9px; font-weight: 400; opacity: 0.7; line-height: 1; }
-.bench-cal-dayval { font-family: var(--font); font-size: 11px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
+.bench-cal-dayval { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
 
 .bench-cal-tooltip {
   position: fixed; z-index: 1000;
@@ -1869,7 +1871,7 @@ body.light .bench-idx-red .bench-kpi-idx-val { color: #A32D2D; }
 .bct-row span:last-child { font-weight: 500; color: var(--text); }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
-.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); font-family: var(--font); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .bench-ai-box { padding: 4px 0 8px; min-height: 60px; }
 .bench-loading { font-family: var(--font); color: var(--text-muted); font-size: 13px; padding: 12px 0; }
@@ -1897,7 +1899,7 @@ body.light .bench-idx-red .bench-kpi-idx-val { color: #A32D2D; }
 .bench-insight-body { font-family: var(--font); font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
 .bench-insight-badge {
   display: inline-block; padding: 3px 9px; border-radius: 20px;
-  font-family: var(--font); font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums;
   align-self: flex-start; margin-top: 4px;
 }
 .bib-green { background: rgba(26,107,60,0.12);  color: var(--green);  border: 1px solid rgba(26,107,60,0.25); }

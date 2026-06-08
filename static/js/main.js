@@ -47,6 +47,7 @@ Chart.register(ChartDataLabels);
 Chart.defaults.scale.grid.display   = false;
 Chart.defaults.scale.grid.drawTicks = false;
 Chart.defaults.scale.border.display = false;
+Chart.defaults.font.family = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
 // ─── State & cache (must precede theme setup — swapMapTiles reads leaflet) ──
 
