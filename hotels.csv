@@ -32,8 +32,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 32,Banyan Tree Tamouda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Banyan Tree,Banyan Tree Hotels & Resorts,92,2017,Operating,35.699,-5.382,Undisclosed,verified
 33,Marriott Tanger Golf & Beach Resort,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Marriott,Marriott International,188,2019,Operating,35.6956,-5.3312,Madaëf,verified
 34,Sofitel Tamuda Bay Beach & Spa,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,168,2020,Operating,35.6912,-5.3389,Madaëf,estimated — key count uncertain
-35,Sofitel Rabat Jardin des Roses,Rabat,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,266,2004,Operating,33.9989,-6.8456,Risma,estimated — key count uncertain
-38,Ibis Rabat Agdal,Rabat,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,168,2010,Operating,34.007,-6.83,Risma,verified
+35,Sofitel Rabat Jardin des Roses,Rabat,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2004,Operating,33.9989,-6.8456,Risma,verified
+38,Ibis Rabat Agdal,Rabat,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2010,Operating,34.007,-6.83,Risma,verified
 40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,200,2008,Operating,34.047,-5.011,Undisclosed,verified
 41,Ibis Fes,Fes,Fès-Meknès,Midscale,Ibis,Accor,102,2011,Operating,34.03,-5.006,Risma,verified
 42,Mövenpick Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Mövenpick,Accor,186,2018,Operating,34.0389,-4.9934,Undisclosed,verified
@@ -81,10 +81,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 92,Sheraton Tanger Hotel,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Sheraton,Marriott International,195,2020,Operating,35.779,-5.8,Undisclosed,verified
 93,Hyatt Regency Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,175,2022,Operating,35.6889,-5.3456,Undisclosed,estimated — key count uncertain
 94,Riu Palace Smir Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Riu,Riu Hotels & Resorts,413,2000,Operating,35.695,-5.371,Undisclosed,estimated — key count uncertain
-95,La Tour Hassan Autograph Collection,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels Group,141,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
-96,Sheraton Rabat Hotel & Towers,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Sheraton,Marriott International,295,1993,Operating,34.015,-6.844,Undisclosed,verified
-98,Mercure Rabat Sheherazade,Rabat,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,128,1975,Operating,34.011,-6.848,Risma,verified
-99,Ibis Styles Rabat,Rabat,Rabat-Salé-Kénitra,Midscale,Ibis Styles,Accor,112,2017,Operating,34.02,-6.844,Risma,verified
+95,La Tour Hassan Palace,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
+98,Mercure Rabat Sheherazade,Rabat,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
 100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,56,2009,Operating,34.0634,-4.9789,Undisclosed,estimated — key count uncertain
 101,Riad Fes MGallery,Fes,Fès-Meknès,Upper Upscale,MGallery,Accor,60,2007,Operating,34.065,-4.981,Risma,verified
 102,Ibis Styles Fes,Fes,Fès-Meknès,Midscale,Ibis Styles,Accor,102,2018,Operating,34.032,-4.993,Risma,verified
@@ -133,7 +131,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 148,Ibis Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,85,2016,Operating,35.569,-5.365,Risma,verified
 149,Zalagh Hotel Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upscale,Zalagh Hotels,Zalagh Hotels Group,95,2016,Operating,35.581,-5.38,Undisclosed,verified
 150,Atlas Asma Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hotels Group,78,2011,Operating,35.566,-5.359,Undisclosed,verified
-151,Diwan MGallery Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,MGallery,Accor,92,2010,Operating,34.0134,-6.8289,Risma,verified
+151,Diwan MGallery Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,MGallery,Accor,94,2010,Operating,34.0134,-6.8289,Risma,verified
 152,La Sultana Marrakech,Marrakech,Marrakech-Safi,Luxury,La Sultana,Independent Luxury,28,2006,Operating,31.622,-8.002,Undisclosed,verified
 153,Selman Marrakech,Marrakech,Marrakech-Safi,Luxury,Selman,Independent Luxury,57,2012,Operating,31.6456,-8.0234,Undisclosed,verified
 154,El Fenn Marrakech,Marrakech,Marrakech-Safi,Luxury,El Fenn,Independent Luxury,21,2003,Operating,31.622,-8.003,Undisclosed,verified
@@ -166,8 +164,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 182,Dar Roumana Fes,Fes,Fès-Meknès,Luxury,Dar Roumana,Independent Luxury,6,2006,Operating,34.0623,-4.9812,Undisclosed,verified
 183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,96,1970,Operating,34.0678,-5.0034,Undisclosed,verified
 184,Zahra Hotel Fes,Fes,Fès-Meknès,Upscale,Zahra,Independent,55,2009,Operating,34.0423,-4.9967,Undisclosed,verified
-185,Hotel Farah Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Farah Hotels,Farah Hotels Group,208,1971,Operating,34.0156,-6.8378,Farah Hotels Group,verified
-187,Fairmont Rabat Sale,Rabat,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,183,2024,Operating,34.0289,-6.8489,Undisclosed,verified
+185,Hotel Borj Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,192,1971,Operating,34.0156,-6.8378,Farah Hotels Group,verified
+187,Fairmont Rabat Sale,Rabat,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,186,2024,Open,34.0456,-6.8234,Undisclosed,verified
 188,Fairmont Taghazout Bay,Taghazout Bay,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed,verified
 189,Robinson Club Taghazout Bay,Taghazout Bay,Souss-Massa,Upscale,Robinson,TUI Hotels & Resorts,360,2022,Operating,30.5278,-9.7123,Undisclosed,verified
 190,Hyatt Place Taghazout Bay,Taghazout Bay,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,120,2023,Operating,30.5345,-9.7056,Undisclosed,verified
@@ -217,7 +215,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
 238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
 239,Riad Laaroussa Fes,Fes,Fès-Meknès,Luxury,Riad Laaroussa,Independent Luxury,6,2009,Operating,34.0645,-4.9767,Undisclosed,verified
-240,Onomo Hotel Rabat,Rabat,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,128,2019,Operating,34.0189,-6.8445,Undisclosed,verified
 241,Hotel Le Vallon Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Hotel Le Vallon,Independent,45,2013,Operating,30.9178,-6.8978,Undisclosed,verified
 242,Heure Bleue Residence Essaouira,Essaouira,Marrakech-Safi,Upscale,Heure Bleue Residence,Independent,18,2014,Operating,31.5134,-9.7712,Undisclosed,verified
 243,Almansour Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Almansour,Independent,90,1995,Operating,35.7678,-5.8378,Undisclosed,verified
@@ -238,16 +235,18 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2019,Open,33.5934,-7.6234,Royal (State),verified
 259,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,60,2023,Open,35.6934,-5.3312,Royal (State),estimated — key count uncertain
 260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,420,1999,Open,35.2456,-3.9289,Club Med (Fosun),estimated — key count uncertain
-261,Waldorf Astoria Rabat,Rabat,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,187,2019,Operating,33.9889,-6.8512,Undisclosed,verified
+261,Waldorf Astoria Rabat,Rabat,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2019,Operating,33.9889,-6.8512,Undisclosed,verified
 262,Fairmont Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Fairmont,Accor,220,2025,Operating,35.7698,-5.8234,Undisclosed,verified
 264,Nobu Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Nobu Hospitality,Nobu Hospitality,71,2024,Operating,31.6423,-8.0178,Undisclosed,verified
 265,Oberoi Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Oberoi,Oberoi Hotels & Resorts,69,2023,Operating,31.6089,-8.0389,Undisclosed,verified
 266,Marchica Lagoon Resort,Nador,Oriental,Upscale,Independent,Independent Luxury,188,2018,Operating,35.1589,-2.9234,Marchica Med (State),estimated — key count uncertain
 267,Hotel Marchica,Nador,Oriental,Upscale,Independent,Independent,96,2015,Operating,35.1612,-2.9256,Marchica Med (State),estimated — key count uncertain
-268,Marriott Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Marriott,Marriott International,191,2021,Operating,34.0089,-6.8423,Madaëf,verified
+268,Marriott Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Marriott,Marriott International,188,2021,Operating,34.0089,-6.8423,Madaëf,verified
 269,Royal Hideaway Casablanca,Casablanca,Casablanca-Settat,Luxury,Royal Hideaway,Barceló Hotel Group,310,2010,Open,33.5921,-7.6198,Undisclosed,verified
 270,Barceló Anfa Casablanca,Casablanca,Casablanca-Settat,Upper Upscale,Barceló,Barceló Hotel Group,206,2012,Open,33.5934,-7.6212,Undisclosed,verified
 271,Onomo Hotel Casablanca Airport,Casablanca,Casablanca-Settat,Midscale,Onomo,Onomo Hotels,135,2018,Open,33.3731,-7.5898,Undisclosed,verified
 272,Onomo Hotel Casablanca Sidi Maarouf,Casablanca,Casablanca-Settat,Midscale,Onomo,Onomo Hotels,120,2019,Open,33.5440,-7.6390,Undisclosed,verified
 273,Le Square by Onomo Collection,Casablanca,Casablanca-Settat,Upscale,Onomo Collection,Onomo Hotels,60,2020,Open,33.5890,-7.6120,Undisclosed,verified
 274,Mogador Casa Marina,Casablanca,Casablanca-Settat,Upscale,Mogador Hotels,Mogador Hotels Group,176,2021,Open,33.6012,-7.6234,Undisclosed,verified
+275,Onomo Hotel Rabat Terminus,Rabat,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,118,2016,Open,34.0134,-6.8289,Undisclosed,verified
+276,Onomo Hotel Rabat Medina,Rabat,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,67,2018,Open,34.0201,-6.8334,Undisclosed,verified
