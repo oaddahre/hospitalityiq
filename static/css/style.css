@@ -900,7 +900,14 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--border-light);
   background: transparent;
   color: var(--text-muted);
+  white-space: nowrap;
 }
+.etype-sport    { border-color: #B87860; color: #B87860; background: rgba(184,120,96,0.08); }
+.etype-culture  { border-color: #A06848; color: #A06848; background: rgba(160,104,72,0.08); }
+.etype-music    { border-color: #C89070; color: #C89070; background: rgba(200,144,112,0.08); }
+.etype-business { border-color: #886050; color: #886050; background: rgba(136,96,80,0.08); }
+.etype-religious{ border-color: #D0A888; color: #D0A888; background: rgba(208,168,136,0.08); }
+.etype-mega     { border-color: #B87860; color: #B87860; background: rgba(184,120,96,0.12); font-weight: 600; }
 
 .event-name {
   font-family: 'Plus Jakarta Sans', sans-serif;

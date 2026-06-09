@@ -1000,7 +1000,7 @@ const TOUR_EVENTS = [
 
 const EVENT_TYPE_CLASS = {
   Sport: 'etype-sport', Culture: 'etype-culture', Music: 'etype-music',
-  Business: 'etype-business', Religious: 'etype-religious',
+  Business: 'etype-business', Religious: 'etype-religious', Mega: 'etype-mega',
 };
 
 function renderTourismEvents() {
