@@ -8,23 +8,19 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 7,Ibis Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,266,2005,Operating,33.566,-7.576,Risma,verified
 8,Movenpick Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Mövenpick,Accor,184,2014,Operating,33.5874,-7.6078,Undisclosed,verified
 10,Barceló Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Barceló,Barceló Hotel Group,85,2008,Operating,33.5921,-7.6198,Undisclosed,verified
-11,Four Seasons Resort Marrakech,Marrakech,Marrakech-Safi,Luxury,Four Seasons,Four Seasons Hotels & Resorts,141,2011,Operating,31.6178,-8.0201,Undisclosed,verified
-12,Mandarin Oriental Marrakech,Marrakech,Marrakech-Safi,Luxury,Mandarin Oriental,Mandarin Oriental Hotel Group,55,2015,Operating,31.6089,-8.0312,Undisclosed,estimated — key count uncertain
+11,Four Seasons Resort Marrakech,Marrakech,Marrakech-Safi,Luxury,Four Seasons,Four Seasons Hotels & Resorts,139,2011,Operating,31.6178,-8.0201,Undisclosed,verified
+12,Mandarin Oriental Marrakech,Marrakech,Marrakech-Safi,Luxury,Mandarin Oriental,Mandarin Oriental Hotel Group,65,2015,Operating,31.6089,-8.0312,Undisclosed,verified
 13,Royal Mansour Marrakech,Marrakech,Marrakech-Safi,Luxury,Royal Mansour,Royal Mansour Collection,53,2010,Operating,31.6244,-7.9992,Royal (State),verified
-14,Sofitel Marrakech Lounge & Spa,Marrakech,Marrakech-Safi,Luxury,Sofitel,Accor,331,2006,Operating,31.6312,-8.0156,Risma,verified
+14,Sofitel Marrakech Palais Imperial & Spa,Marrakech,Marrakech-Safi,Luxury,Sofitel,Accor,157,2006,Operating,31.6312,-8.0156,Risma,verified
 15,Fairmont Royal Palm Marrakech,Marrakech,Marrakech-Safi,Luxury,Fairmont,Accor,134,2015,Operating,31.5789,-8.0912,Risma,verified
-16,Novotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Novotel,Accor,179,2010,Operating,31.62,-7.974,Risma,verified
-17,Pullman Marrakech Palmeraie Resort & Spa,Marrakech,Marrakech-Safi,Upper Upscale,Pullman,Accor,213,2009,Operating,31.644,-7.985,Risma,verified
-18,JW Marriott Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,JW Marriott,Marriott International,244,2015,Operating,31.6389,-8.0098,Undisclosed,verified
-19,Radisson Blu Hotel & Conference Center Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,296,2014,Operating,31.639,-7.994,Undisclosed,verified
-20,Ibis Marrakech Centre Gare,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,250,2009,Operating,31.625,-7.967,Risma,verified
-21,Sofitel Agadir Royal Bay Resort,Agadir,Souss-Massa,Luxury,Sofitel,Accor,280,2013,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
-22,Riu Tikida Palace Agadir,Agadir,Souss-Massa,Upper Upscale,Riu,Riu Hotels & Resorts,336,2000,Operating,30.4012,-9.6012,Undisclosed,verified
-23,Radisson Blu Hotel Agadir,Agadir,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,312,2017,Operating,30.436,-9.593,Undisclosed,verified
-24,Hyatt Place Agadir,Agadir,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,197,2020,Operating,30.4201,-9.5867,Undisclosed,verified
-25,Kenzi Europa Agadir,Agadir,Souss-Massa,Upscale,Kenzi Hotels,Kenzi Hotels Group,196,1985,Operating,30.418,-9.588,Kenzi Hotels Group,verified
-26,Club Med Agadir,Agadir,Souss-Massa,Upper Upscale,Club Med,Accor,302,1990,Operating,30.433,-9.609,Undisclosed,verified
-27,Iberostar Founty Beach Agadir,Agadir,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,318,2001,Operating,30.4156,-9.5934,Undisclosed,verified
+16,Novotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Novotel,Accor,112,2010,Operating,31.62,-7.974,Risma,verified
+19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2014,Operating,31.639,-7.994,Undisclosed,verified
+20,Ibis Marrakech Centre Gare,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,109,2009,Operating,31.625,-7.967,Risma,verified
+21,Sofitel Agadir Royal Bay Resort,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,273,2013,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
+22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,Riu Hotels & Resorts,444,2000,Operating,30.4012,-9.6012,Undisclosed,verified
+23,Radisson Blu Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,191,2017,Operating,30.436,-9.593,Undisclosed,verified
+24,Hyatt Place Taghazout,Agadir / Taghazout,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,172,2020,Operating,30.4201,-9.5867,Undisclosed,verified
+27,Iberostar Waves Founty Beach Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,470,2001,Operating,30.4156,-9.5934,Undisclosed,verified
 28,Hilton Tanger City Center Hotel & Residences,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hilton,Hilton Hotels & Resorts,180,2019,Operating,35.7698,-5.8334,Undisclosed,verified
 29,Mövenpick Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mövenpick,Accor,163,2016,Operating,35.7712,-5.8241,Undisclosed,verified
 30,Ibis Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,108,2012,Operating,35.781,-5.805,Risma,verified
@@ -32,8 +28,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 32,Banyan Tree Tamouda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Banyan Tree,Banyan Tree Hotels & Resorts,92,2017,Operating,35.699,-5.382,Undisclosed,verified
 33,Marriott Tanger Golf & Beach Resort,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Marriott,Marriott International,188,2019,Operating,35.6956,-5.3312,Madaëf,verified
 34,Sofitel Tamuda Bay Beach & Spa,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,168,2020,Operating,35.6912,-5.3389,Madaëf,estimated — key count uncertain
-35,Sofitel Rabat Jardin des Roses,Rabat,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2004,Operating,33.9989,-6.8456,Risma,verified
-38,Ibis Rabat Agdal,Rabat,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2010,Operating,34.007,-6.83,Risma,verified
+35,Sofitel Rabat Jardin des Roses,Rabat / Salé,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2004,Operating,33.9989,-6.8456,Risma,verified
+38,Ibis Rabat Agdal,Rabat / Salé,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2010,Operating,34.007,-6.83,Risma,verified
 40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,200,2008,Operating,34.047,-5.011,Undisclosed,verified
 41,Ibis Fes,Fes,Fès-Meknès,Midscale,Ibis,Accor,102,2011,Operating,34.03,-5.006,Risma,verified
 42,Mövenpick Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Mövenpick,Accor,186,2018,Operating,34.0389,-4.9934,Undisclosed,verified
@@ -48,31 +44,14 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 56,Courtyard by Marriott Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Courtyard,Marriott International,109,2020,Operating,33.582,-7.589,Undisclosed,verified
 58,La Mamounia,Marrakech,Marrakech-Safi,Luxury,La Mamounia,Independent Luxury,209,1923,Operating,31.6234,-8.0089,Société Anonyme Royale (State),verified
 59,Amanjena,Marrakech,Marrakech-Safi,Luxury,Amanjena,Aman Resorts,40,2000,Operating,31.5934,-8.0423,Undisclosed,verified
-60,Es Saadi Marrakech Resort,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,150,1952,Operating,31.636,-7.981,Undisclosed,verified
-61,Kasbah Tamadot,Marrakech,Marrakech-Safi,Luxury,Kasbah Tamadot,Virgin Limited Edition,28,2005,Operating,31.65,-8.014,Undisclosed,verified
-62,Hilton Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Hilton,Hilton Hotels & Resorts,289,2015,Operating,31.628,-7.973,Undisclosed,verified
-63,Sheraton Marrakech Hotel,Marrakech,Marrakech-Safi,Upper Upscale,Sheraton,Marriott International,240,2010,Operating,31.625,-7.985,Undisclosed,verified
-64,DoubleTree by Hilton Marrakech,Marrakech,Marrakech-Safi,Upscale,DoubleTree,Hilton Hotels & Resorts,226,2016,Operating,31.63,-7.968,Undisclosed,verified
-65,Le Méridien Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Le Méridien,Marriott International,280,2014,Operating,31.62,-7.98,Madaëf,verified
-66,Hyatt Regency Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,314,2011,Operating,31.627,-7.978,Undisclosed,verified
-67,Ibis Styles Marrakech,Marrakech,Marrakech-Safi,Midscale,Ibis Styles,Accor,128,2016,Operating,31.622,-7.965,Risma,verified
-68,Mercure Marrakech Ensolia,Marrakech,Marrakech-Safi,Upscale,Mercure,Accor,168,2013,Operating,31.619,-7.971,Risma,verified
-69,Kenzi Menara Palace,Marrakech,Marrakech-Safi,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,448,1974,Operating,31.611,-7.996,Kenzi Hotels Group,verified
-70,Kenzi Rose Garden Hotel,Marrakech,Marrakech-Safi,Upscale,Kenzi Hotels,Kenzi Hotels Group,236,2002,Operating,31.632,-7.984,Kenzi Hotels Group,verified
-71,Club Med Marrakech la Palmeraie,Marrakech,Marrakech-Safi,Upper Upscale,Club Med,Accor,300,1996,Operating,31.645,-8.002,Undisclosed,verified
-72,InterContinental Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,InterContinental,IHG Hotels & Resorts,236,2012,Operating,31.624,-7.976,Undisclosed,verified
-74,Westin Marrakech Resort & Spa,Marrakech,Marrakech-Safi,Upper Upscale,Westin,Marriott International,210,2019,Operating,31.632,-7.986,Undisclosed,verified
-75,Hilton Agadir,Agadir,Souss-Massa,Upper Upscale,Hilton,Hilton Hotels & Resorts,280,2019,Operating,30.439,-9.597,Undisclosed,verified
-76,Sheraton Agadir Resort & Spa,Agadir,Souss-Massa,Upper Upscale,Sheraton,Marriott International,295,2018,Operating,30.43,-9.615,Undisclosed,verified
-77,Pullman Agadir,Agadir,Souss-Massa,Upper Upscale,Pullman,Accor,200,2015,Operating,30.425,-9.608,Risma,verified
-78,Mercure Agadir,Agadir,Souss-Massa,Upscale,Mercure,Accor,194,2011,Operating,30.432,-9.595,Risma,verified
-79,Ibis Agadir,Agadir,Souss-Massa,Midscale,Ibis,Accor,183,2008,Operating,30.428,-9.592,Risma,verified
-80,Riu Tikida Dunes Agadir,Agadir,Souss-Massa,Upper Upscale,Riu,Riu Hotels & Resorts,442,2003,Operating,30.409,-9.598,Undisclosed,verified
-81,Riu Tikida Beach Agadir,Agadir,Souss-Massa,Upper Upscale,Riu,Riu Hotels & Resorts,349,1999,Operating,30.411,-9.601,Undisclosed,verified
-82,Le Méridien Agadir,Agadir,Souss-Massa,Upper Upscale,Le Méridien,Marriott International,242,2007,Operating,30.417,-9.602,Undisclosed,verified
-83,Atlas Amadil Beach Agadir,Agadir,Souss-Massa,Upscale,Atlas Hotels,Atlas Hotels Group,300,1992,Operating,30.406,-9.6,Undisclosed,verified
-84,Kenzi Beach Agadir,Agadir,Souss-Massa,Upscale,Kenzi Hotels,Kenzi Hotels Group,360,1980,Operating,30.403,-9.597,Kenzi Hotels Group,verified
-85,Iberostar Agadir,Agadir,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,392,2006,Operating,30.408,-9.604,Undisclosed,verified
+60,Es Saadi Resort & Palace Marrakech,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,92,1952,Operating,31.636,-7.981,Undisclosed,verified
+61,Kasbah Tamadot,Marrakech,Marrakech-Safi,Luxury,Kasbah Tamadot,Virgin Limited Edition,42,2005,Operating,31.65,-8.014,Undisclosed,verified
+65,Le Méridien N'Fis Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Le Méridien,Marriott International,277,2014,Operating,31.62,-7.98,Madaëf,verified
+69,Kenzi Menara Palace,Marrakech,Marrakech-Safi,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,236,1974,Operating,31.611,-7.996,Kenzi Hotels Group,verified
+70,Kenzi Rose Garden Hotel,Marrakech,Marrakech-Safi,Upscale,Kenzi Hotels,Kenzi Hotels Group,384,2002,Operating,31.632,-7.984,Kenzi Hotels Group,verified
+71,Club Med Marrakech la Palmeraie,Marrakech,Marrakech-Safi,Upper Upscale,Club Med,Accor,350,1996,Operating,31.645,-8.002,Undisclosed,verified
+75,Hilton Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Hilton,Hilton Hotels & Resorts,280,2019,Operating,30.439,-9.597,Undisclosed,verified
+78,Mercure Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Mercure,Accor,194,2011,Operating,30.432,-9.595,Risma,verified
 86,Radisson Blu Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,225,2013,Operating,35.771,-5.801,Undisclosed,verified
 88,Ibis Styles Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Ibis Styles,Accor,105,2019,Operating,35.769,-5.799,Risma,verified
 89,Kenzi Solazur Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Kenzi Hotels,Kenzi Hotels Group,330,1969,Operating,35.783,-5.794,Kenzi Hotels Group,verified
@@ -81,8 +60,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 92,Sheraton Tanger Hotel,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Sheraton,Marriott International,195,2020,Operating,35.779,-5.8,Undisclosed,verified
 93,Hyatt Regency Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,175,2022,Operating,35.6889,-5.3456,Undisclosed,estimated — key count uncertain
 94,Riu Palace Smir Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Riu,Riu Hotels & Resorts,413,2000,Operating,35.695,-5.371,Undisclosed,estimated — key count uncertain
-95,La Tour Hassan Palace,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
-98,Mercure Rabat Sheherazade,Rabat,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
+95,La Tour Hassan Palace,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
+98,Mercure Rabat Sheherazade,Rabat / Salé,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
 100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,56,2009,Operating,34.0634,-4.9789,Undisclosed,estimated — key count uncertain
 101,Riad Fes MGallery,Fes,Fès-Meknès,Upper Upscale,MGallery,Accor,60,2007,Operating,34.065,-4.981,Risma,verified
 102,Ibis Styles Fes,Fes,Fès-Meknès,Midscale,Ibis Styles,Accor,102,2018,Operating,34.032,-4.993,Risma,verified
@@ -131,30 +110,26 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 148,Ibis Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,85,2016,Operating,35.569,-5.365,Risma,verified
 149,Zalagh Hotel Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upscale,Zalagh Hotels,Zalagh Hotels Group,95,2016,Operating,35.581,-5.38,Undisclosed,verified
 150,Atlas Asma Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hotels Group,78,2011,Operating,35.566,-5.359,Undisclosed,verified
-151,Diwan MGallery Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,MGallery,Accor,94,2010,Operating,34.0134,-6.8289,Risma,verified
+151,Diwan MGallery Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,MGallery,Accor,94,2010,Operating,34.0134,-6.8289,Risma,verified
 152,La Sultana Marrakech,Marrakech,Marrakech-Safi,Luxury,La Sultana,Independent Luxury,28,2006,Operating,31.622,-8.002,Undisclosed,verified
-153,Selman Marrakech,Marrakech,Marrakech-Safi,Luxury,Selman,Independent Luxury,57,2012,Operating,31.6456,-8.0234,Undisclosed,verified
-154,El Fenn Marrakech,Marrakech,Marrakech-Safi,Luxury,El Fenn,Independent Luxury,21,2003,Operating,31.622,-8.003,Undisclosed,verified
-155,Villa des Orangers Marrakech,Marrakech,Marrakech-Safi,Luxury,Villa des Orangers,Relais & Châteaux,27,1998,Operating,31.621,-7.999,Undisclosed,verified
+153,Selman Marrakech,Marrakech,Marrakech-Safi,Luxury,Selman,Independent Luxury,60,2012,Operating,31.6456,-8.0234,Undisclosed,verified
+154,El Fenn Marrakech,Marrakech,Marrakech-Safi,Luxury,El Fenn,Independent Luxury,41,2003,Operating,31.622,-8.003,Undisclosed,verified
+155,La Villa Des Orangers Relais & Châteaux Marrakech,Marrakech,Marrakech-Safi,Luxury,Villa des Orangers,Relais & Châteaux,30,1998,Operating,31.621,-7.999,Undisclosed,verified
 156,Palais Namaskar Marrakech,Marrakech,Marrakech-Safi,Luxury,Palais Namaskar,Independent Luxury,41,2012,Operating,31.648,-7.998,Undisclosed,verified
-157,Ksar Char-Bagh Marrakech,Marrakech,Marrakech-Safi,Luxury,Ksar Char-Bagh,Independent Luxury,13,2004,Operating,31.639,-7.989,Undisclosed,verified
-158,Tigmiza Marrakech,Marrakech,Marrakech-Safi,Luxury,Tigmiza,Independent Luxury,30,2007,Operating,31.649,-8.003,Undisclosed,verified
+157,Ksar Char-Bagh Marrakech,Marrakech,Marrakech-Safi,Luxury,Ksar Char-Bagh,Independent Luxury,15,2004,Operating,31.639,-7.989,Undisclosed,verified
+158,Tigmiza Boutique Hotel and Spa Marrakech,Marrakech,Marrakech-Safi,Luxury,Tigmiza,Independent Luxury,27,2007,Operating,31.649,-8.003,Undisclosed,verified
 159,Mövenpick Hotel Mansour Eddahbi Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Mövenpick,Accor,503,2007,Operating,31.614,-7.98,Undisclosed,verified
-160,Hivernage Hotel & Spa Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Hivernage,Independent,67,2008,Operating,31.627,-7.974,Undisclosed,verified
-161,Les Deux Tours Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Les Deux Tours,Independent,25,1996,Operating,31.645,-7.991,Undisclosed,verified
-162,Grand Mogador Menara Marrakech,Marrakech,Marrakech-Safi,Upscale,Mogador Hotels,Mogador Hotels Group,300,2009,Operating,31.615,-7.982,Undisclosed,verified
-163,Iberostar Club Palmeraie Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,320,2007,Operating,31.646,-7.996,Undisclosed,verified
-164,Naoura Barrière Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Barrière,Groupe Lucien Barrière,51,2007,Operating,31.634,-7.983,Undisclosed,verified
+160,Hivernage Hotel and Spa Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Hivernage,Independent,84,2008,Operating,31.627,-7.974,Undisclosed,verified
+161,Les Deux Tours Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Les Deux Tours,Independent,41,1996,Operating,31.645,-7.991,Undisclosed,verified
+162,Grand Mogador Menara Marrakech,Marrakech,Marrakech-Safi,Upscale,Mogador Hotels,Mogador Hotels Group,244,2009,Operating,31.615,-7.982,Undisclosed,verified
+163,Iberostar Waves Club Palmeraie Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,318,2007,Operating,31.646,-7.996,Undisclosed,verified
+164,Barrière Naroua Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Barrière,Groupe Lucien Barrière,85,2007,Operating,31.634,-7.983,Undisclosed,verified
 165,Tikida Palmeraie Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Tikida,Mogador Hotels Group,247,2006,Operating,31.647,-7.999,Undisclosed,verified
-166,Atlas Targa Marrakech,Marrakech,Marrakech-Safi,Upscale,Atlas Hotels,Atlas Hotels Group,225,2000,Operating,31.621,-7.963,Undisclosed,verified
-167,Domaine des Remparts Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Domaine des Remparts,Independent,31,2012,Operating,31.618,-7.996,Undisclosed,verified
+167,Domaine des Remparts Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Domaine des Remparts,Independent,32,2012,Operating,31.618,-7.996,Undisclosed,verified
 168,Adagio Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Adagio,Accor,96,2016,Operating,33.568,-7.594,Risma,verified
 169,Onomo Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Onomo,Onomo Hotels,201,2015,Operating,33.58,-7.605,Undisclosed,verified
-171,Sofitel Agadir Thalassa Sea & Spa,Agadir,Souss-Massa,Luxury,Sofitel,Accor,275,2008,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
-172,Tikida Golf Palace Agadir,Agadir,Souss-Massa,Upper Upscale,Tikida,Mogador Hotels Group,228,2006,Operating,30.4234,-9.5823,Undisclosed,verified
-173,Tildi Hotel & Spa Agadir,Agadir,Souss-Massa,Upscale,Tildi,Independent,180,2001,Operating,30.4167,-9.5889,Undisclosed,verified
-174,Anezi Tower Hotel Agadir,Agadir,Souss-Massa,Upscale,Anezi Tower,Independent,170,2001,Operating,30.4198,-9.5912,Undisclosed,verified
-175,Ibis Styles Agadir,Agadir,Souss-Massa,Midscale,Ibis Styles,Accor,138,2019,Operating,30.4178,-9.5945,Risma,verified
+171,Sofitel Agadir Thalassa Sea & Spa,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,173,2008,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
+174,Anezi Tower Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Anezi Tower,Independent,394,2001,Operating,30.4198,-9.5912,Undisclosed,verified
 176,El Minzah Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,El Minzah,Independent,140,1930,Operating,35.7789,-5.8156,Undisclosed,verified
 177,NH Collection Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,NH Collection,Minor Hotels,126,2015,Operating,35.7756,-5.8212,Undisclosed,verified
 178,Dawliz Hotel & Spa Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Dawliz,Independent,142,2008,Operating,35.7734,-5.8267,Undisclosed,verified
@@ -164,8 +139,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 182,Dar Roumana Fes,Fes,Fès-Meknès,Luxury,Dar Roumana,Independent Luxury,6,2006,Operating,34.0623,-4.9812,Undisclosed,verified
 183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,96,1970,Operating,34.0678,-5.0034,Undisclosed,verified
 184,Zahra Hotel Fes,Fes,Fès-Meknès,Upscale,Zahra,Independent,55,2009,Operating,34.0423,-4.9967,Undisclosed,verified
-185,Hotel Borj Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,192,1971,Operating,34.0156,-6.8378,Farah Hotels Group,verified
-187,Fairmont Rabat Sale,Rabat,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,186,2024,Open,34.0456,-6.8234,Undisclosed,verified
+185,Hotel Borj Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,192,1971,Operating,34.0156,-6.8378,Farah Hotels Group,verified
+187,Fairmont Rabat Sale,Rabat / Salé,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,186,2024,Open,34.0456,-6.8234,Undisclosed,verified
 188,Fairmont Taghazout Bay,Taghazout Bay,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed,verified
 189,Robinson Club Taghazout Bay,Taghazout Bay,Souss-Massa,Upscale,Robinson,TUI Hotels & Resorts,360,2022,Operating,30.5278,-9.7123,Undisclosed,verified
 190,Hyatt Place Taghazout Bay,Taghazout Bay,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,120,2023,Operating,30.5345,-9.7056,Undisclosed,verified
@@ -209,9 +184,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 229,Dar Daif Merzouga,Merzouga,Drâa-Tafilalet,Upscale,Dar Daif,Independent,32,2010,Operating,31.0912,-4.0098,Undisclosed,verified
 230,La Gazelle d'Or Taroudant,Taroudant,Souss-Massa,Luxury,La Gazelle d'Or,Independent Luxury,30,1961,Operating,30.4689,-8.8767,Undisclosed,verified
 231,Dar Zitoune Taroudant,Taroudant,Souss-Massa,Upscale,Dar Zitoune,Independent,24,2005,Operating,30.4712,-8.8734,Undisclosed,verified
-232,Kasbah Bab Ourika Marrakech,Marrakech,Marrakech-Safi,Luxury,Kasbah Bab Ourika,Independent Luxury,15,2010,Operating,31.4601,-7.7001,Undisclosed,verified
+232,Kasbah Bab Ourika Marrakech,Marrakech,Marrakech-Safi,Luxury,Kasbah Bab Ourika,Independent Luxury,42,2010,Operating,31.4601,-7.7001,Undisclosed,verified
 233,Zalagh City Hotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Zalagh Hotels,Zalagh Hotels Group,136,2015,Operating,31.6234,-7.9678,Undisclosed,verified
-236,Novotel Agadir,Agadir,Souss-Massa,Upscale,Novotel,Accor,182,2021,Operating,30.4312,-9.5956,Risma,verified
 237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
 238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
 239,Riad Laaroussa Fes,Fes,Fès-Meknès,Luxury,Riad Laaroussa,Independent Luxury,6,2009,Operating,34.0645,-4.9767,Undisclosed,verified
@@ -235,18 +209,29 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2019,Open,33.5934,-7.6234,Royal (State),verified
 259,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,60,2023,Open,35.6934,-5.3312,Royal (State),estimated — key count uncertain
 260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,420,1999,Open,35.2456,-3.9289,Club Med (Fosun),estimated — key count uncertain
-261,Waldorf Astoria Rabat,Rabat,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2019,Operating,33.9889,-6.8512,Undisclosed,verified
+261,Waldorf Astoria Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2019,Operating,33.9889,-6.8512,Undisclosed,verified
 262,Fairmont Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Fairmont,Accor,220,2025,Operating,35.7698,-5.8234,Undisclosed,verified
 264,Nobu Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Nobu Hospitality,Nobu Hospitality,71,2024,Operating,31.6423,-8.0178,Undisclosed,verified
-265,Oberoi Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Oberoi,Oberoi Hotels & Resorts,69,2023,Operating,31.6089,-8.0389,Undisclosed,verified
+265,Oberoi Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Oberoi,Oberoi Hotels & Resorts,84,2023,Operating,31.6089,-8.0389,Undisclosed,verified
 266,Marchica Lagoon Resort,Nador,Oriental,Upscale,Independent,Independent Luxury,188,2018,Operating,35.1589,-2.9234,Marchica Med (State),estimated — key count uncertain
 267,Hotel Marchica,Nador,Oriental,Upscale,Independent,Independent,96,2015,Operating,35.1612,-2.9256,Marchica Med (State),estimated — key count uncertain
-268,Marriott Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Marriott,Marriott International,188,2021,Operating,34.0089,-6.8423,Madaëf,verified
+268,Marriott Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Marriott,Marriott International,188,2021,Operating,34.0089,-6.8423,Madaëf,verified
 269,Royal Hideaway Casablanca,Casablanca,Casablanca-Settat,Luxury,Royal Hideaway,Barceló Hotel Group,310,2010,Open,33.5921,-7.6198,Undisclosed,verified
 270,Barceló Anfa Casablanca,Casablanca,Casablanca-Settat,Upper Upscale,Barceló,Barceló Hotel Group,206,2012,Open,33.5934,-7.6212,Undisclosed,verified
 271,Onomo Hotel Casablanca Airport,Casablanca,Casablanca-Settat,Midscale,Onomo,Onomo Hotels,135,2018,Open,33.3731,-7.5898,Undisclosed,verified
 272,Onomo Hotel Casablanca Sidi Maarouf,Casablanca,Casablanca-Settat,Midscale,Onomo,Onomo Hotels,120,2019,Open,33.5440,-7.6390,Undisclosed,verified
 273,Le Square by Onomo Collection,Casablanca,Casablanca-Settat,Upscale,Onomo Collection,Onomo Hotels,60,2020,Open,33.5890,-7.6120,Undisclosed,verified
 274,Mogador Casa Marina,Casablanca,Casablanca-Settat,Upscale,Mogador Hotels,Mogador Hotels Group,176,2021,Open,33.6012,-7.6234,Undisclosed,verified
-275,Onomo Hotel Rabat Terminus,Rabat,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,118,2016,Open,34.0134,-6.8289,Undisclosed,verified
-276,Onomo Hotel Rabat Medina,Rabat,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,67,2018,Open,34.0201,-6.8334,Undisclosed,verified
+275,Onomo Hotel Rabat Terminus,Rabat / Salé,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,118,2016,Open,34.0134,-6.8289,Undisclosed,verified
+276,Onomo Hotel Rabat Medina,Rabat / Salé,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,67,2018,Open,34.0201,-6.8334,Undisclosed,verified
+277,Amadil Beach Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Independent,Independent,329,1995,Open,30.4234,-9.5989,Undisclosed,verified
+278,TUI Suneo Kenzi Agadir,Agadir / Taghazout,Souss-Massa,Upscale,TUI Suneo,TUI Hotels & Resorts,236,2000,Open,30.4178,-9.5934,Undisclosed,verified
+279,Riu Tikida Beach Adults Only,Agadir / Taghazout,Souss-Massa,Upscale,RIU,RIU Hotels & Resorts,254,2002,Open,30.4067,-9.6034,Undisclosed,verified
+280,Riu Tikida Dunes,Agadir / Taghazout,Souss-Massa,Upscale,RIU,RIU Hotels & Resorts,406,1999,Open,30.4089,-9.6012,Undisclosed,verified
+281,Tikida Golf Palace Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Independent,Independent,54,2005,Open,30.3934,-9.5456,Undisclosed,verified
+282,Tildi Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Independent,Independent,116,1988,Open,30.4156,-9.5978,Undisclosed,verified
+283,Ibis Marrakech Palmeraie,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,147,2012,Open,31.6456,-7.9945,Risma,verified
+284,Riu Tikida Palmeraie,Marrakech,Marrakech-Safi,Upscale,RIU,RIU Hotels & Resorts,392,2004,Open,31.6478,-7.9978,Undisclosed,verified
+285,Zalagh Kasbah Hotel and Spa,Marrakech,Marrakech-Safi,Upper Upscale,Zalagh,Zalagh Hotels Group,344,2010,Open,31.6312,-7.9845,Undisclosed,verified
+286,Es Saadi Resort Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,150,2019,Open,31.6178,-8.0245,Undisclosed,verified
+287,Park Hyatt Marrakech,Marrakech,Marrakech-Safi,Luxury,Park Hyatt,Hyatt Hotels Corporation,130,2019,Open,31.6234,-8.0178,Undisclosed,verified
