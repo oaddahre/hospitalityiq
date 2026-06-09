@@ -1776,12 +1776,12 @@ body.light .nav-logout  { color: #8A8A8A; }
 .pipe-status-uc {
   display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; font-weight: 500;
   background: transparent; color: #B87860; border: 1px solid #B87860;
-  white-space: nowrap;
+  white-space: nowrap; flex-shrink: 0;
 }
 .pipe-status-pl {
   display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; font-weight: 500;
   background: transparent; color: #666666; border: 1px solid #666666;
-  white-space: nowrap;
+  white-space: nowrap; flex-shrink: 0;
 }
 
 /* ─── News screen ────────────────────────────────── */
