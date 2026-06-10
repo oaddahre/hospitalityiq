@@ -307,46 +307,83 @@
         </div>
 
         <div class="hotels-controls">
-          <div class="search-wrap">
+          <!-- Search -->
+          <div class="hotels-search-wrap">
             <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
               <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
             </svg>
-            <input type="text" id="hotels-search" class="search-input"
-                   placeholder="Search by hotel name, city, or brand…" autocomplete="off" />
+            <input type="text" id="hotels-search" class="hotels-search-input"
+                   placeholder="Search hotels, brands, cities..." autocomplete="off" />
+            <button class="search-clear-btn" id="hotels-search-clear" aria-label="Clear search">×</button>
           </div>
-          <div class="controls-row">
-            <div class="filter-pills" id="hotels-city-pills">
-              <span class="filter-pills-label">City</span>
+          <!-- City pills -->
+          <div class="filter-row-wrap">
+            <div class="filter-pills filter-pills--scroll" id="hotels-city-pills">
               <button class="pill active" data-hcity="all">All</button>
             </div>
-            <div class="filter-pills" id="hotels-seg-pills">
-              <span class="filter-pills-label">Segment</span>
-              <button class="pill active" data-hseg="all">All</button>
+            <div class="filter-row-fade"></div>
+          </div>
+          <!-- Segment pills -->
+          <div class="filter-row-wrap">
+            <div class="filter-pills filter-pills--scroll" id="hotels-seg-pills">
+              <button class="pill active" data-hseg="all">All Segments</button>
+              <button class="pill" data-hseg="Ultra Luxury">Ultra Luxury</button>
               <button class="pill" data-hseg="Luxury">Luxury</button>
               <button class="pill" data-hseg="Upper Upscale">Upper Upscale</button>
               <button class="pill" data-hseg="Upscale">Upscale</button>
               <button class="pill" data-hseg="Midscale">Midscale</button>
             </div>
+            <div class="filter-row-fade"></div>
+          </div>
+          <!-- Sort + Owner + Count -->
+          <div class="hotels-sort-row">
+            <div class="hotels-sort-left">
+              <select class="hotels-sort-select" id="hotels-sort-select">
+                <option value="revpar_mad">Sort: RevPAR ↓</option>
+                <option value="adr_mad">Sort: ADR ↓</option>
+                <option value="occupancy">Sort: Occupancy ↓</option>
+                <option value="keys">Sort: Keys ↓</option>
+                <option value="year_opened">Sort: Year Opened ↓</option>
+                <option value="name">Sort: Name A–Z</option>
+              </select>
+              <select class="hotels-sort-select" id="hotels-owner-select">
+                <option value="all">All Owners</option>
+                <option value="Risma">Risma</option>
+                <option value="Madaëf">Madaëf</option>
+                <option value="Royal (State)">Royal (State)</option>
+                <option value="Marchica Med (State)">Marchica Med</option>
+                <option value="Kenzi Hotels Group">Kenzi Hotels Group</option>
+                <option value="Undisclosed">Undisclosed</option>
+              </select>
+            </div>
+            <span class="hotels-results-count" id="hotels-results-count"></span>
+          </div>
+          <!-- Active filter chips -->
+          <div class="active-filters-row" id="hotels-active-filters">
+            <div class="active-filters-chips" id="hotels-filter-chips"></div>
+            <button class="clear-all-filters" id="hotels-clear-all">Clear all filters</button>
           </div>
         </div>
 
         <div class="table-card">
-          <table class="data-table" id="hotels-table">
-            <thead>
-              <tr>
-                <th class="sortable-col sort-asc" data-col="name">Hotel Name <span class="sort-icon">↑</span></th>
-                <th class="sortable-col" data-col="city">City <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-col="category">Segment <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-col="brand_group">Brand Group <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-col="keys">Keys <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-col="occupancy">Occ % <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-col="adr_mad">ADR (MAD) <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-col="revpar_mad">RevPAR (MAD) <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-col="gop_margin">GOP % <span class="sort-icon">↕</span></th>
-              </tr>
-            </thead>
-            <tbody id="hotels-tbody"></tbody>
-          </table>
+          <div id="hotels-table-wrap">
+            <table class="data-table" id="hotels-table">
+              <thead>
+                <tr>
+                  <th class="sortable-col" data-col="name">Hotel Name <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col" data-col="city">City <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="category">Segment <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="brand_group">Brand Group <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="keys">Keys <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="occupancy">Occ % <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="adr_mad">ADR (MAD) <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col" data-col="revpar_mad">RevPAR (MAD) <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="gop_margin">GOP % <span class="sort-icon">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="hotels-tbody"></tbody>
+            </table>
+          </div>
           <div class="table-footer" id="hotels-footer">Loading…</div>
         </div>
       </section>

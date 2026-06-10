@@ -824,17 +824,19 @@ const hotelsState = {
   query: '',
   city:  'all',
   seg:   'all',
-  col:   'name',
-  dir:   1,       // 1 = asc, -1 = desc
+  owner: 'all',
+  col:   'revpar_mad',
+  dir:   -1,
 };
 
 function filterHotels() {
   const q = hotelsState.query.trim().toLowerCase();
   return (hotels || []).filter(h => {
-    if (hotelsState.city !== 'all' && h.city !== hotelsState.city) return false;
-    if (hotelsState.seg  !== 'all' && h.category !== hotelsState.seg) return false;
+    if (hotelsState.city  !== 'all' && h.city     !== hotelsState.city)  return false;
+    if (hotelsState.seg   !== 'all' && h.category !== hotelsState.seg)   return false;
+    if (hotelsState.owner !== 'all' && h.owner    !== hotelsState.owner) return false;
     if (q) {
-      const haystack = [h.name, h.city, h.brand, h.brand_group].join(' ').toLowerCase();
+      const haystack = [h.name, h.city, h.brand, h.brand_group, h.owner].join(' ').toLowerCase();
       if (!haystack.includes(q)) return false;
     }
     return true;
@@ -853,6 +855,7 @@ function sortHotels(list) {
 function syncHotelsSortIcons() {
   document.querySelectorAll('#hotels-table .sortable-col').forEach(th => {
     const icon = th.querySelector('.sort-icon');
+    if (!icon) return;
     th.classList.remove('sort-asc', 'sort-desc');
     if (th.dataset.col === hotelsState.col) {
       th.classList.add(hotelsState.dir === 1 ? 'sort-asc' : 'sort-desc');
@@ -861,6 +864,44 @@ function syncHotelsSortIcons() {
       icon.textContent = '↕';
     }
   });
+  const sel = document.getElementById('hotels-sort-select');
+  if (sel && sel.querySelector(`option[value="${hotelsState.col}"]`)) sel.value = hotelsState.col;
+}
+
+function renderActiveHotelsFilters() {
+  const chips = [];
+  if (hotelsState.city  !== 'all') chips.push({ type: 'city',  label: hotelsState.city });
+  if (hotelsState.seg   !== 'all') chips.push({ type: 'seg',   label: hotelsState.seg });
+  if (hotelsState.owner !== 'all') chips.push({ type: 'owner', label: hotelsState.owner });
+  if (hotelsState.query)           chips.push({ type: 'query', label: `"${hotelsState.query}"` });
+
+  const row     = document.getElementById('hotels-active-filters');
+  const chipsEl = document.getElementById('hotels-filter-chips');
+  const clearEl = document.getElementById('hotels-clear-all');
+  if (!chips.length) { row.classList.remove('visible'); return; }
+  row.classList.add('visible');
+  chipsEl.innerHTML = chips.map(c =>
+    `<span class="filter-chip" data-ftype="${c.type}">${fmt.esc(c.label)}<button class="filter-chip-remove" aria-label="Remove">×</button></span>`
+  ).join('');
+  clearEl.style.display = chips.length > 1 ? '' : 'none';
+}
+
+function clearAllHotelsFilters() {
+  hotelsState.query = '';
+  hotelsState.city  = 'all';
+  hotelsState.seg   = 'all';
+  hotelsState.owner = 'all';
+  const searchEl = document.getElementById('hotels-search');
+  if (searchEl) { searchEl.value = ''; }
+  const clearBtn = document.getElementById('hotels-search-clear');
+  if (clearBtn) clearBtn.classList.remove('visible');
+  const ownerSel = document.getElementById('hotels-owner-select');
+  if (ownerSel) ownerSel.value = 'all';
+  document.querySelectorAll('#hotels-city-pills .pill').forEach(p =>
+    p.classList.toggle('active', p.dataset.hcity === 'all'));
+  document.querySelectorAll('#hotels-seg-pills .pill').forEach(p =>
+    p.classList.toggle('active', p.dataset.hseg === 'all'));
+  renderHotelsTable();
 }
 
 function renderHotelsTable() {
@@ -873,26 +914,38 @@ function renderHotelsTable() {
   document.getElementById('hotels-sub').textContent =
     `${filtered.length} hotel${filtered.length !== 1 ? 's' : ''} · ${filteredCities} ${filteredCities !== 1 ? 'cities' : 'city'} · All performance: Kōdō estimates 2025`;
 
+  const countEl = document.getElementById('hotels-results-count');
+  if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotels`;
+
   const tbody = document.getElementById('hotels-tbody');
-  tbody.innerHTML = sorted.map(h => {
-    const segColor = SEG_COLORS[h.category] || '#888888';
-    return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
-      <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
-      <td>${fmt.esc(h.city)}</td>
-      <td><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
-      <td>${fmt.esc(h.brand_group)}</td>
-      <td>${fmt.num(h.keys)}</td>
-      <td>${fmt.pct(h.occupancy)}</td>
-      <td>${fmt.mad(h.adr_mad)}</td>
-      <td>${fmt.mad(h.revpar_mad)}</td>
-      <td class="${gopClass(h.gop_margin)}">${fmt.pct(h.gop_margin)}</td>
-    </tr>`;
-  }).join('');
+  if (!sorted.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="table-empty-state">
+      <p class="table-empty-title">No hotels match your filters</p>
+      <p class="table-empty-sub">Try adjusting your search or clearing filters</p>
+      <button class="btn btn-ghost" onclick="clearAllHotelsFilters()" style="font-size:12px;padding:6px 16px">Clear all filters</button>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = sorted.map(h => {
+      const segColor = SEG_COLORS[h.category] || '#888888';
+      return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
+        <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
+        <td>${fmt.esc(h.city)}</td>
+        <td class="col-hide-mobile"><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
+        <td class="col-hide-mobile">${fmt.esc(h.brand_group)}</td>
+        <td class="col-hide-mobile">${fmt.num(h.keys)}</td>
+        <td class="col-hide-mobile">${fmt.pct(h.occupancy)}</td>
+        <td class="col-hide-mobile">${fmt.mad(h.adr_mad)}</td>
+        <td>${fmt.mad(h.revpar_mad)}</td>
+        <td class="col-hide-mobile ${gopClass(h.gop_margin)}">${fmt.pct(h.gop_margin)}</td>
+      </tr>`;
+    }).join('');
+  }
 
   document.getElementById('hotels-footer').textContent =
     `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
 
   syncHotelsSortIcons();
+  renderActiveHotelsFilters();
 }
 
 // ─── Full render ──────────────────────────────────────────────────
@@ -1710,11 +1763,62 @@ document.getElementById('segment-sidebar').addEventListener('click', e => {
   if (leaflet) updateMapMarkers();
 });
 
-// Hotels: search
+// Hotels: search input + clear button
 document.getElementById('hotels-search').addEventListener('input', e => {
   hotelsState.query = e.target.value;
+  const clearBtn = document.getElementById('hotels-search-clear');
+  if (clearBtn) clearBtn.classList.toggle('visible', !!e.target.value);
   renderHotelsTable();
 });
+document.getElementById('hotels-search-clear').addEventListener('click', () => {
+  hotelsState.query = '';
+  document.getElementById('hotels-search').value = '';
+  document.getElementById('hotels-search-clear').classList.remove('visible');
+  renderHotelsTable();
+});
+
+// Hotels: sort select
+document.getElementById('hotels-sort-select').addEventListener('change', e => {
+  const val = e.target.value;
+  hotelsState.col = val;
+  hotelsState.dir = STRING_COLS.has(val) ? 1 : -1;
+  renderHotelsTable();
+});
+
+// Hotels: owner select
+document.getElementById('hotels-owner-select').addEventListener('change', e => {
+  hotelsState.owner = e.target.value;
+  renderHotelsTable();
+});
+
+// Hotels: active filter chip removal
+document.getElementById('hotels-active-filters').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-chip-remove');
+  if (!btn) return;
+  const chip = btn.closest('.filter-chip');
+  if (!chip) return;
+  const type = chip.dataset.ftype;
+  if (type === 'city') {
+    hotelsState.city = 'all';
+    document.querySelectorAll('#hotels-city-pills .pill').forEach(p =>
+      p.classList.toggle('active', p.dataset.hcity === 'all'));
+  } else if (type === 'seg') {
+    hotelsState.seg = 'all';
+    document.querySelectorAll('#hotels-seg-pills .pill').forEach(p =>
+      p.classList.toggle('active', p.dataset.hseg === 'all'));
+  } else if (type === 'owner') {
+    hotelsState.owner = 'all';
+    document.getElementById('hotels-owner-select').value = 'all';
+  } else if (type === 'query') {
+    hotelsState.query = '';
+    document.getElementById('hotels-search').value = '';
+    document.getElementById('hotels-search-clear').classList.remove('visible');
+  }
+  renderHotelsTable();
+});
+
+// Hotels: clear all filters
+document.getElementById('hotels-clear-all').addEventListener('click', clearAllHotelsFilters);
 
 // Hotels: city pills
 document.getElementById('hotels-city-pills').addEventListener('click', e => {
@@ -1746,7 +1850,7 @@ document.getElementById('hotels-seg-pills').addEventListener('click', e => {
   renderHotelsTable();
 });
 
-// Hotels: column sort
+// Hotels: column sort (also syncs sort select)
 document.getElementById('hotels-table').addEventListener('click', e => {
   const th = e.target.closest('.sortable-col');
   if (!th) return;
@@ -1755,7 +1859,7 @@ document.getElementById('hotels-table').addEventListener('click', e => {
     hotelsState.dir *= -1;
   } else {
     hotelsState.col = col;
-    hotelsState.dir = STRING_COLS.has(col) ? 1 : -1; // strings default asc, numbers default desc
+    hotelsState.dir = STRING_COLS.has(col) ? 1 : -1;
   }
   renderHotelsTable();
 });
@@ -1931,15 +2035,30 @@ function buildCityFilter() {
 }
 
 function buildCityPills() {
-  const cities = [...new Set(hotels.map(h => h.city))].sort();
-  const bar = document.getElementById('hotels-city-pills');
+  const all    = hotels || [];
+  const cities = [...new Set(all.map(h => h.city))].sort();
+  const bar    = document.getElementById('hotels-city-pills');
   bar.querySelectorAll('[data-hcity]:not([data-hcity="all"])').forEach(el => el.remove());
+  bar.querySelector('[data-hcity="all"]').textContent = `All (${all.length})`;
   cities.forEach(city => {
+    const count = all.filter(h => h.city === city).length;
     const btn = document.createElement('button');
     btn.className = 'pill';
     btn.dataset.hcity = city;
-    btn.textContent = city;
+    btn.textContent = `${city} (${count})`;
     bar.appendChild(btn);
+  });
+}
+
+function buildSegPills() {
+  const all = hotels || [];
+  const bar = document.getElementById('hotels-seg-pills');
+  bar.querySelector('[data-hseg="all"]').textContent = `All Segments (${all.length})`;
+  ['Ultra Luxury','Luxury','Upper Upscale','Upscale','Midscale'].forEach(seg => {
+    const btn = bar.querySelector(`[data-hseg="${seg}"]`);
+    if (!btn) return;
+    const count = all.filter(h => h.category === seg).length;
+    btn.textContent = `${seg} (${count})`;
   });
 }
 
@@ -2659,6 +2778,7 @@ async function boot() {
   ]);
   buildCityFilter();
   buildCityPills();
+  buildSegPills();
   buildMobileCityPills();
   render();
 }
