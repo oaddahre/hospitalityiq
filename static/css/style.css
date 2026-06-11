@@ -735,11 +735,19 @@ body.light .nav-logout  { color: #8A8A8A; }
 .filter-pills--scroll {
   overflow-x: auto;
   flex-wrap: nowrap;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: 2px;
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+  padding-bottom: 4px;
 }
-.filter-pills--scroll::-webkit-scrollbar { display: none; }
+.filter-pills--scroll::-webkit-scrollbar { height: 3px; }
+.filter-pills--scroll::-webkit-scrollbar-track { background: transparent; }
+.filter-pills--scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.filter-pills--scroll .pill {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 5px 12px;
+  overflow: visible;
+}
 
 .filter-pills-label {
   font-family: 'Plus Jakarta Sans', sans-serif;
