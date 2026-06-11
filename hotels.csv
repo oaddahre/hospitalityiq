@@ -143,9 +143,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 194,Lina Ryad & Spa Chefchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upper Upscale,Lina Ryad,Independent,35,2008,Operating,35.1712,-5.2689,Undisclosed,verified
 195,Hotel Rif Chefchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hotel Rif,Independent,62,1985,Operating,35.1734,-5.2712,Undisclosed,verified
 196,Hotel Parador Chefchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upscale,Parador,Independent,36,1975,Operating,35.1689,-5.2734,Undisclosed,verified
-197,Hôtel Quemado Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hôtel Quemado,Independent,66,1990,Operating,35.2489,-3.9367,Undisclosed,verified
+197,Mercure Quemado Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mercure,Accor,169,1990,Operating,35.2489,-3.9367,Undisclosed,verified
 198,Atlas Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hotels Group,80,2015,Operating,35.2512,-3.9334,Undisclosed,verified
-199,Ibis Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,70,2018,Operating,35.2467,-3.9312,Risma,verified
 200,Mercure Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,125,2013,Operating,34.2612,-6.5789,Risma,verified
 201,Ibis Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,103,2012,Operating,34.2589,-6.5823,Risma,verified
 202,Hotel Mamora Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Hotel Mamora,Independent,90,1985,Operating,34.2634,-6.5756,Undisclosed,verified
@@ -194,14 +193,13 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 250,Anantara Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Anantara,Minor Hotels,96,2022,Operating,35.7012,-5.3845,Undisclosed,estimated — key count uncertain
 251,Hotel Oulmes Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Hotel Oulmes,Independent,65,2010,Operating,32.3354,-6.3489,Undisclosed,verified
 252,Riad Dar Echchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upscale,Riad Dar Echchaouen,Independent,18,2014,Operating,35.1689,-5.2678,Undisclosed,verified
-253,Sofitel Al Hoceima Salam,Al Hoceima,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,168,2005,Operating,35.2534,-3.9289,Risma,estimated — key count uncertain
 254,Riad Madu Merzouga,Merzouga,Drâa-Tafilalet,Upscale,Riad Madu,Independent,22,2012,Operating,31.0967,-4.0089,Undisclosed,verified
 255,Ibis Styles Ouarzazate,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis Styles,Accor,70,2022,Operating,30.9156,-6.8956,Risma,verified
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
 257,Hilton Garden Inn Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,145,2021,Open,35.7589,-5.8334,Undisclosed,verified
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2019,Open,33.5934,-7.6234,Royal (State),verified
 259,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,60,2023,Open,35.6934,-5.3312,Royal (State),estimated — key count uncertain
-260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,420,1999,Open,35.2456,-3.9289,Club Med (Fosun),estimated — key count uncertain
+260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,342,1999,Open,35.2456,-3.9289,Club Med (Fosun),verified
 261,Waldorf Astoria Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2019,Operating,33.9889,-6.8512,Undisclosed,verified
 262,Fairmont Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Fairmont,Accor,220,2025,Operating,35.7698,-5.8234,Undisclosed,verified
 264,Nobu Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Nobu Hospitality,Nobu Hospitality,71,2024,Operating,31.6423,-8.0178,Undisclosed,verified
@@ -232,3 +230,5 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 289,Riad Fès Relais & Châteaux,Fes,Fès-Meknès,Luxury,Relais & Châteaux,Independent Luxury,32,2005,Open,34.0645,-4.9812,Undisclosed,verified
 290,Sahrai Fes,Fes,Fès-Meknès,Luxury,Independent,Independent Luxury,50,2015,Open,34.0701,-4.9634,Undisclosed,verified
 291,Sahrai Casablanca,Casablanca,Casablanca-Settat,Luxury,Independent,Independent Luxury,56,2022,Open,33.5934,-7.6178,Undisclosed,verified
+292,Radisson Blu Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,432,2022,Open,35.2489,-3.9334,Undisclosed,verified
+293,Suites Mohammed V Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,21,2018,Open,35.2456,-3.9312,Undisclosed,verified
