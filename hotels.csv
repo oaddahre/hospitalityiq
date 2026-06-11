@@ -30,12 +30,10 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 34,Sofitel Tamuda Bay Beach & Spa,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,168,2020,Operating,35.6912,-5.3389,Madaëf,estimated — key count uncertain
 35,Sofitel Rabat Jardin des Roses,Rabat / Salé,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2004,Operating,33.9989,-6.8456,Risma,verified
 38,Ibis Rabat Agdal,Rabat / Salé,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2010,Operating,34.007,-6.83,Risma,verified
-40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,200,2008,Operating,34.047,-5.011,Undisclosed,verified
-41,Ibis Fes,Fes,Fès-Meknès,Midscale,Ibis,Accor,102,2011,Operating,34.03,-5.006,Risma,verified
-42,Mövenpick Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Mövenpick,Accor,186,2018,Operating,34.0389,-4.9934,Undisclosed,verified
-43,Kenzi Zalagh Parc Palace Fes,Fes,Fès-Meknès,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,270,2010,Operating,34.025,-4.987,Kenzi Hotels Group,verified
+40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,148,2008,Operating,34.047,-5.011,Undisclosed,verified
+41,Ibis Fes,Fes,Fès-Meknès,Midscale,Ibis,Accor,123,2011,Operating,34.03,-5.006,Risma,verified
+43,Menzeh Zalagh Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Independent,Independent,106,2010,Operating,34.025,-4.987,Kenzi Hotels Group,verified
 44,Radisson Blu Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Radisson Blu,Radisson Hotel Group,224,2014,Operating,34.042,-5.013,Undisclosed,verified
-45,Sheraton Fes Hotel,Fes,Fès-Meknès,Upper Upscale,Sheraton,Marriott International,288,2012,Operating,34.052,-4.992,Undisclosed,verified
 49,DoubleTree by Hilton Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,DoubleTree,Hilton Hotels & Resorts,306,2016,Operating,33.567,-7.592,Undisclosed,verified
 50,Ibis Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,85,2012,Operating,33.543,-7.636,Risma,verified
 52,Ibis Styles Casablanca Centre,Casablanca,Grand Casablanca-Settat,Midscale,Ibis Styles,Accor,120,2018,Operating,33.564,-7.587,Risma,verified
@@ -62,10 +60,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 94,Riu Palace Smir Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Riu,Riu Hotels & Resorts,413,2000,Operating,35.695,-5.371,Undisclosed,estimated — key count uncertain
 95,La Tour Hassan Palace,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
 98,Mercure Rabat Sheherazade,Rabat / Salé,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
-100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,56,2009,Operating,34.0634,-4.9789,Undisclosed,estimated — key count uncertain
-101,Riad Fes MGallery,Fes,Fès-Meknès,Upper Upscale,MGallery,Accor,60,2007,Operating,34.065,-4.981,Risma,verified
-102,Ibis Styles Fes,Fes,Fès-Meknès,Midscale,Ibis Styles,Accor,102,2018,Operating,34.032,-4.993,Risma,verified
-103,Mercure Fes Merinides,Fes,Fès-Meknès,Upscale,Mercure,Accor,95,2002,Operating,34.056,-5.018,Risma,verified
+100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,31,2009,Operating,34.0634,-4.9789,Undisclosed,verified
 104,Berbere Palace Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,Berbere Palace,Independent,224,1989,Operating,30.9189,-6.8889,Undisclosed,verified
 105,Kenzi Club Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Kenzi Hotels,Kenzi Hotels Group,200,1975,Operating,30.928,-6.896,Kenzi Hotels Group,verified
 106,Le Meridien Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,Le Méridien,Marriott International,160,2019,Operating,30.925,-6.91,Undisclosed,verified
@@ -134,11 +129,9 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 177,NH Collection Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,NH Collection,Minor Hotels,126,2015,Operating,35.7756,-5.8212,Undisclosed,verified
 178,Dawliz Hotel & Spa Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Dawliz,Independent,142,2008,Operating,35.7734,-5.8267,Undisclosed,verified
 179,Onomo Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Onomo,Onomo Hotels,100,2021,Operating,35.7712,-5.8301,Undisclosed,verified
-180,Jnan Palace Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Jnan Palace,Independent,140,1975,Operating,34.0456,-4.9978,Undisclosed,verified
-181,Palais Amani Fes,Fes,Fès-Meknès,Luxury,Palais Amani,Independent Luxury,15,2010,Operating,34.0645,-4.9756,Undisclosed,verified
-182,Dar Roumana Fes,Fes,Fès-Meknès,Luxury,Dar Roumana,Independent Luxury,6,2006,Operating,34.0623,-4.9812,Undisclosed,verified
-183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,96,1970,Operating,34.0678,-5.0034,Undisclosed,verified
-184,Zahra Hotel Fes,Fes,Fès-Meknès,Upscale,Zahra,Independent,55,2009,Operating,34.0423,-4.9967,Undisclosed,verified
+180,Marriott Jnane Palace Fes,Fes,Fès-Meknès,Upper Upscale,Marriott,Marriott International,244,1975,Operating,34.0456,-4.9978,Undisclosed,verified
+181,Palais Amani Fes,Fes,Fès-Meknès,Luxury,Palais Amani,Independent Luxury,18,2010,Operating,34.0645,-4.9756,Undisclosed,verified
+183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,106,1970,Operating,34.0678,-5.0034,Undisclosed,verified
 185,Hotel Borj Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,192,1971,Operating,34.0156,-6.8378,Farah Hotels Group,verified
 187,Fairmont Rabat Sale,Rabat / Salé,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,186,2024,Open,34.0456,-6.8234,Undisclosed,verified
 188,Fairmont Taghazout Bay,Taghazout Bay,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed,verified
@@ -188,7 +181,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 233,Zalagh City Hotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Zalagh Hotels,Zalagh Hotels Group,136,2015,Operating,31.6234,-7.9678,Undisclosed,verified
 237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
 238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
-239,Riad Laaroussa Fes,Fes,Fès-Meknès,Luxury,Riad Laaroussa,Independent Luxury,6,2009,Operating,34.0645,-4.9767,Undisclosed,verified
+239,Riad Laaroussa Fes,Fes,Fès-Meknès,Luxury,Riad Laaroussa,Independent Luxury,4,2009,Operating,34.0645,-4.9767,Undisclosed,verified
 241,Hotel Le Vallon Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Hotel Le Vallon,Independent,45,2013,Operating,30.9178,-6.8978,Undisclosed,verified
 242,Heure Bleue Residence Essaouira,Essaouira,Marrakech-Safi,Upscale,Heure Bleue Residence,Independent,18,2014,Operating,31.5134,-9.7712,Undisclosed,verified
 243,Almansour Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Almansour,Independent,90,1995,Operating,35.7678,-5.8378,Undisclosed,verified
@@ -235,3 +228,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 285,Zalagh Kasbah Hotel and Spa,Marrakech,Marrakech-Safi,Upper Upscale,Zalagh,Zalagh Hotels Group,344,2010,Open,31.6312,-7.9845,Undisclosed,verified
 286,Es Saadi Resort Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,150,2019,Open,31.6178,-8.0245,Undisclosed,verified
 287,Park Hyatt Marrakech,Marrakech,Marrakech-Safi,Luxury,Park Hyatt,Hyatt Hotels Corporation,130,2019,Open,31.6234,-8.0178,Undisclosed,verified
+288,Riyad Amine Fes,Fes,Fès-Meknès,Luxury,Independent,Independent Luxury,21,2005,Open,34.0623,-4.9801,Undisclosed,verified
+289,Riad Fès Relais & Châteaux,Fes,Fès-Meknès,Luxury,Relais & Châteaux,Independent Luxury,32,2005,Open,34.0645,-4.9812,Undisclosed,verified
+290,Sahrai Fes,Fes,Fès-Meknès,Luxury,Independent,Independent Luxury,50,2015,Open,34.0701,-4.9634,Undisclosed,verified
+291,Sahrai Casablanca,Casablanca,Casablanca-Settat,Luxury,Independent,Independent Luxury,56,2022,Open,33.5934,-7.6178,Undisclosed,verified
