@@ -2572,6 +2572,26 @@ body.light .nav-logout  { color: #8A8A8A; }
   #hotels-table tbody .col-hide-mobile { display: none; }
   .hotels-sort-select { font-size: 11px; padding: 4px 8px; }
   #hotels-table-wrap { max-height: calc(100vh - 480px); }
+
+  /* ── Plain text arrows on mobile ── */
+  /* Add → to mobile nav items */
+  .mobile-nav-link { justify-content: space-between; }
+  .mobile-nav-link::after {
+    content: '→';
+    color: var(--text-faint);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  /* Prevent iOS emoji rendering of arrow characters */
+  .back-btn,
+  .hiq-popup-profile-btn,
+  .news-read-btn,
+  .bench-cal-nav-btn,
+  .sort-icon,
+  .nav-logout,
+  .hotel-brand-link { font-variant-emoji: text; }
+  /* Replace SVG arrow in chat send button with plain text */
+  .chat-send-btn svg { display: none; }
 }
 
 /* ─── Tablet (768px – 1024px) ───────────────────── */
