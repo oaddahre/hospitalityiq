@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session
 from flask_login import (
     LoginManager, UserMixin, login_user, logout_user,
     login_required, current_user,
@@ -25,6 +25,13 @@ app.config['REMEMBER_COOKIE_DURATION']  = timedelta(days=30)
 app.config['SESSION_COOKIE_SECURE']     = True
 app.config['SESSION_COOKIE_HTTPONLY']   = True
 app.config['SESSION_COOKIE_SAMESITE']   = 'Lax'
+
+print(
+    f"[CONFIG] Session: permanent={app.config.get('SESSION_PERMANENT')}, "
+    f"lifetime={app.config.get('PERMANENT_SESSION_LIFETIME')}, "
+    f"secure={app.config.get('SESSION_COOKIE_SECURE')}, "
+    f"secret_key_set={bool(os.environ.get('SECRET_KEY'))}"
+)
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login_page"
@@ -172,7 +179,7 @@ def ensure_seed_user():
     if any(u["email"].lower() == email.lower() for u in db["users"]):
         return
     db["users"].append({
-        "id":               str(uuid.uuid4()),
+        "id":               str(uuid.uuid5(uuid.NAMESPACE_URL, email)),
         "email":            email,
         "password_hash":    generate_password_hash(password),
         "name":             name,
@@ -229,6 +236,11 @@ ensure_seed_org()
 @login_manager.user_loader
 def load_user(uid):
     return find_user_by_id(uid)
+
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
 
 
 @app.before_request
