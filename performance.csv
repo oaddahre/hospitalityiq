@@ -63,7 +63,6 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 100,2025FY,0.67,3800,2546,4500,0.42,HIQ Estimate
 104,2025FY,0.58,2000,1160,1800,0.32,HIQ Estimate
 105,2025FY,0.56,1400,784,1400,0.29,HIQ Estimate
-106,2025FY,0.59,2200,1298,2000,0.33,HIQ Estimate
 107,2025FY,0.6,560,336,400,0.26,HIQ Estimate
 108,2025FY,0.55,1600,880,1500,0.3,HIQ Estimate
 109,2025FY,0.63,1800,1134,1600,0.33,HIQ Estimate
@@ -147,7 +146,6 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 207,2025FY,0.56,1500,840,1218,0.31,HIQ Estimate
 209,2025FY,0.63,3000,1890,3118,0.38,HIQ Estimate
 210,2025FY,0.61,1800,1098,1702,0.33,HIQ Estimate
-211,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 212,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 213,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 214,2025FY,0.54,1100,594,772,0.27,HIQ Estimate
@@ -172,7 +170,6 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 237,2025FY,0.71,1450,1030,2163,0.33,HIQ Estimate
 238,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 239,2025FY,0.63,3000,1890,3118,0.38,HIQ Estimate
-241,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 242,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 243,2025FY,0.64,1500,960,1296,0.31,HIQ Estimate
 244,2025FY,0.54,1100,594,772,0.27,HIQ Estimate
@@ -185,7 +182,6 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 251,2025FY,0.54,1100,594,772,0.27,HIQ Estimate
 252,2025FY,0.63,1600,1008,1400,0.35,HIQ Estimate
 254,2025FY,0.54,1100,594,772,0.27,HIQ Estimate
-255,2025FY,0.62,580,360,403,0.26,HIQ Estimate
 256,2025FY,0.67,1480,992,1400,0.33,HIQ Estimate
 257,2025FY,0.64,1290,826,1200,0.32,HIQ Estimate
 258,2025FY,0.72,8500,6120,9800,0.46,HIQ Estimate
@@ -229,3 +225,7 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 296,2025FY,0.68,1600,1088,1400,0.32,HIQ Estimate
 297,2025FY,0.62,1300,806,1100,0.28,HIQ Estimate
 298,2025FY,0.62,2200,1364,2600,0.38,HIQ Estimate
+299,2025FY,0.58,1100,638,900,0.27,HIQ Estimate
+300,2025FY,0.65,2800,1820,3200,0.42,HIQ Estimate
+301,2025FY,0.63,2400,1512,2800,0.40,HIQ Estimate
+302,2025FY,0.60,2200,1320,2600,0.38,HIQ Estimate

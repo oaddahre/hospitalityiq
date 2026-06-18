@@ -61,10 +61,9 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 95,La Tour Hassan Palace,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
 98,Mercure Rabat Sheherazade,Rabat / Salé,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
 100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,31,2009,Operating,34.0634,-4.9789,Undisclosed,verified
-104,Berbere Palace Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,Berbere Palace,Independent,224,1989,Operating,30.9189,-6.8889,Undisclosed,verified
-105,Kenzi Club Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Kenzi Hotels,Kenzi Hotels Group,200,1975,Operating,30.928,-6.896,Kenzi Hotels Group,verified
-106,Le Meridien Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,Le Méridien,Marriott International,160,2019,Operating,30.925,-6.91,Undisclosed,verified
-107,Ibis Ouarzazate,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis,Accor,90,2015,Operating,30.919,-6.899,Risma,verified
+104,Le Berbere Palace Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,Berbere Palace,Independent,249,1989,Operating,30.9189,-6.8889,Undisclosed,verified
+105,Kenzi Azghor Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Kenzi Hotels,Kenzi Hotels Group,110,1975,Operating,30.928,-6.896,Kenzi Hotels Group,verified
+107,Ibis Ouarzazate Centre,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis,Accor,104,2015,Operating,30.919,-6.899,Risma,verified
 108,Dar Kamar Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Dar Kamar,Independent,47,2010,Operating,30.932,-6.915,Undisclosed,verified
 109,Radisson Blu Hotel Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upper Upscale,Radisson Blu,Radisson Hotel Group,120,2020,Operating,23.6794,-15.9607,Undisclosed,verified
 110,Club Med Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upper Upscale,Club Med,Accor,250,2018,Operating,23.6794,-15.9567,Undisclosed,verified
@@ -147,7 +146,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 207,Hotel Transatlantique Meknes,Meknes,Fès-Meknès,Upper Upscale,Transatlantique,Independent,120,1941,Operating,33.8934,-5.5449,Undisclosed,verified
 209,Dar Ahlam Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Dar Ahlam,Independent Luxury,10,2001,Operating,30.9234,-6.8934,Undisclosed,verified
 210,La Kasbah Hotel Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,La Kasbah,Independent,85,2006,Operating,30.9267,-6.9012,Undisclosed,verified
-211,Atlas Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Atlas Hotels,Atlas Hotels Group,120,2008,Operating,30.9212,-6.8967,Undisclosed,verified
 212,Dakhla Club Hotel & Kite,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Dakhla Club,Independent,80,2015,Operating,23.6834,-15.9567,Undisclosed,verified
 213,Sahara Regency Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Sahara Regency,Independent,100,2018,Operating,23.6834,-15.9527,Undisclosed,verified
 214,Hôtel Nagjir Laayoune,Laayoune,Laâyoune-Sakia El Hamra,Upscale,Nagjir,Independent,120,2008,Operating,27.1554,-13.2052,Undisclosed,verified
@@ -172,7 +170,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
 238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
 239,Riad Laaroussa Fes,Fes,Fès-Meknès,Luxury,Riad Laaroussa,Independent Luxury,4,2009,Operating,34.0645,-4.9767,Undisclosed,verified
-241,Hotel Le Vallon Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Hotel Le Vallon,Independent,45,2013,Operating,30.9178,-6.8978,Undisclosed,verified
 242,Heure Bleue Residence Essaouira,Essaouira,Marrakech-Safi,Upscale,Heure Bleue Residence,Independent,18,2014,Operating,31.5134,-9.7712,Undisclosed,verified
 243,Almansour Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Almansour,Independent,90,1995,Operating,35.7678,-5.8378,Undisclosed,verified
 244,Hotel Rif Meknes,Meknes,Fès-Meknès,Upscale,Hotel Rif,Independent,100,2008,Operating,33.8974,-5.5489,Undisclosed,verified
@@ -185,7 +182,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 251,Hotel Oulmes Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Hotel Oulmes,Independent,65,2010,Operating,32.3354,-6.3489,Undisclosed,verified
 252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,24,2010,Operating,35.1695,-5.2621,Undisclosed,verified
 254,Riad Madu Merzouga,Merzouga,Drâa-Tafilalet,Upscale,Riad Madu,Independent,22,2012,Operating,31.0967,-4.0089,Undisclosed,verified
-255,Ibis Styles Ouarzazate,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis Styles,Accor,70,2022,Operating,30.9156,-6.8956,Risma,verified
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
 257,Hilton Garden Inn Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,145,2021,Open,35.7589,-5.8334,Undisclosed,verified
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2019,Open,33.5934,-7.6234,Royal (State),verified
@@ -228,3 +224,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 296,Belive Saidia,Saidia,Oriental,Upscale,Be Live Hotels,Globalia Hotels,488,2009,Operating,35.0889,-2.2212,Undisclosed,verified
 297,Oasis Saidia Palace,Saidia,Oriental,Upscale,Independent,Independent,307,2010,Operating,35.0901,-2.2234,Undisclosed,verified
 298,Bella Address Saidia,Saidia,Oriental,Luxury,Independent,Independent Luxury,15,2018,Open,35.0923,-2.2198,Undisclosed,verified
+299,La Perle du Sud Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Independent,Independent,68,2005,Operating,30.9212,-6.8867,Undisclosed,verified
+300,Le Temple des Arts Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Independent,Independent Luxury,7,2012,Open,30.9234,-6.8934,Undisclosed,verified
+301,Warda Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Independent,Independent Luxury,24,2015,Open,30.9189,-6.8912,Undisclosed,verified
+302,Amanar Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Independent,Independent Luxury,77,2010,Open,30.9156,-6.8956,Undisclosed,verified
