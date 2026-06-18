@@ -140,9 +140,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 191,Michlifen Resort & Golf Ifrane,Ifrane,Fès-Meknès,Luxury,Michlifen,Independent Luxury,90,2012,Operating,33.5234,-5.1034,Undisclosed,verified
 192,Hôtel Perce-Neige Ifrane,Ifrane,Fès-Meknès,Upscale,Hôtel Perce-Neige,Independent,80,1959,Operating,33.5189,-5.1089,Undisclosed,verified
 193,Ibis Styles Ifrane,Ifrane,Fès-Meknès,Midscale,Ibis Styles,Accor,75,2020,Operating,33.5212,-5.1067,Risma,verified
-194,Lina Ryad & Spa Chefchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upper Upscale,Lina Ryad,Independent,35,2008,Operating,35.1712,-5.2689,Undisclosed,verified
-195,Hotel Rif Chefchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hotel Rif,Independent,62,1985,Operating,35.1734,-5.2712,Undisclosed,verified
-196,Hotel Parador Chefchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upscale,Parador,Independent,36,1975,Operating,35.1689,-5.2734,Undisclosed,verified
+194,Lina Ryad & Spa Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,17,2008,Operating,35.1689,-5.2634,Undisclosed,verified
+196,Parador Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Parador,Independent,56,1998,Operating,35.1678,-5.2645,Undisclosed,verified
 197,Mercure Quemado Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mercure,Accor,169,1990,Operating,35.2489,-3.9367,Undisclosed,verified
 198,Atlas Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hotels Group,80,2015,Operating,35.2512,-3.9334,Undisclosed,verified
 200,Mercure Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,125,2013,Operating,34.2612,-6.5789,Risma,verified
@@ -192,7 +191,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 249,Novotel El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Novotel,Accor,148,2022,Operating,33.2567,-8.4994,Risma,verified
 250,Anantara Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Anantara,Minor Hotels,96,2022,Operating,35.7012,-5.3845,Undisclosed,estimated — key count uncertain
 251,Hotel Oulmes Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Hotel Oulmes,Independent,65,2010,Operating,32.3354,-6.3489,Undisclosed,verified
-252,Riad Dar Echchaouen,Chefchaouen,Tanger-Tetouan-Al Hoceima,Upscale,Riad Dar Echchaouen,Independent,18,2014,Operating,35.1689,-5.2678,Undisclosed,verified
+252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,24,2010,Operating,35.1695,-5.2621,Undisclosed,verified
 254,Riad Madu Merzouga,Merzouga,Drâa-Tafilalet,Upscale,Riad Madu,Independent,22,2012,Operating,31.0967,-4.0089,Undisclosed,verified
 255,Ibis Styles Ouarzazate,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis Styles,Accor,70,2022,Operating,30.9156,-6.8956,Risma,verified
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
