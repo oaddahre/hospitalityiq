@@ -82,10 +82,9 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 122,Ibis El Jadida,El Jadida,Grand Casablanca-Settat,Midscale,Ibis,Accor,80,2013,Operating,33.2527,-8.5034,Risma,verified
 123,Pullman El Jadida Beach Resort,El Jadida,Grand Casablanca-Settat,Upper Upscale,Pullman,Accor,180,2016,Operating,33.2527,-8.4994,Risma,verified
 124,Farah El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Farah Hotels,Farah Hotels Group,140,1985,Operating,33.2567,-8.5074,Farah Hotels Group,verified
-125,Palais Didi Meknes,Meknes,Fès-Meknès,Luxury,Palais Didi,Independent Luxury,30,2008,Operating,33.8894,-5.5529,Undisclosed,verified
-126,Ibis Meknes,Meknes,Fès-Meknès,Midscale,Ibis,Accor,105,2011,Operating,33.8894,-5.5489,Risma,verified
-127,Mercure Meknes,Meknes,Fès-Meknès,Upscale,Mercure,Accor,129,2009,Operating,33.8894,-5.5449,Risma,verified
-128,Zalagh Parc Palace Meknes,Meknes,Fès-Meknès,Upper Upscale,Zalagh Hotels,Zalagh Hotels Group,210,2014,Operating,33.8934,-5.5529,Undisclosed,verified
+125,Palais Didi Meknes,Meknes,Fès-Meknès,Luxury,Palais Didi,Independent Luxury,12,2008,Operating,33.8894,-5.5529,Undisclosed,verified
+126,Ibis Meknes,Meknes,Fès-Meknès,Midscale,Ibis,Accor,104,2011,Operating,33.8894,-5.5489,Risma,verified
+128,Zalagh Parc Palace Meknes,Meknes,Fès-Meknès,Upper Upscale,Zalagh Hotels,Zalagh Hotels Group,488,2014,Operating,33.8934,-5.5529,Undisclosed,verified
 129,Atlas Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hotels Group,100,1990,Operating,33.8934,-5.5489,Undisclosed,verified
 131,Ibis Nador,Nador,Oriental,Midscale,Ibis,Accor,89,2014,Operating,35.1672,-2.9289,Risma,verified
 132,Mogador Nador,Nador,Oriental,Upscale,Mogador Hotels,Mogador Hotels Group,110,2016,Operating,35.1672,-2.9249,Undisclosed,verified
@@ -152,7 +151,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 205,Riad al Madina Essaouira,Essaouira,Marrakech-Safi,Upscale,Riad al Madina,Independent,27,2010,Operating,31.5123,-9.7678,Undisclosed,verified
 206,Beau Rivage Essaouira,Essaouira,Marrakech-Safi,Upscale,Beau Rivage,Independent,40,2012,Operating,31.5089,-9.7623,Undisclosed,verified
 207,Hotel Transatlantique Meknes,Meknes,Fès-Meknès,Upper Upscale,Transatlantique,Independent,120,1941,Operating,33.8934,-5.5449,Undisclosed,verified
-208,Ibis Styles Meknes,Meknes,Fès-Meknès,Midscale,Ibis Styles,Accor,86,2021,Operating,33.8974,-5.5529,Risma,verified
 209,Dar Ahlam Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Dar Ahlam,Independent Luxury,10,2001,Operating,30.9234,-6.8934,Undisclosed,verified
 210,La Kasbah Hotel Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,La Kasbah,Independent,85,2006,Operating,30.9267,-6.9012,Undisclosed,verified
 211,Atlas Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Atlas Hotels,Atlas Hotels Group,120,2008,Operating,30.9212,-6.8967,Undisclosed,verified
@@ -183,7 +181,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 241,Hotel Le Vallon Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Hotel Le Vallon,Independent,45,2013,Operating,30.9178,-6.8978,Undisclosed,verified
 242,Heure Bleue Residence Essaouira,Essaouira,Marrakech-Safi,Upscale,Heure Bleue Residence,Independent,18,2014,Operating,31.5134,-9.7712,Undisclosed,verified
 243,Almansour Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Almansour,Independent,90,1995,Operating,35.7678,-5.8378,Undisclosed,verified
-244,Hotel Rif Meknes,Meknes,Fès-Meknès,Upscale,Hotel Rif,Independent,90,2008,Operating,33.8974,-5.5489,Undisclosed,verified
+244,Hotel Rif Meknes,Meknes,Fès-Meknès,Upscale,Hotel Rif,Independent,100,2008,Operating,33.8974,-5.5489,Undisclosed,verified
 245,Hotel El Borj Nador,Nador,Oriental,Midscale,El Borj,Independent,55,2002,Operating,35.1712,-2.9249,Undisclosed,verified
 246,Hotel Doumia Laayoune,Laayoune,Laâyoune-Sakia El Hamra,Midscale,Hotel Doumia,Independent,72,1999,Operating,27.1554,-13.2012,Undisclosed,verified
 247,Ibis Styles Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Ibis Styles,Accor,80,2022,Operating,34.2578,-6.5767,Risma,verified
@@ -231,3 +229,4 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 291,Sahrai Casablanca,Casablanca,Casablanca-Settat,Luxury,Independent,Independent Luxury,56,2022,Open,33.5934,-7.6178,Undisclosed,verified
 292,Radisson Blu Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,432,2022,Open,35.2489,-3.9334,Undisclosed,verified
 293,Suites Mohammed V Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,21,2018,Open,35.2456,-3.9312,Undisclosed,verified
+294,Hotel Atlas Safari Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hotels Group,19,2005,Operating,33.8914,-5.5509,Undisclosed,verified

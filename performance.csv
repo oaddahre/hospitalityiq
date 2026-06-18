@@ -84,7 +84,6 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 124,2025FY,0.58,1400,812,1100,0.29,HIQ Estimate
 125,2025FY,0.58,2800,1624,3200,0.38,HIQ Estimate
 126,2025FY,0.59,560,330,410,0.25,HIQ Estimate
-127,2025FY,0.57,1400,798,1100,0.29,HIQ Estimate
 128,2025FY,0.58,1800,1044,1400,0.31,HIQ Estimate
 129,2025FY,0.56,1200,672,1000,0.28,HIQ Estimate
 131,2025FY,0.56,500,280,360,0.24,HIQ Estimate
@@ -152,7 +151,6 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 205,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 206,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
 207,2025FY,0.56,1500,840,1218,0.31,HIQ Estimate
-208,2025FY,0.56,520,291,320,0.24,HIQ Estimate
 209,2025FY,0.63,3000,1890,3118,0.38,HIQ Estimate
 210,2025FY,0.61,1800,1098,1702,0.33,HIQ Estimate
 211,2025FY,0.6,1300,780,1092,0.3,HIQ Estimate
@@ -232,3 +230,4 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 291,2025FY,0.68,2800,1904,3200,0.40,HIQ Estimate
 292,2025FY,0.62,1800,1116,1500,0.33,HIQ Estimate
 293,2025FY,0.58,1200,696,980,0.28,HIQ Estimate
+294,2025FY,0.55,950,522,680,0.27,HIQ Estimate
