@@ -91,13 +91,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 133,Le Zaki Hotel Oujda,Oujda,Oriental,Upper Upscale,Le Zaki,Independent,135,1978,Operating,34.6827,-1.9154,Undisclosed,verified
 134,Ibis Oujda,Oujda,Oriental,Midscale,Ibis,Accor,90,2013,Operating,34.6827,-1.9114,Risma,verified
 135,Mercure Oujda,Oujda,Oriental,Upscale,Mercure,Accor,118,2015,Operating,34.6827,-1.9074,Risma,verified
-137,Iberostar Saidia,Saidia,Oriental,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,464,2009,Operating,35.0849,-2.2294,Undisclosed,verified
-138,Riu Palace Saidia,Saidia,Oriental,Upper Upscale,Riu,Riu Hotels & Resorts,428,2010,Operating,35.0849,-2.2254,Undisclosed,verified
-139,Barceló Saidia,Saidia,Oriental,Upper Upscale,Barceló,Barceló Hotel Group,396,2011,Operating,35.0849,-2.2214,Undisclosed,verified
-140,Club Med Saidia Village,Saidia,Oriental,Upper Upscale,Club Med,Accor,500,2009,Operating,35.0849,-2.2174,Undisclosed,verified
-141,Robinson Club Saidia,Saidia,Oriental,Upscale,Robinson,TUI Hotels & Resorts,430,2012,Operating,35.0889,-2.2294,Undisclosed,verified
-142,Royal Decameron Tafoukt Saidia,Saidia,Oriental,Upscale,Royal Decameron,Decameron Hotels & Resorts,390,2013,Operating,35.0889,-2.2254,Undisclosed,unverified — existence uncertain
-143,Radisson Blu Resort Saidia Beach,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,380,2014,Operating,35.0889,-2.2214,Undisclosed,estimated — key count uncertain
+137,Iberostar Waves Saidia,Saidia,Oriental,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,484,2009,Operating,35.0849,-2.2294,Undisclosed,verified
+143,Radisson Blu Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,397,2014,Operating,35.0889,-2.2214,Undisclosed,verified
 144,Ibis Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,Ibis,Accor,78,2016,Operating,32.3314,-6.3529,Risma,verified
 146,Atlas Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Atlas Hotels,Atlas Hotels Group,85,2009,Operating,32.3314,-6.3449,Undisclosed,verified
 147,Kenzi Marina Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,128,2012,Operating,35.575,-5.373,Kenzi Hotels Group,verified
@@ -146,7 +141,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 200,Mercure Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,125,2013,Operating,34.2612,-6.5789,Risma,verified
 201,Ibis Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,103,2012,Operating,34.2589,-6.5823,Risma,verified
 202,Hotel Mamora Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Hotel Mamora,Independent,90,1985,Operating,34.2634,-6.5756,Undisclosed,verified
-203,Jaal Riad Resort Saidia,Saidia,Oriental,Upper Upscale,Jaal Riad,Independent,368,2015,Operating,35.0889,-2.2174,Undisclosed,estimated — key count uncertain
 204,Palm Saidia Hotel,Saidia,Oriental,Upper Upscale,Palm Saidia,Independent,240,2016,Operating,35.0929,-2.2294,Undisclosed,unverified — existence uncertain
 205,Riad al Madina Essaouira,Essaouira,Marrakech-Safi,Upscale,Riad al Madina,Independent,27,2010,Operating,31.5123,-9.7678,Undisclosed,verified
 206,Beau Rivage Essaouira,Essaouira,Marrakech-Safi,Upscale,Beau Rivage,Independent,40,2012,Operating,31.5089,-9.7623,Undisclosed,verified
@@ -230,3 +224,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 292,Radisson Blu Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,432,2022,Open,35.2489,-3.9334,Undisclosed,verified
 293,Suites Mohammed V Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,21,2018,Open,35.2456,-3.9312,Undisclosed,verified
 294,Hotel Atlas Safari Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hotels Group,19,2005,Operating,33.8914,-5.5509,Undisclosed,verified
+295,Radisson Blu Residences Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,197,2012,Operating,35.0912,-2.2256,Undisclosed,verified
+296,Belive Saidia,Saidia,Oriental,Upscale,Be Live Hotels,Globalia Hotels,488,2009,Operating,35.0889,-2.2212,Undisclosed,verified
+297,Oasis Saidia Palace,Saidia,Oriental,Upscale,Independent,Independent,307,2010,Operating,35.0901,-2.2234,Undisclosed,verified
+298,Bella Address Saidia,Saidia,Oriental,Luxury,Independent,Independent Luxury,15,2018,Open,35.0923,-2.2198,Undisclosed,verified
