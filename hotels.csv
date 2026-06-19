@@ -121,9 +121,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 187,Fairmont Rabat Sale,Rabat / Salé,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,186,2024,Open,34.0456,-6.8234,Undisclosed,verified
 188,Fairmont Taghazout Bay,Agadir / Taghazout,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed,verified
 189,Robinson Club Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upscale,Robinson,TUI Hotels & Resorts,360,2022,Operating,30.5278,-9.7123,Undisclosed,verified
-191,Michlifen Resort & Golf Ifrane,Ifrane,Fès-Meknès,Luxury,Michlifen,Independent Luxury,90,2012,Operating,33.5234,-5.1034,Undisclosed,verified
-192,Hôtel Perce-Neige Ifrane,Ifrane,Fès-Meknès,Upscale,Hôtel Perce-Neige,Independent,80,1959,Operating,33.5189,-5.1089,Undisclosed,verified
-193,Ibis Styles Ifrane,Ifrane,Fès-Meknès,Midscale,Ibis Styles,Accor,75,2020,Operating,33.5212,-5.1067,Risma,verified
 194,Lina Ryad & Spa Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,17,2008,Operating,35.1689,-5.2634,Undisclosed,verified
 196,Parador Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Parador,Independent,56,1998,Operating,35.1678,-5.2645,Undisclosed,verified
 197,Mercure Quemado Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mercure,Accor,169,1990,Operating,35.2489,-3.9367,Undisclosed,verified
@@ -230,3 +227,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 316,Le Médina Essaouira Thalassa Sea & Spa MGallery Collection,Essaouira,Marrakech-Safi,Upper Upscale,MGallery,Accor,117,2008,Open,31.5112,-9.7678,Risma,verified
 317,Atlas Essaouira Riad Resort,Essaouira,Marrakech-Safi,Upscale,Atlas Hotels,Atlas Hotels Group,156,2012,Open,31.5067,-9.7612,Undisclosed,verified
 318,Essaouira Wind Palace,Essaouira,Marrakech-Safi,Luxury,Independent,Independent Luxury,23,2015,Open,31.5145,-9.7634,Undisclosed,verified
+319,Hotel Perce Neige Ifrane,Ifrane,Fès-Meknès,Upscale,Independent,Independent,26,1985,Open,33.5334,-5.1089,Undisclosed,verified
+320,Michlifen Resort and Golf Ifrane,Ifrane,Fès-Meknès,Luxury,Independent,Independent Luxury,71,2009,Open,33.5312,-5.1112,Undisclosed,verified
+321,Farah Inn Ifrane,Ifrane,Fès-Meknès,Upscale,Independent,Farah Hotels,177,1995,Open,33.5356,-5.1067,Undisclosed,verified
+322,Zephyr Ifrane,Ifrane,Fès-Meknès,Upscale,Independent,Independent,148,2018,Open,33.5289,-5.1134,Undisclosed,verified
+323,Residence Ifrane Palace,Ifrane,Fès-Meknès,Upscale,Independent,Independent,45,2012,Open,33.5367,-5.1045,Undisclosed,verified
