@@ -127,9 +127,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,106,1970,Operating,34.0678,-5.0034,Undisclosed,verified
 185,Hotel Borj Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,192,1971,Operating,34.0156,-6.8378,Farah Hotels Group,verified
 187,Fairmont Rabat Sale,Rabat / Salé,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,186,2024,Open,34.0456,-6.8234,Undisclosed,verified
-188,Fairmont Taghazout Bay,Taghazout Bay,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed,verified
-189,Robinson Club Taghazout Bay,Taghazout Bay,Souss-Massa,Upscale,Robinson,TUI Hotels & Resorts,360,2022,Operating,30.5278,-9.7123,Undisclosed,verified
-190,Hyatt Place Taghazout Bay,Taghazout Bay,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,120,2023,Operating,30.5345,-9.7056,Undisclosed,verified
+188,Fairmont Taghazout Bay,Agadir / Taghazout,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed,verified
+189,Robinson Club Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upscale,Robinson,TUI Hotels & Resorts,360,2022,Operating,30.5278,-9.7123,Undisclosed,verified
 191,Michlifen Resort & Golf Ifrane,Ifrane,Fès-Meknès,Luxury,Michlifen,Independent Luxury,90,2012,Operating,33.5234,-5.1034,Undisclosed,verified
 192,Hôtel Perce-Neige Ifrane,Ifrane,Fès-Meknès,Upscale,Hôtel Perce-Neige,Independent,80,1959,Operating,33.5189,-5.1089,Undisclosed,verified
 193,Ibis Styles Ifrane,Ifrane,Fès-Meknès,Midscale,Ibis Styles,Accor,75,2020,Operating,33.5212,-5.1067,Risma,verified
