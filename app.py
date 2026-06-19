@@ -1295,8 +1295,9 @@ def admin_org_members(org_id):
 try:
     from weasyprint import HTML as WeasyHTML
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except Exception:
     WEASYPRINT_AVAILABLE = False
+    WeasyHTML = None
 
 _report_cache: dict = {}
 CACHE_TTL = 86400  # 24 hours
@@ -1562,7 +1563,7 @@ def api_reports_available():
 @tier_required("benchmarker")
 def api_reports_generate():
     if not WEASYPRINT_AVAILABLE:
-        return jsonify({"error": "PDF generation unavailable — WeasyPrint not installed"}), 500
+        return jsonify({"error": "PDF generation temporarily unavailable", "fallback": True}), 503
 
     body   = request.get_json(silent=True) or {}
     city   = body.get("city", "").strip()
