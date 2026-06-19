@@ -21,10 +21,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 23,Radisson Blu Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,191,2017,Operating,30.436,-9.593,Undisclosed,verified
 24,Hyatt Place Taghazout,Agadir / Taghazout,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,172,2020,Operating,30.4201,-9.5867,Undisclosed,verified
 27,Iberostar Waves Founty Beach Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,470,2001,Operating,30.4156,-9.5934,Undisclosed,verified
-28,Hilton Tanger City Center Hotel & Residences,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hilton,Hilton Hotels & Resorts,180,2019,Operating,35.7698,-5.8334,Undisclosed,verified
-29,Mövenpick Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mövenpick,Accor,163,2016,Operating,35.7712,-5.8241,Undisclosed,verified
-30,Ibis Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,108,2012,Operating,35.781,-5.805,Risma,verified
-31,Barceló Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Barceló,Barceló Hotel Group,168,2010,Operating,35.7634,-5.8289,Undisclosed,verified
 35,Sofitel Rabat Jardin des Roses,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2004,Operating,33.9989,-6.8456,Risma,verified
 38,Ibis Rabat Agdal,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2010,Operating,34.007,-6.83,Risma,verified
 40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,148,2008,Operating,34.047,-5.011,Undisclosed,verified
@@ -47,12 +43,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 71,Club Med Marrakech la Palmeraie,Marrakech,Marrakech-Safi,Upper Upscale,Club Med,Accor,350,1996,Operating,31.645,-8.002,Undisclosed,verified
 75,Hilton Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Hilton,Hilton Hotels & Resorts,280,2019,Operating,30.439,-9.597,Undisclosed,verified
 78,Mercure Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Mercure,Accor,194,2011,Operating,30.432,-9.595,Risma,verified
-86,Radisson Blu Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,225,2013,Operating,35.771,-5.801,Undisclosed,verified
-88,Ibis Styles Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Ibis Styles,Accor,105,2019,Operating,35.769,-5.799,Risma,verified
-89,Kenzi Solazur Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Kenzi Hotels,Kenzi Hotels Group,330,1969,Operating,35.783,-5.794,Kenzi Hotels Group,verified
-90,Holiday Inn Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Holiday Inn,IHG Hotels & Resorts,156,2018,Operating,35.775,-5.806,Undisclosed,verified
-91,Mercure Tanger Almohades,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Mercure,Accor,130,2009,Operating,35.772,-5.809,Risma,verified
-92,Sheraton Tanger Hotel,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Sheraton,Marriott International,195,2020,Operating,35.779,-5.8,Undisclosed,verified
 95,La Tour Hassan Palace,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
 98,Mercure Rabat Sheherazade,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
 100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,31,2009,Operating,34.0634,-4.9789,Undisclosed,verified
@@ -95,10 +85,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 169,Onomo Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Onomo,Onomo Hotels,201,2015,Operating,33.58,-7.605,Undisclosed,verified
 171,Sofitel Agadir Thalassa Sea & Spa,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,173,2008,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
 174,Anezi Tower Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Anezi Tower,Independent,394,2001,Operating,30.4198,-9.5912,Undisclosed,verified
-176,El Minzah Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,El Minzah,Independent,140,1930,Operating,35.7789,-5.8156,Undisclosed,verified
-177,NH Collection Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,NH Collection,Minor Hotels,126,2015,Operating,35.7756,-5.8212,Undisclosed,verified
-178,Dawliz Hotel & Spa Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Dawliz,Independent,142,2008,Operating,35.7734,-5.8267,Undisclosed,verified
-179,Onomo Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Onomo,Onomo Hotels,100,2021,Operating,35.7712,-5.8301,Undisclosed,verified
 180,Marriott Jnane Palace Fes,Fes,Fès-Meknès,Upper Upscale,Marriott,Marriott International,244,1975,Operating,34.0456,-4.9978,Undisclosed,verified
 181,Palais Amani Fes,Fes,Fès-Meknès,Luxury,Palais Amani,Independent Luxury,18,2010,Operating,34.0645,-4.9756,Undisclosed,verified
 183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,106,1970,Operating,34.0678,-5.0034,Undisclosed,verified
@@ -128,17 +114,14 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
 238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
 239,Riad Laaroussa Fes,Fes,Fès-Meknès,Luxury,Riad Laaroussa,Independent Luxury,4,2009,Operating,34.0645,-4.9767,Undisclosed,verified
-243,Almansour Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Almansour,Independent,90,1995,Operating,35.7678,-5.8378,Undisclosed,verified
 244,Hotel Rif Meknes,Meknes,Fès-Meknès,Upscale,Hotel Rif,Independent,100,2008,Operating,33.8974,-5.5489,Undisclosed,verified
 245,Hotel El Borj Nador,Nador,Oriental,Midscale,El Borj,Independent,55,2002,Operating,35.1712,-2.9249,Undisclosed,verified
 249,Novotel El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Novotel,Accor,148,2022,Operating,33.2567,-8.4994,Risma,verified
 252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,24,2010,Operating,35.1695,-5.2621,Undisclosed,verified
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
-257,Hilton Garden Inn Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,145,2021,Open,35.7589,-5.8334,Undisclosed,verified
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2019,Open,33.5934,-7.6234,Royal (State),verified
 260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,342,1999,Open,35.2456,-3.9289,Club Med (Fosun),verified
 261,Waldorf Astoria Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2019,Operating,33.9889,-6.8512,Undisclosed,verified
-262,Fairmont Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Fairmont,Accor,220,2025,Operating,35.7698,-5.8234,Undisclosed,verified
 264,Nobu Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Nobu Hospitality,Nobu Hospitality,71,2024,Operating,31.6423,-8.0178,Undisclosed,verified
 265,Oberoi Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Oberoi,Oberoi Hotels & Resorts,84,2023,Operating,31.6089,-8.0389,Undisclosed,verified
 266,Marchica Lagoon Resort,Nador,Oriental,Upscale,Independent,Independent Luxury,188,2018,Operating,35.1589,-2.9234,Marchica Med (State),estimated — key count uncertain
@@ -240,3 +223,40 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 362,Dreams Hotel Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,130,2019,Open,35.5656,-5.3756,Undisclosed,verified
 363,Hotel Al Mandari Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,32,2012,Open,35.5723,-5.3678,Undisclosed,verified
 364,Atenas Hotel Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,80,2010,Open,35.5645,-5.3767,Undisclosed,verified
+365,Ramada Encore by Wyndham Tangier,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Ramada Encore,Wyndham Hotels & Resorts,195,2018,Open,35.7698,-5.8334,Undisclosed,verified
+366,City Bleu Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,27,2016,Open,35.7712,-5.8312,Undisclosed,verified
+367,Fairmont Tazi Palace Tangier,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Fairmont,Accor,133,2025,Open,35.7756,-5.8289,Undisclosed,verified
+368,Hotel Ben Batouta Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,53,2010,Open,35.7689,-5.8356,Undisclosed,verified
+369,Hotel Palace Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent,34,2005,Open,35.7723,-5.8267,Undisclosed,verified
+370,Hôtel Mauritania Centre Tangier,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent,26,1998,Open,35.7734,-5.8245,Undisclosed,verified
+371,Idou Malabata Beach and Spa Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Independent,Independent,159,2012,Open,35.7834,-5.8089,Undisclosed,verified
+372,Occidental Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Occidental Hotels,Barceló Hotel Group,170,2008,Open,35.7812,-5.8112,Undisclosed,verified
+373,Pestana Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Pestana,Pestana Hotel Group,120,2019,Open,35.7789,-5.8134,Undisclosed,verified
+374,Hotel Astoria Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent,29,1990,Open,35.7701,-5.8378,Undisclosed,verified
+375,Flamant Rose Appart Hôtel Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,70,2015,Open,35.7678,-5.8401,Undisclosed,verified
+376,Hotel Miramar Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent,40,1985,Open,35.7745,-5.8223,Undisclosed,verified
+377,Hotel El Djenina Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent,71,2000,Open,35.7756,-5.8201,Undisclosed,verified
+378,Dar Omar Khayam Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,25,2008,Open,35.7823,-5.8067,Undisclosed,verified
+379,Hotel Etoile du Nord Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent,39,1995,Open,35.7767,-5.8178,Undisclosed,verified
+380,Mnar Castle Apartments Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,66,2017,Open,35.7656,-5.8423,Undisclosed,verified
+381,Ibis Tanger City Center,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Ibis,Accor,196,2013,Open,35.7698,-5.8334,Risma,verified
+382,Mandarin Palace Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,58,2014,Open,35.7634,-5.8445,Undisclosed,verified
+383,Hotel Rembrandt Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,70,1945,Open,35.7778,-5.8156,Undisclosed,verified
+384,SBN Suite Hôtel Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,28,2019,Open,35.7645,-5.8467,Undisclosed,verified
+385,Marina Bay City Center Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Independent,Independent,132,2020,Open,35.7801,-5.8045,Undisclosed,verified
+386,Palais Zahia Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,18,2010,Open,35.7834,-5.8023,Undisclosed,verified
+387,Barcelo Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Barceló,Barceló Hotel Group,200,2016,Open,35.7589,-5.8489,Undisclosed,verified
+388,Grand Hotel Villa de France Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,58,2010,Open,35.7845,-5.8001,Undisclosed,verified
+389,Hotel Farah Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Independent,Farah Hotels,140,1988,Open,35.7756,-5.8134,Undisclosed,verified
+390,Royal Tulip City Center Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Royal Tulip,Louvre Hotels Group,218,2014,Open,35.7623,-5.8512,Undisclosed,verified
+391,El Minzah Hotel Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,130,1930,Open,35.7789,-5.8156,Undisclosed,verified
+392,Kenzi Solazur Hotel Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,348,1996,Open,35.7812,-5.8112,Kenzi Hotels Group,verified
+393,Hilton Garden Inn Tanger City Center,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,320,2021,Open,35.7667,-5.8434,Undisclosed,verified
+394,Hilton Tangier City Center,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Hilton,Hilton Hotels & Resorts,180,2023,Open,35.7645,-5.8456,Undisclosed,verified
+395,Hotel El Toro Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent,27,2005,Open,35.7712,-5.8312,Undisclosed,verified
+396,Villa Mirasol Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,14,2012,Open,35.7856,-5.7978,Undisclosed,verified
+397,RIMAS Appart Hôtel Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,20,2018,Open,35.7689,-5.8356,Undisclosed,verified
+398,Amelia Appart Hotel Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,22,2019,Open,35.7678,-5.8378,Undisclosed,verified
+399,Hôtel Tanger Centre Malabata,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,152,2010,Open,35.7823,-5.8089,Undisclosed,verified
+400,Suites by Le Rêve Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,23,2015,Open,35.7834,-5.8045,Undisclosed,verified
+401,Le Mirage Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,53,2014,Open,35.7845,-5.8023,Undisclosed,verified
