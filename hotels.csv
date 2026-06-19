@@ -93,7 +93,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 137,Iberostar Waves Saidia,Saidia,Oriental,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,484,2009,Operating,35.0849,-2.2294,Undisclosed,verified
 143,Radisson Blu Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,397,2014,Operating,35.0889,-2.2214,Undisclosed,verified
 144,Ibis Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,Ibis,Accor,78,2016,Operating,32.3314,-6.3529,Risma,verified
-146,Atlas Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Atlas Hotels,Atlas Hotels Group,85,2009,Operating,32.3314,-6.3449,Undisclosed,verified
+146,Atlas Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Atlas Hotels,Atlas Hotels Group,27,2009,Operating,32.3314,-6.3449,Undisclosed,verified
 147,Kenzi Marina Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,128,2012,Operating,35.575,-5.373,Kenzi Hotels Group,verified
 148,Ibis Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,85,2016,Operating,35.569,-5.365,Risma,verified
 149,Zalagh Hotel Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upscale,Zalagh Hotels,Zalagh Hotels Group,95,2016,Operating,35.581,-5.38,Undisclosed,verified
@@ -152,7 +152,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 216,Atlas Oujda,Oujda,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,80,2005,Operating,34.6867,-1.9074,Undisclosed,verified
 217,Hotel Rif Nador,Nador,Oriental,Upscale,Hotel Rif,Independent,100,1995,Operating,35.1712,-2.9329,Undisclosed,verified
 218,Atlas Nador,Nador,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,85,2010,Operating,35.1712,-2.9289,Undisclosed,verified
-220,Mercure Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Mercure,Accor,95,2020,Operating,32.3354,-6.3529,Risma,verified
 221,Hotel Chams Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hotel Chams,Independent,195,2004,Operating,35.5756,-5.3756,Undisclosed,verified
 222,InterContinental Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,InterContinental,IHG Hotels & Resorts,210,2021,Operating,35.6934,-5.3423,Undisclosed,estimated — key count uncertain
 223,El Oumnia Puerto Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,El Oumnia,Independent,42,2015,Operating,35.6867,-5.3367,Undisclosed,verified
@@ -178,7 +177,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 248,Onomo Hotel Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Midscale,Onomo,Onomo Hotels,68,2022,Operating,35.5734,-5.3712,Undisclosed,verified
 249,Novotel El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Novotel,Accor,148,2022,Operating,33.2567,-8.4994,Risma,verified
 250,Anantara Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Anantara,Minor Hotels,96,2022,Operating,35.7012,-5.3845,Undisclosed,estimated — key count uncertain
-251,Hotel Oulmes Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Hotel Oulmes,Independent,65,2010,Operating,32.3354,-6.3489,Undisclosed,verified
 252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,24,2010,Operating,35.1695,-5.2621,Undisclosed,verified
 254,Riad Madu Merzouga,Merzouga,Drâa-Tafilalet,Upscale,Riad Madu,Independent,22,2012,Operating,31.0967,-4.0089,Undisclosed,verified
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
@@ -229,3 +227,9 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 302,Amanar Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Independent,Independent Luxury,77,2010,Open,30.9156,-6.8956,Undisclosed,verified
 303,Zelis Hotel Asilah,Asilah,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,55,2010,Open,35.4656,-6.0334,Undisclosed,verified
 304,Patio de la Luna Asilah,Asilah,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,6,2008,Open,35.4645,-6.0345,Undisclosed,verified
+305,La Colline Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Independent,Independent,30,2012,Open,32.3367,-6.3512,Undisclosed,verified
+306,Hotel Hadaik Ain Asserdoune Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Independent,Independent,48,2008,Open,32.3389,-6.3478,Undisclosed,verified
+307,Alecanti Hotel Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Independent,Independent,32,2015,Open,32.3345,-6.3534,Undisclosed,verified
+308,Appart Hotel Golden Sky Home Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,Independent,Independent,24,2018,Open,32.3312,-6.3556,Undisclosed,verified
+309,Velsatis Hotel Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Independent,Independent,15,2016,Open,32.3356,-6.3489,Undisclosed,verified
+310,Hotel La Luna Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,Independent,Independent,40,2014,Open,32.3378,-6.3501,Undisclosed,verified
