@@ -3,3 +3,4 @@ flask-login
 anthropic
 pandas
 python-dotenv
+weasyprint

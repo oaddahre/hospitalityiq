@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>{{ d.city }} Hotel Market · {{ d.period }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Page setup ── */
+@page {
+  size: A4;
+  margin: 48px 44px 44px 44px;
+}
+@page cover {
+  margin: 0;
+}
+@page backcover {
+  margin: 0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; color: #1A1A1A; background: #fff; }
+
+/* ── Page containers ── */
+.page { break-after: page; }
+.cover-page { page: cover; break-after: page; }
+.backcover-page { page: backcover; }
+
+/* ── Running header/footer (all pages except cover) ── */
+.page-running-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 8px; margin-bottom: 20px;
+  border-bottom: 1px solid #E8E8E8;
+}
+.page-running-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 8px; margin-top: 20px;
+  border-top: 1px solid #E8E8E8;
+  position: absolute; bottom: 44px; left: 44px; right: 44px;
+}
+.rh-logo { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #0A0A0A; }
+.rh-title { font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em; color: #6A6A6A; }
+.rh-page { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9px; color: #6A6A6A; }
+.rf-left { font-size: 8px; color: #AAAAAA; }
+.rf-right { font-size: 8px; color: #AAAAAA; text-align: right; }
+
+/* ── Cover page ── */
+.cover-top {
+  background: #0A0A0A; height: 40%;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 40px 50px;
+}
+.cover-kodo { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.15em; color: #FFFFFF; text-transform: uppercase; }
+.cover-tagline { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #A06848; margin-top: 6px; }
+.cover-rule { width: 60px; height: 1px; background: #A06848; margin-top: 20px; }
+
+.cover-bottom { background: #FFFFFF; height: 60%; padding: 40px 50px 30px; position: relative; }
+.cover-title { font-family: 'Syne', sans-serif; font-size: 38px; font-weight: 600; color: #0A0A0A; line-height: 1.1; letter-spacing: -0.02em; }
+.cover-period { font-size: 15px; color: #6A6A6A; margin-top: 8px; }
+.cover-accent-rule { width: 100%; height: 2px; background: #A06848; margin: 20px 0; }
+
+.cover-kpis { display: flex; gap: 0; margin-top: 4px; }
+.cover-kpi { flex: 1; border-right: 1px solid #E8E8E8; padding: 14px 16px; }
+.cover-kpi:last-child { border-right: none; }
+.cover-kpi-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em; color: #6A6A6A; margin-bottom: 6px; }
+.cover-kpi-value { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 500; color: #0A0A0A; }
+
+.cover-confidential { position: absolute; bottom: 24px; left: 50px; right: 50px; font-size: 8px; color: #AAAAAA; text-align: center; }
+
+/* ── Section titles ── */
+.section-title { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #E8E8E8; }
+.section-num { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: #A06848; display: block; margin-bottom: 4px; }
+.section-heading { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600; color: #0A0A0A; }
+
+/* ── Two column layout ── */
+.two-col { display: flex; gap: 24px; }
+.col-60 { flex: 0 0 58%; }
+.col-40 { flex: 0 0 38%; }
+
+/* ── Prose text ── */
+.prose { font-size: 12px; line-height: 1.75; color: #1A1A1A; }
+
+/* ── KPI box (at-a-glance) ── */
+.glance-box { background: #F8F8F8; border: 1px solid #E8E8E8; padding: 18px; }
+.glance-title { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6A6A6A; margin-bottom: 14px; }
+.glance-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dotted #E0E0E0; }
+.glance-row:last-child { border-bottom: none; }
+.glance-label { font-size: 10px; color: #6A6A6A; }
+.glance-value { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 500; color: #0A0A0A; }
+
+/* ── Market rating ── */
+.rating-box { background: #F8F8F8; border: 1px solid #E8E8E8; padding: 16px; margin-top: 12px; text-align: center; }
+.rating-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em; color: #6A6A6A; margin-bottom: 8px; }
+.rating-value { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+
+/* ── Disclaimer ── */
+.disclaimer { background: #F8F8F8; border-left: 3px solid #A06848; padding: 10px 14px; margin-top: 16px; font-size: 9px; color: #6A6A6A; line-height: 1.6; }
+
+/* ── Key highlights ── */
+.highlights-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #6A6A6A; margin: 14px 0 8px; }
+.highlight-item { display: flex; gap: 8px; margin-bottom: 6px; font-size: 11px; line-height: 1.6; }
+.highlight-dot { color: #A06848; font-size: 14px; line-height: 1.2; flex-shrink: 0; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; font-size: 10px; }
+th { background: #F8F8F8; font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: #6A6A6A; padding: 7px 8px; text-align: left; border: 1px solid #E8E8E8; font-weight: 500; }
+td { padding: 6px 8px; border: 1px solid #E8E8E8; color: #1A1A1A; }
+td.num { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: right; }
+tr:nth-child(even) td { background: #FAFAFA; }
+tr.total-row td { font-weight: 600; background: #F0F0F0; }
+.idx-high { color: #2D6B3A; font-weight: 600; }
+.idx-low  { color: #8B3A3A; font-weight: 600; }
+
+/* ── Bar charts (horizontal, CSS-only) ── */
+.bar-chart { margin-top: 12px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-label { font-size: 9px; color: #1A1A1A; flex: 0 0 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 14px; background: #F0F0F0; }
+.bar-fill { height: 100%; background: #A06848; }
+.bar-pct { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9px; color: #6A6A6A; flex: 0 0 36px; text-align: right; }
+
+/* ── Financial KPIs (3-box) ── */
+.fin-boxes { display: flex; gap: 12px; margin-top: 16px; }
+.fin-box { flex: 1; background: #F8F8F8; border: 1px solid #E8E8E8; padding: 14px; text-align: center; }
+.fin-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em; color: #6A6A6A; margin-bottom: 6px; }
+.fin-value { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 18px; font-weight: 500; color: #0A0A0A; }
+.fin-sub { font-size: 8px; color: #AAAAAA; margin-top: 2px; }
+
+/* ── Seasonality ── */
+.season-table { width: 100%; }
+.season-table th { font-size: 8px; padding: 5px 4px; text-align: center; }
+.season-table td { font-size: 9px; padding: 5px 4px; text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; }
+.s-high { background: #EAF3E0; }
+.s-mid  { background: #FFF8E8; }
+.s-low  { background: #FEF0F0; }
+
+/* ── Supply risk / status pills ── */
+.supply-risk-box { border: 1px solid #E8E8E8; padding: 16px; margin-top: 16px; text-align: center; }
+.supply-risk-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em; color: #6A6A6A; margin-bottom: 8px; }
+.supply-risk-value { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+.risk-low  { color: #2D6B3A; }
+.risk-med  { color: #B8922A; }
+.risk-high { color: #8B3A3A; }
+
+.status-pill { display: inline-block; padding: 2px 7px; font-size: 8px; border-radius: 2px; }
+.status-construction { background: #FDF0DC; color: #854F0B; }
+.status-planning     { background: #E8F0F8; color: #185FA5; }
+
+/* ── Risks / Opportunities ── */
+.risk-item { background: #FEF8F5; border-left: 3px solid #A06848; padding: 10px 12px; margin-bottom: 8px; }
+.opp-item  { background: #F5F9F5; border-left: 3px solid #2D6B3A; padding: 10px 12px; margin-bottom: 8px; }
+.ro-num    { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; margin-bottom: 3px; }
+.risk-num  { color: #A06848; }
+.opp-num   { color: #2D6B3A; }
+.ro-text   { font-size: 10px; line-height: 1.5; color: #1A1A1A; }
+
+/* ── Back cover ── */
+.backcover-inner { background: #0A0A0A; min-height: 297mm; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; text-align: center; }
+.bc-kodo    { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 700; letter-spacing: 0.15em; color: #FFFFFF; text-transform: uppercase; margin-bottom: 8px; }
+.bc-tag     { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #A06848; margin-bottom: 28px; }
+.bc-url     { font-size: 12px; color: #6A6A6A; margin-bottom: 32px; }
+.bc-copy    { font-size: 9px; color: #444; line-height: 1.8; }
+
+/* ── Directory table ── */
+.dir-table th { font-size: 7px; padding: 5px 5px; }
+.dir-table td { font-size: 8px; padding: 4px 5px; }
+.dir-rank { font-family: 'Helvetica Neue', Arial, sans-serif; color: #A06848; font-weight: 600; text-align: center; }
+</style>
+</head>
+<body>
+
+{# ════════════════════════════════════════════════════════ COVER #}
+<div class="cover-page">
+  <div class="cover-top">
+    <div class="cover-kodo">KŌDŌ</div>
+    <div class="cover-tagline">Hospitality Intelligence</div>
+    <div class="cover-rule"></div>
+  </div>
+  <div class="cover-bottom">
+    <div class="cover-title">{{ d.city }} Hotel Market</div>
+    <div class="cover-period">{{ d.period }} Market Intelligence Report</div>
+    <div class="cover-accent-rule"></div>
+    <div class="cover-kpis">
+      <div class="cover-kpi">
+        <div class="cover-kpi-label">Total Hotels</div>
+        <div class="cover-kpi-value">{{ d.market_overview.total_hotels }}</div>
+      </div>
+      <div class="cover-kpi">
+        <div class="cover-kpi-label">Total Keys</div>
+        <div class="cover-kpi-value">{{ "{:,}".format(d.market_overview.total_keys) }}</div>
+      </div>
+      <div class="cover-kpi">
+        <div class="cover-kpi-label">Avg Occupancy</div>
+        <div class="cover-kpi-value">{{ "%.0f"|format(d.performance.overall.occupancy * 100) }}%</div>
+      </div>
+      <div class="cover-kpi">
+        <div class="cover-kpi-label">Avg RevPAR</div>
+        <div class="cover-kpi-value">MAD {{ "{:,.0f}".format(d.performance.overall.revpar) }}</div>
+      </div>
+    </div>
+    <div class="cover-confidential">
+      Confidential — For Kōdō Subscribers Only &nbsp;·&nbsp; kodohospitality.com &nbsp;·&nbsp; Generated {{ d.generated_date }}
+    </div>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ PAGE 2 – EXECUTIVE SUMMARY #}
+<div class="page" style="position:relative; min-height:249mm; padding-bottom: 60px;">
+  <div class="page-running-header">
+    <span class="rh-logo">KŌDŌ</span>
+    <span class="rh-title">{{ d.city }} Hotel Market &nbsp;·&nbsp; {{ d.period }}</span>
+    <span class="rh-page">02</span>
+  </div>
+
+  <div class="section-title">
+    <span class="section-num">01</span>
+    <span class="section-heading">Executive Summary</span>
+  </div>
+
+  <div class="two-col">
+    <div class="col-60">
+      <p class="prose">{{ d.ai_narrative.executive_summary }}</p>
+
+      <div class="highlights-title">Key Highlights</div>
+      {% for opp in d.ai_narrative.key_opportunities %}
+      <div class="highlight-item">
+        <span class="highlight-dot">·</span>
+        <span>{{ opp }}</span>
+      </div>
+      {% endfor %}
+
+      <div class="disclaimer">
+        All performance metrics are Kōdō proprietary estimates based on market intelligence and statistical modelling. Real operator data collection begins Q3 2026.
+      </div>
+    </div>
+    <div class="col-40">
+      <div class="glance-box">
+        <div class="glance-title">Market at a Glance</div>
+        <div class="glance-row"><span class="glance-label">Total Hotels</span><span class="glance-value">{{ d.market_overview.total_hotels }}</span></div>
+        <div class="glance-row"><span class="glance-label">Total Keys</span><span class="glance-value">{{ "{:,}".format(d.market_overview.total_keys) }}</span></div>
+        <div class="glance-row"><span class="glance-label">Avg Occupancy</span><span class="glance-value">{{ "%.1f"|format(d.performance.overall.occupancy * 100) }}%</span></div>
+        <div class="glance-row"><span class="glance-label">Avg ADR (MAD)</span><span class="glance-value">{{ "{:,.0f}".format(d.performance.overall.adr) }}</span></div>
+        <div class="glance-row"><span class="glance-label">Avg RevPAR (MAD)</span><span class="glance-value">{{ "{:,.0f}".format(d.performance.overall.revpar) }}</span></div>
+        <div class="glance-row"><span class="glance-label">Avg GOP Margin</span><span class="glance-value">{{ "%.1f"|format(d.performance.overall.gop_margin * 100) }}%</span></div>
+      </div>
+      <div class="rating-box">
+        <div class="rating-label">Kōdō Market Rating</div>
+        <div class="rating-value" style="color: {{ d.market_rating_color }};">{{ d.market_rating }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-running-footer">
+    <span class="rf-left">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
+    <span class="rf-right">Data as of {{ d.generated_date }} · Kōdō estimates unless noted</span>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ PAGE 3 – MARKET OVERVIEW #}
+<div class="page" style="position:relative; min-height:249mm; padding-bottom: 60px;">
+  <div class="page-running-header">
+    <span class="rh-logo">KŌDŌ</span>
+    <span class="rh-title">{{ d.city }} Hotel Market &nbsp;·&nbsp; {{ d.period }}</span>
+    <span class="rh-page">03</span>
+  </div>
+
+  <div class="section-title">
+    <span class="section-num">02</span>
+    <span class="section-heading">Market Overview</span>
+  </div>
+
+  <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Supply Breakdown by Segment</p>
+  <table>
+    <thead><tr>
+      <th>Segment</th><th>Hotels</th><th>Keys</th><th>Key Share</th><th>Avg Year Opened</th>
+    </tr></thead>
+    <tbody>
+    {% set total_keys = d.market_overview.total_keys %}
+    {% for seg, keys in d.market_overview.keys_by_segment.items() %}
+      {% set seg_hotels = d.performance.by_segment | selectattr("segment","equalto",seg) | list %}
+      <tr>
+        <td>{{ seg }}</td>
+        <td class="num">{{ seg_hotels[0].hotels if seg_hotels else "—" }}</td>
+        <td class="num">{{ "{:,}".format(keys) }}</td>
+        <td class="num">{{ "%.1f"|format(keys / total_keys * 100) }}%</td>
+        <td class="num">—</td>
+      </tr>
+    {% endfor %}
+    <tr class="total-row">
+      <td>Total</td>
+      <td class="num">{{ d.market_overview.total_hotels }}</td>
+      <td class="num">{{ "{:,}".format(d.market_overview.total_keys) }}</td>
+      <td class="num">100.0%</td>
+      <td class="num">{{ d.market_overview.avg_year_opened }}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top:20px;">
+    <div class="col-60">
+      <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Brand Group Market Share (by Keys)</p>
+      <div class="bar-chart">
+        {% for bg in d.market_overview.brand_groups[:7] %}
+        <div class="bar-row">
+          <span class="bar-label">{{ bg.name }}</span>
+          <div class="bar-track"><div class="bar-fill" style="width: {{ bg.market_share }}%;"></div></div>
+          <span class="bar-pct">{{ bg.market_share }}%</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-40">
+      <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Ownership Structure</p>
+      <div class="bar-chart">
+        {% for ow in d.market_overview.ownership[:5] %}
+        <div class="bar-row">
+          <span class="bar-label">{{ ow.owner }}</span>
+          <div class="bar-track"><div class="bar-fill" style="width: {{ ow.market_share }}%;"></div></div>
+          <span class="bar-pct">{{ ow.market_share }}%</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="page-running-footer">
+    <span class="rf-left">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
+    <span class="rf-right">Data as of {{ d.generated_date }} · Kōdō estimates unless noted</span>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ PAGE 4 – PERFORMANCE ANALYSIS #}
+<div class="page" style="position:relative; min-height:249mm; padding-bottom: 60px;">
+  <div class="page-running-header">
+    <span class="rh-logo">KŌDŌ</span>
+    <span class="rh-title">{{ d.city }} Hotel Market &nbsp;·&nbsp; {{ d.period }}</span>
+    <span class="rh-page">04</span>
+  </div>
+
+  <div class="section-title">
+    <span class="section-num">03</span>
+    <span class="section-heading">Performance Analysis</span>
+  </div>
+
+  <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Performance by Segment</p>
+  <table>
+    <thead><tr>
+      <th>Segment</th><th>Hotels</th><th>Keys</th><th>Occ.</th><th>ADR (MAD)</th><th>RevPAR (MAD)</th><th>GOP Margin</th><th>RevPAR Index</th>
+    </tr></thead>
+    <tbody>
+    {% for sp in d.performance.by_segment %}
+    <tr>
+      <td>{{ sp.segment }}</td>
+      <td class="num">{{ sp.hotels }}</td>
+      <td class="num">{{ "{:,}".format(sp.keys) }}</td>
+      <td class="num">{{ "%.1f"|format(sp.occupancy * 100) }}%</td>
+      <td class="num">{{ "{:,.0f}".format(sp.adr) }}</td>
+      <td class="num">{{ "{:,.0f}".format(sp.revpar) }}</td>
+      <td class="num">{{ "%.1f"|format(sp.gop_margin * 100) }}%</td>
+      <td class="num {% if sp.revpar_index >= 100 %}idx-high{% else %}idx-low{% endif %}">{{ "%.0f"|format(sp.revpar_index) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% if d.performance.top_10_revpar %}
+  <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin: 16px 0 8px;">Top Hotels by RevPAR</p>
+  <table>
+    <thead><tr>
+      <th style="width:28px;">#</th><th>Hotel</th><th>Segment</th><th>Keys</th><th>Occ.</th><th>ADR (MAD)</th><th>RevPAR (MAD)</th>
+    </tr></thead>
+    <tbody>
+    {% for h in d.performance.top_10_revpar %}
+    <tr>
+      <td class="dir-rank">{{ loop.index }}</td>
+      <td>{{ h.name }}</td>
+      <td>{{ h.category }}</td>
+      <td class="num">{{ "{:,}".format(h.keys|int) }}</td>
+      <td class="num">{{ "%.1f"|format(h.occupancy * 100) }}%</td>
+      <td class="num">{{ "{:,.0f}".format(h.adr_mad) }}</td>
+      <td class="num">{{ "{:,.0f}".format(h.revpar_mad) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="fin-boxes">
+    <div class="fin-box">
+      <div class="fin-label">Est. Rooms Revenue</div>
+      <div class="fin-value">MAD {{ d.performance.est_rooms_revenue_mad_m }}M</div>
+      <div class="fin-sub">Annual estimate</div>
+    </div>
+    <div class="fin-box">
+      <div class="fin-label">Est. Total Revenue</div>
+      <div class="fin-value">MAD {{ d.performance.est_total_revenue_mad_m }}M</div>
+      <div class="fin-sub">Annual estimate</div>
+    </div>
+    <div class="fin-box">
+      <div class="fin-label">Est. GOP</div>
+      <div class="fin-value">MAD {{ d.performance.est_gop_mad_m }}M</div>
+      <div class="fin-sub">Annual estimate</div>
+    </div>
+  </div>
+
+  <div class="page-running-footer">
+    <span class="rf-left">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
+    <span class="rf-right">Data as of {{ d.generated_date }} · Kōdō estimates unless noted</span>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ PAGE 5 – DEMAND DRIVERS #}
+<div class="page" style="position:relative; min-height:249mm; padding-bottom: 60px;">
+  <div class="page-running-header">
+    <span class="rh-logo">KŌDŌ</span>
+    <span class="rh-title">{{ d.city }} Hotel Market &nbsp;·&nbsp; {{ d.period }}</span>
+    <span class="rh-page">05</span>
+  </div>
+
+  <div class="section-title">
+    <span class="section-num">04</span>
+    <span class="section-heading">Demand Drivers &amp; Seasonality</span>
+  </div>
+
+  <div class="two-col">
+    <div class="col-60">
+      <p class="prose">{{ d.ai_narrative.market_commentary }}</p>
+    </div>
+    <div class="col-40">
+      <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:10px;">Demand Index Profile</p>
+      <table class="season-table">
+        <thead><tr>
+          {% for m in d.seasonality.months %}<th>{{ m }}</th>{% endfor %}
+        </tr></thead>
+        <tbody><tr>
+          {% for v in d.seasonality.values %}
+          <td class="{% if v >= 80 %}s-high{% elif v >= 65 %}s-mid{% else %}s-low{% endif %}">{{ v }}</td>
+          {% endfor %}
+        </tr></tbody>
+      </table>
+      <p style="font-size:8px;color:#AAAAAA;margin-top:6px;">Index 0–100 · Green &gt;80 · Amber 65–79 · Red &lt;65</p>
+    </div>
+  </div>
+
+  <div class="page-running-footer">
+    <span class="rf-left">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
+    <span class="rf-right">Data as of {{ d.generated_date }} · Kōdō estimates unless noted</span>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ PAGE 6 – PIPELINE #}
+<div class="page" style="position:relative; min-height:249mm; padding-bottom: 60px;">
+  <div class="page-running-header">
+    <span class="rh-logo">KŌDŌ</span>
+    <span class="rh-title">{{ d.city }} Hotel Market &nbsp;·&nbsp; {{ d.period }}</span>
+    <span class="rh-page">06</span>
+  </div>
+
+  <div class="section-title">
+    <span class="section-num">05</span>
+    <span class="section-heading">Pipeline &amp; Supply Outlook</span>
+  </div>
+
+  {% if d.pipeline.projects %}
+  <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Pipeline Projects</p>
+  <table>
+    <thead><tr>
+      <th>Project</th><th>Brand</th><th>Category</th><th>Keys</th><th>Opening</th><th>Status</th><th>Inv. (MAD M)</th>
+    </tr></thead>
+    <tbody>
+    {% for p in d.pipeline.projects %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.brand }}</td>
+      <td>{{ p.category }}</td>
+      <td class="num">{{ "{:,}".format(p.keys) }}</td>
+      <td class="num">{{ p.opening }}</td>
+      <td><span class="status-pill {% if 'Construction' in p.status %}status-construction{% else %}status-planning{% endif %}">{{ p.status }}</span></td>
+      <td class="num">{{ "{:,.0f}".format(p.investment_mad / 1000000) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% if d.pipeline.by_year %}
+  <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin: 16px 0 8px;">Supply by Year (Keys)</p>
+  <div class="bar-chart">
+    {% set max_keys = d.pipeline.by_year.values() | max %}
+    {% for yr, keys in d.pipeline.by_year.items() %}
+    <div class="bar-row">
+      <span class="bar-label">{{ yr }}</span>
+      <div class="bar-track"><div class="bar-fill" style="width: {{ (keys / max_keys * 100)|int }}%;"></div></div>
+      <span class="bar-pct">{{ "{:,}".format(keys) }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <p style="font-size:12px;color:#6A6A6A;padding:20px 0;">No confirmed pipeline projects in {{ d.city }} at this time.</p>
+  {% endif %}
+
+  <div class="supply-risk-box">
+    <div class="supply-risk-label">Supply Risk Assessment</div>
+    <div class="supply-risk-value risk-{{ d.pipeline.supply_risk | lower }}">{{ d.pipeline.supply_risk | upper }}</div>
+    <div style="font-size:9px;color:#6A6A6A;margin-top:4px;">
+      Pipeline keys: {{ "{:,}".format(d.pipeline.total_keys) }} &nbsp;·&nbsp;
+      Existing keys: {{ "{:,}".format(d.market_overview.total_keys) }} &nbsp;·&nbsp;
+      Ratio: {{ "%.1f"|format(d.pipeline.total_keys / d.market_overview.total_keys * 100 if d.market_overview.total_keys else 0) }}%
+    </div>
+  </div>
+
+  <div class="page-running-footer">
+    <span class="rf-left">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
+    <span class="rf-right">Data as of {{ d.generated_date }} · Kōdō estimates unless noted</span>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ PAGE 7 – INVESTMENT PERSPECTIVE #}
+<div class="page" style="position:relative; min-height:249mm; padding-bottom: 60px;">
+  <div class="page-running-header">
+    <span class="rh-logo">KŌDŌ</span>
+    <span class="rh-title">{{ d.city }} Hotel Market &nbsp;·&nbsp; {{ d.period }}</span>
+    <span class="rh-page">07</span>
+  </div>
+
+  <div class="section-title">
+    <span class="section-num">06</span>
+    <span class="section-heading">Investment Perspective</span>
+  </div>
+
+  <p class="prose" style="margin-bottom:16px;">{{ d.ai_narrative.investment_perspective }}</p>
+
+  {% if d.asset_values %}
+  <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Asset Value Estimates by Segment</p>
+  <table>
+    <thead><tr>
+      <th>Segment</th><th>Avg RevPAR (MAD)</th><th>Est. TRevPAR (MAD)</th><th>Est. GOP/Key (MAD)</th><th>Cap Rate</th><th>Est. Value/Key (MAD M)</th>
+    </tr></thead>
+    <tbody>
+    {% for av in d.asset_values %}
+    <tr>
+      <td>{{ av.segment }}</td>
+      <td class="num">{{ "{:,.0f}".format(av.revpar) }}</td>
+      <td class="num">{{ "{:,.0f}".format(av.trevpar) }}</td>
+      <td class="num">{{ "{:,.0f}".format(av.gop_per_key) }}</td>
+      <td class="num">{{ "%.1f"|format(av.cap_rate * 100) }}%</td>
+      <td class="num">{{ "%.2f"|format(av.value_per_key) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="two-col" style="margin-top:18px;">
+    <div class="col-60">
+      <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Key Risks</p>
+      {% for risk in d.ai_narrative.key_risks %}
+      <div class="risk-item">
+        <div class="ro-num risk-num">{{ "%02d"|format(loop.index) }}</div>
+        <div class="ro-text">{{ risk }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="col-40">
+      <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6A6A6A;margin-bottom:8px;">Key Opportunities</p>
+      {% for opp in d.ai_narrative.key_opportunities %}
+      <div class="opp-item">
+        <div class="ro-num opp-num">{{ "%02d"|format(loop.index) }}</div>
+        <div class="ro-text">{{ opp }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="page-running-footer">
+    <span class="rf-left">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
+    <span class="rf-right">Data as of {{ d.generated_date }} · Kōdō estimates unless noted</span>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ PAGE 8 – DIRECTORY #}
+<div class="page" style="position:relative; padding-bottom: 60px;">
+  <div class="page-running-header">
+    <span class="rh-logo">KŌDŌ</span>
+    <span class="rh-title">{{ d.city }} Hotel Market &nbsp;·&nbsp; {{ d.period }}</span>
+    <span class="rh-page">08</span>
+  </div>
+
+  <div class="section-title">
+    <span class="section-num">Appendix</span>
+    <span class="section-heading">Hotel Directory</span>
+  </div>
+  <p style="font-size:9px;color:#6A6A6A;margin-bottom:10px;">{{ d.city }} — Complete branded hotel inventory · Sorted by RevPAR descending</p>
+
+  <table class="dir-table">
+    <thead><tr>
+      <th>#</th><th>Hotel Name</th><th>Brand Group</th><th>Segment</th><th>Keys</th><th>Yr.</th><th>Owner</th><th>Occ.</th><th>ADR</th><th>RevPAR</th>
+    </tr></thead>
+    <tbody>
+    {% for h in d.directory %}
+    <tr>
+      <td class="dir-rank">{{ loop.index }}</td>
+      <td>{{ h.name }}</td>
+      <td>{{ h.brand_group }}</td>
+      <td>{{ h.category }}</td>
+      <td class="num">{{ "{:,}".format(h.keys|int) }}</td>
+      <td class="num">{{ h.year_opened|int }}</td>
+      <td>{{ h.owner }}</td>
+      <td class="num">{{ "%.0f"|format(h.occupancy * 100 if h.occupancy else 0) }}%</td>
+      <td class="num">{{ "{:,.0f}".format(h.adr_mad if h.adr_mad else 0) }}</td>
+      <td class="num">{{ "{:,.0f}".format(h.revpar_mad if h.revpar_mad else 0) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="font-size:8px;color:#AAAAAA;margin-top:12px;text-align:center;">All performance metrics are Kōdō estimates · Source: Kōdō proprietary database · © 2026 Kōdō Hospitality</p>
+
+  <div class="page-running-footer">
+    <span class="rf-left">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
+    <span class="rf-right">Data as of {{ d.generated_date }} · Kōdō estimates unless noted</span>
+  </div>
+</div>
+
+{# ════════════════════════════════════════════════════════ BACK COVER #}
+<div class="backcover-page">
+  <div class="backcover-inner">
+    <div class="bc-kodo">KŌDŌ</div>
+    <div class="bc-tag">Hospitality Intelligence</div>
+    <div class="bc-url">kodohospitality.com</div>
+    <div class="bc-copy">
+      © 2026 Kōdō Hospitality · Casablanca, Morocco<br/>
+      This report is confidential and intended solely for Kōdō subscribers.<br/>
+      All performance data represents Kōdō proprietary estimates unless otherwise noted.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

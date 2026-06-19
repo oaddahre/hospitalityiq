@@ -1721,6 +1721,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
         if (benchmarkInited && benchmarkData) renderBenchAIInsights();
       });
     }
+    if (screen === 'reports') initReports();
   });
 });
 
@@ -2794,5 +2795,131 @@ fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
   badge.style.display = '';
   window._kodoUser = me;
 });
+
+// ── Reports ──────────────────────────────────────────────────────────────────
+let reportsInited = false;
+
+async function initReports() {
+  if (reportsInited) return;
+  const grid = document.getElementById('reports-grid');
+  if (!grid) return;
+
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  const canGenerate = tier === 'benchmarker' || tier === 'advisory';
+
+  try {
+    const res = await fetch('/api/reports/available');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    grid.innerHTML = '';
+    const allCities = data.cities || [];
+
+    allCities.forEach(cityMeta => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px 22px;transition:border-color 0.15s;';
+
+      const periodsHTML = (data.periods || []).map((p, i) =>
+        `<button class="report-period-pill ${i===0?'active':''}" data-period="${p}"
+          style="padding:4px 10px;border-radius:3px;border:1px solid var(--border);font-size:0.6875rem;cursor:pointer;
+          background:${i===0?'var(--accent)':'var(--surface)'};color:${i===0?'#0A0A0A':'var(--muted)'};
+          font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.12s;">${p}</button>`
+      ).join('');
+
+      const lockIcon = canGenerate ? '' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+      card.innerHTML = `
+        <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:600;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:12px;">Morocco Hotel Market</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" class="report-period-pills">${periodsHTML}</div>
+        <div style="font-size:0.6875rem;color:var(--text-faint,#888);margin-bottom:12px;">${cityMeta.hotels} hotels tracked · ${cityMeta.keys?.toLocaleString() || '—'} keys</div>
+        <button class="report-generate-btn" data-city="${cityMeta.city}"
+          style="width:100%;padding:9px;background:${canGenerate?'var(--accent)':'var(--border)'};
+          color:${canGenerate?'#0A0A0A':'var(--muted)'};border:none;cursor:pointer;
+          font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+          display:flex;align-items:center;justify-content:center;">
+          ${lockIcon}Generate &amp; Download
+        </button>
+        <div class="report-status" style="font-size:0.75rem;color:var(--muted);margin-top:8px;min-height:18px;text-align:center;"></div>
+      `;
+
+      // Period pill switching
+      card.querySelectorAll('.report-period-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          card.querySelectorAll('.report-period-pill').forEach(p => {
+            p.style.background = 'var(--surface)';
+            p.style.color = 'var(--muted)';
+            p.classList.remove('active');
+          });
+          pill.style.background = 'var(--accent)';
+          pill.style.color = '#0A0A0A';
+          pill.classList.add('active');
+        });
+      });
+
+      // Hover border
+      card.addEventListener('mouseenter', () => { card.style.borderColor = 'var(--accent)'; });
+      card.addEventListener('mouseleave', () => { card.style.borderColor = 'var(--border)'; });
+
+      // Generate button
+      card.querySelector('.report-generate-btn').addEventListener('click', async () => {
+        if (!canGenerate) {
+          showUpgradeModal('Benchmarker & Advisory Only', 'Reports are available on Benchmarker and Advisory plans. Upgrade to download institutional-grade PDF market reports.');
+          return;
+        }
+        const city   = cityMeta.city;
+        const period = card.querySelector('.report-period-pill.active')?.dataset.period || data.periods[0];
+        const btn    = card.querySelector('.report-generate-btn');
+        const status = card.querySelector('.report-status');
+
+        btn.disabled = true;
+        btn.textContent = 'Generating…';
+        btn.style.opacity = '0.6';
+        status.textContent = 'Generating your report… this may take 30–60 seconds';
+
+        try {
+          const r = await fetch('/api/reports/generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({city, period}),
+          });
+
+          if (!r.ok) {
+            const err = await r.json().catch(() => ({error: 'Unknown error'}));
+            throw new Error(err.error || 'Generation failed');
+          }
+
+          const blob  = await r.blob();
+          const url   = URL.createObjectURL(blob);
+          const a     = document.createElement('a');
+          const safe  = city.replace(/ \/ /g, '-').replace(/ /g, '-');
+          const safep = period.replace(/ /g, '-');
+          a.href      = url;
+          a.download  = `Kodo_${safe}_${safep}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          status.textContent = '✓ Report ready — downloading now';
+          status.style.color = 'var(--positive, #2D6B3A)';
+        } catch (err) {
+          status.textContent = `Error: ${err.message}`;
+          status.style.color = 'var(--negative, #8B3A3A)';
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = `${lockIcon}Generate &amp; Download`;
+          btn.style.opacity = '1';
+        }
+      });
+
+      grid.appendChild(card);
+    });
+
+    reportsInited = true;
+  } catch (e) {
+    console.error('initReports error:', e);
+  }
+}
 
 boot();

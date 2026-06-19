@@ -24,6 +24,7 @@
       <a href="#" class="nav-link" data-screen="pipeline">Pipeline</a>
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
       <a href="#" class="nav-link" data-screen="benchmarking">Benchmarking</a>
+      <a href="#" class="nav-link" data-screen="reports">Reports</a>
       <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
       <a href="#" class="nav-link" data-screen="news">News</a>
       <a href="#" class="nav-link" data-screen="ai">AI Analyst</a>
@@ -47,6 +48,7 @@
     <a href="#" class="nav-link mobile-nav-link" data-screen="pipeline">Pipeline</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="hotels">Hotels</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="benchmarking">Benchmarking</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="reports">Reports</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="tourism">Tourism</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="news">News</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="ai">AI Analyst</a>
@@ -935,6 +937,25 @@
           </button>
         </div>
         <div id="news-feed" class="news-feed"></div>
+      </section>
+
+      <!-- ── Reports ── -->
+      <section class="screen" id="screen-reports">
+        <div class="screen-header">
+          <h1>Market Intelligence Reports</h1>
+          <p class="screen-sub">Institutional-grade hotel market analysis · Powered by Kōdō proprietary data</p>
+          <p style="font-size:0.75rem;color:var(--text-faint,#666);margin-top:4px;">Reports generated live from current database · Data reflects latest available estimates</p>
+        </div>
+
+        <div id="reports-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:900px;">
+          <!-- Cards injected by JS -->
+        </div>
+
+        <div id="reports-upgrade-notice" style="display:none;background:var(--surface);border:1px solid var(--border);padding:24px 28px;max-width:480px;margin-top:24px;">
+          <p style="font-family:'Syne',sans-serif;font-size:0.6875rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Benchmarker &amp; Advisory Only</p>
+          <p style="font-size:0.875rem;color:var(--muted);line-height:1.6;">Reports are available on Benchmarker and Advisory plans. Upgrade to download institutional-grade PDF market reports.</p>
+          <a href="/#pricing" style="display:inline-block;margin-top:14px;padding:10px 20px;background:var(--accent);color:#0A0A0A;font-family:'Syne',sans-serif;font-size:0.8125rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;text-decoration:none;">Upgrade now →</a>
+        </div>
       </section>
 
       <!-- ── AI Analyst ── -->

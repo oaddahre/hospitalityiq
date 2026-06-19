@@ -1290,6 +1290,344 @@ def admin_org_members(org_id):
     return jsonify(safe)
 
 
+# ─── Reports ──────────────────────────────────────────────────────────────────
+
+try:
+    from weasyprint import HTML as WeasyHTML
+    WEASYPRINT_AVAILABLE = True
+except ImportError:
+    WEASYPRINT_AVAILABLE = False
+
+_report_cache: dict = {}
+CACHE_TTL = 86400  # 24 hours
+
+REPORT_CITIES = [
+    "Casablanca", "Rabat / Salé / Témara", "Marrakech",
+    "Agadir / Taghazout", "Tanger", "Fes", "Tamuda Bay / Tétouan",
+]
+REPORT_PERIODS = ["Q3 2026", "Q4 2026", "Annual 2026"]
+
+SEGMENT_ORDER = ["Ultra Luxury", "Luxury", "Upper Upscale", "Upscale", "Midscale", "Budget"]
+CAP_RATES = {
+    "Ultra Luxury": 0.060, "Luxury": 0.065, "Upper Upscale": 0.070,
+    "Upscale": 0.075, "Midscale": 0.085, "Budget": 0.095,
+}
+
+CITY_SEASON_TYPE = {
+    "Casablanca": "business", "Rabat / Salé / Témara": "business",
+    "Marrakech": "cultural", "Agadir / Taghazout": "coastal",
+    "Tanger": "coastal", "Fes": "cultural",
+    "Tamuda Bay / Tétouan": "coastal", "Morocco": "default",
+}
+SEASONALITY_PROFILES = {
+    "default":  [65, 65, 70, 75, 73, 70, 68, 68, 74, 80, 74, 67],
+    "coastal":  [55, 58, 65, 72, 80, 88, 95, 95, 82, 72, 60, 55],
+    "cultural": [72, 75, 82, 88, 80, 68, 65, 65, 78, 88, 82, 75],
+    "business": [68, 70, 75, 78, 75, 72, 65, 62, 75, 82, 78, 68],
+}
+MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+
+
+def compute_city_report_data(city: str, period: str) -> dict:
+    _, _, merged = load_data()
+    pipeline_df = pd.read_csv(os.path.join(DATA_DIR, "pipeline.csv"))
+
+    if city == "Morocco":
+        ch = merged.copy()
+        cp = pipeline_df.copy()
+    else:
+        ch = merged[merged["city"] == city].copy()
+        cp = pipeline_df[pipeline_df["city"] == city].copy()
+
+    ch = ch.dropna(subset=["occupancy", "adr_mad", "revpar_mad"])
+
+    # ── market overview ──
+    total_hotels = len(ch)
+    total_keys   = int(ch["keys"].sum())
+
+    keys_by_seg = {}
+    for seg in SEGMENT_ORDER:
+        k = int(ch[ch["category"] == seg]["keys"].sum())
+        if k > 0:
+            keys_by_seg[seg] = k
+
+    brand_stats = []
+    for bg, g in ch.groupby("brand_group"):
+        brand_stats.append({
+            "name": bg, "hotels": len(g), "keys": int(g["keys"].sum()),
+            "market_share": round(int(g["keys"].sum()) / total_keys * 100, 1) if total_keys else 0,
+        })
+    brand_stats.sort(key=lambda x: -x["keys"])
+
+    owner_stats = []
+    for ow, g in ch.groupby("owner"):
+        owner_stats.append({
+            "owner": ow, "hotels": len(g), "keys": int(g["keys"].sum()),
+            "market_share": round(int(g["keys"].sum()) / total_keys * 100, 1) if total_keys else 0,
+        })
+    owner_stats.sort(key=lambda x: -x["keys"])
+
+    avg_yr = round(ch["year_opened"].mean(), 0) if not ch.empty else 0
+    newest = ch.loc[ch["year_opened"].idxmax(), "name"] if not ch.empty else "—"
+    oldest = ch.loc[ch["year_opened"].idxmin(), "name"] if not ch.empty else "—"
+
+    # ── performance ──
+    def wavg(col, weight_col="keys"):
+        w = ch[weight_col].fillna(0)
+        if w.sum() == 0:
+            return 0.0
+        return float((ch[col] * w).sum() / w.sum())
+
+    overall_occ  = wavg("occupancy")
+    overall_adr  = wavg("adr_mad")
+    overall_rev  = wavg("revpar_mad")
+    overall_gop  = wavg("gop_margin")
+    overall_trev = wavg("trevpar_mad")
+
+    seg_perf = []
+    for seg in SEGMENT_ORDER:
+        sg = ch[ch["category"] == seg]
+        if sg.empty:
+            continue
+        w = sg["keys"].fillna(0)
+        ws = w.sum()
+        def swavg(col):
+            return float((sg[col] * w).sum() / ws) if ws > 0 else 0.0
+        s_rev = swavg("revpar_mad")
+        seg_perf.append({
+            "segment": seg, "hotels": len(sg), "keys": int(sg["keys"].sum()),
+            "occupancy": swavg("occupancy"), "adr": swavg("adr_mad"),
+            "revpar": s_rev, "gop_margin": swavg("gop_margin"),
+            "trevpar": swavg("trevpar_mad"),
+            "revpar_index": round(s_rev / overall_rev * 100, 1) if overall_rev else 100,
+        })
+
+    top10 = ch.nlargest(min(10, len(ch)), "revpar_mad")[
+        ["name", "category", "keys", "occupancy", "adr_mad", "revpar_mad"]
+    ].to_dict(orient="records")
+
+    est_rooms_rev = total_keys * 365 * overall_rev / 1_000_000
+    est_total_rev = total_keys * 365 * overall_trev / 1_000_000
+    est_gop       = est_total_rev * overall_gop
+
+    # ── pipeline ──
+    pip_projects = []
+    for _, r in cp.iterrows():
+        pip_projects.append({
+            "name": r.get("name",""), "brand": r.get("brand",""),
+            "category": r.get("category",""), "keys": int(r.get("keys",0)),
+            "opening": int(r.get("expected_opening",0)),
+            "status": r.get("status",""), "investment_mad": int(r.get("investment_mad",0)),
+        })
+    pip_projects.sort(key=lambda x: x["opening"])
+
+    pip_total_keys = sum(p["keys"] for p in pip_projects)
+    pip_total_inv  = sum(p["investment_mad"] for p in pip_projects) / 1_000_000_000
+    pip_by_year: dict = {}
+    for p in pip_projects:
+        yr = str(p["opening"])
+        pip_by_year[yr] = pip_by_year.get(yr, 0) + p["keys"]
+
+    ratio = pip_total_keys / total_keys if total_keys else 0
+    supply_risk = "High" if ratio > 0.20 else ("Medium" if ratio > 0.10 else "Low")
+
+    # ── asset values ──
+    asset_rows = []
+    for sp in seg_perf:
+        cap = CAP_RATES.get(sp["segment"], 0.075)
+        annual_trev = sp["trevpar"] * 365
+        gop_per_key = annual_trev * sp["gop_margin"]
+        value_per_key_mad_m = (gop_per_key / cap) / 1_000_000 if cap else 0
+        asset_rows.append({
+            "segment": sp["segment"], "revpar": sp["revpar"], "trevpar": sp["trevpar"],
+            "gop_per_key": gop_per_key, "cap_rate": cap,
+            "value_per_key": value_per_key_mad_m,
+        })
+
+    # ── seasonality ──
+    season_type = CITY_SEASON_TYPE.get(city, "default")
+    season_vals = SEASONALITY_PROFILES[season_type]
+
+    # ── hotel directory ──
+    dir_cols = ["name", "brand_group", "category", "keys", "year_opened",
+                "owner", "occupancy", "adr_mad", "revpar_mad"]
+    directory = ch[dir_cols].sort_values("revpar_mad", ascending=False).to_dict(orient="records")
+
+    return {
+        "city": city, "period": period,
+        "generated_at": datetime.utcnow(),
+        "generated_date": datetime.utcnow().strftime("%d %B %Y"),
+        "market_overview": {
+            "total_hotels": total_hotels, "total_keys": total_keys,
+            "keys_by_segment": keys_by_seg, "brand_groups": brand_stats[:8],
+            "ownership": owner_stats[:6], "avg_year_opened": int(avg_yr),
+            "newest_hotel": newest, "oldest_hotel": oldest,
+        },
+        "performance": {
+            "overall": {
+                "occupancy": overall_occ, "adr": overall_adr,
+                "revpar": overall_rev, "gop_margin": overall_gop, "trevpar": overall_trev,
+            },
+            "by_segment": seg_perf,
+            "top_10_revpar": top10,
+            "est_rooms_revenue_mad_m": round(est_rooms_rev, 1),
+            "est_total_revenue_mad_m": round(est_total_rev, 1),
+            "est_gop_mad_m": round(est_gop, 1),
+        },
+        "pipeline": {
+            "projects": pip_projects, "total_projects": len(pip_projects),
+            "total_keys": pip_total_keys, "total_investment_mad_b": round(pip_total_inv, 2),
+            "by_year": pip_by_year, "supply_risk": supply_risk,
+        },
+        "asset_values": asset_rows,
+        "seasonality": {"months": MONTHS, "values": season_vals},
+        "directory": directory,
+    }
+
+
+def generate_ai_narrative(report_data: dict) -> dict:
+    placeholder = {
+        "executive_summary": "The market demonstrates resilient performance fundamentals, supported by continued demand from both leisure and corporate segments. Key indicators reflect stable occupancy trends and improving rate discipline across branded properties. The competitive landscape continues to evolve with measured supply additions that maintain market equilibrium.",
+        "market_commentary": "Supply dynamics remain disciplined, with limited new inventory entering the market over the near term. Demand drivers include growing inbound tourism, domestic corporate travel, and expanding MICE activity. Upper upscale and luxury segments outperform on a RevPAR index basis, reflecting the premium positioning of recently opened branded properties. Midscale and budget segments provide volume support to overall market occupancy.",
+        "investment_perspective": "The market presents compelling risk-adjusted returns for institutional investors, supported by stable cash flow generation and improving operational efficiency. Asset values benefit from a constrained development pipeline and growing brand presence. Cap rate compression is anticipated in the luxury segment as institutional capital targets quality branded assets.",
+        "key_risks": [
+            "Currency volatility and MAD exchange rate fluctuations may impact international visitor spending and operator profitability",
+            "New supply pipeline, while currently constrained, could create localised pockets of oversupply in specific segments",
+            "Global macroeconomic uncertainty and potential slowdown in European source markets may moderate leisure demand growth",
+        ],
+        "key_opportunities": [
+            "Premium leisure demand from European and Gulf markets creates significant upside for luxury and upper upscale positioning",
+            "Infrastructure investment and improving air connectivity support sustained demand growth across segments",
+            "Limited branded midscale supply relative to demand presents development opportunities with strong stabilised returns",
+        ],
+    }
+
+    try:
+        api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+        if not api_key:
+            return placeholder
+
+        city    = report_data["city"]
+        period  = report_data["period"]
+        perf    = report_data["performance"]["overall"]
+        mo      = report_data["market_overview"]
+        pip     = report_data["pipeline"]
+
+        prompt = f"""You are a senior hotel market analyst at Kōdō, Morocco's leading hospitality intelligence firm. Write institutional-grade market analysis in the style of JLL Hotels & Hospitality or Deloitte Real Estate. Be precise, data-driven, and professional. Use MAD for currency.
+
+Market: {city} Hotel Market | Period: {period}
+Total Hotels: {mo['total_hotels']} | Total Keys: {mo['total_keys']:,}
+Avg Occupancy: {perf['occupancy']*100:.1f}% | Avg ADR: MAD {perf['adr']:,.0f} | Avg RevPAR: MAD {perf['revpar']:,.0f} | Avg GOP Margin: {perf['gop_margin']*100:.1f}%
+Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} keys, Supply Risk: {pip['supply_risk']}
+Est. Total Revenue: MAD {report_data['performance']['est_total_revenue_mad_m']:.0f}M | Est. GOP: MAD {report_data['performance']['est_gop_mad_m']:.0f}M
+
+Generate a JSON response with exactly these keys:
+- "executive_summary": 140-160 word paragraph, overall market health and key trends
+- "market_commentary": 190-210 word paragraph, supply dynamics and demand drivers
+- "investment_perspective": 140-160 word paragraph, asset values and investment attractiveness
+- "key_risks": array of exactly 3 strings, each a one-sentence specific risk
+- "key_opportunities": array of exactly 3 strings, each a one-sentence specific opportunity
+
+Return ONLY valid JSON, no markdown fences."""
+
+        client = anthropic.Anthropic(api_key=api_key)
+        msg = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        import json as _json
+        text = msg.content[0].text.strip()
+        return _json.loads(text)
+    except Exception as e:
+        app.logger.warning(f"AI narrative generation failed: {e}")
+        return placeholder
+
+
+@app.route("/api/reports/available")
+@login_required
+def api_reports_available():
+    _, _, merged = load_data()
+    city_meta = []
+    for c in REPORT_CITIES:
+        ch = merged[merged["city"] == c]
+        city_meta.append({"city": c, "hotels": len(ch), "keys": int(ch["keys"].sum())})
+    # national
+    city_meta.append({"city": "Morocco", "hotels": len(merged), "keys": int(merged["keys"].sum())})
+    return jsonify({"cities": city_meta, "periods": REPORT_PERIODS, "national": True})
+
+
+@app.route("/api/reports/generate", methods=["POST"])
+@login_required
+@tier_required("benchmarker")
+def api_reports_generate():
+    if not WEASYPRINT_AVAILABLE:
+        return jsonify({"error": "PDF generation unavailable — WeasyPrint not installed"}), 500
+
+    body   = request.get_json(silent=True) or {}
+    city   = body.get("city", "").strip()
+    period = body.get("period", "").strip()
+
+    valid_cities = REPORT_CITIES + ["Morocco"]
+    if city not in valid_cities:
+        return jsonify({"error": f"Unknown city: {city}"}), 400
+    if period not in REPORT_PERIODS:
+        return jsonify({"error": f"Unknown period: {period}"}), 400
+
+    cache_key = f"{city}|{period}"
+    now = datetime.utcnow().timestamp()
+    if cache_key in _report_cache:
+        cached_pdf, cached_at = _report_cache[cache_key]
+        if now - cached_at < CACHE_TTL:
+            safe_city = city.replace(" / ", "-").replace(" ", "-")
+            safe_period = period.replace(" ", "-")
+            filename = f"Kodo_{safe_city}_{safe_period}.pdf"
+            from flask import Response
+            return Response(
+                cached_pdf,
+                mimetype="application/pdf",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
+
+    try:
+        app.logger.info(f"Generating report: {city} | {period}")
+        report_data = compute_city_report_data(city, period)
+        narrative   = generate_ai_narrative(report_data)
+        report_data["ai_narrative"] = narrative
+
+        # Determine market rating
+        _, _, merged = load_data()
+        national_revpar = float(merged["revpar_mad"].mean()) if not merged.empty else 1
+        city_revpar     = report_data["performance"]["overall"]["revpar"]
+        if city_revpar >= national_revpar * 1.10:
+            rating, rating_color = "OUTPERFORM", "#2D6B3A"
+        elif city_revpar <= national_revpar * 0.90:
+            rating, rating_color = "UNDERPERFORM", "#8B3A3A"
+        else:
+            rating, rating_color = "NEUTRAL", "#B8922A"
+        report_data["market_rating"] = rating
+        report_data["market_rating_color"] = rating_color
+
+        html_str = render_template("report_template.html", d=report_data)
+        pdf_bytes = WeasyHTML(string=html_str, base_url=app.root_path).write_pdf()
+
+        _report_cache[cache_key] = (pdf_bytes, now)
+
+        safe_city   = city.replace(" / ", "-").replace(" ", "-")
+        safe_period = period.replace(" ", "-")
+        filename    = f"Kodo_{safe_city}_{safe_period}.pdf"
+
+        from flask import Response
+        return Response(
+            pdf_bytes,
+            mimetype="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+    except Exception as e:
+        app.logger.error(f"Report generation error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=False)
