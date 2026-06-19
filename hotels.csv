@@ -25,9 +25,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 29,Mövenpick Hotel Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mövenpick,Accor,163,2016,Operating,35.7712,-5.8241,Undisclosed,verified
 30,Ibis Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Midscale,Ibis,Accor,108,2012,Operating,35.781,-5.805,Risma,verified
 31,Barceló Tanger,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Barceló,Barceló Hotel Group,168,2010,Operating,35.7634,-5.8289,Undisclosed,verified
-32,Banyan Tree Tamouda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Banyan Tree,Banyan Tree Hotels & Resorts,92,2017,Operating,35.699,-5.382,Undisclosed,verified
-33,Marriott Tanger Golf & Beach Resort,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Marriott,Marriott International,188,2019,Operating,35.6956,-5.3312,Madaëf,verified
-34,Sofitel Tamuda Bay Beach & Spa,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Sofitel,Accor,168,2020,Operating,35.6912,-5.3389,Madaëf,estimated — key count uncertain
 35,Sofitel Rabat Jardin des Roses,Rabat / Salé,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2004,Operating,33.9989,-6.8456,Risma,verified
 38,Ibis Rabat Agdal,Rabat / Salé,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2010,Operating,34.007,-6.83,Risma,verified
 40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,148,2008,Operating,34.047,-5.011,Undisclosed,verified
@@ -56,8 +53,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 90,Holiday Inn Tanger City Center,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Holiday Inn,IHG Hotels & Resorts,156,2018,Operating,35.775,-5.806,Undisclosed,verified
 91,Mercure Tanger Almohades,Tanger,Tanger-Tetouan-Al Hoceima,Upscale,Mercure,Accor,130,2009,Operating,35.772,-5.809,Risma,verified
 92,Sheraton Tanger Hotel,Tanger,Tanger-Tetouan-Al Hoceima,Upper Upscale,Sheraton,Marriott International,195,2020,Operating,35.779,-5.8,Undisclosed,verified
-93,Hyatt Regency Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,175,2022,Operating,35.6889,-5.3456,Undisclosed,estimated — key count uncertain
-94,Riu Palace Smir Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,Riu,Riu Hotels & Resorts,413,2000,Operating,35.695,-5.371,Undisclosed,estimated — key count uncertain
 95,La Tour Hassan Palace,Rabat / Salé,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
 98,Mercure Rabat Sheherazade,Rabat / Salé,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
 100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,31,2009,Operating,34.0634,-4.9789,Undisclosed,verified
@@ -128,8 +123,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 217,Hotel Rif Nador,Nador,Oriental,Upscale,Hotel Rif,Independent,100,1995,Operating,35.1712,-2.9329,Undisclosed,verified
 218,Atlas Nador,Nador,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,85,2010,Operating,35.1712,-2.9289,Undisclosed,verified
 221,Hotel Chams Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Upper Upscale,Hotel Chams,Independent,195,2004,Operating,35.5756,-5.3756,Undisclosed,verified
-222,InterContinental Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,InterContinental,IHG Hotels & Resorts,210,2021,Operating,35.6934,-5.3423,Undisclosed,estimated — key count uncertain
-223,El Oumnia Puerto Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Upper Upscale,El Oumnia,Independent,42,2015,Operating,35.6867,-5.3367,Undisclosed,verified
 224,Amphitrite Palace Hotel,Skhirat-Temara,Rabat-Salé-Kénitra,Luxury,Amphitrite Palace,Independent Luxury,420,2008,Operating,33.8512,-6.9178,Undisclosed,verified
 225,Zelis Hotel Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upper Upscale,Zelis,Independent,65,2010,Operating,35.4689,-6.0334,Undisclosed,verified
 226,Hotel Patio de la Luna Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upscale,Patio de la Luna,Independent,20,2008,Operating,35.4667,-6.0312,Undisclosed,verified
@@ -145,12 +138,10 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 245,Hotel El Borj Nador,Nador,Oriental,Midscale,El Borj,Independent,55,2002,Operating,35.1712,-2.9249,Undisclosed,verified
 248,Onomo Hotel Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Midscale,Onomo,Onomo Hotels,68,2022,Operating,35.5734,-5.3712,Undisclosed,verified
 249,Novotel El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Novotel,Accor,148,2022,Operating,33.2567,-8.4994,Risma,verified
-250,Anantara Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Anantara,Minor Hotels,96,2022,Operating,35.7012,-5.3845,Undisclosed,estimated — key count uncertain
 252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,24,2010,Operating,35.1695,-5.2621,Undisclosed,verified
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
 257,Hilton Garden Inn Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,145,2021,Open,35.7589,-5.8334,Undisclosed,verified
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2019,Open,33.5934,-7.6234,Royal (State),verified
-259,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,60,2023,Open,35.6934,-5.3312,Royal (State),estimated — key count uncertain
 260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,342,1999,Open,35.2456,-3.9289,Club Med (Fosun),verified
 261,Waldorf Astoria Rabat,Rabat / Salé,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2019,Operating,33.9889,-6.8512,Undisclosed,verified
 262,Fairmont Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Fairmont,Accor,220,2025,Operating,35.7698,-5.8234,Undisclosed,verified
@@ -242,3 +233,8 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 349,Ibis Oujda,Oujda,Oriental,Midscale,Ibis,Accor,74,2012,Open,34.6834,-1.9178,Risma,verified
 350,Terminus City Center Oujda,Oujda,Oriental,Upscale,Independent,Independent,80,2008,Open,34.6856,-1.9123,Undisclosed,verified
 351,Relax Hotel Oujda,Oujda,Oriental,Upscale,Independent,Independent,60,2014,Open,34.6823,-1.9189,Undisclosed,verified
+352,The St. Regis La Bahia Blanca Resort Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Luxury,St. Regis,Marriott International,100,2023,Open,35.6934,-5.3456,Undisclosed,verified
+353,Sofitel Tamuda Bay Beach and Spa,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Upper Upscale,Sofitel,Accor,104,2012,Open,35.6912,-5.3389,Madaëf,verified
+354,Hôtel Tamuda Beach,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,83,2008,Open,35.6889,-5.3412,Undisclosed,verified
+355,Royal Mansour Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,55,2023,Open,35.6956,-5.3334,Royal (State),verified
+356,Hotel Kabila Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,96,2005,Open,35.6867,-5.3478,Undisclosed,verified
