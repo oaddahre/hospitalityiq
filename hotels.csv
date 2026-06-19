@@ -227,3 +227,5 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 300,Le Temple des Arts Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Independent,Independent Luxury,7,2012,Open,30.9234,-6.8934,Undisclosed,verified
 301,Warda Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Independent,Independent Luxury,24,2015,Open,30.9189,-6.8912,Undisclosed,verified
 302,Amanar Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Independent,Independent Luxury,77,2010,Open,30.9156,-6.8956,Undisclosed,verified
+303,Zelis Hotel Asilah,Asilah,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,55,2010,Open,35.4656,-6.0334,Undisclosed,verified
+304,Patio de la Luna Asilah,Asilah,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,6,2008,Open,35.4645,-6.0345,Undisclosed,verified
