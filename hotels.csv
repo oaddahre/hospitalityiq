@@ -125,9 +125,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 196,Parador Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Parador,Independent,56,1998,Operating,35.1678,-5.2645,Undisclosed,verified
 197,Mercure Quemado Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mercure,Accor,169,1990,Operating,35.2489,-3.9367,Undisclosed,verified
 198,Atlas Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hotels Group,80,2015,Operating,35.2512,-3.9334,Undisclosed,verified
-200,Mercure Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,125,2013,Operating,34.2612,-6.5789,Risma,verified
-201,Ibis Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,103,2012,Operating,34.2589,-6.5823,Risma,verified
-202,Hotel Mamora Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Hotel Mamora,Independent,90,1985,Operating,34.2634,-6.5756,Undisclosed,verified
 204,Palm Saidia Hotel,Saidia,Oriental,Upper Upscale,Palm Saidia,Independent,240,2016,Operating,35.0929,-2.2294,Undisclosed,unverified — existence uncertain
 207,Hotel Transatlantique Meknes,Meknes,Fès-Meknès,Upper Upscale,Transatlantique,Independent,120,1941,Operating,33.8934,-5.5449,Undisclosed,verified
 209,Dar Ahlam Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Dar Ahlam,Independent Luxury,10,2001,Operating,30.9234,-6.8934,Undisclosed,verified
@@ -159,7 +156,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 244,Hotel Rif Meknes,Meknes,Fès-Meknès,Upscale,Hotel Rif,Independent,100,2008,Operating,33.8974,-5.5489,Undisclosed,verified
 245,Hotel El Borj Nador,Nador,Oriental,Midscale,El Borj,Independent,55,2002,Operating,35.1712,-2.9249,Undisclosed,verified
 246,Hotel Doumia Laayoune,Laayoune,Laâyoune-Sakia El Hamra,Midscale,Hotel Doumia,Independent,72,1999,Operating,27.1554,-13.2012,Undisclosed,verified
-247,Ibis Styles Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Ibis Styles,Accor,80,2022,Operating,34.2578,-6.5767,Risma,verified
 248,Onomo Hotel Tetouan,Tetouan,Tanger-Tetouan-Al Hoceima,Midscale,Onomo,Onomo Hotels,68,2022,Operating,35.5734,-5.3712,Undisclosed,verified
 249,Novotel El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Novotel,Accor,148,2022,Operating,33.2567,-8.4994,Risma,verified
 250,Anantara Tamuda Bay,Tamuda Bay,Tanger-Tetouan-Al Hoceima,Luxury,Anantara,Minor Hotels,96,2022,Operating,35.7012,-5.3845,Undisclosed,estimated — key count uncertain
@@ -232,3 +228,12 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 321,Farah Inn Ifrane,Ifrane,Fès-Meknès,Upscale,Independent,Farah Hotels,177,1995,Open,33.5356,-5.1067,Undisclosed,verified
 322,Zephyr Ifrane,Ifrane,Fès-Meknès,Upscale,Independent,Independent,148,2018,Open,33.5289,-5.1134,Undisclosed,verified
 323,Residence Ifrane Palace,Ifrane,Fès-Meknès,Upscale,Independent,Independent,45,2012,Open,33.5367,-5.1045,Undisclosed,verified
+324,Hotel Vitality Terminus Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Independent,Independent,58,2005,Open,34.2612,-6.5789,Undisclosed,verified
+325,Town Hotel Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Independent,Independent,18,2012,Open,34.2634,-6.5812,Undisclosed,verified
+326,Relax Hotel Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Independent,Independent,60,2010,Open,34.2589,-6.5834,Undisclosed,verified
+327,Razane Hotel Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Independent,Independent,20,2015,Open,34.2601,-6.5801,Undisclosed,verified
+328,JB Apartment Hotel Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Independent,Independent,18,2018,Open,34.2623,-6.5778,Undisclosed,verified
+329,Hotel Jacaranda Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Independent,Independent,89,1998,Open,34.2578,-6.5856,Undisclosed,verified
+330,Hotel Mamora Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Independent,Independent,69,1990,Open,34.2567,-6.5867,Undisclosed,verified
+331,Hotel d'Europe Kenitra,Kenitra,Rabat-Salé-Kénitra,Midscale,Independent,Independent,20,1975,Open,34.2645,-6.5767,Undisclosed,verified
+332,Urban Hotel and Spa Kenitra,Kenitra,Rabat-Salé-Kénitra,Upscale,Independent,Independent,58,2019,Open,34.2556,-6.5878,Undisclosed,verified
