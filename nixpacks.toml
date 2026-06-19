@@ -1,0 +1,2 @@
+[phases.setup]
+nixPkgs = ["python312", "cairo", "pango", "gdk-pixbuf", "libffi", "gobject-introspection"]

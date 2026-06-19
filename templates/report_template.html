@@ -350,7 +350,7 @@ tr.total-row td { font-weight: 600; background: #F0F0F0; }
     <tr>
       <td>{{ sp.segment }}</td>
       <td class="num">{{ sp.hotels }}</td>
-      <td class="num">{{ "{:,}".format(sp.keys) }}</td>
+      <td class="num">{{ "{:,}".format(sp['keys']) }}</td>
       <td class="num">{{ "%.1f"|format(sp.occupancy * 100) }}%</td>
       <td class="num">{{ "{:,.0f}".format(sp.adr) }}</td>
       <td class="num">{{ "{:,.0f}".format(sp.revpar) }}</td>
@@ -373,7 +373,7 @@ tr.total-row td { font-weight: 600; background: #F0F0F0; }
       <td class="dir-rank">{{ loop.index }}</td>
       <td>{{ h.name }}</td>
       <td>{{ h.category }}</td>
-      <td class="num">{{ "{:,}".format(h.keys|int) }}</td>
+      <td class="num">{{ "{:,}".format(h['keys']|int) }}</td>
       <td class="num">{{ "%.1f"|format(h.occupancy * 100) }}%</td>
       <td class="num">{{ "{:,.0f}".format(h.adr_mad) }}</td>
       <td class="num">{{ "{:,.0f}".format(h.revpar_mad) }}</td>
@@ -431,7 +431,7 @@ tr.total-row td { font-weight: 600; background: #F0F0F0; }
           {% for m in d.seasonality.months %}<th>{{ m }}</th>{% endfor %}
         </tr></thead>
         <tbody><tr>
-          {% for v in d.seasonality.values %}
+          {% for v in d.seasonality['values'] %}
           <td class="{% if v >= 80 %}s-high{% elif v >= 65 %}s-mid{% else %}s-low{% endif %}">{{ v }}</td>
           {% endfor %}
         </tr></tbody>
@@ -471,7 +471,7 @@ tr.total-row td { font-weight: 600; background: #F0F0F0; }
       <td>{{ p.name }}</td>
       <td>{{ p.brand }}</td>
       <td>{{ p.category }}</td>
-      <td class="num">{{ "{:,}".format(p.keys) }}</td>
+      <td class="num">{{ "{:,}".format(p['keys']) }}</td>
       <td class="num">{{ p.opening }}</td>
       <td><span class="status-pill {% if 'Construction' in p.status %}status-construction{% else %}status-planning{% endif %}">{{ p.status }}</span></td>
       <td class="num">{{ "{:,.0f}".format(p.investment_mad / 1000000) }}</td>
@@ -602,7 +602,7 @@ tr.total-row td { font-weight: 600; background: #F0F0F0; }
       <td>{{ h.name }}</td>
       <td>{{ h.brand_group }}</td>
       <td>{{ h.category }}</td>
-      <td class="num">{{ "{:,}".format(h.keys|int) }}</td>
+      <td class="num">{{ "{:,}".format(h['keys']|int) }}</td>
       <td class="num">{{ h.year_opened|int }}</td>
       <td>{{ h.owner }}</td>
       <td class="num">{{ "%.0f"|format(h.occupancy * 100 if h.occupancy else 0) }}%</td>

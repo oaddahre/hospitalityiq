@@ -22,7 +22,7 @@ app.config['SECRET_KEY']                = os.environ.get('SECRET_KEY', 'kodo-dev
 app.config['SESSION_PERMANENT']         = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['REMEMBER_COOKIE_DURATION']  = timedelta(days=30)
-app.config['SESSION_COOKIE_SECURE']     = True
+app.config['SESSION_COOKIE_SECURE']     = os.environ.get('FLASK_ENV') != 'development'
 app.config['SESSION_COOKIE_HTTPONLY']   = True
 app.config['SESSION_COOKIE_SAMESITE']   = 'Lax'
 
