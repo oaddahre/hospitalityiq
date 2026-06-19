@@ -1,5 +1,5 @@
 id,name,city,region,category,brand,brand_group,owner,keys,expected_opening,status,investment_mad,lat,lng,notes
-1,Ritz Carlton Tamuda Bay,Tamuda Bay,Tanger-Tétouan-Al Hoceima,Luxury,Ritz Carlton,Marriott International,Undisclosed,97,2026,Under Construction,920000000,35.6889,-5.3456,Under construction on the Mediterranean coast
+1,Ritz Carlton Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Luxury,Ritz Carlton,Marriott International,Undisclosed,97,2026,Under Construction,920000000,35.6889,-5.3456,Under construction on the Mediterranean coast
 2,Ritz Carlton Marrakech,Marrakech,Marrakech-Safi,Luxury,Ritz Carlton,Marriott International,Undisclosed,130,2028,Planning,1100000000,31.5934,-8.0456,Confirmed Marriott luxury flagship in Marrakech
 3,Waldorf Astoria Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,Undisclosed,120,2028,Planning,1400000000,31.6056,-8.0312,Hilton ultra luxury brand entry Morocco
 4,Mama Shelter Casablanca,Casablanca,Casablanca-Settat,Upscale,Mama Shelter,Accor,Undisclosed,95,2026,Under Construction,180000000,33.5934,-7.6289,Lifestyle brand Accor expansion
@@ -9,4 +9,4 @@ id,name,city,region,category,brand,brand_group,owner,keys,expected_opening,statu
 8,Dakhla Luxury Eco Resort,Dakhla,Laâyoune-Sakia El Hamra,Luxury,Independent,Independent,Undisclosed,45,2026,Under Construction,280000000,23.6934,-15.9456,Luxury kite and wind sports destination
 9,Pullman Bouskoura Casablanca,Casablanca,Casablanca-Settat,Upper Upscale,Pullman,Accor,Risma,200,2026,Under Construction,350000000,33.4234,-7.6589,New Pullman resort at Bouskoura Golf City
 10,Four Points by Sheraton Casablanca,Casablanca,Casablanca-Settat,Upscale,Four Points by Sheraton,Marriott International,Undisclosed,195,2026,Planning,280000000,33.5550,-7.5990,Four Points by Sheraton confirmed for Casablanca
-11,Hilton Rabat,Rabat,Rabat-Salé-Kénitra,Upper Upscale,Hilton,Hilton Hotels & Resorts,Undisclosed,220,2026,Planning,450000000,34.0089,-6.8456,Confirmed Hilton full service hotel for Rabat
+11,Hilton Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,Hilton,Hilton Hotels & Resorts,Undisclosed,220,2026,Planning,450000000,34.0089,-6.8456,Confirmed Hilton full service hotel for Rabat

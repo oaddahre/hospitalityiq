@@ -14,8 +14,8 @@ const CITY_COORDS = {
   'Marrakech':   [31.629, -7.981],
   'Agadir':      [30.427, -9.598],
   'Tanger':      [35.769, -5.800],
-  'Tamuda Bay':  [35.690, -5.370],
-  'Rabat':       [34.020, -6.841],
+  'Tamuda Bay / Tétouan':    [35.630, -5.380],
+  'Rabat / Salé / Témara':  [34.020, -6.841],
   'Fes':         [34.037, -4.998],
 };
 
