@@ -65,10 +65,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 105,Kenzi Azghor Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Kenzi Hotels,Kenzi Hotels Group,110,1975,Operating,30.928,-6.896,Kenzi Hotels Group,verified
 107,Ibis Ouarzazate Centre,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis,Accor,104,2015,Operating,30.919,-6.899,Risma,verified
 108,Dar Kamar Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Dar Kamar,Independent,47,2010,Operating,30.932,-6.915,Undisclosed,verified
-109,Radisson Blu Hotel Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upper Upscale,Radisson Blu,Radisson Hotel Group,120,2020,Operating,23.6794,-15.9607,Undisclosed,verified
-110,Club Med Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upper Upscale,Club Med,Accor,250,2018,Operating,23.6794,-15.9567,Undisclosed,verified
-111,Dakhla Attitude,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Dakhla Attitude,Independent,60,2012,Operating,23.6794,-15.9527,Undisclosed,verified
-112,Barceló Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Barceló,Barceló Hotel Group,180,2021,Operating,23.6834,-15.9607,Undisclosed,verified
+111,Dakhla Attitude,Dakhla,Dakhla-Oued Ed-Dahab,Luxury,Independent,Independent Luxury,90,2012,Operating,23.6794,-15.9527,Undisclosed,verified
 113,Parador Hotel Laayoune,Laayoune,Laâyoune-Sakia El Hamra,Upscale,Parador,Independent,48,1976,Operating,27.1514,-13.2052,Undisclosed,verified
 114,Ibis Laayoune,Laayoune,Laâyoune-Sakia El Hamra,Midscale,Ibis,Accor,75,2014,Operating,27.1514,-13.2012,Risma,verified
 115,Atlas Laayoune,Laayoune,Laâyoune-Sakia El Hamra,Upscale,Atlas Hotels,Atlas Hotels Group,120,2010,Operating,27.1514,-13.1972,Undisclosed,verified
@@ -145,7 +142,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 207,Hotel Transatlantique Meknes,Meknes,Fès-Meknès,Upper Upscale,Transatlantique,Independent,120,1941,Operating,33.8934,-5.5449,Undisclosed,verified
 209,Dar Ahlam Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Dar Ahlam,Independent Luxury,10,2001,Operating,30.9234,-6.8934,Undisclosed,verified
 210,La Kasbah Hotel Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,La Kasbah,Independent,85,2006,Operating,30.9267,-6.9012,Undisclosed,verified
-212,Dakhla Club Hotel & Kite,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Dakhla Club,Independent,80,2015,Operating,23.6834,-15.9567,Undisclosed,verified
+212,Dakhla Club Hotel and Spa,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Dakhla Club,Independent,53,2015,Operating,23.6834,-15.9567,Undisclosed,verified
 213,Sahara Regency Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Sahara Regency,Independent,100,2018,Operating,23.6834,-15.9527,Undisclosed,verified
 214,Hôtel Nagjir Laayoune,Laayoune,Laâyoune-Sakia El Hamra,Upscale,Nagjir,Independent,120,2008,Operating,27.1554,-13.2052,Undisclosed,verified
 215,Ibis Styles Oujda,Oujda,Oriental,Midscale,Ibis Styles,Accor,100,2019,Operating,34.6867,-1.9114,Risma,verified
@@ -233,3 +230,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 308,Appart Hotel Golden Sky Home Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,Independent,Independent,24,2018,Open,32.3312,-6.3556,Undisclosed,verified
 309,Velsatis Hotel Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Independent,Independent,15,2016,Open,32.3356,-6.3489,Undisclosed,verified
 310,Hotel La Luna Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,Independent,Independent,40,2014,Open,32.3378,-6.3501,Undisclosed,verified
+311,Tulum Beach Resort Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Luxury,Independent,Independent Luxury,44,2018,Open,23.6812,-15.9589,Undisclosed,verified
+312,Dakhla South Bay,Dakhla,Dakhla-Oued Ed-Dahab,Luxury,Independent,Independent Luxury,27,2019,Open,23.6789,-15.9612,Undisclosed,verified
+313,Westpoint Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Independent,Independent,40,2016,Open,23.6856,-15.9545,Undisclosed,verified
