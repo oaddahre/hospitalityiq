@@ -370,5 +370,79 @@
   </div>
 </footer>
 
+<script>
+// Scroll progress bar
+const progressBar = document.createElement('div');
+progressBar.className = 'scroll-progress';
+document.body.prepend(progressBar);
+
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = (scrollTop / docHeight) * 100;
+  progressBar.style.width = progress + '%';
+});
+
+// Intersection Observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('animate-visible');
+      }, entry.target.dataset.delay || 0);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+// Apply animations to elements
+const animateSelectors = [
+  '.module-card',
+  '.audience-card',
+  '.dest-card',
+  '.pricing-card',
+  '.team-card',
+  '.mk-section-title',
+  '.mk-section-sub',
+  '.hero__title',
+  '.hero__body',
+  '.hero__ctas',
+  '.hero__stat'
+];
+
+animateSelectors.forEach(selector => {
+  document.querySelectorAll(selector).forEach((el, index) => {
+    el.classList.add('animate-hidden');
+    el.dataset.delay = (index % 6) * 80;
+    observer.observe(el);
+  });
+});
+
+// Hero entrance animations on load
+window.addEventListener('load', () => {
+  const heroElements = document.querySelectorAll('.hero__title, .hero__body, .hero__actions');
+  heroElements.forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 600ms ease-out, transform 600ms ease-out';
+    setTimeout(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, 100 + index * 150);
+  });
+});
+
+// Hover lift effect on cards
+document.querySelectorAll('.module-card, .pricing-card, .team-card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    card.style.transform = 'translateY(-4px)';
+    card.style.transition = 'transform 200ms ease';
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'translateY(0)';
+  });
+});
+</script>
+
 </body>
 </html>

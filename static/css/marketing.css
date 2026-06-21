@@ -1,5 +1,5 @@
 /*
- * Kōdō Marketing Pages — Hard-coded Light Theme
+ * Kōdō Marketing Pages — Dark Obsidian Theme
  * No CSS variables. Covers all class names used in landing.html,
  * team.html, and contact.html exactly as they appear in the HTML.
  */
@@ -11,8 +11,8 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background: #FAFAFA;
-  color: #0A0A0A;
+  background: #0A0A0A;
+  color: #F0F0EE;
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -20,17 +20,43 @@ body {
 
 /* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #FAFAFA; }
-::-webkit-scrollbar-thumb { background: #ECECEC; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #CCCCCC; }
+::-webkit-scrollbar-track { background: #0A0A0A; }
+::-webkit-scrollbar-thumb { background: #242424; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #444444; }
+
+/* ── Scroll progress bar ───────────────────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: #B87860;
+  z-index: 9999;
+  width: 0%;
+  transition: width 100ms linear;
+}
+
+/* ── Scroll animations ─────────────────────────────────────── */
+.animate-hidden {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 500ms ease-out, transform 500ms ease-out;
+}
+.animate-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-hidden { opacity: 1; transform: none; transition: none; }
+}
 
 /* ── Layout ────────────────────────────────────────────────── */
 .container { max-width: 1160px; margin: 0 auto; padding: 0 32px; }
 
 .section { padding: 80px 0; }
 .section--dark { background: #0A0A0A; }
-.section--alt  { background: #F5F5F5; }
-.values-section { background: #F5F5F5; }
+.section--alt  { background: #141414; }
+.values-section { background: #141414; }
 
 .section__header { margin-bottom: 48px; }
 
@@ -41,14 +67,14 @@ body {
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  color: #0A0A0A;
+  color: #F0F0EE;
 }
 .t-headline {
   font-family: 'Syne', sans-serif;
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 600;
   line-height: 1.2;
-  color: #0A0A0A;
+  color: #F0F0EE;
   margin-bottom: 12px;
 }
 .t-subhead {
@@ -57,7 +83,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #A06848;
+  color: #B87860;
   margin-bottom: 8px;
   display: block;
 }
@@ -65,7 +91,7 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 15px;
   line-height: 1.7;
-  color: #8A8A8A;
+  color: #888888;
 }
 
 /* ── Buttons ───────────────────────────────────────────────── */
@@ -85,24 +111,24 @@ body {
   line-height: 1;
 }
 .btn-primary {
-  border-color: #A06848;
-  color: #A06848;
+  border-color: #B87860;
+  color: #B87860;
   background: transparent;
 }
-.btn-primary:hover { background: #A06848; color: #FAFAFA; }
+.btn-primary:hover { background: #B87860; color: #050505; }
 
 .btn-secondary {
-  border-color: #ECECEC;
-  color: #8A8A8A;
+  border-color: #242424;
+  color: #888888;
   background: transparent;
   display: inline-flex;
   align-items: center;
 }
-.btn-secondary:hover { border-color: #CCCCCC; color: #0A0A0A; }
+.btn-secondary:hover { border-color: #444444; color: #F0F0EE; }
 
 .btn-outline-accent {
-  border-color: #A06848;
-  color: #A06848;
+  border-color: #B87860;
+  color: #B87860;
   background: transparent;
   display: inline-block;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -113,11 +139,11 @@ body {
   text-decoration: none;
   transition: all 150ms;
 }
-.btn-outline-accent:hover { background: #A06848; color: #FAFAFA; }
+.btn-outline-accent:hover { background: #B87860; color: #050505; }
 
 .btn-dark {
-  border-color: #ECECEC;
-  color: #8A8A8A;
+  border-color: #242424;
+  color: #888888;
   background: transparent;
   display: inline-block;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -128,15 +154,15 @@ body {
   text-decoration: none;
   transition: all 150ms;
 }
-.btn-dark:hover { border-color: #0A0A0A; color: #0A0A0A; }
+.btn-dark:hover { border-color: #F0F0EE; color: #F0F0EE; }
 
 /* ── Navigation ────────────────────────────────────────────── */
 .mk-nav {
-  background: #FAFAFA;
+  background: #050505;
   height: 56px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ECECEC;
+  border-bottom: 1px solid #141414;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -157,7 +183,7 @@ body {
   font-size: 15px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #0A0A0A;
+  color: #F0F0EE;
 }
 .mk-nav__links {
   display: flex;
@@ -170,21 +196,21 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #8A8A8A;
+  color: #888888;
   text-decoration: none;
   padding: 6px 12px;
   border-radius: 4px;
   transition: color 150ms;
 }
 .mk-nav__links a:hover,
-.mk-nav__links a.active { color: #0A0A0A; }
+.mk-nav__links a.active { color: #F0F0EE; }
 .mk-nav__cta {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
   padding: 7px 16px;
-  border: 1px solid #A06848;
-  color: #A06848;
+  border: 1px solid #B87860;
+  color: #B87860;
   background: transparent;
   border-radius: 4px;
   text-decoration: none;
@@ -192,25 +218,25 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.mk-nav__cta:hover { background: #A06848; color: #FAFAFA; }
+.mk-nav__cta:hover { background: #B87860; color: #050505; }
 
 /* ── Page Header ───────────────────────────────────────────── */
 .page-header {
   padding: 56px 0 44px;
-  border-bottom: 1px solid #ECECEC;
-  background: #FAFAFA;
+  border-bottom: 1px solid #242424;
+  background: #0A0A0A;
 }
 .page-header__breadcrumb {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
-  color: #AAAAAA;
+  color: #666666;
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
 }
-.page-header__breadcrumb a { color: #AAAAAA; text-decoration: none; }
-.page-header__breadcrumb a:hover { color: #A06848; }
+.page-header__breadcrumb a { color: #666666; text-decoration: none; }
+.page-header__breadcrumb a:hover { color: #B87860; }
 
 /* ── Ticker ────────────────────────────────────────────────── */
 .mk-ticker {
@@ -237,7 +263,7 @@ body {
   color: #666666;
   padding: 0 20px;
 }
-.mk-ticker__item strong { color: #A06848; }
+.mk-ticker__item strong { color: #B87860; }
 .mk-ticker__sep {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 10px;
@@ -250,7 +276,7 @@ body {
 }
 
 /* ── Hero ──────────────────────────────────────────────────── */
-.hero { background: #FAFAFA; padding: 80px 0; }
+.hero { background: #0A0A0A; padding: 80px 0; }
 .hero .container { max-width: 1160px; margin: 0 auto; padding: 0 32px; }
 .hero__inner {
   display: grid;
@@ -264,7 +290,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #A06848;
+  color: #B87860;
   margin-bottom: 20px;
   display: block;
 }
@@ -272,15 +298,15 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
   line-height: 1.1;
   margin-bottom: 20px;
 }
-.hero__title em { font-style: italic; color: #A06848; }
+.hero__title em { font-style: italic; color: #B87860; }
 .hero__body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 15px;
-  color: #8A8A8A;
+  color: #888888;
   line-height: 1.7;
   margin-bottom: 32px;
   max-width: 500px;
@@ -292,8 +318,8 @@ body {
   gap: 12px;
 }
 .hero__stat {
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
+  background: #141414;
+  border: 1px solid #242424;
   border-radius: 6px;
   padding: 20px;
   text-align: center;
@@ -302,7 +328,7 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 24px;
   font-weight: 500;
-  color: #0A0A0A;
+  color: #F0F0EE;
   display: block;
   margin-bottom: 4px;
   font-variant-numeric: tabular-nums;
@@ -312,12 +338,12 @@ body {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #8A8A8A;
+  color: #888888;
 }
 .hero__note {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
-  color: #AAAAAA;
+  color: #666666;
   margin-top: 12px;
   text-align: center;
 }
@@ -329,17 +355,17 @@ body {
   gap: 12px;
 }
 .module-card {
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
+  background: #141414;
+  border: 1px solid #242424;
   border-radius: 6px;
   padding: 28px 24px;
   transition: border-color 150ms;
 }
-.module-card:hover { border-color: #A06848; }
+.module-card:hover { border-color: #B87860; }
 .module-card__index {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px;
-  color: #A06848;
+  color: #B87860;
   font-weight: 500;
   display: block;
   margin-bottom: 12px;
@@ -349,13 +375,13 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
   margin-bottom: 10px;
 }
 .module-card__body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
-  color: #8A8A8A;
+  color: #888888;
   line-height: 1.6;
 }
 
@@ -366,16 +392,16 @@ body {
   gap: 16px;
 }
 .audience-card {
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
+  background: #141414;
+  border: 1px solid #242424;
   border-radius: 6px;
   padding: 28px;
   transition: border-color 150ms;
 }
-.audience-card:hover { border-color: #A06848; }
+.audience-card:hover { border-color: #B87860; }
 .audience-card__icon {
   font-size: 20px;
-  color: #A06848;
+  color: #B87860;
   margin-bottom: 14px;
   display: block;
 }
@@ -383,13 +409,13 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
   margin-bottom: 8px;
 }
 .audience-card__body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
-  color: #8A8A8A;
+  color: #888888;
   line-height: 1.6;
 }
 
@@ -405,7 +431,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #AAAAAA;
+  color: #666666;
   margin-bottom: 12px;
   display: block;
 }
@@ -415,8 +441,8 @@ body {
   gap: 8px;
 }
 .dest-card {
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
+  background: #141414;
+  border: 1px solid #242424;
   border-radius: 4px;
   padding: 12px 14px;
   display: flex;
@@ -427,16 +453,16 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
 }
 .dest-card__count {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 10px;
-  color: #8A8A8A;
+  color: #888888;
 }
 .dest-card__overflow {
-  background: #F5F5F5 !important;
-  color: #8A8A8A;
+  background: #1E1E1E !important;
+  color: #666666;
   justify-content: center;
   gap: 8px;
 }
@@ -447,27 +473,27 @@ body {
 .bar-row__label {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 12px;
-  color: #8A8A8A;
+  color: #888888;
   width: 160px;
   flex-shrink: 0;
 }
 .bar-row__track {
   flex: 1;
-  background: #ECECEC;
+  background: #242424;
   border-radius: 2px;
   height: 4px;
   overflow: hidden;
 }
 .bar-row__fill {
   height: 100%;
-  background: #A06848;
+  background: #B87860;
   border-radius: 2px;
 }
-.bar-row__fill--gold { background: #A06848; opacity: 0.7; }
+.bar-row__fill--gold { background: #B87860; opacity: 0.7; }
 .bar-row__value {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px;
-  color: #A06848;
+  color: #B87860;
   width: 36px;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -481,21 +507,21 @@ body {
   align-items: start;
 }
 .pricing-card {
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
+  background: #141414;
+  border: 1px solid #242424;
   border-radius: 6px;
   padding: 28px;
   position: relative;
 }
 .pricing-card--featured {
-  border-color: #A06848;
+  border-color: #B87860;
 }
 .pricing-card--featured::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: #A06848;
+  background: #B87860;
   border-radius: 6px 6px 0 0;
 }
 .pricing-tier {
@@ -504,7 +530,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #A06848;
+  color: #B87860;
   display: block;
   margin-bottom: 6px;
 }
@@ -512,7 +538,7 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
   margin-bottom: 4px;
 }
 .pricing-popular {
@@ -521,8 +547,8 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #FAFAFA;
-  background: #A06848;
+  color: #050505;
+  background: #B87860;
   padding: 3px 8px;
   border-radius: 3px;
   display: inline-block;
@@ -538,24 +564,24 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 28px;
   font-weight: 500;
-  color: #A06848;
+  color: #B87860;
   font-variant-numeric: tabular-nums;
 }
 .pricing-price__period {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 12px;
-  color: #8A8A8A;
+  color: #888888;
 }
 .pricing-features { margin-bottom: 24px; }
 .pricing-feature {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
-  color: #8A8A8A;
+  color: #888888;
   padding: 6px 0;
-  border-bottom: 1px solid #F5F5F5;
+  border-bottom: 1px solid #1E1E1E;
   display: block;
 }
-.pricing-feature::before { content: "→ "; color: #A06848; }
+.pricing-feature::before { content: "→ "; color: #B87860; }
 
 /* ── Team ──────────────────────────────────────────────────── */
 .team-grid {
@@ -564,8 +590,8 @@ body {
   gap: 20px;
 }
 .team-card {
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
+  background: #141414;
+  border: 1px solid #242424;
   border-radius: 6px;
   padding: 28px;
   display: flex;
@@ -576,27 +602,27 @@ body {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #F5EDE8;
-  border: 1px solid #A06848;
+  background: #1E1411;
+  border: 1px solid #B87860;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Syne', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #A06848;
+  color: #B87860;
   flex-shrink: 0;
 }
 .team-avatar--open {
-  background: #F5F5F5;
-  border-color: #ECECEC;
-  color: #AAAAAA;
+  background: #1E1E1E;
+  border-color: #242424;
+  color: #666666;
 }
 .team-name {
   font-family: 'Syne', sans-serif;
   font-size: 15px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
   margin-bottom: 2px;
 }
 .team-role {
@@ -605,12 +631,12 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #A06848;
+  color: #B87860;
 }
 .team-bio {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
-  color: #8A8A8A;
+  color: #888888;
   line-height: 1.65;
 }
 
@@ -621,12 +647,12 @@ body {
   font-weight: 500;
   padding: 3px 9px;
   border-radius: 3px;
-  border: 1px solid #ECECEC;
-  color: #8A8A8A;
+  border: 1px solid #242424;
+  color: #888888;
   background: transparent;
   display: inline-block;
 }
-.tag--gold { border-color: #A06848; color: #A06848; }
+.tag--gold { border-color: #B87860; color: #B87860; }
 
 /* ── Values ────────────────────────────────────────────────── */
 .values-grid {
@@ -636,12 +662,12 @@ body {
 }
 .value-card {
   padding: 24px 0;
-  border-top: 2px solid #ECECEC;
+  border-top: 2px solid #242424;
 }
 .value-card__number {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px;
-  color: #A06848;
+  color: #B87860;
   display: block;
   margin-bottom: 10px;
   font-weight: 500;
@@ -651,22 +677,22 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
   margin-bottom: 8px;
 }
 .value-card__body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
-  color: #8A8A8A;
+  color: #888888;
   line-height: 1.65;
 }
 
 /* ── Section--dark text overrides ─────────────────────────── */
 .section--dark .t-headline { color: #F0F0EE; }
-.section--dark .t-body     { color: #8A8A8A; }
-.section--dark .t-subhead  { color: #A06848; }
-.section--dark .btn-primary { border-color: #A06848; color: #A06848; }
-.section--dark .btn-primary:hover { background: #A06848; color: #FAFAFA; }
+.section--dark .t-body     { color: #888888; }
+.section--dark .t-subhead  { color: #B87860; }
+.section--dark .btn-primary { border-color: #B87860; color: #B87860; }
+.section--dark .btn-primary:hover { background: #B87860; color: #050505; }
 
 /* ── Contact form ──────────────────────────────────────────── */
 .contact-cols {
@@ -684,16 +710,16 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #8A8A8A;
+  color: #888888;
 }
 .form-input,
 .form-select,
 .form-textarea {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
-  color: #0A0A0A;
+  background: #141414;
+  border: 1px solid #242424;
+  color: #F0F0EE;
   border-radius: 4px;
   padding: 10px 14px;
   outline: none;
@@ -701,10 +727,10 @@ body {
   width: 100%;
 }
 .form-input::placeholder,
-.form-textarea::placeholder { color: #AAAAAA; }
+.form-textarea::placeholder { color: #555555; }
 .form-input:focus,
 .form-select:focus,
-.form-textarea:focus { border-color: #A06848; }
+.form-textarea:focus { border-color: #B87860; }
 .form-select {
   appearance: none;
   -webkit-appearance: none;
@@ -716,7 +742,7 @@ body {
   align-items: flex-start;
   gap: 16px;
   padding: 20px;
-  background: #FFFFFF;
+  background: #141414;
   border: 1px solid #5A8A5A;
   border-radius: 6px;
 }
@@ -724,7 +750,7 @@ body {
 .form-success__icon {
   width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(90,138,90,0.1);
+  background: rgba(90,138,90,0.15);
   border: 1px solid #5A8A5A;
   border-radius: 50%;
   color: #5A8A5A;
@@ -741,7 +767,7 @@ body {
   align-items: flex-start;
   gap: 16px;
   padding: 12px 0;
-  border-bottom: 1px solid #ECECEC;
+  border-bottom: 1px solid #242424;
 }
 .contact-item:last-child { border-bottom: none; }
 .contact-item__label {
@@ -750,24 +776,24 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #8A8A8A;
+  color: #888888;
   flex-shrink: 0;
   padding-top: 1px;
 }
 .contact-item__value {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
-  color: #0A0A0A;
+  color: #F0F0EE;
   text-align: right;
   line-height: 1.5;
 }
 .contact-item__value--muted {
-  color: #8A8A8A;
+  color: #888888;
   line-height: 1.6;
 }
 .contact-platform-card {
-  background: #FFFFFF;
-  border: 1px solid #ECECEC;
+  background: #141414;
+  border: 1px solid #242424;
   border-radius: 6px;
   padding: 16px 20px;
   margin-top: 20px;
@@ -776,13 +802,13 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #F0F0EE;
   margin-bottom: 8px;
 }
 .contact-platform-card__body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 13px;
-  color: #8A8A8A;
+  color: #888888;
   line-height: 1.6;
   margin-bottom: 16px;
 }
@@ -790,7 +816,7 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 12px;
   font-weight: 500;
-  color: #A06848;
+  color: #B87860;
   text-decoration: none;
   display: inline-block;
   transition: opacity 150ms;
@@ -814,8 +840,8 @@ body {
 .mk-footer__brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .mk-footer__logo-mark {
   width: 26px; height: 26px;
-  background: #A06848;
-  color: #FAFAFA;
+  background: #B87860;
+  color: #050505;
   border-radius: 3px;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Syne', sans-serif;
@@ -829,7 +855,7 @@ body {
 }
 .mk-footer__tagline {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12px; color: #888888; line-height: 1.55;
+  font-size: 12px; color: #666666; line-height: 1.55;
 }
 .mk-footer__links {
   display: flex; flex-direction: column;
@@ -837,7 +863,7 @@ body {
 }
 .mk-footer__links a {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12px; color: #888888; text-decoration: none; transition: color 150ms;
+  font-size: 12px; color: #666666; text-decoration: none; transition: color 150ms;
 }
 .mk-footer__links a:hover { color: #F0F0EE; }
 .mk-footer__bottom {
