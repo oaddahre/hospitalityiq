@@ -224,9 +224,14 @@ document.body.prepend(progressBar);
 window.addEventListener('scroll', () => {
   const scrollTop = window.scrollY;
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = (scrollTop / docHeight) * 100;
-  progressBar.style.width = progress + '%';
-});
+  progressBar.style.width = (scrollTop / docHeight) * 100 + '%';
+}, { passive: true });
+
+// Nav frosted-glass blur on scroll
+const nav = document.querySelector('.mk-nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+}, { passive: true });
 
 // Intersection Observer for scroll animations
 const observer = new IntersectionObserver((entries) => {

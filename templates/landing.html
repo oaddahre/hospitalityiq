@@ -87,19 +87,19 @@
       <div>
         <div class="hero__stats">
           <div class="hero__stat">
-            <span class="hero__stat-value">250+</span>
+            <span class="hero__stat-value count-up" data-target="250" data-suffix="+">250+</span>
             <span class="hero__stat-label">Hotels &amp; Properties</span>
           </div>
           <div class="hero__stat">
-            <span class="hero__stat-value">18+</span>
+            <span class="hero__stat-value count-up" data-target="18" data-suffix="+">18+</span>
             <span class="hero__stat-label">Destinations</span>
           </div>
           <div class="hero__stat">
-            <span class="hero__stat-value">20.1M</span>
+            <span class="hero__stat-value count-up" data-target="20.1" data-suffix="M">20.1M</span>
             <span class="hero__stat-label">Tourist Arrivals 2025</span>
           </div>
           <div class="hero__stat">
-            <span class="hero__stat-value" style="font-size:20px;">MAD 118B</span>
+            <span class="hero__stat-value count-up" data-target="118" data-prefix="MAD " data-suffix="B" style="font-size:20px;">MAD 118B</span>
             <span class="hero__stat-label">Tourism Revenue 2025</span>
           </div>
         </div>
@@ -230,40 +230,40 @@
       </div>
       <div>
         <p class="coverage-label">Top Origin Markets by Room Nights</p>
-        <div class="bar-chart">
+        <div class="bar-chart origin-chart">
           <div class="bar-row">
             <span class="bar-row__label">France</span>
-            <div class="bar-row__track"><div class="bar-row__fill" style="width:92%"></div></div>
+            <div class="bar-row__track"><div class="bar-row__fill bar-fill" style="--bar-width:92%"></div></div>
             <span class="bar-row__value">28%</span>
           </div>
           <div class="bar-row">
             <span class="bar-row__label">Morocco (domestic)</span>
-            <div class="bar-row__track"><div class="bar-row__fill" style="width:72%"></div></div>
+            <div class="bar-row__track"><div class="bar-row__fill bar-fill" style="--bar-width:72%"></div></div>
             <span class="bar-row__value">22%</span>
           </div>
           <div class="bar-row">
             <span class="bar-row__label">Saudi Arabia</span>
-            <div class="bar-row__track"><div class="bar-row__fill bar-row__fill--gold" style="width:46%"></div></div>
+            <div class="bar-row__track"><div class="bar-row__fill bar-row__fill--gold bar-fill" style="--bar-width:46%"></div></div>
             <span class="bar-row__value">14%</span>
           </div>
           <div class="bar-row">
             <span class="bar-row__label">United Kingdom</span>
-            <div class="bar-row__track"><div class="bar-row__fill" style="width:36%"></div></div>
+            <div class="bar-row__track"><div class="bar-row__fill bar-fill" style="--bar-width:36%"></div></div>
             <span class="bar-row__value">11%</span>
           </div>
           <div class="bar-row">
             <span class="bar-row__label">UAE</span>
-            <div class="bar-row__track"><div class="bar-row__fill bar-row__fill--gold" style="width:28%"></div></div>
+            <div class="bar-row__track"><div class="bar-row__fill bar-row__fill--gold bar-fill" style="--bar-width:28%"></div></div>
             <span class="bar-row__value">8%</span>
           </div>
           <div class="bar-row">
             <span class="bar-row__label">Germany</span>
-            <div class="bar-row__track"><div class="bar-row__fill" style="width:20%"></div></div>
+            <div class="bar-row__track"><div class="bar-row__fill bar-fill" style="--bar-width:20%"></div></div>
             <span class="bar-row__value">6%</span>
           </div>
           <div class="bar-row">
             <span class="bar-row__label">Other</span>
-            <div class="bar-row__track"><div class="bar-row__fill" style="width:36%"></div></div>
+            <div class="bar-row__track"><div class="bar-row__fill bar-fill" style="--bar-width:36%"></div></div>
             <span class="bar-row__value">11%</span>
           </div>
         </div>
@@ -371,7 +371,7 @@
 </footer>
 
 <script>
-// Scroll progress bar
+// ── Scroll progress bar ────────────────────────────────────────
 const progressBar = document.createElement('div');
 progressBar.className = 'scroll-progress';
 document.body.prepend(progressBar);
@@ -379,11 +379,16 @@ document.body.prepend(progressBar);
 window.addEventListener('scroll', () => {
   const scrollTop = window.scrollY;
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = (scrollTop / docHeight) * 100;
-  progressBar.style.width = progress + '%';
-});
+  progressBar.style.width = (scrollTop / docHeight) * 100 + '%';
+}, { passive: true });
 
-// Intersection Observer for scroll animations
+// ── Nav frosted-glass blur on scroll ──────────────────────────
+const nav = document.querySelector('.mk-nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+}, { passive: true });
+
+// ── Scroll-reveal (fade + slide up) ───────────────────────────
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
@@ -395,18 +400,10 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.12 });
 
-// Apply animations to elements
 const animateSelectors = [
-  '.module-card',
-  '.audience-card',
-  '.dest-card',
-  '.pricing-card',
-  '.team-card',
-  '.mk-section-title',
-  '.mk-section-sub',
-  '.hero__title',
-  '.hero__body',
-  '.hero__ctas',
+  '.module-card', '.audience-card', '.dest-card',
+  '.pricing-card', '.team-card',
+  '.mk-section-title', '.mk-section-sub',
   '.hero__stat'
 ];
 
@@ -418,10 +415,9 @@ animateSelectors.forEach(selector => {
   });
 });
 
-// Hero entrance animations on load
+// ── Hero entrance (fade + slide up on load) ────────────────────
 window.addEventListener('load', () => {
-  const heroElements = document.querySelectorAll('.hero__title, .hero__body, .hero__actions');
-  heroElements.forEach((el, index) => {
+  document.querySelectorAll('.hero__title, .hero__body, .hero__actions').forEach((el, index) => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'opacity 600ms ease-out, transform 600ms ease-out';
@@ -432,7 +428,63 @@ window.addEventListener('load', () => {
   });
 });
 
-// Hover lift effect on cards
+// ── Hero shimmer settle (clear gradient after animation ends) ──
+setTimeout(() => {
+  const title = document.querySelector('.hero__title');
+  if (title) {
+    title.style.backgroundImage = 'none';
+    title.style.webkitTextFillColor = '#F0F0EE';
+    title.style.color = '#F0F0EE';
+  }
+}, 2800);
+
+// ── Counting number animation ──────────────────────────────────
+function animateCounter(el) {
+  const target = parseFloat(el.dataset.target);
+  const prefix = el.dataset.prefix || '';
+  const suffix = el.dataset.suffix || '';
+  const duration = 1200;
+  const start = performance.now();
+
+  function update(currentTime) {
+    const elapsed = currentTime - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = target * eased;
+    const formatted = current >= 10 ? Math.round(current) : current.toFixed(1);
+    el.textContent = prefix + formatted + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !entry.target.dataset.counted) {
+      entry.target.dataset.counted = 'true';
+      animateCounter(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.count-up').forEach(el => counterObserver.observe(el));
+
+// ── Bar chart reveal ───────────────────────────────────────────
+const barObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.querySelectorAll('.bar-fill').forEach((bar, index) => {
+        setTimeout(() => bar.classList.add('animated'), index * 100);
+      });
+      barObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+const barSection = document.querySelector('.origin-chart');
+if (barSection) barObserver.observe(barSection);
+
+// ── Card hover lift ────────────────────────────────────────────
 document.querySelectorAll('.module-card, .pricing-card, .team-card').forEach(card => {
   card.addEventListener('mouseenter', () => {
     card.style.transform = 'translateY(-4px)';

@@ -166,6 +166,13 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: background 300ms ease, backdrop-filter 300ms ease, box-shadow 300ms ease;
+}
+.mk-nav.scrolled {
+  background: rgba(5, 5, 5, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
 }
 .mk-nav__inner {
   max-width: 1160px;
@@ -298,11 +305,29 @@ body {
   font-family: 'Syne', sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 600;
-  color: #F0F0EE;
   line-height: 1.1;
   margin-bottom: 20px;
+  background: linear-gradient(
+    90deg,
+    #F0F0EE 0%,
+    #F0F0EE 30%,
+    #B87860 50%,
+    #F0F0EE 70%,
+    #F0F0EE 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-position: 100% center;
+  animation: shimmer 2s ease-out 0.5s forwards;
+  animation-fill-mode: forwards;
 }
-.hero__title em { font-style: italic; color: #B87860; }
+.hero__title em { font-style: italic; }
+@keyframes shimmer {
+  0%   { background-position: 100% center; }
+  100% { background-position: -100% center; }
+}
 .hero__body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 15px;
@@ -490,6 +515,13 @@ body {
   border-radius: 2px;
 }
 .bar-row__fill--gold { background: #B87860; opacity: 0.7; }
+.bar-fill {
+  width: 0% !important;
+  transition: width 800ms ease-out;
+}
+.bar-fill.animated {
+  width: var(--bar-width) !important;
+}
 .bar-row__value {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px;
