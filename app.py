@@ -1293,11 +1293,11 @@ def admin_org_members(org_id):
 # ─── Reports ──────────────────────────────────────────────────────────────────
 
 try:
-    from weasyprint import HTML as WeasyHTML
+    from fpdf import FPDF
     WEASYPRINT_AVAILABLE = True
 except Exception:
     WEASYPRINT_AVAILABLE = False
-    WeasyHTML = None
+    FPDF = None
 
 _report_cache: dict = {}
 CACHE_TTL = 86400  # 24 hours
@@ -1545,6 +1545,508 @@ Return ONLY valid JSON, no markdown fences."""
         return placeholder
 
 
+def build_report_pdf(d: dict) -> bytes:
+    """Build a professional A4 PDF report using fpdf2."""
+    TERRA = (160, 104, 72)
+    DARK  = (10, 10, 10)
+    MUTED = (106, 106, 106)
+    LGRAY = (248, 248, 248)
+    BORD  = (232, 232, 232)
+    WHITE = (255, 255, 255)
+    GREEN = (45, 107, 58)
+    AMBER = (184, 146, 42)
+    RED   = (139, 58, 58)
+
+    LM, RM = 20, 20
+    TM, BM = 15, 15
+    PW = 210 - LM - RM
+
+    def s(text: str) -> str:
+        """Transliterate to latin-1 safe string for fpdf2 core fonts."""
+        import unicodedata
+        nfkd = unicodedata.normalize("NFKD", str(text))
+        return "".join(c for c in nfkd if ord(c) < 256)
+
+    mo   = d["market_overview"]
+    perf = d["performance"]
+    pip  = d["pipeline"]
+    ai   = d.get("ai_narrative", {})
+    city = d["city"]
+    period = d["period"]
+    rating = d.get("market_rating", "NEUTRAL")
+
+    class KodoPDF(FPDF):
+        def __init__(self):
+            super().__init__(orientation="P", unit="mm", format="A4")
+            self.set_margins(LM, TM, RM)
+            self.set_auto_page_break(auto=True, margin=BM + 8)
+            self._page_num = 0
+            self._city = s(city)
+            self._period = s(period)
+
+        def add_content_page(self):
+            self.add_page()
+            self._page_num += 1
+
+        def header(self):
+            if self.page_no() <= 1:
+                return
+            self.set_y(8)
+            self.set_font("Helvetica", "B", 9)
+            self.set_text_color(*TERRA)
+            self.cell(30, 5, "KODO", ln=0)
+            self.set_font("Helvetica", "", 7)
+            self.set_text_color(*MUTED)
+            title = f"{self._city} Hotel Market  |  {self._period}"
+            self.cell(PW - 40, 5, title, align="C", ln=0)
+            self.set_font("Helvetica", "", 7)
+            self.set_text_color(*MUTED)
+            self.cell(10, 5, str(self.page_no() - 1), align="R", ln=1)
+            self.set_draw_color(*BORD)
+            self.set_line_width(0.3)
+            self.line(LM, 14, 210 - RM, 14)
+            self.set_y(17)
+
+        def footer(self):
+            if self.page_no() <= 1:
+                return
+            self.set_y(-12)
+            self.set_draw_color(*BORD)
+            self.set_line_width(0.3)
+            self.line(LM, self.get_y(), 210 - RM, self.get_y())
+            self.set_y(-10)
+            self.set_font("Helvetica", "", 6)
+            self.set_text_color(*MUTED)
+            self.cell(PW, 4, "Confidential - For Kodo Subscribers Only  -  kodohospitality.com", align="C")
+
+        # ── helpers ──────────────────────────────────────────────────────────
+        def section_title(self, num: str, title: str):
+            self.set_font("Helvetica", "B", 8)
+            self.set_text_color(*TERRA)
+            self.cell(18, 6, num + "  |", ln=0)
+            self.set_font("Helvetica", "B", 12)
+            self.set_text_color(*DARK)
+            self.cell(PW - 18, 6, "  " + title, ln=1)
+            self.set_draw_color(*TERRA)
+            self.set_line_width(0.5)
+            self.line(LM, self.get_y(), LM + 40, self.get_y())
+            self.ln(4)
+
+        def body_text(self, txt: str, w: float = 0):
+            self.set_font("Helvetica", "", 9)
+            self.set_text_color(*DARK)
+            self.multi_cell(w or PW, 5, s(txt), ln=1)
+            self.ln(2)
+
+        def kpi_row(self, label: str, value: str):
+            self.set_font("Helvetica", "", 8)
+            self.set_text_color(*MUTED)
+            self.cell(PW * 0.55, 6, label, ln=0)
+            self.set_font("Helvetica", "B", 8)
+            self.set_text_color(*DARK)
+            self.cell(PW * 0.45, 6, value, align="R", ln=1)
+            self.set_draw_color(*BORD)
+            self.set_line_width(0.2)
+            self.line(LM, self.get_y(), LM + PW, self.get_y())
+
+        def table_header(self, cols: list, widths: list):
+            self.set_fill_color(*DARK)
+            self.set_text_color(*WHITE)
+            self.set_font("Helvetica", "B", 7)
+            for col, w in zip(cols, widths):
+                align = "R" if col not in ("Segment", "Hotel", "Name", "Brand", "Category",
+                                            "Owner", "Brand Group", "Status") else "L"
+                self.cell(w, 6, col, border=0, fill=True, align=align)
+            self.ln()
+
+        def table_row(self, vals: list, widths: list, fill: bool = False, bold: bool = False):
+            self.set_fill_color(*(LGRAY if fill else WHITE))
+            self.set_text_color(*DARK)
+            self.set_font("Helvetica", "B" if bold else "", 7)
+            for i, (v, w) in enumerate(zip(vals, widths)):
+                align = "L" if i == 0 else "R"
+                self.cell(w, 5.5, s(str(v)), border=0, fill=True, align=align)
+            self.ln()
+
+        def bar_chart(self, items: list, label_key: str, value_key: str,
+                      max_val: float, bar_h: float = 4.5, bar_max_w: float = 80):
+            for i, item in enumerate(items[:8]):
+                label = s(str(item[label_key]))[:30]
+                val   = item[value_key]
+                pct   = val / max_val if max_val else 0
+                bw    = bar_max_w * pct
+                self.set_font("Helvetica", "", 7)
+                self.set_text_color(*DARK)
+                self.cell(60, bar_h, label, ln=0)
+                self.set_fill_color(*TERRA)
+                self.rect(self.get_x(), self.get_y() + 0.8, max(bw, 1), bar_h - 1.6, "F")
+                self.set_x(self.get_x() + bar_max_w + 2)
+                self.set_font("Helvetica", "B", 7)
+                self.set_text_color(*MUTED)
+                self.cell(18, bar_h, f"{val:,}", align="R", ln=1)
+
+        def rating_box(self, rating: str):
+            color = GREEN if rating == "OUTPERFORM" else (RED if rating == "UNDERPERFORM" else AMBER)
+            bx = LM + PW - 55
+            by = self.get_y()
+            self.set_fill_color(*color)
+            self.rect(bx, by, 55, 12, "F")
+            self.set_xy(bx, by + 2)
+            self.set_font("Helvetica", "", 6)
+            self.set_text_color(*WHITE)
+            self.cell(55, 4, "MARKET RATING", align="C", ln=1)
+            self.set_x(bx)
+            self.set_font("Helvetica", "B", 9)
+            self.cell(55, 5, rating, align="C", ln=1)
+            self.ln(2)
+
+        def risk_item(self, num: int, text: str, color: tuple):
+            x, y = self.get_x(), self.get_y()
+            self.set_fill_color(*color)
+            self.rect(x, y, 2, 10, "F")
+            self.set_xy(x + 4, y)
+            self.set_font("Helvetica", "B", 7)
+            self.set_text_color(*color)
+            self.cell(8, 5, f"0{num}", ln=0)
+            self.set_font("Helvetica", "", 7)
+            self.set_text_color(*DARK)
+            self.multi_cell(PW - 12, 5, s(text), ln=1)
+            self.ln(1)
+
+        def kpi_boxes(self, items: list):
+            """items = list of (label, value) tuples — drawn as equal-width boxes in a row."""
+            n = len(items)
+            bw = PW / n
+            bh = 18
+            by = self.get_y()
+            for i, (label, value) in enumerate(items):
+                bx = LM + i * bw
+                self.set_fill_color(*LGRAY)
+                self.set_draw_color(*BORD)
+                self.rect(bx, by, bw - 1, bh, "FD")
+                self.set_xy(bx + 2, by + 3)
+                self.set_font("Helvetica", "B", 11)
+                self.set_text_color(*DARK)
+                self.cell(bw - 4, 7, str(value), align="C", ln=1)
+                self.set_x(bx + 2)
+                self.set_font("Helvetica", "", 6)
+                self.set_text_color(*MUTED)
+                self.cell(bw - 4, 4, label, align="C", ln=1)
+            self.set_y(by + bh + 3)
+
+    pdf = KodoPDF()
+
+    # ─── COVER PAGE ───────────────────────────────────────────────────────────
+    pdf.add_page()
+    # dark top 40%
+    pdf.set_fill_color(*DARK)
+    pdf.rect(0, 0, 210, 117, "F")
+    # logo
+    pdf.set_xy(LM, 28)
+    pdf.set_font("Helvetica", "B", 28)
+    pdf.set_text_color(*WHITE)
+    pdf.cell(0, 12, "KODO", ln=1)
+    pdf.set_x(LM)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*TERRA)
+    pdf.cell(0, 5, "HOSPITALITY INTELLIGENCE", ln=1)
+    # cover accent line
+    pdf.set_draw_color(*TERRA)
+    pdf.set_line_width(0.8)
+    pdf.line(LM, 60, LM + 50, 60)
+    # white section
+    pdf.set_xy(LM, 126)
+    pdf.set_font("Helvetica", "B", 32)
+    pdf.set_text_color(*DARK)
+    pdf.cell(0, 14, s(city), ln=1)
+    pdf.set_x(LM)
+    pdf.set_font("Helvetica", "", 16)
+    pdf.set_text_color(*MUTED)
+    pdf.cell(0, 8, "Hotel Market Report  |  " + s(period), ln=1)
+    pdf.ln(8)
+    # 4 KPI boxes
+    o = perf["overall"]
+    pdf.kpi_boxes([
+        ("Total Hotels",  str(mo["total_hotels"])),
+        ("Total Keys",    f"{mo['total_keys']:,}"),
+        ("Avg Occupancy", f"{o['occupancy']*100:.0f}%"),
+        ("Avg RevPAR",    f"MAD {o['revpar']:,.0f}"),
+    ])
+    # confidentiality footer
+    pdf.set_xy(LM, 275)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(*MUTED)
+    pdf.cell(PW, 5,
+        "Confidential - For Kodo Subscribers Only  -  kodohospitality.com",
+        align="C")
+
+    # ─── S1: EXECUTIVE SUMMARY ───────────────────────────────────────────────
+    pdf.add_content_page()
+    pdf.section_title("01", "EXECUTIVE SUMMARY")
+    pdf.body_text(ai.get("executive_summary", ""))
+    pdf.ln(2)
+    # market at a glance
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*DARK)
+    pdf.cell(PW, 5, "Market at a Glance", ln=1)
+    pdf.ln(1)
+    pdf.kpi_row("Total Hotels", str(mo["total_hotels"]))
+    pdf.kpi_row("Total Keys", f"{mo['total_keys']:,}")
+    pdf.kpi_row("Weighted Avg Occupancy", f"{o['occupancy']*100:.1f}%")
+    pdf.kpi_row("Weighted Avg ADR", f"MAD {o['adr']:,.0f}")
+    pdf.kpi_row("Weighted Avg RevPAR", f"MAD {o['revpar']:,.0f}")
+    pdf.kpi_row("Weighted Avg GOP Margin", f"{o['gop_margin']*100:.1f}%")
+    pdf.ln(6)
+    pdf.rating_box(rating)
+
+    # ─── S2: MARKET OVERVIEW ─────────────────────────────────────────────────
+    pdf.add_content_page()
+    pdf.section_title("02", "MARKET OVERVIEW")
+    # supply by segment
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*DARK)
+    pdf.cell(PW, 5, "Supply Breakdown by Segment", ln=1)
+    pdf.ln(1)
+    cols = ["Segment", "Hotels", "Keys", "Mkt Share %", "Avg Year"]
+    cw   = [60, 25, 30, 35, 20]
+    pdf.table_header(cols, cw)
+    total_keys = mo["total_keys"] or 1
+    for i, sp in enumerate(perf["by_segment"]):
+        seg_keys = sp["keys"]
+        seg_yr   = ""
+        ch_seg = [h for h in d["directory"] if h.get("category") == sp["segment"]]
+        if ch_seg:
+            yrs = [h.get("year_opened", 0) for h in ch_seg if h.get("year_opened")]
+            seg_yr = str(int(sum(yrs) / len(yrs))) if yrs else ""
+        pdf.table_row([
+            sp["segment"],
+            sp["hotels"],
+            f"{seg_keys:,}",
+            f"{seg_keys/total_keys*100:.1f}%",
+            seg_yr,
+        ], cw, fill=(i % 2 == 1))
+    pdf.ln(6)
+
+    # brand group bars
+    brands = mo["brand_groups"]
+    if brands:
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*DARK)
+        pdf.cell(PW, 5, "Brand Group Distribution (by Keys)", ln=1)
+        pdf.ln(1)
+        max_keys = brands[0]["keys"] if brands else 1
+        pdf.bar_chart(brands, "name", "keys", max_keys)
+        pdf.ln(4)
+
+    # ownership bars
+    owners = mo["ownership"]
+    if owners:
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*DARK)
+        pdf.cell(PW, 5, "Ownership Structure (by Keys)", ln=1)
+        pdf.ln(1)
+        max_keys_o = owners[0]["keys"] if owners else 1
+        pdf.bar_chart(owners, "owner", "keys", max_keys_o)
+
+    # ─── S3: PERFORMANCE ANALYSIS ────────────────────────────────────────────
+    pdf.add_content_page()
+    pdf.section_title("03", "PERFORMANCE ANALYSIS")
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*DARK)
+    pdf.cell(PW, 5, "Performance by Segment", ln=1)
+    pdf.ln(1)
+    cols = ["Segment", "Hotels", "Occ %", "ADR (MAD)", "RevPAR", "GOP %", "Index"]
+    cw   = [48, 18, 18, 24, 24, 18, 20]
+    pdf.table_header(cols, cw)
+    for i, sp in enumerate(perf["by_segment"]):
+        pdf.table_row([
+            sp["segment"],
+            sp["hotels"],
+            f"{sp['occupancy']*100:.1f}%",
+            f"{sp['adr']:,.0f}",
+            f"{sp['revpar']:,.0f}",
+            f"{sp['gop_margin']*100:.1f}%",
+            f"{sp['revpar_index']:.0f}",
+        ], cw, fill=(i % 2 == 1))
+    pdf.ln(5)
+
+    # top 10 by RevPAR
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*DARK)
+    pdf.cell(PW, 5, "Top Hotels by RevPAR", ln=1)
+    pdf.ln(1)
+    cols = ["Name", "Category", "Keys", "Occ %", "ADR", "RevPAR"]
+    cw   = [58, 32, 16, 16, 22, 22]
+    pdf.table_header(cols, cw)
+    for i, h in enumerate(perf["top_10_revpar"]):
+        pdf.table_row([
+            str(h.get("name", ""))[:35],
+            h.get("category", ""),
+            f"{int(h.get('keys', 0)):,}",
+            f"{h.get('occupancy', 0)*100:.1f}%",
+            f"{h.get('adr_mad', 0):,.0f}",
+            f"{h.get('revpar_mad', 0):,.0f}",
+        ], cw, fill=(i % 2 == 1))
+    pdf.ln(5)
+
+    # financials
+    pdf.kpi_boxes([
+        ("Est. Rooms Revenue", f"MAD {perf['est_rooms_revenue_mad_m']:.0f}M"),
+        ("Est. Total Revenue",  f"MAD {perf['est_total_revenue_mad_m']:.0f}M"),
+        ("Est. GOP",            f"MAD {perf['est_gop_mad_m']:.0f}M"),
+    ])
+
+    # ─── S4: DEMAND DRIVERS ──────────────────────────────────────────────────
+    pdf.add_content_page()
+    pdf.section_title("04", "DEMAND DRIVERS")
+    pdf.body_text(ai.get("market_commentary", ""))
+    pdf.ln(2)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*DARK)
+    pdf.cell(PW, 5, "Seasonality Index (Estimated Occupancy %)", ln=1)
+    pdf.ln(1)
+    months = d["seasonality"]["months"]
+    vals   = d["seasonality"]["values"]
+    cw_s   = [PW / 12] * 12
+    pdf.table_header(months, cw_s)
+    pdf.set_fill_color(*LGRAY)
+    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_text_color(*DARK)
+    for v in vals:
+        pdf.cell(PW / 12, 5.5, str(v), fill=True, align="C")
+    pdf.ln()
+
+    # ─── S5: PIPELINE ────────────────────────────────────────────────────────
+    pdf.add_content_page()
+    pdf.section_title("05", "PIPELINE & SUPPLY OUTLOOK")
+    if pip["projects"]:
+        cols = ["Name", "Brand", "Category", "Keys", "Opening", "Status", "Inv (MMAD)"]
+        cw   = [48, 28, 28, 14, 16, 22, 14]
+        pdf.table_header(cols, cw)
+        for i, p in enumerate(pip["projects"]):
+            inv_m = f"{p['investment_mad']//1_000_000:,}" if p.get("investment_mad") else "-"
+            pdf.table_row([
+                str(p.get("name", ""))[:28],
+                str(p.get("brand", ""))[:16],
+                p.get("category", ""),
+                f"{p['keys']:,}",
+                str(p.get("opening", "")),
+                p.get("status", ""),
+                inv_m,
+            ], cw, fill=(i % 2 == 1))
+        pdf.ln(4)
+    else:
+        pdf.body_text("No pipeline projects currently tracked for this market.")
+        pdf.ln(2)
+
+    # supply risk box
+    risk_col = GREEN if pip["supply_risk"] == "Low" else (RED if pip["supply_risk"] == "High" else AMBER)
+    pdf.set_fill_color(*risk_col)
+    pdf.set_text_color(*WHITE)
+    bx, by = LM, pdf.get_y()
+    pdf.rect(bx, by, PW, 14, "F")
+    pdf.set_xy(bx, by + 2)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.cell(PW, 4, "SUPPLY RISK ASSESSMENT", align="C", ln=1)
+    pdf.set_x(bx)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.cell(PW, 5, pip["supply_risk"].upper(), align="C", ln=1)
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(*MUTED)
+    ratio_pct = (pip["total_keys"] / mo["total_keys"] * 100) if mo["total_keys"] else 0
+    pdf.cell(PW, 5,
+        f"{pip['total_projects']} projects  |  {pip['total_keys']:,} keys in pipeline  "
+        f"|  {ratio_pct:.1f}% of existing supply",
+        align="C", ln=1)
+
+    # ─── S6: INVESTMENT PERSPECTIVE ──────────────────────────────────────────
+    pdf.add_content_page()
+    pdf.section_title("06", "INVESTMENT PERSPECTIVE")
+    pdf.body_text(ai.get("investment_perspective", ""))
+    pdf.ln(2)
+
+    # asset value table
+    if d["asset_values"]:
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*DARK)
+        pdf.cell(PW, 5, "Indicative Asset Value Estimates", ln=1)
+        pdf.ln(1)
+        cols = ["Segment", "RevPAR (MAD)", "TRevPAR (MAD)", "GOP/Key (MAD)", "Cap Rate", "Value/Key (MMAD)"]
+        cw   = [38, 26, 28, 28, 18, 32]
+        pdf.table_header(cols, cw)
+        for i, av in enumerate(d["asset_values"]):
+            pdf.table_row([
+                av["segment"],
+                f"{av['revpar']:,.0f}",
+                f"{av['trevpar']:,.0f}",
+                f"{av['gop_per_key']:,.0f}",
+                f"{av['cap_rate']*100:.1f}%",
+                f"{av['value_per_key']:.2f}",
+            ], cw, fill=(i % 2 == 1))
+        pdf.ln(5)
+
+    # risks and opportunities
+    risks = ai.get("key_risks", [])
+    opps  = ai.get("key_opportunities", [])
+    if risks:
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*DARK)
+        pdf.cell(PW, 5, "Key Risks", ln=1)
+        pdf.ln(1)
+        for i, r in enumerate(risks[:3]):
+            pdf.risk_item(i + 1, r, RED)
+    pdf.ln(2)
+    if opps:
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*DARK)
+        pdf.cell(PW, 5, "Key Opportunities", ln=1)
+        pdf.ln(1)
+        for i, op in enumerate(opps[:3]):
+            pdf.risk_item(i + 1, op, GREEN)
+
+    # ─── S7: HOTEL DIRECTORY ────────────────────────────────────────────────
+    pdf.add_content_page()
+    pdf.section_title("07", "HOTEL DIRECTORY")
+    cols = ["Name", "Brand Group", "Category", "Keys", "Yr", "Occ %", "ADR", "RevPAR"]
+    cw   = [50, 30, 28, 14, 12, 14, 18, 18]
+    pdf.set_font("Helvetica", "", 6)
+    pdf.set_auto_page_break(auto=True, margin=BM + 8)
+    pdf.table_header(cols, cw)
+    for i, h in enumerate(d["directory"]):
+        occ = h.get("occupancy") or 0
+        pdf.table_row([
+            str(h.get("name", ""))[:32],
+            str(h.get("brand_group", ""))[:18],
+            h.get("category", ""),
+            f"{int(h.get('keys', 0)):,}",
+            str(int(h.get("year_opened", 0))) if h.get("year_opened") else "-",
+            f"{occ*100:.0f}%",
+            f"{h.get('adr_mad', 0):,.0f}",
+            f"{h.get('revpar_mad', 0):,.0f}",
+        ], cw, fill=(i % 2 == 1))
+
+    # ─── BACK PAGE ───────────────────────────────────────────────────────────
+    pdf.add_page()
+    pdf.set_fill_color(*DARK)
+    pdf.rect(0, 0, 210, 297, "F")
+    pdf.set_xy(0, 110)
+    pdf.set_font("Helvetica", "B", 48)
+    pdf.set_text_color(*WHITE)
+    pdf.cell(210, 20, "KODO", align="C", ln=1)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(*TERRA)
+    pdf.cell(210, 8, "HOSPITALITY INTELLIGENCE", align="C", ln=1)
+    pdf.ln(6)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(160, 160, 160)
+    pdf.cell(210, 6, "kodohospitality.com", align="C", ln=1)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.cell(210, 5, f"Generated {d['generated_date']}  |  Confidential", align="C", ln=1)
+
+    return bytes(pdf.output())
+
+
 @app.route("/api/reports/available")
 @login_required
 def api_reports_available():
@@ -1596,22 +2098,18 @@ def api_reports_generate():
         narrative   = generate_ai_narrative(report_data)
         report_data["ai_narrative"] = narrative
 
-        # Determine market rating
         _, _, merged = load_data()
         national_revpar = float(merged["revpar_mad"].mean()) if not merged.empty else 1
         city_revpar     = report_data["performance"]["overall"]["revpar"]
         if city_revpar >= national_revpar * 1.10:
-            rating, rating_color = "OUTPERFORM", "#2D6B3A"
+            rating = "OUTPERFORM"
         elif city_revpar <= national_revpar * 0.90:
-            rating, rating_color = "UNDERPERFORM", "#8B3A3A"
+            rating = "UNDERPERFORM"
         else:
-            rating, rating_color = "NEUTRAL", "#B8922A"
+            rating = "NEUTRAL"
         report_data["market_rating"] = rating
-        report_data["market_rating_color"] = rating_color
 
-        html_str = render_template("report_template.html", d=report_data)
-        pdf_bytes = WeasyHTML(string=html_str, base_url=app.root_path).write_pdf()
-
+        pdf_bytes = build_report_pdf(report_data)
         _report_cache[cache_key] = (pdf_bytes, now)
 
         safe_city   = city.replace(" / ", "-").replace(" ", "-")
