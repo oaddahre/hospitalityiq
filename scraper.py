@@ -151,41 +151,57 @@ CAP_RATES = {
 # ─── FINANCIAL MODEL ─────────────────────────────────────────────────────────
 
 def compute_hotel_financials(hotel, occupancy, adr_mad):
-    keys     = int(hotel.get('keys', 0) or 0)
-    segment  = hotel.get('category', 'Upscale')
+    keys       = int(hotel.get('keys', 0) or 0)
+    segment    = hotel.get('category', 'Upscale')
     hotel_type = classify_hotel_type(hotel)
 
+    # Step 1 — Rooms Revenue
     rooms_revenue = adr_mad * occupancy * keys * 365
 
+    # Step 2 — Revenue mix
     mix       = REVENUE_MIX.get(hotel_type, REVENUE_MIX['city_business']).get(segment, {'rooms': 0.72, 'fb': 0.18, 'other': 0.10})
     rooms_pct = mix['rooms']
-
     total_revenue = rooms_revenue / rooms_pct if rooms_pct else 0
     fb_revenue    = total_revenue * mix['fb']
     other_revenue = total_revenue * mix['other']
 
+    # Step 3 — EBITDA
     ebitda_margin = EBITDA_MARGINS.get(hotel_type, EBITDA_MARGINS['city_business']).get(segment, 0.28)
     ebitda = total_revenue * ebitda_margin
 
-    cap_rate    = CAP_RATES.get(segment, 0.075)
-    asset_value = ebitda / cap_rate if cap_rate else 0
+    # Step 4 — NOI
+    ffe_reserve = total_revenue * 0.035
+
+    brand_group = hotel.get('brand_group', 'Independent')
+    is_managed  = brand_group.lower() not in ['independent', 'independent luxury']
+    management_fee = total_revenue * 0.025 if is_managed else 0
+
+    noi = ebitda - ffe_reserve - management_fee
+
+    cap_rate      = CAP_RATES.get(segment, 0.075)
+    asset_value   = noi / cap_rate if cap_rate > 0 else 0
     value_per_key = asset_value / keys if keys > 0 else 0
 
     return {
-        'hotel_type':       hotel_type,
-        'rooms_revenue_mad': round(rooms_revenue),
-        'fb_revenue_mad':    round(fb_revenue),
-        'other_revenue_mad': round(other_revenue),
-        'total_revenue_mad': round(total_revenue),
-        'rooms_pct':         round(rooms_pct * 100, 1),
-        'fb_pct':            round(mix['fb'] * 100, 1),
-        'other_pct':         round(mix['other'] * 100, 1),
-        'ebitda_mad':        round(ebitda),
-        'ebitda_margin_pct': round(ebitda_margin * 100, 1),
-        'cap_rate_pct':      round(cap_rate * 100, 1),
-        'asset_value_mad':   round(asset_value),
-        'value_per_key_mad': round(value_per_key),
-        'value_per_key_eur': round(value_per_key / EUR_TO_MAD),
+        'hotel_type':         hotel_type,
+        'is_managed':         is_managed,
+        'rooms_revenue_mad':  round(rooms_revenue),
+        'fb_revenue_mad':     round(fb_revenue),
+        'other_revenue_mad':  round(other_revenue),
+        'total_revenue_mad':  round(total_revenue),
+        'rooms_pct':          round(rooms_pct * 100, 1),
+        'fb_pct':             round(mix['fb'] * 100, 1),
+        'other_pct':          round(mix['other'] * 100, 1),
+        'ebitda_mad':         round(ebitda),
+        'ebitda_margin_pct':  round(ebitda_margin * 100, 1),
+        'ffe_reserve_mad':    round(ffe_reserve),
+        'management_fee_mad': round(management_fee),
+        'noi_mad':            round(noi),
+        'noi_margin_pct':     round(noi / total_revenue * 100, 1) if total_revenue > 0 else 0,
+        'cap_rate_pct':       round(cap_rate * 100, 1),
+        'asset_value_mad':    round(asset_value),
+        'value_per_key_mad':  round(value_per_key),
+        'value_per_key_eur':  round(value_per_key / EUR_TO_MAD),
     }
 
 

@@ -835,32 +835,59 @@ async function renderDetailedFinancials(hotelId) {
   } catch (e) { return; }
 
   const TYPE_LABELS = {
-    city_business:    'City Business Hotel',
-    beach_resort:     'Beach & Resort Hotel',
-    cultural_leisure: 'Cultural & Leisure Hotel',
-    riad_boutique:    'Riad & Boutique Hotel',
+    city_business:    'City Business',
+    beach_resort:     'Beach Resort',
+    cultural_leisure: 'Cultural & Leisure',
+    riad_boutique:    'Riad & Boutique',
   };
 
-  document.getElementById('hfin-hotel-type').textContent = TYPE_LABELS[fin.hotel_type] || fin.hotel_type;
+  document.getElementById('hfin-hotel-type').textContent =
+    TYPE_LABELS[fin.hotel_type] || fin.hotel_type;
   document.getElementById('hfin-adr-source').textContent =
     fin.adr_source === 'live_scrape' ? 'Live BAR Rate' : 'Kōdō Estimate';
 
-  document.getElementById('hfm-rooms').textContent     = fmMad(fin.rooms_revenue_mad);
-  document.getElementById('hfm-rooms-pct').textContent = `${fin.rooms_pct}%`;
-  document.getElementById('hfm-fb').textContent        = fmMad(fin.fb_revenue_mad);
-  document.getElementById('hfm-fb-pct').textContent    = `${fin.fb_pct}%`;
-  document.getElementById('hfm-other').textContent     = fmMad(fin.other_revenue_mad);
-  document.getElementById('hfm-other-pct').textContent = `${fin.other_pct}%`;
-  document.getElementById('hfm-total').textContent     = fmMad(fin.total_revenue_mad);
-  document.getElementById('hfm-ebitda').textContent    = fmMad(fin.ebitda_mad);
-  document.getElementById('hfm-ebitda-pct').textContent= `${fin.ebitda_margin_pct}% margin`;
+  // Revenue waterfall
+  document.getElementById('hfm-rooms').textContent      = fmMad(fin.rooms_revenue_mad);
+  document.getElementById('hfm-rooms-pct').textContent  = `${fin.rooms_pct}%`;
+  document.getElementById('hfm-fb').textContent         = fmMad(fin.fb_revenue_mad);
+  document.getElementById('hfm-fb-pct').textContent     = `${fin.fb_pct}%`;
+  document.getElementById('hfm-other').textContent      = fmMad(fin.other_revenue_mad);
+  document.getElementById('hfm-other-pct').textContent  = `${fin.other_pct}%`;
+  document.getElementById('hfm-total').textContent      = fmMad(fin.total_revenue_mad);
+  document.getElementById('hfm-ebitda').textContent     = fmMad(fin.ebitda_mad);
+  document.getElementById('hfm-ebitda-pct').textContent = `${fin.ebitda_margin_pct}% margin`;
 
+  // Deductions
+  document.getElementById('hfm-ffe').textContent = fin.ffe_reserve_mad
+    ? `(${fmMad(fin.ffe_reserve_mad)})`
+    : '—';
+
+  const mgmtRow   = document.getElementById('hfm-mgmt-row');
+  const mgmtLabel = document.getElementById('hfm-mgmt-label');
+  const mgmtVal   = document.getElementById('hfm-mgmt');
+  if (fin.is_managed) {
+    mgmtRow.style.display = '';
+    mgmtLabel.innerHTML = 'Management Fee <span class="fin-rate-note">(2.5% of revenue)</span>';
+    mgmtVal.textContent = fin.management_fee_mad ? `(${fmMad(fin.management_fee_mad)})` : '—';
+  } else {
+    mgmtRow.style.display = '';
+    mgmtLabel.innerHTML = 'Management Fee <span class="fin-rate-note">(owner-operated)</span>';
+    mgmtVal.textContent = 'N/A';
+    mgmtVal.style.color = 'var(--text-faint)';
+    mgmtVal.style.fontStyle = 'italic';
+  }
+
+  // NOI
+  document.getElementById('hfm-noi').textContent     = fmMad(fin.noi_mad);
+  document.getElementById('hfm-noi-pct').textContent = `${fin.noi_margin_pct}% margin`;
+
+  // Asset value
+  document.getElementById('hfm-cap-rate').textContent  = fin.cap_rate_pct ? `${fin.cap_rate_pct}%` : '—';
   document.getElementById('hfm-asset-val').textContent = fmMad(fin.asset_value_mad);
   document.getElementById('hfm-vpk-mad').textContent   = fmMad(fin.value_per_key_mad);
   document.getElementById('hfm-vpk-eur').textContent   = fin.value_per_key_eur
     ? `EUR ${(+fin.value_per_key_eur).toLocaleString()}`
     : '—';
-  document.getElementById('hfm-cap-rate').textContent  = fin.cap_rate_pct ? `${fin.cap_rate_pct}%` : '—';
 
   section.style.display = '';
 }

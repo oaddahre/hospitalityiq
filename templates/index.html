@@ -877,34 +877,22 @@
           </div>
           <table class="fin-model-table">
             <thead>
-              <tr><th>Revenue Stream</th><th>Amount (MAD)</th><th>% of Total</th></tr>
+              <tr><th>Line Item</th><th>Amount (MAD)</th><th></th></tr>
             </thead>
             <tbody>
-              <tr><td>Rooms Revenue</td><td id="hfm-rooms">—</td><td id="hfm-rooms-pct">—</td></tr>
-              <tr><td>F&amp;B Revenue</td><td id="hfm-fb">—</td><td id="hfm-fb-pct">—</td></tr>
-              <tr><td>Other Revenue</td><td id="hfm-other">—</td><td id="hfm-other-pct">—</td></tr>
-              <tr class="fin-model-total"><td>Total Revenue</td><td id="hfm-total">—</td><td>100%</td></tr>
-              <tr class="fin-model-ebitda"><td>EBITDA</td><td id="hfm-ebitda">—</td><td id="hfm-ebitda-pct">—</td></tr>
+              <tr><td>Rooms Revenue</td><td id="hfm-rooms">—</td><td id="hfm-rooms-pct" class="fin-pct">—</td></tr>
+              <tr><td>F&amp;B Revenue</td><td id="hfm-fb">—</td><td id="hfm-fb-pct" class="fin-pct">—</td></tr>
+              <tr><td>Other Revenue</td><td id="hfm-other">—</td><td id="hfm-other-pct" class="fin-pct">—</td></tr>
+              <tr class="fin-model-total"><td>Total Revenue</td><td id="hfm-total">—</td><td class="fin-pct">100%</td></tr>
+              <tr class="fin-model-ebitda"><td>EBITDA</td><td id="hfm-ebitda">—</td><td id="hfm-ebitda-pct" class="fin-pct">—</td></tr>
+              <tr class="fin-model-deduct"><td>FF&amp;E Reserve <span class="fin-rate-note">(3.5% of revenue)</span></td><td id="hfm-ffe">—</td><td></td></tr>
+              <tr class="fin-model-deduct" id="hfm-mgmt-row"><td id="hfm-mgmt-label">Management Fee <span class="fin-rate-note">(2.5% of revenue)</span></td><td id="hfm-mgmt">—</td><td></td></tr>
+              <tr class="fin-model-noi"><td>NOI</td><td id="hfm-noi">—</td><td id="hfm-noi-pct" class="fin-pct">—</td></tr>
+              <tr class="fin-model-caprate"><td>Cap Rate</td><td id="hfm-cap-rate">—</td><td></td></tr>
+              <tr class="fin-model-asset-inline"><td>Est. Asset Value</td><td id="hfm-asset-val">—</td><td></td></tr>
+              <tr class="fin-model-asset-inline"><td>Value per Key</td><td id="hfm-vpk-mad">—</td><td id="hfm-vpk-eur" class="fin-pct">—</td></tr>
             </tbody>
           </table>
-          <div class="fin-model-asset-row">
-            <div class="fin-model-asset-item">
-              <div class="fin-model-asset-val" id="hfm-asset-val">—</div>
-              <div class="fin-model-asset-lbl">Est. Asset Value</div>
-            </div>
-            <div class="fin-model-asset-item">
-              <div class="fin-model-asset-val" id="hfm-vpk-mad">—</div>
-              <div class="fin-model-asset-lbl">Value / Key (MAD)</div>
-            </div>
-            <div class="fin-model-asset-item">
-              <div class="fin-model-asset-val" id="hfm-vpk-eur">—</div>
-              <div class="fin-model-asset-lbl">Value / Key (EUR)</div>
-            </div>
-            <div class="fin-model-asset-item">
-              <div class="fin-model-asset-val" id="hfm-cap-rate">—</div>
-              <div class="fin-model-asset-lbl">Cap Rate</div>
-            </div>
-          </div>
           <p class="hotel-fin-disc">Kōdō model estimates — indicative only. Based on BAR scrape, Kōdō occupancy model, and industry revenue mix ratios calibrated for Morocco. Not for investment decisions.</p>
         </div>
 

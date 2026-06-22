@@ -1594,6 +1594,49 @@ body.light .nav-logout  { color: #8A8A8A; }
   background: rgba(107,175,122,0.06);
   border-top: 1px solid rgba(107,175,122,0.2);
 }
+.fin-model-deduct td {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 11px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.fin-model-deduct td:not(:first-child) {
+  color: #C47A5A;
+}
+.fin-rate-note {
+  font-size: 10px;
+  opacity: 0.7;
+}
+.fin-pct {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.fin-model-noi td {
+  font-weight: 700;
+  color: #A06848;
+  background: rgba(160,104,72,0.08);
+  border-top: 2px solid rgba(160,104,72,0.25);
+  font-size: 13px;
+}
+.fin-model-caprate td {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-top: 10px;
+  padding-bottom: 4px;
+  border-bottom: none;
+}
+.fin-model-asset-inline td {
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+.fin-model-asset-inline:first-of-type td {
+  font-size: 13px;
+  font-weight: 700;
+}
 .fin-model-asset-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

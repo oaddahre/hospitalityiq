@@ -1661,14 +1661,22 @@ def compute_city_report_data(city: str, period: str) -> dict:
     # ── asset values ──
     asset_rows = []
     for sp in seg_perf:
-        cap = CAP_RATES.get(sp["segment"], 0.075)
+        cap         = CAP_RATES.get(sp["segment"], 0.075)
         annual_trev = sp["trevpar"] * 365
-        gop_per_key = annual_trev * sp["gop_margin"]
-        value_per_key_mad_m = (gop_per_key / cap) / 1_000_000 if cap else 0
+        ebitda_per_key   = annual_trev * sp["gop_margin"]
+        ffe_per_key      = annual_trev * 0.035
+        mgmt_per_key     = annual_trev * 0.025
+        noi_per_key      = ebitda_per_key - ffe_per_key - mgmt_per_key
+        value_per_key_mad_m = (noi_per_key / cap) / 1_000_000 if cap else 0
         asset_rows.append({
-            "segment": sp["segment"], "revpar": sp["revpar"], "trevpar": sp["trevpar"],
-            "gop_per_key": gop_per_key, "cap_rate": cap,
-            "value_per_key": value_per_key_mad_m,
+            "segment":         sp["segment"],
+            "revpar":          sp["revpar"],
+            "ebitda_per_key":  ebitda_per_key,
+            "ffe_per_key":     ffe_per_key,
+            "mgmt_per_key":    mgmt_per_key,
+            "noi_per_key":     noi_per_key,
+            "cap_rate":        cap,
+            "value_per_key":   value_per_key_mad_m,
         })
 
     # ── seasonality ──
@@ -2012,17 +2020,19 @@ def generate_pdf_report(data: dict, ai_narrative: dict) -> bytes:
     if data["asset_values"]:
         pdf.set_font("Helvetica", "B", 8)
         pdf.set_text_color(*_DARK)
-        pdf.cell(_PW, 5, "Indicative Asset Value Estimates", ln=1)
+        pdf.cell(_PW, 5, "Indicative Asset Value Estimates (NOI-based)", ln=1)
         pdf.ln(1)
-        cols = ["Segment", "RevPAR (MAD)", "TRevPAR (MAD)", "GOP/Key (MAD)", "Cap Rate", "Value/Key (MMAD)"]
-        cw   = [38, 26, 28, 28, 18, 32]
+        cols = ["Segment", "RevPAR", "EBITDA/Key", "FF&E/Key", "Mgmt/Key", "NOI/Key", "Cap", "Value/Key (MMAD)"]
+        cw   = [34, 20, 22, 18, 18, 22, 14, 22]
         pdf.table_header(cols, cw)
         for i, av in enumerate(data["asset_values"]):
             pdf.table_row([
                 av["segment"],
                 f"{av['revpar']:,.0f}",
-                f"{av['trevpar']:,.0f}",
-                f"{av['gop_per_key']:,.0f}",
+                f"{av['ebitda_per_key']:,.0f}",
+                f"({av['ffe_per_key']:,.0f})",
+                f"({av['mgmt_per_key']:,.0f})",
+                f"{av['noi_per_key']:,.0f}",
                 f"{av['cap_rate']*100:.1f}%",
                 f"{av['value_per_key']:.2f}",
             ], cw, fill=(i % 2 == 1))
