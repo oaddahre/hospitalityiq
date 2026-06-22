@@ -11,11 +11,28 @@ import csv
 import io
 import os
 import uuid
+import subprocess
+import sys
 from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# ─── Scraper helpers (graceful import) ───────────────────────────────────────
+try:
+    from scraper import compute_hotel_financials, classify_hotel_type
+    SCRAPER_MODULE_OK = True
+except Exception:
+    SCRAPER_MODULE_OK = False
+    def compute_hotel_financials(*a, **kw): return {}
+    def classify_hotel_type(*a, **kw): return 'city_business'
+
+try:
+    from playwright.sync_api import sync_playwright
+    PLAYWRIGHT_AVAILABLE = True
+except Exception:
+    PLAYWRIGHT_AVAILABLE = False
 
 app = Flask(__name__)
 app.config['SECRET_KEY']                = os.environ.get('SECRET_KEY', 'kodo-dev-fallback-key-2026')
@@ -51,6 +68,33 @@ TIER_ORDER  = {"observer": 0, "benchmarker": 1, "advisory": 2}
 PLAN_SEATS  = {"observer": 1, "benchmarker": 3, "advisory": 5}
 
 _login_failures: dict = {}   # {email: {"count": int, "since": datetime}}
+
+# ─── APScheduler — daily rate scraper at 03:00 Casablanca time ───────────────
+try:
+    import pytz as _tz
+    from apscheduler.schedulers.background import BackgroundScheduler
+
+    def _scheduled_scraper():
+        scraper_path = os.path.join(DATA_DIR, 'scraper.py')
+        subprocess.Popen([sys.executable, scraper_path])
+        app.logger.info('Daily rate scraper triggered by scheduler')
+
+    _scheduler = BackgroundScheduler(timezone=_tz.timezone('Africa/Casablanca'))
+    _scheduler.add_job(
+        func=_scheduled_scraper,
+        trigger='cron',
+        hour=3, minute=0,
+        id='daily_rate_scraper',
+        replace_existing=True,
+    )
+    _scheduler.start()
+
+    import atexit
+    atexit.register(lambda: _scheduler.shutdown(wait=False))
+except Exception as _e:
+    _scheduler = None
+    import logging as _logging
+    _logging.getLogger(__name__).warning(f'APScheduler not started: {_e}')
 
 
 # ─── User model ───────────────────────────────────────────────────────────────
@@ -2113,6 +2157,282 @@ def api_reports_generate():
     except Exception as e:
         app.logger.error(f"Report generation error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+
+# ─── Rate Intelligence API ────────────────────────────────────────────────────
+
+RATES_CSV_PATH    = os.path.join(DATA_DIR, 'scraped_rates.csv')
+SCRAPER_LOG_PATH  = os.path.join(DATA_DIR, 'scraper_log.json')
+PROGRESS_PATH     = os.path.join(DATA_DIR, 'scraper_progress.json')
+SCRAPER_LOG_TXT   = os.path.join(DATA_DIR, 'scraper_log.txt')
+
+
+def _read_rates_csv():
+    rows = []
+    if not os.path.exists(RATES_CSV_PATH):
+        return rows
+    try:
+        with open(RATES_CSV_PATH, 'r', encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+    except Exception:
+        pass
+    return rows
+
+
+def _write_rates_csv(rows):
+    if not rows:
+        return
+    fieldnames = [
+        'hotel_id', 'hotel_name', 'city', 'scrape_date', 'stay_date',
+        'rate_mad', 'rate_eur', 'source', 'data_quality', 'rooms_left',
+        'availability_signal', 'scrape_status',
+    ]
+    with open(RATES_CSV_PATH, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+@app.route('/api/rates')
+@login_required
+def api_rates():
+    hotel_id = request.args.get('hotel_id', '').strip()
+    city     = request.args.get('city', '').strip()
+    days     = int(request.args.get('days', 30))
+
+    rows = _read_rates_csv()
+    today = datetime.utcnow()
+    cutoff = (today - timedelta(days=days)).strftime('%Y-%m-%d')
+
+    filtered = [r for r in rows if r.get('scrape_date', '') >= cutoff]
+    if hotel_id:
+        filtered = [r for r in filtered if str(r.get('hotel_id', '')) == str(hotel_id)]
+    elif city:
+        filtered = [r for r in filtered if r.get('city', '').lower() == city.lower()]
+
+    filtered.sort(key=lambda r: r.get('stay_date', ''))
+
+    # If no scraped data, fall back to estimated rates from performance.csv
+    if not filtered and hotel_id:
+        try:
+            hotels_df, perf_df, merged = load_data()
+            h_row = merged[merged['id'].astype(str) == str(hotel_id)]
+            if not h_row.empty:
+                h = h_row.iloc[0]
+                adr = float(h.get('adr_mad', 0) or 0)
+                for offset in [1, 7, 14, 21, 30]:
+                    stay = (today + timedelta(days=offset)).strftime('%Y-%m-%d')
+                    filtered.append({
+                        'hotel_id': hotel_id,
+                        'hotel_name': h.get('name', ''),
+                        'city': h.get('city', ''),
+                        'scrape_date': today.strftime('%Y-%m-%d'),
+                        'stay_date': stay,
+                        'rate_mad': str(round(adr)),
+                        'rate_eur': str(round(adr / 10.8)),
+                        'source': 'estimated',
+                        'data_quality': 'estimated',
+                        'rooms_left': '',
+                        'availability_signal': 'estimated',
+                        'scrape_status': 'estimated',
+                    })
+        except Exception as e:
+            app.logger.warning(f'Rate fallback failed: {e}')
+
+    # Source breakdown
+    source_counts = {}
+    for r in filtered:
+        src = r.get('source', 'unknown')
+        source_counts[src] = source_counts.get(src, 0) + 1
+
+    last_scraped = max((r.get('scrape_date', '') for r in filtered), default=None)
+
+    return jsonify({
+        'rates': filtered,
+        'count': len(filtered),
+        'last_scraped': last_scraped,
+        'source_breakdown': source_counts,
+    })
+
+
+@app.route('/api/scraper/run', methods=['POST'])
+@login_required
+def api_scraper_run():
+    if not admin_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        scraper_path = os.path.join(DATA_DIR, 'scraper.py')
+        subprocess.Popen([sys.executable, scraper_path])
+        return jsonify({'status': 'started', 'message': 'Scraper started in background'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/scraper/status')
+@login_required
+def api_scraper_status():
+    stats = {}
+    if os.path.exists(SCRAPER_LOG_PATH):
+        try:
+            with open(SCRAPER_LOG_PATH) as f:
+                stats = json.load(f)
+        except Exception:
+            pass
+
+    progress = {}
+    if os.path.exists(PROGRESS_PATH):
+        try:
+            with open(PROGRESS_PATH) as f:
+                progress = json.load(f)
+        except Exception:
+            pass
+
+    today = datetime.utcnow().strftime('%Y-%m-%d')
+    done_today  = sum(1 for v in progress.values() if v.get('status', '').startswith(f'done_{today}'))
+    error_count = sum(1 for v in progress.values() if v.get('status') == 'error')
+
+    rows = _read_rates_csv()
+    live_sources = {'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+    hotels_with_live = len({r['hotel_id'] for r in rows
+                            if r.get('source') in live_sources and r.get('scrape_date') >= today})
+    hotels_estimated = len({r['hotel_id'] for r in rows
+                            if r.get('source') == 'estimated' and r.get('scrape_date') >= today})
+
+    # Source breakdown from last 24h
+    src_counts: dict = {}
+    for r in rows:
+        if r.get('scrape_date', '') >= today:
+            src = r.get('source', 'unknown')
+            src_counts[src] = src_counts.get(src, 0) + 1
+
+    # Last 30 log lines
+    log_tail = []
+    if os.path.exists(SCRAPER_LOG_TXT):
+        try:
+            with open(SCRAPER_LOG_TXT) as f:
+                log_tail = f.readlines()[-30:]
+        except Exception:
+            pass
+
+    return jsonify({
+        'last_run':          stats.get('end_time') or stats.get('start_time'),
+        'hotels_total':      stats.get('total', 0),
+        'hotels_scraped':    stats.get('scraped', 0),
+        'hotels_failed':     stats.get('failed', 0),
+        'done_today':        done_today,
+        'error_count':       error_count,
+        'hotels_with_live':  hotels_with_live,
+        'hotels_estimated':  hotels_estimated,
+        'source_breakdown':  src_counts,
+        'log_tail':          ''.join(log_tail),
+        'scheduler_running': _scheduler is not None and _scheduler.running if _scheduler else False,
+    })
+
+
+@app.route('/api/scraper/override', methods=['POST'])
+@login_required
+def api_scraper_override():
+    if not admin_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    body      = request.get_json(silent=True) or {}
+    hotel_id  = str(body.get('hotel_id', '')).strip()
+    stay_date = str(body.get('stay_date', '')).strip()
+    rate_mad  = body.get('rate_mad')
+    note      = str(body.get('note', '')).strip()
+
+    if not hotel_id or not stay_date or rate_mad is None:
+        return jsonify({'error': 'hotel_id, stay_date, rate_mad required'}), 400
+
+    try:
+        rate_mad = float(rate_mad)
+    except Exception:
+        return jsonify({'error': 'rate_mad must be numeric'}), 400
+
+    # Resolve hotel name from hotels.csv
+    hotel_name, city = '', ''
+    try:
+        hotels_df, _, _ = load_data()
+        h_row = hotels_df[hotels_df['id'].astype(str) == hotel_id]
+        if not h_row.empty:
+            hotel_name = h_row.iloc[0]['name']
+            city       = h_row.iloc[0]['city']
+    except Exception:
+        pass
+
+    today = datetime.utcnow().strftime('%Y-%m-%d')
+    row = {
+        'hotel_id': hotel_id, 'hotel_name': hotel_name, 'city': city,
+        'scrape_date': today, 'stay_date': stay_date,
+        'rate_mad': str(round(rate_mad)), 'rate_eur': str(round(rate_mad / 10.8)),
+        'source': 'manual_override', 'data_quality': 'manual_override',
+        'rooms_left': '', 'availability_signal': 'available',
+        'scrape_status': 'success',
+    }
+    fieldnames = [
+        'hotel_id', 'hotel_name', 'city', 'scrape_date', 'stay_date',
+        'rate_mad', 'rate_eur', 'source', 'data_quality', 'rooms_left',
+        'availability_signal', 'scrape_status',
+    ]
+    file_exists = os.path.exists(RATES_CSV_PATH)
+    with open(RATES_CSV_PATH, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
+
+    app.logger.info(f'Manual override: hotel {hotel_id} | {stay_date} | MAD {rate_mad} | {note}')
+    return jsonify({'status': 'saved', 'row': row})
+
+
+@app.route('/api/financials/<hotel_id>')
+@login_required
+def api_financials(hotel_id):
+    try:
+        hotels_df, perf_df, merged = load_data()
+        h_row = merged[merged['id'].astype(str) == str(hotel_id)]
+        if h_row.empty:
+            return jsonify({'error': 'Hotel not found'}), 404
+
+        h         = h_row.iloc[0]
+        hotel     = h.to_dict()
+        occupancy = float(h.get('occupancy', 0) or 0)
+        adr_mad   = float(h.get('adr_mad', 0) or 0)
+
+        # Prefer scraped BAR rate if available (latest scrape_date, nearest stay_date)
+        rows = _read_rates_csv()
+        live_rows = [r for r in rows
+                     if str(r.get('hotel_id', '')) == str(hotel_id)
+                     and r.get('source', '') in {'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+                     and r.get('rate_mad')]
+        if live_rows:
+            live_rows.sort(key=lambda r: (r.get('scrape_date', ''), r.get('stay_date', '')), reverse=True)
+            try:
+                adr_mad = float(live_rows[0]['rate_mad'])
+            except Exception:
+                pass
+
+        financials = compute_hotel_financials(hotel, occupancy, adr_mad)
+        financials['hotel_id']   = hotel_id
+        financials['hotel_name'] = h.get('name', '')
+        financials['occupancy']  = occupancy
+        financials['adr_used']   = adr_mad
+        financials['adr_source'] = 'live_scrape' if live_rows else 'kodo_estimate'
+        return jsonify(financials)
+    except Exception as e:
+        app.logger.error(f'Financials error for {hotel_id}: {e}', exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/scraper/download-rates')
+@login_required
+def api_scraper_download_rates():
+    if not admin_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+    if not os.path.exists(RATES_CSV_PATH):
+        return jsonify({'error': 'No rates file yet'}), 404
+    return send_file(RATES_CSV_PATH, mimetype='text/csv',
+                     as_attachment=True, download_name='kodo_scraped_rates.csv')
 
 
 if __name__ == "__main__":

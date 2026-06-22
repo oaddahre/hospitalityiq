@@ -370,6 +370,75 @@
 
     <hr style="border:none;border-top:1px solid var(--border);margin-bottom:28px">
 
+    <!-- ── Rate Intelligence section ── -->
+    <div style="margin-bottom:32px" id="rate-intel-section">
+      <div class="toolbar" style="margin-bottom:16px">
+        <span class="toolbar-title">Rate Intelligence</span>
+        <div style="display:flex;gap:8px">
+          <button class="new-btn" onclick="runScraper()" id="run-scraper-btn">▶ Run Scraper Now</button>
+          <a class="new-btn" style="text-decoration:none" href="/api/scraper/download-rates">↓ Download CSV</a>
+        </div>
+      </div>
+
+      <!-- Status row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px" id="scraper-status-grid">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Scraper Status</div>
+          <div style="font-size:14px;font-weight:600" id="ri-status">—</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:3px" id="ri-last-run">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Hotels with Live Data</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green)" id="ri-live-count">—</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:3px">today</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Hotels Estimated Only</div>
+          <div style="font-size:22px;font-weight:700;color:var(--amber)" id="ri-est-count">—</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:3px">today</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Source Breakdown</div>
+          <div style="font-size:11px;color:var(--text);line-height:1.9" id="ri-sources">—</div>
+        </div>
+      </div>
+
+      <!-- Manual rate override -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:14px">Manual Rate Override</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;align-items:end">
+          <div>
+            <label style="display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px">Hotel</label>
+            <select id="ri-hotel-sel" style="width:100%;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:var(--font)">
+              <option value="">Select hotel…</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px">Stay Date</label>
+            <input type="date" id="ri-stay-date" style="width:100%;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:var(--font)" />
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px">Rate (MAD)</label>
+            <input type="number" id="ri-rate-mad" placeholder="e.g. 2500" style="width:100%;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:var(--font)" />
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px">Note</label>
+            <input type="text" id="ri-note" placeholder="Optional note" style="width:100%;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:var(--font)" />
+          </div>
+          <button onclick="submitOverride()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">Save</button>
+        </div>
+        <div id="ri-override-msg" style="font-size:12px;margin-top:8px;display:none"></div>
+      </div>
+
+      <!-- Scraper log -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px">Scraper Log (last 30 lines)</div>
+        <pre id="ri-log" style="font-size:10px;color:var(--text-muted);background:var(--surface2);border-radius:6px;padding:12px;max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.6;margin:0">Loading…</pre>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:28px">
+
     <!-- ── User & Org Management section ── -->
     <div style="margin-bottom:32px">
       <!-- Tab bar -->
@@ -571,6 +640,8 @@
     loadHotelsForDI();
     loadRecentUploads();
     loadUsers();
+    loadScraperStatus();
+    populateHotelSelect();
   }
 
   // ── CRUD ──────────────────────────────────────────
@@ -1137,6 +1208,111 @@
   }
 
   function closeOrgMembers() { document.getElementById('org-members-panel').style.display = 'none'; }
+
+  // ── Rate Intelligence ──────────────────────────────────────────────────────
+
+  async function loadScraperStatus() {
+    try {
+      const res  = await fetch('/api/scraper/status', { headers: { 'X-Admin-Password': adminPwd } });
+      const data = await res.json();
+
+      const statusEl = document.getElementById('ri-status');
+      if (data.scheduler_running) {
+        statusEl.textContent = 'Scheduler Active';
+        statusEl.style.color = 'var(--green)';
+      } else {
+        statusEl.textContent = 'Scheduler Off';
+        statusEl.style.color = 'var(--amber)';
+      }
+      document.getElementById('ri-last-run').textContent = data.last_run
+        ? `Last run: ${data.last_run.replace('T', ' ').slice(0,19)}`
+        : 'Never run';
+      document.getElementById('ri-live-count').textContent = data.hotels_with_live ?? '—';
+      document.getElementById('ri-est-count').textContent  = data.hotels_estimated ?? '—';
+
+      const srcEl = document.getElementById('ri-sources');
+      const src = data.source_breakdown || {};
+      srcEl.innerHTML = Object.entries(src)
+        .map(([k,v]) => `<span style="color:var(--text-muted)">${k}:</span> <strong>${v}</strong>`)
+        .join(' &nbsp;|&nbsp; ') || '—';
+
+      document.getElementById('ri-log').textContent = data.log_tail || '(no log yet)';
+    } catch (e) {
+      document.getElementById('ri-log').textContent = 'Error loading status';
+    }
+  }
+
+  async function populateHotelSelect() {
+    try {
+      const res    = await fetch('/api/hotels', { headers: { 'X-Admin-Password': adminPwd } });
+      const hotels = await res.json();
+      const sel    = document.getElementById('ri-hotel-sel');
+      (hotels.hotels || hotels).forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        opt.textContent = `${h.name} (${h.city})`;
+        sel.appendChild(opt);
+      });
+    } catch (e) {}
+  }
+
+  async function runScraper() {
+    const btn = document.getElementById('run-scraper-btn');
+    btn.disabled = true;
+    btn.textContent = 'Starting…';
+    try {
+      const res  = await fetch('/api/scraper/run', {
+        method: 'POST',
+        headers: { 'X-Admin-Password': adminPwd },
+      });
+      const data = await res.json();
+      btn.textContent = data.status === 'started' ? '✓ Started' : '✗ Error';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Run Scraper Now'; }, 3000);
+    } catch (e) {
+      btn.textContent = '✗ Error';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Run Scraper Now'; }, 2000);
+    }
+  }
+
+  async function submitOverride() {
+    const hotelId  = document.getElementById('ri-hotel-sel').value;
+    const stayDate = document.getElementById('ri-stay-date').value;
+    const rateMad  = document.getElementById('ri-rate-mad').value;
+    const note     = document.getElementById('ri-note').value;
+    const msgEl    = document.getElementById('ri-override-msg');
+
+    if (!hotelId || !stayDate || !rateMad) {
+      msgEl.textContent = 'Hotel, date, and rate are required.';
+      msgEl.style.color = 'var(--red)';
+      msgEl.style.display = '';
+      return;
+    }
+
+    try {
+      const res  = await fetch('/api/scraper/override', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+        body: JSON.stringify({ hotel_id: hotelId, stay_date: stayDate, rate_mad: +rateMad, note }),
+      });
+      const data = await res.json();
+      if (data.status === 'saved') {
+        msgEl.textContent   = `✓ Saved — MAD ${rateMad} on ${stayDate}`;
+        msgEl.style.color   = 'var(--green)';
+        msgEl.style.display = '';
+        document.getElementById('ri-rate-mad').value  = '';
+        document.getElementById('ri-note').value      = '';
+      } else {
+        msgEl.textContent   = data.error || 'Error saving override';
+        msgEl.style.color   = 'var(--red)';
+        msgEl.style.display = '';
+      }
+    } catch (e) {
+      msgEl.textContent   = 'Network error';
+      msgEl.style.color   = 'var(--red)';
+      msgEl.style.display = '';
+    }
+  }
+
 
 </script>
 </body>

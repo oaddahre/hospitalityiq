@@ -6,3 +6,7 @@ __pycache__/
 .claude/settings.local.json
 users.json
 organisations.json
+scraped_rates.csv
+scraper_log.json
+scraper_log.txt
+scraper_progress.json

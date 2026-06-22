@@ -846,10 +846,73 @@
           </div>
         </div>
 
-        <!-- Estimated financials -->
+        <!-- Section A: Live Rate Intelligence — BAR Calendar -->
+        <div class="table-card" id="hotel-rates-section" style="margin-bottom:20px">
+          <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
+            <span class="table-title">Best Available Rate · Next 30 Days</span>
+            <span class="rate-source-badge" id="hrate-source-badge">Loading…</span>
+          </div>
+          <div id="hrate-calendar" class="bar-calendar">
+            <div class="bar-cal-loading">Loading rate data…</div>
+          </div>
+          <div class="bar-cal-legend">
+            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-google"></span>Live Google</span>
+            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-brand"></span>Live Brand</span>
+            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-booking"></span>Live Booking</span>
+            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-estimated"></span>Kōdō Estimate</span>
+            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>Unavailable</span>
+          </div>
+          <p class="hotel-fin-disc" id="hrate-updated">Updates daily at 3:00 AM Morocco time</p>
+        </div>
+
+        <!-- Section B: Detailed Financial Model -->
+        <div class="table-card" id="hotel-fin-model-section" style="margin-bottom:20px;display:none">
+          <div class="table-card-header">
+            <span class="table-title">Estimated Annual Financials · Kōdō Model</span>
+            <span class="rate-source-badge" id="hfin-adr-source">Kōdō Estimate</span>
+          </div>
+          <div class="hotel-type-badge-row">
+            <span class="hotel-type-label">Hotel Type:</span>
+            <span class="hotel-type-val" id="hfin-hotel-type">—</span>
+          </div>
+          <table class="fin-model-table">
+            <thead>
+              <tr><th>Revenue Stream</th><th>Amount (MAD)</th><th>% of Total</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Rooms Revenue</td><td id="hfm-rooms">—</td><td id="hfm-rooms-pct">—</td></tr>
+              <tr><td>F&amp;B Revenue</td><td id="hfm-fb">—</td><td id="hfm-fb-pct">—</td></tr>
+              <tr><td>Other Revenue</td><td id="hfm-other">—</td><td id="hfm-other-pct">—</td></tr>
+              <tr class="fin-model-total"><td>Total Revenue</td><td id="hfm-total">—</td><td>100%</td></tr>
+              <tr class="fin-model-ebitda"><td>EBITDA</td><td id="hfm-ebitda">—</td><td id="hfm-ebitda-pct">—</td></tr>
+            </tbody>
+          </table>
+          <div class="fin-model-asset-row">
+            <div class="fin-model-asset-item">
+              <div class="fin-model-asset-val" id="hfm-asset-val">—</div>
+              <div class="fin-model-asset-lbl">Est. Asset Value</div>
+            </div>
+            <div class="fin-model-asset-item">
+              <div class="fin-model-asset-val" id="hfm-vpk-mad">—</div>
+              <div class="fin-model-asset-lbl">Value / Key (MAD)</div>
+            </div>
+            <div class="fin-model-asset-item">
+              <div class="fin-model-asset-val" id="hfm-vpk-eur">—</div>
+              <div class="fin-model-asset-lbl">Value / Key (EUR)</div>
+            </div>
+            <div class="fin-model-asset-item">
+              <div class="fin-model-asset-val" id="hfm-cap-rate">—</div>
+              <div class="fin-model-asset-lbl">Cap Rate</div>
+            </div>
+          </div>
+          <p class="hotel-fin-disc">Kōdō model estimates — indicative only. Based on BAR scrape, Kōdō occupancy model, and industry revenue mix ratios calibrated for Morocco. Not for investment decisions.</p>
+        </div>
+
+        <!-- Section C: Kōdō Performance Estimates (existing, label updated) -->
         <div class="table-card" style="margin-bottom:20px">
           <div class="table-card-header">
-            <span class="table-title">Estimated annual financials · Kōdō model</span>
+            <span class="table-title">Kōdō Performance Estimates · 2025 FY</span>
+            <span class="rate-source-badge">Kōdō Estimate · Updated when operator data received</span>
           </div>
           <div class="hotel-fin-grid">
             <div class="hotel-fin-card">

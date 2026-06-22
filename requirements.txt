@@ -4,3 +4,10 @@ anthropic
 pandas
 python-dotenv
 fpdf2
+playwright
+serpapi
+apscheduler
+pytz
+requests
+beautifulsoup4
+lxml

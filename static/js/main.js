@@ -556,6 +556,10 @@ async function showHotelDetail(id) {
 
   // ── 8. Owner section ──
   renderOwnerSection(h);
+
+  // ── 9. Live Rate Intelligence ──
+  renderRateCalendar(h.id);
+  renderDetailedFinancials(h.id);
 }
 
 function renderHotelCityChart(h) {
@@ -704,6 +708,163 @@ function renderOwnerSection(h) {
     ctxEl.style.display   = 'none';
   }
 }
+
+// ─── Rate Intelligence ─────────────────────────────────────────────────────────
+
+const SOURCE_CLASS = {
+  live_google:     'src-live-google',
+  live_brand:      'src-live-brand',
+  live_booking:    'src-live-booking',
+  live_expedia:    'src-live-google',
+  manual_override: 'src-manual-override',
+  estimated:       'src-estimated',
+  unavailable:     'src-unavailable',
+};
+
+const SOURCE_LABEL = {
+  live_google:     'Google Hotels',
+  live_brand:      'Brand Direct',
+  live_booking:    'Booking.com',
+  live_expedia:    'Expedia',
+  manual_override: 'Manual Override',
+  estimated:       'Kōdō Estimate',
+  unavailable:     'Unavailable',
+};
+
+function fmtMadShort(v) {
+  if (!v) return '—';
+  const n = +v;
+  if (n >= 1000) return `${(n/1000).toFixed(1)}k`;
+  return String(Math.round(n));
+}
+
+function fmtMadLong(v) {
+  if (!v) return '—';
+  return `MAD ${(+v).toLocaleString()}`;
+}
+
+async function renderRateCalendar(hotelId) {
+  const calEl    = document.getElementById('hrate-calendar');
+  const badgeEl  = document.getElementById('hrate-source-badge');
+  const updEl    = document.getElementById('hrate-updated');
+
+  calEl.innerHTML = '<div class="bar-cal-loading">Loading rate data…</div>';
+
+  let data;
+  try {
+    const resp = await fetch(`/api/rates?hotel_id=${hotelId}&days=35`);
+    data = await resp.json();
+  } catch (e) {
+    calEl.innerHTML = '<div class="bar-cal-loading">Rate data unavailable</div>';
+    return;
+  }
+
+  const rates   = data.rates || [];
+  const sources = data.source_breakdown || {};
+
+  // Build a map stay_date → rate row (prefer live over estimated)
+  const rateMap = {};
+  for (const r of rates) {
+    const sd = r.stay_date;
+    if (!rateMap[sd]) {
+      rateMap[sd] = r;
+    } else {
+      const priority = {'live_google':5,'live_brand':5,'live_expedia':5,'manual_override':4,'live_booking':3,'estimated':1,'unavailable':0};
+      if ((priority[r.source]||0) > (priority[rateMap[sd].source]||0)) rateMap[sd] = r;
+    }
+  }
+
+  // Generate next 30 days
+  const today = new Date();
+  const cells  = [];
+  for (let i = 1; i <= 30; i++) {
+    const d   = new Date(today); d.setDate(today.getDate() + i);
+    const iso = d.toISOString().split('T')[0];
+    const r   = rateMap[iso] || null;
+    cells.push({ iso, d, r });
+  }
+
+  // Dominant source for badge
+  let dominantSrc = 'estimated';
+  let maxCount = 0;
+  for (const [src, cnt] of Object.entries(sources)) {
+    if (cnt > maxCount && src !== 'unavailable') { maxCount = cnt; dominantSrc = src; }
+  }
+  badgeEl.textContent = `Source: ${SOURCE_LABEL[dominantSrc] || dominantSrc}`;
+
+  if (data.last_scraped) {
+    updEl.textContent = `Last updated: ${data.last_scraped} · Updates daily at 3:00 AM`;
+  }
+
+  // Build grid
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = '';
+  for (const { iso, d, r } of cells) {
+    const src      = r ? r.source : 'unavailable';
+    const cls      = SOURCE_CLASS[src] || 'src-estimated';
+    const rateMAD  = r && r.rate_mad ? +r.rate_mad : null;
+    const rateDisp = rateMAD ? fmtMadShort(rateMAD) : '—';
+    const roomsLeft = r && r.rooms_left ? `<br>Rooms left: ${r.rooms_left}` : '';
+    const tip = `${iso}<br>Rate: ${rateMAD ? fmtMadLong(rateMAD) : 'Unavailable'}<br>Source: ${SOURCE_LABEL[src]||src}${roomsLeft}`;
+    html += `<div class="bar-cal-day ${cls}" title="">
+      <div class="bar-cal-dn">${DAYS[d.getDay()]} ${d.getDate()}</div>
+      <div class="bar-cal-rate">${rateDisp}</div>
+      <div class="bar-cal-tip">${tip}</div>
+    </div>`;
+  }
+  calEl.innerHTML = html;
+}
+
+function fmMad(n) {
+  if (!n) return '—';
+  n = +n;
+  if (n >= 1_000_000_000) return `MAD ${(n/1e9).toFixed(1)}B`;
+  if (n >= 1_000_000)     return `MAD ${(n/1e6).toFixed(1)}M`;
+  return `MAD ${Math.round(n).toLocaleString()}`;
+}
+
+async function renderDetailedFinancials(hotelId) {
+  const section = document.getElementById('hotel-fin-model-section');
+  section.style.display = 'none';
+
+  let fin;
+  try {
+    const resp = await fetch(`/api/financials/${hotelId}`);
+    if (!resp.ok) return;
+    fin = await resp.json();
+  } catch (e) { return; }
+
+  const TYPE_LABELS = {
+    city_business:    'City Business Hotel',
+    beach_resort:     'Beach & Resort Hotel',
+    cultural_leisure: 'Cultural & Leisure Hotel',
+    riad_boutique:    'Riad & Boutique Hotel',
+  };
+
+  document.getElementById('hfin-hotel-type').textContent = TYPE_LABELS[fin.hotel_type] || fin.hotel_type;
+  document.getElementById('hfin-adr-source').textContent =
+    fin.adr_source === 'live_scrape' ? 'Live BAR Rate' : 'Kōdō Estimate';
+
+  document.getElementById('hfm-rooms').textContent     = fmMad(fin.rooms_revenue_mad);
+  document.getElementById('hfm-rooms-pct').textContent = `${fin.rooms_pct}%`;
+  document.getElementById('hfm-fb').textContent        = fmMad(fin.fb_revenue_mad);
+  document.getElementById('hfm-fb-pct').textContent    = `${fin.fb_pct}%`;
+  document.getElementById('hfm-other').textContent     = fmMad(fin.other_revenue_mad);
+  document.getElementById('hfm-other-pct').textContent = `${fin.other_pct}%`;
+  document.getElementById('hfm-total').textContent     = fmMad(fin.total_revenue_mad);
+  document.getElementById('hfm-ebitda').textContent    = fmMad(fin.ebitda_mad);
+  document.getElementById('hfm-ebitda-pct').textContent= `${fin.ebitda_margin_pct}% margin`;
+
+  document.getElementById('hfm-asset-val').textContent = fmMad(fin.asset_value_mad);
+  document.getElementById('hfm-vpk-mad').textContent   = fmMad(fin.value_per_key_mad);
+  document.getElementById('hfm-vpk-eur').textContent   = fin.value_per_key_eur
+    ? `EUR ${(+fin.value_per_key_eur).toLocaleString()}`
+    : '—';
+  document.getElementById('hfm-cap-rate').textContent  = fin.cap_rate_pct ? `${fin.cap_rate_pct}%` : '—';
+
+  section.style.display = '';
+}
+
 
 // ─── Map ──────────────────────────────────────────────────────────
 
