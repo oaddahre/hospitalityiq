@@ -104,7 +104,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 213,Sahara Regency Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Sahara Regency,Independent,100,2018,Operating,23.6834,-15.9527,Undisclosed,verified
 217,Hotel Rif Nador,Nador,Oriental,Upscale,Hotel Rif,Independent,100,1995,Operating,35.1712,-2.9329,Undisclosed,verified
 218,Atlas Nador,Nador,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,85,2010,Operating,35.1712,-2.9289,Undisclosed,verified
-224,Amphitrite Palace Hotel,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Amphitrite Palace,Independent Luxury,420,2008,Operating,33.8512,-6.9178,Undisclosed,verified
+224,Amphitrite Palace Hotel,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Amphitrite Palace,Independent Luxury,176,2008,Operating,33.8512,-6.9178,Undisclosed,verified
 225,Zelis Hotel Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upper Upscale,Zelis,Independent,65,2010,Operating,35.4689,-6.0334,Undisclosed,verified
 226,Hotel Patio de la Luna Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upscale,Patio de la Luna,Independent,20,2008,Operating,35.4667,-6.0312,Undisclosed,verified
 232,Kasbah Bab Ourika Marrakech,Marrakech,Marrakech-Safi,Luxury,Kasbah Bab Ourika,Independent Luxury,42,2010,Operating,31.4601,-7.7001,Undisclosed,verified
