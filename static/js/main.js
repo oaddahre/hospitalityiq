@@ -2534,17 +2534,29 @@ function buildCalMap(view, prefix, map) {
 
 function adrCellStyle(adr) {
   const dark = !document.body.classList.contains('light');
-  if (adr < 4000) return dark ? {bg:'#141414',col:'#888888'} : {bg:'#FFFFFF',col:'#888888'};
-  if (adr < 6000) return dark ? {bg:'#1E1210',col:'#B87860'} : {bg:'#FAF0EC',col:'#A06848'};
-  return dark ? {bg:'#261510',col:'#B87860'} : {bg:'#F5E8E0',col:'#804030'};
+  if (dark) {
+    if (adr >= 6000) return {bg:'#B87860', col:'#0A0A0A', fw:'600', border:''};
+    if (adr >= 4000) return {bg:'#6B4838', col:'#F0EDE6', fw:'500', border:''};
+    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #B87860'};
+  } else {
+    if (adr >= 6000) return {bg:'#F5EDE8', col:'#6B3828', fw:'600', border:'1px solid #A06848'};
+    if (adr >= 4000) return {bg:'#FAF2EE', col:'#A06848', fw:'', border:'1px solid #C88870'};
+    return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
+  }
 }
 
 function occCellStyle(occ) {
   const dark = !document.body.classList.contains('light');
   const p = occ * 100;
-  if (p < 60) return dark ? {bg:'#141414',col:'#888888'} : {bg:'#FFFFFF',col:'#888888'};
-  if (p < 80) return dark ? {bg:'#101810',col:'#5A8A5A'} : {bg:'#F2F8EC',col:'#3D6B2A'};
-  return dark ? {bg:'#142014',col:'#5A8A5A'} : {bg:'#EAF3E0',col:'#2A4A1A'};
+  if (dark) {
+    if (p >= 80) return {bg:'#C8922A', col:'#0A0A0A', fw:'600', border:''};
+    if (p >= 60) return {bg:'#7A5818', col:'#F0EDE6', fw:'500', border:''};
+    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #7A5818'};
+  } else {
+    if (p >= 80) return {bg:'#FDF3E0', col:'#6B4A10', fw:'600', border:'1px solid #C8922A'};
+    if (p >= 60) return {bg:'#FEF8EE', col:'#8B6820', fw:'', border:'1px solid #E0B860'};
+    return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
+  }
 }
 
 function renderBenchCalendar(calType) {
@@ -2579,10 +2591,13 @@ function renderBenchCalendar(calType) {
         ? Math.round(d.adr).toLocaleString('en')
         : (d.occupancy * 100).toFixed(0) + '%';
       const tip = `${dateStr}|${Math.round(d.adr)}|${(d.occupancy*100).toFixed(1)}|${Math.round(d.revpar)}`;
+      const dark = !document.body.classList.contains('light');
+      const dayNumCol = dark ? '#888888' : '#AAAAAA';
+      const styAttr = `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}`;
       html += `<div class="bench-cal-day${isWknd ? ' bench-cal-weekend' : ''}"
-        style="background:${sty.bg};color:${sty.col}"
+        style="${styAttr}"
         data-btip="${tip}">
-        <span class="bench-cal-daynum">${day}</span>
+        <span class="bench-cal-daynum" style="color:${dayNumCol};opacity:1">${day}</span>
         <span class="bench-cal-dayval">${dispVal}</span>
       </div>`;
     } else {
