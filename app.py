@@ -2440,9 +2440,20 @@ def api_scraper_download_rates():
     if not admin_ok():
         return jsonify({'error': 'Unauthorized'}), 401
     if not os.path.exists(RATES_CSV_PATH):
-        return jsonify({'error': 'No rates file yet'}), 404
+        return jsonify({'status': 'no rates found — scraper has not run yet'})
     return send_file(RATES_CSV_PATH, mimetype='text/csv',
                      as_attachment=True, download_name='kodo_scraped_rates.csv')
+
+
+@app.route('/api/scraper/download-log')
+@login_required
+def api_scraper_download_log():
+    if not admin_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+    if not os.path.exists(SCRAPER_LOG_PATH):
+        return jsonify({'status': 'no log found — scraper has not run yet'})
+    return send_file(SCRAPER_LOG_PATH, mimetype='application/json',
+                     as_attachment=True, download_name='kodo_scraper_log.json')
 
 
 if __name__ == "__main__":
