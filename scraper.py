@@ -1,10 +1,14 @@
-import os, csv, json, time, random, logging, re
+import os, csv, json, time, random, logging, re, subprocess, sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote as url_quote
 
 import pytz
 import requests
+
+from occupancy_model import (
+    EUR_TO_MAD, REVENUE_MIX, EBITDA_MARGINS, CAP_RATES, classify_hotel_type,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,7 +22,6 @@ logger = logging.getLogger('kodo_scraper')
 
 MOROCCO_TZ  = pytz.timezone('Africa/Casablanca')
 SERPAPI_KEY = os.environ.get('SERPAPI_KEY', '')
-EUR_TO_MAD  = 10.8
 HOTELS_CSV  = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'hotels.csv')
 RATES_CSV   = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scraped_rates.csv')
 PROGRESS_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scraper_progress.json')
@@ -58,94 +61,6 @@ BRAND_SEARCH_PATTERNS = {
         'brands': ['Radisson Blu', 'Radisson', 'Park Inn'],
         'search_url': 'https://www.radissonhotels.com/en-us/search#countryCode=MA&checkInDate={checkin}&checkOutDate={checkout}&adults=2&rooms=1'
     },
-}
-
-# ─── HOTEL TYPE CLASSIFIER ────────────────────────────────────────────────────
-
-def classify_hotel_type(hotel):
-    city  = hotel.get('city', '')
-    name  = hotel.get('name', '').lower()
-    keys  = int(hotel.get('keys', 50) or 50)
-
-    resort_cities   = ['Agadir / Taghazout', 'Saidia', 'Dakhla', 'Tamuda Bay / Tétouan', 'Al Hoceima']
-    leisure_cities  = ['Marrakech', 'Fes', 'Chefchaouen', 'Essaouira', 'Ouarzazate', 'Merzouga', 'Asilah']
-    business_cities = ['Casablanca', 'Rabat / Salé / Témara', 'Tanger']
-    riad_signals    = ['riad', 'dar ', 'palais', 'kasbah', 'maison', 'camp', 'bivouac', 'lodge']
-
-    if any(signal in name for signal in riad_signals) or keys < 30:
-        return 'riad_boutique'
-    elif city in resort_cities:
-        return 'beach_resort'
-    elif city in leisure_cities:
-        return 'cultural_leisure'
-    elif city in business_cities:
-        return 'city_business'
-    else:
-        return 'city_business'
-
-# ─── REVENUE MIX RATIOS by segment × hotel_type ──────────────────────────────
-
-REVENUE_MIX = {
-    'city_business': {
-        'Ultra Luxury':  {'rooms': 0.58, 'fb': 0.28, 'other': 0.14},
-        'Luxury':        {'rooms': 0.62, 'fb': 0.25, 'other': 0.13},
-        'Upper Upscale': {'rooms': 0.72, 'fb': 0.18, 'other': 0.10},
-        'Upscale':       {'rooms': 0.80, 'fb': 0.14, 'other': 0.06},
-        'Midscale':      {'rooms': 0.88, 'fb': 0.09, 'other': 0.03},
-        'Economy':       {'rooms': 0.92, 'fb': 0.06, 'other': 0.02},
-    },
-    'beach_resort': {
-        'Ultra Luxury':  {'rooms': 0.38, 'fb': 0.32, 'other': 0.30},
-        'Luxury':        {'rooms': 0.42, 'fb': 0.30, 'other': 0.28},
-        'Upper Upscale': {'rooms': 0.48, 'fb': 0.28, 'other': 0.24},
-        'Upscale':       {'rooms': 0.55, 'fb': 0.25, 'other': 0.20},
-        'Midscale':      {'rooms': 0.65, 'fb': 0.22, 'other': 0.13},
-        'Economy':       {'rooms': 0.78, 'fb': 0.15, 'other': 0.07},
-    },
-    'cultural_leisure': {
-        'Ultra Luxury':  {'rooms': 0.42, 'fb': 0.30, 'other': 0.28},
-        'Luxury':        {'rooms': 0.48, 'fb': 0.28, 'other': 0.24},
-        'Upper Upscale': {'rooms': 0.55, 'fb': 0.25, 'other': 0.20},
-        'Upscale':       {'rooms': 0.65, 'fb': 0.22, 'other': 0.13},
-        'Midscale':      {'rooms': 0.75, 'fb': 0.18, 'other': 0.07},
-        'Economy':       {'rooms': 0.85, 'fb': 0.12, 'other': 0.03},
-    },
-    'riad_boutique': {
-        'Ultra Luxury':  {'rooms': 0.68, 'fb': 0.22, 'other': 0.10},
-        'Luxury':        {'rooms': 0.72, 'fb': 0.20, 'other': 0.08},
-        'Upper Upscale': {'rooms': 0.78, 'fb': 0.16, 'other': 0.06},
-        'Upscale':       {'rooms': 0.82, 'fb': 0.14, 'other': 0.04},
-        'Midscale':      {'rooms': 0.88, 'fb': 0.10, 'other': 0.02},
-        'Economy':       {'rooms': 0.92, 'fb': 0.06, 'other': 0.02},
-    },
-}
-
-# ─── EBITDA MARGINS by segment × hotel_type ──────────────────────────────────
-
-EBITDA_MARGINS = {
-    'city_business': {
-        'Ultra Luxury': 0.30, 'Luxury': 0.32, 'Upper Upscale': 0.28,
-        'Upscale': 0.25, 'Midscale': 0.22, 'Economy': 0.18,
-    },
-    'beach_resort': {
-        'Ultra Luxury': 0.35, 'Luxury': 0.37, 'Upper Upscale': 0.33,
-        'Upscale': 0.30, 'Midscale': 0.26, 'Economy': 0.22,
-    },
-    'cultural_leisure': {
-        'Ultra Luxury': 0.33, 'Luxury': 0.35, 'Upper Upscale': 0.30,
-        'Upscale': 0.27, 'Midscale': 0.24, 'Economy': 0.20,
-    },
-    'riad_boutique': {
-        'Ultra Luxury': 0.38, 'Luxury': 0.40, 'Upper Upscale': 0.35,
-        'Upscale': 0.35, 'Midscale': 0.28, 'Economy': 0.22,
-    },
-}
-
-# ─── CAP RATES by segment ─────────────────────────────────────────────────────
-
-CAP_RATES = {
-    'Ultra Luxury': 0.060, 'Luxury': 0.065, 'Upper Upscale': 0.070,
-    'Upscale': 0.075, 'Midscale': 0.085, 'Economy': 0.090,
 }
 
 # ─── FINANCIAL MODEL ─────────────────────────────────────────────────────────
@@ -549,6 +464,15 @@ class KodoScraper:
             json.dump(self.stats, f, indent=2)
 
         logger.info(f'Done — {self.stats["scraped"]} scraped, {self.stats["failed"]} failed')
+
+        # Trigger occupancy model after scraping completes
+        try:
+            occ_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'occupancy_model.py')
+            subprocess.Popen([sys.executable, occ_path])
+            logger.info('Occupancy model triggered after scraping')
+        except Exception as e:
+            logger.warning(f'Could not trigger occupancy model: {e}')
+
         return self.stats
 
 

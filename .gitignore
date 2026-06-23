@@ -10,3 +10,5 @@ scraped_rates.csv
 scraper_log.json
 scraper_log.txt
 scraper_progress.json
+estimated_occupancy.csv
+calibration_results.json

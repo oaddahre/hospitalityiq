@@ -19,14 +19,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ─── Scraper helpers (graceful import) ───────────────────────────────────────
+# ─── Scraper / occupancy model helpers (graceful import) ─────────────────────
 try:
-    from scraper import compute_hotel_financials, classify_hotel_type
+    from scraper import compute_hotel_financials
+    from occupancy_model import OccupancyModel, estimate_occupancy, classify_hotel_type
     SCRAPER_MODULE_OK = True
 except Exception:
     SCRAPER_MODULE_OK = False
     def compute_hotel_financials(*a, **kw): return {}
     def classify_hotel_type(*a, **kw): return 'city_business'
+    OccupancyModel = None
+    def estimate_occupancy(*a, **kw): return 0.60, {}
 
 try:
     from playwright.sync_api import sync_playwright
@@ -79,12 +82,24 @@ try:
         subprocess.Popen([sys.executable, scraper_path])
         app.logger.info('Daily rate scraper triggered by scheduler')
 
+    def _scheduled_occ_model():
+        occ_path = os.path.join(DATA_DIR, 'occupancy_model.py')
+        subprocess.Popen([sys.executable, occ_path])
+        app.logger.info('Occupancy model triggered by scheduler')
+
     _scheduler = BackgroundScheduler(timezone=_tz.timezone('Africa/Casablanca'))
     _scheduler.add_job(
         func=_scheduled_scraper,
         trigger='cron',
         hour=3, minute=0,
         id='daily_rate_scraper',
+        replace_existing=True,
+    )
+    _scheduler.add_job(
+        func=_scheduled_occ_model,
+        trigger='cron',
+        hour=4, minute=0,
+        id='daily_occ_model',
         replace_existing=True,
     )
     _scheduler.start()
@@ -2175,6 +2190,7 @@ RATES_CSV_PATH    = os.path.join(DATA_DIR, 'scraped_rates.csv')
 SCRAPER_LOG_PATH  = os.path.join(DATA_DIR, 'scraper_log.json')
 PROGRESS_PATH     = os.path.join(DATA_DIR, 'scraper_progress.json')
 SCRAPER_LOG_TXT   = os.path.join(DATA_DIR, 'scraper_log.txt')
+OCCUPANCY_CSV_PATH = os.path.join(DATA_DIR, 'estimated_occupancy.csv')
 
 
 def _read_rates_csv():
@@ -2454,6 +2470,194 @@ def api_scraper_download_log():
         return jsonify({'status': 'no log found — scraper has not run yet'})
     return send_file(SCRAPER_LOG_PATH, mimetype='application/json',
                      as_attachment=True, download_name='kodo_scraper_log.json')
+
+
+# ─── Occupancy Model API ──────────────────────────────────────────────────────
+
+def _read_occupancy_csv():
+    rows = []
+    if not os.path.exists(OCCUPANCY_CSV_PATH):
+        return rows
+    try:
+        with open(OCCUPANCY_CSV_PATH, 'r', encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+    except Exception:
+        pass
+    return rows
+
+
+@app.route('/api/occupancy/<hotel_id>')
+@login_required
+def api_occupancy_hotel(hotel_id):
+    try:
+        rows = _read_occupancy_csv()
+        hotel_rows = [r for r in rows if r.get('hotel_id') == str(hotel_id)]
+
+        if not hotel_rows:
+            # Fall back to live estimation if no pre-computed data
+            if not SCRAPER_MODULE_OK or OccupancyModel is None:
+                return jsonify({'error': 'Occupancy model not available'}), 503
+            hotels_df, perf_df, merged = load_data()
+            h_row = merged[merged['id'].astype(str) == str(hotel_id)]
+            if h_row.empty:
+                return jsonify({'error': 'Hotel not found'}), 404
+            h          = h_row.iloc[0].to_dict()
+            model      = OccupancyModel()
+            today      = datetime.utcnow()
+            estimates  = []
+            for offset in range(1, 31):
+                stay_dt  = today + timedelta(days=offset)
+                stay_str = stay_dt.strftime('%Y-%m-%d')
+                scraped_bar, rooms_left = model.get_scraped_data_for_date(str(hotel_id), stay_str)
+                baseline_adr = float(h.get('adr_mad', 0) or 0)
+                occ, breakdown = estimate_occupancy(
+                    h, stay_dt,
+                    scraped_bar=scraped_bar,
+                    rooms_left=rooms_left,
+                    baseline_adr=baseline_adr,
+                )
+                adr_used     = scraped_bar or baseline_adr
+                est_revpar   = round(adr_used * occ, 0) if adr_used else None
+                estimates.append({
+                    'date':                stay_str,
+                    'estimated_occupancy': round(occ * 100, 1),
+                    'scraped_bar':         round(scraped_bar, 0) if scraped_bar else None,
+                    'estimated_revpar':    est_revpar,
+                    'confidence':          breakdown['confidence'],
+                    'breakdown':           breakdown,
+                })
+            hotel_name  = h.get('name', '')
+            model_run   = today.strftime('%Y-%m-%d')
+        else:
+            hotel_rows.sort(key=lambda r: r.get('date', ''))
+            hotel_name = hotel_rows[0].get('hotel_name', '') if hotel_rows else ''
+            model_run  = hotel_rows[0].get('model_run_date', '') if hotel_rows else ''
+            estimates  = []
+            for r in hotel_rows:
+                estimates.append({
+                    'date':                r.get('date'),
+                    'estimated_occupancy': float(r.get('estimated_occupancy', 0)),
+                    'scraped_bar':         float(r['scraped_bar']) if r.get('scraped_bar') else None,
+                    'estimated_revpar':    float(r['estimated_revpar']) if r.get('estimated_revpar') else None,
+                    'confidence':          r.get('confidence', 'low'),
+                    'breakdown': {
+                        'base':                    float(r.get('base_occ', 0)),
+                        'rate_adjustment':         float(r.get('rate_adj', 0)),
+                        'dow_adjustment':          float(r.get('dow_adj', 0)),
+                        'seasonality_adjustment':  float(r.get('season_adj', 0)),
+                        'availability_adjustment': float(r.get('avail_adj', 0)),
+                        'event_adjustment':        float(r.get('event_adj', 0)),
+                    },
+                })
+
+        occs   = [e['estimated_occupancy'] for e in estimates]
+        revs   = [e['estimated_revpar'] for e in estimates if e.get('estimated_revpar')]
+        avg_occ   = round(sum(occs) / len(occs), 1) if occs else None
+        avg_revpar = round(sum(revs) / len(revs), 0) if revs else None
+        conf_counts = {'high': 0, 'medium': 0, 'low': 0}
+        for e in estimates:
+            conf_counts[e.get('confidence', 'low')] = conf_counts.get(e.get('confidence', 'low'), 0) + 1
+
+        return jsonify({
+            'hotel_id':          hotel_id,
+            'hotel_name':        hotel_name,
+            'estimates':         estimates,
+            'avg_occupancy_30d': avg_occ,
+            'avg_revpar_30d':    avg_revpar,
+            'confidence_counts': conf_counts,
+            'model_run_date':    model_run,
+        })
+    except Exception as e:
+        app.logger.error(f'Occupancy hotel error {hotel_id}: {e}', exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/occupancy/city/<path:city>')
+@login_required
+def api_occupancy_city(city):
+    try:
+        rows = _read_occupancy_csv()
+        city_rows = [r for r in rows if r.get('city') == city]
+
+        by_date: dict = {}
+        by_seg: dict  = {}
+        for r in city_rows:
+            d   = r.get('date', '')
+            seg = r.get('category', 'Unknown')
+            occ = float(r.get('estimated_occupancy', 0))
+            if d:
+                if d not in by_date:
+                    by_date[d] = []
+                by_date[d].append(occ)
+            if seg not in by_seg:
+                by_seg[seg] = []
+            by_seg[seg].append(occ)
+
+        by_date_list = sorted([
+            {'date': d, 'avg_occupancy': round(sum(v) / len(v), 1)}
+            for d, v in by_date.items()
+        ], key=lambda x: x['date'])
+
+        all_occs = [o for lst in by_date.values() for o in lst]
+        avg_occ  = round(sum(all_occs) / len(all_occs), 1) if all_occs else None
+
+        model_run = city_rows[0].get('model_run_date', '') if city_rows else ''
+
+        return jsonify({
+            'city':              city,
+            'avg_occupancy_30d': avg_occ,
+            'by_segment':        {seg: round(sum(v)/len(v), 1) for seg, v in by_seg.items()},
+            'by_date':           by_date_list,
+            'model_run_date':    model_run,
+        })
+    except Exception as e:
+        app.logger.error(f'Occupancy city error {city}: {e}', exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/occupancy/run', methods=['POST'])
+@login_required
+def api_occupancy_run():
+    if not admin_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        occ_path = os.path.join(DATA_DIR, 'occupancy_model.py')
+        subprocess.Popen([sys.executable, occ_path])
+        return jsonify({'status': 'started', 'message': 'Occupancy model started in background'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/occupancy/status')
+@login_required
+def api_occupancy_status():
+    if not admin_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+    rows = _read_occupancy_csv()
+    if not rows:
+        return jsonify({
+            'has_data': False,
+            'model_run_date': None,
+            'total_estimates': 0,
+            'high_confidence': 0,
+            'medium_confidence': 0,
+            'low_confidence': 0,
+            'hotels_covered': 0,
+        })
+    model_run = rows[0].get('model_run_date', '') if rows else ''
+    hotels_covered = len({r.get('hotel_id') for r in rows})
+    high   = sum(1 for r in rows if r.get('confidence') == 'high')
+    medium = sum(1 for r in rows if r.get('confidence') == 'medium')
+    low    = sum(1 for r in rows if r.get('confidence') == 'low')
+    return jsonify({
+        'has_data':          True,
+        'model_run_date':    model_run,
+        'total_estimates':   len(rows),
+        'high_confidence':   high,
+        'medium_confidence': medium,
+        'low_confidence':    low,
+        'hotels_covered':    hotels_covered,
+    })
 
 
 if __name__ == "__main__":

@@ -395,7 +395,10 @@
         <div class="screen-header">
           <h1>Benchmarking</h1>
           <p class="screen-sub">Your performance vs competitive set · Powered by Kōdō</p>
-          <span class="bench-demo-badge">Demo mode — sample Marrakech luxury comp set</span>
+          <span class="bench-demo-badge" id="bench-mode-badge">Demo mode — sample Marrakech luxury comp set</span>
+        </div>
+        <div class="bench-freshness-bar" id="bench-freshness-bar">
+          <span id="bench-freshness-text">Demo mode — sample Marrakech luxury data</span>
         </div>
 
         <!-- Controls row: property selector + comp set builder -->
@@ -847,22 +850,43 @@
         </div>
 
         <!-- Section A: Live Rate Intelligence — BAR Calendar -->
-        <div class="table-card" id="hotel-rates-section" style="margin-bottom:20px">
-          <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
-            <span class="table-title">Best Available Rate · Next 30 Days</span>
-            <span class="rate-source-badge" id="hrate-source-badge">Loading…</span>
+        <!-- Dual calendar: BAR + Occupancy side by side -->
+        <div class="dual-cal-wrap" id="hotel-rates-section" style="margin-bottom:20px">
+          <!-- BAR Calendar -->
+          <div class="table-card dual-cal-card">
+            <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
+              <span class="table-title">Best Available Rate · Next 30 Days</span>
+              <span class="rate-source-badge" id="hrate-source-badge">Loading…</span>
+            </div>
+            <div id="hrate-calendar" class="bar-calendar">
+              <div class="bar-cal-loading">Loading rate data…</div>
+            </div>
+            <div class="bar-cal-legend">
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-google"></span>Live</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-estimated"></span>Estimate</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>N/A</span>
+            </div>
           </div>
-          <div id="hrate-calendar" class="bar-calendar">
-            <div class="bar-cal-loading">Loading rate data…</div>
+          <!-- Occupancy Calendar -->
+          <div class="table-card dual-cal-card">
+            <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
+              <span class="table-title">Estimated Occupancy · Next 30 Days</span>
+              <span class="rate-source-badge" id="hocc-model-badge">Kōdō Model</span>
+            </div>
+            <div id="hocc-calendar" class="bar-calendar">
+              <div class="bar-cal-loading">Loading occupancy data…</div>
+            </div>
+            <div class="bar-cal-legend">
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#C8922A"></span>&gt;80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#7A5818"></span>60–80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#444"></span>&lt;60%</span>
+            </div>
           </div>
-          <div class="bar-cal-legend">
-            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-google"></span>Live Google</span>
-            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-brand"></span>Live Brand</span>
-            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-booking"></span>Live Booking</span>
-            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-estimated"></span>Kōdō Estimate</span>
-            <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>Unavailable</span>
-          </div>
-          <p class="hotel-fin-disc" id="hrate-updated">Updates daily at 3:00 AM Morocco time</p>
+        </div>
+        <!-- 30-day averages bar -->
+        <div class="dual-cal-avg-bar" id="hotel-cal-averages" style="display:none;margin-bottom:20px">
+          <span id="hcal-avg-bar-text">—</span>
+          <span class="dual-cal-conf-note" id="hcal-conf-note">—</span>
         </div>
 
         <!-- Section B: Detailed Financial Model -->

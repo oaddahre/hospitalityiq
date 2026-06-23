@@ -559,6 +559,7 @@ async function showHotelDetail(id) {
 
   // ── 9. Live Rate Intelligence ──
   renderRateCalendar(h.id);
+  renderOccCalendar(h.id);
   renderDetailedFinancials(h.id);
 }
 
@@ -821,6 +822,85 @@ function fmMad(n) {
   if (n >= 1_000_000_000) return `MAD ${(n/1e9).toFixed(1)}B`;
   if (n >= 1_000_000)     return `MAD ${(n/1e6).toFixed(1)}M`;
   return `MAD ${Math.round(n).toLocaleString()}`;
+}
+
+async function renderOccCalendar(hotelId) {
+  const calEl   = document.getElementById('hocc-calendar');
+  const badgeEl = document.getElementById('hocc-model-badge');
+  const avgBar  = document.getElementById('hotel-cal-averages');
+  const avgText = document.getElementById('hcal-avg-bar-text');
+  const confEl  = document.getElementById('hcal-conf-note');
+
+  calEl.innerHTML = '<div class="bar-cal-loading">Loading occupancy data…</div>';
+
+  let data;
+  try {
+    const resp = await fetch(`/api/occupancy/${hotelId}`);
+    if (!resp.ok) { calEl.innerHTML = '<div class="bar-cal-loading">Occupancy data unavailable</div>'; return; }
+    data = await resp.json();
+  } catch (e) {
+    calEl.innerHTML = '<div class="bar-cal-loading">Occupancy data unavailable</div>';
+    return;
+  }
+
+  const estimates = data.estimates || [];
+  const estMap = {};
+  for (const e of estimates) estMap[e.date] = e;
+
+  const dark = !document.body.classList.contains('light');
+  const dayNumCol = dark ? '#888888' : '#AAAAAA';
+
+  const today = new Date();
+  let html = '';
+  for (let i = 1; i <= 30; i++) {
+    const d   = new Date(today); d.setDate(today.getDate() + i);
+    const iso = d.toISOString().split('T')[0];
+    const e   = estMap[iso];
+    const occ = e ? +e.estimated_occupancy : null;
+    const conf = e ? e.confidence : 'low';
+
+    let bg, col, fw = '', border = '';
+    if (occ !== null) {
+      if (dark) {
+        if (occ >= 80) { bg = '#C8922A'; col = '#0A0A0A'; fw = '600'; }
+        else if (occ >= 60) { bg = '#7A5818'; col = '#F0EDE6'; fw = '500'; }
+        else { bg = '#1C1C1A'; col = '#888888'; border = '1px solid #7A5818'; }
+      } else {
+        if (occ >= 80) { bg = '#FDF3E0'; col = '#6B4A10'; fw = '600'; border = '1px solid #C8922A'; }
+        else if (occ >= 60) { bg = '#FEF8EE'; col = '#8B6820'; border = '1px solid #E0B860'; }
+        else { bg = '#FFFFFF'; col = '#8A8A8A'; border = '1px solid #ECECEC'; }
+      }
+    } else {
+      bg = dark ? '#181818' : '#F8F8F8';
+      col = dark ? '#444' : '#BBB';
+      border = dark ? '1px dashed #333' : '1px dashed #DDD';
+    }
+
+    const styAttr = `background:${bg};color:${col};${fw ? `font-weight:${fw};` : ''}${border ? `border:${border};` : ''}`;
+    const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : '—';
+    const confBadge = conf === 'high' ? '●' : conf === 'medium' ? '◑' : '○';
+    const tip = e
+      ? `${iso}\nOccupancy: ${occ.toFixed(1)}%\nConfidence: ${conf}\nBase: ${e.breakdown?.base ?? '—'}% + adj`
+      : `${iso}\nNo estimate`;
+    html += `<div class="bar-cal-day" style="${styAttr}" title="${tip}">
+      <div class="bar-cal-dn" style="color:${dayNumCol};opacity:1">${d.getDate()}<span style="font-size:7px;margin-left:2px;opacity:0.6">${confBadge}</span></div>
+      <div class="bar-cal-rate">${dispVal}</div>
+    </div>`;
+  }
+  calEl.innerHTML = html;
+
+  if (data.model_run_date) {
+    badgeEl.textContent = `Model: ${data.model_run_date}`;
+  }
+
+  // Averages bar
+  const cc = data.confidence_counts || {};
+  if (data.avg_occupancy_30d != null) {
+    const revStr = data.avg_revpar_30d ? ` · Est. RevPAR MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '';
+    avgText.textContent = `30-day averages: Est. Occupancy ${data.avg_occupancy_30d}%${revStr}`;
+    confEl.textContent  = `High confidence: ${cc.high ?? 0} days · Medium: ${cc.medium ?? 0} · Low: ${cc.low ?? 0}`;
+    avgBar.style.display = '';
+  }
 }
 
 async function renderDetailedFinancials(hotelId) {
@@ -2326,6 +2406,31 @@ async function initBenchmarking() {
   renderBenchPropertySelector();
   renderBenchCompSetBuilder();
   renderBenchAll();
+  updateBenchFreshness();
+}
+
+async function updateBenchFreshness() {
+  const freshnessEl = document.getElementById('bench-freshness-text');
+  const modeEl      = document.getElementById('bench-mode-badge');
+  if (!freshnessEl) return;
+  try {
+    const [scraperRes, occRes] = await Promise.all([
+      fetch('/api/scraper/status').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/occupancy/status').then(r => r.ok ? r.json() : null).catch(() => null),
+    ]);
+    const hasLive = scraperRes && (scraperRes.hotels_with_live > 0 || scraperRes.done_today > 0);
+    const hasOcc  = occRes && occRes.has_data;
+    if (hasLive || hasOcc) {
+      const lastScrape = scraperRes?.last_run?.slice(0, 10) || '—';
+      const modelRun   = occRes?.model_run_date || '—';
+      freshnessEl.textContent = `Data as of ${lastScrape} · Occupancy model run ${modelRun}`;
+      if (modeEl) { modeEl.textContent = 'Live data available'; modeEl.style.background = 'rgba(45,107,58,0.15)'; modeEl.style.color = 'var(--green)'; }
+    } else {
+      freshnessEl.textContent = 'Demo mode — sample Marrakech luxury data';
+    }
+  } catch (e) {
+    freshnessEl.textContent = 'Demo mode — sample Marrakech luxury data';
+  }
 }
 
 // ── Selectors ────────────────────────────────────────────────────

@@ -436,6 +436,39 @@
         <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px">Scraper Log (last 30 lines)</div>
         <pre id="ri-log" style="font-size:10px;color:var(--text-muted);background:var(--surface2);border-radius:6px;padding:12px;max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.6;margin:0">Loading…</pre>
       </div>
+
+      <!-- Occupancy Model subsection -->
+      <div style="margin-top:24px">
+        <div class="toolbar" style="margin-bottom:12px">
+          <span class="toolbar-title" style="font-size:13px">Occupancy Model</span>
+          <button class="new-btn" onclick="runOccupancyModel()" id="run-occ-btn">▶ Run Occupancy Model Now</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px" id="occ-status-grid">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Last Model Run</div>
+            <div style="font-size:13px;font-weight:600" id="occ-last-run">—</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">High Confidence</div>
+            <div style="font-size:22px;font-weight:700;color:var(--green)" id="occ-high">—</div>
+            <div style="font-size:11px;color:var(--text-dim)">estimates (scrape + rooms)</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Medium Confidence</div>
+            <div style="font-size:22px;font-weight:700;color:var(--amber)" id="occ-medium">—</div>
+            <div style="font-size:11px;color:var(--text-dim)">estimates (scrape only)</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Low Confidence</div>
+            <div style="font-size:22px;font-weight:700;color:var(--text-muted)" id="occ-low">—</div>
+            <div style="font-size:11px;color:var(--text-dim)">model-only (no scrape)</div>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:var(--text-muted)">
+          Calibration pending — add real hotel data to improve accuracy.
+          Upload a CSV with columns <code>hotel_id, date, actual_occupancy</code> to calibrate.
+        </div>
+      </div>
     </div>
 
     <hr style="border:none;border-top:1px solid var(--border);margin-bottom:28px">
@@ -642,6 +675,7 @@
     loadRecentUploads();
     loadUsers();
     loadScraperStatus();
+    loadOccupancyStatus();
     populateHotelSelect();
   }
 
@@ -1272,6 +1306,40 @@
     } catch (e) {
       btn.textContent = '✗ Error';
       setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Run Scraper Now'; }, 2000);
+    }
+  }
+
+  async function loadOccupancyStatus() {
+    try {
+      const res  = await fetch('/api/occupancy/status', { headers: { 'X-Admin-Password': adminPwd } });
+      const data = await res.json();
+      document.getElementById('occ-last-run').textContent =
+        data.model_run_date ? data.model_run_date : (data.has_data ? '—' : 'Not run yet');
+      document.getElementById('occ-high').textContent   = data.high_confidence   ?? '—';
+      document.getElementById('occ-medium').textContent = data.medium_confidence ?? '—';
+      document.getElementById('occ-low').textContent    = data.low_confidence    ?? '—';
+    } catch (e) {}
+  }
+
+  async function runOccupancyModel() {
+    const btn = document.getElementById('run-occ-btn');
+    btn.disabled = true;
+    btn.textContent = 'Starting…';
+    try {
+      const res  = await fetch('/api/occupancy/run', {
+        method: 'POST',
+        headers: { 'X-Admin-Password': adminPwd },
+      });
+      const data = await res.json();
+      btn.textContent = data.status === 'started' ? '✓ Started' : '✗ Error';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '▶ Run Occupancy Model Now';
+        loadOccupancyStatus();
+      }, 3000);
+    } catch (e) {
+      btn.textContent = '✗ Error';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Run Occupancy Model Now'; }, 2000);
     }
   }
 
