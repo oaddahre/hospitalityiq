@@ -486,10 +486,21 @@ body {
   color: #888888;
 }
 .dest-card__overflow {
-  background: #1E1E1E !important;
-  color: #666666;
+  background: transparent !important;
+  border-color: #B87860 !important;
+  color: #B87860;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+.dest-card__overflow:hover {
+  background: #B87860 !important;
+  color: #0A0A0A;
+}
+.dest-card__overflow .dest-card__city,
+.dest-card__overflow .dest-card__count {
+  color: inherit;
 }
 
 /* ── Bar chart ─────────────────────────────────────────────── */

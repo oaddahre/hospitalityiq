@@ -222,10 +222,26 @@
             <span class="dest-card__city">Essaouira</span>
             <span class="dest-card__count">Coastal resort</span>
           </div>
-          <div class="dest-card dest-card__overflow">
-            <span class="dest-card__city">+11 more</span>
-            <span class="dest-card__count">destinations</span>
+          <div class="dest-card dest-card__overflow" id="dest-more-btn" onclick="revealMoreCities()">
+            <span class="dest-card__city">+14 more</span>
+            <span class="dest-card__count">click to reveal</span>
           </div>
+
+          <!-- Hidden city cards revealed on click -->
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Chefchaouen</span><span class="dest-card__count">Blue city</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Meknès</span><span class="dest-card__count">Imperial city</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Ouarzazate</span><span class="dest-card__count">Desert gateway</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Merzouga</span><span class="dest-card__count">Sahara resort</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Dakhla</span><span class="dest-card__count">Coastal kite hub</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Saïdia</span><span class="dest-card__count">Beach resort</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Asilah</span><span class="dest-card__count">Art & heritage</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Beni Mellal</span><span class="dest-card__count">Emerging market</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Ifrane</span><span class="dest-card__count">Mountain resort</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Kénitra</span><span class="dest-card__count">Industrial hub</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Laâyoune</span><span class="dest-card__count">Southern gateway</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Nador</span><span class="dest-card__count">Eastern coast</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">Oujda</span><span class="dest-card__count">Eastern gateway</span></div>
+          <div class="dest-card dest-card--hidden" style="display:none"><span class="dest-card__city">El Jadida</span><span class="dest-card__count">Atlantic coast</span></div>
         </div>
       </div>
       <div>
@@ -494,6 +510,27 @@ document.querySelectorAll('.module-card, .pricing-card, .team-card').forEach(car
     card.style.transform = 'translateY(0)';
   });
 });
+
+// ── Reveal hidden city cards ───────────────────────────────────
+function revealMoreCities() {
+  const btn    = document.getElementById('dest-more-btn');
+  const hidden = document.querySelectorAll('.dest-card--hidden');
+  if (!btn || !hidden.length) return;
+
+  btn.style.display = 'none';
+
+  hidden.forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(6px)';
+    card.style.transition = 'opacity 300ms ease, transform 300ms ease';
+    card.style.display = '';
+    // Stagger each card 60ms apart
+    setTimeout(() => {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, i * 60);
+  });
+}
 </script>
 
 </body>
