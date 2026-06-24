@@ -102,6 +102,13 @@ try:
         id='daily_occ_model',
         replace_existing=True,
     )
+    _scheduler.add_job(
+        func=lambda: app.logger.info('Keep-alive ping'),
+        trigger='interval',
+        minutes=10,
+        id='keep_alive',
+        replace_existing=True,
+    )
     _scheduler.start()
 
     import atexit
@@ -629,6 +636,11 @@ def terms():
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
+
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
 
 
 # ─── API routes ───────────────────────────────────────────────────────────────
