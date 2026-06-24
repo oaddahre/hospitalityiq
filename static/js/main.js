@@ -1049,6 +1049,46 @@ function _addHotelsSourceAndLayer(map) {
   });
 }
 
+function _hideMoroccoDisputes(map) {
+  try {
+    // Hide every layer whose ID contains "dispute" (case-insensitive)
+    const style = map.getStyle();
+    if (style && style.layers) {
+      style.layers.forEach(layer => {
+        if (layer.id.toLowerCase().includes('dispute')) {
+          map.setLayoutProperty(layer.id, 'visibility', 'none');
+        }
+      });
+    }
+
+    // Also explicitly target the known Mapbox dispute layer names
+    const knownDisputeLayers = [
+      'admin-0-boundary-disputed',
+      'admin-1-boundary-disputed',
+      'disputed-boundary',
+      'admin-0-disputed',
+    ];
+    knownDisputeLayers.forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+    });
+
+    // Remove "Western Sahara" from country labels
+    if (map.getLayer('country-label')) {
+      map.setFilter('country-label', ['!=', ['get', 'name_en'], 'Western Sahara']);
+    }
+
+    // Remove admin-1 disputed boundary filter if present
+    if (map.getLayer('admin-1-boundary')) {
+      const existing = map.getFilter('admin-1-boundary');
+      if (!existing) {
+        map.setFilter('admin-1-boundary', ['!=', ['get', 'disputed'], true]);
+      }
+    }
+  } catch (e) {
+    console.warn('_hideMoroccoDisputes error:', e);
+  }
+}
+
 function swapMapStyle(mode) {
   if (!mapboxMap && !pipelineMapbox) return;
   const style = mode === 'light' ? MAP_STYLE_LIGHT : MAP_STYLE_DARK;
@@ -1056,6 +1096,7 @@ function swapMapStyle(mode) {
     mapboxMap.map.setStyle(style);
     mapboxMap.map.once('style.load', () => {
       _addHotelsSourceAndLayer(mapboxMap.map);
+      _hideMoroccoDisputes(mapboxMap.map);
       updateMapMarkers();
     });
   }
@@ -1092,6 +1133,9 @@ function initMap() {
     map.addControl(new mapboxgl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
     map.on('load', () => {
+      // Hide disputed Morocco/Western Sahara boundary and label
+      _hideMoroccoDisputes(map);
+
       _addHotelsSourceAndLayer(map);
 
       map.on('click', 'hotels-layer', e => {
