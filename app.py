@@ -565,7 +565,7 @@ def landing():
 @app.route("/dashboard")
 @login_required
 def index():
-    return render_template("index.html")
+    return render_template("index.html", mapbox_token=os.environ.get('MAPBOX_TOKEN', ''))
 
 
 @app.route("/account")
