@@ -19,9 +19,11 @@ const CITY_COORDS = {
   'Fes':         [34.037, -4.998],
 };
 
-const MOROCCO_CENTER = [-5.5, 31.5];  // [lng, lat] — Mapbox order
-const MOROCCO_ZOOM   = 5.5;
-const CITY_ZOOM      = 10;
+const MOROCCO_CENTER  = [-5.5, 31.5];  // [lng, lat] — Mapbox order
+const MOROCCO_ZOOM    = 5.5;
+const CITY_ZOOM       = 10;
+const MAP_STYLE_DARK  = 'mapbox://styles/mapbox/dark-v11';
+const MAP_STYLE_LIGHT = 'mapbox://styles/mapbox/light-v11';
 
 
 const KPI_DELTAS = {
@@ -1006,9 +1008,6 @@ function popupHTML(h) {
     </div>`;
 }
 
-const MAP_STYLE_DARK  = 'mapbox://styles/mapbox/dark-v11';
-const MAP_STYLE_LIGHT = 'mapbox://styles/mapbox/light-v11';
-
 function _buildHotelsGeoJSON() {
   return {
     type: 'FeatureCollection',
@@ -1051,6 +1050,7 @@ function _addHotelsSourceAndLayer(map) {
 }
 
 function swapMapStyle(mode) {
+  if (!mapboxMap && !pipelineMapbox) return;
   const style = mode === 'light' ? MAP_STYLE_LIGHT : MAP_STYLE_DARK;
   if (mapboxMap) {
     mapboxMap.map.setStyle(style);
@@ -1066,42 +1066,54 @@ function swapMapStyle(mode) {
 }
 
 function initMap() {
-  mapboxgl.accessToken = MAPBOX_TOKEN;
-  const isDark = !document.body.classList.contains('light');
+  if (typeof mapboxgl === 'undefined') {
+    console.warn('Mapbox GL JS not loaded — map disabled');
+    return;
+  }
+  if (!MAPBOX_TOKEN) {
+    console.warn('Mapbox token missing — map disabled');
+    return;
+  }
+  try {
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+    const isDark = !document.body.classList.contains('light');
 
-  const map = new mapboxgl.Map({
-    container:       'map-container',
-    style:           isDark ? MAP_STYLE_DARK : MAP_STYLE_LIGHT,
-    center:          MOROCCO_CENTER,
-    zoom:            MOROCCO_ZOOM,
-    maxBounds:       [[-17.5, 20.5], [0.5, 36.5]],
-    dragRotate:      false,
-    pitchWithRotate: false,
-  });
-
-  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-  map.addControl(new mapboxgl.ScaleControl({ unit: 'metric' }), 'bottom-left');
-
-  map.on('load', () => {
-    _addHotelsSourceAndLayer(map);
-
-    map.on('click', 'hotels-layer', e => {
-      const props  = e.features[0].properties;
-      const coords = e.features[0].geometry.coordinates.slice();
-      const h = hotels.find(x => x.id == props.id);
-      if (!h) return;
-      new mapboxgl.Popup({ maxWidth: '300px' })
-        .setLngLat(coords)
-        .setHTML(popupHTML(h))
-        .addTo(map);
+    const map = new mapboxgl.Map({
+      container:       'map-container',
+      style:           isDark ? MAP_STYLE_DARK : MAP_STYLE_LIGHT,
+      center:          MOROCCO_CENTER,
+      zoom:            MOROCCO_ZOOM,
+      maxBounds:       [[-17.5, 20.5], [0.5, 36.5]],
+      dragRotate:      false,
+      pitchWithRotate: false,
     });
 
-    map.on('mouseenter', 'hotels-layer', () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', 'hotels-layer', () => { map.getCanvas().style.cursor = ''; });
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.addControl(new mapboxgl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
-    mapboxMap = { map };
-    updateMapMarkers();
-  });
+    map.on('load', () => {
+      _addHotelsSourceAndLayer(map);
+
+      map.on('click', 'hotels-layer', e => {
+        const props  = e.features[0].properties;
+        const coords = e.features[0].geometry.coordinates.slice();
+        const h = hotels.find(x => x.id == props.id);
+        if (!h) return;
+        new mapboxgl.Popup({ maxWidth: '300px' })
+          .setLngLat(coords)
+          .setHTML(popupHTML(h))
+          .addTo(map);
+      });
+
+      map.on('mouseenter', 'hotels-layer', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'hotels-layer', () => { map.getCanvas().style.cursor = ''; });
+
+      mapboxMap = { map };
+      updateMapMarkers();
+    });
+  } catch (e) {
+    console.error('Mapbox map init failed:', e);
+  }
 }
 
 function updateMapMarkers() {
@@ -1773,6 +1785,11 @@ function _addPipelineSourceAndLayer(map) {
 function initPipelineMap() {
   const container = document.getElementById('pipeline-map-container');
   if (!container) return;
+  if (typeof mapboxgl === 'undefined' || !MAPBOX_TOKEN) {
+    console.warn('Mapbox not available — pipeline map disabled');
+    return;
+  }
+  try {
   mapboxgl.accessToken = MAPBOX_TOKEN;
   const isDark = !document.body.classList.contains('light');
 
@@ -1807,6 +1824,9 @@ function initPipelineMap() {
 
     pipelineMapbox = { map };
   });
+  } catch (e) {
+    console.error('Mapbox pipeline map init failed:', e);
+  }
 }
 
 function pipelinePopupHTML(p) {
