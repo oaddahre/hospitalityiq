@@ -2331,10 +2331,10 @@ def api_photos_stats():
     photos = _load_photos()
     with_photo = sum(1 for v in photos.values() if v.get('url'))
     return jsonify({
-        'total':       len(photos),
-        'with_photo':  with_photo,
-        'without':     len(photos) - with_photo,
-        'file_exists': os.path.exists(PHOTOS_JSON_PATH),
+        'total':         len(photos),
+        'with_photo':    with_photo,
+        'without_photo': len(photos) - with_photo,
+        'file_exists':   os.path.exists(PHOTOS_JSON_PATH),
     })
 
 
