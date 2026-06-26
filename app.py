@@ -2299,6 +2299,81 @@ def api_reports_generate():
         return jsonify({"error": str(e)}), 500
 
 
+# ─── Photos API ───────────────────────────────────────────────────────────────
+
+PHOTOS_JSON_PATH = os.path.join(os.path.dirname(__file__), 'hotel_photos.json')
+_photos_cache: dict | None = None
+
+def _load_photos() -> dict:
+    global _photos_cache
+    if _photos_cache is not None:
+        return _photos_cache
+    try:
+        if os.path.exists(PHOTOS_JSON_PATH):
+            with open(PHOTOS_JSON_PATH, 'r', encoding='utf-8') as f:
+                _photos_cache = json.load(f)
+            return _photos_cache
+    except Exception:
+        pass
+    _photos_cache = {}
+    return _photos_cache
+
+
+@app.route('/api/photos/<hotel_id>')
+def api_photo_single(hotel_id):
+    photos = _load_photos()
+    return jsonify(photos.get(str(hotel_id), {'url': None}))
+
+
+@app.route('/api/photos/stats')
+@login_required
+def api_photos_stats():
+    photos = _load_photos()
+    with_photo = sum(1 for v in photos.values() if v.get('url'))
+    return jsonify({
+        'total':       len(photos),
+        'with_photo':  with_photo,
+        'without':     len(photos) - with_photo,
+        'file_exists': os.path.exists(PHOTOS_JSON_PATH),
+    })
+
+
+@app.route('/api/photos/batch')
+def api_photos_batch():
+    ids_param = request.args.get('ids', '')
+    if not ids_param:
+        return jsonify({})
+    ids    = [s.strip() for s in ids_param.split(',') if s.strip()]
+    photos = _load_photos()
+    result = {}
+    for id_ in ids:
+        entry = photos.get(str(id_))
+        if entry and entry.get('url'):
+            result[id_] = {
+                'url':              entry.get('url'),
+                'thumb':            entry.get('thumb') or entry.get('small') or entry.get('url'),
+                'photographer':     entry.get('photographer', ''),
+                'photographer_url': entry.get('photographer_url', ''),
+                'pexels_url':       entry.get('pexels_url', ''),
+            }
+    return jsonify(result)
+
+
+@app.route('/api/photos/fetch', methods=['POST'])
+def api_photos_fetch():
+    if not admin_ok():
+        return jsonify({'error': 'Unauthorized'}), 403
+    global _photos_cache
+    _photos_cache = None  # invalidate cache after fetch
+    script = os.path.join(os.path.dirname(__file__), 'fetch_photos.py')
+    if not os.path.exists(script):
+        return jsonify({'error': 'fetch_photos.py not found'}), 500
+    subprocess.Popen([sys.executable, script],
+                     env={**os.environ},
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return jsonify({'status': 'started', 'message': 'Photo fetch started — check server logs for progress'})
+
+
 # ─── Rate Intelligence API ────────────────────────────────────────────────────
 
 RATES_CSV_PATH    = os.path.join(DATA_DIR, 'scraped_rates.csv')

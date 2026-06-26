@@ -2890,6 +2890,115 @@ body.light .nav-logout  { color: #8A8A8A; }
   letter-spacing: 0.04em;
 }
 
+/* ─── Hotel hero photo ───────────────────────────── */
+.hotel-hero-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.hotel-hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.hotel-hero-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(transparent, rgba(10,10,10,0.75));
+  pointer-events: none;
+}
+.hotel-hero-credit {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  font-size: 7px;
+  color: rgba(255,255,255,0.4);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.hotel-hero-credit a {
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+}
+.hotel-hero-no-photo {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
+}
+.hotel-hero-no-photo .hotel-hero-photo { display: none; }
+.hotel-hero-no-photo .hotel-hero-gradient { display: none; }
+
+/* ─── Hotels table thumbnail ─────────────────────── */
+.hotel-thumb-cell {
+  width: 44px;
+  padding: 4px 6px 4px 0 !important;
+}
+.hotel-thumb-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+  display: block;
+  background: var(--surface);
+}
+.hotel-thumb-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  flex-shrink: 0;
+}
+
+/* ─── Pipeline card photo header ─────────────────── */
+.pipe-card-photo {
+  position: relative;
+  width: calc(100% + 32px);
+  margin: -16px -16px 14px;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 6px 6px 0 0;
+}
+.pipe-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pipe-card-photo-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 30%, rgba(10,10,10,0.8));
+}
+.pipe-card-photo-name {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  right: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pipe-card-no-photo {
+  background: linear-gradient(135deg, var(--surface) 0%, #B87860 100%);
+  opacity: 0.7;
+}
+
 /* ─── Print styles ───────────────────────────────── */
 @media print {
   .navbar, .sidebar, .noprint,

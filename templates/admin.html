@@ -473,6 +473,34 @@
 
     <hr style="border:none;border-top:1px solid var(--border);margin-bottom:28px">
 
+    <!-- ── Hotel Photos section ── -->
+    <div style="margin-bottom:32px" id="photos-section">
+      <div class="toolbar" style="margin-bottom:16px">
+        <span class="toolbar-title">Hotel Photos</span>
+        <button class="new-btn" onclick="fetchPhotos()" id="fetch-photos-btn">▶ Fetch Photos Now</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px" id="photos-status-grid">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Total Entries</div>
+          <div style="font-size:20px;font-weight:700" id="ph-total">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">With Photo</div>
+          <div style="font-size:20px;font-weight:700;color:var(--positive,#2D6B3A)" id="ph-with">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Without Photo</div>
+          <div style="font-size:20px;font-weight:700;color:var(--negative,#8B3A3A)" id="ph-without">—</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:8px" id="ph-note">
+        Run "Fetch Photos Now" to populate hotel_photos.json via Pexels API. Requires PEXELS_API_KEY env var. Photos are cached and not re-fetched on subsequent runs.
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:28px">
+
     <!-- ── User & Org Management section ── -->
     <div style="margin-bottom:32px">
       <!-- Tab bar -->
@@ -677,6 +705,7 @@
     loadScraperStatus();
     loadOccupancyStatus();
     populateHotelSelect();
+    loadPhotosStats();
   }
 
   // ── CRUD ──────────────────────────────────────────
@@ -1379,6 +1408,39 @@
       msgEl.textContent   = 'Network error';
       msgEl.style.color   = 'var(--red)';
       msgEl.style.display = '';
+    }
+  }
+
+  // ── Hotel Photos ──────────────────────────────────
+  async function loadPhotosStats() {
+    try {
+      const r = await fetch('/api/photos/stats');
+      if (!r.ok) return;
+      const d = await r.json();
+      const el = id => document.getElementById(id);
+      el('ph-total').textContent   = d.total   ?? '—';
+      el('ph-with').textContent    = d.with_photo    ?? '—';
+      el('ph-without').textContent = d.without_photo ?? '—';
+    } catch (e) { /* non-critical */ }
+  }
+
+  async function fetchPhotos() {
+    const btn = document.getElementById('fetch-photos-btn');
+    btn.disabled    = true;
+    btn.textContent = '⏳ Fetching…';
+    try {
+      const r = await fetch('/api/photos/fetch', { method: 'POST' });
+      const d = await r.json();
+      if (r.ok) {
+        btn.textContent = '✓ Triggered';
+        setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Fetch Photos Now'; loadPhotosStats(); }, 4000);
+      } else {
+        btn.textContent = d.error || 'Error';
+        setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Fetch Photos Now'; }, 3000);
+      }
+    } catch (e) {
+      btn.textContent = 'Network error';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Fetch Photos Now'; }, 3000);
     }
   }
 
