@@ -22,8 +22,30 @@ const CITY_COORDS = {
 const MOROCCO_CENTER  = [-5.5, 31.5];  // [lng, lat] — Mapbox order
 const MOROCCO_ZOOM    = 5.5;
 const CITY_ZOOM       = 10;
-const MAP_STYLE_DARK  = 'mapbox://styles/mapbox/dark-v11';
-const MAP_STYLE_LIGHT = 'mapbox://styles/mapbox/light-v11';
+const GMAP_STYLE_DARK = [
+  {"elementType":"geometry","stylers":[{"color":"#141414"}]},
+  {"elementType":"labels.text.fill","stylers":[{"color":"#888888"}]},
+  {"elementType":"labels.text.stroke","stylers":[{"color":"#0A0A0A"}]},
+  {"featureType":"administrative","elementType":"geometry","stylers":[{"color":"#242424"}]},
+  {"featureType":"administrative.country","elementType":"geometry.stroke","stylers":[{"color":"#444444"}]},
+  {"featureType":"administrative.province","elementType":"geometry.stroke","stylers":[{"color":"#242424"}]},
+  {"featureType":"road","elementType":"geometry","stylers":[{"color":"#1C1C1C"}]},
+  {"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#242424"}]},
+  {"featureType":"water","elementType":"geometry","stylers":[{"color":"#0A0A0A"}]},
+  {"featureType":"poi","stylers":[{"visibility":"off"}]},
+  {"featureType":"transit","stylers":[{"visibility":"off"}]},
+];
+const GMAP_STYLE_LIGHT = [
+  {"elementType":"geometry","stylers":[{"color":"#F5F5F5"}]},
+  {"elementType":"labels.text.fill","stylers":[{"color":"#616161"}]},
+  {"elementType":"labels.text.stroke","stylers":[{"color":"#F5F5F5"}]},
+  {"featureType":"administrative.country","elementType":"geometry.stroke","stylers":[{"color":"#CCCCCC"}]},
+  {"featureType":"road","elementType":"geometry","stylers":[{"color":"#FFFFFF"}]},
+  {"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#E0E0E0"}]},
+  {"featureType":"water","elementType":"geometry","stylers":[{"color":"#C9D8E8"}]},
+  {"featureType":"poi","stylers":[{"visibility":"off"}]},
+  {"featureType":"transit","stylers":[{"visibility":"off"}]},
+];
 
 
 const KPI_DELTAS = {
@@ -52,7 +74,12 @@ let apiData  = null;   // /api/data response
 let hotels   = null;   // /api/hotels response (flat, merged)
 let revChart = null;
 let occChart = null;
-let mapboxMap     = null;  // { map } — main map
+let googleMap          = null;
+let googlePipelineMap  = null;
+let googleMapsApiReady = false;
+let hotelMarkers       = [];   // [{marker, hotel}]
+let pipelineMarkers    = [];   // [{marker, project}]
+let activeInfoWindow   = null;
 let brandChart      = null;
 let brandHotelsData = [];
 const brandState    = { col: 'name', dir: 1 };
@@ -60,7 +87,6 @@ const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner']);
 let tourismInited   = false;
 let pipelineInited  = false;
 let pipelineData    = null;
-let pipelineMapbox  = null;  // { map } — pipeline map
 const pipelineState = { status: 'all', city: 'all', category: 'all' };
 const pipelineSort  = { col: 'expected_opening', dir: 1 };
 const PIPE_STR_COLS = new Set(['name', 'city', 'category', 'brand', 'status']);
@@ -82,7 +108,7 @@ function applyTheme(mode) {
     document.body.classList.remove('light');
     icon.innerHTML = ICON_MOON;
   }
-  swapMapStyle(mode);
+  swapMapTheme(mode);
 }
 
 document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -1008,191 +1034,98 @@ function popupHTML(h) {
     </div>`;
 }
 
-function _buildHotelsGeoJSON() {
-  return {
-    type: 'FeatureCollection',
-    features: hotels.map(h => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [h.lng, h.lat] },
-      properties: {
-        id:          h.id,
-        name:        h.name,
-        brand:       h.brand,
-        city:        h.city,
-        category:    h.category,
-        keys:        h.keys,
-        occupancy:   h.occupancy,
-        adr_mad:     h.adr_mad,
-        revpar_mad:  h.revpar_mad,
-        year_opened: h.year_opened,
-        radius:      Math.max(8, Math.sqrt(h.keys) * 0.78),
-        color:       SEG_COLORS[h.category] || '#888888',
-      },
-    })),
-  };
-}
+// ─── Google Maps ──────────────────────────────────────────────────
 
-function _addHotelsSourceAndLayer(map) {
-  if (map.getSource('hotels')) map.removeLayer('hotels-layer'), map.removeSource('hotels');
-  map.addSource('hotels', { type: 'geojson', data: _buildHotelsGeoJSON() });
-  map.addLayer({
-    id:   'hotels-layer',
-    type: 'circle',
-    source: 'hotels',
-    paint: {
-      'circle-radius':       ['get', 'radius'],
-      'circle-color':        ['get', 'color'],
-      'circle-stroke-color': 'rgba(255,255,255,0.6)',
-      'circle-stroke-width': 1.2,
-      'circle-opacity':      0.85,
-    },
-  });
-}
+const GMAP_OPTIONS_BASE = {
+  mapTypeId:          'roadmap',
+  mapTypeControl:     false,
+  streetViewControl:  false,
+  fullscreenControl:  false,
+  zoomControl:        true,
+  restriction: {
+    latLngBounds: { north: 37, south: 20, west: -18, east: 1 },
+    strictBounds: false,
+  },
+};
 
-function _hideMoroccoDisputes(map) {
-  try {
-    // Hide every layer whose ID contains "dispute" (case-insensitive)
-    const style = map.getStyle();
-    if (style && style.layers) {
-      style.layers.forEach(layer => {
-        if (layer.id.toLowerCase().includes('dispute')) {
-          map.setLayoutProperty(layer.id, 'visibility', 'none');
-        }
-      });
-    }
-
-    // Also explicitly target the known Mapbox dispute layer names
-    const knownDisputeLayers = [
-      'admin-0-boundary-disputed',
-      'admin-1-boundary-disputed',
-      'disputed-boundary',
-      'admin-0-disputed',
-    ];
-    knownDisputeLayers.forEach(id => {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
-    });
-
-    // Remove "Western Sahara" from country labels
-    if (map.getLayer('country-label')) {
-      map.setFilter('country-label', ['!=', ['get', 'name_en'], 'Western Sahara']);
-    }
-
-    // Remove admin-1 disputed boundary filter if present
-    if (map.getLayer('admin-1-boundary')) {
-      const existing = map.getFilter('admin-1-boundary');
-      if (!existing) {
-        map.setFilter('admin-1-boundary', ['!=', ['get', 'disputed'], true]);
-      }
-    }
-  } catch (e) {
-    console.warn('_hideMoroccoDisputes error:', e);
+// Called by Google Maps API when it finishes loading
+function initGoogleMaps() {
+  googleMapsApiReady = true;
+  // Re-trigger if map screen is already visible
+  if (document.getElementById('screen-map')?.classList.contains('active') && !googleMap) {
+    initMap();
   }
 }
 
-function swapMapStyle(mode) {
-  if (!mapboxMap && !pipelineMapbox) return;
-  const style = mode === 'light' ? MAP_STYLE_LIGHT : MAP_STYLE_DARK;
-  if (mapboxMap) {
-    mapboxMap.map.setStyle(style);
-    mapboxMap.map.once('style.load', () => {
-      _addHotelsSourceAndLayer(mapboxMap.map);
-      _hideMoroccoDisputes(mapboxMap.map);
-      updateMapMarkers();
-    });
-  }
-  if (pipelineMapbox) {
-    pipelineMapbox.map.setStyle(style);
-    pipelineMapbox.map.once('style.load', () => _addPipelineSourceAndLayer(pipelineMapbox.map));
-  }
+function swapMapTheme(mode) {
+  const styles = mode === 'light' ? GMAP_STYLE_LIGHT : GMAP_STYLE_DARK;
+  if (googleMap)         googleMap.setOptions({ styles });
+  if (googlePipelineMap) googlePipelineMap.setOptions({ styles });
 }
 
 function initMap() {
-  if (typeof mapboxgl === 'undefined') {
-    console.warn('Mapbox GL JS not loaded — map disabled');
-    return;
-  }
-  if (!MAPBOX_TOKEN) {
-    console.warn('Mapbox token missing — map disabled');
-    return;
-  }
+  if (!googleMapsApiReady || googleMap || !hotels) return;
   try {
-    mapboxgl.accessToken = MAPBOX_TOKEN;
     const isDark = !document.body.classList.contains('light');
-
-    const map = new mapboxgl.Map({
-      container:       'map-container',
-      style:           isDark ? MAP_STYLE_DARK : MAP_STYLE_LIGHT,
-      center:          MOROCCO_CENTER,
-      zoom:            MOROCCO_ZOOM,
-      maxBounds:       [[-17.5, 20.5], [0.5, 36.5]],
-      dragRotate:      false,
-      pitchWithRotate: false,
+    googleMap = new google.maps.Map(document.getElementById('map-container'), {
+      ...GMAP_OPTIONS_BASE,
+      center: { lat: 31.5, lng: -5.5 },
+      zoom:   6,
+      styles: isDark ? GMAP_STYLE_DARK : GMAP_STYLE_LIGHT,
     });
 
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    map.addControl(new mapboxgl.ScaleControl({ unit: 'metric' }), 'bottom-left');
-
-    map.on('load', () => {
-      // Hide disputed Morocco/Western Sahara boundary and label
-      _hideMoroccoDisputes(map);
-
-      _addHotelsSourceAndLayer(map);
-
-      map.on('click', 'hotels-layer', e => {
-        const props  = e.features[0].properties;
-        const coords = e.features[0].geometry.coordinates.slice();
-        const h = hotels.find(x => x.id == props.id);
-        if (!h) return;
-        new mapboxgl.Popup({ maxWidth: '300px' })
-          .setLngLat(coords)
-          .setHTML(popupHTML(h))
-          .addTo(map);
+    hotelMarkers = hotels.map(h => {
+      const marker = new google.maps.Marker({
+        position: { lat: h.lat, lng: h.lng },
+        map:      googleMap,
+        icon: {
+          path:        google.maps.SymbolPath.CIRCLE,
+          scale:       markerRadius(h),
+          fillColor:   SEG_COLORS[h.category] || '#888888',
+          fillOpacity: 0.85,
+          strokeColor: 'rgba(255,255,255,0.6)',
+          strokeWeight: 1.2,
+        },
       });
-
-      map.on('mouseenter', 'hotels-layer', () => { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', 'hotels-layer', () => { map.getCanvas().style.cursor = ''; });
-
-      mapboxMap = { map };
-      updateMapMarkers();
+      marker.addListener('click', () => {
+        if (activeInfoWindow) activeInfoWindow.close();
+        activeInfoWindow = new google.maps.InfoWindow({ content: popupHTML(h) });
+        activeInfoWindow.open({ map: googleMap, anchor: marker });
+      });
+      return { marker, hotel: h };
     });
+
+    updateMapMarkers();
   } catch (e) {
-    console.error('Mapbox map init failed:', e);
+    console.error('Google Maps init failed:', e);
   }
 }
 
 function updateMapMarkers() {
-  if (!mapboxMap) return;
-  const { map } = mapboxMap;
-  if (!map.getLayer('hotels-layer')) return;
-
-  const conditions = [];
-  if (state.city   !== 'all') conditions.push(['==', ['get', 'city'],     state.city]);
-  if (state.mapSeg !== 'all') conditions.push(['==', ['get', 'category'], state.mapSeg]);
-
-  const filter = conditions.length === 0 ? null
-               : conditions.length === 1 ? conditions[0]
-               : ['all', ...conditions];
-  map.setFilter('hotels-layer', filter);
-
-  const visible = hotels.filter(h => {
-    return (state.city   === 'all' || h.city     === state.city) &&
-           (state.mapSeg === 'all' || h.category === state.mapSeg);
-  }).length;
+  if (!googleMap) return;
+  let visible = 0;
+  hotelMarkers.forEach(({ marker, hotel: h }) => {
+    const show = (state.city   === 'all' || h.city     === state.city) &&
+                 (state.mapSeg === 'all' || h.category === state.mapSeg);
+    marker.setMap(show ? googleMap : null);
+    if (show) visible++;
+  });
   const countEl = document.getElementById('map-count');
   if (countEl) countEl.textContent = visible + ' hotel' + (visible !== 1 ? 's' : '');
 }
 
 function panMap() {
-  if (!mapboxMap) return;
-  const { map } = mapboxMap;
+  if (!googleMap) return;
   if (state.city === 'all') {
-    map.flyTo({ center: MOROCCO_CENTER, zoom: MOROCCO_ZOOM });
+    googleMap.setCenter({ lat: 31.5, lng: -5.5 });
+    googleMap.setZoom(6);
   } else {
     const cityHotels = hotels.filter(h => h.city === state.city);
     if (cityHotels.length) {
       const lat = cityHotels.reduce((s, h) => s + h.lat, 0) / cityHotels.length;
       const lng = cityHotels.reduce((s, h) => s + h.lng, 0) / cityHotels.length;
-      map.flyTo({ center: [lng, lat], zoom: CITY_ZOOM });
+      googleMap.setCenter({ lat, lng });
+      googleMap.setZoom(10);
     }
   }
 }
@@ -1335,7 +1268,7 @@ function render() {
   renderKPIs();
   renderCharts();
   renderBrandTable();
-  if (mapboxMap) {
+  if (googleMap) {
     updateMapMarkers();
     panMap();
   }
@@ -1732,7 +1665,7 @@ function initTourismCharts() {
 
 async function initPipeline() {
   if (pipelineInited) {
-    if (pipelineMapbox) setTimeout(() => pipelineMapbox.map.resize(), 60);
+    if (googlePipelineMap) setTimeout(() => google.maps.event.trigger(googlePipelineMap, 'resize'), 60);
     return;
   }
   pipelineInited = true;
@@ -1786,90 +1719,42 @@ function renderPipelineKPIs() {
   setKpi('pkpi-2027',  by2027);
 }
 
-function _buildPipelineGeoJSON() {
-  return {
-    type: 'FeatureCollection',
-    features: pipelineData.map(p => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
-      properties: {
-        id:               p.id || p.name,
-        name:             p.name,
-        brand:            p.brand,
-        city:             p.city,
-        category:         p.category,
-        keys:             p.keys,
-        expected_opening: p.expected_opening,
-        investment_mad:   p.investment_mad,
-        status:           p.status,
-        radius:           Math.max(8, Math.sqrt(p.keys) * 0.85),
-        color:            p.status === 'Under Construction' ? '#B87860' : '#888888',
-      },
-    })),
-  };
-}
-
-function _addPipelineSourceAndLayer(map) {
-  if (map.getSource('pipeline')) map.removeLayer('pipeline-layer'), map.removeSource('pipeline');
-  map.addSource('pipeline', { type: 'geojson', data: _buildPipelineGeoJSON() });
-  map.addLayer({
-    id:   'pipeline-layer',
-    type: 'circle',
-    source: 'pipeline',
-    paint: {
-      'circle-radius':       ['get', 'radius'],
-      'circle-color':        ['get', 'color'],
-      'circle-stroke-color': ['get', 'color'],
-      'circle-stroke-width': 1.5,
-      'circle-opacity':      0.85,
-    },
-  });
-}
-
 function initPipelineMap() {
   const container = document.getElementById('pipeline-map-container');
-  if (!container) return;
-  if (typeof mapboxgl === 'undefined' || !MAPBOX_TOKEN) {
-    console.warn('Mapbox not available — pipeline map disabled');
-    return;
-  }
+  if (!container || !googleMapsApiReady || googlePipelineMap) return;
   try {
-  mapboxgl.accessToken = MAPBOX_TOKEN;
-  const isDark = !document.body.classList.contains('light');
-
-  const map = new mapboxgl.Map({
-    container:       'pipeline-map-container',
-    style:           isDark ? MAP_STYLE_DARK : MAP_STYLE_LIGHT,
-    center:          MOROCCO_CENTER,
-    zoom:            5.5,
-    dragRotate:      false,
-    pitchWithRotate: false,
-  });
-
-  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-  map.addControl(new mapboxgl.ScaleControl({ unit: 'metric' }), 'bottom-left');
-
-  map.on('load', () => {
-    _addPipelineSourceAndLayer(map);
-
-    map.on('click', 'pipeline-layer', e => {
-      const props  = e.features[0].properties;
-      const coords = e.features[0].geometry.coordinates.slice();
-      const p = pipelineData.find(x => (x.id || x.name) == props.id);
-      if (!p) return;
-      new mapboxgl.Popup({ maxWidth: '300px' })
-        .setLngLat(coords)
-        .setHTML(pipelinePopupHTML(p))
-        .addTo(map);
+    const isDark = !document.body.classList.contains('light');
+    googlePipelineMap = new google.maps.Map(container, {
+      ...GMAP_OPTIONS_BASE,
+      center: { lat: 31.5, lng: -5.5 },
+      zoom:   6,
+      styles: isDark ? GMAP_STYLE_DARK : GMAP_STYLE_LIGHT,
     });
 
-    map.on('mouseenter', 'pipeline-layer', () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', 'pipeline-layer', () => { map.getCanvas().style.cursor = ''; });
-
-    pipelineMapbox = { map };
-  });
+    pipelineMarkers = pipelineData.map(p => {
+      const color  = p.status === 'Under Construction' ? '#B87860' : '#888888';
+      const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
+      const marker = new google.maps.Marker({
+        position: { lat: p.lat, lng: p.lng },
+        map:      googlePipelineMap,
+        icon: {
+          path:        google.maps.SymbolPath.CIRCLE,
+          scale:       radius,
+          fillColor:   color,
+          fillOpacity: 0.85,
+          strokeColor: color,
+          strokeWeight: 1.5,
+        },
+      });
+      marker.addListener('click', () => {
+        if (activeInfoWindow) activeInfoWindow.close();
+        activeInfoWindow = new google.maps.InfoWindow({ content: pipelinePopupHTML(p) });
+        activeInfoWindow.open({ map: googlePipelineMap, anchor: marker });
+      });
+      return { marker, project: p };
+    });
   } catch (e) {
-    console.error('Mapbox pipeline map init failed:', e);
+    console.error('Google Maps pipeline init failed:', e);
   }
 }
 
@@ -2002,18 +1887,13 @@ function applyPipelineFilter() {
   renderPipelineCharts();
   const tableOpen = document.getElementById('pipe-table-wrap').classList.contains('open');
   if (tableOpen) renderPipelineTableView();
-  if (pipelineMapbox) {
-    const { map } = pipelineMapbox;
-    if (map.getLayer('pipeline-layer')) {
-      const conditions = [];
-      if (pipelineState.status   !== 'all') conditions.push(['==', ['get', 'status'],   pipelineState.status]);
-      if (pipelineState.city     !== 'all') conditions.push(['==', ['get', 'city'],     pipelineState.city]);
-      if (pipelineState.category !== 'all') conditions.push(['==', ['get', 'category'], pipelineState.category]);
-      const filter = conditions.length === 0 ? null
-                   : conditions.length === 1 ? conditions[0]
-                   : ['all', ...conditions];
-      map.setFilter('pipeline-layer', filter);
-    }
+  if (googlePipelineMap) {
+    pipelineMarkers.forEach(({ marker, project: p }) => {
+      const show = (pipelineState.status   === 'all' || p.status   === pipelineState.status) &&
+                   (pipelineState.city     === 'all' || p.city     === pipelineState.city)   &&
+                   (pipelineState.category === 'all' || p.category === pipelineState.category);
+      marker.setMap(show ? googlePipelineMap : null);
+    });
   }
 }
 
@@ -2150,10 +2030,10 @@ document.querySelectorAll('.nav-link').forEach(link => {
     syncMobileNav(screen);
 
     if (screen === 'map') {
-      if (!mapboxMap) {
+      if (!googleMap) {
         initMap();
       } else {
-        setTimeout(() => mapboxMap.map.resize(), 60);
+        setTimeout(() => google.maps.event.trigger(googleMap, 'resize'), 60);
         updateMapMarkers();
         panMap();
       }
@@ -2207,7 +2087,7 @@ document.getElementById('segment-sidebar').addEventListener('click', e => {
   document.querySelectorAll('#map-seg-bar .seg-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.mapSeg === state.mapSeg);
   });
-  if (mapboxMap) updateMapMarkers();
+  if (googleMap) updateMapMarkers();
 });
 
 // Hotels: search input + clear button
@@ -2341,8 +2221,8 @@ document.getElementById('hotel-back-btn').addEventListener('click', () => {
   setSidebar(prev);
   syncMobileNav(prev);
   if (prev === 'map') {
-    if (!mapboxMap) initMap();
-    else setTimeout(() => mapboxMap.map.resize(), 60);
+    if (!googleMap) initMap();
+    else setTimeout(() => google.maps.event.trigger(googleMap, 'resize'), 60);
   }
 });
 
@@ -2549,7 +2429,7 @@ document.getElementById('mobile-seg-pills').addEventListener('click', e => {
   document.querySelectorAll('#map-seg-bar .seg-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.mapSeg === state.mapSeg)
   );
-  if (mapboxMap) updateMapMarkers();
+  if (googleMap) updateMapMarkers();
 });
 
 // ─── Benchmarking screen ──────────────────────────────────────────

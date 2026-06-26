@@ -586,30 +586,29 @@ body.light .nav-logout  { color: #8A8A8A; }
   overflow: hidden;
 }
 
-.mapboxgl-popup-content {
+.gm-style .gm-style-iw-c {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
   border-radius: 6px !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
-  color: var(--text) !important;
   padding: 0 !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
   min-width: 200px;
 }
 
-.mapboxgl-popup-tip {
-  border-top-color: var(--border) !important;
-  border-bottom-color: var(--border) !important;
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
 }
 
-.mapboxgl-popup-close-button {
-  color: var(--text-muted) !important;
-  font-size: 18px !important;
-  padding: 6px 10px !important;
-  line-height: 1 !important;
-  background: none !important;
+.gm-style .gm-style-iw-tc::after {
+  background: var(--surface) !important;
 }
-.mapboxgl-popup-close-button:hover { color: var(--text) !important; }
+
+.gm-style .gm-style-iw-chr button {
+  color: var(--text-muted) !important;
+}
+.gm-style .gm-style-iw-chr button:hover { color: var(--text) !important; }
 
 .hiq-popup {
   padding: 14px 16px 16px;
