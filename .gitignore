@@ -12,3 +12,4 @@ scraper_log.txt
 scraper_progress.json
 estimated_occupancy.csv
 calibration_results.json
+hotel_photos.json

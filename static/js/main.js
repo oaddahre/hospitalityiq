@@ -72,8 +72,6 @@ const state = {
 
 let apiData  = null;   // /api/data response
 let hotels   = null;   // /api/hotels response (flat, merged)
-let hotelPhotos = {};  // {hotel_id: {url, thumb, photographer, photographer_url, pexels_url}}
-let photosLoaded = false;
 let revChart = null;
 let occChart = null;
 let googleMap          = null;
@@ -542,34 +540,6 @@ async function showHotelDetail(id) {
     dqEl.textContent = 'Kōdō Estimate';
     dqEl.className   = 'hotel-dq-badge dq-estimate';
   }
-
-  // ── 1b. Hero photo ──
-  const heroWrap = document.getElementById('hotel-hero-wrap');
-  const heroImg  = document.getElementById('hotel-hero-img');
-  const heroCredit = document.getElementById('hotel-hero-credit');
-  heroWrap.classList.remove('hotel-hero-no-photo');
-  heroImg.src = '';
-  heroImg.alt = '';
-  heroCredit.innerHTML = '';
-  (async () => {
-    try {
-      const cached = hotelPhotos[String(h.id)];
-      const photo  = cached !== undefined ? cached
-                   : await fetch(`/api/photos/${h.id}`).then(r => r.ok ? r.json() : {});
-      if (!cached) hotelPhotos[String(h.id)] = photo;
-      if (photo && photo.url) {
-        heroImg.src = photo.url;
-        heroImg.alt = h.name;
-        if (photo.photographer) {
-          heroCredit.innerHTML = `Photo by <a href="${photo.photographer_url || '#'}" target="_blank" rel="noopener">${photo.photographer}</a> on <a href="${photo.pexels_url || 'https://www.pexels.com'}" target="_blank" rel="noopener">Pexels</a>`;
-        }
-      } else {
-        heroWrap.classList.add('hotel-hero-no-photo');
-      }
-    } catch (e) {
-      heroWrap.classList.add('hotel-hero-no-photo');
-    }
-  })();
 
   // ── 2. KPI cards ──
   const setKv = (id, v) => document.getElementById(id).querySelector('.kpi-value').textContent = v;
@@ -1248,18 +1218,6 @@ function clearAllHotelsFilters() {
   renderHotelsTable();
 }
 
-async function loadHotelPhotosBatch() {
-  if (photosLoaded || !hotels) return;
-  try {
-    const ids = hotels.map(h => h.id).join(',');
-    const r   = await fetch(`/api/photos/batch?ids=${ids}`);
-    if (r.ok) {
-      hotelPhotos = await r.json();
-      photosLoaded = true;
-    }
-  } catch (e) { /* photos are non-critical */ }
-}
-
 function renderHotelsTable() {
   if (!hotels) return;
   const filtered = filterHotels();
@@ -1273,12 +1231,9 @@ function renderHotelsTable() {
   const countEl = document.getElementById('hotels-results-count');
   if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotels`;
 
-  // Trigger batch photo load (non-blocking)
-  if (!photosLoaded) loadHotelPhotosBatch().then(() => renderHotelsTable());
-
   const tbody = document.getElementById('hotels-tbody');
   if (!sorted.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="table-empty-state">
+    tbody.innerHTML = `<tr><td colspan="9"><div class="table-empty-state">
       <p class="table-empty-title">No hotels match your filters</p>
       <p class="table-empty-sub">Try adjusting your search or clearing filters</p>
       <button class="btn btn-ghost" onclick="clearAllHotelsFilters()" style="font-size:12px;padding:6px 16px">Clear all filters</button>
@@ -1286,12 +1241,7 @@ function renderHotelsTable() {
   } else {
     tbody.innerHTML = sorted.map(h => {
       const segColor  = SEG_COLORS[h.category] || '#888888';
-      const photo     = hotelPhotos[String(h.id)];
-      const thumbCell = photo
-        ? `<td class="hotel-thumb-cell col-hide-mobile"><img class="hotel-thumb-img" src="${photo.thumb}" alt="" loading="lazy" onerror="this.style.display='none'"></td>`
-        : `<td class="hotel-thumb-cell col-hide-mobile"><div class="hotel-thumb-placeholder" style="background:${segColor}">${fmt.esc(h.category.charAt(0))}</div></td>`;
       return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
-        ${thumbCell}
         <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
         <td>${fmt.esc(h.city)}</td>
         <td class="col-hide-mobile"><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
@@ -1739,13 +1689,6 @@ async function initPipeline() {
   cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cityEl.appendChild(o); });
   cats.forEach(c   => { const o = document.createElement('option'); o.value = c; o.textContent = c; catEl.appendChild(o); });
 
-  // Load pipeline photos (non-blocking)
-  const pipeIds = pipelineData.map(p => `pipe_${p.id}`).join(',');
-  fetch(`/api/photos/batch?ids=${pipeIds}`).then(r => r.ok ? r.json() : {}).then(photos => {
-    Object.assign(hotelPhotos, photos);
-    renderPipelineCards();
-  }).catch(() => {});
-
   renderPipelineKPIs();
   renderPipelineCards();
   renderPipelineCharts();
@@ -1849,20 +1792,7 @@ function renderPipelineCards() {
     const isUC = p.status === 'Under Construction';
     const pill  = isUC ? `<span class="pipe-status-uc">${p.status}</span>` : `<span class="pipe-status-pl">${p.status}</span>`;
     const invM  = Math.round(p.investment_mad / 1e6).toLocaleString('en');
-    const pipeKey = `pipe_${p.id}`;
-    const photo   = hotelPhotos[pipeKey];
-    const photoHdr = photo && photo.url
-      ? `<div class="pipe-card-photo">
-           <img src="${photo.url}" alt="${fmt.esc(p.name)}" loading="lazy" onerror="this.parentElement.classList.add('pipe-card-no-photo');this.style.display='none'">
-           <div class="pipe-card-photo-gradient"></div>
-           <div class="pipe-card-photo-name">${fmt.esc(p.name)}</div>
-         </div>`
-      : `<div class="pipe-card-photo pipe-card-no-photo">
-           <div class="pipe-card-photo-gradient"></div>
-           <div class="pipe-card-photo-name">${fmt.esc(p.name)}</div>
-         </div>`;
     return `<div class="pipe-card ${isUC ? 'pipe-card-uc' : 'pipe-card-pl'}">
-      ${photoHdr}
       <div>
         <div class="pipe-card-header-row">
           <div class="pipe-card-name">${fmt.esc(p.name)}</div>
