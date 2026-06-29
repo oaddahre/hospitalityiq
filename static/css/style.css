@@ -2913,3 +2913,36 @@ body.light .nav-logout  { color: #8A8A8A; }
   .news-cat { border: 1px solid #999 !important; color: #333 !important; background: #f5f5f5 !important; }
   .news-read-btn { display: none !important; }
 }
+
+/* ─── Brand logos ─────────────────────────────────────────────── */
+.brand-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 3px;
+  background: white;
+  padding: 2px;
+  margin-right: 6px;
+}
+.brand-logo-lg {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: white;
+  padding: 3px;
+  margin-right: 10px;
+}
+.brand-logo-img {
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 3px;
+  background: white;
+  padding: 2px;
+  margin-right: 6px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.brand-logo-img.loaded { opacity: 1; }
+

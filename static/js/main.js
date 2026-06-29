@@ -1,5 +1,53 @@
 // ─── Constants ────────────────────────────────────────────────────
 
+const BRAND_DOMAINS = {
+  'Accor': 'accor.com',
+  'Marriott International': 'marriott.com',
+  'Hilton Hotels & Resorts': 'hilton.com',
+  'Hyatt Hotels Corporation': 'hyatt.com',
+  'Four Seasons Hotels & Resorts': 'fourseasons.com',
+  'Radisson Hotel Group': 'radissonhotels.com',
+  'IHG Hotels & Resorts': 'ihg.com',
+  'RIU Hotels & Resorts': 'riu.com',
+  'Barceló Hotel Group': 'barcelo.com',
+  'Kenzi Hotels Group': 'kenzihotels.com',
+  'Atlas Hotels Group': 'atlashotels.ma',
+  'Mogador Hotels Group': 'hotelmogador.com',
+  'Onomo Hotels': 'onomohotel.com',
+  'Zalagh Hotels Group': 'zalagh.com',
+  'Louvre Hotels Group': 'louvrehotels.com',
+  'Wyndham Hotels & Resorts': 'wyndhamhotels.com',
+  'Rotana Hotels': 'rotana.com',
+  'Meininger Hotels': 'meininger-hotels.com',
+  'Club Med': 'clubmed.com',
+  'Iberostar Hotels & Resorts': 'iberostar.com',
+  'Minor Hotels': 'minorhotels.com',
+  'Pestana Hotel Group': 'pestana.com',
+  'Barrière': 'hotelsbarriere.com',
+  'Oberoi Hotels & Resorts': 'oberoihotels.com',
+  'Nobu Hospitality': 'nobuhotels.com',
+  'Relais & Châteaux': 'relaischateaux.com',
+  'Farah Hotels': 'farahhotels.com',
+  'TUI Hotels & Resorts': 'tui.com',
+  'Globalia Hotels': 'beliveholidays.com',
+  'Royal Mansour Collection': 'royalmansour.com',
+  'Kerzner International': 'kerzner.com',
+  'Groupe Barrière': 'hotelsbarriere.com',
+  'Soho Boutique': 'sohohoteles.com',
+};
+
+function getBrandLogoUrl(brandGroup) {
+  const domain = BRAND_DOMAINS[brandGroup];
+  if (!domain) return null;
+  return `https://cdn.brandfetch.io/domain/${domain}?c=1idptYpdMe9b8BdTIPC`;
+}
+
+function getBrandLogoImg(brandGroup, size = 24) {
+  const url = getBrandLogoUrl(brandGroup);
+  if (!url) return '';
+  return `<img src="${url}" alt="${brandGroup}" class="brand-logo-img" style="width:${size}px;height:${size}px;" onload="this.classList.add('loaded')" onerror="this.style.display='none'">`;
+}
+
 const SEG_COLORS = {
   'Ultra Luxury': '#B87860',
   'Luxury':       '#A06848',
@@ -365,7 +413,7 @@ function renderBrandTable() {
   tbody.innerHTML = rows.map((r, i) => `
     <tr>
       <td class="rank-cell">${i + 1}</td>
-      <td><button class="brand-link" data-brand="${fmt.esc(r.brand_group)}" onclick="showBrandDetail(this.dataset.brand)">${fmt.esc(r.brand_group)}</button></td>
+      <td><button class="brand-link" data-brand="${fmt.esc(r.brand_group)}" onclick="showBrandDetail(this.dataset.brand)">${getBrandLogoImg(r.brand_group, 20)} ${fmt.esc(r.brand_group)}</button></td>
       <td>${r.hotel_count}</td>
       <td>${fmt.num(r.total_keys)}</td>
       <td>${fmt.pct(r.occupancy)}</td>
@@ -398,7 +446,7 @@ function showBrandDetail(brandGroup) {
   const distinctOwners = ownerValues.filter(o => o !== 'Undisclosed');
 
   // Header
-  document.getElementById('brand-detail-name').textContent = brandGroup;
+  document.getElementById('brand-detail-name').innerHTML = getBrandLogoImg(brandGroup, 40) + ' ' + fmt.esc(brandGroup);
   document.getElementById('brand-detail-sub').textContent =
     `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''} · ${fmt.num(tk)} keys · ${cities.join(', ')}`;
 
@@ -572,7 +620,7 @@ async function showHotelDetail(id) {
 
   // ── 6. Brand info ──
   const brandCount = hotels.filter(x => x.brand_group === h.brand_group).length;
-  document.getElementById('hotel-brand-name').textContent  = h.brand_group;
+  document.getElementById('hotel-brand-name').innerHTML = getBrandLogoImg(h.brand_group, 32) + ' ' + fmt.esc(h.brand_group);
   document.getElementById('hotel-brand-count').textContent = brandCount;
   const brandBtn = document.getElementById('hotel-brand-link');
   brandBtn.textContent     = `View all ${h.brand_group} properties →`;
@@ -1245,7 +1293,7 @@ function renderHotelsTable() {
         <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
         <td>${fmt.esc(h.city)}</td>
         <td class="col-hide-mobile"><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
-        <td class="col-hide-mobile">${fmt.esc(h.brand_group)}</td>
+        <td class="col-hide-mobile">${getBrandLogoImg(h.brand_group, 16)} ${fmt.esc(h.brand_group)}</td>
         <td class="col-hide-mobile">${fmt.num(h.keys)}</td>
         <td class="col-hide-mobile">${fmt.pct(h.occupancy)}</td>
         <td class="col-hide-mobile">${fmt.mad(h.adr_mad)}</td>
@@ -1799,7 +1847,7 @@ function renderPipelineCards() {
           ${pill}
         </div>
         <div class="pipe-card-location">${fmt.esc(p.city)} · ${fmt.esc(p.category)}</div>
-        <div class="pipe-card-brand">${fmt.esc(p.brand)}</div>
+        <div class="pipe-card-brand">${getBrandLogoImg(p.brand, 16)} ${fmt.esc(p.brand)}</div>
       </div>
       <div class="pipe-card-year">${p.expected_opening}</div>
       <div class="pipe-card-metrics">
