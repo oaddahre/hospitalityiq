@@ -859,6 +859,115 @@ def api_hotels():
     return jsonify(records)
 
 
+@app.route("/api/brands")
+@login_required
+def api_brands():
+    _BRAND_DOMAINS = {
+        'Accor': 'accor.com',
+        'Marriott International': 'marriott.com',
+        'Hilton Hotels & Resorts': 'hilton.com',
+        'Hyatt Hotels Corporation': 'hyatt.com',
+        'Four Seasons Hotels & Resorts': 'fourseasons.com',
+        'Radisson Hotel Group': 'radissonhotels.com',
+        'IHG Hotels & Resorts': 'ihg.com',
+        'RIU Hotels & Resorts': 'riu.com',
+        'Barceló Hotel Group': 'barcelo.com',
+        'Kenzi Hotels Group': 'kenzihotels.com',
+        'Atlas Hotels Group': 'atlashotels.ma',
+        'Mogador Hotels Group': 'hotelmogador.com',
+        'Onomo Hotels': 'onomohotel.com',
+        'Zalagh Hotels Group': 'zalagh.com',
+        'Louvre Hotels Group': 'louvrehotels.com',
+        'Wyndham Hotels & Resorts': 'wyndhamhotels.com',
+        'Rotana Hotels': 'rotana.com',
+        'Club Med': 'clubmed.com',
+        'Iberostar Hotels & Resorts': 'iberostar.com',
+        'Minor Hotels': 'minorhotels.com',
+        'Pestana Hotel Group': 'pestana.com',
+        'Farah Hotels': 'farahhotels.com',
+        'TUI Hotels & Resorts': 'tui.com',
+        'Royal Mansour Collection': 'royalmansour.com',
+        'Kerzner International': 'kerzner.com',
+    }
+
+    def _norm_bg(bg):
+        if bg in ('Independent', 'Independent Luxury'):
+            return 'Independent Hotels'
+        return bg
+
+    _, _, merged = load_data()
+    merged = merged.copy()
+    merged['_bg'] = merged['brand_group'].apply(_norm_bg)
+
+    total_keys = int(merged['keys'].sum())
+
+    try:
+        pipe_df = pd.read_csv(os.path.join(DATA_DIR, 'pipeline.csv'))
+        pipe_df['_bg'] = pipe_df['brand_group'].apply(_norm_bg)
+    except Exception:
+        pipe_df = pd.DataFrame(columns=['_bg', 'keys'])
+
+    results = []
+    for bg, grp in merged.groupby('_bg'):
+        if len(grp) < 2:
+            continue
+
+        tk = int(grp['keys'].sum())
+        ok = float((grp['keys'] * grp['occupancy']).sum())
+        avg_occ      = ok / tk if tk else 0.0
+        avg_adr      = float((grp['adr_mad'] * grp['keys'] * grp['occupancy']).sum()) / ok if ok else 0.0
+        w_revpar     = float((grp['revpar_mad'] * grp['keys']).sum()) / tk if tk else 0.0
+        avg_gop      = float((grp['gop_margin'] * grp['keys']).sum()) / tk if tk else 0.0
+        total_rev_m  = round(float((grp['revpar_mad'] * grp['keys']).sum()) * 365 / 1_000_000, 1)
+
+        cities   = sorted(grp['city'].unique().tolist())
+        segments = sorted(grp['category'].unique().tolist())
+
+        newest_row = grp.loc[grp['year_opened'].idxmax()]
+        oldest_row = grp.loc[grp['year_opened'].idxmin()]
+        newest = f"{newest_row['name']} ({int(newest_row['year_opened'])})"
+        oldest = f"{oldest_row['name']} ({int(oldest_row['year_opened'])})"
+
+        owners     = grp['owner'].dropna().unique().tolist()
+        disclosed  = [o for o in owners if o != 'Undisclosed']
+        if not disclosed:
+            ownership = 'Undisclosed'
+        elif 'Risma' in disclosed:
+            ownership = 'Listed (Risma)'
+        elif len(disclosed) == 1:
+            ownership = disclosed[0]
+        else:
+            ownership = 'Mixed'
+
+        pg = pipe_df[pipe_df['_bg'] == bg]
+        pipeline_projects = int(len(pg))
+        pipeline_keys     = int(pg['keys'].sum()) if len(pg) else 0
+
+        results.append({
+            'brand_group':               bg,
+            'domain':                    _BRAND_DOMAINS.get(bg),
+            'hotels':                    len(grp),
+            'total_keys':                tk,
+            'cities':                    cities,
+            'segments':                  segments,
+            'avg_occupancy':             round(avg_occ, 4),
+            'avg_adr':                   round(avg_adr, 1),
+            'avg_revpar':                round(w_revpar, 1),
+            'avg_gop_margin':            round(avg_gop, 4),
+            'weighted_revpar':           round(w_revpar, 1),
+            'total_rooms_revenue_mad_m': total_rev_m,
+            'pipeline_projects':         pipeline_projects,
+            'pipeline_keys':             pipeline_keys,
+            'newest_hotel':              newest,
+            'oldest_hotel':              oldest,
+            'ownership':                 ownership,
+            'market_share_keys_pct':     round(tk / total_keys * 100, 1),
+        })
+
+    results.sort(key=lambda x: x['total_keys'], reverse=True)
+    return jsonify(results)
+
+
 @app.route("/api/pipeline")
 @login_required
 @tier_required("benchmarker")

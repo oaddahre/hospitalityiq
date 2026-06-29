@@ -142,6 +142,18 @@ const PIPE_STR_COLS = new Set(['name', 'city', 'category', 'brand', 'status']);
 let hotelDetailPrevScreen = 'hotels';
 let hotelCityChart        = null;
 
+let brandsData   = null;
+let brandsInited = false;
+let brandDetailPrevScreen = 'dashboard';
+const brandsFilter   = { sort: 'total_keys', search: '', segment: 'all' };
+const brandsCompSort = { col: 'total_keys', dir: -1 };
+const BRANDS_STR_COLS = new Set(['brand_group']);
+const BRAND_PALETTE   = [
+  '#B87860','#A06848','#886050','#705040','#584038',
+  '#3E2E28','#6A8A6A','#4A6E8A','#7A6A8A','#8A6A4A',
+];
+const BRANDS_COMP_STR = new Set(['brand_group']);
+
 // ─── Theme ────────────────────────────────────────────────────────
 
 const ICON_MOON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
@@ -428,11 +440,213 @@ function renderBrandTable() {
   sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''}`;
 }
 
+// ─── Brands screen ────────────────────────────────────────────────
+
+async function initBrands() {
+  if (!brandsInited) {
+    try {
+      brandsData   = await fetch('/api/brands').then(r => r.json());
+      brandsInited = true;
+    } catch (e) {
+      document.getElementById('brands-cards-grid').innerHTML =
+        '<p style="color:var(--text-muted);font-size:13px;padding:16px 0">Failed to load brand data.</p>';
+      return;
+    }
+  }
+  renderBrandsKPIs();
+  renderBrandsCards();
+  renderBrandsMarketShare();
+  renderBrandsCompTable();
+  renderBrandsInsights();
+}
+
+function filteredBrands() {
+  let data = [...brandsData];
+  if (brandsFilter.segment !== 'all') {
+    data = data.filter(b => b.segments.includes(brandsFilter.segment));
+  }
+  if (brandsFilter.search.trim()) {
+    const q = brandsFilter.search.trim().toLowerCase();
+    data = data.filter(b => b.brand_group.toLowerCase().includes(q));
+  }
+  data.sort((a, b) => b[brandsFilter.sort] - a[brandsFilter.sort]);
+  return data;
+}
+
+function renderBrandsKPIs() {
+  const branded = brandsData.filter(b => b.brand_group !== 'Independent Hotels');
+  const allKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);
+  const champion = [...brandsData].sort((a, b) => b.weighted_revpar - a.weighted_revpar)[0];
+  const largest  = [...brandsData].sort((a, b) => b.total_keys - a.total_keys)[0];
+
+  document.querySelector('#brnkpi-groups .kpi-value').textContent  = brandsData.length;
+  document.querySelector('#brnkpi-keys .kpi-value').textContent    = allKeys.toLocaleString('en');
+  document.querySelector('#brnkpi-champion .kpi-value').textContent = champion ? champion.brand_group.split(' ')[0] : '—';
+  document.querySelector('#brnkpi-largest .kpi-value').textContent  = largest  ? largest.brand_group.split(' ')[0] : '—';
+}
+
+function brandLogoOrInitials(bg, size) {
+  const url = getBrandLogoUrl(bg);
+  if (url) return getBrandLogoImg(bg, size);
+  const initials = bg.replace('Hotels', '').replace('Hotel', '').replace('Resorts', '').replace('International', '')
+    .trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const bg2 = BRAND_PALETTE[Math.abs(bg.split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % BRAND_PALETTE.length];
+  return `<div class="brn-initials" style="width:${size}px;height:${size}px;background:${bg2}">${initials}</div>`;
+}
+
+function renderBrandsCards() {
+  const data = filteredBrands();
+  const grid = document.getElementById('brands-cards-grid');
+  if (!data.length) {
+    grid.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:16px 0">No brands match the selected filters.</p>';
+    return;
+  }
+  grid.innerHTML = data.map(b => {
+    const cityList  = b.cities.slice(0, 3).map(fmt.esc).join(' · ');
+    const cityMore  = b.cities.length > 3 ? ` <span class="brn-more">+${b.cities.length - 3}</span>` : '';
+    const segPills  = b.segments.map(s => `<span class="brn-seg-pill">${fmt.esc(s)}</span>`).join('');
+    const mktBar    = Math.min(b.market_share_keys_pct * 4, 100);
+    const pipeRow   = b.pipeline_projects > 0
+      ? `<div class="brn-card-pipeline">Pipeline: ${b.pipeline_projects} project${b.pipeline_projects !== 1 ? 's' : ''} · ${b.pipeline_keys.toLocaleString('en')} keys →</div>`
+      : '';
+    const esc = fmt.esc(b.brand_group).replace(/'/g, '&#39;');
+
+    return `<div class="brn-card" data-brand-group="${esc}">
+      <div class="brn-card-header">
+        <div class="brn-card-logo-wrap">${brandLogoOrInitials(b.brand_group, 40)}</div>
+        <div class="brn-card-header-info">
+          <div class="brn-card-name">${fmt.esc(b.brand_group)}</div>
+          <div class="brn-card-sub">${b.hotels} hotel${b.hotels !== 1 ? 's' : ''} · ${b.total_keys.toLocaleString('en')} keys</div>
+        </div>
+      </div>
+      <div class="brn-card-kpis">
+        <div class="brn-kpi"><div class="brn-kpi-lbl">OCC</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
+        <div class="brn-kpi"><div class="brn-kpi-lbl">ADR</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
+        <div class="brn-kpi"><div class="brn-kpi-lbl">RevPAR</div><div class="brn-kpi-val">${fmt.mad(b.weighted_revpar)}</div></div>
+        <div class="brn-kpi"><div class="brn-kpi-lbl">GOP</div><div class="brn-kpi-val">${fmt.pct(b.avg_gop_margin)}</div></div>
+      </div>
+      <div class="brn-card-meta">
+        <div class="brn-card-cities">${cityList}${cityMore}</div>
+        <div class="brn-card-segs">${segPills}</div>
+      </div>
+      <div class="brn-card-share">
+        <span class="brn-share-txt">Mkt share: ${b.market_share_keys_pct.toFixed(1)}% of keys</span>
+        <div class="brn-share-mini"><div class="brn-share-mini-fill" style="width:${mktBar}%"></div></div>
+        ${pipeRow}
+      </div>
+      <button class="brn-card-link" data-brand-group="${esc}">View all properties →</button>
+    </div>`;
+  }).join('');
+}
+
+function renderBrandsMarketShare() {
+  const sorted = [...brandsData].sort((a, b) => b.total_keys - a.total_keys);
+  const total  = sorted.reduce((s, b) => s + b.total_keys, 0);
+  const top8   = sorted.slice(0, 8);
+  const others = sorted.slice(8);
+  const otherKeys = others.reduce((s, b) => s + b.total_keys, 0);
+
+  const segs = top8.map((b, i) => ({
+    name:  b.brand_group,
+    pct:   b.total_keys / total * 100,
+    color: BRAND_PALETTE[i] || '#888888',
+  }));
+  if (otherKeys > 0) segs.push({ name: 'Other', pct: otherKeys / total * 100, color: '#444444' });
+
+  const barHtml = segs.map(s =>
+    `<div class="brn-mkt-seg" style="width:${s.pct.toFixed(2)}%;background:${s.color}" title="${s.name}: ${s.pct.toFixed(1)}%"></div>`
+  ).join('');
+
+  const legendHtml = segs.map(s =>
+    `<div class="brn-mkt-legend-item">
+      <span class="brn-mkt-dot" style="background:${s.color}"></span>
+      <span class="brn-mkt-label">${fmt.esc(s.name)}</span>
+      <span class="brn-mkt-pct">${s.pct.toFixed(1)}%</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('brands-market-share-wrap').innerHTML =
+    `<div class="brn-mkt-bar">${barHtml}</div>
+     <div class="brn-mkt-legend">${legendHtml}</div>`;
+}
+
+function renderBrandsCompTable() {
+  const { col, dir } = brandsCompSort;
+  const sorted = [...brandsData].sort((a, b) => {
+    if (BRANDS_COMP_STR.has(col)) return dir * String(a[col]).localeCompare(String(b[col]));
+    return dir * (a[col] - b[col]);
+  });
+
+  document.querySelectorAll('#brands-comp-table .sortable-col').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    const icon = th.querySelector('.sort-icon');
+    if (th.dataset.bccol === col) {
+      th.classList.add(dir === 1 ? 'sort-asc' : 'sort-desc');
+      if (icon) icon.textContent = dir === 1 ? '↑' : '↓';
+    } else {
+      if (icon) icon.textContent = '↕';
+    }
+  });
+
+  document.getElementById('brands-comp-tbody').innerHTML = sorted.map((b, i) => {
+    const rank      = i + 1;
+    const topClass  = rank <= 3 ? ' brn-top3' : '';
+    const rankStyle = rank <= 3 ? `style="color:var(--accent);font-weight:700"` : '';
+    return `<tr class="brand-hotel-row${topClass}" data-brand-group="${fmt.esc(b.brand_group).replace(/'/g,'&#39;')}">
+      <td class="rank-cell" ${rankStyle}>${rank}</td>
+      <td>
+        <button class="brand-link" data-brand-group="${fmt.esc(b.brand_group).replace(/'/g,'&#39;')}" style="display:flex;align-items:center;gap:6px">
+          ${getBrandLogoImg(b.brand_group, 20)} ${fmt.esc(b.brand_group)}
+        </button>
+      </td>
+      <td>${b.hotels}</td>
+      <td>${b.total_keys.toLocaleString('en')}</td>
+      <td>${b.market_share_keys_pct.toFixed(1)}%</td>
+      <td>${fmt.pct(b.avg_occupancy)}</td>
+      <td>${fmt.mad(b.avg_adr)}</td>
+      <td>${fmt.mad(b.weighted_revpar)}</td>
+      <td class="${gopClass(b.avg_gop_margin)}">${fmt.pct(b.avg_gop_margin)}</td>
+      <td>${b.pipeline_keys > 0 ? b.pipeline_keys.toLocaleString('en') : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderBrandsInsights() {
+  const byKeys   = [...brandsData].sort((a, b) => b.total_keys   - a.total_keys)[0];
+  const byRevpar = [...brandsData].sort((a, b) => b.weighted_revpar - a.weighted_revpar)[0];
+  const byPipe   = [...brandsData].filter(b => b.pipeline_projects > 0)
+                                   .sort((a, b) => b.pipeline_keys - a.pipeline_keys)[0];
+  const totalKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);
+
+  if (byKeys) {
+    document.getElementById('brni-leader-val').textContent  = byKeys.brand_group;
+    document.getElementById('brni-leader-desc').textContent =
+      `${byKeys.market_share_keys_pct.toFixed(1)}% of all Morocco hotel keys`;
+  }
+  if (byRevpar) {
+    document.getElementById('brni-revpar-val').textContent  = byRevpar.brand_group;
+    document.getElementById('brni-revpar-desc').textContent =
+      `MAD ${fmt.mad(byRevpar.weighted_revpar)} weighted RevPAR`;
+  }
+  if (byPipe) {
+    document.getElementById('brni-pipeline-val').textContent  = byPipe.brand_group;
+    document.getElementById('brni-pipeline-desc').textContent =
+      `${byPipe.pipeline_projects} projects · ${byPipe.pipeline_keys.toLocaleString('en')} keys in pipeline`;
+  } else {
+    document.getElementById('brni-pipeline-val').textContent  = '—';
+    document.getElementById('brni-pipeline-desc').textContent = 'No pipeline data available';
+  }
+}
+
 // ─── Brand detail ─────────────────────────────────────────────────
 
-function showBrandDetail(brandGroup) {
-  console.log('clicked brand:', brandGroup);
-  brandHotelsData = hotels.filter(h => h.brand_group === brandGroup);
+function showBrandDetail(brandGroup, prevScreen) {
+  brandDetailPrevScreen = prevScreen || 'dashboard';
+  const backBtn = document.getElementById('brand-back-btn');
+  backBtn.textContent = brandDetailPrevScreen === 'brands' ? '← Back to Brands' : '← Back to Dashboard';
+
+  brandHotelsData = hotels.filter(h => h.brand_group === brandGroup
+    || (brandGroup === 'Independent Hotels' && (h.brand_group === 'Independent' || h.brand_group === 'Independent Luxury')));
 
   const tk    = brandHotelsData.reduce((s, h) => s + h.keys, 0);
   const ok    = brandHotelsData.reduce((s, h) => s + h.keys * h.occupancy, 0);
@@ -2087,6 +2301,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
       }
     }
     if (screen === 'hotels')   renderHotelsTable();
+    if (screen === 'brands')   initBrands();
     if (screen === 'tourism')  initTourismCharts();
     if (screen === 'pipeline') initPipeline();
     if (screen === 'news')         initNews();
@@ -2246,15 +2461,17 @@ document.querySelector('#brand-table tbody').addEventListener('click', e => {
   showBrandDetail(cell.dataset.brand);
 });
 
-// Brand detail — back to dashboard
+// Brand detail — back button (dashboard or brands depending on origin)
 document.getElementById('brand-back-btn').addEventListener('click', () => {
+  const prev = brandDetailPrevScreen || 'dashboard';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l =>
-    l.classList.toggle('active', l.dataset.screen === 'dashboard')
+    l.classList.toggle('active', l.dataset.screen === prev)
   );
-  document.getElementById('screen-dashboard').classList.add('active');
-  setSidebar('dashboard');
-  syncMobileNav('dashboard');
+  const prevEl = document.getElementById('screen-' + prev);
+  if (prevEl) prevEl.classList.add('active');
+  setSidebar(prev);
+  syncMobileNav(prev);
 });
 
 // Hotel detail — back button
@@ -2286,6 +2503,59 @@ document.getElementById('brand-hotels-table').addEventListener('click', e => {
     brandState.dir = BRAND_STR_COLS.has(col) ? 1 : -1;
   }
   renderBrandHotelsTable();
+});
+
+// ─── Brands screen events ─────────────────────────────────────────
+
+// Card clicks + comparison table brand clicks → brand detail
+document.getElementById('brands-cards-grid').addEventListener('click', e => {
+  const card = e.target.closest('[data-brand-group]');
+  if (!card) return;
+  const bg = card.dataset.brandGroup;
+  if (bg) showBrandDetail(bg, 'brands');
+});
+
+document.getElementById('brands-comp-tbody').addEventListener('click', e => {
+  const row = e.target.closest('[data-brand-group]');
+  if (!row) return;
+  const bg = row.dataset.brandGroup;
+  if (bg) showBrandDetail(bg, 'brands');
+});
+
+// Comparison table column sort
+document.getElementById('brands-comp-table').addEventListener('click', e => {
+  const th = e.target.closest('.sortable-col[data-bccol]');
+  if (!th) return;
+  const col = th.dataset.bccol;
+  if (col === brandsCompSort.col) {
+    brandsCompSort.dir *= -1;
+  } else {
+    brandsCompSort.col = col;
+    brandsCompSort.dir = BRANDS_COMP_STR.has(col) ? 1 : -1;
+  }
+  if (brandsInited) renderBrandsCompTable();
+});
+
+// Segment filter pills
+document.getElementById('brands-seg-pills').addEventListener('click', e => {
+  const btn = e.target.closest('.seg-btn');
+  if (!btn) return;
+  document.querySelectorAll('#brands-seg-pills .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  brandsFilter.segment = btn.dataset.bseg;
+  if (brandsInited) renderBrandsCards();
+});
+
+// Search input
+document.getElementById('brands-search').addEventListener('input', e => {
+  brandsFilter.search = e.target.value;
+  if (brandsInited) renderBrandsCards();
+});
+
+// Sort select
+document.getElementById('brands-sort').addEventListener('change', e => {
+  brandsFilter.sort = e.target.value;
+  if (brandsInited) renderBrandsCards();
 });
 
 // ─── AI Chat ──────────────────────────────────────────────────────

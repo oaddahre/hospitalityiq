@@ -24,6 +24,7 @@
       <a href="#" class="nav-link" data-screen="map">Map</a>
       <a href="#" class="nav-link" data-screen="pipeline">Pipeline</a>
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
+      <a href="#" class="nav-link" data-screen="brands">Brands</a>
       <a href="#" class="nav-link" data-screen="benchmarking">Benchmarking</a>
       <a href="#" class="nav-link" data-screen="reports">Reports</a>
       <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
@@ -48,6 +49,7 @@
     <a href="#" class="nav-link mobile-nav-link" data-screen="map">Map</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="pipeline">Pipeline</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="hotels">Hotels</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="brands">Brands</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="benchmarking">Benchmarking</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="reports">Reports</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="tourism">Tourism</a>
@@ -735,10 +737,122 @@
         <p class="tour-disclaimer">Tourism statistics: ONMT official publications 2020–2025. 2026E: Kōdō estimates based on YTD trends and forward bookings. Airport data: ONDA. Events: publicly announced programmes — dates subject to change.</p>
       </section>
 
+      <!-- ── Brands ── -->
+      <section class="screen" id="screen-brands">
+        <div class="screen-header">
+          <h1>Brand Intelligence</h1>
+          <p class="screen-sub">Hotel brand group performance across Morocco · Kōdō proprietary data</p>
+        </div>
+
+        <!-- Summary KPIs -->
+        <div class="kpi-grid brands-kpi-grid" id="brands-kpi-grid">
+          <div class="kpi-card" id="brnkpi-groups">
+            <span class="kpi-label">Brand Groups</span>
+            <span class="kpi-value">—</span>
+          </div>
+          <div class="kpi-card" id="brnkpi-keys">
+            <span class="kpi-label">Total Branded Keys</span>
+            <span class="kpi-value">—</span>
+          </div>
+          <div class="kpi-card" id="brnkpi-champion">
+            <span class="kpi-label">RevPAR Champion</span>
+            <span class="kpi-value">—</span>
+          </div>
+          <div class="kpi-card" id="brnkpi-largest">
+            <span class="kpi-label">Largest Group</span>
+            <span class="kpi-value">—</span>
+          </div>
+        </div>
+
+        <!-- Filter / sort bar -->
+        <div class="brands-filter-bar">
+          <div class="brands-seg-pills" id="brands-seg-pills">
+            <button class="seg-btn active" data-bseg="all">All</button>
+            <button class="seg-btn" data-bseg="Ultra Luxury">Ultra Luxury</button>
+            <button class="seg-btn" data-bseg="Luxury">Luxury</button>
+            <button class="seg-btn" data-bseg="Upper Upscale">Upper Upscale</button>
+            <button class="seg-btn" data-bseg="Upscale">Upscale</button>
+            <button class="seg-btn" data-bseg="Midscale">Midscale</button>
+          </div>
+          <div class="brands-filter-right">
+            <input type="text" id="brands-search" class="brands-search-input" placeholder="Search brands…">
+            <select id="brands-sort" class="pipe-select">
+              <option value="total_keys">Sort by: Keys</option>
+              <option value="weighted_revpar">Sort by: RevPAR</option>
+              <option value="hotels">Sort by: Hotels</option>
+              <option value="avg_occupancy">Sort by: Occupancy</option>
+              <option value="avg_adr">Sort by: ADR</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Brand cards grid -->
+        <div class="brands-cards-grid" id="brands-cards-grid">
+          <p style="color:var(--text-muted);font-size:13px;padding:16px 0">Loading brand data…</p>
+        </div>
+
+        <!-- Market share chart -->
+        <div class="chart-card" style="margin-bottom:20px" id="brands-mktshare-card">
+          <div class="chart-card-header">
+            <span class="chart-title">Market Share by Keys</span>
+            <span class="chart-unit">% of total Morocco hotel keys</span>
+          </div>
+          <div id="brands-market-share-wrap"></div>
+        </div>
+
+        <!-- Comparison table -->
+        <div class="table-card" style="margin-bottom:20px">
+          <div class="table-card-header">
+            <span class="table-title">Brand Performance Ranking</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table" id="brands-comp-table">
+              <thead>
+                <tr>
+                  <th style="width:40px">Rank</th>
+                  <th class="sortable-col" data-bccol="brand_group">Brand Group <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col" data-bccol="hotels">Hotels <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col sort-desc" data-bccol="total_keys">Keys <span class="sort-icon">↓</span></th>
+                  <th class="sortable-col" data-bccol="market_share_keys_pct">Mkt Share <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col" data-bccol="avg_occupancy">Occ % <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col" data-bccol="avg_adr">ADR (MAD) <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col sort-desc" data-bccol="weighted_revpar">RevPAR (MAD) <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col" data-bccol="avg_gop_margin">GOP % <span class="sort-icon">↕</span></th>
+                  <th class="sortable-col" data-bccol="pipeline_keys">Pipeline Keys <span class="sort-icon">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="brands-comp-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Insights row -->
+        <div class="brands-insights-row">
+          <div class="brands-insight-card" id="brni-leader">
+            <div class="brni-icon">🏆</div>
+            <div class="brni-title">Market Leader</div>
+            <div class="brni-value" id="brni-leader-val">—</div>
+            <div class="brni-desc" id="brni-leader-desc">—</div>
+          </div>
+          <div class="brands-insight-card" id="brni-revpar">
+            <div class="brni-icon">🎯</div>
+            <div class="brni-title">RevPAR Champion</div>
+            <div class="brni-value" id="brni-revpar-val">—</div>
+            <div class="brni-desc" id="brni-revpar-desc">—</div>
+          </div>
+          <div class="brands-insight-card" id="brni-pipeline">
+            <div class="brni-icon">🚀</div>
+            <div class="brni-title">Fastest Growing</div>
+            <div class="brni-value" id="brni-pipeline-val">—</div>
+            <div class="brni-desc" id="brni-pipeline-desc">—</div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── Brand Detail ── -->
       <section class="screen" id="screen-brand">
         <div class="brand-top">
-          <button class="back-btn" id="brand-back-btn">← Back to Dashboard</button>
+          <button class="back-btn" id="brand-back-btn">← Back</button>
           <div class="screen-header">
             <h1 id="brand-detail-name">—</h1>
             <p class="screen-sub" id="brand-detail-sub">—</p>

@@ -2946,3 +2946,282 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .brand-logo-img.loaded { opacity: 1; }
 
+/* ─── Brands screen ───────────────────────────────────────────── */
+.brands-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+
+.brands-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.brands-seg-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.brands-filter-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.brands-search-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 6px 10px;
+  width: 160px;
+  outline: none;
+  transition: border-color 150ms;
+}
+.brands-search-input:focus { border-color: var(--accent); }
+.brands-search-input::placeholder { color: var(--text-muted); }
+
+/* Cards grid */
+.brands-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.brn-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.brn-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+}
+
+.brn-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brn-card-logo-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.brn-initials {
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.brn-card-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+.brn-card-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.brn-card-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}
+.brn-kpi { text-align: center; }
+.brn-kpi-lbl {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.brn-kpi-val {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.brn-card-meta { display: flex; flex-direction: column; gap: 6px; }
+.brn-card-cities {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.brn-more {
+  color: var(--accent);
+  font-weight: 500;
+}
+.brn-card-segs { display: flex; flex-wrap: wrap; gap: 4px; }
+.brn-seg-pill {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px;
+  color: var(--text-muted);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+.brn-card-share { display: flex; flex-direction: column; gap: 5px; }
+.brn-share-txt {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.brn-share-mini {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.brn-share-mini-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.brn-card-pipeline {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.brn-card-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 2px;
+  transition: opacity 150ms;
+}
+.brn-card-link:hover { opacity: 0.75; }
+
+/* Market share bar */
+.brn-mkt-bar {
+  display: flex;
+  height: 32px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.brn-mkt-seg {
+  height: 100%;
+  transition: opacity 150ms;
+  cursor: default;
+}
+.brn-mkt-seg:hover { opacity: 0.75; }
+.brn-mkt-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+.brn-mkt-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.brn-mkt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.brn-mkt-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.brn-mkt-pct {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Comparison table top-3 */
+.brn-top3 { border-left: 2px solid var(--accent); }
+
+/* Insights row */
+.brands-insights-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.brands-insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.brni-icon { font-size: 20px; line-height: 1; }
+.brni-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.brni-value {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1.2;
+}
+.brni-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Mobile — brands */
+@media (max-width: 768px) {
+  .brands-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .brands-cards-grid { grid-template-columns: 1fr; }
+  .brands-filter-bar { flex-direction: column; align-items: flex-start; }
+  .brands-filter-right { width: 100%; }
+  .brands-search-input { flex: 1; }
+  .brands-insights-row { grid-template-columns: 1fr; }
+  .brn-card-kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 12px 0; }
+}
+
