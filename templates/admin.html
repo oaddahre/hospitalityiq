@@ -254,56 +254,125 @@
       <button class="new-btn" onclick="openForm(null)">+ New Article</button>
     </div>
 
+    <!-- Pricing info box -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)">Sponsored Content Pricing</span>
+      <span style="font-size:12px;color:var(--text)">Sponsored Feature: <strong style="color:var(--accent)">MAD 8,000/month</strong></span>
+      <span style="font-size:12px;color:var(--text)">Partner Feature: <strong style="color:var(--accent)">MAD 15,000/month</strong></span>
+      <span style="font-size:12px;color:var(--text)">Opening Announcement: <strong style="color:var(--accent)">MAD 20,000 one-time</strong></span>
+    </div>
+
     <!-- Article form -->
     <div class="form-panel" id="form-panel">
       <div class="form-title" id="form-title">New Article</div>
       <input type="hidden" id="form-id" value="" />
       <div class="form-grid">
+
         <div class="form-group full">
-          <label class="form-label">Headline</label>
-          <input type="text" id="f-headline" class="form-input" placeholder="Article headline" />
+          <label class="form-label">Title</label>
+          <input type="text" id="f-title" class="form-input" placeholder="Article title" />
         </div>
-        <div class="form-group full">
-          <label class="form-label">Summary <span style="font-weight:400;text-transform:none;letter-spacing:0">(3–4 sentences shown in feed)</span></label>
-          <textarea id="f-summary" class="form-textarea" rows="4" placeholder="Lead paragraph shown in the news feed…"></textarea>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Body <span style="font-weight:400;text-transform:none;letter-spacing:0">(full article, shown on expand)</span></label>
-          <textarea id="f-body" class="form-textarea" rows="10" placeholder="Full article text…"></textarea>
-        </div>
+
         <div class="form-group">
           <label class="form-label">Category</label>
           <select id="f-category" class="form-select">
-            <option>Market</option>
-            <option>Hotel Opening</option>
-            <option>Investment</option>
-            <option>Tourism</option>
-            <option>Policy</option>
-            <option>Luxury</option>
-            <option>Infrastructure</option>
+            <option value="Market Intelligence">Market Intelligence</option>
+            <option value="Pipeline">Pipeline</option>
+            <option value="Openings">Openings</option>
+            <option value="Interviews">Interviews</option>
+            <option value="Sponsored">Sponsored</option>
+            <option value="Partner Feature">Partner Feature</option>
           </select>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select id="f-type" class="form-select" onchange="toggleSponsoredFields()">
+            <option value="editorial">Editorial</option>
+            <option value="sponsored">Sponsored</option>
+            <option value="partner">Partner Feature</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Author</label>
           <input type="text" id="f-author" class="form-input" value="Kōdō Editorial" />
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Read Time</label>
+          <input type="text" id="f-read-time" class="form-input" placeholder="e.g. 5 min read" value="5 min read" />
+        </div>
+
         <div class="form-group">
           <label class="form-label">Date</label>
           <input type="date" id="f-date" class="form-input" />
         </div>
-        <div class="form-group" style="justify-content:flex-end">
-          <label class="form-label">Status</label>
-          <div class="toggle-row">
+
+        <div class="form-group">
+          <label class="form-label">Cover Image Query</label>
+          <input type="text" id="f-cover-query" class="form-input" placeholder="e.g. luxury hotel morocco" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tags <span style="font-weight:400;text-transform:none;letter-spacing:0">(comma-separated)</span></label>
+          <input type="text" id="f-tags" class="form-input" placeholder="Marrakech, Luxury, Pipeline" />
+        </div>
+
+        <div class="form-group" style="justify-content:flex-start;gap:14px">
+          <label class="form-label">Status &amp; Featured</label>
+          <div class="toggle-row" style="margin-bottom:8px">
             <label class="toggle-switch">
               <input type="checkbox" id="f-published" />
               <span class="toggle-track"></span>
             </label>
-            <span class="toggle-label">Publish immediately</span>
+            <span class="toggle-label">Published</span>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-switch">
+              <input type="checkbox" id="f-featured" />
+              <span class="toggle-track"></span>
+            </label>
+            <span class="toggle-label">Featured (hero)</span>
           </div>
         </div>
+
+        <div class="form-group full">
+          <label class="form-label">Excerpt <span style="font-weight:400;text-transform:none;letter-spacing:0">(2–3 sentences, shown in cards)</span></label>
+          <textarea id="f-excerpt" class="form-textarea" rows="3" placeholder="Brief summary shown in article cards and hero…"></textarea>
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label">Content <span style="font-weight:400;text-transform:none;letter-spacing:0">(HTML — use &lt;p&gt;, &lt;h2&gt;, &lt;blockquote&gt;, &lt;strong&gt;)</span></label>
+          <textarea id="f-content" class="form-textarea" rows="14" placeholder="&lt;p&gt;Article content…&lt;/p&gt;"></textarea>
+        </div>
+
+        <!-- Sponsored fields (hidden by default) -->
+        <div class="form-group full" id="sponsored-fields" style="display:none;border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent);margin-bottom:14px">Sponsored Content Fields</div>
+          <div class="form-grid" style="padding:0">
+            <div class="form-group">
+              <label class="form-label">Sponsor Name</label>
+              <input type="text" id="f-sponsor-name" class="form-input" placeholder="e.g. Accor Morocco" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sponsor Logo Domain <span style="font-weight:400;text-transform:none;letter-spacing:0">(Brandfetch)</span></label>
+              <input type="text" id="f-sponsor-domain" class="form-input" placeholder="e.g. accor.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">CTA Button Text</label>
+              <input type="text" id="f-sponsor-cta-text" class="form-input" placeholder="Learn More →" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">CTA Button URL</label>
+              <input type="url" id="f-sponsor-cta-url" class="form-input" placeholder="https://…" />
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="form-actions">
-        <button class="save-btn" onclick="saveArticle()">Save</button>
+        <button class="save-btn" onclick="saveArticle()">Save Article</button>
         <button class="cancel-btn" onclick="closeForm()">Cancel</button>
         <span class="form-msg" id="form-msg"></span>
       </div>
@@ -594,15 +663,17 @@
         <thead>
           <tr>
             <th style="width:40px">ID</th>
-            <th>Headline</th>
-            <th style="width:130px">Category</th>
-            <th style="width:100px">Date</th>
-            <th style="width:90px">Status</th>
-            <th style="width:130px">Actions</th>
+            <th>Title</th>
+            <th style="width:140px">Category</th>
+            <th style="width:90px">Type</th>
+            <th style="width:96px">Date</th>
+            <th style="width:56px">Views</th>
+            <th style="width:86px">Status</th>
+            <th style="width:210px">Actions</th>
           </tr>
         </thead>
         <tbody id="articles-tbody">
-          <tr><td colspan="6" class="empty-state">Loading…</td></tr>
+          <tr><td colspan="8" class="empty-state">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -646,7 +717,7 @@
     const res = await fetch('/admin/news', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
-      body: JSON.stringify({ headline: '__test__', published: false, date: getToday(), category: 'Market', author: 'Kōdō Editorial', summary: '', body: '' }),
+      body: JSON.stringify({ title: '__test__', published: false, date: getToday(), category: 'Market Intelligence', author: 'Kōdō Editorial', excerpt: '', content: '' }),
     });
     if (res.status === 401) {
       document.getElementById('auth-error').style.display = 'block';
@@ -681,38 +752,56 @@
 
   // ── CRUD ──────────────────────────────────────────
   async function loadArticles() {
-    const res = await fetch('/api/news');
-    const pub = await res.json();
-    // Also fetch drafts — reuse the published list but fetch all via a trick:
-    // The GET /api/news only returns published ones, so we need a separate admin endpoint.
-    // For now, load published list and also check local state.
-    articles = pub;
+    try {
+      const res  = await fetch('/api/news');
+      const data = await res.json();
+      articles = Array.isArray(data) ? data : (data.all || []);
+    } catch { articles = []; }
     renderTable();
   }
+
+  function artTitle(a) { return a.title || a.headline || '(untitled)'; }
+  function artStatus(a) { return a.status === 'published' || a.published ? 'published' : 'draft'; }
 
   function renderTable() {
     const tbody = document.getElementById('articles-tbody');
     if (!articles.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No articles yet. Click "+ New Article" to get started.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No articles yet. Click "+ New Article" to get started.</td></tr>';
       return;
     }
-    tbody.innerHTML = articles.map(a => `
-      <tr>
+    tbody.innerHTML = articles.map(a => {
+      const status  = artStatus(a);
+      const typePill = a.type === 'sponsored' ? '<span class="status-pill" style="background:rgba(184,120,96,0.12);color:#B87860;border-color:rgba(184,120,96,0.3)">Sponsored</span>'
+                     : a.type === 'partner'    ? '<span class="status-pill" style="background:rgba(79,126,248,0.12);color:#4f7ef8;border-color:rgba(79,126,248,0.3)">Partner</span>'
+                     :                          '<span class="status-pill" style="background:rgba(140,140,140,0.08);color:#8a96b0;border-color:rgba(140,140,140,0.2)">Editorial</span>';
+      return `<tr>
         <td style="color:var(--text-dim);font-size:12px">${a.id}</td>
-        <td class="article-headline-cell"><div class="article-hl">${escHtml(a.headline)}</div></td>
-        <td><span class="cat-pill">${escHtml(a.category)}</span></td>
-        <td style="font-size:12px;color:var(--text-muted)">${a.date}</td>
-        <td><span class="status-pill ${a.published ? 'status-pub' : 'status-draft'}">${a.published ? 'Published' : 'Draft'}</span></td>
+        <td class="article-headline-cell">
+          <div class="article-hl">${escHtml(artTitle(a))}</div>
+          ${a.featured ? '<span style="font-size:9px;font-weight:700;color:#B87860;text-transform:uppercase;letter-spacing:0.06em">★ Featured</span>' : ''}
+        </td>
+        <td><span class="cat-pill">${escHtml(a.category || '—')}</span></td>
+        <td>${typePill}</td>
+        <td style="font-size:12px;color:var(--text-muted)">${a.date || '—'}</td>
+        <td style="font-size:12px;color:var(--text-muted)">${a.views || 0}</td>
+        <td><span class="status-pill ${status === 'published' ? 'status-pub' : 'status-draft'}">${status}</span></td>
         <td>
           <button class="action-btn" onclick="openForm(${a.id})">Edit</button>
+          <button class="action-btn ${status === 'published' ? '' : 'approve'}" onclick="togglePublish(${a.id})">${status === 'published' ? 'Unpublish' : 'Publish'}</button>
           <button class="action-btn delete" onclick="deleteArticle(${a.id})">Delete</button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   }
 
   function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function toggleSponsoredFields() {
+    const type = document.getElementById('f-type').value;
+    document.getElementById('sponsored-fields').style.display =
+      (type === 'sponsored' || type === 'partner') ? 'block' : 'none';
   }
 
   // ── Form ──────────────────────────────────────────
@@ -723,25 +812,45 @@
     if (id === null) {
       document.getElementById('form-title').textContent = 'New Article';
       document.getElementById('form-id').value = '';
-      document.getElementById('f-headline').value = '';
-      document.getElementById('f-summary').value = '';
-      document.getElementById('f-body').value = '';
-      document.getElementById('f-category').value = 'Market';
+      document.getElementById('f-title').value = '';
+      document.getElementById('f-excerpt').value = '';
+      document.getElementById('f-content').value = '';
+      document.getElementById('f-category').value = 'Market Intelligence';
+      document.getElementById('f-type').value = 'editorial';
       document.getElementById('f-author').value = 'Kōdō Editorial';
+      document.getElementById('f-read-time').value = '5 min read';
+      document.getElementById('f-cover-query').value = '';
+      document.getElementById('f-tags').value = '';
       document.getElementById('f-date').value = getToday();
       document.getElementById('f-published').checked = false;
+      document.getElementById('f-featured').checked = false;
+      document.getElementById('f-sponsor-name').value = '';
+      document.getElementById('f-sponsor-domain').value = '';
+      document.getElementById('f-sponsor-cta-text').value = '';
+      document.getElementById('f-sponsor-cta-url').value = '';
+      toggleSponsoredFields();
     } else {
       const a = articles.find(x => x.id === id);
       if (!a) return;
       document.getElementById('form-title').textContent = 'Edit Article';
       document.getElementById('form-id').value = id;
-      document.getElementById('f-headline').value = a.headline;
-      document.getElementById('f-summary').value = a.summary;
-      document.getElementById('f-body').value = a.body;
-      document.getElementById('f-category').value = a.category;
-      document.getElementById('f-author').value = a.author;
-      document.getElementById('f-date').value = a.date;
-      document.getElementById('f-published').checked = a.published;
+      document.getElementById('f-title').value = a.title || a.headline || '';
+      document.getElementById('f-excerpt').value = a.excerpt || a.summary || '';
+      document.getElementById('f-content').value = a.content || a.body || '';
+      document.getElementById('f-category').value = a.category || 'Market Intelligence';
+      document.getElementById('f-type').value = a.type || 'editorial';
+      document.getElementById('f-author').value = a.author || 'Kōdō Editorial';
+      document.getElementById('f-read-time').value = a.read_time || '5 min read';
+      document.getElementById('f-cover-query').value = a.cover_image_query || '';
+      document.getElementById('f-tags').value = Array.isArray(a.tags) ? a.tags.join(', ') : (a.tags || '');
+      document.getElementById('f-date').value = a.date || '';
+      document.getElementById('f-published').checked = artStatus(a) === 'published';
+      document.getElementById('f-featured').checked = !!a.featured;
+      document.getElementById('f-sponsor-name').value = a.sponsor_name || '';
+      document.getElementById('f-sponsor-domain').value = a.sponsor_logo_domain || '';
+      document.getElementById('f-sponsor-cta-text').value = a.sponsor_cta_text || '';
+      document.getElementById('f-sponsor-cta-url').value = a.sponsor_cta_url || '';
+      toggleSponsoredFields();
     }
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -751,19 +860,29 @@
   }
 
   async function saveArticle() {
-    const id = document.getElementById('form-id').value;
+    const id      = document.getElementById('form-id').value;
+    const tagsRaw = document.getElementById('f-tags').value;
+    const tags    = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
     const payload = {
-      headline:  document.getElementById('f-headline').value.trim(),
-      summary:   document.getElementById('f-summary').value.trim(),
-      body:      document.getElementById('f-body').value.trim(),
-      category:  document.getElementById('f-category').value,
-      author:    document.getElementById('f-author').value.trim() || 'Kōdō Editorial',
-      date:      document.getElementById('f-date').value,
-      published: document.getElementById('f-published').checked,
+      title:               document.getElementById('f-title').value.trim(),
+      category:            document.getElementById('f-category').value,
+      type:                document.getElementById('f-type').value,
+      author:              document.getElementById('f-author').value.trim() || 'Kōdō Editorial',
+      read_time:           document.getElementById('f-read-time').value.trim(),
+      date:                document.getElementById('f-date').value,
+      cover_image_query:   document.getElementById('f-cover-query').value.trim(),
+      tags,
+      published:           document.getElementById('f-published').checked,
+      featured:            document.getElementById('f-featured').checked,
+      excerpt:             document.getElementById('f-excerpt').value.trim(),
+      content:             document.getElementById('f-content').value.trim(),
+      sponsor_name:        document.getElementById('f-sponsor-name').value.trim() || null,
+      sponsor_logo_domain: document.getElementById('f-sponsor-domain').value.trim() || null,
+      sponsor_cta_text:    document.getElementById('f-sponsor-cta-text').value.trim() || null,
+      sponsor_cta_url:     document.getElementById('f-sponsor-cta-url').value.trim() || null,
     };
-    if (!payload.headline) { showMsg('Headline is required.', true); return; }
-
-    const url = id ? '/admin/news/' + id : '/admin/news';
+    if (!payload.title) { showMsg('Title is required.', true); return; }
+    const url    = id ? '/admin/news/' + id : '/admin/news';
     const method = id ? 'PUT' : 'POST';
     const res = await fetch(url, {
       method,
@@ -777,9 +896,22 @@
     await loadArticles();
   }
 
+  async function togglePublish(id) {
+    const a = articles.find(x => x.id === id);
+    if (!a) return;
+    const newStatus = artStatus(a) === 'published' ? 'draft' : 'published';
+    const res = await fetch('/admin/news/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      body: JSON.stringify({ status: newStatus, published: newStatus === 'published' }),
+    });
+    if (!res.ok) { alert('Failed.'); return; }
+    await loadArticles();
+  }
+
   async function deleteArticle(id) {
     const a = articles.find(x => x.id === id);
-    if (!confirm(`Delete "${a?.headline}"?`)) return;
+    if (!confirm(`Delete "${artTitle(a)}"?`)) return;
     const res = await fetch('/admin/news/' + id, {
       method: 'DELETE',
       headers: { 'X-Admin-Password': adminPwd },

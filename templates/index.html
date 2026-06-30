@@ -1118,15 +1118,58 @@
 
       <!-- ── News ── -->
       <section class="screen" id="screen-news">
-        <div class="screen-header">
-          <h1>Market Intelligence</h1>
-          <p class="screen-sub">Original research &amp; analysis from Kōdō Editorial</p>
-          <button class="news-pdf-btn noprint" onclick="window.print()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Download PDF
-          </button>
+
+        <!-- ── Editorial main view ── -->
+        <div id="editorial-view">
+          <div class="screen-header">
+            <h1>Kōdō Editorial</h1>
+            <p class="screen-sub">Market intelligence, industry news and hotel spotlights for Morocco hospitality</p>
+          </div>
+
+          <!-- Category filter pills -->
+          <div class="ed-cat-bar" id="ed-cat-bar">
+            <button class="ed-cat-pill active" data-cat="all">All</button>
+            <button class="ed-cat-pill" data-cat="Market Intelligence">Market Intelligence</button>
+            <button class="ed-cat-pill" data-cat="Pipeline">Pipeline</button>
+            <button class="ed-cat-pill" data-cat="Openings">Openings</button>
+            <button class="ed-cat-pill" data-cat="Interviews">Interviews</button>
+            <button class="ed-cat-pill" data-cat="Sponsored">Sponsored</button>
+          </div>
+
+          <!-- Featured hero -->
+          <div id="ed-hero" style="margin-bottom:24px"></div>
+
+          <!-- Sponsored strip -->
+          <div id="ed-sponsored-wrap" style="display:none;margin-bottom:24px">
+            <div class="ed-section-header">
+              <span class="ed-section-title">Partner Features</span>
+              <span class="ed-sponsored-label">Sponsored</span>
+            </div>
+            <div class="ed-sponsored-strip" id="ed-sponsored-strip"></div>
+          </div>
+
+          <!-- Article grid -->
+          <div id="ed-grid" class="ed-grid"></div>
+
+          <!-- Load more -->
+          <div style="text-align:center;margin-top:24px;margin-bottom:8px">
+            <button class="ed-load-more" id="ed-load-more" style="display:none" onclick="loadMoreArticles()">Load more articles</button>
+          </div>
         </div>
-        <div id="news-feed" class="news-feed"></div>
+
+        <!-- ── Article detail view ── -->
+        <div id="article-detail-view" style="display:none">
+          <button class="back-btn" id="article-back-btn" onclick="closeArticleDetail()">← Back to Editorial</button>
+          <div class="ed-article-wrap">
+            <div class="ed-article-meta-top" id="art-meta-top"></div>
+            <h1 class="ed-article-title" id="art-title"></h1>
+            <div class="ed-article-byline" id="art-byline"></div>
+            <div class="ed-article-cover" id="art-cover"></div>
+            <div class="ed-article-body" id="art-body"></div>
+            <div class="ed-article-sponsor-cta" id="art-sponsor-cta" style="display:none"></div>
+          </div>
+        </div>
+
       </section>
 
       <!-- ── Reports ── -->

@@ -982,12 +982,59 @@ def api_pipeline():
     return jsonify(df.to_dict(orient="records"))
 
 
+def _is_published(a):
+    return a.get("status") == "published" or a.get("published") is True
+
+
 @app.route("/api/news")
 @login_required
 def api_news():
-    articles = [a for a in load_news() if a.get("published")]
-    articles.sort(key=lambda a: a.get("date", ""), reverse=True)
-    return jsonify(articles)
+    all_arts = load_news()
+    published = [a for a in all_arts if _is_published(a)]
+    published.sort(key=lambda a: a.get("date", ""), reverse=True)
+
+    featured  = next((a for a in published if a.get("featured")), None)
+    sponsored = [a for a in published if a.get("type") in ("sponsored", "partner")]
+    editorial = [a for a in published if not a.get("featured") and a.get("type") not in ("sponsored", "partner")]
+
+    by_category: dict = {}
+    for a in published:
+        cat = a.get("category", "General")
+        by_category.setdefault(cat, []).append(a)
+
+    return jsonify({
+        "featured":    featured,
+        "sponsored":   sponsored,
+        "editorial":   editorial,
+        "by_category": by_category,
+        "all":         published,
+    })
+
+
+@app.route("/api/news/<article_id>")
+@login_required
+def api_news_article(article_id):
+    arts = load_news()
+    try:
+        aid = int(article_id)
+        art = next((a for a in arts if a.get("id") == aid), None)
+    except ValueError:
+        art = next((a for a in arts if a.get("slug") == article_id), None)
+    if not art or not _is_published(art):
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(art)
+
+
+@app.route("/api/news/<int:article_id>/view", methods=["POST"])
+@login_required
+def api_news_view(article_id):
+    arts = load_news()
+    for a in arts:
+        if a.get("id") == article_id:
+            a["views"] = a.get("views", 0) + 1
+            save_news(arts)
+            return jsonify({"views": a["views"]})
+    return jsonify({"error": "Not found"}), 404
 
 
 @app.route("/api/benchmarking")
@@ -1190,23 +1237,55 @@ def admin_page():
     return render_template("admin.html")
 
 
+def _article_fields(data, base=None):
+    b = base or {}
+    published_flag = data.get("published", b.get("published", False))
+    status = data.get("status", b.get("status", "draft"))
+    if published_flag and status not in ("published", "draft"):
+        status = "published"
+    if isinstance(published_flag, bool) and published_flag:
+        status = "published"
+    featured = bool(data.get("featured", b.get("featured", False)))
+    return {
+        "title":               data.get("title",               b.get("title",    data.get("headline", b.get("headline", "")))),
+        "slug":                data.get("slug",                 b.get("slug", "")),
+        "category":            data.get("category",            b.get("category", "Market Intelligence")),
+        "type":                data.get("type",                 b.get("type", "editorial")),
+        "status":              status,
+        "featured":            featured,
+        "author":              data.get("author",               b.get("author", "Kōdō Editorial")),
+        "author_title":        data.get("author_title",         b.get("author_title", "Morocco Hospitality Intelligence")),
+        "date":                data.get("date",                 b.get("date", "")),
+        "read_time":           data.get("read_time",            b.get("read_time", "5 min read")),
+        "excerpt":             data.get("excerpt",              b.get("excerpt",  data.get("summary", b.get("summary", "")))),
+        "content":             data.get("content",              b.get("content",  data.get("body",    b.get("body", "")))),
+        "tags":                data.get("tags",                 b.get("tags", [])),
+        "hotel_id":            data.get("hotel_id",             b.get("hotel_id")),
+        "hotel_name":          data.get("hotel_name",           b.get("hotel_name")),
+        "brand_group":         data.get("brand_group",          b.get("brand_group")),
+        "sponsor_name":        data.get("sponsor_name",         b.get("sponsor_name")),
+        "sponsor_logo_domain": data.get("sponsor_logo_domain",  b.get("sponsor_logo_domain")),
+        "sponsor_cta_text":    data.get("sponsor_cta_text",     b.get("sponsor_cta_text")),
+        "sponsor_cta_url":     data.get("sponsor_cta_url",      b.get("sponsor_cta_url")),
+        "cover_image_query":   data.get("cover_image_query",    b.get("cover_image_query", "hotel morocco")),
+        "views":               b.get("views", 0),
+        "published":           status == "published",
+    }
+
+
 @app.route("/admin/news", methods=["POST"])
 def admin_news_create():
     if not admin_ok():
         return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json(silent=True) or {}
     articles = load_news()
-    new_id = max((a["id"] for a in articles), default=0) + 1
-    article = {
-        "id":        new_id,
-        "headline":  data.get("headline", ""),
-        "summary":   data.get("summary", ""),
-        "body":      data.get("body", ""),
-        "category":  data.get("category", "Market"),
-        "author":    data.get("author", "Kōdō Editorial"),
-        "date":      data.get("date", ""),
-        "published": bool(data.get("published", False)),
-    }
+    new_id = max((a.get("id", 0) for a in articles), default=0) + 1
+    # If new article is featured, unset featured on all others
+    if data.get("featured"):
+        for a in articles:
+            a["featured"] = False
+    article = {"id": new_id}
+    article.update(_article_fields(data))
     articles.append(article)
     save_news(articles)
     return jsonify(article), 201
@@ -1218,19 +1297,16 @@ def admin_news_update(article_id):
         return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json(silent=True) or {}
     articles = load_news()
+    if data.get("featured"):
+        for a in articles:
+            a["featured"] = False
     for i, a in enumerate(articles):
-        if a["id"] == article_id:
-            articles[i].update({
-                "headline":  data.get("headline",  a["headline"]),
-                "summary":   data.get("summary",   a["summary"]),
-                "body":      data.get("body",       a["body"]),
-                "category":  data.get("category",  a["category"]),
-                "author":    data.get("author",     a["author"]),
-                "date":      data.get("date",       a["date"]),
-                "published": bool(data.get("published", a["published"])),
-            })
+        if a.get("id") == article_id:
+            updated = {"id": article_id}
+            updated.update(_article_fields(data, base=a))
+            articles[i] = updated
             save_news(articles)
-            return jsonify(articles[i])
+            return jsonify(updated)
     return jsonify({"error": "Not found"}), 404
 
 

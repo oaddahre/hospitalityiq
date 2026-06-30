@@ -2189,12 +2189,12 @@ document.getElementById('pipe-cat-filter').addEventListener('change', e => {
   applyPipelineFilter();
 });
 
-// ─── News screen ──────────────────────────────────────────────────
-let newsInited = false;
-
-function newsCatClass(cat) {
-  return 'news-cat-' + (cat || '').toLowerCase().replace(/\s+/g, '-');
-}
+// ─── Editorial / News screen ──────────────────────────────────────
+let newsData    = null;
+let newsInited  = false;
+let newsCatFilter = 'all';
+let newsPage    = 1;
+const NEWS_PER_PAGE = 6;
 
 function newsDateFmt(d) {
   if (!d) return '';
@@ -2202,47 +2202,220 @@ function newsDateFmt(d) {
   return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function toggleArticle(id) {
-  const body = document.getElementById('news-body-' + id);
-  const btn  = document.getElementById('news-btn-' + id);
-  const open = body.classList.toggle('expanded');
-  btn.textContent = open ? '← Show less' : 'Read full article →';
+function newsCoverUrl(slug, query) {
+  return `https://picsum.photos/seed/${encodeURIComponent(slug || query || 'hotel')}/800/450`;
+}
+
+function edCatPill(cat, type) {
+  const isSponsored = type === 'sponsored' || type === 'partner';
+  const label = isSponsored ? 'Partner' : (cat || '');
+  const cls   = isSponsored ? 'ed-cat-badge ed-cat-partner' : 'ed-cat-badge';
+  return `<span class="${cls}">${fmt.esc(label)}</span>`;
 }
 
 async function initNews() {
-  if (newsInited) return;
-  newsInited = true;
-  const feed = document.getElementById('news-feed');
-  feed.innerHTML = '<p class="news-loading">Loading…</p>';
-  try {
-    const res = await fetch('/api/news');
-    const articles = await res.json();
-    if (!articles.length) {
-      feed.innerHTML = '<p class="news-loading">No articles published yet.</p>';
+  if (!newsInited) {
+    try {
+      const res = await fetch('/api/news');
+      newsData   = await res.json();
+      newsInited = true;
+    } catch {
+      document.getElementById('ed-grid').innerHTML = '<p class="news-loading">Failed to load articles.</p>';
       return;
     }
-    const shown = articles.slice(0, 7);
-    feed.innerHTML = shown.map(a => {
-      const bodyBlock = a.body
-        ? `<div class="news-body" id="news-body-${a.id}">${a.body}</div>
-           <button class="news-read-btn noprint" id="news-btn-${a.id}" onclick="toggleArticle(${a.id})">Read full article →</button>`
-        : '';
-      return `<div class="news-card">
-        <div class="news-card-meta">
-          <span class="news-cat ${newsCatClass(a.category)}">${a.category}</span>
-          <span class="news-date">${newsDateFmt(a.date)}</span>
-          <span class="news-sep">·</span>
-          <span class="news-author">${a.author}</span>
-        </div>
-        <div class="news-headline">${a.headline}</div>
-        <div class="news-summary">${a.summary}</div>
-        ${bodyBlock}
-      </div>`;
-    }).join('');
-  } catch {
-    feed.innerHTML = '<p class="news-loading">Failed to load articles.</p>';
   }
+  renderEditorialMain();
 }
+
+function filteredEditorialArticles() {
+  if (!newsData) return [];
+  const all = newsData.all || [];
+  if (newsCatFilter === 'all') return all.filter(a => !a.featured);
+  if (newsCatFilter === 'Sponsored') return all.filter(a => a.type === 'sponsored' || a.type === 'partner');
+  return all.filter(a => a.category === newsCatFilter && a.type === 'editorial');
+}
+
+function renderEditorialMain() {
+  if (!newsData) return;
+  newsPage = 1;
+
+  // Hero
+  const heroWrap = document.getElementById('ed-hero');
+  if (newsCatFilter === 'all' && newsData.featured) {
+    const f = newsData.featured;
+    heroWrap.innerHTML = `
+      <div class="ed-hero-card" data-art-id="${f.id}">
+        <div class="ed-hero-body">
+          <div class="ed-hero-top">
+            <span class="ed-featured-badge">FEATURED</span>
+            ${edCatPill(f.category, f.type)}
+          </div>
+          <h2 class="ed-hero-title">${fmt.esc(f.title || f.headline || '')}</h2>
+          <p class="ed-hero-excerpt">${fmt.esc(f.excerpt || f.summary || '')}</p>
+          <div class="ed-hero-meta">
+            <span>${fmt.esc(f.author || 'Kōdō Editorial')}</span>
+            <span class="ed-dot">·</span>
+            <span>${newsDateFmt(f.date)}</span>
+            <span class="ed-dot">·</span>
+            <span>${fmt.esc(f.read_time || '')}</span>
+          </div>
+          <button class="ed-read-btn" data-art-id="${f.id}">Read article →</button>
+        </div>
+        <div class="ed-hero-img-wrap">
+          <img src="${newsCoverUrl(f.slug, f.cover_image_query)}" alt="${fmt.esc(f.title || '')}"
+               class="ed-hero-img" loading="lazy" onerror="this.closest('.ed-hero-img-wrap').style.background='var(--surface-hover)'">
+        </div>
+      </div>`;
+    heroWrap.style.display = '';
+  } else {
+    heroWrap.innerHTML = '';
+    heroWrap.style.display = 'none';
+  }
+
+  // Sponsored strip
+  const sponsWrap  = document.getElementById('ed-sponsored-wrap');
+  const sponsStrip = document.getElementById('ed-sponsored-strip');
+  if (newsCatFilter === 'all' && newsData.sponsored && newsData.sponsored.length) {
+    sponsStrip.innerHTML = newsData.sponsored.map(s => `
+      <div class="ed-spons-card" data-art-id="${s.id}">
+        <div class="ed-spons-badge">Partner</div>
+        ${s.sponsor_logo_domain
+          ? `<img src="https://cdn.brandfetch.io/domain/${s.sponsor_logo_domain}?c=1idptYpdMe9b8BdTIPC"
+                  alt="${fmt.esc(s.sponsor_name || '')}" class="ed-spons-logo"
+                  onerror="this.style.display='none'">`
+          : `<div class="ed-spons-logo-placeholder">${fmt.esc((s.sponsor_name || '?')[0])}</div>`}
+        <div class="ed-spons-name">${fmt.esc(s.title || s.headline || '')}</div>
+        <div class="ed-spons-by">${fmt.esc(s.sponsor_name || '')}</div>
+        <button class="ed-spons-cta" data-art-id="${s.id}">${fmt.esc(s.sponsor_cta_text || 'Learn More →')}</button>
+      </div>`).join('');
+    sponsWrap.style.display = '';
+  } else {
+    sponsWrap.style.display = 'none';
+  }
+
+  // Article grid
+  renderArticleGrid();
+}
+
+function renderArticleGrid() {
+  const articles = filteredEditorialArticles();
+  const grid     = document.getElementById('ed-grid');
+  const loadBtn  = document.getElementById('ed-load-more');
+  const shown    = articles.slice(0, newsPage * NEWS_PER_PAGE);
+
+  if (!articles.length) {
+    grid.innerHTML = '<p class="news-loading">No articles in this category yet.</p>';
+    loadBtn.style.display = 'none';
+    return;
+  }
+
+  grid.innerHTML = shown.map(a => {
+    const isSponsored = a.type === 'sponsored' || a.type === 'partner';
+    return `<div class="ed-card ${isSponsored ? 'ed-card-sponsored' : ''}" data-art-id="${a.id}">
+      <div class="ed-card-img-wrap">
+        <img src="${newsCoverUrl(a.slug, a.cover_image_query)}"
+             alt="${fmt.esc(a.title || a.headline || '')}" class="ed-card-img" loading="lazy"
+             onerror="this.closest('.ed-card-img-wrap').classList.add('ed-img-error')">
+      </div>
+      <div class="ed-card-body">
+        ${edCatPill(a.category, a.type)}
+        <div class="ed-card-title">${fmt.esc(a.title || a.headline || '')}</div>
+        <div class="ed-card-excerpt">${fmt.esc(a.excerpt || a.summary || '')}</div>
+        <div class="ed-card-footer">
+          <span>${fmt.esc(a.author || 'Kōdō Editorial')}</span>
+          <span class="ed-dot">·</span>
+          <span>${newsDateFmt(a.date)}</span>
+          <span class="ed-dot">·</span>
+          <span>${fmt.esc(a.read_time || '')}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  loadBtn.style.display = shown.length < articles.length ? '' : 'none';
+}
+
+function loadMoreArticles() {
+  newsPage++;
+  renderArticleGrid();
+}
+
+async function showArticleDetail(id) {
+  const art = (newsData?.all || []).find(a => a.id === id);
+  if (!art) return;
+
+  // Increment view counter (fire-and-forget)
+  fetch(`/api/news/${id}/view`, { method: 'POST' }).catch(() => {});
+
+  document.getElementById('editorial-view').style.display    = 'none';
+  document.getElementById('article-detail-view').style.display = '';
+
+  const isSponsored = art.type === 'sponsored' || art.type === 'partner';
+
+  document.getElementById('art-meta-top').innerHTML =
+    `${edCatPill(art.category, art.type)}
+     ${isSponsored && art.sponsor_name ? `<span class="ed-spons-by-label">Sponsored by ${fmt.esc(art.sponsor_name)}</span>` : ''}`;
+
+  document.getElementById('art-title').textContent = art.title || art.headline || '';
+
+  document.getElementById('art-byline').innerHTML =
+    `<span class="art-author">${fmt.esc(art.author || 'Kōdō Editorial')}</span>
+     <span class="ed-dot">·</span>
+     <span>${newsDateFmt(art.date)}</span>
+     <span class="ed-dot">·</span>
+     <span>${fmt.esc(art.read_time || '')}</span>`;
+
+  document.getElementById('art-cover').innerHTML =
+    `<img src="${newsCoverUrl(art.slug, art.cover_image_query)}"
+          alt="${fmt.esc(art.title || '')}" class="art-cover-img" loading="lazy"
+          onerror="this.style.display='none'">`;
+
+  document.getElementById('art-body').innerHTML = art.content || art.body || '';
+
+  const ctaEl = document.getElementById('art-sponsor-cta');
+  if (isSponsored && art.sponsor_cta_text) {
+    ctaEl.innerHTML = `
+      <div class="art-cta-box">
+        ${art.sponsor_logo_domain
+          ? `<img src="https://cdn.brandfetch.io/domain/${art.sponsor_logo_domain}?c=1idptYpdMe9b8BdTIPC"
+                  alt="${fmt.esc(art.sponsor_name || '')}" class="art-cta-logo"
+                  onerror="this.style.display='none'">`
+          : ''}
+        <div class="art-cta-text">Learn more from ${fmt.esc(art.sponsor_name || 'our partner')}</div>
+        <a href="${fmt.esc(art.sponsor_cta_url || '#')}" class="art-cta-btn" target="_blank" rel="noopener">
+          ${fmt.esc(art.sponsor_cta_text)}
+        </a>
+      </div>`;
+    ctaEl.style.display = '';
+  } else {
+    ctaEl.style.display = 'none';
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function closeArticleDetail() {
+  document.getElementById('article-detail-view').style.display = 'none';
+  document.getElementById('editorial-view').style.display      = '';
+}
+
+// Category pill filter
+document.getElementById('ed-cat-bar').addEventListener('click', e => {
+  const btn = e.target.closest('.ed-cat-pill');
+  if (!btn) return;
+  document.querySelectorAll('.ed-cat-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  newsCatFilter = btn.dataset.cat;
+  if (newsInited) renderEditorialMain();
+});
+
+// Article clicks — hero, grid, sponsored
+document.getElementById('screen-news').addEventListener('click', e => {
+  const btn = e.target.closest('[data-art-id]');
+  if (!btn) return;
+  const id = parseInt(btn.dataset.artId, 10);
+  if (!isNaN(id)) showArticleDetail(id);
+});
 
 // ─── Sidebar visibility ───────────────────────────────────────────
 
