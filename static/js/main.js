@@ -39,6 +39,11 @@ const BRAND_DOMAINS = {
   'Soho Boutique': 'sohohoteles.com',
 };
 
+const BRAND_CUSTOM_LOGOS = {
+  'Zalagh Hotels Group': { letter: 'Z', bg: '#1A1A1A', color: '#B87860' },
+  'Farah Hotels':        { letter: 'F', bg: '#1A1A1A', color: '#B87860' },
+};
+
 function getBrandLogoUrl(brandGroup) {
   const domain = BRAND_DOMAINS[brandGroup];
   if (!domain) return null;
@@ -46,9 +51,13 @@ function getBrandLogoUrl(brandGroup) {
 }
 
 function getBrandLogoImg(brandGroup, size = 24) {
-  const url = getBrandLogoUrl(brandGroup);
-  if (!url) return '';
-  return `<img src="${url}" alt="${brandGroup}" class="brand-logo-img" style="width:${size}px;height:${size}px;" onload="this.classList.add('loaded')" onerror="this.style.display='none'">`;
+  const custom = BRAND_CUSTOM_LOGOS[brandGroup];
+  if (custom) {
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:'Syne',sans-serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;letter-spacing:0;flex-shrink:0;vertical-align:middle;margin-right:6px;">${custom.letter}</span>`;
+  }
+  const domain = BRAND_DOMAINS[brandGroup];
+  if (!domain) return '';
+  return `<img src="https://cdn.brandfetch.io/domain/${domain}?c=1idptYpdMe9b8BdTIPC" alt="${brandGroup}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;border-radius:3px;background:white;padding:2px;margin-right:6px;" onerror="this.style.display='none'">`;
 }
 
 const SEG_COLORS = {
