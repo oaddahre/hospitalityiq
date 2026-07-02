@@ -31,6 +31,7 @@ const BRAND_DOMAINS = {
   'Nobu Hospitality': 'nobuhotels.com',
   'Relais & Châteaux': 'relaischateaux.com',
   'Farah Hotels': 'farahhotels.com',
+  'Mia Hotels': 'miahotels.com',
   'TUI Hotels & Resorts': 'tui.com',
   'Globalia Hotels': 'beliveholidays.com',
   'Royal Mansour Collection': 'royalmansour.com',
@@ -981,7 +982,7 @@ async function renderHotelPipeline(h) {
   const items = cityPipe.map(p => `
     <div class="hpipe-item">
       <div class="hpipe-item-name">${fmt.esc(p.name)}</div>
-      <span class="hpipe-item-meta">${fmt.esc(p.brand)} · ${p.keys} keys · ${p.expected_opening}</span>
+      <span class="hpipe-item-meta">${fmt.esc(p.brand)} · ${p.keys || 'TBC'} keys · ${p.expected_opening}</span>
       <span class="${p.status === 'Under Construction' ? 'pipe-status-uc' : 'pipe-status-pl'}">${fmt.esc(p.status)}</span>
     </div>`).join('');
 
@@ -2041,7 +2042,7 @@ function pipelinePopupHTML(p) {
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${fmt.esc(p.category)}</div>
     <div class="hiq-popup-grid">
-      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys || 'TBC'}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.expected_opening}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">MAD ${invB}B</div><div class="hiq-popup-stat-lbl">Investment</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${statusPill}</div><div class="hiq-popup-stat-lbl">Status</div></div>
@@ -2078,7 +2079,7 @@ function renderPipelineCards() {
       <div class="pipe-card-year">${p.expected_opening}</div>
       <div class="pipe-card-metrics">
         <div>
-          <div class="pipe-card-metric-val">${p.keys.toLocaleString('en')}</div>
+          <div class="pipe-card-metric-val">${p.keys ? p.keys.toLocaleString('en') : 'TBC'}</div>
           <div class="pipe-card-metric-lbl">Keys</div>
         </div>
         <div>

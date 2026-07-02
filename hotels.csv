@@ -260,3 +260,9 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 401,Le Mirage Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,53,2014,Open,35.7845,-5.8023,Undisclosed,verified
 402,View Hotel Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upscale,View Hotels,Atlas Hospitality Group,145,2015,Open,34.0089,-6.8334,Undisclosed,verified
 403,View Hotel Bouznika,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upscale,View Hotels,Atlas Hospitality Group,130,2018,Open,33.7834,-7.1612,Undisclosed,verified
+404,Mia Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Mia Hotels,Mia Hotels,111,2019,Open,30.4156,-9.5934,Undisclosed,verified
+405,Mia Hotel Agafay,Marrakech,Marrakech-Safi,Upper Upscale,Mia Hotels,Mia Hotels,50,2021,Open,31.5234,-8.1456,Undisclosed,verified
+406,Mia Hotels Detroit Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Mia Hotels,Mia Hotels,96,2020,Open,35.7756,-5.8289,Undisclosed,verified
+407,Mia Hotels Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upper Upscale,Mia Hotels,Mia Hotels,80,2022,Open,23.6934,-15.9456,Undisclosed,verified
+408,Mia Hotels Mazagan Bay,El Jadida,Casablanca-Settat,Upper Upscale,Mia Hotels,Mia Hotels,52,2021,Open,33.2456,-8.5234,Undisclosed,verified
+409,Mia Hotels Fes,Fes,Fès-Meknès,Upper Upscale,Mia Hotels,Mia Hotels,121,2020,Open,34.0234,-5.0012,Undisclosed,verified
