@@ -258,3 +258,5 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 399,Hôtel Tanger Centre Malabata,Tanger,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,152,2010,Open,35.7823,-5.8089,Undisclosed,verified
 400,Suites by Le Rêve Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,23,2015,Open,35.7834,-5.8045,Undisclosed,verified
 401,Le Mirage Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,53,2014,Open,35.7845,-5.8023,Undisclosed,verified
+402,View Hotel Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upscale,View Hotels,Atlas Hospitality Group,145,2015,Open,34.0089,-6.8334,Undisclosed,verified
+403,View Hotel Bouznika,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upscale,View Hotels,Atlas Hospitality Group,130,2018,Open,33.7834,-7.1612,Undisclosed,verified
