@@ -58,13 +58,13 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 125,Palais Didi Meknes,Meknes,Fès-Meknès,Luxury,Palais Didi,Independent Luxury,12,2008,Operating,33.8894,-5.5529,Undisclosed,verified
 126,Ibis Meknes,Meknes,Fès-Meknès,Midscale,Ibis,Accor,104,2011,Operating,33.8894,-5.5489,Risma,verified
 128,Zalagh Parc Palace Meknes,Meknes,Fès-Meknès,Upper Upscale,Zalagh Hotels,Zalagh Hotels Group,488,2014,Operating,33.8934,-5.5529,Undisclosed,verified
-129,Atlas Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hotels Group,100,1990,Operating,33.8934,-5.5489,Undisclosed,verified
+129,Atlas Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hospitality Group,100,1990,Operating,33.8934,-5.5489,Undisclosed,verified
 131,Ibis Nador,Nador,Oriental,Midscale,Ibis,Accor,89,2014,Operating,35.1672,-2.9289,Risma,verified
 132,Mogador Nador,Nador,Oriental,Upscale,Mogador Hotels,Mogador Hotels Group,110,2016,Operating,35.1672,-2.9249,Undisclosed,verified
 137,Iberostar Waves Saidia,Saidia,Oriental,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,484,2009,Operating,35.0849,-2.2294,Undisclosed,verified
 143,Radisson Blu Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,397,2014,Operating,35.0889,-2.2214,Undisclosed,verified
 144,Ibis Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Midscale,Ibis,Accor,78,2016,Operating,32.3314,-6.3529,Risma,verified
-146,Atlas Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Atlas Hotels,Atlas Hotels Group,27,2009,Operating,32.3314,-6.3449,Undisclosed,verified
+146,Atlas Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Atlas Hotels,Atlas Hospitality Group,27,2009,Operating,32.3314,-6.3449,Undisclosed,verified
 151,Diwan MGallery Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,MGallery,Accor,94,2010,Operating,34.0134,-6.8289,Risma,verified
 152,La Sultana Marrakech,Marrakech,Marrakech-Safi,Luxury,La Sultana,Independent Luxury,28,2006,Operating,31.622,-8.002,Undisclosed,verified
 153,Selman Marrakech,Marrakech,Marrakech-Safi,Luxury,Selman,Independent Luxury,60,2012,Operating,31.6456,-8.0234,Undisclosed,verified
@@ -95,7 +95,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 194,Lina Ryad & Spa Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,17,2008,Operating,35.1689,-5.2634,Undisclosed,verified
 196,Parador Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Parador,Independent,56,1998,Operating,35.1678,-5.2645,Undisclosed,verified
 197,Mercure Quemado Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mercure,Accor,169,1990,Operating,35.2489,-3.9367,Undisclosed,verified
-198,Atlas Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hotels Group,80,2015,Operating,35.2512,-3.9334,Undisclosed,verified
+198,Atlas Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hospitality Group,80,2015,Operating,35.2512,-3.9334,Undisclosed,verified
 204,Palm Saidia Hotel,Saidia,Oriental,Upper Upscale,Palm Saidia,Independent,240,2016,Operating,35.0929,-2.2294,Undisclosed,unverified — existence uncertain
 207,Hotel Transatlantique Meknes,Meknes,Fès-Meknès,Upper Upscale,Transatlantique,Independent,120,1941,Operating,33.8934,-5.5449,Undisclosed,verified
 209,Dar Ahlam Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Dar Ahlam,Independent Luxury,10,2001,Operating,30.9234,-6.8934,Undisclosed,verified
@@ -103,7 +103,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 212,Dakhla Club Hotel and Spa,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Dakhla Club,Independent,53,2015,Operating,23.6834,-15.9567,Undisclosed,verified
 213,Sahara Regency Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Sahara Regency,Independent,100,2018,Operating,23.6834,-15.9527,Undisclosed,verified
 217,Hotel Rif Nador,Nador,Oriental,Upscale,Hotel Rif,Independent,100,1995,Operating,35.1712,-2.9329,Undisclosed,verified
-218,Atlas Nador,Nador,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,85,2010,Operating,35.1712,-2.9289,Undisclosed,verified
+218,Atlas Nador,Nador,Oriental,Upscale,Atlas Hotels,Atlas Hospitality Group,85,2010,Operating,35.1712,-2.9289,Undisclosed,verified
 224,Amphitrite Palace Hotel,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Amphitrite Palace,Independent Luxury,176,2008,Operating,33.8512,-6.9178,Undisclosed,verified
 225,Zelis Hotel Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upper Upscale,Zelis,Independent,65,2010,Operating,35.4689,-6.0334,Undisclosed,verified
 226,Hotel Patio de la Luna Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upscale,Patio de la Luna,Independent,20,2008,Operating,35.4667,-6.0312,Undisclosed,verified
@@ -150,7 +150,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 291,Sahrai Casablanca,Casablanca,Casablanca-Settat,Luxury,Independent,Independent Luxury,56,2022,Open,33.5934,-7.6178,Undisclosed,verified
 292,Radisson Blu Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,432,2022,Open,35.2489,-3.9334,Undisclosed,verified
 293,Suites Mohammed V Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent,21,2018,Open,35.2456,-3.9312,Undisclosed,verified
-294,Hotel Atlas Safari Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hotels Group,19,2005,Operating,33.8914,-5.5509,Undisclosed,verified
+294,Hotel Atlas Safari Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hospitality Group,19,2005,Operating,33.8914,-5.5509,Undisclosed,verified
 295,Radisson Blu Residences Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,197,2012,Operating,35.0912,-2.2256,Undisclosed,verified
 296,Belive Saidia,Saidia,Oriental,Upscale,Be Live Hotels,Globalia Hotels,488,2009,Operating,35.0889,-2.2212,Undisclosed,verified
 297,Oasis Saidia Palace,Saidia,Oriental,Upscale,Independent,Independent,307,2010,Operating,35.0901,-2.2234,Undisclosed,verified
@@ -173,7 +173,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 314,Heure Bleue Palais Relais & Châteaux Essaouira,Essaouira,Marrakech-Safi,Luxury,Relais & Châteaux,Independent Luxury,33,2006,Open,31.5134,-9.7689,Undisclosed,verified
 315,Hotel Le Golf d'Essaouira,Essaouira,Marrakech-Safi,Upscale,Independent,Independent,135,2010,Open,31.5089,-9.7456,Undisclosed,verified
 316,Le Médina Essaouira Thalassa Sea & Spa MGallery Collection,Essaouira,Marrakech-Safi,Upper Upscale,MGallery,Accor,117,2008,Open,31.5112,-9.7678,Risma,verified
-317,Atlas Essaouira Riad Resort,Essaouira,Marrakech-Safi,Upscale,Atlas Hotels,Atlas Hotels Group,156,2012,Open,31.5067,-9.7612,Undisclosed,verified
+317,Atlas Essaouira Riad Resort,Essaouira,Marrakech-Safi,Upscale,Atlas Hotels,Atlas Hospitality Group,156,2012,Open,31.5067,-9.7612,Undisclosed,verified
 318,Essaouira Wind Palace,Essaouira,Marrakech-Safi,Luxury,Independent,Independent Luxury,23,2015,Open,31.5145,-9.7634,Undisclosed,verified
 319,Hotel Perce Neige Ifrane,Ifrane,Fès-Meknès,Upscale,Independent,Independent,26,1985,Open,33.5334,-5.1089,Undisclosed,verified
 320,Michlifen Resort and Golf Ifrane,Ifrane,Fès-Meknès,Luxury,Independent,Independent Luxury,71,2009,Open,33.5312,-5.1112,Undisclosed,verified
@@ -202,7 +202,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 343,Les Pyramides Merzouga Camp,Merzouga,Drâa-Tafilalet,Upscale,Independent,Independent,6,2012,Open,31.0756,-4.0201,Undisclosed,verified
 344,Hotel Afriquia Oujda,Oujda,Oriental,Midscale,Independent,Independent,14,2010,Open,34.6867,-1.9134,Undisclosed,verified
 345,Hotel Aswan Oujda,Oujda,Oriental,Midscale,Independent,Independent,8,2015,Open,34.6889,-1.9112,Undisclosed,verified
-346,Atlas Orient Oujda,Oujda,Oriental,Upscale,Atlas Hotels,Atlas Hotels Group,105,2005,Open,34.6845,-1.9156,Undisclosed,verified
+346,Atlas Orient Oujda,Oujda,Oriental,Upscale,Atlas Hotels,Atlas Hospitality Group,105,2005,Open,34.6845,-1.9156,Undisclosed,verified
 347,Hotel des Lilas Oujda,Oujda,Oriental,Midscale,Independent,Independent,46,1998,Open,34.6901,-1.9089,Undisclosed,verified
 348,Hotel Royal Oujda,Oujda,Oriental,Midscale,Independent,Independent,50,1985,Open,34.6878,-1.9101,Undisclosed,verified
 349,Ibis Oujda,Oujda,Oriental,Midscale,Ibis,Accor,74,2012,Open,34.6834,-1.9178,Risma,verified
