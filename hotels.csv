@@ -17,7 +17,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2014,Operating,31.639,-7.994,Undisclosed,verified
 20,Ibis Marrakech Centre Gare,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,109,2009,Operating,31.625,-7.967,Risma,verified
 21,Sofitel Agadir Royal Bay Resort,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,273,2013,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
-22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,Riu Hotels & Resorts,444,2000,Operating,30.4012,-9.6012,Undisclosed,verified
+22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,RIU Hotels & Resorts,444,2000,Operating,30.4012,-9.6012,Undisclosed,verified
 23,Radisson Blu Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,191,2017,Operating,30.436,-9.593,Undisclosed,verified
 24,Hyatt Place Taghazout,Agadir / Taghazout,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,172,2020,Operating,30.4201,-9.5867,Undisclosed,verified
 27,Iberostar Waves Founty Beach Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,470,2001,Operating,30.4156,-9.5934,Undisclosed,verified
@@ -54,7 +54,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 121,Mazagan Beach & Golf Resort,El Jadida,Grand Casablanca-Settat,Luxury,Mazagan,Independent Luxury,500,2009,Operating,33.2527,-8.5074,Kerzner International / Madaëf,verified
 122,Ibis El Jadida,El Jadida,Grand Casablanca-Settat,Midscale,Ibis,Accor,80,2013,Operating,33.2527,-8.5034,Risma,verified
 123,Pullman El Jadida Beach Resort,El Jadida,Grand Casablanca-Settat,Upper Upscale,Pullman,Accor,180,2016,Operating,33.2527,-8.4994,Risma,verified
-124,Farah El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Farah Hotels,Farah Hotels Group,140,1985,Operating,33.2567,-8.5074,Farah Hotels Group,verified
+124,Farah El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Farah Hotels,Farah Hotels,140,1985,Operating,33.2567,-8.5074,Farah Hotels Group,verified
 125,Palais Didi Meknes,Meknes,Fès-Meknès,Luxury,Palais Didi,Independent Luxury,12,2008,Operating,33.8894,-5.5529,Undisclosed,verified
 126,Ibis Meknes,Meknes,Fès-Meknès,Midscale,Ibis,Accor,104,2011,Operating,33.8894,-5.5489,Risma,verified
 128,Zalagh Parc Palace Meknes,Meknes,Fès-Meknès,Upper Upscale,Zalagh Hotels,Zalagh Hotels Group,488,2014,Operating,33.8934,-5.5529,Undisclosed,verified

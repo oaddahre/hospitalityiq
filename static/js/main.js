@@ -494,8 +494,8 @@ function renderBrandsKPIs() {
 
   document.querySelector('#brnkpi-groups .kpi-value').textContent  = brandsData.length;
   document.querySelector('#brnkpi-keys .kpi-value').textContent    = allKeys.toLocaleString('en');
-  document.querySelector('#brnkpi-champion .kpi-value').textContent = champion ? champion.brand_group.split(' ')[0] : '—';
-  document.querySelector('#brnkpi-largest .kpi-value').textContent  = largest  ? largest.brand_group.split(' ')[0] : '—';
+  document.querySelector('#brnkpi-champion .kpi-value').textContent = champion ? champion.brand_group : '—';
+  document.querySelector('#brnkpi-largest .kpi-value').textContent  = largest  ? largest.brand_group  : '—';
 }
 
 function brandLogoOrInitials(bg, size) {

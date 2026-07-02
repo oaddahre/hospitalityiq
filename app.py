@@ -890,7 +890,12 @@ def api_brands():
         'Kerzner International': 'kerzner.com',
     }
 
+    _INVALID_BG = {'', 'Undisclosed', 'Royal (State)', 'Royal', 'Royal Mansour Brand',
+                   'None', 'N/A', 'Unknown'}
+
     def _norm_bg(bg):
+        if not isinstance(bg, str) or not bg.strip() or bg in _INVALID_BG:
+            return None
         if bg in ('Independent', 'Independent Luxury'):
             return 'Independent Hotels'
         return bg
@@ -898,6 +903,7 @@ def api_brands():
     _, _, merged = load_data()
     merged = merged.copy()
     merged['_bg'] = merged['brand_group'].apply(_norm_bg)
+    merged = merged[merged['_bg'].notna()]
 
     total_keys = int(merged['keys'].sum())
 
