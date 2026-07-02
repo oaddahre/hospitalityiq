@@ -2,7 +2,7 @@
 
 const BRAND_DOMAINS = {
   'Accor': 'accor.com',
-  'Marriott International': 'marriott.com',
+  'Marriott International': 'marriotthotels.com',
   'Hilton Hotels & Resorts': 'hilton.com',
   'Hyatt Hotels Corporation': 'hyatt.com',
   'Four Seasons Hotels & Resorts': 'fourseasons.com',
