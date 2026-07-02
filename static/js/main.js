@@ -3186,29 +3186,51 @@ function buildCalMap(view, prefix, map) {
   }
 }
 
-function adrCellStyle(adr) {
+function adrCellStyle(adr, isCompSet = false) {
   const dark = !document.body.classList.contains('light');
+  if (isCompSet) {
+    if (dark) {
+      if (adr >= 6000) return {bg:'#2A4A6B', col:'#FFFFFF',  fw:'600', border:''};
+      if (adr >= 4000) return {bg:'#1A2E42', col:'#8AB0D0',  fw:'500', border:''};
+      return {bg:'#0A1520', col:'#6A8AAA', fw:'', border:'1px solid #2A4A6B'};
+    } else {
+      if (adr >= 6000) return {bg:'#D0E4F5', col:'#1A4A7A', fw:'600', border:'1px solid #5A90C8'};
+      if (adr >= 4000) return {bg:'#E8F2FC', col:'#2A6AAA', fw:'',    border:'1px solid #8AB8E0'};
+      return {bg:'#F5F9FF', col:'#5A8AB0', fw:'', border:'1px solid #C0D8F0'};
+    }
+  }
   if (dark) {
     if (adr >= 6000) return {bg:'#B87860', col:'#0A0A0A', fw:'600', border:''};
     if (adr >= 4000) return {bg:'#6B4838', col:'#F0EDE6', fw:'500', border:''};
     return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #B87860'};
   } else {
     if (adr >= 6000) return {bg:'#F5EDE8', col:'#6B3828', fw:'600', border:'1px solid #A06848'};
-    if (adr >= 4000) return {bg:'#FAF2EE', col:'#A06848', fw:'', border:'1px solid #C88870'};
+    if (adr >= 4000) return {bg:'#FAF2EE', col:'#A06848', fw:'',    border:'1px solid #C88870'};
     return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
   }
 }
 
-function occCellStyle(occ) {
+function occCellStyle(occ, isCompSet = false) {
   const dark = !document.body.classList.contains('light');
   const p = occ * 100;
+  if (isCompSet) {
+    if (dark) {
+      if (p >= 80) return {bg:'#1A4A3A', col:'#FFFFFF',  fw:'600', border:''};
+      if (p >= 60) return {bg:'#0F2E24', col:'#5A9A82',  fw:'500', border:''};
+      return {bg:'#051510', col:'#3A7A62', fw:'', border:'1px solid #1A4A3A'};
+    } else {
+      if (p >= 80) return {bg:'#D0EDE5', col:'#0A4A32', fw:'600', border:'1px solid #3A9A7A'};
+      if (p >= 60) return {bg:'#E5F5EF', col:'#1A6A4A', fw:'',    border:'1px solid #7ABDA8'};
+      return {bg:'#F0FAF6', col:'#3A8A68', fw:'', border:'1px solid #B0D8C8'};
+    }
+  }
   if (dark) {
     if (p >= 80) return {bg:'#C8922A', col:'#0A0A0A', fw:'600', border:''};
     if (p >= 60) return {bg:'#7A5818', col:'#F0EDE6', fw:'500', border:''};
     return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #7A5818'};
   } else {
     if (p >= 80) return {bg:'#FDF3E0', col:'#6B4A10', fw:'600', border:'1px solid #C8922A'};
-    if (p >= 60) return {bg:'#FEF8EE', col:'#8B6820', fw:'', border:'1px solid #E0B860'};
+    if (p >= 60) return {bg:'#FEF8EE', col:'#8B6820', fw:'',    border:'1px solid #E0B860'};
     return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
   }
 }
@@ -3240,7 +3262,8 @@ function renderBenchCalendar(calType) {
     const isWknd = [0,6].includes((new Date(yr, mo-1, day).getDay()));
     const d = dataMap[dateStr];
     if (d) {
-      const sty = calType === 'adr' ? adrCellStyle(d.adr) : occCellStyle(d.occupancy);
+      const isComp = view === 'comp';
+      const sty = calType === 'adr' ? adrCellStyle(d.adr, isComp) : occCellStyle(d.occupancy, isComp);
       const dispVal = calType === 'adr'
         ? Math.round(d.adr).toLocaleString('en')
         : (d.occupancy * 100).toFixed(0) + '%';
