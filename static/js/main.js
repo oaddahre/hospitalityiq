@@ -42,8 +42,14 @@ const BRAND_DOMAINS = {
 };
 
 const BRAND_CUSTOM_LOGOS = {
-  'Zalagh Hotels Group': { letter: 'Z', bg: '#1A1A1A', color: '#B87860' },
-  'Farah Hotels':        { letter: 'F', bg: '#1A1A1A', color: '#B87860' },
+  'Zalagh Hotels Group':         { letter: 'Z',  bg: '#1A1A1A', color: '#B87860' },
+  'Farah Hotels':                { letter: 'F',  bg: '#1A1A1A', color: '#B87860' },
+  'Independent Ultra Luxury':    { letter: 'UL', bg: '#1A1A1A', color: '#C8A96E' },
+  'Independent Luxury':          { letter: 'IL', bg: '#1A1A1A', color: '#B87860' },
+  'Independent Upper Upscale':   { letter: 'UU', bg: '#1A1A1A', color: '#888888' },
+  'Independent Upscale':         { letter: 'IU', bg: '#1A1A1A', color: '#666666' },
+  'Independent Midscale':        { letter: 'IM', bg: '#1A1A1A', color: '#555555' },
+  'Independent Economy':         { letter: 'IE', bg: '#1A1A1A', color: '#444444' },
 };
 
 function getBrandLogoUrl(brandGroup) {

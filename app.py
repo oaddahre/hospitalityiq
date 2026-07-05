@@ -896,7 +896,9 @@ def api_brands():
     def _norm_bg(bg):
         if not isinstance(bg, str) or not bg.strip() or bg in _INVALID_BG:
             return None
-        if bg in ('Independent', 'Independent Luxury'):
+        # Collapse legacy un-segmented independent entries; segment-specific
+        # groups (Independent Luxury, Independent Upscale, etc.) pass through
+        if bg == 'Independent':
             return 'Independent Hotels'
         return bg
 
