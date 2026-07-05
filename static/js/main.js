@@ -14,6 +14,7 @@ const BRAND_DOMAINS = {
   'Atlas Hotels Group': 'almada.ma',
   'Atlas Hospitality Group': 'almada.ma',
   'View Hotels': 'almada.ma',
+  'The View': 'almada.ma',
   'Terminus Hotels': 'almada.ma',
   'Mogador Hotels Group': 'hotelmogador.com',
   'Onomo Hotels': 'onomohotel.com',
