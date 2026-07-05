@@ -46,10 +46,10 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 95,La Tour Hassan Palace,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,143,1960,Operating,34.0212,-6.8334,Farah Hotels Group,verified
 98,Mercure Rabat Sheherazade,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upscale,Mercure,Accor,77,1975,Operating,34.011,-6.848,Risma,verified
 100,Palais Faraj Suites & Spa,Fes,Fès-Meknès,Luxury,Palais Faraj,Independent Luxury,31,2009,Operating,34.0634,-4.9789,Undisclosed,verified
-104,Le Berbere Palace Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,Berbere Palace,Independent,249,1989,Operating,30.9189,-6.8889,Undisclosed,verified
+104,Le Berbere Palace Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,Berbere Palace,Independent Upper Upscale,249,1989,Operating,30.9189,-6.8889,Undisclosed,verified
 105,Kenzi Azghor Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Kenzi Hotels,Kenzi Hotels Group,110,1975,Operating,30.928,-6.896,Kenzi Hotels Group,verified
 107,Ibis Ouarzazate Centre,Ouarzazate,Drâa-Tafilalet,Midscale,Ibis,Accor,104,2015,Operating,30.919,-6.899,Risma,verified
-108,Dar Kamar Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Dar Kamar,Independent,47,2010,Operating,30.932,-6.915,Undisclosed,verified
+108,Dar Kamar Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upscale,Dar Kamar,Independent Upscale,47,2010,Operating,30.932,-6.915,Undisclosed,verified
 111,Dakhla Attitude,Dakhla,Dakhla-Oued Ed-Dahab,Luxury,Independent,Independent Luxury,90,2012,Operating,23.6794,-15.9527,Undisclosed,verified
 121,Mazagan Beach & Golf Resort,El Jadida,Grand Casablanca-Settat,Luxury,Mazagan,Independent Luxury,500,2009,Operating,33.2527,-8.5074,Kerzner International / Madaëf,verified
 122,Ibis El Jadida,El Jadida,Grand Casablanca-Settat,Midscale,Ibis,Accor,80,2013,Operating,33.2527,-8.5034,Risma,verified
@@ -74,46 +74,46 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 157,Ksar Char-Bagh Marrakech,Marrakech,Marrakech-Safi,Luxury,Ksar Char-Bagh,Independent Luxury,15,2004,Operating,31.639,-7.989,Undisclosed,verified
 158,Tigmiza Boutique Hotel and Spa Marrakech,Marrakech,Marrakech-Safi,Luxury,Tigmiza,Independent Luxury,27,2007,Operating,31.649,-8.003,Undisclosed,verified
 159,Mövenpick Hotel Mansour Eddahbi Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Mövenpick,Accor,503,2007,Operating,31.614,-7.98,Undisclosed,verified
-160,Hivernage Hotel and Spa Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Hivernage,Independent,84,2008,Operating,31.627,-7.974,Undisclosed,verified
-161,Les Deux Tours Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Les Deux Tours,Independent,41,1996,Operating,31.645,-7.991,Undisclosed,verified
+160,Hivernage Hotel and Spa Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Hivernage,Independent Upper Upscale,84,2008,Operating,31.627,-7.974,Undisclosed,verified
+161,Les Deux Tours Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Les Deux Tours,Independent Upper Upscale,41,1996,Operating,31.645,-7.991,Undisclosed,verified
 162,Grand Mogador Menara Marrakech,Marrakech,Marrakech-Safi,Upscale,Mogador Hotels,Mogador Hotels Group,244,2009,Operating,31.615,-7.982,Undisclosed,verified
 163,Iberostar Waves Club Palmeraie Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,318,2007,Operating,31.646,-7.996,Undisclosed,verified
 164,Barrière Naroua Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Barrière,Groupe Lucien Barrière,85,2007,Operating,31.634,-7.983,Undisclosed,verified
 165,Tikida Palmeraie Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Tikida,Mogador Hotels Group,247,2006,Operating,31.647,-7.999,Undisclosed,verified
-167,Domaine des Remparts Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Domaine des Remparts,Independent,32,2012,Operating,31.618,-7.996,Undisclosed,verified
+167,Domaine des Remparts Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Domaine des Remparts,Independent Upper Upscale,32,2012,Operating,31.618,-7.996,Undisclosed,verified
 168,Adagio Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Adagio,Accor,96,2016,Operating,33.568,-7.594,Risma,verified
 169,Onomo Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Onomo,Onomo Hotels,201,2015,Operating,33.58,-7.605,Undisclosed,verified
 171,Sofitel Agadir Thalassa Sea & Spa,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,173,2008,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
-174,Anezi Tower Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Anezi Tower,Independent,394,2001,Operating,30.4198,-9.5912,Undisclosed,verified
+174,Anezi Tower Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Anezi Tower,Independent Upscale,394,2001,Operating,30.4198,-9.5912,Undisclosed,verified
 180,Marriott Jnane Palace Fes,Fes,Fès-Meknès,Upper Upscale,Marriott,Marriott International,244,1975,Operating,34.0456,-4.9978,Undisclosed,verified
 181,Palais Amani Fes,Fes,Fès-Meknès,Luxury,Palais Amani,Independent Luxury,18,2010,Operating,34.0645,-4.9756,Undisclosed,verified
-183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent,106,1970,Operating,34.0678,-5.0034,Undisclosed,verified
+183,Hotel Les Merinides Fes,Fes,Fès-Meknès,Upper Upscale,Les Mérinides,Independent Upper Upscale,106,1970,Operating,34.0678,-5.0034,Undisclosed,verified
 185,Hotel Borj Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,Independent,Farah Hotels,192,1971,Operating,34.0156,-6.8378,Farah Hotels Group,verified
 187,Fairmont Rabat Sale,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Fairmont,Accor,186,2024,Open,34.0456,-6.8234,Undisclosed,verified
 188,Fairmont Taghazout Bay,Agadir / Taghazout,Souss-Massa,Luxury,Fairmont,Accor,153,2022,Operating,30.5312,-9.7089,Undisclosed,verified
 189,Robinson Club Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upscale,Robinson,TUI Hotels & Resorts,360,2022,Operating,30.5278,-9.7123,Undisclosed,verified
 194,Lina Ryad & Spa Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,17,2008,Operating,35.1689,-5.2634,Undisclosed,verified
-196,Parador Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Parador,Independent,56,1998,Operating,35.1678,-5.2645,Undisclosed,verified
+196,Parador Chefchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Parador,Independent Upscale,56,1998,Operating,35.1678,-5.2645,Undisclosed,verified
 197,Mercure Quemado Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upper Upscale,Mercure,Accor,169,1990,Operating,35.2489,-3.9367,Undisclosed,verified
 198,Atlas Al Hoceima,Al Hoceima,Tanger-Tetouan-Al Hoceima,Upscale,Atlas Hotels,Atlas Hospitality Group,80,2015,Operating,35.2512,-3.9334,Undisclosed,verified
-204,Palm Saidia Hotel,Saidia,Oriental,Upper Upscale,Palm Saidia,Independent,240,2016,Operating,35.0929,-2.2294,Undisclosed,unverified — existence uncertain
-207,Hotel Transatlantique Meknes,Meknes,Fès-Meknès,Upper Upscale,Transatlantique,Independent,120,1941,Operating,33.8934,-5.5449,Undisclosed,verified
+204,Palm Saidia Hotel,Saidia,Oriental,Upper Upscale,Palm Saidia,Independent Upper Upscale,240,2016,Operating,35.0929,-2.2294,Undisclosed,unverified — existence uncertain
+207,Hotel Transatlantique Meknes,Meknes,Fès-Meknès,Upper Upscale,Transatlantique,Independent Upper Upscale,120,1941,Operating,33.8934,-5.5449,Undisclosed,verified
 209,Dar Ahlam Ouarzazate,Ouarzazate,Drâa-Tafilalet,Luxury,Dar Ahlam,Independent Luxury,10,2001,Operating,30.9234,-6.8934,Undisclosed,verified
-210,La Kasbah Hotel Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,La Kasbah,Independent,85,2006,Operating,30.9267,-6.9012,Undisclosed,verified
-212,Dakhla Club Hotel and Spa,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Dakhla Club,Independent,53,2015,Operating,23.6834,-15.9567,Undisclosed,verified
-213,Sahara Regency Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Sahara Regency,Independent,100,2018,Operating,23.6834,-15.9527,Undisclosed,verified
-217,Hotel Rif Nador,Nador,Oriental,Upscale,Hotel Rif,Independent,100,1995,Operating,35.1712,-2.9329,Undisclosed,verified
+210,La Kasbah Hotel Ouarzazate,Ouarzazate,Drâa-Tafilalet,Upper Upscale,La Kasbah,Independent Upper Upscale,85,2006,Operating,30.9267,-6.9012,Undisclosed,verified
+212,Dakhla Club Hotel and Spa,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Dakhla Club,Independent Upscale,53,2015,Operating,23.6834,-15.9567,Undisclosed,verified
+213,Sahara Regency Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Sahara Regency,Independent Upscale,100,2018,Operating,23.6834,-15.9527,Undisclosed,verified
+217,Hotel Rif Nador,Nador,Oriental,Upscale,Hotel Rif,Independent Upscale,100,1995,Operating,35.1712,-2.9329,Undisclosed,verified
 218,Atlas Nador,Nador,Oriental,Upscale,Atlas Hotels,Atlas Hospitality Group,85,2010,Operating,35.1712,-2.9289,Undisclosed,verified
 224,Amphitrite Palace Hotel,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Amphitrite Palace,Independent Luxury,176,2008,Operating,33.8512,-6.9178,Undisclosed,verified
-225,Zelis Hotel Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upper Upscale,Zelis,Independent,65,2010,Operating,35.4689,-6.0334,Undisclosed,verified
-226,Hotel Patio de la Luna Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upscale,Patio de la Luna,Independent,20,2008,Operating,35.4667,-6.0312,Undisclosed,verified
+225,Zelis Hotel Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upper Upscale,Zelis,Independent Upper Upscale,65,2010,Operating,35.4689,-6.0334,Undisclosed,verified
+226,Hotel Patio de la Luna Asilah,Asilah,Tanger-Tetouan-Al Hoceima,Upscale,Patio de la Luna,Independent Upscale,20,2008,Operating,35.4667,-6.0312,Undisclosed,verified
 232,Kasbah Bab Ourika Marrakech,Marrakech,Marrakech-Safi,Luxury,Kasbah Bab Ourika,Independent Luxury,42,2010,Operating,31.4601,-7.7001,Undisclosed,verified
 233,Zalagh City Hotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Zalagh Hotels,Zalagh Hotels Group,136,2015,Operating,31.6234,-7.9678,Undisclosed,verified
-237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
-238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
+237,Azur Saidia Resort,Saidia,Oriental,Upscale,Azur,Independent Upscale,200,2017,Operating,35.0929,-2.2254,Undisclosed,estimated — key count uncertain
+238,Kasbah Baha Baha Dakhla,Dakhla,Dakhla-Oued Ed-Dahab,Upscale,Kasbah Baha Baha,Independent Upscale,60,2016,Operating,23.6874,-15.9607,Undisclosed,verified
 239,Riad Laaroussa Fes,Fes,Fès-Meknès,Luxury,Riad Laaroussa,Independent Luxury,4,2009,Operating,34.0645,-4.9767,Undisclosed,verified
-244,Hotel Rif Meknes,Meknes,Fès-Meknès,Upscale,Hotel Rif,Independent,100,2008,Operating,33.8974,-5.5489,Undisclosed,verified
-245,Hotel El Borj Nador,Nador,Oriental,Midscale,El Borj,Independent,55,2002,Operating,35.1712,-2.9249,Undisclosed,verified
+244,Hotel Rif Meknes,Meknes,Fès-Meknès,Upscale,Hotel Rif,Independent Upscale,100,2008,Operating,33.8974,-5.5489,Undisclosed,verified
+245,Hotel El Borj Nador,Nador,Oriental,Midscale,El Borj,Independent Midscale,55,2002,Operating,35.1712,-2.9249,Undisclosed,verified
 249,Novotel El Jadida,El Jadida,Grand Casablanca-Settat,Upscale,Novotel,Accor,148,2022,Operating,33.2567,-8.4994,Risma,verified
 252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Luxury,Independent,Independent Luxury,24,2010,Operating,35.1695,-5.2621,Undisclosed,verified
 256,Hilton Garden Inn Casablanca,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2019,Open,33.5834,-7.6234,Undisclosed,verified
@@ -215,7 +215,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,status,lat,lng,o
 356,Hotel Kabila Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,96,2005,Open,35.6867,-5.3478,Undisclosed,verified
 357,Prestige Hotel Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,60,2008,Open,35.5689,-5.3712,Undisclosed,verified
 358,Hotel La Paloma Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,110,2005,Open,35.5712,-5.3689,Undisclosed,verified
-359,Soho Boutique Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Soho Boutique,Independent,59,2018,Open,35.5734,-5.3667,Undisclosed,verified
+359,Soho Boutique Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Soho Boutique,Independent Upscale,59,2018,Open,35.5734,-5.3667,Undisclosed,verified
 360,Aurea Hotel Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,63,2015,Open,35.5678,-5.3734,Undisclosed,verified
 361,Hotel Regina Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent Midscale,56,1995,Open,35.5701,-5.3701,Undisclosed,verified
 362,Dreams Hotel Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,130,2019,Open,35.5656,-5.3756,Undisclosed,verified
