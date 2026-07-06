@@ -856,6 +856,13 @@ def api_hotels():
     ]
     # For observer tier, hide financial detail columns (still return them but frontend handles display)
     records = merged[cols].to_dict(orient="records")
+    # Replace NaN with None so jsonify emits null (not the invalid-JSON literal NaN)
+    import math
+    for row in records:
+        for k in row:
+            v = row[k]
+            if isinstance(v, float) and math.isnan(v):
+                row[k] = None
     return jsonify(records)
 
 
