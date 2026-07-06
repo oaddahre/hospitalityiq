@@ -831,19 +831,8 @@ async function showHotelDetail(id) {
   setKv('hkpi-revpar', fmt.mad(h.revpar_mad));
   setKv('hkpi-gop',    fmt.pct(h.gop_margin));
 
-  // ── 3. Estimated financials ──
-  const roomsRev = h.adr_mad * h.occupancy * h.keys * 365 / 1e6;
-  const totalRev = (h.trevpar_mad || h.revpar_mad / h.occupancy * 1.35) * h.keys * 365 / 1e6;
-  const gopMad   = totalRev * h.gop_margin;
-  const assetVal = gopMad * 0.85 / 0.072;
-
-  const madM = v => `MAD ${v < 1000 ? v.toFixed(0) : (v / 1000).toFixed(1) + 'B'}M`.replace('BMM', 'B');
-  document.getElementById('hfin-rooms').textContent  = `MAD ${roomsRev.toFixed(0)}M`;
-  document.getElementById('hfin-total').textContent  = `MAD ${totalRev.toFixed(0)}M`;
-  document.getElementById('hfin-gop').textContent    = `MAD ${gopMad.toFixed(0)}M`;
-  document.getElementById('hfin-asset').textContent  = assetVal >= 1000
-    ? `MAD ${(assetVal / 1000).toFixed(1)}B`
-    : `MAD ${assetVal.toFixed(0)}M`;
+  // ── 3. Estimated financials (range model) ──
+  renderHotelFinancials(h);
 
   // ── 4. Market context chart ──
   document.getElementById('hotel-ctx-city').textContent = h.city;
@@ -870,7 +859,6 @@ async function showHotelDetail(id) {
   // ── 9. Live Rate Intelligence ──
   renderRateCalendar(h.id);
   renderOccCalendar(h.id);
-  renderDetailedFinancials(h.id);
 }
 
 function renderHotelCityChart(h) {
@@ -1213,73 +1201,56 @@ async function renderOccCalendar(hotelId) {
   }
 }
 
-async function renderDetailedFinancials(hotelId) {
-  const section = document.getElementById('hotel-fin-model-section');
-  section.style.display = 'none';
-
-  let fin;
-  try {
-    const resp = await fetch(`/api/financials/${hotelId}`);
-    if (!resp.ok) return;
-    fin = await resp.json();
-  } catch (e) { return; }
-
-  const TYPE_LABELS = {
-    city_business:    'City Business',
-    beach_resort:     'Beach Resort',
-    cultural_leisure: 'Cultural & Leisure',
-    riad_boutique:    'Riad & Boutique',
+function renderHotelFinancials(h) {
+  const MULTIPLES = {
+    'Ultra Luxury':  { lo: 18, hi: 22 },
+    'Luxury':        { lo: 15, hi: 18 },
+    'Upper Upscale': { lo: 12, hi: 15 },
+    'Upscale':       { lo: 10, hi: 12 },
+    'Midscale':      { lo:  8, hi: 10 },
+    'Economy':       { lo:  6, hi:  8 },
   };
 
-  document.getElementById('hfin-hotel-type').textContent =
-    TYPE_LABELS[fin.hotel_type] || fin.hotel_type;
-  document.getElementById('hfin-adr-source').textContent =
-    fin.adr_source === 'live_scrape' ? 'Live BAR Rate' : 'Kōdō Estimate';
+  const bar  = h.adr_mad;
+  const occ  = h.occupancy;
+  const keys = h.keys;
 
-  // Revenue waterfall
-  document.getElementById('hfm-rooms').textContent      = fmMad(fin.rooms_revenue_mad);
-  document.getElementById('hfm-rooms-pct').textContent  = `${fin.rooms_pct}%`;
-  document.getElementById('hfm-fb').textContent         = fmMad(fin.fb_revenue_mad);
-  document.getElementById('hfm-fb-pct').textContent     = `${fin.fb_pct}%`;
-  document.getElementById('hfm-other').textContent      = fmMad(fin.other_revenue_mad);
-  document.getElementById('hfm-other-pct').textContent  = `${fin.other_pct}%`;
-  document.getElementById('hfm-total').textContent      = fmMad(fin.total_revenue_mad);
-  document.getElementById('hfm-ebitda').textContent     = fmMad(fin.ebitda_mad);
-  document.getElementById('hfm-ebitda-pct').textContent = `${fin.ebitda_margin_pct}% margin`;
+  const occLo = Math.max(0.10, occ - 0.08);
+  const occHi = Math.min(0.98, occ + 0.08);
 
-  // Deductions
-  document.getElementById('hfm-ffe').textContent = fin.ffe_reserve_mad
-    ? `(${fmMad(fin.ffe_reserve_mad)})`
-    : '—';
+  const revLoM = bar * occLo * keys * 365 / 1e6;
+  const revHiM = bar * occHi * keys * 365 / 1e6;
 
-  const mgmtRow   = document.getElementById('hfm-mgmt-row');
-  const mgmtLabel = document.getElementById('hfm-mgmt-label');
-  const mgmtVal   = document.getElementById('hfm-mgmt');
-  if (fin.is_managed) {
-    mgmtRow.style.display = '';
-    mgmtLabel.innerHTML = 'Management Fee <span class="fin-rate-note">(2.5% of revenue)</span>';
-    mgmtVal.textContent = fin.management_fee_mad ? `(${fmMad(fin.management_fee_mad)})` : '—';
-  } else {
-    mgmtRow.style.display = '';
-    mgmtLabel.innerHTML = 'Management Fee <span class="fin-rate-note">(owner-operated)</span>';
-    mgmtVal.textContent = 'N/A';
-    mgmtVal.style.color = 'var(--text-faint)';
-    mgmtVal.style.fontStyle = 'italic';
-  }
+  const mult = MULTIPLES[h.category] || { lo: 8, hi: 12 };
 
-  // NOI
-  document.getElementById('hfm-noi').textContent     = fmMad(fin.noi_mad);
-  document.getElementById('hfm-noi-pct').textContent = `${fin.noi_margin_pct}% margin`;
+  const assetLoM = revLoM * mult.lo;
+  const assetHiM = revHiM * mult.hi;
 
-  // Asset value
-  document.getElementById('hfm-cap-rate').textContent  = fin.cap_rate_pct ? `${fin.cap_rate_pct}%` : '—';
-  document.getElementById('hfm-asset-val').textContent = fmMad(fin.asset_value_mad);
-  document.getElementById('hfm-vpk-mad').textContent   = fmMad(fin.value_per_key_mad);
-  document.getElementById('hfm-vpk-eur').textContent   = fin.value_per_key_eur
-    ? `EUR ${(+fin.value_per_key_eur).toLocaleString()}`
-    : '—';
+  const vpkLoMad = (assetLoM * 1e6) / keys;
+  const vpkHiMad = (assetHiM * 1e6) / keys;
 
-  section.style.display = '';
+  const fmM  = v => `MAD ${v.toFixed(1)}M`;
+  const fmLg = v => v >= 1000 ? `MAD ${(v / 1000).toFixed(1)}B` : `MAD ${v.toFixed(0)}M`;
+  const fmK  = v => v >= 1e6  ? `MAD ${(v / 1e6).toFixed(1)}M`  : `MAD ${(v / 1000).toFixed(0)}k`;
+  const fmEur = v => `EUR ${Math.round(v / 10.8 / 1000)}k`;
+
+  document.getElementById('hfin-rev-range').textContent =
+    `${fmM(revLoM)} — ${fmM(revHiM)}`;
+  document.getElementById('hfin-rev-sub').textContent =
+    `Based on BAR × occupancy range × ${keys} keys × 365 days`;
+
+  document.getElementById('hfin-asset-range').textContent =
+    `${fmLg(assetLoM)} — ${fmLg(assetHiM)}`;
+  document.getElementById('hfin-asset-sub').textContent =
+    `Based on ${mult.lo}×–${mult.hi}× rooms revenue multiple (${h.category} segment)`;
+
+  document.getElementById('hfin-vpk-range').textContent =
+    `${fmK(vpkLoMad)} — ${fmK(vpkHiMad)} / ${fmEur(vpkLoMad)} — ${fmEur(vpkHiMad)}`;
+  document.getElementById('hfin-vpk-sub').textContent =
+    `EUR at MAD/EUR 10.8 conversion`;
+
+  document.getElementById('hfin-confidence-badge').textContent =
+    'Medium · Based on Kōdō static estimates';
 }
 
 

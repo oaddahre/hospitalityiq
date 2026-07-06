@@ -1587,6 +1587,14 @@ CAP_RATES = {
     "Ultra Luxury": 0.060, "Luxury": 0.065, "Upper Upscale": 0.070,
     "Upscale": 0.075, "Midscale": 0.085, "Budget": 0.095,
 }
+REVENUE_MULTIPLES = {
+    "Ultra Luxury":  {"lo": 18, "hi": 22},
+    "Luxury":        {"lo": 15, "hi": 18},
+    "Upper Upscale": {"lo": 12, "hi": 15},
+    "Upscale":       {"lo": 10, "hi": 12},
+    "Midscale":      {"lo":  8, "hi": 10},
+    "Economy":       {"lo":  6, "hi":  8},
+}
 
 CITY_SEASON_TYPE = {
     "Casablanca": "business", "Rabat / Salé / Témara": "business",
@@ -1936,25 +1944,38 @@ def compute_city_report_data(city: str, period: str) -> dict:
     ratio = pip_total_keys / total_keys if total_keys else 0
     supply_risk = "High" if ratio > 0.20 else ("Medium" if ratio > 0.10 else "Low")
 
-    # ── asset values ──
+    # ── asset value ranges (revenue-multiple model) ──
     asset_rows = []
     for sp in seg_perf:
-        cap         = CAP_RATES.get(sp["segment"], 0.075)
-        annual_trev = sp["trevpar"] * 365
-        ebitda_per_key   = annual_trev * sp["gop_margin"]
-        ffe_per_key      = annual_trev * 0.035
-        mgmt_per_key     = annual_trev * 0.025
-        noi_per_key      = ebitda_per_key - ffe_per_key - mgmt_per_key
-        value_per_key_mad_m = (noi_per_key / cap) / 1_000_000 if cap else 0
+        keys_seg = sp["keys"]
+        adr_seg  = sp["adr"]
+        occ_seg  = sp["occupancy"]
+        mult     = REVENUE_MULTIPLES.get(sp["segment"], {"lo": 8, "hi": 12})
+        cap      = CAP_RATES.get(sp["segment"], 0.075)
+
+        occ_lo = max(0.05, occ_seg - 0.08)
+        occ_hi = min(0.98, occ_seg + 0.08)
+
+        rev_lo = adr_seg * occ_lo * keys_seg * 365
+        rev_hi = adr_seg * occ_hi * keys_seg * 365
+        rev_lo_m = round(rev_lo / 1_000_000, 1)
+        rev_hi_m = round(rev_hi / 1_000_000, 1)
+
+        vpk_lo_m = round((rev_lo * mult["lo"]) / keys_seg / 1_000_000, 3) if keys_seg else 0
+        vpk_hi_m = round((rev_hi * mult["hi"]) / keys_seg / 1_000_000, 3) if keys_seg else 0
+
         asset_rows.append({
-            "segment":         sp["segment"],
-            "revpar":          sp["revpar"],
-            "ebitda_per_key":  ebitda_per_key,
-            "ffe_per_key":     ffe_per_key,
-            "mgmt_per_key":    mgmt_per_key,
-            "noi_per_key":     noi_per_key,
-            "cap_rate":        cap,
-            "value_per_key":   value_per_key_mad_m,
+            "segment":   sp["segment"],
+            "keys":      keys_seg,
+            "avg_bar":   round(adr_seg, 0),
+            "avg_occ":   round(occ_seg, 4),
+            "rev_lo_m":  rev_lo_m,
+            "rev_hi_m":  rev_hi_m,
+            "mult_lo":   mult["lo"],
+            "mult_hi":   mult["hi"],
+            "vpk_lo_m":  vpk_lo_m,
+            "vpk_hi_m":  vpk_hi_m,
+            "cap_rate":  cap,
         })
 
     # ── seasonality ──
@@ -2250,9 +2271,9 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'dark') -> 
     pdf.ln(3)
 
     pdf.kpi_boxes([
-        ("Est. Rooms Revenue", f"MAD {perf['est_rooms_revenue_mad_m']:.0f}M"),
-        ("Est. Total Revenue",  f"MAD {perf['est_total_revenue_mad_m']:.0f}M"),
-        ("Est. GOP",            f"MAD {perf['est_gop_mad_m']:.0f}M"),
+        ("Estimated RevPAR", f"MAD {o['revpar']:,.0f}"),
+        ("Market Avg Occ",   f"{o['occupancy']*100:.1f}%"),
+        ("Market Avg ADR",   f"MAD {o['adr']:,.0f}"),
     ])
 
     # ─── S4: DEMAND DRIVERS ──────────────────────────────────────────────────
@@ -2337,25 +2358,69 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'dark') -> 
     pdf.ln(2)
 
     if data["asset_values"]:
+        # Table 1 — Rooms Revenue Range by Segment
         pdf.set_font("Helvetica", "B", 8)
         pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Indicative Asset Value Estimates (NOI-based)", ln=1)
+        pdf.cell(_PW, 4, "Rooms Revenue Range by Segment", ln=1)
         pdf.ln(1)
-        cols = ["Segment", "RevPAR", "EBITDA/Key", "FF&E/Key", "Mgmt/Key", "NOI/Key", "Cap", "Value/Key (MMAD)"]
-        cw   = [36, 21, 23, 19, 19, 23, 15, 24]
-        pdf.table_header(cols, cw)
+        cols1 = ["Segment", "Keys", "Avg BAR (MAD)", "Avg Occ", "Rev Low (MAD M)", "Rev High (MAD M)"]
+        cw1   = [40, 16, 32, 22, 35, 35]
+        pdf.table_header(cols1, cw1)
         for i, av in enumerate(data["asset_values"]):
             pdf.table_row([
                 av["segment"],
-                f"{av['revpar']:,.0f}",
-                f"{av['ebitda_per_key']:,.0f}",
-                f"({av['ffe_per_key']:,.0f})",
-                f"({av['mgmt_per_key']:,.0f})",
-                f"{av['noi_per_key']:,.0f}",
-                f"{av['cap_rate']*100:.1f}%",
-                f"{av['value_per_key']:.2f}",
-            ], cw, fill=(i % 2 == 1))
-        pdf.ln(3)
+                f"{av['keys']:,}",
+                f"{av['avg_bar']:,.0f}",
+                f"{av['avg_occ']*100:.1f}%",
+                f"{av['rev_lo_m']:.1f}",
+                f"{av['rev_hi_m']:.1f}",
+            ], cw1, fill=(i % 2 == 1))
+        pdf.ln(4)
+
+        # Table 2 — Asset Value Reference by Segment
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*c['text'])
+        pdf.cell(_PW, 4, "Asset Value Reference by Segment", ln=1)
+        pdf.ln(1)
+        cols2 = ["Segment", "Revenue Multiple", "Est. Value/Key Low (MMAD)", "Est. Value/Key High (MMAD)"]
+        cw2   = [40, 42, 52, 46]
+        pdf.table_header(cols2, cw2)
+        for i, av in enumerate(data["asset_values"]):
+            pdf.table_row([
+                av["segment"],
+                f"{av['mult_lo']}×–{av['mult_hi']}×",
+                f"{av['vpk_lo_m']:.3f}",
+                f"{av['vpk_hi_m']:.3f}",
+            ], cw2, fill=(i % 2 == 1))
+        pdf.ln(4)
+
+        # Table 3 — Market Cap Rate Reference (static)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*c['text'])
+        pdf.cell(_PW, 4, "Market Cap Rate Reference", ln=1)
+        pdf.ln(1)
+        cap_ref = [
+            ("Ultra Luxury",  "5.5–6.5%", "Limited transactions — trophy asset pricing"),
+            ("Luxury",        "6.0–7.0%", "Strong institutional demand"),
+            ("Upper Upscale", "6.5–7.5%", "Most liquid segment in Morocco"),
+            ("Upscale",       "7.0–8.0%", "Growing interest from regional funds"),
+            ("Midscale",      "8.0–9.5%", "Value-add opportunities"),
+        ]
+        cols3 = ["Segment", "Benchmark Cap Rate", "Market Commentary"]
+        cw3   = [40, 42, 98]
+        pdf.table_header(cols3, cw3)
+        for i, (seg, cap, comment) in enumerate(cap_ref):
+            pdf.table_row([seg, cap, comment], cw3, fill=(i % 2 == 1))
+        pdf.ln(4)
+
+        # Footer note
+        pdf.set_font("Helvetica", "", 7)
+        pdf.set_text_color(*c['muted'])
+        pdf.multi_cell(_PW, 4,
+            "Revenue multiples based on Kōdō market analysis. "
+            "Contact Kōdō Advisory for asset-specific valuation: advisory@kodohospitality.com",
+            ln=1)
+        pdf.ln(2)
 
     risks = ai.get("key_risks", [])
     opps  = ai.get("key_opportunities", [])
@@ -2717,45 +2782,6 @@ def api_scraper_override():
 
     app.logger.info(f'Manual override: hotel {hotel_id} | {stay_date} | MAD {rate_mad} | {note}')
     return jsonify({'status': 'saved', 'row': row})
-
-
-@app.route('/api/financials/<hotel_id>')
-@login_required
-def api_financials(hotel_id):
-    try:
-        hotels_df, perf_df, merged = load_data()
-        h_row = merged[merged['id'].astype(str) == str(hotel_id)]
-        if h_row.empty:
-            return jsonify({'error': 'Hotel not found'}), 404
-
-        h         = h_row.iloc[0]
-        hotel     = h.to_dict()
-        occupancy = float(h.get('occupancy', 0) or 0)
-        adr_mad   = float(h.get('adr_mad', 0) or 0)
-
-        # Prefer scraped BAR rate if available (latest scrape_date, nearest stay_date)
-        rows = _read_rates_csv()
-        live_rows = [r for r in rows
-                     if str(r.get('hotel_id', '')) == str(hotel_id)
-                     and r.get('source', '') in {'live_google', 'live_brand', 'live_booking', 'live_expedia'}
-                     and r.get('rate_mad')]
-        if live_rows:
-            live_rows.sort(key=lambda r: (r.get('scrape_date', ''), r.get('stay_date', '')), reverse=True)
-            try:
-                adr_mad = float(live_rows[0]['rate_mad'])
-            except Exception:
-                pass
-
-        financials = compute_hotel_financials(hotel, occupancy, adr_mad)
-        financials['hotel_id']   = hotel_id
-        financials['hotel_name'] = h.get('name', '')
-        financials['occupancy']  = occupancy
-        financials['adr_used']   = adr_mad
-        financials['adr_source'] = 'live_scrape' if live_rows else 'kodo_estimate'
-        return jsonify(financials)
-    except Exception as e:
-        app.logger.error(f'Financials error for {hotel_id}: {e}', exc_info=True)
-        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/scraper/download-rates')

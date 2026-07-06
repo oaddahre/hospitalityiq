@@ -1047,62 +1047,36 @@
           <span class="dual-cal-conf-note" id="hcal-conf-note">—</span>
         </div>
 
-        <!-- Section B: Detailed Financial Model -->
-        <div class="table-card" id="hotel-fin-model-section" style="margin-bottom:20px;display:none">
-          <div class="table-card-header">
-            <span class="table-title">Estimated Annual Financials · Kōdō Model</span>
-            <span class="rate-source-badge" id="hfin-adr-source">Kōdō Estimate</span>
-          </div>
-          <div class="hotel-type-badge-row">
-            <span class="hotel-type-label">Hotel Type:</span>
-            <span class="hotel-type-val" id="hfin-hotel-type">—</span>
-          </div>
-          <table class="fin-model-table">
-            <thead>
-              <tr><th>Line Item</th><th>Amount (MAD)</th><th></th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Rooms Revenue</td><td id="hfm-rooms">—</td><td id="hfm-rooms-pct" class="fin-pct">—</td></tr>
-              <tr><td>F&amp;B Revenue</td><td id="hfm-fb">—</td><td id="hfm-fb-pct" class="fin-pct">—</td></tr>
-              <tr><td>Other Revenue</td><td id="hfm-other">—</td><td id="hfm-other-pct" class="fin-pct">—</td></tr>
-              <tr class="fin-model-total"><td>Total Revenue</td><td id="hfm-total">—</td><td class="fin-pct">100%</td></tr>
-              <tr class="fin-model-ebitda"><td>EBITDA</td><td id="hfm-ebitda">—</td><td id="hfm-ebitda-pct" class="fin-pct">—</td></tr>
-              <tr class="fin-model-deduct"><td>FF&amp;E Reserve <span class="fin-rate-note">(3.5% of revenue)</span></td><td id="hfm-ffe">—</td><td></td></tr>
-              <tr class="fin-model-deduct" id="hfm-mgmt-row"><td id="hfm-mgmt-label">Management Fee <span class="fin-rate-note">(2.5% of revenue)</span></td><td id="hfm-mgmt">—</td><td></td></tr>
-              <tr class="fin-model-noi"><td>NOI</td><td id="hfm-noi">—</td><td id="hfm-noi-pct" class="fin-pct">—</td></tr>
-              <tr class="fin-model-caprate"><td>Cap Rate</td><td id="hfm-cap-rate">—</td><td></td></tr>
-              <tr class="fin-model-asset-inline"><td>Est. Asset Value</td><td id="hfm-asset-val">—</td><td></td></tr>
-              <tr class="fin-model-asset-inline"><td>Value per Key</td><td id="hfm-vpk-mad">—</td><td id="hfm-vpk-eur" class="fin-pct">—</td></tr>
-            </tbody>
-          </table>
-          <p class="hotel-fin-disc">Kōdō model estimates — indicative only. Based on BAR scrape, Kōdō occupancy model, and industry revenue mix ratios calibrated for Morocco. Not for investment decisions.</p>
-        </div>
-
-        <!-- Section C: Kōdō Performance Estimates (existing, label updated) -->
+        <!-- Estimated Financials · Kōdō Model -->
         <div class="table-card" style="margin-bottom:20px">
           <div class="table-card-header">
-            <span class="table-title">Kōdō Performance Estimates · 2025 FY</span>
-            <span class="rate-source-badge">Kōdō Estimate · Updated when operator data received</span>
+            <span class="table-title">Estimated Financials · Kōdō Model</span>
+            <span class="rate-source-badge" id="hfin-confidence-badge">—</span>
           </div>
-          <div class="hotel-fin-grid">
-            <div class="hotel-fin-card">
-              <div class="hotel-fin-val" id="hfin-rooms">—</div>
-              <div class="hotel-fin-lbl">Rooms Revenue</div>
+          <div class="fin-ranges-wrap">
+            <div class="fin-range-row">
+              <div class="fin-range-meta">
+                <div class="fin-range-label">Estimated Rooms Revenue</div>
+                <div class="fin-range-sub" id="hfin-rev-sub">—</div>
+              </div>
+              <div class="fin-range-value" id="hfin-rev-range">—</div>
             </div>
-            <div class="hotel-fin-card">
-              <div class="hotel-fin-val" id="hfin-total">—</div>
-              <div class="hotel-fin-lbl">Total Revenue</div>
+            <div class="fin-range-row">
+              <div class="fin-range-meta">
+                <div class="fin-range-label">Estimated Asset Value</div>
+                <div class="fin-range-sub" id="hfin-asset-sub">—</div>
+              </div>
+              <div class="fin-range-value" id="hfin-asset-range">—</div>
             </div>
-            <div class="hotel-fin-card">
-              <div class="hotel-fin-val" id="hfin-gop">—</div>
-              <div class="hotel-fin-lbl">GOP</div>
-            </div>
-            <div class="hotel-fin-card">
-              <div class="hotel-fin-val" id="hfin-asset">—</div>
-              <div class="hotel-fin-lbl">Est. Asset Value</div>
+            <div class="fin-range-row">
+              <div class="fin-range-meta">
+                <div class="fin-range-label">Est. Value per Key</div>
+                <div class="fin-range-sub" id="hfin-vpk-sub">—</div>
+              </div>
+              <div class="fin-range-value" id="hfin-vpk-range">—</div>
             </div>
           </div>
-          <p class="hotel-fin-disc">Indicative only — based on Kōdō estimates. Not for investment decisions.</p>
+          <div class="fin-disclaimer">Indicative ranges only — based on Kōdō BAR scrape and occupancy model. Not for investment decisions. Contact Kōdō Advisory for asset-specific valuation.</div>
         </div>
 
         <!-- Market context chart -->
