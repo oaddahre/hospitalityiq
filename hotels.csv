@@ -135,7 +135,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 291,Sahrai Casablanca,Casablanca,Casablanca-Settat,Luxury,Independent,Independent Luxury,56,2022,,Open,33.5934,-7.6178,Undisclosed,verified,
 292,Radisson Blu Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,432,2021,verified,Open,35.2489,-3.9334,Undisclosed,verified,
 293,Suites Mohammed V Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,21,2018,,Open,35.2456,-3.9312,Undisclosed,verified,
-294,Hotel Atlas Safari Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hospitality Group,19,,unverified,Operating,33.8914,-5.5509,Undisclosed,verified,
 295,Radisson Blu Residences Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,197,2023,verified,Operating,35.0912,-2.2256,Undisclosed,verified,
 296,Belive Saidia,Saidia,Oriental,Upscale,Be Live Hotels,Globalia Hotels,488,2009,,Operating,35.0889,-2.2212,Undisclosed,verified,
 297,Oasis Saidia Palace,Saidia,Oriental,Upscale,Independent,Independent Upscale,307,2010,,Operating,35.0901,-2.2234,Undisclosed,verified,
