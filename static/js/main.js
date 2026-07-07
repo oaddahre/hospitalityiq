@@ -32,7 +32,6 @@ const BRAND_DOMAINS = {
   'Nobu Hospitality': 'nobuhotels.com',
   'Relais & Châteaux': 'relaischateaux.com',
   'Farah Hotels': 'farahhotels.com',
-  'Mia Hotels': 'mia-hotels.com',
   'TUI Hotels & Resorts': 'tui.com',
   'Globalia Hotels': 'beliveholidays.com',
   'Royal Mansour Collection': 'royalmansour.com',
@@ -50,6 +49,7 @@ const BRAND_CUSTOM_LOGOS = {
   'Independent Upscale':         { letter: 'IU', bg: '#1A1A1A', color: '#666666' },
   'Independent Midscale':        { letter: 'IM', bg: '#1A1A1A', color: '#555555' },
   'Independent Economy':         { letter: 'IE', bg: '#1A1A1A', color: '#444444' },
+  'Mia Hotels':                  { letter: 'M',  bg: '#1A1A1A', color: '#B87860' },
 };
 
 function getBrandLogoUrl(brandGroup) {
