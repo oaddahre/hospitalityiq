@@ -17,7 +17,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2016,verified,Operating,31.639,-7.994,Undisclosed,verified
 20,Ibis Marrakech Centre Gare,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,109,1991,verified,Operating,31.625,-7.967,Risma,verified
 21,Sofitel Agadir Royal Bay Resort,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,273,2024,verified,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
-22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,RIU Hotels & Resorts,444,2000,,Operating,30.4012,-9.6012,Undisclosed,verified
+22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,RIU Hotels & Resorts,444,2012,verified,Operating,30.4012,-9.6012,Undisclosed,verified
 23,Radisson Blu Resort Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,91,2021,verified,Operating,30.436,-9.593,Undisclosed,verified
 24,Hyatt Place Taghazout,Agadir / Taghazout,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,172,2020,,Operating,30.4201,-9.5867,Undisclosed,verified
 27,Iberostar Waves Founty Beach Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,470,2001,,Operating,30.4156,-9.5934,Undisclosed,verified
@@ -131,12 +131,12 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 276,Onomo Hotel Rabat Medina,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Midscale,Onomo,Onomo Hotels,67,2018,,Open,34.0201,-6.8334,Undisclosed,verified
 277,Amadil Beach Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Independent,Independent Upscale,329,1995,,Open,30.4234,-9.5989,Undisclosed,verified
 278,TUI Suneo Kenzi Agadir,Agadir / Taghazout,Souss-Massa,Upscale,TUI Suneo,TUI Hotels & Resorts,236,2000,,Open,30.4178,-9.5934,Undisclosed,verified
-279,Riu Tikida Beach Adults Only,Agadir / Taghazout,Souss-Massa,Upscale,RIU,RIU Hotels & Resorts,254,2002,,Open,30.4067,-9.6034,Undisclosed,verified
-280,Riu Tikida Dunes,Agadir / Taghazout,Souss-Massa,Upscale,RIU,RIU Hotels & Resorts,406,1999,,Open,30.4089,-9.6012,Undisclosed,verified
+279,Riu Tikida Beach Adults Only,Agadir / Taghazout,Souss-Massa,Upscale,RIU,RIU Hotels & Resorts,254,2003,verified,Open,30.4067,-9.6034,Undisclosed,verified
+280,Riu Tikida Dunes,Agadir / Taghazout,Souss-Massa,Upscale,RIU,RIU Hotels & Resorts,406,2002,verified,Open,30.4089,-9.6012,Undisclosed,verified
 281,Tikida Golf Palace Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Independent,Independent Upscale,54,2005,,Open,30.3934,-9.5456,Undisclosed,verified
 282,Tildi Hotel Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Independent,Independent Upscale,116,1988,,Open,30.4156,-9.5978,Undisclosed,verified
 283,Ibis Marrakech Palmeraie,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,147,2007,verified,Open,31.6456,-7.9945,Risma,verified
-284,Riu Tikida Palmeraie,Marrakech,Marrakech-Safi,Upscale,RIU,RIU Hotels & Resorts,392,2004,,Open,31.6478,-7.9978,Undisclosed,verified
+284,Riu Tikida Palmeraie,Marrakech,Marrakech-Safi,Upscale,RIU,RIU Hotels & Resorts,392,2009,verified,Open,31.6478,-7.9978,Undisclosed,verified
 285,Zalagh Kasbah Hotel and Spa,Marrakech,Marrakech-Safi,Upper Upscale,Zalagh,Zalagh Hotels Group,344,2010,,Open,31.6312,-7.9845,Undisclosed,verified
 286,Es Saadi Resort Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,150,2019,,Open,31.6178,-8.0245,Undisclosed,verified
 287,Park Hyatt Marrakech,Marrakech,Marrakech-Safi,Luxury,Park Hyatt,Hyatt Hotels Corporation,130,2019,,Open,31.6234,-8.0178,Undisclosed,verified
