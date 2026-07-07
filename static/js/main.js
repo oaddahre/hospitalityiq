@@ -40,6 +40,10 @@ const BRAND_DOMAINS = {
   'Soho Boutique': 'sohohoteles.com',
 };
 
+const LOCAL_BRAND_LOGOS = {
+  'Mia Hotels': '/static/images/brands/mia-hotels.jpg',
+};
+
 const BRAND_CUSTOM_LOGOS = {
   'Zalagh Hotels Group':         { letter: 'Z',  bg: '#1A1A1A', color: '#B87860' },
   'Farah Hotels':                { letter: 'F',  bg: '#1A1A1A', color: '#B87860' },
@@ -59,6 +63,10 @@ function getBrandLogoUrl(brandGroup) {
 }
 
 function getBrandLogoImg(brandGroup, size = 24) {
+  const local = LOCAL_BRAND_LOGOS[brandGroup];
+  if (local) {
+    return `<img src="${local}" alt="${brandGroup}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;border-radius:3px;background:white;padding:2px;margin-right:6px;" onerror="this.style.display='none'">`;
+  }
   const custom = BRAND_CUSTOM_LOGOS[brandGroup];
   if (custom) {
     return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:'Syne',sans-serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;letter-spacing:0;flex-shrink:0;vertical-align:middle;margin-right:6px;">${custom.letter}</span>`;
