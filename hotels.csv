@@ -1,6 +1,6 @@
 id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_verified,status,lat,lng,owner,data_quality,notes
 1,Four Seasons Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Luxury,Four Seasons,Four Seasons Hotels & Resorts,184,2015,,Operating,33.5955,-7.6308,Undisclosed,verified,
-2,Hyatt Regency Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,255,2023,,Operating,33.5731,-7.6534,Undisclosed,verified,
+2,Hyatt Regency Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,255,1973,verified,Operating,33.5731,-7.6534,Undisclosed,verified,
 3,Sofitel Casablanca Tour Blanche,Casablanca,Grand Casablanca-Settat,Luxury,Sofitel,Accor,171,2012,verified,Operating,33.5869,-7.6192,Risma,verified,
 4,Novotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upscale,Novotel,Accor,281,2007,verified,Operating,33.5848,-7.6334,Risma,verified,
 5,Kenzi Tower Hotel,Casablanca,Grand Casablanca-Settat,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,237,2009,verified,Operating,33.5755,-7.6289,Kenzi Hotels Group,verified,
@@ -19,7 +19,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 21,Sofitel Agadir Royal Bay Resort,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,273,2024,verified,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain,
 22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,RIU Hotels & Resorts,444,2012,verified,Operating,30.4012,-9.6012,Undisclosed,verified,
 23,Radisson Blu Resort Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,91,2021,verified,Operating,30.436,-9.593,Undisclosed,verified,
-24,Hyatt Place Taghazout,Agadir / Taghazout,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,172,2020,,Operating,30.4201,-9.5867,Undisclosed,verified,
+24,Hyatt Place Taghazout,Agadir / Taghazout,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,172,2015,verified,Operating,30.4201,-9.5867,Undisclosed,verified,
 27,Iberostar Waves Founty Beach Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,470,2003,verified,Operating,30.4156,-9.5934,Undisclosed,verified,
 35,Sofitel Rabat Jardin des Roses,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2010,verified,Operating,33.9989,-6.8456,Risma,verified,
 38,Ibis Rabat Agdal,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2017,verified,Operating,34.007,-6.83,Risma,verified,
@@ -130,7 +130,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 284,Riu Tikida Palmeraie Marrakech,Marrakech,Marrakech-Safi,Upscale,RIU,RIU Hotels & Resorts,392,2009,verified,Open,31.6478,-7.9978,Undisclosed,verified,
 285,Zalagh Kasbah Hotel and Spa,Marrakech,Marrakech-Safi,Upper Upscale,Zalagh,Zalagh Hotels Group,344,2009,verified,Open,31.6312,-7.9845,Undisclosed,verified,
 286,Es Saadi Resort Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,150,2019,,Open,31.6178,-8.0245,Undisclosed,verified,
-287,Park Hyatt Marrakech,Marrakech,Marrakech-Safi,Luxury,Park Hyatt,Hyatt Hotels Corporation,130,2019,,Open,31.6234,-8.0178,Undisclosed,verified,
+287,Park Hyatt Marrakech,Marrakech,Marrakech-Safi,Luxury,Park Hyatt,Hyatt Hotels Corporation,130,2023,verified,Open,31.6234,-8.0178,Undisclosed,verified,
 288,Riyad Amine Fes,Fes,Fès-Meknès,Luxury,Independent,Independent Luxury,21,2005,,Open,34.0623,-4.9801,Undisclosed,verified,
 289,Riad Fès Relais & Châteaux,Fes,Fès-Meknès,Luxury,Relais & Châteaux,Independent Luxury,32,2005,,Open,34.0645,-4.9812,Undisclosed,verified,
 290,Sahrai Fes,Fes,Fès-Meknès,Luxury,Independent,Independent Luxury,50,2015,,Open,34.0701,-4.9634,Undisclosed,verified,
@@ -266,3 +266,4 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 420,Grand Mogador Aqua Resort Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Mogador Hotels,Mogador Hotels Group,404,2007,verified,Open,31.5934,-8.0456,Undisclosed,verified,Formerly Mogador Kasbah
 421,Mogador Menzah Appart Hotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Mogador Hotels,Mogador Hotels Group,196,2008,verified,Open,31.6234,-8.0178,Undisclosed,verified,
 422,Grand Mogador Sea View Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Upper Upscale,Mogador Hotels,Mogador Hotels Group,81,2012,verified,Open,35.7823,-5.8067,Undisclosed,verified,
+423,Hyatt Regency Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Hyatt Regency,Hyatt Hotels Corporation,190,2021,verified,Open,30.5212,-9.7023,Undisclosed,verified,
