@@ -32,7 +32,7 @@ const BRAND_DOMAINS = {
   'Nobu Hospitality': 'nobuhotels.com',
   'Relais & Châteaux': 'relaischateaux.com',
   'Farah Hotels': 'farahhotels.com',
-  'Mia Hotels': 'miahotels.com',
+  'Mia Hotels': 'mia-hotels.com',
   'TUI Hotels & Resorts': 'tui.com',
   'Globalia Hotels': 'beliveholidays.com',
   'Royal Mansour Collection': 'royalmansour.com',
