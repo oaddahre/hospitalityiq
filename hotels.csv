@@ -4,7 +4,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 3,Sofitel Casablanca Tour Blanche,Casablanca,Grand Casablanca-Settat,Luxury,Sofitel,Accor,171,2012,verified,Operating,33.5869,-7.6192,Risma,verified
 4,Novotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upscale,Novotel,Accor,281,2007,verified,Operating,33.5848,-7.6334,Risma,verified
 5,Kenzi Tower Hotel,Casablanca,Grand Casablanca-Settat,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,237,2010,,Operating,33.5755,-7.6289,Kenzi Hotels Group,verified
-6,Radisson Blu Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upper Upscale,Radisson Blu,Radisson Hotel Group,120,2012,,Operating,33.575,-7.581,Undisclosed,verified
+6,Radisson Blu Hotel Casablanca City Center,Casablanca,Grand Casablanca-Settat,Upper Upscale,Radisson Blu,Radisson Hotel Group,120,2019,verified,Operating,33.575,-7.581,Undisclosed,verified
 7,Ibis Casablanca City Center,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,266,,unverified,Operating,33.566,-7.576,Risma,verified
 8,Movenpick Hotel Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,Mövenpick,Accor,184,2014,verified,Operating,33.5874,-7.6078,Undisclosed,verified
 10,Barceló Casablanca,Casablanca,Grand Casablanca-Settat,Upscale,Barceló,Barceló Hotel Group,85,2008,,Operating,33.5921,-7.6198,Undisclosed,verified
@@ -14,11 +14,11 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 14,Sofitel Marrakech Palais Imperial & Spa,Marrakech,Marrakech-Safi,Luxury,Sofitel,Accor,157,,unverified,Operating,31.6312,-8.0156,Risma,verified
 15,Fairmont Royal Palm Marrakech,Marrakech,Marrakech-Safi,Luxury,Fairmont,Accor,134,2017,verified,Operating,31.5789,-8.0912,Risma,verified
 16,Novotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Novotel,Accor,112,2009,verified,Operating,31.62,-7.974,Risma,verified
-19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2014,,Operating,31.639,-7.994,Undisclosed,verified
+19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2016,verified,Operating,31.639,-7.994,Undisclosed,verified
 20,Ibis Marrakech Centre Gare,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,109,1991,verified,Operating,31.625,-7.967,Risma,verified
 21,Sofitel Agadir Royal Bay Resort,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,273,2024,verified,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain
 22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,RIU Hotels & Resorts,444,2000,,Operating,30.4012,-9.6012,Undisclosed,verified
-23,Radisson Blu Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,191,2017,,Operating,30.436,-9.593,Undisclosed,verified
+23,Radisson Blu Resort Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson Blu,Radisson Hotel Group,91,2021,verified,Operating,30.436,-9.593,Undisclosed,verified
 24,Hyatt Place Taghazout,Agadir / Taghazout,Souss-Massa,Upscale,Hyatt Place,Hyatt Hotels Corporation,172,2020,,Operating,30.4201,-9.5867,Undisclosed,verified
 27,Iberostar Waves Founty Beach Agadir,Agadir / Taghazout,Souss-Massa,Upscale,Iberostar,Iberostar Hotels & Resorts,470,2001,,Operating,30.4156,-9.5934,Undisclosed,verified
 35,Sofitel Rabat Jardin des Roses,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Luxury,Sofitel,Accor,229,2010,verified,Operating,33.9989,-6.8456,Risma,verified
@@ -26,7 +26,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 40,Barceló Fes Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,148,2008,,Operating,34.047,-5.011,Undisclosed,verified
 41,Ibis Fes,Fes,Fès-Meknès,Midscale,Ibis,Accor,123,1990,verified,Operating,34.03,-5.006,Risma,verified
 43,Menzeh Zalagh Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Independent,Independent Upper Upscale,106,2010,,Operating,34.025,-4.987,Kenzi Hotels Group,verified
-44,Radisson Blu Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Radisson Blu,Radisson Hotel Group,224,2014,,Operating,34.042,-5.013,Undisclosed,verified
+44,Radisson Blu Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Radisson Blu,Radisson Hotel Group,224,2019,verified,Operating,34.042,-5.013,Undisclosed,verified
 49,DoubleTree by Hilton Casablanca,Casablanca,Grand Casablanca-Settat,Upper Upscale,DoubleTree,Hilton Hotels & Resorts,306,2016,,Operating,33.567,-7.592,Undisclosed,verified
 50,Ibis Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,85,2014,verified,Operating,33.543,-7.636,Risma,verified
 52,Ibis Casablanca City Centre,Casablanca,Grand Casablanca-Settat,Midscale,Ibis Styles,Accor,120,2007,verified,Operating,33.564,-7.587,Risma,verified
@@ -60,7 +60,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 129,Atlas Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hospitality Group,100,1990,,Operating,33.8934,-5.5489,Undisclosed,verified
 132,Mogador Nador,Nador,Oriental,Upscale,Mogador Hotels,Mogador Hotels Group,110,2016,,Operating,35.1672,-2.9249,Undisclosed,verified
 137,Iberostar Waves Saidia,Saidia,Oriental,Upper Upscale,Iberostar,Iberostar Hotels & Resorts,484,2009,,Operating,35.0849,-2.2294,Undisclosed,verified
-143,Radisson Blu Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,397,2014,,Operating,35.0889,-2.2214,Undisclosed,verified
+143,Radisson Blu Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,397,2021,verified,Operating,35.0889,-2.2214,Undisclosed,verified
 146,Atlas Beni Mellal,Beni Mellal,Béni Mellal-Khénifra,Upscale,Atlas Hotels,Atlas Hospitality Group,27,2009,,Operating,32.3314,-6.3449,Undisclosed,verified
 151,Diwan MGallery Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,MGallery,Accor,94,2009,verified,Operating,34.0134,-6.8289,Risma,verified
 152,La Sultana Marrakech,Marrakech,Marrakech-Safi,Luxury,La Sultana,Independent Luxury,28,2006,,Operating,31.622,-8.002,Undisclosed,verified
@@ -144,10 +144,10 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 289,Riad Fès Relais & Châteaux,Fes,Fès-Meknès,Luxury,Relais & Châteaux,Independent Luxury,32,2005,,Open,34.0645,-4.9812,Undisclosed,verified
 290,Sahrai Fes,Fes,Fès-Meknès,Luxury,Independent,Independent Luxury,50,2015,,Open,34.0701,-4.9634,Undisclosed,verified
 291,Sahrai Casablanca,Casablanca,Casablanca-Settat,Luxury,Independent,Independent Luxury,56,2022,,Open,33.5934,-7.6178,Undisclosed,verified
-292,Radisson Blu Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,432,2022,,Open,35.2489,-3.9334,Undisclosed,verified
+292,Radisson Blu Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Radisson Blu,Radisson Hotel Group,432,2021,verified,Open,35.2489,-3.9334,Undisclosed,verified
 293,Suites Mohammed V Al Hoceima,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,21,2018,,Open,35.2456,-3.9312,Undisclosed,verified
 294,Hotel Atlas Safari Meknes,Meknes,Fès-Meknès,Upscale,Atlas Hotels,Atlas Hospitality Group,19,2005,,Operating,33.8914,-5.5509,Undisclosed,verified
-295,Radisson Blu Residences Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,197,2012,,Operating,35.0912,-2.2256,Undisclosed,verified
+295,Radisson Blu Residences Saidia,Saidia,Oriental,Upper Upscale,Radisson Blu,Radisson Hotel Group,197,2023,verified,Operating,35.0912,-2.2256,Undisclosed,verified
 296,Belive Saidia,Saidia,Oriental,Upscale,Be Live Hotels,Globalia Hotels,488,2009,,Operating,35.0889,-2.2212,Undisclosed,verified
 297,Oasis Saidia Palace,Saidia,Oriental,Upscale,Independent,Independent Upscale,307,2010,,Operating,35.0901,-2.2234,Undisclosed,verified
 298,Bella Address Saidia,Saidia,Oriental,Luxury,Independent,Independent Luxury,15,2018,,Open,35.0923,-2.2198,Undisclosed,verified
@@ -264,3 +264,4 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 409,Mia Hotels Fes,Fes,Fès-Meknès,Upper Upscale,Mia Hotels,Mia Hotels,121,2020,,Open,34.0234,-5.0012,Undisclosed,verified
 410,Ibis Casablanca Abdelmoumen,Casablanca,Casablanca-Settat,Midscale,Ibis,Accor,157,2014,verified,Open,33.5834,-7.6289,Risma,verified
 411,Ibis Mohammedia,Casablanca,Casablanca-Settat,Midscale,Ibis,Accor,96,2018,verified,Open,33.6834,-7.3834,Risma,verified
+412,Radisson Residences Taghazout Bay,Agadir / Taghazout,Souss-Massa,Upper Upscale,Radisson,Radisson Hotel Group,208,2025,verified,Open,30.5234,-9.7034,Undisclosed,verified
