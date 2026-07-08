@@ -43,6 +43,7 @@ const BRAND_DOMAINS = {
 
 const LOCAL_BRAND_LOGOS = {
   'Mia Hotels': '/static/images/brands/mia-hotels.jpg',
+  'Zephyr': '/static/images/brands/zephyr-logo.jpg',
 };
 
 const BRAND_CUSTOM_LOGOS = {
