@@ -71,7 +71,7 @@ function getBrandLogoImg(brandGroup, size = 24) {
   if (local) {
     const custom = BRAND_CUSTOM_LOGOS[brandGroup];
     const fallback = custom
-      ? `this.outerHTML=\`<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:'Syne',sans-serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;flex-shrink:0;vertical-align:middle;margin-right:6px;">${custom.letter}</span>\``
+      ? `this.outerHTML=\`<span style='display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:Syne,sans-serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;flex-shrink:0;vertical-align:middle;margin-right:6px;'>${custom.letter}</span>\``
       : `this.style.display='none'`;
     return `<img src="${local}" alt="${brandGroup}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;border-radius:3px;background:white;padding:2px;margin-right:6px;" onerror="${fallback}">`;
   }
