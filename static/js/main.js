@@ -71,13 +71,13 @@ function getBrandLogoImg(brandGroup, size = 24) {
   if (local) {
     const custom = BRAND_CUSTOM_LOGOS[brandGroup];
     const fallback = custom
-      ? `this.outerHTML=\`<span style='display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;flex-shrink:0;vertical-align:middle;margin-right:6px;'>${custom.letter}</span>\``
+      ? `this.outerHTML=\`<span style='display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:Syne,sans-serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;flex-shrink:0;vertical-align:middle;margin-right:6px;'>${custom.letter}</span>\``
       : `this.style.display='none'`;
     return `<img src="${local}" alt="${brandGroup}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;border-radius:3px;background:white;padding:2px;margin-right:6px;" onerror="${fallback}">`;
   }
   const custom = BRAND_CUSTOM_LOGOS[brandGroup];
   if (custom) {
-    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;letter-spacing:0;flex-shrink:0;vertical-align:middle;margin-right:6px;">${custom.letter}</span>`;
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${custom.bg};color:${custom.color};border-radius:4px;font-family:'Syne',sans-serif;font-weight:700;font-size:${Math.round(size * 0.55)}px;letter-spacing:0;flex-shrink:0;vertical-align:middle;margin-right:6px;">${custom.letter}</span>`;
   }
   const domain = BRAND_DOMAINS[brandGroup];
   if (!domain) return '';
@@ -1668,7 +1668,7 @@ function renderTourismEvents() {
 
   if (!sorted.length) {
     document.getElementById('events-container').innerHTML =
-      '<p style="padding:24px 20px;font-family:\'Inter\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
+      '<p style="padding:24px 20px;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
     return;
   }
 
@@ -3710,28 +3710,28 @@ async function initReports() {
         `<button class="report-period-pill ${i===0?'active':''}" data-period="${p}"
           style="padding:4px 10px;border-radius:3px;border:1px solid var(--border);font-size:0.6875rem;cursor:pointer;
           background:${i===0?'var(--accent)':'var(--surface)'};color:${i===0?'#0A0A0A':'var(--muted)'};
-          font-family:'Inter',sans-serif;transition:all 0.12s;">${p}</button>`
+          font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.12s;">${p}</button>`
       ).join('');
 
       const lockIcon = canGenerate ? '' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 
       card.innerHTML = `
-        <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:600;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
         <div style="font-size:0.75rem;color:var(--muted);margin-bottom:12px;">Morocco Hotel Market</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" class="report-period-pills">${periodsHTML}</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;" class="report-theme-pills">
           <button class="report-theme-pill active" data-theme="dark"
             style="padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-size:0.6875rem;cursor:pointer;
-            background:var(--accent);color:#0A0A0A;font-family:'Inter',sans-serif;transition:all 0.12s;">◐ Dark</button>
+            background:var(--accent);color:#0A0A0A;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.12s;">◐ Dark</button>
           <button class="report-theme-pill" data-theme="light"
             style="padding:4px 10px;border-radius:3px;border:1px solid var(--border);font-size:0.6875rem;cursor:pointer;
-            background:var(--surface);color:var(--muted);font-family:'Inter',sans-serif;transition:all 0.12s;">○ Light</button>
+            background:var(--surface);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.12s;">○ Light</button>
         </div>
         <div style="font-size:0.6875rem;color:var(--text-faint,#888);margin-bottom:12px;">${cityMeta.hotels} hotels tracked · ${cityMeta.keys?.toLocaleString() || '—'} keys</div>
         <button class="report-generate-btn" data-city="${cityMeta.city}"
           style="width:100%;padding:9px;background:${canGenerate?'var(--accent)':'var(--border)'};
           color:${canGenerate?'#0A0A0A':'var(--muted)'};border:none;cursor:pointer;
-          font-family:'Cormorant Garamond',serif;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+          font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
           display:flex;align-items:center;justify-content:center;">
           ${lockIcon}Generate Dark Report
         </button>
