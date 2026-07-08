@@ -105,7 +105,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Luxury,24,2009,verified,Operating,35.1695,-5.2621,Undisclosed,verified,
 256,Hilton Garden Inn Casablanca Sud,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2022,verified,Open,33.5834,-7.6234,Undisclosed,verified,
 258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2024,verified,Open,33.5934,-7.6234,Royal Mansour Brand,verified,
-260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upscale,Club Med,Club Med,342,1968,verified,Open,35.2456,-3.9289,Club Med (Fosun),verified,
+260,Club Med Yasmina,Al Hoceima,Tanger-Tétouan-Al Hoceima,Upper Upscale,Club Med,Club Med,342,1968,verified,Open,35.2456,-3.9289,Club Med (Fosun),verified,
 261,Waldorf Astoria Rabat Salé,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2025,verified,Operating,33.9889,-6.8512,Undisclosed,verified,
 264,Nobu Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Nobu Hospitality,Nobu Hospitality,71,2024,,Operating,31.6423,-8.0178,Undisclosed,verified,
 265,Oberoi Marrakech,Marrakech,Marrakech-Safi,Ultra Luxury,Oberoi,Oberoi Hotels & Resorts,84,2023,,Operating,31.6089,-8.0389,Undisclosed,verified,
