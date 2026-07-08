@@ -2932,6 +2932,19 @@ document.getElementById('mobile-seg-pills').addEventListener('click', e => {
 
 // ─── Benchmarking screen ──────────────────────────────────────────
 
+// Segment adjacency for comp set filtering (ordered most-to-least luxury)
+const BENCH_SEGMENTS = ['Ultra Luxury', 'Luxury', 'Upper Upscale', 'Upscale', 'Midscale', 'Economy'];
+function benchAllowedSegments(seg) {
+  const idx = BENCH_SEGMENTS.indexOf(seg);
+  const allowed = new Set([seg]);
+  if (idx > 0) allowed.add(BENCH_SEGMENTS[idx - 1]);
+  if (idx < BENCH_SEGMENTS.length - 1) allowed.add(BENCH_SEGMENTS[idx + 1]);
+  return allowed;
+}
+
+const BENCH_MAX_COMP = 8;
+const BENCH_MIN_COMP = 3;
+
 let benchmarkInited = false;
 let benchmarkData   = null;
 let benchTrendRevpar = null;
@@ -3015,29 +3028,73 @@ function updateBenchPropInfo() {
 
 function renderBenchCompSetBuilder() {
   const container = document.getElementById('bench-comp-checks');
-  const others = benchmarkData.hotels.filter(h => h.id !== benchState.myHotelId);
-  // remove any comp set entry that is now my property
+  const myHotel = benchmarkData.hotels.find(x => x.id === benchState.myHotelId);
+
+  // Always remove own property from comp set
   benchState.compSet.delete(benchState.myHotelId);
 
-  container.innerHTML = others.map(h => {
-    const checked = benchState.compSet.has(h.id);
-    return `<label class="bench-comp-check-label${checked ? ' active' : ''}">
-      <input type="checkbox" class="bench-comp-cb" value="${h.id}"${checked ? ' checked' : ''}>
-      ${fmt.esc(h.name)}<span class="bench-comp-keys">${h.keys} keys</span>
-    </label>`;
-  }).join('');
+  // Eligible: same city + same/adjacent segment, not own property
+  const allowedSegs = myHotel ? benchAllowedSegments(myHotel.category) : new Set();
+  const eligible = benchmarkData.hotels.filter(h =>
+    h.id !== benchState.myHotelId &&
+    (!myHotel || h.city === myHotel.city) &&
+    (!myHotel || allowedSegs.has(h.category))
+  );
 
-  container.querySelectorAll('.bench-comp-cb').forEach(cb => {
-    cb.addEventListener('change', () => {
-      if (cb.checked) benchState.compSet.add(cb.value);
-      else benchState.compSet.delete(cb.value);
-      cb.closest('.bench-comp-check-label').classList.toggle('active', cb.checked);
-      renderCompPills();
-      renderBenchAll();
-    });
+  // Remove previously selected hotels that are no longer eligible
+  benchState.compSet.forEach(id => {
+    if (!eligible.find(h => h.id === id)) benchState.compSet.delete(id);
   });
 
+  if (!eligible.length) {
+    container.innerHTML = '<p style="font-size:11px;color:var(--text-muted);padding:4px 0">No comparable hotels in this city and segment.</p>';
+  } else {
+    container.innerHTML = eligible.map(h => {
+      const checked = benchState.compSet.has(h.id);
+      const maxReached = benchState.compSet.size >= BENCH_MAX_COMP && !checked;
+      return `<label class="bench-comp-check-label${checked ? ' active' : ''}${maxReached ? ' bench-comp-check-disabled' : ''}">
+        <input type="checkbox" class="bench-comp-cb" value="${h.id}"${checked ? ' checked' : ''}${maxReached ? ' disabled' : ''}>
+        ${fmt.esc(h.name)}<span class="bench-comp-keys">${h.keys} keys</span>
+      </label>`;
+    }).join('');
+
+    container.querySelectorAll('.bench-comp-cb').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          if (benchState.compSet.size >= BENCH_MAX_COMP) { cb.checked = false; return; }
+          benchState.compSet.add(cb.value);
+        } else {
+          benchState.compSet.delete(cb.value);
+        }
+        cb.closest('.bench-comp-check-label').classList.toggle('active', cb.checked);
+        // Refresh disabled state on other checkboxes after max changes
+        container.querySelectorAll('.bench-comp-cb').forEach(other => {
+          const otherChecked = benchState.compSet.has(other.value);
+          const shouldDisable = benchState.compSet.size >= BENCH_MAX_COMP && !otherChecked;
+          other.disabled = shouldDisable;
+          other.closest('.bench-comp-check-label').classList.toggle('bench-comp-check-disabled', shouldDisable);
+        });
+        updateBenchCompCounter();
+        renderCompPills();
+        renderBenchAll();
+      });
+    });
+  }
+
+  updateBenchCompCounter();
   renderCompPills();
+}
+
+function updateBenchCompCounter() {
+  const n = benchState.compSet.size;
+  const counterEl = document.getElementById('bench-comp-counter');
+  const msgEl     = document.getElementById('bench-comp-min-msg');
+  if (counterEl) {
+    counterEl.textContent = `${n} hotel${n !== 1 ? 's' : ''} selected — minimum ${BENCH_MIN_COMP} required`;
+    counterEl.classList.toggle('bench-comp-counter--warn', n < BENCH_MIN_COMP);
+    counterEl.classList.toggle('bench-comp-counter--ok',   n >= BENCH_MIN_COMP);
+  }
+  if (msgEl) msgEl.style.display = n < BENCH_MIN_COMP ? 'block' : 'none';
 }
 
 function renderCompPills() {
@@ -3053,6 +3110,7 @@ function renderCompPills() {
       benchState.compSet.delete(btn.dataset.compid);
       const cb = document.querySelector(`.bench-comp-cb[value="${btn.dataset.compid}"]`);
       if (cb) { cb.checked = false; cb.closest('.bench-comp-check-label').classList.remove('active'); }
+      updateBenchCompCounter();
       renderCompPills();
       renderBenchAll();
     });
@@ -3086,7 +3144,7 @@ function getMyDaily() {
 }
 
 function getCompDaily() {
-  if (!benchState.compSet.size) return [];
+  if (benchState.compSet.size < 3) return [];  // privacy: minimum 3 required
   const [s, e] = getBenchDateRange();
   const byDate = {};
   benchmarkData.daily.forEach(d => {
@@ -3132,7 +3190,7 @@ function renderBenchKPIs() {
   const my   = aggDaily(getMyDaily());
   const comp = aggDaily(getCompDaily());
 
-  const noComp = !benchState.compSet.size;
+  const noComp = benchState.compSet.size < 3;
 
   function setCard(id, myVal, compVal, myFmt, compFmt) {
     const card = document.getElementById(id);
@@ -3492,7 +3550,7 @@ function renderBenchMonthlyTable() {
     const myAgg = aggDaily(my);
     const compDailyAvg = Object.values(compByDate).map(recs => aggDaily(recs));
     const compAgg = aggDaily(compDailyAvg);
-    const noComp = !benchState.compSet.size || !compDailyAvg.length;
+    const noComp = benchState.compSet.size < 3 || !compDailyAvg.length;
     const revIdx = (!noComp && compAgg.revpar > 0) ? Math.round(myAgg.revpar / compAgg.revpar * 100) : null;
     const [yr, mo] = mk.split('-');
     const label = `${MON_NAMES[Number(mo)-1]} ${yr}`;
@@ -3519,7 +3577,7 @@ function renderBenchInsightCards() {
   const box    = document.getElementById('bench-ai-insights');
   const my     = aggDaily(getMyDaily());
   const comp   = aggDaily(getCompDaily());
-  const noComp = !benchState.compSet.size;
+  const noComp = benchState.compSet.size < 3;
   const myDailyData = getMyDaily();
 
   // ── Card 1: ADR ──────────────────────────────────────────────
