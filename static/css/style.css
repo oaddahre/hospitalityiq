@@ -514,10 +514,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding-right: 6px !important;
 }
 
-.gop-high { color: var(--positive) !important; }
-.gop-mid  { color: var(--accent) !important; }
-.gop-low  { color: var(--text-muted) !important; }
-
 .brand-dot {
   display: inline-block;
   width: 8px;

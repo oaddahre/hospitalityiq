@@ -448,12 +448,6 @@ function renderCharts() {
 
 // ─── Brand table ──────────────────────────────────────────────────
 
-function gopClass(v) {
-  if (v >= 0.37) return 'gop-high';
-  if (v >= 0.30) return 'gop-mid';
-  return 'gop-low';
-}
-
 function renderBrandTable() {
   const rows = brandAggs(filteredByCity());
   const tbody = document.querySelector('#brand-table tbody');
@@ -467,7 +461,6 @@ function renderBrandTable() {
       <td>${fmt.pct(r.occupancy)}</td>
       <td>${fmt.mad(r.adr_mad)}</td>
       <td>${fmt.mad(r.revpar_mad)}</td>
-      <td class="${gopClass(r.gop_margin)}">${fmt.pct(r.gop_margin)}</td>
     </tr>
   `).join('');
 
@@ -559,7 +552,6 @@ function renderBrandsCards() {
         <div class="brn-kpi"><div class="brn-kpi-lbl">OCC</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
         <div class="brn-kpi"><div class="brn-kpi-lbl">ADR</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
         <div class="brn-kpi"><div class="brn-kpi-lbl">RevPAR</div><div class="brn-kpi-val">${fmt.mad(b.weighted_revpar)}</div></div>
-        <div class="brn-kpi"><div class="brn-kpi-lbl">GOP</div><div class="brn-kpi-val">${fmt.pct(b.avg_gop_margin)}</div></div>
       </div>
       <div class="brn-card-meta">
         <div class="brn-card-cities">${cityList}${cityMore}</div>
@@ -641,7 +633,6 @@ function renderBrandsCompTable() {
       <td>${fmt.pct(b.avg_occupancy)}</td>
       <td>${fmt.mad(b.avg_adr)}</td>
       <td>${fmt.mad(b.weighted_revpar)}</td>
-      <td class="${gopClass(b.avg_gop_margin)}">${fmt.pct(b.avg_gop_margin)}</td>
       <td>${b.pipeline_keys > 0 ? b.pipeline_keys.toLocaleString('en') : '—'}</td>
     </tr>`;
   }).join('');
@@ -689,8 +680,6 @@ function showBrandDetail(brandGroup, prevScreen) {
   const occ   = ok / tk;
   const adr   = brandHotelsData.reduce((s, h) => s + h.adr_mad * h.keys * h.occupancy, 0) / ok;
   const revpar= brandHotelsData.reduce((s, h) => s + h.revpar_mad * h.keys, 0) / tk;
-  const gop   = brandHotelsData.reduce((s, h) => s + h.gop_margin * h.keys, 0) / tk;
-
   const cities      = [...new Set(brandHotelsData.map(h => h.city))].sort();
   const ownerValues = [...new Set(brandHotelsData.map(h => h.owner).filter(Boolean))];
   const distinctOwners = ownerValues.filter(o => o !== 'Undisclosed');
@@ -717,7 +706,6 @@ function showBrandDetail(brandGroup, prevScreen) {
   setKpi('brand-bkpi-occ',    fmt.pct(occ));
   setKpi('brand-bkpi-adr',    fmt.mad(adr));
   setKpi('brand-bkpi-revpar', fmt.mad(revpar));
-  setKpi('brand-bkpi-gop',    fmt.pct(gop));
 
   // Switch to brand screen FIRST so the canvas has visible dimensions for Chart.js
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -773,7 +761,6 @@ function renderBrandHotelsTable() {
       <td>${fmt.pct(h.occupancy)}</td>
       <td>${fmt.mad(h.adr_mad)}</td>
       <td>${fmt.mad(h.revpar_mad)}</td>
-      <td class="${gopClass(h.gop_margin)}">${fmt.pct(h.gop_margin)}</td>
       <td>${fmt.esc(h.owner || '—')}</td>
     </tr>`;
   }).join('');
@@ -845,7 +832,6 @@ async function showHotelDetail(id) {
   setKv('hkpi-occ',    fmt.pct(h.occupancy));
   setKv('hkpi-adr',    fmt.mad(h.adr_mad));
   setKv('hkpi-revpar', fmt.mad(h.revpar_mad));
-  setKv('hkpi-gop',    fmt.pct(h.gop_margin));
 
   // ── 3. Estimated financials (range model) ──
   renderHotelFinancials(h);
@@ -1519,7 +1505,6 @@ function renderHotelsTable() {
         <td class="col-hide-mobile">${fmt.pct(h.occupancy)}</td>
         <td class="col-hide-mobile">${fmt.mad(h.adr_mad)}</td>
         <td>${fmt.mad(h.revpar_mad)}</td>
-        <td class="col-hide-mobile ${gopClass(h.gop_margin)}">${fmt.pct(h.gop_margin)}</td>
       </tr>`;
     }).join('');
   }

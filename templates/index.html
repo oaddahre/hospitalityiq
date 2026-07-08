@@ -166,7 +166,6 @@
                 <th>Occ %</th>
                 <th>ADR (MAD)</th>
                 <th>RevPAR (MAD)</th>
-                <th>GOP %</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -383,7 +382,6 @@
                   <th class="sortable-col col-hide-mobile" data-col="occupancy">Occ % <span class="sort-icon">↕</span></th>
                   <th class="sortable-col col-hide-mobile" data-col="adr_mad">ADR (MAD) <span class="sort-icon">↕</span></th>
                   <th class="sortable-col" data-col="revpar_mad">RevPAR (MAD) <span class="sort-icon">↕</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="gop_margin">GOP % <span class="sort-icon">↕</span></th>
                 </tr>
               </thead>
               <tbody id="hotels-tbody"></tbody>
@@ -863,7 +861,6 @@
                   <th class="sortable-col" data-bccol="avg_occupancy">Occ % <span class="sort-icon">↕</span></th>
                   <th class="sortable-col" data-bccol="avg_adr">ADR (MAD) <span class="sort-icon">↕</span></th>
                   <th class="sortable-col sort-desc" data-bccol="weighted_revpar">RevPAR (MAD) <span class="sort-icon">↕</span></th>
-                  <th class="sortable-col" data-bccol="avg_gop_margin">GOP % <span class="sort-icon">↕</span></th>
                   <th class="sortable-col" data-bccol="pipeline_keys">Pipeline Keys <span class="sort-icon">↕</span></th>
                 </tr>
               </thead>
@@ -925,10 +922,6 @@
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
-          <div class="kpi-card" id="brand-bkpi-gop">
-            <span class="kpi-label">GOP Margin</span>
-            <span class="kpi-value">—</span>
-          </div>
         </div>
 
         <div class="chart-card" style="margin-bottom:20px">
@@ -955,7 +948,6 @@
                 <th class="sortable-col" data-bcol="occupancy">Occ % <span class="sort-icon">↕</span></th>
                 <th class="sortable-col" data-bcol="adr_mad">ADR (MAD) <span class="sort-icon">↕</span></th>
                 <th class="sortable-col" data-bcol="revpar_mad">RevPAR (MAD) <span class="sort-icon">↕</span></th>
-                <th class="sortable-col" data-bcol="gop_margin">GOP % <span class="sort-icon">↕</span></th>
                 <th class="sortable-col" data-bcol="owner">Owner <span class="sort-icon">↕</span></th>
               </tr>
             </thead>
@@ -1003,10 +995,6 @@
             <span class="kpi-label">RevPAR</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
-          </div>
-          <div class="kpi-card" id="hkpi-gop">
-            <span class="kpi-label">GOP Margin</span>
-            <span class="kpi-value">—</span>
           </div>
         </div>
 
@@ -1279,7 +1267,7 @@
         <ul style="list-style:none;font-size:0.8125rem;color:var(--muted);line-height:1.9">
           <li>✓ &nbsp;Development pipeline — 50+ projects</li>
           <li>✓ &nbsp;Benchmarking comparisons and trend data</li>
-          <li>✓ &nbsp;Hotel-level financial details (ADR, GOP, TRevPAR)</li>
+          <li>✓ &nbsp;Hotel-level financial details (ADR, TRevPAR)</li>
           <li>✓ &nbsp;Unlimited AI Analyst queries</li>
         </ul>
       </div>

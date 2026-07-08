@@ -2063,9 +2063,9 @@ def generate_ai_narrative(report_data: dict) -> dict:
 
 Market: {city} Hotel Market | Period: {period}
 Total Hotels: {mo['total_hotels']} | Total Keys: {mo['total_keys']:,}
-Avg Occupancy: {perf['occupancy']*100:.1f}% | Avg ADR: MAD {perf['adr']:,.0f} | Avg RevPAR: MAD {perf['revpar']:,.0f} | Avg GOP Margin: {perf['gop_margin']*100:.1f}%
+Avg Occupancy: {perf['occupancy']*100:.1f}% | Avg ADR: MAD {perf['adr']:,.0f} | Avg RevPAR: MAD {perf['revpar']:,.0f}
 Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} keys, Supply Risk: {pip['supply_risk']}
-Est. Total Revenue: MAD {report_data['performance']['est_total_revenue_mad_m']:.0f}M | Est. GOP: MAD {report_data['performance']['est_gop_mad_m']:.0f}M
+Est. Total Revenue: MAD {report_data['performance']['est_total_revenue_mad_m']:.0f}M
 
 Generate a JSON response with exactly these keys:
 - "executive_summary": 140-160 word paragraph, overall market health and key trends
@@ -2193,7 +2193,6 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'dark') -> 
     pdf.kpi_row("Weighted Avg Occupancy", f"{o['occupancy']*100:.1f}%")
     pdf.kpi_row("Weighted Avg ADR", f"MAD {o['adr']:,.0f}")
     pdf.kpi_row("Weighted Avg RevPAR", f"MAD {o['revpar']:,.0f}")
-    pdf.kpi_row("Weighted Avg GOP Margin", f"{o['gop_margin']*100:.1f}%")
     pdf.ln(4)
     pdf.rating_box(rating)
 
@@ -2245,8 +2244,8 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'dark') -> 
     pdf.set_text_color(*c['text'])
     pdf.cell(_PW, 4, "Performance by Segment", ln=1)
     pdf.ln(1)
-    cols = ["Segment", "Hotels", "Occ %", "ADR (MAD)", "RevPAR", "GOP %", "Index"]
-    cw   = [51, 19, 19, 26, 26, 19, 20]
+    cols = ["Segment", "Hotels", "Occ %", "ADR (MAD)", "RevPAR", "Index"]
+    cw   = [60, 19, 19, 30, 30, 22]
     pdf.table_header(cols, cw)
     for i, sp in enumerate(perf["by_segment"]):
         pdf.table_row([
@@ -2254,7 +2253,6 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'dark') -> 
             f"{sp['occupancy']*100:.1f}%",
             f"{sp['adr']:,.0f}",
             f"{sp['revpar']:,.0f}",
-            f"{sp['gop_margin']*100:.1f}%",
             f"{sp['revpar_index']:.0f}",
         ], cw, fill=(i % 2 == 1))
     pdf.ln(3)
