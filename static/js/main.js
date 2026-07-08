@@ -3087,14 +3087,24 @@ function renderBenchCompSetBuilder() {
 
 function updateBenchCompCounter() {
   const n = benchState.compSet.size;
+  const valid = isCompSetValid();
   const counterEl = document.getElementById('bench-comp-counter');
   const msgEl     = document.getElementById('bench-comp-min-msg');
   if (counterEl) {
     counterEl.textContent = `${n} hotel${n !== 1 ? 's' : ''} selected — minimum ${BENCH_MIN_COMP} required`;
-    counterEl.classList.toggle('bench-comp-counter--warn', n < BENCH_MIN_COMP);
-    counterEl.classList.toggle('bench-comp-counter--ok',   n >= BENCH_MIN_COMP);
+    counterEl.classList.toggle('bench-comp-counter--warn', !valid);
+    counterEl.classList.toggle('bench-comp-counter--ok',    valid);
   }
-  if (msgEl) msgEl.style.display = n < BENCH_MIN_COMP ? 'block' : 'none';
+  if (msgEl) msgEl.style.display = valid ? 'none' : 'block';
+  // Update comp toggle buttons on both calendars
+  ['adr','occ'].forEach(calType => {
+    document.querySelectorAll(`[data-ctype="${calType}"][data-cview="comp"]`).forEach(btn => {
+      btn.disabled = !valid;
+      btn.title    = valid ? '' : 'Add at least 3 hotels to view comp set data';
+      btn.style.opacity = valid ? '' : '0.4';
+      btn.style.cursor  = valid ? '' : 'not-allowed';
+    });
+  });
 }
 
 function renderCompPills() {
@@ -3143,8 +3153,18 @@ function getMyDaily() {
   ).sort((a, b) => a.date.localeCompare(b.date));
 }
 
+function isCompSetValid() {
+  return benchState.compSet.size >= BENCH_MIN_COMP;
+}
+
+function benchCompPlaceholder() {
+  return `<div style="display:flex;align-items:center;justify-content:center;padding:32px 16px;color:var(--text-muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;text-align:center;">
+    ⚠ Add at least ${BENCH_MIN_COMP} hotels to view comp set data
+  </div>`;
+}
+
 function getCompDaily() {
-  if (benchState.compSet.size < 3) return [];  // privacy: minimum 3 required
+  if (!isCompSetValid()) return [];  // privacy: minimum 3 required
   const [s, e] = getBenchDateRange();
   const byDate = {};
   benchmarkData.daily.forEach(d => {
@@ -3234,6 +3254,7 @@ function buildCalMap(view, prefix, map) {
       map[d.date] = { adr: d.adr, occupancy: d.occupancy, revpar: d.revpar };
     });
   } else {
+    if (!isCompSetValid()) return;  // privacy: no data below minimum
     const byDate = {};
     benchmarkData.daily.forEach(d => {
       if (!benchState.compSet.has(d.hotel_id)) return;
@@ -3303,14 +3324,29 @@ function occCellStyle(occ, isCompSet = false) {
 function renderBenchCalendar(calType) {
   const yr  = calType === 'adr' ? benchState.adrCalYear  : benchState.occCalYear;
   const mo  = calType === 'adr' ? benchState.adrCalMonth : benchState.occCalMonth;
-  const view = calType === 'adr' ? benchState.adrCalView : benchState.occCalView;
+  let   view = calType === 'adr' ? benchState.adrCalView : benchState.occCalView;
+
+  const valid = isCompSetValid();
+
+  // If comp view is active but comp set is invalid, force back to mine
+  if (!valid && view === 'comp') {
+    view = 'mine';
+    if (calType === 'adr') benchState.adrCalView = 'mine';
+    else benchState.occCalView = 'mine';
+  }
 
   const MON_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById(`bench-${calType}-month-label`).textContent = `${MON_NAMES[mo-1]} ${yr}`;
 
-  // Update toggle button active state
+  // Update toggle button active state; disable comp button when invalid
   document.querySelectorAll(`[data-ctype="${calType}"]`).forEach(btn => {
     btn.classList.toggle('active', btn.dataset.cview === view);
+    if (btn.dataset.cview === 'comp') {
+      btn.disabled = !valid;
+      btn.title = valid ? '' : 'Add at least 3 hotels to view comp set data';
+      btn.style.opacity = valid ? '' : '0.4';
+      btn.style.cursor  = valid ? '' : 'not-allowed';
+    }
   });
 
   const dataMap = benchCalDataMap(calType, yr, mo);
@@ -3349,6 +3385,12 @@ function renderBenchCalendar(calType) {
     }
   }
   html += '</div>';
+
+  // If comp is requested but invalid, replace entire grid with placeholder
+  if (!valid && view === 'comp') {
+    html = benchCompPlaceholder();
+  }
+
   document.getElementById(`bench-${calType}-grid`).innerHTML = html;
 }
 
@@ -3428,18 +3470,18 @@ function renderBenchTrends() {
 
   function mkTrend(myData, compData, suffix) {
     const cc = getChartColors();
+    const datasets = [
+      { label: 'My Property', data: myData, borderColor: getChartColors().barColor,
+        backgroundColor: getChartColors().fillColor, borderWidth: 2, fill: false,
+        tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: getChartColors().barColor },
+    ];
+    if (isCompSetValid()) {
+      datasets.push({ label: 'Comp Set Avg', data: compData, borderColor: '#444444',
+        borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.3, pointRadius: 0 });
+    }
     return {
       type: 'line',
-      data: {
-        labels,
-        datasets: [
-          { label: 'My Property', data: myData, borderColor: getChartColors().barColor,
-            backgroundColor: getChartColors().fillColor, borderWidth: 2, fill: false,
-            tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: getChartColors().barColor },
-          { label: 'Comp Set Avg', data: compData, borderColor: '#444444',
-            borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.3, pointRadius: 0 },
-        ],
-      },
+      data: { labels, datasets },
       options: {
         responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
         layout: { padding: { top: 14 } },
@@ -3498,14 +3540,17 @@ function renderBenchDOW() {
 
   {
     const cc = getChartColors();
+    const dowDatasets = [
+      { label: 'My Property', data: myDOW.map(avg), backgroundColor: getChartColors().barColor, hoverBackgroundColor: getChartColors().hoverColor, borderRadius: 4, borderSkipped: false },
+    ];
+    if (isCompSetValid()) {
+      dowDatasets.push({ label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(68,68,68,0.35)', borderRadius: 4, borderSkipped: false });
+    }
     benchDOWChart = new Chart(document.getElementById('bench-dow-chart'), {
       type: 'bar',
       data: {
         labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-        datasets: [
-          { label: 'My Property', data: myDOW.map(avg), backgroundColor: getChartColors().barColor, hoverBackgroundColor: getChartColors().hoverColor, borderRadius: 4, borderSkipped: false },
-          { label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(68,68,68,0.35)', borderRadius: 4, borderSkipped: false },
-        ],
+        datasets: dowDatasets,
       },
       options: {
         responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
