@@ -1154,7 +1154,7 @@ def build_system_prompt():
 You serve hospitality investors, operators, developers, and consultants. Provide precise, data-driven answers. Always cite specific metrics. Use MAD (Moroccan Dirhams) for all monetary values unless asked otherwise. Approximate USD/EUR conversions: 1 USD ≈ 10 MAD, 1 EUR ≈ 11 MAD. Be analytical, concise, and professional — not conversational.
 
 ══════════════════════════════════════════════════
-KŌDŌ PROPRIETARY DATA — MOROCCO BRANDED HOTELS — 2025 FY ESTIMATES
+KŌDŌ PROPRIETARY DATA — MOROCCO BRANDED HOTELS — KŌDŌ ESTIMATES
 ══════════════════════════════════════════════════
 
 NATIONAL MARKET SNAPSHOT
@@ -1622,18 +1622,18 @@ SEASONALITY_PROFILES = {
 }
 MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
-# ── PDF layout constants (condensed) ──────────────────────────────────────────
-_LM, _RM = 15, 15
-_TM, _BM = 12, 12
-_PW = 210 - _LM - _RM  # 180mm
+# ── PDF layout constants ──────────────────────────────────────────────────────
+_LM, _RM = 14, 14
+_TM, _BM = 10, 10
+_PW = 210 - _LM - _RM  # 182mm
 
 _PALETTE_LIGHT = {
     'bg':       (255, 255, 255),
     'surface':  (248, 248, 248),
     'border':   (232, 232, 232),
-    'text':     (10, 10, 10),
+    'text':     (26, 26, 26),
     'muted':    (106, 106, 106),
-    'faint':    (160, 160, 160),
+    'faint':    (180, 180, 180),
     'accent':   (160, 104, 72),
     'positive': (45, 107, 58),
     'negative': (139, 58, 58),
@@ -1641,9 +1641,9 @@ _PALETTE_LIGHT = {
     'white':    (255, 255, 255),
     'row_even': (255, 255, 255),
     'row_alt':  (248, 248, 248),
-    'hdr_bg':   (10, 10, 10),
-    'hdr_text': (255, 255, 255),
-    'cover_hdr':(10, 10, 10),
+    'hdr_bg':   (248, 248, 248),
+    'hdr_text': (106, 106, 106),
+    'cover_hdr':(160, 104, 72),
 }
 
 _PALETTE_DARK = {
@@ -1659,7 +1659,7 @@ _PALETTE_DARK = {
     'amber':    (200, 146, 42),
     'white':    (255, 255, 255),
     'row_even': (10, 10, 10),
-    'row_alt':  (20, 20, 20),
+    'row_alt':  (16, 16, 16),
     'hdr_bg':   (20, 20, 20),
     'hdr_text': (136, 136, 136),
     'cover_hdr':(10, 10, 10),
@@ -1689,29 +1689,26 @@ if FPDF is not None:
             self.add_page()
 
         def header(self):
-            # Fill dark page background before anything else
             if self._theme == 'dark':
                 self.set_fill_color(*self.c['bg'])
                 self.rect(0, 0, 210, 297, "F")
             if self.page_no() <= 1 or self._back_page:
                 return
-            if self._theme == 'dark':
-                self.set_fill_color(*self.c['hdr_bg'])
-                self.rect(0, 0, 210, 13, "F")
-            self.set_y(6)
-            self.set_font("Helvetica", "B", 9)
+            self.set_y(3)
+            self.set_font("Helvetica", "B", 8)
             self.set_text_color(*self.c['accent'])
-            self.cell(30, 5, "KODO", ln=0)
-            self.set_font("Helvetica", "", 7)
+            self.cell(25, 5, "KODO", ln=0)
+            self.set_font("Helvetica", "", 6)
             self.set_text_color(*self.c['muted'])
             title = f"{self._city} Hotel Market  |  {self._period}"
-            self.cell(_PW - 40, 5, title, align="C", ln=0)
+            self.cell(_PW - 35, 5, title, align="C", ln=0)
+            self.set_font("Helvetica", "", 7)
             self.set_text_color(*self.c['muted'])
             self.cell(10, 5, str(self.page_no() - 1), align="R", ln=1)
             self.set_draw_color(*self.c['border'])
             self.set_line_width(0.3)
-            self.line(_LM, 13, 210 - _RM, 13)
-            self.set_y(16)
+            self.line(_LM, 10, 210 - _RM, 10)
+            self.set_y(13)
 
         def footer(self):
             if self.page_no() <= 1 or self._back_page:
@@ -1722,19 +1719,20 @@ if FPDF is not None:
             self.line(_LM, self.get_y(), 210 - _RM, self.get_y())
             self.set_y(-8)
             self.set_font("Helvetica", "", 6)
-            self.set_text_color(*self.c['muted'])
-            self.cell(_PW, 4, "Confidential - For Kodo Subscribers Only  -  kodohospitality.com", align="C")
+            self.set_text_color(*self.c['faint'])
+            self.cell(_PW / 2, 4, "\xa9 2026 Kodo Hospitality", ln=0)
+            self.cell(_PW / 2, 4, "Confidential  |  For Kodo Subscribers Only", align="R")
 
         def section_title(self, num: str, title: str):
             self.set_font("Helvetica", "B", 7)
             self.set_text_color(*self.c['accent'])
             self.cell(18, 5, num + "  |", ln=0)
-            self.set_font("Helvetica", "B", 14)
+            self.set_font("Helvetica", "B", 15)
             self.set_text_color(*self.c['text'])
             self.cell(_PW - 18, 5, "  " + title, ln=1)
-            self.set_draw_color(*self.c['accent'])
-            self.set_line_width(0.5)
-            self.line(_LM, self.get_y(), _LM + 40, self.get_y())
+            self.set_draw_color(*self.c['border'])
+            self.set_line_width(0.3)
+            self.line(_LM, self.get_y(), _LM + _PW, self.get_y())
             self.ln(3)
 
         def body_text(self, txt: str, w: float = 0):

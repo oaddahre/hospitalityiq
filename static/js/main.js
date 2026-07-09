@@ -318,8 +318,8 @@ function renderKPIs() {
 
   const sub = document.getElementById('dashboard-sub');
   sub.textContent = state.city === 'all'
-    ? 'Morocco branded hotel market · 2025 FY estimates'
-    : state.city + ' · 2025 FY estimates · ' + hotelLabel;
+    ? 'Morocco branded hotel market · Kōdō Estimates'
+    : state.city + ' · Kōdō Estimates · ' + hotelLabel;
 }
 
 // ─── Charts ───────────────────────────────────────────────────────
