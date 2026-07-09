@@ -603,6 +603,11 @@ def account_change_password():
     return jsonify({"ok": True})
 
 
+@app.route("/methodology")
+def methodology():
+    return render_template("methodology.html")
+
+
 @app.route("/team")
 def team():
     return render_template("team.html")
@@ -2423,7 +2428,8 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'dark') -> 
         pdf.set_text_color(*c['muted'])
         pdf.multi_cell(_PW, 4,
             "Revenue multiples based on Kōdō market analysis. "
-            "Contact Kōdō Advisory for asset-specific valuation: advisory@kodohospitality.com",
+            "Contact Kōdō Advisory for asset-specific valuation: advisory@kodohospitality.com. "
+            "Full methodology: kodohospitality.com/methodology",
             ln=1)
         pdf.ln(2)
 
