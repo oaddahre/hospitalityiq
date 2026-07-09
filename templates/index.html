@@ -247,6 +247,7 @@
             <option value="all">All Categories</option>
           </select>
           <span class="pipe-count" id="pipe-count"></span>
+          <button class="export-btn" id="btn-export-pipeline">↓ Export</button>
         </div>
 
         <!-- Analytics row -->
@@ -361,6 +362,7 @@
               </select>
             </div>
             <span class="hotels-results-count" id="hotels-results-count"></span>
+            <button class="export-btn" id="btn-export-hotels">↓ Export</button>
           </div>
           <!-- Active filter chips -->
           <div class="active-filters-row" id="hotels-active-filters">
@@ -428,6 +430,7 @@
           <button class="bench-date-pill active" data-brange="30">Last 30 days</button>
           <button class="bench-date-pill" data-brange="90">Last 90 days</button>
           <button class="bench-date-pill" data-brange="ytd">YTD</button>
+          <button class="export-btn" id="btn-export-bench" style="margin-left:auto">↓ Export</button>
         </div>
 
         <!-- KPI comparison cards -->
@@ -623,6 +626,9 @@
         <div class="screen-header">
           <h1>Morocco — Tourism Intelligence</h1>
           <p class="screen-sub">Source: ONMT, Ministère du Tourisme, ONDA · 2020–2025 official data · 2026E Kōdō forecast</p>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <button class="export-btn" id="btn-export-tourism">↓ Export</button>
         </div>
 
         <!-- KPI cards -->
@@ -827,6 +833,7 @@
               <option value="avg_occupancy">Sort by: Occupancy</option>
               <option value="avg_adr">Sort by: ADR</option>
             </select>
+            <button class="export-btn" id="btn-export-brands">↓ Export</button>
           </div>
         </div>
 
@@ -1251,6 +1258,7 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="/static/js/main.js"></script>
 
   <footer class="platform-footer">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence · <a href="/terms" style="color:inherit;opacity:0.6;text-decoration:none;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Terms</a> · <a href="/privacy" style="color:inherit;opacity:0.6;text-decoration:none;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Privacy</a></footer>

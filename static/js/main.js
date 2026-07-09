@@ -3932,4 +3932,225 @@ async function initReports() {
   }
 }
 
+// ─── Excel Export ─────────────────────────────────────────────────────────────
+
+function canExport() {
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  return tier === 'benchmarker' || tier === 'advisory';
+}
+
+function addAboutSheet(wb) {
+  const about = [{
+    'Source':    'Kōdō Hospitality — Morocco Hotel Market Intelligence',
+    'Website':   'kodohospitality.com',
+    'Generated': new Date().toLocaleDateString('en-GB'),
+    'Data':      'Kōdō proprietary estimates unless noted as Verified',
+    'Contact':   'advisory@kodohospitality.com',
+  }];
+  const ws = XLSX.utils.json_to_sheet(about);
+  ws['!cols'] = Object.keys(about[0]).map(k => ({
+    wch: Math.max(k.length, ...about.map(r => String(r[k] ?? '').length))
+  }));
+  XLSX.utils.book_append_sheet(wb, ws, 'About');
+}
+
+function exportToExcel(data, filename, sheetName) {
+  if (!data.length) return;
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = Object.keys(data[0]).map(key => ({
+    wch: Math.max(key.length, ...data.map(row => String(row[key] ?? '').length))
+  }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  addAboutSheet(wb);
+  XLSX.writeFile(wb, filename + '.xlsx');
+}
+
+function exportHotels() {
+  if (!canExport()) {
+    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download hotel directory data.');
+    return;
+  }
+  const filtered = filterHotels();
+  if (!filtered.length) return;
+  const date = new Date().toISOString().split('T')[0];
+  const cityLabel = hotelsState.city !== 'all' ? hotelsState.city.replace(/[^a-zA-Z0-9]/g, '_') : 'All';
+  const data = filtered.map(h => ({
+    'Hotel Name':       h.name,
+    'City':             h.city,
+    'Segment':          h.category,
+    'Brand Group':      h.brand_group,
+    'Keys':             h.keys,
+    'Occupancy %':      h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
+    'ADR (MAD)':        h.adr_mad || 'N/A',
+    'RevPAR (MAD)':     h.revpar_mad || 'N/A',
+    'Year Established': h.year_opened || 'N/A',
+    'Owner':            h.owner || 'Undisclosed',
+    'Data Quality':     h.data_quality || 'Kōdō Estimate',
+  }));
+  exportToExcel(data, `Kodo_Hotels_${cityLabel}_${date}`, 'Hotels');
+}
+
+function exportPipeline() {
+  if (!canExport()) {
+    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download pipeline data.');
+    return;
+  }
+  if (!pipelineData) return;
+  const date = new Date().toISOString().split('T')[0];
+  const data = filteredPipeline().map(p => ({
+    'Project Name':       p.name,
+    'City':               p.city,
+    'Category':           p.category,
+    'Brand':              p.brand,
+    'Brand Group':        p.brand_group,
+    'Keys':               p.keys || 'TBC',
+    'Expected Opening':   p.expected_opening,
+    'Status':             p.status,
+    'Investment (MAD M)': p.investment_mad ? Math.round(p.investment_mad / 1e6) : 'N/A',
+  }));
+  exportToExcel(data, `Kodo_Pipeline_${date}`, 'Pipeline');
+}
+
+function exportBrands() {
+  if (!canExport()) {
+    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download brand performance data.');
+    return;
+  }
+  if (!brandsData) return;
+  const date = new Date().toISOString().split('T')[0];
+  const data = filteredBrands().map((b, i) => ({
+    'Rank':              i + 1,
+    'Brand Group':       b.brand_group,
+    'Hotels':            b.hotels,
+    'Total Keys':        b.total_keys,
+    'Market Share %':    b.market_share_keys_pct != null ? b.market_share_keys_pct.toFixed(1) + '%' : 'N/A',
+    'Avg Occupancy %':   b.avg_occupancy ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',
+    'Avg ADR (MAD)':     b.avg_adr ? Math.round(b.avg_adr) : 'N/A',
+    'Avg RevPAR (MAD)':  b.weighted_revpar ? Math.round(b.weighted_revpar) : 'N/A',
+    'Pipeline Projects': b.pipeline_projects || 0,
+    'Pipeline Keys':     b.pipeline_keys || 0,
+  }));
+  exportToExcel(data, `Kodo_Brands_${date}`, 'Brand Performance');
+}
+
+function exportBenchmarking() {
+  if (!canExport()) {
+    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download benchmarking data.');
+    return;
+  }
+  if (!benchmarkData) return;
+  const date   = new Date().toISOString().split('T')[0];
+  const myH    = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
+  const propName = myH ? myH.name.replace(/[^a-zA-Z0-9]/g, '_') : 'Property';
+  const valid  = isCompSetValid();
+  const autoW  = data => Object.keys(data[0] || {}).map(k => ({
+    wch: Math.max(k.length, ...data.map(r => String(r[k] ?? '').length))
+  }));
+
+  // Sheet 1 — KPI Summary
+  const my   = aggDaily(getMyDaily());
+  const comp = aggDaily(getCompDaily());
+  const mkIdx = (myV, compV) => (valid && compV > 0) ? Math.round(myV / compV * 100) : 'N/A';
+  const kpiData = [
+    { 'Metric': 'Occupancy %', 'My Property': (my.occupancy * 100).toFixed(1) + '%',
+      'Comp Set Avg': valid ? (comp.occupancy * 100).toFixed(1) + '%' : 'N/A', 'Index': mkIdx(my.occupancy, comp.occupancy) },
+    { 'Metric': 'ADR (MAD)',   'My Property': Math.round(my.adr),
+      'Comp Set Avg': valid ? Math.round(comp.adr) : 'N/A',                    'Index': mkIdx(my.adr, comp.adr) },
+    { 'Metric': 'RevPAR (MAD)','My Property': Math.round(my.revpar),
+      'Comp Set Avg': valid ? Math.round(comp.revpar) : 'N/A',                 'Index': mkIdx(my.revpar, comp.revpar) },
+  ];
+
+  // Sheet 2 — Monthly Detail (mirrors renderBenchMonthlyTable)
+  const months = {};
+  benchmarkData.daily.forEach(d => {
+    const mk = d.date.substring(0, 7);
+    if (!months[mk]) months[mk] = { my: [], compByDate: {} };
+    if (d.hotel_id === benchState.myHotelId) {
+      months[mk].my.push(d);
+    } else if (benchState.compSet.has(d.hotel_id)) {
+      if (!months[mk].compByDate[d.date]) months[mk].compByDate[d.date] = [];
+      months[mk].compByDate[d.date].push(d);
+    }
+  });
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthlyData = Object.keys(months).sort().map(mk => {
+    const { my: myRecs, compByDate } = months[mk];
+    const myAgg   = aggDaily(myRecs);
+    const compAvgs = Object.values(compByDate).map(recs => aggDaily(recs));
+    const compAgg  = aggDaily(compAvgs);
+    const noComp   = !valid || !compAvgs.length;
+    const revIdx   = (!noComp && compAgg.revpar > 0) ? Math.round(myAgg.revpar / compAgg.revpar * 100) : 'N/A';
+    const [yr, mo] = mk.split('-');
+    return {
+      'Month':             `${MON[Number(mo) - 1]} ${yr}`,
+      'My Occupancy %':    (myAgg.occupancy * 100).toFixed(1) + '%',
+      'Comp Occupancy %':  noComp ? 'N/A' : (compAgg.occupancy * 100).toFixed(1) + '%',
+      'My ADR (MAD)':      Math.round(myAgg.adr),
+      'Comp ADR (MAD)':    noComp ? 'N/A' : Math.round(compAgg.adr),
+      'My RevPAR (MAD)':   Math.round(myAgg.revpar),
+      'Comp RevPAR (MAD)': noComp ? 'N/A' : Math.round(compAgg.revpar),
+      'RevPAR Index':      revIdx,
+    };
+  });
+
+  const wsKpi = XLSX.utils.json_to_sheet(kpiData);    wsKpi['!cols'] = autoW(kpiData);
+  const wsMo  = XLSX.utils.json_to_sheet(monthlyData); wsMo['!cols']  = autoW(monthlyData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsKpi, 'KPI Summary');
+  XLSX.utils.book_append_sheet(wb, wsMo,  'Monthly Detail');
+  addAboutSheet(wb);
+  XLSX.writeFile(wb, `Kodo_Benchmarking_${propName}_${date}.xlsx`);
+}
+
+function exportTourism() {
+  if (!canExport()) {
+    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download tourism intelligence data.');
+    return;
+  }
+  const date = new Date().toISOString().split('T')[0];
+  const autoW = data => Object.keys(data[0] || {}).map(k => ({
+    wch: Math.max(k.length, ...data.map(r => String(r[k] ?? '').length))
+  }));
+
+  // Arrivals by year
+  const arrYears = ['2020','2021','2022','2023','2024','2025','2026E'];
+  const arrVals  = [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5];
+  const arrivalsData = arrYears.map((yr, i) => ({
+    'Year': yr,
+    'International Arrivals (M)': arrVals[i],
+  }));
+
+  // Airport traffic (all years from constant)
+  const airportData = TOUR_AIRPORT_DATA.labels.map((airport, i) => {
+    const row = { 'Airport': airport };
+    Object.entries(TOUR_AIRPORT_DATA.years).forEach(([yr, vals]) => { row[yr + ' (M pax)'] = vals[i]; });
+    return row;
+  });
+
+  // Origin markets (all years from constant)
+  const originsData = TOUR_ORIGINS_DATA.labels.map((origin, i) => {
+    const row = { 'Origin Market': origin };
+    Object.entries(TOUR_ORIGINS_DATA.years).forEach(([yr, vals]) => { row[yr + ' (%)'] = vals[i]; });
+    return row;
+  });
+
+  const wsArr  = XLSX.utils.json_to_sheet(arrivalsData); wsArr['!cols']  = autoW(arrivalsData);
+  const wsAir  = XLSX.utils.json_to_sheet(airportData);  wsAir['!cols']  = autoW(airportData);
+  const wsOrig = XLSX.utils.json_to_sheet(originsData);  wsOrig['!cols'] = autoW(originsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsArr,  'Arrivals');
+  XLSX.utils.book_append_sheet(wb, wsAir,  'Airport Traffic');
+  XLSX.utils.book_append_sheet(wb, wsOrig, 'Origin Markets');
+  addAboutSheet(wb);
+  XLSX.writeFile(wb, `Kodo_Tourism_Morocco_${date}.xlsx`);
+}
+
+// Wire up export button clicks
+document.getElementById('btn-export-hotels')  ?.addEventListener('click', exportHotels);
+document.getElementById('btn-export-pipeline') ?.addEventListener('click', exportPipeline);
+document.getElementById('btn-export-brands')   ?.addEventListener('click', exportBrands);
+document.getElementById('btn-export-bench')    ?.addEventListener('click', exportBenchmarking);
+document.getElementById('btn-export-tourism')  ?.addEventListener('click', exportTourism);
+
 boot();
