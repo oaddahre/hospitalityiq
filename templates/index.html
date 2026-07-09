@@ -37,6 +37,9 @@
       <a href="/account" class="nav-account" title="Account settings">Account</a>
       <a href="/logout" class="nav-logout" title="Sign out">←</a>
       <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+      <button id="search-nav-btn" class="search-nav-btn" title="Search (⌘K)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
       <button id="theme-toggle" class="theme-toggle" title="Toggle light/dark mode">
         <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
@@ -1282,6 +1285,26 @@
       <div style="display:flex;gap:10px">
         <a href="/#pricing" style="flex:1;display:block;padding:11px;background:var(--accent);color:#0A0A0A;text-align:center;font-family:'Syne',sans-serif;font-size:0.8125rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;text-decoration:none">Upgrade now →</a>
         <button onclick="closeUpgradeModal()" style="flex:0 0 auto;padding:11px 18px;background:none;border:1px solid var(--border);font-family:'Syne',sans-serif;font-size:0.8125rem;color:var(--muted);cursor:pointer">Maybe later</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Search Modal -->
+  <div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+    <div class="search-modal" id="search-modal">
+      <div class="search-input-wrap">
+        <svg class="search-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="search-input" class="search-input" type="text" placeholder="Search hotels, brands, cities, pipeline..." autocomplete="off" spellcheck="false">
+        <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="search-results" id="search-results"></div>
+      <div class="search-footer">
+        <span class="search-hint"><kbd class="search-kbd">↑↓</kbd> Navigate</span>
+        <span class="search-hint"><kbd class="search-kbd">↵</kbd> Select</span>
+        <span class="search-hint"><kbd class="search-kbd">Esc</kbd> Close</span>
+        <span class="search-hint"><kbd class="search-kbd">⌘K</kbd> Open</span>
       </div>
     </div>
   </div>

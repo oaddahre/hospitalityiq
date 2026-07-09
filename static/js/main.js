@@ -1934,6 +1934,7 @@ async function initPipeline() {
     }
   }
   pipelineData = await res.json();
+  buildSearchIndex();
 
   // Populate filter dropdowns
   const cities = [...new Set(pipelineData.map(p => p.city))].sort();
@@ -2211,6 +2212,7 @@ async function initNews() {
       const res = await fetch('/api/news');
       newsData   = await res.json();
       newsInited = true;
+      buildSearchIndex();
     } catch {
       document.getElementById('ed-grid').innerHTML = '<p class="news-loading">Failed to load articles.</p>';
       return;
@@ -3745,6 +3747,300 @@ document.getElementById('bench-date-bar').addEventListener('click', e => {
 // AI refresh button
 document.getElementById('bench-ai-refresh').addEventListener('click', renderBenchAIInsights);
 
+// ─── Global Search ────────────────────────────────────────────────
+
+const searchIndex = { hotels: [], brands: [], cities: [], pipeline: [], news: [] };
+let _srchDebounce = null;
+let _srchActiveIdx = -1;
+
+function buildSearchIndex() {
+  if (hotels && hotels.length) {
+    searchIndex.hotels = hotels.map(h => ({
+      id: h.id,
+      name: h.name || '',
+      city: h.city || '',
+      category: h.category || '',
+      brand_group: h.brand_group || '',
+      keys: h.keys || 0,
+      searchText: `${h.name || ''} ${h.city || ''} ${h.brand_group || ''} ${h.owner || ''}`.toLowerCase(),
+    }));
+
+    const cityMap = {};
+    hotels.forEach(h => { if (h.city) cityMap[h.city] = (cityMap[h.city] || 0) + 1; });
+    searchIndex.cities = Object.entries(cityMap)
+      .map(([city, count]) => ({ city, count, searchText: city.toLowerCase() }))
+      .sort((a, b) => b.count - a.count);
+
+    const brandMap = {};
+    hotels.forEach(h => { if (h.brand_group) brandMap[h.brand_group] = (brandMap[h.brand_group] || 0) + 1; });
+    searchIndex.brands = Object.entries(brandMap)
+      .map(([brand, count]) => ({ brand, count, searchText: brand.toLowerCase() }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  if (pipelineData) {
+    searchIndex.pipeline = pipelineData.map(p => ({
+      id: p.id,
+      name: p.name || '',
+      city: p.city || '',
+      brand: p.brand || '',
+      expected_opening: p.expected_opening || '',
+      status: p.status || '',
+      searchText: `${p.name || ''} ${p.city || ''} ${p.brand || ''}`.toLowerCase(),
+    }));
+  }
+
+  if (newsData) {
+    const articles = newsData.all || [];
+    searchIndex.news = articles.map(a => ({
+      id: a.id,
+      title: a.title || '',
+      category: a.category || '',
+      date: a.date || '',
+      searchText: `${a.title || ''} ${a.excerpt || ''}`.toLowerCase(),
+    }));
+  }
+}
+
+function _srchRun(query) {
+  const q = query.toLowerCase().trim();
+  if (q.length < 2) return null;
+  return {
+    hotels:   searchIndex.hotels.filter(h => h.searchText.includes(q)).slice(0, 4),
+    brands:   searchIndex.brands.filter(b => b.searchText.includes(q)).slice(0, 3),
+    cities:   searchIndex.cities.filter(c => c.searchText.includes(q)).slice(0, 3),
+    pipeline: searchIndex.pipeline.filter(p => p.searchText.includes(q)).slice(0, 3),
+    news:     searchIndex.news.filter(a => a.searchText.includes(q)).slice(0, 2),
+  };
+}
+
+function _srchGetRecents() {
+  try { return JSON.parse(localStorage.getItem('kodo_search_recents') || '[]'); } catch { return []; }
+}
+function _srchSaveRecent(q) {
+  if (!q || q.length < 2) return;
+  let r = _srchGetRecents().filter(x => x !== q);
+  r.unshift(q);
+  try { localStorage.setItem('kodo_search_recents', JSON.stringify(r.slice(0, 5))); } catch {}
+}
+function _srchRemoveRecent(q) {
+  try { localStorage.setItem('kodo_search_recents', JSON.stringify(_srchGetRecents().filter(x => x !== q))); } catch {}
+}
+function _srchClearRecents() {
+  try { localStorage.removeItem('kodo_search_recents'); } catch {}
+}
+
+function openSearch() {
+  const overlay = document.getElementById('search-overlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const input = document.getElementById('search-input');
+  if (input) { input.value = ''; input.focus(); }
+  _srchActiveIdx = -1;
+  _srchRender('');
+}
+
+function closeSearch() {
+  const overlay = document.getElementById('search-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  _srchActiveIdx = -1;
+}
+
+function _srchNavigate(dir) {
+  const container = document.getElementById('search-results');
+  if (!container) return;
+  const items = container.querySelectorAll('.search-result-item');
+  if (!items.length) return;
+  items[_srchActiveIdx]?.classList.remove('srch-active');
+  _srchActiveIdx = (_srchActiveIdx + dir + items.length) % items.length;
+  items[_srchActiveIdx].classList.add('srch-active');
+  items[_srchActiveIdx].scrollIntoView({ block: 'nearest' });
+}
+
+function _srchSelectActive() {
+  const active = document.querySelector('#search-results .srch-active');
+  if (active) active.click();
+}
+
+function _srchNavigateToScreen(screen) {
+  const link = document.querySelector(`.nav-link[data-screen="${screen}"]`);
+  if (link) link.click();
+}
+
+function _srchRender(query) {
+  const container = document.getElementById('search-results');
+  const clearBtn  = document.getElementById('search-clear-btn');
+  if (!container) return;
+  _srchActiveIdx = -1;
+  clearBtn?.classList.toggle('visible', query.length > 0);
+
+  if (!query) {
+    const recents = _srchGetRecents();
+    if (!recents.length) {
+      container.innerHTML = '<div class="search-empty">Type to search hotels, brands, cities, and more</div>';
+      return;
+    }
+    const header = document.createElement('div');
+    header.className = 'search-recents-header';
+    header.innerHTML = '<span class="search-recents-label">Recent Searches</span>';
+    const clearAll = document.createElement('button');
+    clearAll.className = 'search-clear-all';
+    clearAll.textContent = 'Clear all';
+    clearAll.addEventListener('click', () => { _srchClearRecents(); _srchRender(''); });
+    header.appendChild(clearAll);
+    container.innerHTML = '';
+    container.appendChild(header);
+    recents.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'search-recent-item';
+      item.innerHTML = `
+        <span class="search-recent-text">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.45;flex-shrink:0"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+          ${fmt.esc(r)}
+        </span>
+        <button class="search-recent-remove" aria-label="Remove">&times;</button>`;
+      item.querySelector('.search-recent-remove').addEventListener('click', e => {
+        e.stopPropagation();
+        _srchRemoveRecent(r);
+        _srchRender('');
+      });
+      item.addEventListener('click', () => {
+        const inp = document.getElementById('search-input');
+        if (inp) inp.value = r;
+        _srchRender(r);
+      });
+      container.appendChild(item);
+    });
+    return;
+  }
+
+  if (query.length < 2) {
+    container.innerHTML = '<div class="search-empty">Type at least 2 characters to search</div>';
+    return;
+  }
+
+  const results = _srchRun(query);
+  const groups = [];
+
+  if (results.hotels.length) groups.push({
+    label: 'Hotels',
+    items: results.hotels.map(h => ({
+      name: h.name,
+      meta: [h.city, h.category, h.keys ? h.keys.toLocaleString() + ' keys' : ''].filter(Boolean).join(' · '),
+      action() { closeSearch(); _srchSaveRecent(query); showHotelDetail(h.id); },
+    })),
+  });
+
+  if (results.brands.length) groups.push({
+    label: 'Brands',
+    items: results.brands.map(b => ({
+      name: b.brand,
+      meta: `${b.count} ${b.count === 1 ? 'hotel' : 'hotels'}`,
+      action() { closeSearch(); _srchSaveRecent(query); showBrandDetail(b.brand, 'dashboard'); },
+    })),
+  });
+
+  if (results.cities.length) groups.push({
+    label: 'Cities',
+    items: results.cities.map(c => ({
+      name: c.city,
+      meta: `${c.count} ${c.count === 1 ? 'hotel' : 'hotels'}`,
+      action() {
+        closeSearch(); _srchSaveRecent(query);
+        _srchNavigateToScreen('dashboard');
+        const sidebarItem = document.querySelector(`#city-filter .sidebar-item[data-city="${c.city}"]`);
+        if (sidebarItem) sidebarItem.click();
+      },
+    })),
+  });
+
+  if (results.pipeline.length) groups.push({
+    label: 'Pipeline',
+    items: results.pipeline.map(p => ({
+      name: p.name,
+      meta: [p.city, p.expected_opening, p.status].filter(Boolean).join(' · '),
+      action() { closeSearch(); _srchSaveRecent(query); _srchNavigateToScreen('pipeline'); },
+    })),
+  });
+
+  if (results.news.length) groups.push({
+    label: 'News',
+    items: results.news.map(a => ({
+      name: a.title,
+      meta: [a.category, a.date].filter(Boolean).join(' · '),
+      action() {
+        closeSearch(); _srchSaveRecent(query);
+        _srchNavigateToScreen('news');
+        setTimeout(() => showArticleDetail(a.id), 350);
+      },
+    })),
+  });
+
+  if (!groups.length) {
+    container.innerHTML = `<div class="search-empty">No results for &ldquo;${fmt.esc(query)}&rdquo;</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  groups.forEach((g, gi) => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'search-group';
+    const labelEl = document.createElement('div');
+    labelEl.className = 'search-group-label';
+    labelEl.textContent = g.label;
+    groupEl.appendChild(labelEl);
+    g.items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'search-result-item';
+      el.innerHTML = `<div class="search-result-name">${fmt.esc(item.name)}</div><div class="search-result-meta">${fmt.esc(item.meta)}</div>`;
+      el.addEventListener('click', item.action);
+      groupEl.appendChild(el);
+    });
+    container.appendChild(groupEl);
+  });
+}
+
+// Search event wiring
+(function initSearchEvents() {
+  const input   = document.getElementById('search-input');
+  const clearBtn = document.getElementById('search-clear-btn');
+  const overlay = document.getElementById('search-overlay');
+
+  input?.addEventListener('input', () => {
+    clearTimeout(_srchDebounce);
+    _srchDebounce = setTimeout(() => _srchRender(input.value.trim()), 150);
+  });
+
+  clearBtn?.addEventListener('click', () => {
+    if (input) { input.value = ''; input.focus(); }
+    _srchRender('');
+  });
+
+  overlay?.addEventListener('click', e => {
+    if (e.target === overlay) closeSearch();
+  });
+
+  document.getElementById('search-nav-btn')?.addEventListener('click', openSearch);
+
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      const ov = document.getElementById('search-overlay');
+      if (ov?.classList.contains('open')) closeSearch(); else openSearch();
+      return;
+    }
+    const ov = document.getElementById('search-overlay');
+    if (!ov?.classList.contains('open')) return;
+    if (e.key === 'Escape')    { closeSearch(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); _srchNavigate(1); }
+    else if (e.key === 'ArrowUp')   { e.preventDefault(); _srchNavigate(-1); }
+    else if (e.key === 'Enter')     { e.preventDefault(); _srchSelectActive(); }
+  });
+})();
+
 // ─── Boot ─────────────────────────────────────────────────────────
 
 async function boot() {
@@ -3757,6 +4053,7 @@ async function boot() {
   buildSegPills();
   buildMobileCityPills();
   render();
+  buildSearchIndex();
 }
 
 // Fetch current user info and populate tier badge
