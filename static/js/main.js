@@ -3741,6 +3741,9 @@ document.getElementById('bench-date-bar').addEventListener('click', e => {
   btn.classList.add('active');
   const v = btn.dataset.brange;
   benchState.dateRange = isNaN(Number(v)) ? v : Number(v);
+  // Sync export period dropdown to match active date pill
+  const periodEl = document.getElementById('bench-export-period');
+  if (periodEl) periodEl.value = v;
   renderBenchAll();
 });
 
@@ -4066,6 +4069,12 @@ fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
   badge.className = `tier-badge tier-badge--${me.tier}`;
   badge.style.display = '';
   window._kodoUser = me;
+  // Hide export buttons and dropdowns for Observer tier
+  if (me.tier === 'observer') {
+    document.querySelectorAll(
+      '.export-btn, #bench-export-period, #tourism-export-year'
+    ).forEach(el => { el.style.display = 'none'; });
+  }
 });
 
 // ── Reports ──────────────────────────────────────────────────────────────────
@@ -4236,30 +4245,29 @@ function canExport() {
   return tier === 'benchmarker' || tier === 'advisory';
 }
 
-function addAboutSheet(wb) {
+function exportToExcel(sheets, filename) {
+  const wb = XLSX.utils.book_new();
+  const autoW = data => Object.keys(data[0] || {}).map(k => ({
+    wch: Math.max(k.length, ...data.map(r => String(r[k] ?? '').length))
+  }));
+  sheets.forEach(({ data, name }) => {
+    if (!data || !data.length) return;
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = autoW(data);
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  });
   const about = [{
     'Source':    'Kōdō Hospitality — Morocco Hotel Market Intelligence',
     'Website':   'kodohospitality.com',
     'Generated': new Date().toLocaleDateString('en-GB'),
-    'Data':      'Kōdō proprietary estimates unless noted as Verified',
+    'Note':      'Kōdō proprietary estimates unless marked Verified',
     'Contact':   'advisory@kodohospitality.com',
   }];
-  const ws = XLSX.utils.json_to_sheet(about);
-  ws['!cols'] = Object.keys(about[0]).map(k => ({
+  const wsAbout = XLSX.utils.json_to_sheet(about);
+  wsAbout['!cols'] = Object.keys(about[0]).map(k => ({
     wch: Math.max(k.length, ...about.map(r => String(r[k] ?? '').length))
   }));
-  XLSX.utils.book_append_sheet(wb, ws, 'About');
-}
-
-function exportToExcel(data, filename, sheetName) {
-  if (!data.length) return;
-  const ws = XLSX.utils.json_to_sheet(data);
-  ws['!cols'] = Object.keys(data[0]).map(key => ({
-    wch: Math.max(key.length, ...data.map(row => String(row[key] ?? '').length))
-  }));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  addAboutSheet(wb);
+  XLSX.utils.book_append_sheet(wb, wsAbout, 'About');
   XLSX.writeFile(wb, filename + '.xlsx');
 }
 
@@ -4281,11 +4289,11 @@ function exportHotels() {
     'Occupancy %':      h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
     'ADR (MAD)':        h.adr_mad || 'N/A',
     'RevPAR (MAD)':     h.revpar_mad || 'N/A',
-    'Year Established': h.year_opened || 'N/A',
+    'Year Established': h.year_opened_verified === 'verified' ? h.year_opened : 'N/A',
     'Owner':            h.owner || 'Undisclosed',
     'Data Quality':     h.data_quality || 'Kōdō Estimate',
   }));
-  exportToExcel(data, `Kodo_Hotels_${cityLabel}_${date}`, 'Hotels');
+  exportToExcel([{ data, name: 'Hotels' }], `Kodo_Hotels_${cityLabel}_${date}`);
 }
 
 function exportPipeline() {
@@ -4306,7 +4314,7 @@ function exportPipeline() {
     'Status':             p.status,
     'Investment (MAD M)': p.investment_mad ? Math.round(p.investment_mad / 1e6) : 'N/A',
   }));
-  exportToExcel(data, `Kodo_Pipeline_${date}`, 'Pipeline');
+  exportToExcel([{ data, name: 'Pipeline' }], `Kodo_Pipeline_${date}`);
 }
 
 function exportBrands() {
@@ -4325,10 +4333,11 @@ function exportBrands() {
     'Avg Occupancy %':   b.avg_occupancy ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',
     'Avg ADR (MAD)':     b.avg_adr ? Math.round(b.avg_adr) : 'N/A',
     'Avg RevPAR (MAD)':  b.weighted_revpar ? Math.round(b.weighted_revpar) : 'N/A',
+    'Cities Present':    Array.isArray(b.cities) ? b.cities.join(', ') : 'N/A',
     'Pipeline Projects': b.pipeline_projects || 0,
     'Pipeline Keys':     b.pipeline_keys || 0,
   }));
-  exportToExcel(data, `Kodo_Brands_${date}`, 'Brand Performance');
+  exportToExcel([{ data, name: 'Brand Performance' }], `Kodo_Brands_${date}`);
 }
 
 function exportBenchmarking() {
@@ -4337,25 +4346,32 @@ function exportBenchmarking() {
     return;
   }
   if (!benchmarkData) return;
-  const date   = new Date().toISOString().split('T')[0];
-  const myH    = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
+  const date     = new Date().toISOString().split('T')[0];
+  const myH      = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
   const propName = myH ? myH.name.replace(/[^a-zA-Z0-9]/g, '_') : 'Property';
-  const valid  = isCompSetValid();
-  const autoW  = data => Object.keys(data[0] || {}).map(k => ({
-    wch: Math.max(k.length, ...data.map(r => String(r[k] ?? '').length))
-  }));
+  const valid    = isCompSetValid();
+
+  // Read selected export period from dropdown (default to active date pill)
+  const periodEl  = document.getElementById('bench-export-period');
+  const periodVal = periodEl ? periodEl.value : String(benchState.dateRange);
+  const periodMap = { '7': 'Last_7_Days', '30': 'Last_30_Days', '90': 'Last_90_Days', 'ytd': 'YTD' };
+  const periodLabel = periodMap[periodVal] || 'Period';
+  const periodDisp  = periodEl ? periodEl.options[periodEl.selectedIndex]?.text : String(benchState.dateRange);
 
   // Sheet 1 — KPI Summary
   const my   = aggDaily(getMyDaily());
   const comp = aggDaily(getCompDaily());
   const mkIdx = (myV, compV) => (valid && compV > 0) ? Math.round(myV / compV * 100) : 'N/A';
   const kpiData = [
-    { 'Metric': 'Occupancy %', 'My Property': (my.occupancy * 100).toFixed(1) + '%',
-      'Comp Set Avg': valid ? (comp.occupancy * 100).toFixed(1) + '%' : 'N/A', 'Index': mkIdx(my.occupancy, comp.occupancy) },
-    { 'Metric': 'ADR (MAD)',   'My Property': Math.round(my.adr),
-      'Comp Set Avg': valid ? Math.round(comp.adr) : 'N/A',                    'Index': mkIdx(my.adr, comp.adr) },
-    { 'Metric': 'RevPAR (MAD)','My Property': Math.round(my.revpar),
-      'Comp Set Avg': valid ? Math.round(comp.revpar) : 'N/A',                 'Index': mkIdx(my.revpar, comp.revpar) },
+    { 'Metric': 'Occupancy %',  'My Property': (my.occupancy * 100).toFixed(1) + '%',
+      'Comp Set Average': valid ? (comp.occupancy * 100).toFixed(1) + '%' : 'N/A',
+      'Index': mkIdx(my.occupancy, comp.occupancy), 'Period': periodDisp },
+    { 'Metric': 'ADR (MAD)',    'My Property': Math.round(my.adr),
+      'Comp Set Average': valid ? Math.round(comp.adr) : 'N/A',
+      'Index': mkIdx(my.adr, comp.adr), 'Period': periodDisp },
+    { 'Metric': 'RevPAR (MAD)', 'My Property': Math.round(my.revpar),
+      'Comp Set Average': valid ? Math.round(comp.revpar) : 'N/A',
+      'Index': mkIdx(my.revpar, comp.revpar), 'Period': periodDisp },
   ];
 
   // Sheet 2 — Monthly Detail (mirrors renderBenchMonthlyTable)
@@ -4373,31 +4389,31 @@ function exportBenchmarking() {
   const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const monthlyData = Object.keys(months).sort().map(mk => {
     const { my: myRecs, compByDate } = months[mk];
-    const myAgg   = aggDaily(myRecs);
+    const myAgg    = aggDaily(myRecs);
     const compAvgs = Object.values(compByDate).map(recs => aggDaily(recs));
     const compAgg  = aggDaily(compAvgs);
     const noComp   = !valid || !compAvgs.length;
     const revIdx   = (!noComp && compAgg.revpar > 0) ? Math.round(myAgg.revpar / compAgg.revpar * 100) : 'N/A';
     const [yr, mo] = mk.split('-');
     return {
-      'Month':             `${MON[Number(mo) - 1]} ${yr}`,
-      'My Occupancy %':    (myAgg.occupancy * 100).toFixed(1) + '%',
-      'Comp Occupancy %':  noComp ? 'N/A' : (compAgg.occupancy * 100).toFixed(1) + '%',
-      'My ADR (MAD)':      Math.round(myAgg.adr),
-      'Comp ADR (MAD)':    noComp ? 'N/A' : Math.round(compAgg.adr),
-      'My RevPAR (MAD)':   Math.round(myAgg.revpar),
-      'Comp RevPAR (MAD)': noComp ? 'N/A' : Math.round(compAgg.revpar),
-      'RevPAR Index':      revIdx,
+      'Month':                `${MON[Number(mo) - 1]} ${yr}`,
+      'My Occupancy %':       (myAgg.occupancy * 100).toFixed(1) + '%',
+      'Comp Set Occupancy %': noComp ? 'N/A' : (compAgg.occupancy * 100).toFixed(1) + '%',
+      'My ADR (MAD)':         Math.round(myAgg.adr),
+      'Comp Set ADR (MAD)':   noComp ? 'N/A' : Math.round(compAgg.adr),
+      'My RevPAR (MAD)':      Math.round(myAgg.revpar),
+      'Comp Set RevPAR (MAD)':noComp ? 'N/A' : Math.round(compAgg.revpar),
+      'RevPAR Index':         revIdx,
     };
   });
 
-  const wsKpi = XLSX.utils.json_to_sheet(kpiData);    wsKpi['!cols'] = autoW(kpiData);
-  const wsMo  = XLSX.utils.json_to_sheet(monthlyData); wsMo['!cols']  = autoW(monthlyData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsKpi, 'KPI Summary');
-  XLSX.utils.book_append_sheet(wb, wsMo,  'Monthly Detail');
-  addAboutSheet(wb);
-  XLSX.writeFile(wb, `Kodo_Benchmarking_${propName}_${date}.xlsx`);
+  exportToExcel(
+    [
+      { data: kpiData, name: 'KPI Summary' },
+      { data: monthlyData.length ? monthlyData : [{ 'Note': 'No monthly data available' }], name: 'Monthly Detail' },
+    ],
+    `Kodo_Benchmarking_${propName}_${periodLabel}_${date}`
+  );
 }
 
 function exportTourism() {
@@ -4405,42 +4421,58 @@ function exportTourism() {
     showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download tourism intelligence data.');
     return;
   }
-  const date = new Date().toISOString().split('T')[0];
-  const autoW = data => Object.keys(data[0] || {}).map(k => ({
-    wch: Math.max(k.length, ...data.map(r => String(r[k] ?? '').length))
-  }));
+  const yearEl = document.getElementById('tourism-export-year');
+  const year   = yearEl ? yearEl.value : '2025';
+  const yearNum = parseInt(year, 10);
 
-  // Arrivals by year
-  const arrYears = ['2020','2021','2022','2023','2024','2025','2026E'];
-  const arrVals  = [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5];
-  const arrivalsData = arrYears.map((yr, i) => ({
-    'Year': yr,
-    'International Arrivals (M)': arrVals[i],
-  }));
+  // Sheet 1 — International Arrivals (all years with YoY growth, filtered to selected year)
+  const ARR_YEARS = ['2020','2021','2022','2023','2024','2025','2026E'];
+  const ARR_VALS  = [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5];
+  const arrivalsData = ARR_YEARS
+    .filter(yr => yr === year)
+    .map(yr => {
+      const idx  = ARR_YEARS.indexOf(yr);
+      const prev = idx > 0 ? ARR_VALS[idx - 1] : null;
+      const growth = prev ? ((ARR_VALS[idx] - prev) / prev * 100).toFixed(1) + '%' : 'N/A';
+      return { 'Year': yr, 'Total Arrivals (M)': ARR_VALS[idx], 'YoY Growth %': growth };
+    });
 
-  // Airport traffic (all years from constant)
-  const airportData = TOUR_AIRPORT_DATA.labels.map((airport, i) => {
-    const row = { 'Airport': airport };
-    Object.entries(TOUR_AIRPORT_DATA.years).forEach(([yr, vals]) => { row[yr + ' (M pax)'] = vals[i]; });
-    return row;
-  });
+  // Sheet 2 — Airport Traffic for selected year
+  const airYearVals = TOUR_AIRPORT_DATA.years[yearNum];
+  const airportData = airYearVals
+    ? TOUR_AIRPORT_DATA.labels.map((airport, i) => ({
+        'Airport': airport,
+        'Passengers (M)': airYearVals[i],
+        'Year': year,
+      }))
+    : TOUR_AIRPORT_DATA.labels.map((airport, i) => {
+        const row = { 'Airport': airport };
+        Object.entries(TOUR_AIRPORT_DATA.years).forEach(([yr, vals]) => { row[`${yr} (M pax)`] = vals[i]; });
+        return row;
+      });
 
-  // Origin markets (all years from constant)
-  const originsData = TOUR_ORIGINS_DATA.labels.map((origin, i) => {
-    const row = { 'Origin Market': origin };
-    Object.entries(TOUR_ORIGINS_DATA.years).forEach(([yr, vals]) => { row[yr + ' (%)'] = vals[i]; });
-    return row;
-  });
+  // Sheet 3 — Origin Markets for selected year
+  const origYearVals = TOUR_ORIGINS_DATA.years[yearNum];
+  const originsData = origYearVals
+    ? TOUR_ORIGINS_DATA.labels.map((origin, i) => ({
+        'Country': origin,
+        'Arrivals Share %': origYearVals[i] + '%',
+        'Year': year,
+      }))
+    : TOUR_ORIGINS_DATA.labels.map((origin, i) => {
+        const row = { 'Origin Market': origin };
+        Object.entries(TOUR_ORIGINS_DATA.years).forEach(([yr, vals]) => { row[`${yr} (%)`] = vals[i]; });
+        return row;
+      });
 
-  const wsArr  = XLSX.utils.json_to_sheet(arrivalsData); wsArr['!cols']  = autoW(arrivalsData);
-  const wsAir  = XLSX.utils.json_to_sheet(airportData);  wsAir['!cols']  = autoW(airportData);
-  const wsOrig = XLSX.utils.json_to_sheet(originsData);  wsOrig['!cols'] = autoW(originsData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsArr,  'Arrivals');
-  XLSX.utils.book_append_sheet(wb, wsAir,  'Airport Traffic');
-  XLSX.utils.book_append_sheet(wb, wsOrig, 'Origin Markets');
-  addAboutSheet(wb);
-  XLSX.writeFile(wb, `Kodo_Tourism_Morocco_${date}.xlsx`);
+  exportToExcel(
+    [
+      { data: arrivalsData.length ? arrivalsData : [{ 'Note': 'No data for selected year' }], name: 'International Arrivals' },
+      { data: airportData, name: 'Airport Traffic' },
+      { data: originsData, name: 'Origin Markets' },
+    ],
+    `Kodo_Tourism_Morocco_${year}`
+  );
 }
 
 // Wire up export button clicks
