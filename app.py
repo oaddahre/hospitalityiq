@@ -929,9 +929,6 @@ def api_brands():
 
     results = []
     for bg, grp in merged.groupby('_bg'):
-        if len(grp) < 2:
-            continue
-
         tk = int(grp['keys'].sum())
         ok = float((grp['keys'] * grp['occupancy']).sum())
         avg_occ      = ok / tk if tk else 0.0
