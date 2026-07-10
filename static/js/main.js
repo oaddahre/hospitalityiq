@@ -37,6 +37,10 @@ const BRAND_DOMAINS = {
   'Royal Mansour Collection': 'royalmansour.com',
   'Kerzner International': 'kerzner.com',
   'Groupe Barrière': 'hotelsbarriere.com',
+  'Groupe Lucien Barrière': 'hotelsbarriere.com',
+  'Aman Resorts': 'aman.com',
+  'Mandarin Oriental Hotel Group': 'mandarinoriental.com',
+  'Virgin Limited Edition': 'virginlimitededition.com',
   'Soho Boutique': 'sohohoteles.com',
   'Zephyr': 'zephyr.ma',
 };
