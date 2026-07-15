@@ -60,6 +60,7 @@ const BRAND_CUSTOM_LOGOS = {
   'Independent Midscale':        { letter: 'IM', bg: '#1A1A1A', color: '#555555' },
   'Independent Economy':         { letter: 'IE', bg: '#1A1A1A', color: '#444444' },
   'Mia Hotels':                  { letter: 'M',  bg: '#1A1A1A', color: '#B87860' },
+  'Story Hospitality':           { letter: 'S',  bg: '#1A1A1A', color: '#B87860' },
   'Zephyr':                      { letter: 'Z',  bg: '#1A1A1A', color: '#B87860' },
 };
 
