@@ -902,6 +902,13 @@ def api_brands():
         'Kerzner International': 'kerzner.com',
     }
 
+    _BRAND_DESCRIPTIONS = {
+        'Four Seasons Hotels & Resorts': "Four Seasons Hotels & Resorts is a Canadian luxury hospitality company operating over 120 properties in 50 countries, consistently ranked among the world's finest hotel brands. In Morocco, Four Seasons has established a significant presence with landmark properties in Casablanca, Marrakech, and the newly opened Rabat at Kasr Al Bahr, reflecting the brand's confidence in Morocco's luxury tourism potential. Each Four Seasons property in Morocco is positioned at the very top of its local market, offering bespoke service standards and prime real estate locations that set the benchmark for ultra-luxury hospitality in the country. The brand's continued investment in Morocco aligns with the kingdom's Vision 2030 tourism ambitions and the growing appetite from high-net-worth international travelers.",
+        'Radisson Hotel Group': "Radisson Hotel Group is a Belgian-based multinational hospitality company operating over 1,700 hotels across 120 countries through brands including Radisson Blu, Radisson, Radisson RED, and Park Inn. In Morocco, Radisson has emerged as one of the most active international operators, with a rapidly expanding portfolio spanning Casablanca, Marrakech, Fes, Al Hoceima, Saidia, and the Taghazout Bay resort corridor. The group's Morocco strategy combines full-service Radisson Blu properties in major urban and resort destinations with the newer Radisson Residences concept targeting the branded residential segment. Radisson's aggressive expansion in Morocco reflects its broader Africa and Middle East growth strategy and its early recognition of Morocco's emerging status as a premium tourism and investment destination.",
+        'IHG Hotels & Resorts': "IHG Hotels & Resorts is a British multinational hospitality company headquartered in Windsor, operating over 6,000 hotels across nearly 100 countries through brands including InterContinental, Crowne Plaza, Holiday Inn, and voco. In Morocco, IHG maintains a selective presence focused on the upper upscale and luxury segments, with its properties serving primarily the corporate and MICE travel segments in major business destinations. The group's Morocco footprint reflects a measured approach to a market it views as strategically important given the country's growing role as a regional business hub and international conference destination. IHG's global distribution network and loyalty program provide its Morocco properties with strong connectivity to international corporate accounts and premium leisure travelers.",
+        'RIU Hotels & Resorts': "RIU Hotels & Resorts is a Spanish family-owned hotel group founded in 1953 and one of Europe's leading all-inclusive resort operators, with over 100 properties across 20 countries. In Morocco, RIU has built the country's largest beach resort portfolio with six properties concentrated in Agadir and Marrakech, representing a significant share of Morocco's international leisure tourism capacity. The group's Tikida brand operates a cluster of all-inclusive resorts in Agadir that have been foundational to the city's development as a mass-market European beach destination, while the newer Riu Palace Tikida Taghazout positions the group in the premium resort segment. RIU's long-standing commitment to Morocco and its large room count make it one of the most influential operators in the country's leisure tourism ecosystem.",
+    }
+
     _INVALID_BG = {'', 'Undisclosed', 'Royal (State)', 'Royal', 'Royal Mansour Brand',
                    'None', 'N/A', 'Unknown'}
 
@@ -963,6 +970,7 @@ def api_brands():
         results.append({
             'brand_group':               bg,
             'domain':                    _BRAND_DOMAINS.get(bg),
+            'description':               _BRAND_DESCRIPTIONS.get(bg),
             'hotels':                    len(grp),
             'total_keys':                tk,
             'cities':                    cities,
