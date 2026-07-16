@@ -36,7 +36,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 59,Amanjena,Marrakech,Marrakech-Safi,Luxury,Amanjena,Aman Resorts,40,2000,,Operating,31.5934,-8.0423,Undisclosed,verified,
 60,Es Saadi Resort & Palace Marrakech,Marrakech,Marrakech-Safi,Luxury,Es Saadi,Independent Luxury,92,1952,,Operating,31.636,-7.981,Undisclosed,verified,
 61,Kasbah Tamadot,Marrakech,Marrakech-Safi,Luxury,Kasbah Tamadot,Virgin Limited Edition,42,2005,,Operating,31.65,-8.014,Undisclosed,verified,
-65,Le Méridien N'Fis Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Le Méridien,Marriott International,277,1989,verified,Operating,31.62,-7.98,Madaëf,verified,
+65,Le Méridien N'Fis Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Le Méridien,Marriott International,277,1989,verified,Operating,31.62,-7.98,Undisclosed,verified,
 69,Kenzi Menara Palace,Marrakech,Marrakech-Safi,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,236,2009,verified,Operating,31.611,-7.996,Kenzi Hotels Group,verified,
 70,Kenzi Rose Garden Hotel,Marrakech,Marrakech-Safi,Upper Upscale,Kenzi Hotels,Kenzi Hotels Group,384,2019,verified,Operating,31.632,-7.984,Kenzi Hotels Group,verified,
 71,Club Med Marrakech la Palmeraie,Marrakech,Marrakech-Safi,Upper Upscale,Club Med,Club Med,350,1966,verified,Operating,31.645,-8.002,Undisclosed,verified,
