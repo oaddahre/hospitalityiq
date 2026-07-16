@@ -1337,6 +1337,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .brand-about-card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 2px solid #B87860;
   border-radius: 6px;
   padding: 20px 24px;
   margin-bottom: 24px;
