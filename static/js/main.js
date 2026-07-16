@@ -2126,7 +2126,7 @@ function initPipelineMap() {
 }
 
 function pipelinePopupHTML(p) {
-  const invB = (p.investment_mad / 1e9).toFixed(2);
+  const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
   const statusPill = p.status === 'Under Construction'
     ? `<span style="background:transparent;color:#B87860;border:1px solid #B87860;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`
     : `<span style="background:transparent;color:#888888;border:1px solid #444444;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`;
@@ -2136,7 +2136,7 @@ function pipelinePopupHTML(p) {
     <div class="hiq-popup-grid">
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys || 'TBC'}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.expected_opening}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
-      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">MAD ${invB}B</div><div class="hiq-popup-stat-lbl">Investment</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.investment_mad ? 'MAD ' + invB : invB}</div><div class="hiq-popup-stat-lbl">Investment</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${statusPill}</div><div class="hiq-popup-stat-lbl">Status</div></div>
     </div>
   </div>`;
@@ -2158,7 +2158,7 @@ function renderPipelineCards() {
   grid.innerHTML = data.map(p => {
     const isUC = p.status === 'Under Construction';
     const pill  = isUC ? `<span class="pipe-status-uc">${p.status}</span>` : `<span class="pipe-status-pl">${p.status}</span>`;
-    const invM  = Math.round(p.investment_mad / 1e6).toLocaleString('en');
+    const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
     return `<div class="pipe-card ${isUC ? 'pipe-card-uc' : 'pipe-card-pl'}">
       <div>
         <div class="pipe-card-header-row">
@@ -2197,7 +2197,7 @@ function renderPipelineTableView() {
   }
   tbody.innerHTML = data.map(p => {
     const pill  = p.status === 'Under Construction' ? `<span class="pipe-status-uc">${p.status}</span>` : `<span class="pipe-status-pl">${p.status}</span>`;
-    const invM  = Math.round(p.investment_mad / 1e6).toLocaleString('en');
+    const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
     return `<tr>
       <td style="font-weight:600">${fmt.esc(p.name)}</td>
       <td>${fmt.esc(p.city)}</td>
