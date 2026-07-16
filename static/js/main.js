@@ -718,16 +718,23 @@ function showBrandDetail(brandGroup, prevScreen) {
 
   // Header
   document.getElementById('brand-detail-name').innerHTML = getBrandLogoImg(brandGroup, 40) + ' ' + fmt.esc(brandGroup);
-  document.getElementById('brand-detail-sub').textContent =
-    `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''} · ${fmt.num(tk)} keys · ${cities.join(', ')}`;
+  document.getElementById('brand-meta-hotels').textContent = `${brandHotelsData.length} Hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
+  document.getElementById('brand-meta-keys').textContent   = `${fmt.num(tk)} Keys`;
 
   const ownerBadge = document.getElementById('brand-owner-badge');
   if (distinctOwners.length === 1) {
-    ownerBadge.textContent = `Owned by ${distinctOwners[0]}`;
+    ownerBadge.textContent = `· Owned by ${distinctOwners[0]}`;
     ownerBadge.style.display = '';
   } else {
     ownerBadge.style.display = 'none';
   }
+
+  const visibleCities  = cities.slice(0, 5);
+  const overflowCount  = cities.length - 5;
+  const cityPillsHtml  = visibleCities.map(c => `<span class="brand-city-pill">${fmt.esc(c)}</span>`).join('');
+  const overflowHtml   = overflowCount > 0 ? `<span class="brand-city-pill brand-city-more">+${overflowCount} more</span>` : '';
+  document.getElementById('brand-cities-row').innerHTML =
+    `<span class="brand-cities-label">Present in</span>${cityPillsHtml}${overflowHtml}`;
 
   // KPI cards
   const setKpi = (id, val) => {
