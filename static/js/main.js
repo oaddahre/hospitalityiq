@@ -656,9 +656,9 @@ function renderBrandsCompTable() {
     const icon = th.querySelector('.sort-icon');
     if (th.dataset.bccol === col) {
       th.classList.add(dir === 1 ? 'sort-asc' : 'sort-desc');
-      if (icon) icon.textContent = dir === 1 ? '↑' : '↓';
+      if (icon) icon.textContent = dir === 1 ? '↑︎' : '↓︎';
     } else {
-      if (icon) icon.textContent = '↕';
+      if (icon) icon.textContent = '↕︎';
     }
   });
 
@@ -850,9 +850,9 @@ function renderBrandHotelsTable() {
     th.classList.remove('sort-asc', 'sort-desc');
     if (th.dataset.bcol === col) {
       th.classList.add(dir === 1 ? 'sort-asc' : 'sort-desc');
-      icon.textContent = dir === 1 ? '↑' : '↓';
+      icon.textContent = dir === 1 ? '↑︎' : '↓︎';
     } else {
-      icon.textContent = '↕';
+      icon.textContent = '↕︎';
     }
   });
 }
@@ -1538,9 +1538,9 @@ function syncHotelsSortIcons() {
     th.classList.remove('sort-asc', 'sort-desc');
     if (th.dataset.col === hotelsState.col) {
       th.classList.add(hotelsState.dir === 1 ? 'sort-asc' : 'sort-desc');
-      icon.textContent = hotelsState.dir === 1 ? '↑' : '↓';
+      icon.textContent = hotelsState.dir === 1 ? '↑︎' : '↓︎';
     } else {
-      icon.textContent = '↕';
+      icon.textContent = '↕︎';
     }
   });
   const sel = document.getElementById('hotels-sort-select');

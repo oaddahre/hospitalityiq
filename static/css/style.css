@@ -934,6 +934,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-size: 10px;
   color: var(--text-muted);
   transition: color 0.14s;
+  font-variant-emoji: text;
 }
 .sortable-col.sort-asc  .sort-icon,
 .sortable-col.sort-desc .sort-icon { color: var(--text); }
@@ -3456,7 +3457,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   .hiq-popup-profile-btn,
   .news-read-btn,
   .bench-cal-nav-btn,
-  .sort-icon,
   .nav-logout,
   .hotel-brand-link { font-variant-emoji: text; }
   /* Replace SVG arrow in chat send button with plain text */
