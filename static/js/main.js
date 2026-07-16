@@ -194,6 +194,7 @@ let activeInfoWindow   = null;
 let brandChart      = null;
 let brandHotelsData = [];
 const brandState    = { col: 'name', dir: 1 };
+let activeBrandCity = null;
 const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner']);
 let tourismInited   = false;
 let pipelineInited  = false;
@@ -729,12 +730,22 @@ function showBrandDetail(brandGroup, prevScreen) {
     ownerBadge.style.display = 'none';
   }
 
-  const visibleCities  = cities.slice(0, 5);
-  const overflowCount  = cities.length - 5;
-  const cityPillsHtml  = visibleCities.map(c => `<span class="brand-city-pill">${fmt.esc(c)}</span>`).join('');
-  const overflowHtml   = overflowCount > 0 ? `<span class="brand-city-pill brand-city-more">+${overflowCount} more</span>` : '';
+  activeBrandCity = null;
+  const visibleCities = cities.slice(0, 5);
+  const hiddenCities  = cities.slice(5);
+  const mkCityPill = c =>
+    `<span class="brand-city-pill" data-city="${fmt.esc(c)}" onclick="filterBrandHotelsByCity('${fmt.esc(c).replace(/'/g, "\\'")}')">${fmt.esc(c)}</span>`;
+  const hiddenHtml  = hiddenCities.length
+    ? `<span class="brand-cities-hidden">${hiddenCities.map(mkCityPill).join('')}</span>`
+    : '';
+  const moreHtml    = hiddenCities.length
+    ? `<span class="brand-cities-more" onclick="expandBrandCities(this)">+${hiddenCities.length} more</span>`
+    : '';
   document.getElementById('brand-cities-row').innerHTML =
-    `<span class="brand-cities-label">Present in</span>${cityPillsHtml}${overflowHtml}`;
+    `<span class="brand-cities-label">Present in</span>` +
+    `<span class="brand-city-pill active" data-city="" onclick="filterBrandHotelsByCity(null)">All Cities</span>` +
+    visibleCities.map(mkCityPill).join('') +
+    hiddenHtml + moreHtml;
 
   // KPI cards
   const setKpi = (id, val) => {
@@ -785,8 +796,6 @@ function showBrandDetail(brandGroup, prevScreen) {
   }
 
   // Hotel table
-  document.getElementById('brand-hotels-title').textContent =
-    `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
   brandState.col = 'name';
   brandState.dir = 1;
   renderBrandHotelsTable();
@@ -795,11 +804,19 @@ function showBrandDetail(brandGroup, prevScreen) {
 
 function renderBrandHotelsTable() {
   const { col, dir } = brandState;
-  const sorted = [...brandHotelsData].sort((a, b) => {
+  const filtered = activeBrandCity
+    ? brandHotelsData.filter(h => h.city === activeBrandCity)
+    : brandHotelsData;
+  const sorted = [...filtered].sort((a, b) => {
     const va = a[col], vb = b[col];
     if (BRAND_STR_COLS.has(col)) return dir * String(va).localeCompare(String(vb));
     return dir * (va - vb);
   });
+
+  document.getElementById('brand-hotels-title').textContent =
+    activeBrandCity
+      ? `${sorted.length} hotel${sorted.length !== 1 ? 's' : ''} in ${activeBrandCity}`
+      : `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
 
   document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
     const segColor = SEG_COLORS[h.category] || '#888888';
@@ -825,6 +842,36 @@ function renderBrandHotelsTable() {
       icon.textContent = '↕';
     }
   });
+}
+
+function filterBrandHotelsByCity(city) {
+  activeBrandCity = activeBrandCity === city ? null : city;
+  updateBrandCityPills(activeBrandCity);
+  renderBrandHotelsTable();
+}
+
+function updateBrandCityPills(activeCity) {
+  document.querySelectorAll('#brand-cities-row .brand-city-pill').forEach(pill => {
+    const pillCity = pill.dataset.city || null;
+    pill.classList.toggle('active', pillCity === activeCity);
+  });
+}
+
+function expandBrandCities(el) {
+  const hidden = el.parentElement.querySelector('.brand-cities-hidden');
+  if (!hidden) return;
+  hidden.style.display = 'contents';
+  const pills = hidden.querySelectorAll('.brand-city-pill');
+  pills.forEach((pill, i) => {
+    pill.style.opacity = '0';
+    pill.style.transform = 'translateY(4px)';
+    pill.style.transition = 'opacity 200ms ease, transform 200ms ease';
+    setTimeout(() => {
+      pill.style.opacity = '1';
+      pill.style.transform = 'translateY(0)';
+    }, i * 40);
+  });
+  el.remove();
 }
 
 // ─── Hotel detail ─────────────────────────────────────────────────
