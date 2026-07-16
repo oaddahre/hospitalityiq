@@ -565,8 +565,9 @@ function renderBrandsCards() {
     const pipeRow   = b.pipeline_projects > 0
       ? `<div class="brn-card-pipeline">Pipeline: ${b.pipeline_projects} project${b.pipeline_projects !== 1 ? 's' : ''} · ${b.pipeline_keys.toLocaleString('en')} keys →</div>`
       : '';
-    const descRow   = BRAND_DESCRIPTIONS[b.brand_group]
-      ? `<p class="brand-description">${fmt.esc(BRAND_DESCRIPTIONS[b.brand_group])}</p>`
+    const _desc     = BRAND_DESCRIPTIONS[b.brand_group] || '';
+    const descRow   = _desc
+      ? `<p class="brand-card-teaser">${fmt.esc(_desc.split('.')[0] + '.')}</p>`
       : '';
     const esc = fmt.esc(b.brand_group).replace(/'/g, '&#39;');
 
@@ -728,16 +729,6 @@ function showBrandDetail(brandGroup, prevScreen) {
     ownerBadge.style.display = 'none';
   }
 
-  const descEl = document.getElementById('brand-detail-desc');
-  const descText = document.getElementById('brand-detail-desc-text');
-  const description = BRAND_DESCRIPTIONS[brandGroup] || '';
-  if (description) {
-    descText.textContent = description;
-    descEl.style.display = '';
-  } else {
-    descEl.style.display = 'none';
-  }
-
   // KPI cards
   const setKpi = (id, val) => {
     const el = document.getElementById(id);
@@ -753,6 +744,17 @@ function showBrandDetail(brandGroup, prevScreen) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-brand').classList.add('active');
   setSidebar('brand');
+
+  // About card
+  const description = BRAND_DESCRIPTIONS[brandGroup] || '';
+  const aboutSlot = document.getElementById('brand-about-slot');
+  aboutSlot.innerHTML = description
+    ? `<div class="brand-about-card">
+        <div class="brand-about-title">About ${fmt.esc(brandGroup)}</div>
+        <div class="brand-about-divider"></div>
+        <p class="brand-about-body">${fmt.esc(description)}</p>
+      </div>`
+    : '';
 
   // City RevPAR chart
   const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
