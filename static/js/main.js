@@ -543,6 +543,9 @@ function renderBrandsCards() {
     const pipeRow   = b.pipeline_projects > 0
       ? `<div class="brn-card-pipeline">Pipeline: ${b.pipeline_projects} project${b.pipeline_projects !== 1 ? 's' : ''} · ${b.pipeline_keys.toLocaleString('en')} keys →</div>`
       : '';
+    const descRow   = b.description
+      ? `<div class="brn-card-desc">${fmt.esc(b.description)}</div>`
+      : '';
     const esc = fmt.esc(b.brand_group).replace(/'/g, '&#39;');
 
     return `<div class="brn-card" data-brand-group="${esc}">
@@ -553,6 +556,7 @@ function renderBrandsCards() {
           <div class="brn-card-sub">${b.hotels} hotel${b.hotels !== 1 ? 's' : ''} · ${b.total_keys.toLocaleString('en')} keys</div>
         </div>
       </div>
+      ${descRow}
       <div class="brn-card-kpis">
         <div class="brn-kpi"><div class="brn-kpi-lbl">OCC</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
         <div class="brn-kpi"><div class="brn-kpi-lbl">ADR</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
@@ -700,6 +704,16 @@ function showBrandDetail(brandGroup, prevScreen) {
     ownerBadge.style.display = '';
   } else {
     ownerBadge.style.display = 'none';
+  }
+
+  const brandRecord = brandsData ? brandsData.find(b => b.brand_group === brandGroup) : null;
+  const descEl = document.getElementById('brand-detail-desc');
+  const descText = document.getElementById('brand-detail-desc-text');
+  if (brandRecord && brandRecord.description) {
+    descText.textContent = brandRecord.description;
+    descEl.style.display = '';
+  } else {
+    descEl.style.display = 'none';
   }
 
   // KPI cards
