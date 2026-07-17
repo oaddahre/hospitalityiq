@@ -551,8 +551,9 @@ function renderBrandsKPIs() {
 }
 
 function brandLogoOrInitials(bg, size) {
-  const url = getBrandLogoUrl(bg);
-  if (url) return getBrandLogoImg(bg, size);
+  if (LOCAL_BRAND_LOGOS[bg] || BRAND_CUSTOM_LOGOS[bg] || getBrandLogoUrl(bg)) {
+    return getBrandLogoImg(bg, size);
+  }
   const initials = bg.replace('Hotels', '').replace('Hotel', '').replace('Resorts', '').replace('International', '')
     .trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   const bg2 = BRAND_PALETTE[Math.abs(bg.split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % BRAND_PALETTE.length];
