@@ -48,6 +48,7 @@ const LOCAL_BRAND_LOGOS = {
   'Mia Hotels': '/static/images/brands/mia_logo.jpeg',
   'Zephyr': '/static/images/brands/zephyr_logo.jpg',
   'Story Hospitality': '/static/images/brands/story_logo.png',
+  'Globalia Hotels': '/static/images/brands/globalia_logo.png',
 };
 
 const BRAND_CUSTOM_LOGOS = {
