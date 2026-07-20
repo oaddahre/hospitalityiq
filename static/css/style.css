@@ -990,7 +990,9 @@ body.light .nav-logout  { color: #8A8A8A; }
 #hotels-table tbody tr:nth-child(odd)  td { background: var(--bg); }
 #hotels-table tbody tr:hover td { background: var(--surface-hover) !important; }
 #hotels-table thead th,
-#hotels-table tbody td { text-align: left; }
+#hotels-table tbody td,
+#brand-hotels-table thead th,
+#brand-hotels-table tbody td { text-align: left; }
 
 .table-empty-state {
   padding: 48px 20px;
