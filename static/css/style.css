@@ -654,6 +654,25 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 /* ─── Hotels screen ──────────────────────────────── */
+.hotels-kpi-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.hotels-kpi-row .kpi-card {
+  flex: 1;
+  padding: 12px 16px;
+}
+.hotels-kpi-row .kpi-value { font-size: 18px; }
+.hotels-kpi-row .kpi-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10px;
+  color: var(--text-faint);
+  text-align: center;
+  margin-top: 3px;
+  width: 100%;
+}
+
 .hotels-controls {
   display: flex;
   flex-direction: column;
@@ -3376,6 +3395,8 @@ body.light .nav-logout  { color: #8A8A8A; }
   .kpi-value { font-size: 20px; }
   .kpi-card { padding: 10px 10px; }
   .brand-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; justify-items: stretch; }
+  .hotels-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hotels-kpi-row .kpi-value { font-size: 16px; }
   .charts-row.tour-2col { grid-template-columns: 1fr; }
   .chart-wrap { min-height: 220px; }
   .chart-card { padding: 14px 14px 12px; }

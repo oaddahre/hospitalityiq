@@ -1588,9 +1588,15 @@ function renderHotelsTable() {
   const sorted   = sortHotels(filtered);
   const total    = hotels.length;
 
-  const filteredCities = new Set(filtered.map(h => h.city)).size;
-  document.getElementById('hotels-sub').textContent =
-    `${filtered.length} hotel${filtered.length !== 1 ? 's' : ''} · ${filteredCities} ${filteredCities !== 1 ? 'cities' : 'city'} · All performance: Kōdō estimates 2025`;
+  const totalHotels = hotels.length;
+  const totalCities = new Set(hotels.map(h => h.city)).size;
+  const totalKeys   = hotels.reduce((s, h) => s + (h.keys || 0), 0);
+  const hkpiTotal  = document.getElementById('hkpi-total');
+  const hkpiCities = document.getElementById('hkpi-cities');
+  const hkpiKeys   = document.getElementById('hkpi-keys');
+  if (hkpiTotal)  hkpiTotal.textContent  = totalHotels.toLocaleString('en');
+  if (hkpiCities) hkpiCities.textContent = totalCities;
+  if (hkpiKeys)   hkpiKeys.textContent   = totalKeys.toLocaleString('en');
 
   const countEl = document.getElementById('hotels-results-count');
   if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
