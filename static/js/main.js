@@ -50,6 +50,7 @@ const LOCAL_BRAND_LOGOS = {
   'Zephyr': '/static/images/brands/zephyr_logo.jpg',
   'Story Hospitality': '/static/images/brands/story_logo.png',
   'Globalia Hotels': '/static/images/brands/globalia_logo.png',
+  'Lancaster Hotels': '/static/images/brands/lancaster_logo.png',
 };
 
 const BRAND_CUSTOM_LOGOS = {
