@@ -702,7 +702,7 @@ function renderBrandsInsights() {
   if (byPipe) {
     document.getElementById('brni-pipeline-val').textContent  = byPipe.brand_group;
     document.getElementById('brni-pipeline-desc').textContent =
-      `${byPipe.pipeline_projects} projects · ${byPipe.pipeline_keys.toLocaleString('en')} keys in pipeline`;
+      `${byPipe.pipeline_projects} project${byPipe.pipeline_projects !== 1 ? 's' : ''} · ${byPipe.pipeline_keys.toLocaleString('en')} key${byPipe.pipeline_keys !== 1 ? 's' : ''} in pipeline`;
   } else {
     document.getElementById('brni-pipeline-val').textContent  = '—';
     document.getElementById('brni-pipeline-desc').textContent = 'No pipeline data available';
@@ -731,7 +731,7 @@ function showBrandDetail(brandGroup, prevScreen) {
   // Header
   document.getElementById('brand-detail-name').innerHTML = getBrandLogoImg(brandGroup, 40) + ' ' + fmt.esc(brandGroup);
   document.getElementById('brand-meta-hotels').textContent = `${brandHotelsData.length} Hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
-  document.getElementById('brand-meta-keys').textContent   = `${fmt.num(tk)} Keys`;
+  document.getElementById('brand-meta-keys').textContent   = `${fmt.num(tk)} Key${tk !== 1 ? 's' : ''}`;
 
   const ownerBadge = document.getElementById('brand-owner-badge');
   if (distinctOwners.length === 1) {
@@ -1592,7 +1592,7 @@ function renderHotelsTable() {
     `${filtered.length} hotel${filtered.length !== 1 ? 's' : ''} · ${filteredCities} ${filteredCities !== 1 ? 'cities' : 'city'} · All performance: Kōdō estimates 2025`;
 
   const countEl = document.getElementById('hotels-results-count');
-  if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotels`;
+  if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
 
   const tbody = document.getElementById('hotels-tbody');
   if (!sorted.length) {
@@ -4040,7 +4040,7 @@ function _srchRender(query) {
     label: 'Hotels',
     items: results.hotels.map(h => ({
       name: h.name,
-      meta: [h.city, h.category, h.keys ? h.keys.toLocaleString() + ' keys' : ''].filter(Boolean).join(' · '),
+      meta: [h.city, h.category, h.keys ? h.keys.toLocaleString() + (h.keys === 1 ? ' key' : ' keys') : ''].filter(Boolean).join(' · '),
       action() { closeSearch(); _srchSaveRecent(query); showHotelDetail(h.id); },
     })),
   });
