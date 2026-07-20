@@ -42,6 +42,7 @@ const BRAND_DOMAINS = {
   'Virgin Limited Edition': 'virginlimitededition.com',
   'Soho Boutique': 'sohohoteles.com',
   'Zephyr': 'zephyr.ma',
+  'Lancaster Hotels': 'lancaster-hotel.com',
 };
 
 const LOCAL_BRAND_LOGOS = {
