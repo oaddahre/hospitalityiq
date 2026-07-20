@@ -12,3 +12,4 @@ id,name,city,region,category,brand,brand_group,owner,keys,expected_opening,statu
 11,Hilton Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,Hilton,Hilton Hotels & Resorts,Undisclosed,220,2026,Planning,450000000,34.0089,-6.8456,Confirmed Hilton full service hotel for Rabat
 12,Mia Hotels Rabat,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Upper Upscale,Mia Hotels,Mia Hotels,Undisclosed,0,2027,Planning,0,34.0134,-6.8289,Mia Hotels expansion to Rabat — room count and investment TBC
 13,Kimpton Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Kimpton Hotels & Restaurants,IHG Hotels & Resorts,Sirayane Hospitality,67,2026,Under Construction,0,31.6289,-8.0134,"Kimpton Hotels & Restaurants first Morocco property, operated by IHG. Opening expected Q4 2026."
+14,Sofitel Tanger,Tanger,Tanger-Tétouan-Al Hoceima,Luxury,Sofitel,Accor,Undisclosed,170,2029,Planning,0,35.7823,-5.8134,"Sofitel brand entry into Tanger. Opening expected 2029."
