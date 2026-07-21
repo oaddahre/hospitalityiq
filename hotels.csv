@@ -273,3 +273,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 430,Pestana CR7 Marrakech,Marrakech,Marrakech-Safi,Upper Upscale,Pestana,Pestana Hotel Group,174,2022,verified,Open,31.6289,-8.0134,Undisclosed,verified,
 431,Lancaster Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Luxury,Lancaster,Lancaster Hotels,191,2026,verified,Open,35.6934,-5.3234,Undisclosed,verified,
 432,Lunja Village,Agadir / Taghazout,Souss-Massa,Midscale,Independent,Independent Midscale,494,2012,verified,Open,30.3456,-9.5234,Madaëf,verified,
+433,Banyan Tree Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Banyan Tree,Banyan Tree,92,2016,verified,Open,35.6856,-5.3289,Madaëf,verified,
+434,Vichy Thermalia Spa Hotel,Fes,Fès-Meknès,Upscale,Vichy Thermalia,Vichy Thermalia,100,2018,verified,Open,34.0834,-5.1789,Madaëf,verified,"Thermal wellness hotel in Moulay Yacoub near Fes"
+435,Mercure Rif Nador,Nador,Oriental,Upscale,Mercure,Accor,190,2011,verified,Open,35.1689,-2.9234,Madaëf,verified,
