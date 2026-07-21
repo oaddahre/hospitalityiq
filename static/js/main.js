@@ -70,6 +70,7 @@ const BRAND_CUSTOM_LOGOS = {
 
 const OWNER_LOGOS = {
   'Madaëf': '/static/images/brands/madaef_logo.png',
+  'Risma': '/static/images/brands/risma_logo.png',
 };
 
 const OWNER_LOGO_DOMAINS = {
