@@ -10,7 +10,7 @@
     "description": "Madaëf is Morocco's leading state-owned hotel development and management company, created under the CDG Group (Caisse de Dépôt et de Gestion) to develop and manage the tourism infrastructure assets of Morocco's major resort destinations. As the principal vehicle for state investment in hospitality real estate, Madaëf owns and manages an extensive portfolio of hotels across Morocco's most strategically important tourism zones including Taghazout Bay, Saidia, Al Hoceima, Tamuda Bay, El Jadida, and Marrakech. The agency's mandate combines commercial hotel operations with the broader mission of developing Morocco's tourism infrastructure in line with the kingdom's national tourism strategy, Vision 2030, and the objectives of the Plan Azur resort development program. Madaëf operates through a mixed model of direct management and international brand management agreements, partnering with global operators including Accor, Marriott, Hyatt, Hilton, Radisson, and Club Med to bring international standards to its portfolio while maintaining state ownership of the underlying assets.",
     "hotels": [
       {"name": "Sofitel Tamuda Bay Beach and Spa", "brand_group": "Accor", "city": "Tamuda Bay / Tétouan"},
-      {"name": "Banyan Tree Tamuda Bay", "brand_group": "Independent Luxury", "city": "Tamuda Bay / Tétouan"},
+      {"name": "Banyan Tree Tamuda Bay", "brand_group": "Banyan Tree", "city": "Tamuda Bay / Tétouan"},
       {"name": "Marriott Rabat", "brand_group": "Marriott International", "city": "Rabat / Salé / Témara"},
       {"name": "Marriott Jnane Palace Fes", "brand_group": "Marriott International", "city": "Fes"},
       {"name": "Hyatt Regency Taghazout Bay", "brand_group": "Hyatt Hotels Corporation", "city": "Agadir / Taghazout"},
@@ -19,7 +19,7 @@
       {"name": "Radisson Blu Resort Taghazout Bay", "brand_group": "Radisson Hotel Group", "city": "Agadir / Taghazout"},
       {"name": "Pullman El Jadida Beach Resort", "brand_group": "Accor", "city": "El Jadida"},
       {"name": "Mazagan Beach & Golf Resort", "brand_group": "Independent Luxury", "city": "El Jadida"},
-      {"name": "Vichy Thermalia Spa Hotel", "brand_group": "Independent Upscale", "city": "Moulay Yacoub"},
+      {"name": "Vichy Thermalia Spa Hotel", "brand_group": "Vichy Thermalia", "city": "Moulay Yacoub"},
       {"name": "Radisson Blu Resort Saidia Beach", "brand_group": "Radisson Hotel Group", "city": "Saidia"},
       {"name": "Radisson Blu Resort Saidia Garden", "brand_group": "Radisson Hotel Group", "city": "Saidia"},
       {"name": "Belive Saidia", "brand_group": "Globalia Hotels", "city": "Saidia"},
@@ -32,6 +32,42 @@
       {"name": "Club Med Marrakech La Palmeraie", "brand_group": "Club Med", "city": "Marrakech"},
       {"name": "Le Méridien N'Fis Marrakech", "brand_group": "Marriott International", "city": "Marrakech"},
       {"name": "Lunja Village", "brand_group": "Independent Midscale", "city": "Agadir / Taghazout"}
+    ]
+  },
+  {
+    "id": "risma",
+    "name": "Risma",
+    "full_name": "Risma S.A. — Société d'Investissement et de Management Hôtelier",
+    "type": "Listed",
+    "parent": "Accor",
+    "headquarters": "Casablanca, Morocco",
+    "logo_domain": "risma.ma",
+    "description": "Risma is Morocco's only publicly listed hotel company, traded on the Casablanca Stock Exchange, and the country's largest hotel operator by number of properties. Operating as the master franchisee of Accor brands in Morocco, Risma manages a diversified portfolio spanning the luxury Sofitel and MGallery brands down to the economy Ibis family, making it the most vertically integrated hotel operator in the kingdom. The company's portfolio is concentrated in Morocco's primary business and tourism destinations including Casablanca, Rabat, Marrakech, Agadir, and Fes, with a strong emphasis on the midscale and economy segments that serve the country's large domestic corporate travel market. As a listed entity, Risma provides one of the rare windows into publicly disclosed hotel operating performance in Morocco, making it a key reference point for market benchmarking and investment analysis.",
+    "hotels": [
+      {"name": "Sofitel Rabat Jardin des Roses", "brand_group": "Accor", "city": "Rabat / Salé / Témara"},
+      {"name": "Sofitel Marrakech Palais Imperial & Spa", "brand_group": "Accor", "city": "Marrakech"},
+      {"name": "Sofitel Casablanca Tour Blanche", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Sofitel Agadir Thalassa Sea & Spa", "brand_group": "Accor", "city": "Agadir / Taghazout"},
+      {"name": "Le Médina Essaouira Thalassa Sea & Spa MGallery Collection", "brand_group": "Accor", "city": "Essaouira"},
+      {"name": "Diwan MGallery Rabat", "brand_group": "Accor", "city": "Rabat / Salé / Témara"},
+      {"name": "Radisson Blu Marrakech Carré Eden", "brand_group": "Radisson Hotel Group", "city": "Marrakech"},
+      {"name": "Novotel Marrakech", "brand_group": "Accor", "city": "Marrakech"},
+      {"name": "Novotel Casablanca City Center", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Mercure Rabat Sheherazade", "brand_group": "Accor", "city": "Rabat / Salé / Témara"},
+      {"name": "Ibis Casablanca City Centre", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Ibis Casablanca Nearshore", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Ibis Casablanca Sidi Maarouf", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Ibis Casablanca Abdelmoumen", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Ibis Casablanca Casa Voyageurs", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Ibis Rabat Agdal", "brand_group": "Accor", "city": "Rabat / Salé / Témara"},
+      {"name": "Ibis Marrakech Centre Gare", "brand_group": "Accor", "city": "Marrakech"},
+      {"name": "Ibis Marrakech Palmeraie", "brand_group": "Accor", "city": "Marrakech"},
+      {"name": "Ibis Fes", "brand_group": "Accor", "city": "Fes"},
+      {"name": "Ibis Meknes", "brand_group": "Accor", "city": "Meknes"},
+      {"name": "Ibis Oujda", "brand_group": "Accor", "city": "Oujda"},
+      {"name": "Ibis El Jadida", "brand_group": "Accor", "city": "El Jadida"},
+      {"name": "Ibis Ouarzazate", "brand_group": "Accor", "city": "Ouarzazate"},
+      {"name": "Ibis Tanger City Center", "brand_group": "Accor", "city": "Tanger"}
     ]
   }
 ]

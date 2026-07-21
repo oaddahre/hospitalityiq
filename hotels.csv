@@ -14,7 +14,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 14,Sofitel Marrakech Palais Imperial & Spa,Marrakech,Marrakech-Safi,Luxury,Sofitel,Accor,157,,unverified,Operating,31.6312,-8.0156,Risma,verified,
 15,Fairmont Royal Palm Marrakech,Marrakech,Marrakech-Safi,Luxury,Fairmont,Accor,134,2017,verified,Operating,31.5789,-8.0912,Risma,verified,
 16,Novotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Novotel,Accor,112,2009,verified,Operating,31.62,-7.974,Risma,verified,
-19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2016,verified,Operating,31.639,-7.994,Undisclosed,verified,
+19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2016,verified,Operating,31.639,-7.994,Risma,verified,
 20,Ibis Marrakech Centre Gare,Marrakech,Marrakech-Safi,Midscale,Ibis,Accor,109,1991,verified,Operating,31.625,-7.967,Risma,verified,
 21,Sofitel Agadir Royal Bay Resort,Agadir / Taghazout,Souss-Massa,Luxury,Sofitel,Accor,273,2024,verified,Operating,30.4089,-9.5998,Risma,estimated — key count uncertain,
 22,Riu Tikida Palace Agadir,Agadir / Taghazout,Souss-Massa,Upper Upscale,Riu,RIU Hotels & Resorts,444,2012,verified,Operating,30.4012,-9.6012,Undisclosed,verified,
@@ -276,3 +276,5 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 433,Banyan Tree Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Banyan Tree,Banyan Tree,92,2016,verified,Open,35.6856,-5.3289,Madaëf,verified,
 434,Vichy Thermalia Spa Hotel,Fes,Fès-Meknès,Upscale,Vichy Thermalia,Vichy Thermalia,100,2018,verified,Open,34.0834,-5.1789,Madaëf,verified,"Thermal wellness hotel in Moulay Yacoub near Fes"
 435,Mercure Rif Nador,Nador,Oriental,Upscale,Mercure,Accor,190,2011,verified,Open,35.1689,-2.9234,Madaëf,verified,
+436,Ibis Casablanca Nearshore,Casablanca,Casablanca-Settat,Midscale,Ibis,Accor,200,,unverified,Open,33.5934,-7.6123,Risma,verified,
+437,Ibis Casablanca Casa Voyageurs,Casablanca,Casablanca-Settat,Midscale,Ibis,Accor,180,,unverified,Open,33.5889,-7.6034,Risma,verified,

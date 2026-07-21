@@ -72,11 +72,19 @@ const OWNER_LOGOS = {
   'Madaëf': '/static/images/brands/madaef_logo.png',
 };
 
+const OWNER_LOGO_DOMAINS = {
+  'Risma': 'risma.ma',
+};
+
 function getOwnerLogoImg(ownerName, size) {
   size = size || 40;
   var localLogo = OWNER_LOGOS[ownerName];
   if (localLogo) {
     return '<img src="' + localLogo + '" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
+  }
+  var domainLogo = OWNER_LOGO_DOMAINS[ownerName];
+  if (domainLogo) {
+    return '<img src="https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
   }
   var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
   return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#B87860;border-radius:4px;font-family:Syne,sans-serif;font-weight:700;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
