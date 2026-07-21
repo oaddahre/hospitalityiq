@@ -1016,14 +1016,33 @@ def api_pipeline():
 OWNERS_FILE = os.path.join(DATA_DIR, "owners.json")
 
 
+def _find_hotel_match(hotel_name, hotels_lower):
+    name_lower = hotel_name.strip().lower()
+    # 1. Exact match
+    if name_lower in hotels_lower:
+        return hotels_lower[name_lower]
+    # 2. Substring containment
+    for csv_name, row in hotels_lower.items():
+        if name_lower in csv_name or csv_name in name_lower:
+            return row
+    # 3. Token overlap: all tokens of the shorter name appear in the longer name
+    query_tokens = set(name_lower.split())
+    for csv_name, row in hotels_lower.items():
+        csv_tokens = set(csv_name.split())
+        shorter = query_tokens if len(query_tokens) <= len(csv_tokens) else csv_tokens
+        longer = csv_tokens if len(query_tokens) <= len(csv_tokens) else query_tokens
+        if len(shorter) >= 2 and shorter.issubset(longer):
+            return row
+    return None
+
+
 @app.route("/api/owners")
 @login_required
 def api_owners():
-    import math
     with open(OWNERS_FILE, encoding="utf-8") as f:
         owners = json.load(f)
     _, _, merged = load_data()
-    hotels_lower = {str(r["name"]).lower(): r for _, r in merged.iterrows()}
+    hotels_lower = {str(r["name"]).strip().lower(): r for _, r in merged.iterrows()}
     result = []
     for o in owners:
         total_keys = 0
@@ -1031,8 +1050,7 @@ def api_owners():
         segments = []
         brands = []
         for h in o.get("hotels", []):
-            hname = h["name"].lower()
-            match = hotels_lower.get(hname)
+            match = _find_hotel_match(h["name"], hotels_lower)
             if match is not None:
                 keys = match.get("keys", 0)
                 if pd.notna(keys) and keys:
@@ -1060,18 +1078,16 @@ def api_owners():
 @app.route("/api/owners/<owner_id>")
 @login_required
 def api_owner_detail(owner_id):
-    import math
     with open(OWNERS_FILE, encoding="utf-8") as f:
         owners = json.load(f)
     owner = next((o for o in owners if o["id"] == owner_id), None)
     if not owner:
         return jsonify({"error": "Not found"}), 404
     _, _, merged = load_data()
-    hotels_lower = {str(r["name"]).lower(): r for _, r in merged.iterrows()}
+    hotels_lower = {str(r["name"]).strip().lower(): r for _, r in merged.iterrows()}
     enriched_hotels = []
     for h in owner.get("hotels", []):
-        hname = h["name"].lower()
-        match = hotels_lower.get(hname)
+        match = _find_hotel_match(h["name"], hotels_lower)
         entry = dict(h)
         if match is not None:
             keys = match.get("keys", 0)
