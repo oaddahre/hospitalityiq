@@ -273,3 +273,4 @@ hotel_id,period,occupancy,adr_mad,revpar_mad,trevpar_mad,gop_margin,source
 429,2025FY,0.72,4000,2880,4600,0.37,HIQ Estimate
 430,2025FY,0.70,2400,1680,2800,0.36,HIQ Estimate
 431,2025FY,0.65,3200,2080,3800,0.40,HIQ Estimate
+432,2025FY,0.65,900,585,750,0.25,HIQ Estimate

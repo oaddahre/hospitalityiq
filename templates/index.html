@@ -25,6 +25,7 @@
       <a href="#" class="nav-link" data-screen="pipeline">Pipeline</a>
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
       <a href="#" class="nav-link" data-screen="brands">Brands</a>
+      <a href="#" class="nav-link" data-screen="owners">Owners</a>
       <a href="#" class="nav-link" data-screen="benchmarking">Benchmarking</a>
       <a href="#" class="nav-link" data-screen="reports">Reports</a>
       <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
@@ -53,6 +54,7 @@
     <a href="#" class="nav-link mobile-nav-link" data-screen="pipeline">Pipeline</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="hotels">Hotels</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="brands">Brands</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="owners">Owners</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="benchmarking">Benchmarking</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="reports">Reports</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="tourism">Tourism</a>
@@ -941,6 +943,53 @@
             <div class="brni-title">Fastest Growing</div>
             <div class="brni-value" id="brni-pipeline-val">—</div>
             <div class="brni-desc" id="brni-pipeline-desc">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Owners ── -->
+      <section class="screen" id="screen-owners">
+        <div class="screen-header">
+          <h1>Ownership Intelligence</h1>
+          <p class="screen-sub">Major hotel asset owners and institutional portfolios · Morocco</p>
+        </div>
+        <!-- KPI row -->
+        <div class="owners-kpi-row" id="owners-kpi-row">
+          <div class="kpi-card"><span class="kpi-label">Owners Tracked</span><span class="kpi-value" id="okpi-count">—</span></div>
+          <div class="kpi-card"><span class="kpi-label">Keys Under Coverage</span><span class="kpi-value" id="okpi-keys">—</span></div>
+          <div class="kpi-card"><span class="kpi-label">Portfolio Types</span><span class="kpi-value" style="font-size:13px;">State · Listed · Private · Family</span></div>
+        </div>
+        <!-- Owner cards grid -->
+        <div class="owners-grid" id="owners-grid"></div>
+        <!-- Owner detail (hidden by default) -->
+        <div id="screen-owner-detail" style="display:none">
+          <button class="back-btn" id="owner-back-btn">← Ownership Intelligence</button>
+          <div class="brand-detail-header" id="owner-detail-header"></div>
+          <div id="owner-about-slot"></div>
+          <div class="brand-kpi-row" id="owner-kpi-row">
+            <div class="kpi-card"><span class="kpi-label">Total Hotels</span><span class="kpi-value" id="odkpi-hotels">—</span></div>
+            <div class="kpi-card"><span class="kpi-label">Total Keys</span><span class="kpi-value" id="odkpi-keys">—</span></div>
+            <div class="kpi-card"><span class="kpi-label">Cities Present</span><span class="kpi-value" id="odkpi-cities">—</span></div>
+            <div class="kpi-card"><span class="kpi-label">Brands Operated</span><span class="kpi-value" id="odkpi-brands">—</span></div>
+          </div>
+          <div class="brand-meta-row" id="owner-destinations-row" style="margin-bottom:8px"></div>
+          <div class="brand-meta-row" id="owner-operators-row" style="margin-bottom:20px"></div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title" id="owner-portfolio-title">Hotel Portfolio</span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="owner-portfolio-table" id="owner-portfolio-table">
+                <thead><tr>
+                  <th>Hotel Name</th>
+                  <th data-sort="brand_group" style="cursor:pointer">Brand / Operator ↕&#xFE0E;</th>
+                  <th data-sort="city" style="cursor:pointer">City ↕&#xFE0E;</th>
+                  <th data-sort="category" style="cursor:pointer">Segment ↕&#xFE0E;</th>
+                  <th data-sort="keys" style="cursor:pointer">Keys ↕&#xFE0E;</th>
+                </tr></thead>
+                <tbody id="owner-portfolio-tbody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>

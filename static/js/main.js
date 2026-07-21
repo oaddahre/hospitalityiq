@@ -66,6 +66,31 @@ const BRAND_CUSTOM_LOGOS = {
   'Zephyr':                      { letter: 'Z',  bg: '#1A1A1A', color: '#B87860' },
 };
 
+const OWNER_LOGOS = {
+  'Madaëf': '/static/images/brands/madaef_logo.png',
+};
+
+function getOwnerLogoImg(ownerName, size) {
+  size = size || 40;
+  var localLogo = OWNER_LOGOS[ownerName];
+  if (localLogo) {
+    return '<img src="' + localLogo + '" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
+  }
+  var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#B87860;border-radius:4px;font-family:Syne,sans-serif;font-weight:700;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+}
+
+function ownerTypeBadge(type) {
+  var styles = {
+    'State-Owned':  'background:rgba(90,138,90,0.12);color:#5A8A5A;border-color:#5A8A5A',
+    'Listed':       'background:rgba(184,120,96,0.12);color:#B87860;border-color:#B87860',
+    'Private':      'background:rgba(136,136,136,0.12);color:#888888;border-color:#888888',
+    'Family-Owned': 'background:rgba(200,146,42,0.12);color:#C8922A;border-color:#C8922A',
+  };
+  var s = styles[type] || styles['Private'];
+  return '<span class="owner-type-badge" style="' + s + '">' + fmt.esc(type) + '</span>';
+}
+
 const BRAND_DESCRIPTIONS = {
   'Marriott International': "Marriott International is the world's largest hotel company with over 30 brands and 9,000 properties across 140 countries. In Morocco, Marriott operates through flagship brands including Marriott Hotels, Sheraton, Courtyard, Four Points, and the ultra-luxury St. Regis and Ritz-Carlton. The group has been present in Morocco since 1989 and continues to expand with confirmed pipeline projects in Marrakech and Tamuda Bay. Marriott's Morocco portfolio spans all segments from upper upscale business hotels in Casablanca and Rabat to luxury resort developments on the Atlantic and Mediterranean coasts.",
   'Hyatt Hotels Corporation': "Hyatt Hotels Corporation is a leading global hospitality company headquartered in Chicago, with a portfolio of over 20 brands across luxury, lifestyle, and select-service segments. In Morocco, Hyatt operates through Hyatt Regency, Park Hyatt, and Hyatt Place, with properties in Casablanca and the Taghazout Bay resort destination. The group entered Morocco in 1973 with the opening of Hyatt Regency Casablanca, one of the country's first international luxury hotel brands, and has since expanded into the emerging resort corridor of Agadir and Taghazout. Hyatt's Morocco strategy focuses on premium resort and urban business hotels targeting international corporate and leisure travelers.",
@@ -2593,6 +2618,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
       });
     }
     if (screen === 'reports') initReports();
+    if (screen === 'owners')  initOwners();
   });
 });
 
@@ -4588,6 +4614,200 @@ function exportTourism() {
     ],
     `Kodo_Tourism_Morocco_${year}`
   );
+}
+
+// ─── Owners screen ───────────────────────────────────────────────────────────
+
+var ownersData = null;
+var ownerDetailData = null;
+var ownerPortfolioSort = { col: null, dir: 1 };
+
+async function initOwners() {
+  if (ownersData) { renderOwnerCards(); return; }
+  document.getElementById('owners-grid').innerHTML = '<p style="color:var(--text-muted);font-size:12px">Loading…</p>';
+  try {
+    const res = await fetch('/api/owners');
+    ownersData = await res.json();
+    renderOwnerCards();
+  } catch(e) {
+    document.getElementById('owners-grid').innerHTML = '<p style="color:var(--text-muted);font-size:12px">Error loading owners.</p>';
+  }
+}
+
+function renderOwnerCards() {
+  var owners = ownersData || [];
+  // KPI row
+  var totalKeys = owners.reduce(function(s, o) { return s + (o.total_keys || 0); }, 0);
+  document.getElementById('okpi-count').textContent = owners.length;
+  document.getElementById('okpi-keys').textContent = totalKeys.toLocaleString();
+
+  // Hide detail, show grid
+  document.getElementById('screen-owner-detail').style.display = 'none';
+  document.getElementById('owners-kpi-row').style.display = '';
+  document.getElementById('owners-grid').style.display = '';
+
+  var grid = document.getElementById('owners-grid');
+  if (!owners.length) {
+    grid.innerHTML = '<p style="color:var(--text-muted);font-size:12px">No owners tracked yet.</p>';
+    return;
+  }
+
+  grid.innerHTML = owners.map(function(o) {
+    var cities = (o.cities || []).slice(0, 3).join(', ') + ((o.cities || []).length > 3 ? ' +' + ((o.cities || []).length - 3) + ' more' : '');
+    var brands = (o.brands_operated || []).slice(0, 3).join(', ') + ((o.brands_operated || []).length > 3 ? ' +' + ((o.brands_operated || []).length - 3) + ' more' : '');
+    return '<div class="owner-card" onclick="showOwnerDetail(\'' + fmt.esc(o.id) + '\')">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between">' +
+        '<div style="display:flex;align-items:center">' +
+          getOwnerLogoImg(o.name, 40) +
+          '<div>' +
+            '<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:600;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
+            '<div style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">' + fmt.esc(o.parent || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        ownerTypeBadge(o.type || 'Private') +
+      '</div>' +
+      '<div class="owner-stats-row">' +
+        '<div class="owner-stat-item"><span class="owner-stat-label">Hotels</span><span class="owner-stat-value">' + (o.total_hotels || 0) + '</span></div>' +
+        '<div class="owner-stat-item"><span class="owner-stat-label">Keys</span><span class="owner-stat-value">' + (o.total_keys || 0).toLocaleString() + '</span></div>' +
+        '<div class="owner-stat-item"><span class="owner-stat-label">Cities</span><span class="owner-stat-value">' + (o.cities || []).length + '</span></div>' +
+        '<div class="owner-stat-item"><span class="owner-stat-label">Operators</span><span class="owner-stat-value">' + (o.brands_operated || []).length + '</span></div>' +
+      '</div>' +
+      '<div style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:10px;color:var(--text-muted)">' +
+        (cities ? '<span style="color:var(--text-faint)">Cities: </span>' + fmt.esc(cities) : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function showOwnerDetail(ownerId) {
+  document.getElementById('owners-kpi-row').style.display = 'none';
+  document.getElementById('owners-grid').style.display = 'none';
+  var detail = document.getElementById('screen-owner-detail');
+  detail.style.display = '';
+  document.getElementById('owner-detail-header').innerHTML = '<p style="color:var(--text-muted);font-size:12px">Loading…</p>';
+
+  try {
+    const res = await fetch('/api/owners/' + ownerId);
+    ownerDetailData = await res.json();
+    renderOwnerDetail(ownerDetailData);
+  } catch(e) {
+    document.getElementById('owner-detail-header').innerHTML = '<p style="color:var(--text-muted)">Error loading owner.</p>';
+  }
+}
+
+function renderOwnerDetail(o) {
+  // Header
+  document.getElementById('owner-detail-header').innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">' +
+      getOwnerLogoImg(o.name, 52) +
+      '<div>' +
+        '<h1 style="font-family:Syne,sans-serif;font-size:22px;font-weight:700;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
+          ownerTypeBadge(o.type || 'Private') +
+          (o.parent ? '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:11px;color:var(--text-muted)">' + fmt.esc(o.parent) + '</span>' : '') +
+          (o.headquarters ? '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:11px;color:var(--text-faint)">· ' + fmt.esc(o.headquarters) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // About card
+  if (o.description) {
+    document.getElementById('owner-about-slot').innerHTML =
+      '<div class="brand-about-card" style="margin-bottom:20px">' +
+        '<p style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;margin:0">' + fmt.esc(o.description) + '</p>' +
+      '</div>';
+  } else {
+    document.getElementById('owner-about-slot').innerHTML = '';
+  }
+
+  // KPI row
+  document.getElementById('odkpi-hotels').textContent = o.total_hotels || 0;
+  document.getElementById('odkpi-keys').textContent = (o.total_keys || 0).toLocaleString();
+  document.getElementById('odkpi-cities').textContent = (o.cities || []).length;
+  document.getElementById('odkpi-brands').textContent = (o.brands_operated || []).length;
+
+  // Destination pills
+  document.getElementById('owner-destinations-row').innerHTML =
+    '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Cities</span>' +
+    (o.cities || []).map(function(c) {
+      return '<span class="brand-meta-pill">' + fmt.esc(c) + '</span>';
+    }).join('');
+
+  // Operator pills
+  document.getElementById('owner-operators-row').innerHTML =
+    '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Operators</span>' +
+    (o.brands_operated || []).map(function(b) {
+      return '<span class="brand-meta-pill">' + getBrandLogoImg(b, 14) + fmt.esc(b) + '</span>';
+    }).join('');
+
+  // Portfolio title
+  document.getElementById('owner-portfolio-title').textContent = o.name + ' Hotel Portfolio (' + (o.total_hotels || 0) + ' hotels)';
+
+  // Portfolio table
+  ownerPortfolioSort = { col: null, dir: 1 };
+  renderOwnerPortfolioTable(o.hotels || []);
+
+  // Wire sort headers
+  document.querySelectorAll('#owner-portfolio-table th[data-sort]').forEach(function(th) {
+    th.onclick = function() {
+      var col = th.dataset.sort;
+      if (ownerPortfolioSort.col === col) {
+        ownerPortfolioSort.dir *= -1;
+      } else {
+        ownerPortfolioSort.col = col;
+        ownerPortfolioSort.dir = 1;
+      }
+      renderOwnerPortfolioTable(ownerDetailData.hotels || []);
+    };
+  });
+
+  // Back button
+  document.getElementById('owner-back-btn').onclick = function() {
+    document.getElementById('screen-owner-detail').style.display = 'none';
+    document.getElementById('owners-kpi-row').style.display = '';
+    document.getElementById('owners-grid').style.display = '';
+  };
+}
+
+function renderOwnerPortfolioTable(hotels) {
+  var sorted = hotels.slice();
+  if (ownerPortfolioSort.col) {
+    var col = ownerPortfolioSort.col;
+    var dir = ownerPortfolioSort.dir;
+    sorted.sort(function(a, b) {
+      var av = a[col] || '';
+      var bv = b[col] || '';
+      if (col === 'keys') { av = Number(av) || 0; bv = Number(bv) || 0; }
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }
+
+  var catOrder = { 'Ultra Luxury': 0, 'Luxury': 1, 'Upper Upscale': 2, 'Upscale': 3, 'Midscale': 4, 'Economy': 5 };
+  function catBadge(cat) {
+    var colors = {
+      'Ultra Luxury':  '#C8A96E', 'Luxury': '#B87860',
+      'Upper Upscale': '#888888', 'Upscale': '#666666',
+      'Midscale':      '#555555', 'Economy': '#444444',
+    };
+    var c = colors[cat] || '#888';
+    return '<span style="font-size:9px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:' + c + ';border:1px solid ' + c + ';border-radius:3px;padding:1px 6px">' + fmt.esc(cat || '—') + '</span>';
+  }
+
+  var tbody = document.getElementById('owner-portfolio-tbody');
+  tbody.innerHTML = sorted.map(function(h) {
+    var nameCell = h.hotel_id
+      ? '<span class="owner-hotel-link" onclick="showHotelDetail(' + h.hotel_id + ')">' + fmt.esc(h.name) + '</span>'
+      : fmt.esc(h.name);
+    return '<tr>' +
+      '<td>' + nameCell + '</td>' +
+      '<td>' + getBrandLogoImg(h.brand_group, 14) + fmt.esc(h.brand_group || '—') + '</td>' +
+      '<td>' + fmt.esc(h.city || '—') + '</td>' +
+      '<td>' + catBadge(h.category) + '</td>' +
+      '<td style="text-align:right">' + (h.keys ? h.keys.toLocaleString() : '—') + '</td>' +
+    '</tr>';
+  }).join('');
 }
 
 // Wire up export button clicks

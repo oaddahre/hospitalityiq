@@ -1013,6 +1013,88 @@ def api_pipeline():
     return jsonify(df.to_dict(orient="records"))
 
 
+OWNERS_FILE = os.path.join(DATA_DIR, "owners.json")
+
+
+@app.route("/api/owners")
+@login_required
+def api_owners():
+    import math
+    with open(OWNERS_FILE, encoding="utf-8") as f:
+        owners = json.load(f)
+    _, _, merged = load_data()
+    hotels_lower = {str(r["name"]).lower(): r for _, r in merged.iterrows()}
+    result = []
+    for o in owners:
+        total_keys = 0
+        cities = []
+        segments = []
+        brands = []
+        for h in o.get("hotels", []):
+            hname = h["name"].lower()
+            match = hotels_lower.get(hname)
+            if match is not None:
+                keys = match.get("keys", 0)
+                if pd.notna(keys) and keys:
+                    total_keys += int(keys)
+                cat = match.get("category", "")
+                if cat and cat not in segments:
+                    segments.append(cat)
+            city = h.get("city", "")
+            if city and city not in cities:
+                cities.append(city)
+            bg = h.get("brand_group", "")
+            if bg and bg not in brands:
+                brands.append(bg)
+        result.append({
+            **{k: v for k, v in o.items() if k != "hotels"},
+            "total_hotels": len(o.get("hotels", [])),
+            "total_keys": total_keys,
+            "cities": sorted(cities),
+            "segments": segments,
+            "brands_operated": brands,
+        })
+    return jsonify(result)
+
+
+@app.route("/api/owners/<owner_id>")
+@login_required
+def api_owner_detail(owner_id):
+    import math
+    with open(OWNERS_FILE, encoding="utf-8") as f:
+        owners = json.load(f)
+    owner = next((o for o in owners if o["id"] == owner_id), None)
+    if not owner:
+        return jsonify({"error": "Not found"}), 404
+    _, _, merged = load_data()
+    hotels_lower = {str(r["name"]).lower(): r for _, r in merged.iterrows()}
+    enriched_hotels = []
+    for h in owner.get("hotels", []):
+        hname = h["name"].lower()
+        match = hotels_lower.get(hname)
+        entry = dict(h)
+        if match is not None:
+            keys = match.get("keys", 0)
+            entry["keys"] = int(keys) if pd.notna(keys) and keys else 0
+            entry["category"] = match.get("category", h.get("category", ""))
+            entry["hotel_id"] = int(match.get("id", 0)) if pd.notna(match.get("id")) and match.get("id") else None
+        else:
+            entry["keys"] = 0
+            entry["hotel_id"] = None
+        enriched_hotels.append(entry)
+    total_keys = sum(h["keys"] for h in enriched_hotels)
+    cities = sorted(list({h["city"] for h in enriched_hotels if h.get("city")}))
+    brands = list({h["brand_group"] for h in enriched_hotels if h.get("brand_group")})
+    return jsonify({
+        **{k: v for k, v in owner.items() if k != "hotels"},
+        "hotels": enriched_hotels,
+        "total_hotels": len(enriched_hotels),
+        "total_keys": total_keys,
+        "cities": cities,
+        "brands_operated": brands,
+    })
+
+
 def _is_published(a):
     return a.get("status") == "published" or a.get("published") is True
 

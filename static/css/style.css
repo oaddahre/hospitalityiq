@@ -4077,3 +4077,95 @@ body.light .nav-logout  { color: #8A8A8A; }
   .brn-card-kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 12px 0; }
 }
 
+/* ─── Owners screen ───────────────────────────────── */
+.owners-kpi-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.owners-kpi-row .kpi-card { flex: 1; padding: 12px 16px; }
+.owners-kpi-row .kpi-value { font-size: 18px; }
+.owners-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.owner-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px;
+  cursor: pointer;
+  transition: border-color 150ms;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.owner-card:hover { border-color: var(--accent); }
+.owner-type-badge {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.owner-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.owner-stat-item { display: flex; flex-direction: column; gap: 2px; }
+.owner-stat-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+.owner-stat-value {
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+.owner-portfolio-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.owner-portfolio-table th {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.owner-portfolio-table th:hover { color: var(--text); }
+.owner-portfolio-table td {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.owner-portfolio-table tr:nth-child(even) td { background: var(--surface-hover); }
+.owner-portfolio-table tr:hover td { background: var(--surface-hover) !important; }
+.owner-hotel-link { color: var(--text); cursor: pointer; }
+.owner-hotel-link:hover { color: var(--accent); }
+
+/* Mobile — owners */
+@media (max-width: 767px) {
+  .owners-grid { grid-template-columns: 1fr; }
+  .owner-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .owners-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+
