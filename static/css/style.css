@@ -4077,6 +4077,26 @@ body.light .nav-logout  { color: #8A8A8A; }
   .brn-card-kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 12px 0; }
 }
 
+/* ─── Segment badges ─────────────────────────────── */
+.segment-badge {
+  display: inline-block;
+  border-radius: 3px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+.segment-ultra-luxury  { background: rgba(200,146,42,0.15);  color: #C8922A; border-color: #C8922A; }
+.segment-luxury        { background: rgba(184,120,96,0.15);  color: #B87860; border-color: #B87860; }
+.segment-upper-upscale { background: rgba(90,138,90,0.15);   color: #5A8A5A; border-color: #5A8A5A; }
+.segment-upscale       { background: rgba(100,130,180,0.15); color: #6482B4; border-color: #6482B4; }
+.segment-midscale      { background: rgba(136,136,136,0.15); color: #888888; border-color: #888888; }
+.segment-economy       { background: rgba(100,100,100,0.12); color: #666666; border-color: #666666; }
+
 /* ─── Owners screen ───────────────────────────────── */
 .owners-kpi-row {
   display: flex;

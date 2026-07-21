@@ -170,6 +170,20 @@ const SEG_COLORS = {
   'Economy':      '#403028',
 };
 
+function getSegmentBadgeHtml(segment) {
+  if (!segment) return '—';
+  const colors = {
+    'Ultra Luxury':  { bg: 'rgba(200,146,42,0.15)',  color: '#C8922A', border: '#C8922A' },
+    'Luxury':        { bg: 'rgba(184,120,96,0.15)',  color: '#B87860', border: '#B87860' },
+    'Upper Upscale': { bg: 'rgba(90,138,90,0.15)',   color: '#5A8A5A', border: '#5A8A5A' },
+    'Upscale':       { bg: 'rgba(100,130,180,0.15)', color: '#6482B4', border: '#6482B4' },
+    'Midscale':      { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' },
+    'Economy':       { bg: 'rgba(100,100,100,0.12)', color: '#666666', border: '#666666' },
+  };
+  const c = colors[segment] || { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' };
+  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:3px;font-family:Plus Jakarta Sans,sans-serif;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
+}
+
 const CITY_COORDS = {
   'Casablanca':  [33.573, -7.589],
   'Marrakech':   [31.629, -7.981],
@@ -870,11 +884,10 @@ function renderBrandHotelsTable() {
       : `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
 
   document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
-    const segColor = SEG_COLORS[h.category] || '#888888';
     return `<tr class="brand-hotel-row">
       <td class="hotel-name-cell"><button class="hotel-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
-      <td><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
+      <td>${getSegmentBadgeHtml(h.category)}</td>
       <td>${fmt.num(h.keys)}</td>
       <td>${fmt.pct(h.occupancy)}</td>
       <td>${fmt.mad(h.adr_mad)}</td>
@@ -951,8 +964,8 @@ async function showHotelDetail(id) {
 
   // ── 1. Header ──
   document.getElementById('hotel-hd-name').textContent = h.name;
-  document.getElementById('hotel-hd-sub').textContent =
-    `${h.brand} · ${h.city} · ${h.category}`;
+  document.getElementById('hotel-hd-sub').innerHTML =
+    `${fmt.esc(h.brand)} · ${fmt.esc(h.city)} · ${getSegmentBadgeHtml(h.category)}`;
 
   const ownerLine = document.getElementById('hotel-hd-owner');
   if (h.owner && h.owner !== 'Undisclosed') {
@@ -1414,7 +1427,7 @@ function popupHTML(h) {
   return `
     <div class="hiq-popup">
       <button class="hiq-popup-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button>
-      <div class="hiq-popup-meta">${fmt.esc(h.brand)} · ${fmt.esc(h.category)} · ${h.year_opened}</div>
+      <div class="hiq-popup-meta">${fmt.esc(h.brand)} · ${getSegmentBadgeHtml(h.category)} · ${h.year_opened}</div>
       <div class="hiq-popup-grid">
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.num(h.keys)}</div>
@@ -1649,11 +1662,10 @@ function renderHotelsTable() {
     </div></td></tr>`;
   } else {
     tbody.innerHTML = sorted.map(h => {
-      const segColor  = SEG_COLORS[h.category] || '#888888';
       return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
         <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
         <td>${fmt.esc(h.city)}</td>
-        <td class="col-hide-mobile"><span class="seg-pip" style="background:${segColor};margin-right:7px"></span>${fmt.esc(h.category)}</td>
+        <td class="col-hide-mobile">${getSegmentBadgeHtml(h.category)}</td>
         <td class="col-hide-mobile">${getBrandLogoImg(h.brand_group, 16)} ${fmt.esc(h.brand_group)}</td>
         <td class="col-hide-mobile">${fmt.num(h.keys)}</td>
         <td class="col-hide-mobile">${fmt.pct(h.occupancy)}</td>
@@ -2174,7 +2186,7 @@ function pipelinePopupHTML(p) {
     : `<span style="background:transparent;color:#888888;border:1px solid #444444;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
-    <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${fmt.esc(p.category)}</div>
+    <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${getSegmentBadgeHtml(p.category)}</div>
     <div class="hiq-popup-grid">
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys || 'TBC'}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.expected_opening}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
@@ -2207,7 +2219,7 @@ function renderPipelineCards() {
           <div class="pipe-card-name">${fmt.esc(p.name)}</div>
           ${pill}
         </div>
-        <div class="pipe-card-location">${fmt.esc(p.city)} · ${fmt.esc(p.category)}</div>
+        <div class="pipe-card-location">${fmt.esc(p.city)} · ${getSegmentBadgeHtml(p.category)}</div>
         <div class="pipe-card-brand">${getBrandLogoImg(p.brand, 16)} ${fmt.esc(p.brand)}</div>
       </div>
       <div class="pipe-card-year">${p.expected_opening}</div>
@@ -4088,6 +4100,7 @@ function _srchRender(query) {
     items: results.hotels.map(h => ({
       name: h.name,
       meta: [h.city, h.category, h.keys ? h.keys.toLocaleString() + (h.keys === 1 ? ' key' : ' keys') : ''].filter(Boolean).join(' · '),
+      metaHtml: fmt.esc(h.city) + ' · ' + getSegmentBadgeHtml(h.category) + (h.keys ? ' · ' + h.keys.toLocaleString() + (h.keys === 1 ? ' key' : ' keys') : ''),
       action() { closeSearch(); _srchSaveRecent(query); showHotelDetail(h.id); },
     })),
   });
@@ -4153,7 +4166,7 @@ function _srchRender(query) {
     g.items.forEach(item => {
       const el = document.createElement('div');
       el.className = 'search-result-item';
-      el.innerHTML = `<div class="search-result-name">${fmt.esc(item.name)}</div><div class="search-result-meta">${fmt.esc(item.meta)}</div>`;
+      el.innerHTML = `<div class="search-result-name">${fmt.esc(item.name)}</div><div class="search-result-meta">${item.metaHtml || fmt.esc(item.meta)}</div>`;
       el.addEventListener('click', item.action);
       groupEl.appendChild(el);
     });
@@ -4798,17 +4811,6 @@ function renderOwnerPortfolioTable(hotels) {
     });
   }
 
-  var catOrder = { 'Ultra Luxury': 0, 'Luxury': 1, 'Upper Upscale': 2, 'Upscale': 3, 'Midscale': 4, 'Economy': 5 };
-  function catBadge(cat) {
-    var colors = {
-      'Ultra Luxury':  '#C8A96E', 'Luxury': '#B87860',
-      'Upper Upscale': '#888888', 'Upscale': '#666666',
-      'Midscale':      '#555555', 'Economy': '#444444',
-    };
-    var c = colors[cat] || '#888';
-    return '<span style="font-size:9px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:' + c + ';border:1px solid ' + c + ';border-radius:3px;padding:1px 6px">' + fmt.esc(cat || '—') + '</span>';
-  }
-
   var tbody = document.getElementById('owner-portfolio-tbody');
   tbody.innerHTML = sorted.map(function(h) {
     var nameCell = h.hotel_id
@@ -4818,7 +4820,7 @@ function renderOwnerPortfolioTable(hotels) {
       '<td>' + nameCell + '</td>' +
       '<td>' + getBrandLogoImg(h.brand_group, 14) + fmt.esc(h.brand_group || '—') + '</td>' +
       '<td>' + fmt.esc(h.city || '—') + '</td>' +
-      '<td>' + catBadge(h.category) + '</td>' +
+      '<td>' + getSegmentBadgeHtml(h.category || '—') + '</td>' +
       '<td style="text-align:right">' + (h.keys ? h.keys.toLocaleString() : '—') + '</td>' +
     '</tr>';
   }).join('');
