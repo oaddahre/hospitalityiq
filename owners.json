@@ -73,12 +73,12 @@
   {
     "id": "almada",
     "name": "Al Mada",
-    "full_name": "Al Mada — Société Nationale d'Investissement",
+    "full_name": "Al Mada",
     "type": "State-Owned",
-    "parent": "SNI Group",
+    "parent": "Al Mada Group",
     "headquarters": "Casablanca, Morocco",
     "logo_domain": "almada.ma",
-    "description": "Al Mada, formerly known as Société Nationale d'Investissement (SNI), is one of Morocco's largest and most diversified investment holding companies with significant interests across financial services, industry, retail, agriculture, and hospitality. In the hotel sector, Al Mada operates through Atlas Hospitality Group, a wholly owned subsidiary that has emerged as one of the largest Moroccan-owned hotel operators in the kingdom by total room count. The group's hospitality portfolio spans luxury resorts, upscale urban hotels, midscale business properties, and branded residential developments across Morocco's primary destinations including Casablanca, Marrakech, Agadir, Fes, and Tétouan. Atlas Hospitality Group's combination of internationally branded properties under The View collection and domestically branded assets under the Atlas and Relax Hotels banners reflects Al Mada's strategy of building a vertically integrated hospitality platform that serves multiple market segments simultaneously.",
+    "description": "Al Mada is one of Morocco's largest and most diversified investment holding companies with significant interests across financial services, industry, retail, agriculture, and hospitality. In the hotel sector, Al Mada operates through Atlas Hospitality Group, a wholly owned subsidiary that has emerged as one of the largest Moroccan-owned hotel operators in the kingdom by total room count. The group's hospitality portfolio spans luxury resorts, upscale urban hotels, midscale business properties, and branded residential developments across Morocco's primary destinations including Casablanca, Marrakech, Agadir, Fes, and Tétouan. Atlas Hospitality Group's combination of internationally branded properties under The View collection and domestically branded assets under the Atlas and Relax Hotels banners reflects Al Mada's strategy of building a vertically integrated hospitality platform that serves multiple market segments simultaneously.",
     "hotels": [
       {"name": "The View Rabat", "brand_group": "Atlas Hospitality Group", "city": "Rabat / Salé / Témara"},
       {"name": "The View Bouznika", "brand_group": "Atlas Hospitality Group", "city": "Rabat / Salé / Témara"},
