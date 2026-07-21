@@ -69,5 +69,36 @@
       {"name": "Ibis Ouarzazate", "brand_group": "Accor", "city": "Ouarzazate"},
       {"name": "Ibis Tanger City Center", "brand_group": "Accor", "city": "Tanger"}
     ]
+  },
+  {
+    "id": "almada",
+    "name": "Al Mada",
+    "full_name": "Al Mada — Société Nationale d'Investissement",
+    "type": "State-Owned",
+    "parent": "SNI Group",
+    "headquarters": "Casablanca, Morocco",
+    "logo_domain": "almada.ma",
+    "description": "Al Mada, formerly known as Société Nationale d'Investissement (SNI), is one of Morocco's largest and most diversified investment holding companies with significant interests across financial services, industry, retail, agriculture, and hospitality. In the hotel sector, Al Mada operates through Atlas Hospitality Group, a wholly owned subsidiary that has emerged as one of the largest Moroccan-owned hotel operators in the kingdom by total room count. The group's hospitality portfolio spans luxury resorts, upscale urban hotels, midscale business properties, and branded residential developments across Morocco's primary destinations including Casablanca, Marrakech, Agadir, Fes, and Tétouan. Atlas Hospitality Group's combination of internationally branded properties under The View collection and domestically branded assets under the Atlas and Relax Hotels banners reflects Al Mada's strategy of building a vertically integrated hospitality platform that serves multiple market segments simultaneously.",
+    "hotels": [
+      {"name": "The View Rabat", "brand_group": "Atlas Hospitality Group", "city": "Rabat / Salé / Témara"},
+      {"name": "The View Bouznika", "brand_group": "Atlas Hospitality Group", "city": "Rabat / Salé / Témara"},
+      {"name": "The View Agadir", "brand_group": "Atlas Hospitality Group", "city": "Agadir / Taghazout"},
+      {"name": "Dunes d'Or Agadir", "brand_group": "Atlas Hospitality Group", "city": "Agadir / Taghazout"},
+      {"name": "Amadil Ocean Club Agadir", "brand_group": "Atlas Hospitality Group", "city": "Agadir / Taghazout"},
+      {"name": "Jaal Riad Resort Marrakech", "brand_group": "Atlas Hospitality Group", "city": "Marrakech"},
+      {"name": "Aqualis Club Resort Marrakech", "brand_group": "Atlas Hospitality Group", "city": "Marrakech"},
+      {"name": "Rose Aqua Park Hotel Marrakech", "brand_group": "Atlas Hospitality Group", "city": "Marrakech"},
+      {"name": "Relax Hotel Marrakech", "brand_group": "Atlas Hospitality Group", "city": "Marrakech"},
+      {"name": "Palais Medina Fes", "brand_group": "Atlas Hospitality Group", "city": "Fes"},
+      {"name": "Kaan Casablanca", "brand_group": "Atlas Hospitality Group", "city": "Casablanca"},
+      {"name": "Sky Casa Airport", "brand_group": "Atlas Hospitality Group", "city": "Casablanca"},
+      {"name": "Relax Hotel Casa Voyageur", "brand_group": "Atlas Hospitality Group", "city": "Casablanca"},
+      {"name": "Relax Hotel Nouaceur", "brand_group": "Atlas Hospitality Group", "city": "Casablanca"},
+      {"name": "Atlas Essaouira Riad Resort", "brand_group": "Atlas Hospitality Group", "city": "Essaouira"},
+      {"name": "Atlas Beni Mellal", "brand_group": "Atlas Hospitality Group", "city": "Beni Mellal"},
+      {"name": "Hotel Atlas Safari Meknes", "brand_group": "Atlas Hospitality Group", "city": "Meknes"},
+      {"name": "Relax Hotel Kenitra", "brand_group": "Atlas Hospitality Group", "city": "Kenitra"},
+      {"name": "Relax Hotel Oujda", "brand_group": "Atlas Hospitality Group", "city": "Oujda"}
+    ]
   }
 ]
