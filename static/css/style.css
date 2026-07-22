@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,6 +26,7 @@
   --font:          'Plus Jakarta Sans', system-ui, sans-serif;
   --heading:       'Syne', sans-serif;
   --font-mono:     'IBM Plex Mono', monospace;
+  --font-numeric:  'IBM Plex Sans', sans-serif;
 }
 
 /* ─── Light mode overrides ───────────────────────── */
@@ -350,7 +351,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .kpi-value {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 24px;
   font-weight: 500;
   color: var(--text);
@@ -495,19 +496,19 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .data-table tbody td:nth-child(n+3) {
   text-align: right;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .num-cell, .num-col {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
 .rank-cell {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 10px;
   font-weight: 400;
   color: var(--text-faint);
@@ -637,7 +638,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 8px 10px;
 }
 .hiq-popup-stat-val {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
@@ -1213,7 +1214,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-bottom: 3px;
 }
 .timeline-date__day {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 18px;
   font-weight: 500;
   color: var(--text);
@@ -1564,7 +1565,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 14px 16px;
 }
 .hotel-fin-val {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 18px;
   font-weight: 500;
   color: var(--text);
@@ -1908,7 +1909,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hbench-bar-fill.accent { background: var(--accent); }
 .hbench-bar-fill.muted  { background: var(--text-faint); }
 .hbench-val {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--text);
@@ -2521,7 +2522,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-weight: 400;
 }
 .pipe-card-year {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 28px;
   font-weight: 500;
   color: var(--text-muted);
@@ -2538,7 +2539,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-top: 2px;
 }
 .pipe-card-metric-val, .pipe-metric-value {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 16px;
   font-weight: 500;
   color: var(--text);
@@ -3182,14 +3183,14 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-kpi-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 12px; }
 .bench-kpi-body { display: flex; align-items: center; gap: 8px; }
 .bench-kpi-mine { text-align: center; flex: 1; }
-.bench-kpi-mine-val { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 500; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-mine-val { font-family: 'IBM Plex Sans', sans-serif; font-size: 20px; font-weight: 500; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-mine-lbl { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; color: var(--accent); font-weight: 400; margin-top: 3px; }
 .bench-kpi-sep { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; font-weight: 400; color: var(--text-faint); flex-shrink: 0; }
 .bench-kpi-comp-blk { text-align: center; flex: 1; }
-.bench-kpi-comp-val { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 500; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-comp-val { font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; font-weight: 500; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-comp-lbl { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; color: var(--text-faint); font-weight: 400; margin-top: 3px; }
 .bench-kpi-index { text-align: center; padding: 6px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); flex-shrink: 0; min-width: 48px; }
-.bench-kpi-idx-val { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-idx-val { font-family: 'IBM Plex Sans', sans-serif; font-size: 17px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-idx-lbl { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 2px; }
 .bench-idx-green { background: rgba(90,138,90,0.10); border-color: rgba(90,138,90,0.25); }
 .bench-idx-green .bench-kpi-idx-val { color: var(--positive); }
@@ -3237,7 +3238,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-cal-day.bench-cal-empty   { background: transparent; border-color: transparent; }
 .bench-cal-day.bench-cal-nodata  { background: var(--surface-hover); opacity: 0.4; }
 .bench-cal-daynum { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; font-weight: 400; opacity: 0.7; line-height: 1; }
-.bench-cal-dayval { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
+.bench-cal-dayval { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
 
 .bench-cal-tooltip {
   position: fixed; z-index: 1000;
@@ -3251,7 +3252,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bct-row span:last-child { font-weight: 500; color: var(--text); }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
-.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .bench-ai-box { padding: 4px 0 8px; min-height: 60px; }
 .bench-loading { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-muted); font-size: 13px; padding: 12px 0; }
@@ -3279,7 +3280,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-insight-body { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
 .bench-insight-badge {
   display: inline-block; padding: 3px 9px; border-radius: 3px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums;
   align-self: flex-start; margin-top: 4px;
 }
 .bib-green { background: transparent; color: var(--positive); border: 1px solid rgba(90,138,90,0.40); }
@@ -3898,7 +3899,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-bottom: 4px;
 }
 .brn-kpi-val {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
@@ -4018,7 +4019,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   color: var(--text-muted);
 }
 .brn-mkt-pct {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--text);
@@ -4054,7 +4055,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   letter-spacing: 0.06em;
 }
 .brni-value {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 18px;
   font-weight: 500;
   color: var(--accent);
@@ -4152,7 +4153,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   color: var(--text-faint);
 }
 .owner-stat-value {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 16px;
   font-weight: 500;
   color: var(--text);

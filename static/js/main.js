@@ -239,7 +239,7 @@ Chart.register(ChartDataLabels);
 Chart.defaults.scale.grid.display   = false;
 Chart.defaults.scale.grid.drawTicks = false;
 Chart.defaults.scale.border.display = false;
-Chart.defaults.font.family = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
 
 // ─── State & cache ────────────────────────────────────────────────
 
