@@ -455,7 +455,7 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
       responsive: true,
       maintainAspectRatio: false,
       animation: { duration: 350 },
-      layout: { padding: { right: 72 } },
+      layout: { padding: { right: 72, left: 8 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -482,10 +482,10 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
       scales: {
         x: {
           min: 0,
-          ticks: { color: cc.tick, font: { size: 11 } }
+          ticks: { color: cc.tick, font: { size: 11 }, padding: 4 }
         },
         y: {
-          ticks: { color: cc.catLabel, font: { size: 12, weight: '500' } }
+          ticks: { color: cc.catLabel, font: { size: 12, weight: '500' }, padding: 10 }
         }
       }
     }
@@ -1955,7 +1955,7 @@ function initTourismCharts() {
           },
         },
         scales: {
-          x: { ticks: { color: cc.tick, font: { size: 11 } } },
+          x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
           y: { ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
@@ -1997,7 +1997,7 @@ function initTourismCharts() {
           },
         },
         scales: {
-          x: { ticks: { color: cc.tick, font: { size: 11 } } },
+          x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
           y: { ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
@@ -3722,7 +3722,7 @@ function renderBenchDOW() {
           },
         },
         scales: {
-          x: { ticks: { color: cc.tick, font: { size: 11 } } },
+          x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
           y: { suggestedMin: 0, suggestedMax: 100, ticks: { color: cc.tick, font: { size: 11 } } },
         },
       },
