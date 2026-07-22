@@ -185,7 +185,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: 999px;
   flex-shrink: 0;
 }
 .tier-badge--observer    { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
@@ -386,6 +386,39 @@ body.light .nav-logout  { color: #8A8A8A; }
 .timeline-date__day,
 .cal-legend-label {
   text-transform: uppercase;
+}
+
+/* ─── Oval border-radius for all badges and pills ─────────────── */
+.segment-badge,
+.segment-ultra-luxury,
+.segment-luxury,
+.segment-upper-upscale,
+.segment-upscale,
+.segment-midscale,
+.segment-economy,
+.owner-type-badge,
+.status-badge,
+.tier-badge,
+.data-quality-badge,
+.category-pill,
+.city-pill,
+.pipeline-status-badge,
+.bench-mode-badge,
+.confidence-badge,
+.filter-pill,
+.nav-tier-badge,
+.brand-city-pill,
+.brand-cities-more,
+.owner-city-pill,
+.search-result-category,
+.pipeline-legend-dot,
+.cal-legend-item,
+.bench-card-label,
+.events-filter-pill,
+.hotel-status-badge,
+.hotel-dq-badge,
+.bench-idx-badge {
+  border-radius: 999px;
 }
 
 .kpi-meta, .kpi-delta {
@@ -1199,7 +1232,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 4px 12px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 999px;
   color: var(--text-muted);
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
@@ -1399,7 +1432,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .brand-city-pill {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 999px;
   padding: 2px 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 10px;
@@ -1423,7 +1456,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 10px;
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: 999px;
   cursor: pointer;
   transition: border-color 150ms;
   white-space: nowrap;
@@ -1538,7 +1571,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hotel-status-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: 999px;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
@@ -1551,7 +1584,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hotel-dq-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: 999px;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
@@ -3281,7 +3314,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bct-row span:last-child { font-weight: 500; color: var(--text); }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
-.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .bench-ai-box { padding: 4px 0 8px; min-height: 60px; }
 .bench-loading { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-muted); font-size: 13px; padding: 12px 0; }
@@ -4113,7 +4146,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 /* ─── Segment badges ─────────────────────────────── */
 .segment-badge {
   display: inline-block;
-  border-radius: 3px;
+  border-radius: 999px;
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 600;
@@ -4163,7 +4196,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: 999px;
   border: 1px solid;
   white-space: nowrap;
 }

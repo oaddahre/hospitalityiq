@@ -689,7 +689,7 @@ body {
   font-size: 10px;
   font-weight: 500;
   padding: 3px 9px;
-  border-radius: 3px;
+  border-radius: 999px;
   border: 1px solid #242424;
   color: #888888;
   background: transparent;

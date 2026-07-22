@@ -184,7 +184,7 @@ function getSegmentBadgeHtml(segment) {
     'Economy':       { bg: 'rgba(100,100,100,0.12)', color: '#666666', border: '#666666' },
   };
   const c = colors[segment] || { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' };
-  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:3px;font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
+  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:999px;font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
 }
 
 const CITY_COORDS = {
@@ -2185,8 +2185,8 @@ function initPipelineMap() {
 function pipelinePopupHTML(p) {
   const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
   const statusPill = p.status === 'Under Construction'
-    ? `<span style="background:transparent;color:#B87860;border:1px solid #B87860;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`
-    : `<span style="background:transparent;color:#888888;border:1px solid #444444;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`;
+    ? `<span style="background:transparent;color:#B87860;border:1px solid #B87860;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`
+    : `<span style="background:transparent;color:#888888;border:1px solid #444444;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${getSegmentBadgeHtml(p.category)}</div>
