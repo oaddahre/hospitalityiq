@@ -4051,12 +4051,12 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .brni-icon { font-size: 20px; line-height: 1; }
 .brni-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 400;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 .brni-value {
   font-family: 'IBM Plex Sans', sans-serif;
