@@ -4,7 +4,7 @@
  * team.html, and contact.html exactly as they appear in the HTML.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -62,7 +62,7 @@ body {
 
 /* ── Typography ────────────────────────────────────────────── */
 .t-display {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: clamp(2rem, 4.5vw, 3.2rem);
   font-weight: 600;
   line-height: 1.1;
@@ -70,7 +70,7 @@ body {
   color: #F0F0EE;
 }
 .t-headline {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 600;
   line-height: 1.2;
@@ -185,7 +185,7 @@ body {
 }
 .mk-nav__logo { text-decoration: none; flex-shrink: 0; }
 .mk-nav__logo-text {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.12em;
@@ -302,7 +302,7 @@ body {
   display: block;
 }
 .hero__title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 600;
   line-height: 1.1;
@@ -397,7 +397,7 @@ body {
   letter-spacing: 0.05em;
 }
 .module-card__title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 14px;
   font-weight: 600;
   color: #F0F0EE;
@@ -431,7 +431,7 @@ body {
   display: block;
 }
 .audience-card__title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 14px;
   font-weight: 600;
   color: #F0F0EE;
@@ -475,7 +475,7 @@ body {
   justify-content: space-between;
 }
 .dest-card__city {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
   font-weight: 600;
   color: #F0F0EE;
@@ -568,7 +568,7 @@ body {
   border-radius: 6px 6px 0 0;
 }
 .pricing-tier {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -578,7 +578,7 @@ body {
   margin-bottom: 6px;
 }
 .pricing-name {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 16px;
   font-weight: 600;
   color: #F0F0EE;
@@ -650,7 +650,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 14px;
   font-weight: 700;
   color: #B87860;
@@ -662,7 +662,7 @@ body {
   color: #666666;
 }
 .team-name {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 15px;
   font-weight: 600;
   color: #F0F0EE;
@@ -724,7 +724,7 @@ body {
   text-transform: uppercase;
 }
 .value-card__title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 14px;
   font-weight: 600;
   color: #F0F0EE;
@@ -849,7 +849,7 @@ body {
   margin-top: 20px;
 }
 .contact-platform-card__title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 14px;
   font-weight: 600;
   color: #F0F0EE;
@@ -894,11 +894,11 @@ body {
   color: #050505;
   border-radius: 3px;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px; font-weight: 700;
 }
 .mk-footer__logo-text {
-  font-family: 'Syne', sans-serif;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 14px; font-weight: 700;
   letter-spacing: 0.1em; text-transform: uppercase;
   color: #F0F0EE;
