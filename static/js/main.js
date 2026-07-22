@@ -184,7 +184,7 @@ function getSegmentBadgeHtml(segment) {
     'Economy':       { bg: 'rgba(100,100,100,0.12)', color: '#666666', border: '#666666' },
   };
   const c = colors[segment] || { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' };
-  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:3px;font-family:Plus Jakarta Sans,sans-serif;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
+  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:3px;font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
 }
 
 const CITY_COORDS = {
@@ -4758,14 +4758,14 @@ function renderOwnerDetail(o) {
 
   // Destination pills
   document.getElementById('owner-destinations-row').innerHTML =
-    '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Cities</span>' +
+    '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Cities</span>' +
     (o.cities || []).map(function(c) {
       return '<span class="brand-meta-pill">' + fmt.esc(c) + '</span>';
     }).join('');
 
   // Operator pills
   document.getElementById('owner-operators-row').innerHTML =
-    '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Operators</span>' +
+    '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Operators</span>' +
     (o.brands_operated || []).map(function(b) {
       return '<span class="brand-meta-pill">' + getBrandLogoImg(b, 14) + fmt.esc(b) + '</span>';
     }).join('');
