@@ -91,7 +91,7 @@ function getOwnerLogoImg(ownerName, size) {
     return '<img src="https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
   }
   var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#B87860;border-radius:4px;font-family:IBM Plex Mono,monospace;font-weight:700;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#B87860;border-radius:4px;font-family:Geist Mono,monospace;font-weight:700;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
 }
 
 function ownerTypeBadge(type) {
@@ -157,7 +157,7 @@ function getBrandLogoImg(brandGroup, size=24) {
   }
   const custom = BRAND_CUSTOM_LOGOS[brandGroup];
   if (custom) {
-    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:' + custom.bg + ';color:' + custom.color + ';border-radius:4px;font-family:IBM Plex Mono,monospace;font-weight:700;font-size:' + Math.round(size*0.55) + 'px;flex-shrink:0;vertical-align:middle;margin-right:6px;">' + custom.letter + '</span>';
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:' + custom.bg + ';color:' + custom.color + ';border-radius:4px;font-family:Geist Mono,monospace;font-weight:700;font-size:' + Math.round(size*0.55) + 'px;flex-shrink:0;vertical-align:middle;margin-right:6px;">' + custom.letter + '</span>';
   }
   const domain = BRAND_DOMAINS[brandGroup];
   if (!domain) return '';
@@ -184,7 +184,7 @@ function getSegmentBadgeHtml(segment) {
     'Economy':       { bg: 'rgba(100,100,100,0.12)', color: '#666666', border: '#666666' },
   };
   const c = colors[segment] || { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' };
-  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:999px;font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
+  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:999px;font-family:Geist Mono,monospace;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
 }
 
 const CITY_COORDS = {
@@ -239,7 +239,7 @@ Chart.register(ChartDataLabels);
 Chart.defaults.scale.grid.display   = false;
 Chart.defaults.scale.grid.drawTicks = false;
 Chart.defaults.scale.border.display = false;
-Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.family = "'Geist Mono', monospace";
 
 // ─── State & cache ────────────────────────────────────────────────
 
@@ -4281,7 +4281,7 @@ async function initReports() {
       const lockIcon = canGenerate ? '' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 
       card.innerHTML = `
-        <div style="font-family:IBM Plex Mono,monospace;font-size:1rem;font-weight:600;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
+        <div style="font-family:Geist Mono,monospace;font-size:1rem;font-weight:600;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
         <div style="font-size:0.75rem;color:var(--muted);margin-bottom:12px;">Morocco Hotel Market</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" class="report-period-pills">${periodsHTML}</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;" class="report-theme-pills">
@@ -4296,7 +4296,7 @@ async function initReports() {
         <button class="report-generate-btn" data-city="${cityMeta.city}"
           style="width:100%;padding:9px;background:${canGenerate?'var(--accent)':'var(--border)'};
           color:${canGenerate?'#0A0A0A':'var(--muted)'};border:none;cursor:pointer;
-          font-family:IBM Plex Mono,monospace;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+          font-family:Geist Mono,monospace;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
           display:flex;align-items:center;justify-content:center;">
           ${lockIcon}Generate Dark Report
         </button>
@@ -4690,7 +4690,7 @@ function renderOwnerCards() {
         '<div style="display:flex;align-items:center">' +
           getOwnerLogoImg(o.name, 40) +
           '<div>' +
-            '<div style="font-family:IBM Plex Mono,monospace;font-size:15px;font-weight:600;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
+            '<div style="font-family:Geist Mono,monospace;font-size:15px;font-weight:600;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
             '<div style="font-family:\'Inter\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">' + fmt.esc(o.parent || '') + '</div>' +
           '</div>' +
         '</div>' +
@@ -4731,7 +4731,7 @@ function renderOwnerDetail(o) {
     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">' +
       getOwnerLogoImg(o.name, 52) +
       '<div>' +
-        '<h1 style="font-family:IBM Plex Mono,monospace;font-size:22px;font-weight:700;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
+        '<h1 style="font-family:Geist Mono,monospace;font-size:22px;font-weight:700;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
           ownerTypeBadge(o.type || 'Private') +
           (o.parent ? '<span style="font-family:\'Inter\',sans-serif;font-size:11px;color:var(--text-muted)">' + fmt.esc(o.parent) + '</span>' : '') +
@@ -4758,14 +4758,14 @@ function renderOwnerDetail(o) {
 
   // Destination pills
   document.getElementById('owner-destinations-row').innerHTML =
-    '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Cities</span>' +
+    '<span style="font-family:\'Geist Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Cities</span>' +
     (o.cities || []).map(function(c) {
       return '<span class="brand-meta-pill">' + fmt.esc(c) + '</span>';
     }).join('');
 
   // Operator pills
   document.getElementById('owner-operators-row').innerHTML =
-    '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Operators</span>' +
+    '<span style="font-family:\'Geist Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Operators</span>' +
     (o.brands_operated || []).map(function(b) {
       return '<span class="brand-meta-pill">' + getBrandLogoImg(b, 14) + fmt.esc(b) + '</span>';
     }).join('');
