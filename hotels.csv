@@ -289,3 +289,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 446,Relax Hotel Nouaceur,Casablanca,Casablanca-Settat,Midscale,Relax Hotels,Atlas Hospitality Group,168,2006,verified,Open,33.3712,-7.5823,Al Mada,verified,
 447,Relax Hotel Marrakech,Marrakech,Marrakech-Safi,Midscale,Relax Hotels,Atlas Hospitality Group,137,2014,verified,Open,31.6289,-8.0134,Al Mada,verified,
 448,Relax Hotel Casa Voyageur,Casablanca,Casablanca-Settat,Midscale,Relax Hotels,Atlas Hospitality Group,94,2018,verified,Open,33.5889,-7.6034,Al Mada,verified,
+449,Valeria Madina Club Resort,Marrakech,Marrakech-Safi,Upscale,Valeria Hotels,Valeria Hotels,430,2008,verified,Open,31.6734,-8.0089,Valeria Hotels,verified,
+450,Valeria Dar Atlas Club Resort,Marrakech,Marrakech-Safi,Upscale,Valeria Hotels,Valeria Hotels,320,2009,verified,Open,31.6756,-8.0112,Valeria Hotels,verified,
+451,Valeria Les Jardins d'Agadir Resort,Agadir / Taghazout,Souss-Massa,Upscale,Valeria Hotels,Valeria Hotels,393,2012,verified,Open,30.4156,-9.5934,Valeria Hotels,verified,
+452,Valeria Kasbah del Mar,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Valeria Hotels,Valeria Hotels,72,2025,verified,Open,35.6823,-5.2934,Valeria Hotels,verified,

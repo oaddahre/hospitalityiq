@@ -53,6 +53,7 @@ const LOCAL_BRAND_LOGOS = {
   'Lancaster Hotels': '/static/images/brands/lancaster_logo.png',
   'Banyan Tree': '/static/images/brands/banyantree_logo.png',
   'Vichy Thermalia': '/static/images/brands/vichy_logo.png',
+  'Valeria Hotels': '/static/images/brands/valeria_logo.png',
 };
 
 const BRAND_CUSTOM_LOGOS = {
@@ -71,6 +72,7 @@ const BRAND_CUSTOM_LOGOS = {
 const OWNER_LOGOS = {
   'Madaëf': '/static/images/brands/madaef_logo.png',
   'Risma': '/static/images/brands/risma_logo.png',
+  'Valeria Hotels': '/static/images/brands/valeria_logo.png',
 };
 
 const OWNER_LOGO_DOMAINS = {
@@ -139,6 +141,7 @@ const BRAND_DESCRIPTIONS = {
   'Globalia Hotels': "Globalia Hotels is the hotel division of Globalia, one of Spain's largest travel and tourism conglomerates, operating the Be Live Hotels brand across popular Mediterranean, Caribbean, and North African leisure destinations. In Morocco, Globalia's Be Live brand is represented by the Belive Saidia property in the Mediterrania Saidia resort complex, targeting the all-inclusive European package travel segment that forms the backbone of Saidia's hotel market. The property serves primarily Spanish and European charter travelers seeking a cost-effective all-inclusive beach holiday experience in Morocco's northeastern Mediterranean resort corridor. Globalia's presence in Saidia reflects the strong historical ties between Spanish tour operators and Morocco's northern coastal resort destinations and the continued importance of the all-inclusive format for European mass-market leisure tourism in Morocco.",
   'Banyan Tree': "Banyan Tree Hotels & Resorts is a Singapore-based luxury hospitality company founded in 1994, renowned for pioneering the private pool villa concept and operating a portfolio of award-winning luxury resorts, spas, and residences across Asia, the Middle East, Africa, and the Americas. In Morocco, Banyan Tree operates a single ultra-luxury property in Tamuda Bay, the Banyan Tree Tamuda Bay, bringing the brand's signature blend of intimate seclusion, world-class spa philosophy, and deep environmental sensitivity to Morocco's emerging Mediterranean luxury corridor. The property's presence in Tamuda Bay reflects Banyan Tree's deliberate strategy of establishing footholds in destinations at the early stages of luxury development, positioning the brand ahead of the wave of international interest that follows. Banyan Tree Tamuda Bay adds an Asian luxury sensibility to a destination already attracting significant international brand investment.",
   'Vichy Thermalia': "Vichy Thermalia is a French thermal wellness hospitality brand operated under the Vichy Célestins Spa Hotels network, specializing in medically supervised thermal spa hotels that combine hydrotherapy treatments with premium hotel accommodation in destinations with natural mineral water sources. In Morocco, Vichy Thermalia operates the Vichy Thermalia Spa Hotel in Moulay Yacoub, a thermal resort town located 20 kilometers northwest of Fes renowned for its natural hot springs and longstanding reputation as a wellness destination. The property is developed in partnership with Madaëf and represents Morocco's most sophisticated medically oriented thermal spa offering, targeting both domestic wellness travelers and international guests seeking therapeutic spa experiences in a culturally rich environment. Vichy Thermalia's presence in Moulay Yacoub reinforces Morocco's ambition to develop its natural thermal assets into internationally competitive wellness tourism destinations.",
+  'Valeria Hotels': "Valeria Hotels is a Moroccan independent hotel group specializing in large-scale club resort properties targeting the European all-inclusive leisure market. Operating exclusively within Morocco, Valeria has built a significant resort portfolio concentrated in Marrakech's Palmeraie district and Agadir, with properties that combine extensive leisure facilities, entertainment programming, and all-inclusive packages tailored to family and group travelers. The group's Marrakech properties in the Palmeraie have established Valeria as one of the largest resort operators in the city's leisure segment, while the Agadir property serves the Atlantic coast's strong European charter market. Valeria's most recent addition, the Valeria Kasbah del Mar in Cabo Negro on the Mediterranean coast, signals the group's ambition to expand into Morocco's emerging northern resort corridor.",
 };
 
 function getBrandLogoUrl(brandGroup) {

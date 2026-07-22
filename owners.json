@@ -100,5 +100,21 @@
       {"name": "Relax Hotel Kenitra", "brand_group": "Atlas Hospitality Group", "city": "Kenitra"},
       {"name": "Relax Hotel Oujda", "brand_group": "Atlas Hospitality Group", "city": "Oujda"}
     ]
+  },
+  {
+    "id": "valeria",
+    "name": "Valeria Hotels",
+    "full_name": "Valeria Hotels",
+    "type": "Private",
+    "parent": "Valeria Hotels",
+    "headquarters": "Marrakech, Morocco",
+    "logo_local": "/static/images/brands/valeria_logo.png",
+    "description": "Valeria Hotels is a Moroccan independent hotel group specializing in large-scale club resort properties targeting the European all-inclusive leisure market. Operating exclusively within Morocco, Valeria has built a significant resort portfolio concentrated in Marrakech's Palmeraie district and Agadir, with properties that combine extensive leisure facilities, entertainment programming, and all-inclusive packages tailored to family and group travelers. The group's Marrakech properties in the Palmeraie have established Valeria as one of the largest resort operators in the city's leisure segment, while the Agadir property serves the Atlantic coast's strong European charter market. Valeria's most recent addition, the Valeria Kasbah del Mar in Cabo Negro on the Mediterranean coast, signals the group's ambition to expand into Morocco's emerging northern resort corridor.",
+    "hotels": [
+      {"name": "Valeria Madina Club Resort", "brand_group": "Valeria Hotels", "city": "Marrakech"},
+      {"name": "Valeria Dar Atlas Club Resort", "brand_group": "Valeria Hotels", "city": "Marrakech"},
+      {"name": "Valeria Les Jardins d'Agadir Resort", "brand_group": "Valeria Hotels", "city": "Agadir / Taghazout"},
+      {"name": "Valeria Kasbah del Mar", "brand_group": "Valeria Hotels", "city": "Tamuda Bay / Tétouan"}
+    ]
   }
 ]
