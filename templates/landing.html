@@ -534,10 +534,10 @@ function revealMoreCities() {
 
   function generateMoroccanPattern(group) {
     var NS    = 'http://www.w3.org/2000/svg';
-    var TILE  = window.innerWidth < 768 ? 70 : 100;
+    var TILE  = window.innerWidth < 768 ? 42 : 60;
     var CX    = 720;
     var CY    = 450;
-    var steps = Math.ceil(1400 / TILE) + 2;
+    var steps = Math.ceil(1600 / TILE) + 2;
 
     // Clear any previous content
     while (group.firstChild) group.removeChild(group.firstChild);
