@@ -232,10 +232,11 @@ body.light .nav-logout  { color: #8A8A8A; }
   display: inline-block;
 }
 
-.kodo-estimate-badge {
-  background: rgba(184,120,96,0.12);
+.kodo-estimate-badge,
+.powered-by-kodo-badge {
+  background: transparent;
   color: #B87860;
-  border: 1px solid rgba(184,120,96,0.4);
+  border: 1px solid #B87860;
   border-radius: 999px;
   font-family: 'Space Mono', monospace;
   font-size: 8px;

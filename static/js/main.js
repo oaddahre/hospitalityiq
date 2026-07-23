@@ -412,9 +412,10 @@ function renderKPIs() {
   set('kpi-revpar', fmt.mad(kpis.revpar_mad));
 
   const sub = document.getElementById('dashboard-sub');
-  sub.textContent = state.city === 'all'
-    ? 'Morocco branded hotel market · Kōdō Estimates'
-    : state.city + ' · Kōdō Estimates · ' + hotelLabel;
+  const badge = '<span class="kodo-estimate-badge">Kōdō Estimates</span>';
+  sub.innerHTML = state.city === 'all'
+    ? 'Morocco branded hotel market · ' + badge
+    : fmt.esc(state.city) + ' · ' + badge + ' · ' + fmt.esc(hotelLabel);
 }
 
 // ─── Charts ───────────────────────────────────────────────────────
