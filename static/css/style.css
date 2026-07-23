@@ -3940,6 +3940,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 /* ─── Brands screen ───────────────────────────────────────────── */
 .brands-kpi-grid { grid-template-columns: repeat(4, 1fr); }
 .brands-kpi-grid .kpi-value { font-size: 18px; }
+.brand-kpi-grid .kpi-value { font-size: 18px; }
 
 .brands-filter-bar {
   display: flex;
@@ -4225,6 +4226,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 @media (max-width: 768px) {
   .brands-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .brands-kpi-grid .kpi-value { font-size: 16px; }
+  .brand-kpi-grid .kpi-value { font-size: 16px; }
   .brands-cards-grid { grid-template-columns: 1fr; }
   .brands-filter-bar { flex-direction: column; align-items: flex-start; }
   .brands-filter-right { width: 100%; }
