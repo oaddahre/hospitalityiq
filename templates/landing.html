@@ -28,6 +28,19 @@
   </div>
 </nav>
 
+<!-- Fullscreen constellation hero -->
+<section class="hero-fullscreen">
+  <canvas id="morocco-constellation"></canvas>
+  <div class="hero-overlay-content">
+    <div class="hero-logo-mark">KŌDŌ</div>
+    <div class="hero-tagline">Morocco Hotel Intelligence</div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll to explore</span>
+    <div class="hero-scroll-arrow">↓</div>
+  </div>
+</section>
+
 <!-- Ticker -->
 <div class="mk-ticker">
   <div class="mk-ticker__track">
@@ -67,9 +80,8 @@
   </div>
 </div>
 
-<!-- Hero -->
-<section class="hero">
-  <canvas id="morocco-constellation" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:all;z-index:1;"></canvas>
+<!-- Hero content section (appears on scroll) -->
+<section class="hero-content-section">
   <div class="container">
     <div class="hero__inner">
       <div>
@@ -400,10 +412,24 @@ window.addEventListener('scroll', () => {
   progressBar.style.width = (scrollTop / docHeight) * 100 + '%';
 }, { passive: true });
 
-// ── Nav frosted-glass blur on scroll ──────────────────────────
+// ── Nav: transparent over hero, white after scroll ────────────
 const nav = document.querySelector('.mk-nav');
 window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 20);
+  nav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.8);
+}, { passive: true });
+
+// ── Constellation fade on scroll ──────────────────────────────
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  const canvas  = document.getElementById('morocco-constellation');
+  const overlay = document.querySelector('.hero-overlay-content');
+  const hint    = document.querySelector('.hero-scroll-hint');
+  if (scrollY < window.innerHeight) {
+    const opacity = Math.max(0, 1 - scrollY / (window.innerHeight * 0.7));
+    if (canvas)  canvas.style.opacity  = opacity;
+    if (overlay) overlay.style.opacity = opacity;
+    if (hint)    hint.style.opacity    = opacity;
+  }
 }, { passive: true });
 
 // ── Scroll-reveal (fade + slide up) ───────────────────────────
@@ -432,29 +458,6 @@ animateSelectors.forEach(selector => {
     observer.observe(el);
   });
 });
-
-// ── Hero entrance (fade + slide up on load) ────────────────────
-window.addEventListener('load', () => {
-  document.querySelectorAll('.hero__title, .hero__body, .hero__actions').forEach((el, index) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 600ms ease-out, transform 600ms ease-out';
-    setTimeout(() => {
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    }, 100 + index * 150);
-  });
-});
-
-// ── Hero shimmer settle (clear gradient after animation ends) ──
-setTimeout(() => {
-  const title = document.querySelector('.hero__title');
-  if (title) {
-    title.style.backgroundImage = 'none';
-    title.style.webkitTextFillColor = '#F0F0EE';
-    title.style.color = '#F0F0EE';
-  }
-}, 2800);
 
 // ── Counting number animation ──────────────────────────────────
 function animateCounter(el) {
@@ -543,26 +546,26 @@ function revealMoreCities() {
   var ctx = canvas.getContext('2d');
 
   var CITIES = [
-    { name: 'Casablanca',  x: 0.32, y: 0.42, size: 5,   primary: true  },
-    { name: 'Rabat',       x: 0.30, y: 0.34, size: 4,   primary: true  },
-    { name: 'Marrakech',   x: 0.35, y: 0.58, size: 4,   primary: true  },
-    { name: 'Agadir',      x: 0.22, y: 0.68, size: 4,   primary: true  },
-    { name: 'Tanger',      x: 0.28, y: 0.18, size: 3.5, primary: true  },
-    { name: 'Fes',         x: 0.44, y: 0.30, size: 3.5, primary: true  },
-    { name: 'Oujda',       x: 0.62, y: 0.28, size: 3,   primary: false },
-    { name: 'Tétouan',     x: 0.33, y: 0.16, size: 3,   primary: false },
-    { name: 'Al Hoceima',  x: 0.50, y: 0.18, size: 2.5, primary: false },
-    { name: 'Meknès',      x: 0.40, y: 0.32, size: 2.5, primary: false },
-    { name: 'Essaouira',   x: 0.22, y: 0.56, size: 2.5, primary: false },
-    { name: 'El Jadida',   x: 0.26, y: 0.48, size: 2.5, primary: false },
-    { name: 'Ouarzazate',  x: 0.44, y: 0.64, size: 2.5, primary: false },
-    { name: 'Dakhla',      x: 0.20, y: 0.88, size: 2.5, primary: false },
-    { name: 'Laayoune',    x: 0.18, y: 0.76, size: 2.5, primary: false },
-    { name: 'Saidia',      x: 0.66, y: 0.22, size: 2,   primary: false },
-    { name: 'Nador',       x: 0.60, y: 0.20, size: 2,   primary: false },
-    { name: 'Kenitra',     x: 0.28, y: 0.36, size: 2,   primary: false },
-    { name: 'Ifrane',      x: 0.44, y: 0.38, size: 2,   primary: false },
-    { name: 'Merzouga',    x: 0.58, y: 0.62, size: 2,   primary: false },
+    { name: 'Casablanca',  x: 0.35, y: 0.48, size: 6,   primary: true  },
+    { name: 'Rabat',       x: 0.33, y: 0.38, size: 5,   primary: true  },
+    { name: 'Marrakech',   x: 0.38, y: 0.62, size: 5,   primary: true  },
+    { name: 'Agadir',      x: 0.25, y: 0.72, size: 5,   primary: true  },
+    { name: 'Tanger',      x: 0.30, y: 0.18, size: 4.5, primary: true  },
+    { name: 'Fes',         x: 0.50, y: 0.28, size: 4.5, primary: true  },
+    { name: 'Oujda',       x: 0.68, y: 0.26, size: 3.5, primary: false },
+    { name: 'Tétouan',     x: 0.36, y: 0.14, size: 3.5, primary: false },
+    { name: 'Al Hoceima',  x: 0.54, y: 0.16, size: 3,   primary: false },
+    { name: 'Meknès',      x: 0.44, y: 0.32, size: 3,   primary: false },
+    { name: 'Essaouira',   x: 0.24, y: 0.60, size: 3,   primary: false },
+    { name: 'El Jadida',   x: 0.28, y: 0.52, size: 3,   primary: false },
+    { name: 'Ouarzazate',  x: 0.48, y: 0.68, size: 3,   primary: false },
+    { name: 'Dakhla',      x: 0.22, y: 0.90, size: 3,   primary: false },
+    { name: 'Laayoune',    x: 0.20, y: 0.80, size: 3,   primary: false },
+    { name: 'Saidia',      x: 0.72, y: 0.20, size: 2.5, primary: false },
+    { name: 'Nador',       x: 0.64, y: 0.18, size: 2.5, primary: false },
+    { name: 'Kenitra',     x: 0.30, y: 0.40, size: 2.5, primary: false },
+    { name: 'Ifrane',      x: 0.48, y: 0.36, size: 2.5, primary: false },
+    { name: 'Merzouga',    x: 0.62, y: 0.66, size: 2.5, primary: false },
   ];
 
   var CONNECTIONS_RAW = [
@@ -732,7 +735,7 @@ function revealMoreCities() {
     CITIES.forEach(function (city, i) {
       if (city.opacity <= 0) return;
       var p    = pos(city);
-      var base = isMobile ? city.size * 0.7 : city.size;
+      var base = isMobile ? city.size * 0.6 : city.size;
       var isHovered = hoveredCity === i;
 
       // Idle breathing
@@ -828,7 +831,7 @@ function revealMoreCities() {
   });
 
   // ── Pause when off-screen ──
-  var hero = canvas.closest('.hero');
+  var hero = canvas.closest('.hero-fullscreen');
   if (hero) {
     var visObs = new IntersectionObserver(function (entries) {
       if (entries[0].isIntersecting) {

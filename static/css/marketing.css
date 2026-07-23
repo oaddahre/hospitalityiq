@@ -158,22 +158,30 @@ body {
 
 /* ── Navigation ────────────────────────────────────────────── */
 .mk-nav {
-  background: #050505;
   height: 56px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #141414;
-  position: sticky;
+  border-bottom: 1px solid transparent;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  transition: background 300ms ease, backdrop-filter 300ms ease, box-shadow 300ms ease;
+  background: transparent;
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
 }
 .mk-nav.scrolled {
-  background: rgba(5, 5, 5, 0.85) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
 }
+.mk-nav.scrolled .mk-nav__logo-text { color: #1A1A1A; }
+.mk-nav.scrolled .mk-nav__links a { color: #555555; }
+.mk-nav.scrolled .mk-nav__links a:hover,
+.mk-nav.scrolled .mk-nav__links a.active { color: #1A1A1A; }
+.mk-nav.scrolled .mk-nav__cta { border-color: #B87860; color: #B87860; background: transparent; }
 .mk-nav__inner {
   max-width: 1160px;
   margin: 0 auto;
@@ -283,6 +291,112 @@ body {
 }
 
 /* ── Hero ──────────────────────────────────────────────────── */
+/* ── Fullscreen constellation hero ─────────────────────────── */
+.hero-fullscreen {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #0A0A0A;
+  overflow: hidden;
+}
+#morocco-constellation {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: all;
+  z-index: 1;
+}
+.hero-overlay-content {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.hero-logo-mark {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 48px;
+  letter-spacing: 0.3em;
+  color: #F0F0EE;
+  margin-bottom: 12px;
+  opacity: 0;
+  animation: heroFadeInUp 800ms ease 2000ms forwards;
+}
+.hero-tagline {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: #B87860;
+  opacity: 0;
+  animation: heroFadeInUp 800ms ease 2400ms forwards;
+}
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  text-align: center;
+  opacity: 0;
+  animation: heroFadeInUp 800ms ease 3000ms forwards;
+  pointer-events: none;
+}
+.hero-scroll-hint span {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(240,240,238,0.4);
+  display: block;
+  margin-bottom: 8px;
+}
+.hero-scroll-arrow {
+  font-size: 16px;
+  color: #B87860;
+  animation: heroBounceDown 1.5s ease infinite;
+}
+@keyframes heroFadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroBounceDown {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(6px); }
+}
+
+/* ── Hero content section (first scroll destination) ───────── */
+.hero-content-section {
+  background: #FFFFFF;
+  padding: 80px 0;
+  position: relative;
+  z-index: 3;
+}
+.hero-content-section .hero__eyebrow { color: #B87860; }
+.hero-content-section .hero__title {
+  background: none;
+  -webkit-text-fill-color: #0A0A0A;
+  color: #0A0A0A;
+  animation: none;
+}
+.hero-content-section .hero__title em {
+  -webkit-text-fill-color: #B87860;
+  color: #B87860;
+  font-style: italic;
+}
+.hero-content-section .hero__body { color: #444444; }
+.hero-content-section .hero__stat {
+  background: #F5F5F5;
+  border-color: #E0E0E0;
+}
+.hero-content-section .hero__stat-value { color: #0A0A0A; }
+.hero-content-section .hero__stat-label { color: #777777; }
+.hero-content-section .hero__note { color: #AAAAAA; }
+
+/* ── Legacy .hero (no longer fullscreen — kept for fallback) ── */
 .hero { background: #0A0A0A; padding: 80px 0; position: relative; overflow: hidden; }
 .hero .container { max-width: 1160px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 2; }
 .hero__inner {
