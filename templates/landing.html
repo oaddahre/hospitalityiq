@@ -32,7 +32,7 @@
 <!-- Fullscreen geometric hero -->
 <section class="hero-fullscreen">
   <div class="hero-geo-bg">
-    <svg id="morocco-geo" viewBox="-1500 -1500 5440 4900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"></svg>
+    <svg id="morocco-geo" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"><g id="morocco-pattern-group"></g></svg>
   </div>
   <div class="hero-overlay-content">
     <div class="hero-logo-mark">KŌDŌ</div>
@@ -532,22 +532,20 @@ function revealMoreCities() {
 (function () {
   'use strict';
 
-  function generateMoroccanPattern(svg) {
-    var W    = 5440;
-    var H    = 4900;
-    var TILE = window.innerWidth < 768 ? 70 : 100;
-    var NS   = 'http://www.w3.org/2000/svg';
+  function generateMoroccanPattern(group) {
+    var NS    = 'http://www.w3.org/2000/svg';
+    var TILE  = window.innerWidth < 768 ? 70 : 100;
+    var CX    = 720;
+    var CY    = 450;
+    var steps = Math.ceil(1400 / TILE) + 2;
 
     // Clear any previous content
-    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    while (group.firstChild) group.removeChild(group.firstChild);
 
-    var colMin = -15, colMax = Math.ceil(W / TILE) + 15;
-    var rowMin = -15, rowMax = Math.ceil(H / TILE) + 15;
-
-    for (var col = colMin; col < colMax; col++) {
-      for (var row = rowMin; row < rowMax; row++) {
-        var cx = col * TILE + TILE / 2;
-        var cy = row * TILE + TILE / 2;
+    for (var col = -steps; col <= steps; col++) {
+      for (var row = -steps; row <= steps; row++) {
+        var cx = CX + col * TILE;
+        var cy = CY + row * TILE;
         var g  = document.createElementNS(NS, 'g');
 
         var outerR = TILE * 0.46;
@@ -648,15 +646,15 @@ function revealMoreCities() {
         dot.setAttribute('fill', 'rgba(255,255,255,0.4)');
         g.appendChild(dot);
 
-        svg.appendChild(g);
+        group.appendChild(g);
       }
     }
 
     // Diagonal cross connectors between tile centres
-    for (var col2 = colMin; col2 < colMax; col2++) {
-      for (var row2 = rowMin; row2 < rowMax; row2++) {
-        var cx2 = col2 * TILE + TILE / 2;
-        var cy2 = row2 * TILE + TILE / 2;
+    for (var col2 = -steps; col2 <= steps; col2++) {
+      for (var row2 = -steps; row2 <= steps; row2++) {
+        var cx2 = CX + col2 * TILE;
+        var cy2 = CY + row2 * TILE;
         var d   = TILE * 0.35;
 
         var d1 = document.createElementNS(NS, 'line');
@@ -664,27 +662,28 @@ function revealMoreCities() {
         d1.setAttribute('x2', (cx2 + d).toFixed(2)); d1.setAttribute('y2', (cy2 + d).toFixed(2));
         d1.setAttribute('stroke', 'rgba(255,255,255,0.04)');
         d1.setAttribute('stroke-width', '0.3');
-        svg.appendChild(d1);
+        group.appendChild(d1);
 
         var d2 = document.createElementNS(NS, 'line');
         d2.setAttribute('x1', (cx2 + d).toFixed(2)); d2.setAttribute('y1', (cy2 - d).toFixed(2));
         d2.setAttribute('x2', (cx2 - d).toFixed(2)); d2.setAttribute('y2', (cy2 + d).toFixed(2));
         d2.setAttribute('stroke', 'rgba(255,255,255,0.04)');
         d2.setAttribute('stroke-width', '0.3');
-        svg.appendChild(d2);
+        group.appendChild(d2);
       }
     }
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    var svg = document.getElementById('morocco-geo');
-    if (!svg || typeof gsap === 'undefined') return;
+    var svg   = document.getElementById('morocco-geo');
+    var group = document.getElementById('morocco-pattern-group');
+    if (!svg || !group || typeof gsap === 'undefined') return;
 
     var isMobile = window.innerWidth < 768;
 
-    generateMoroccanPattern(svg);
+    generateMoroccanPattern(group);
 
-    var stars = svg.querySelectorAll('.geo-star');
+    var stars = group.querySelectorAll('.geo-star');
 
     // Phase 1 — Draw in from centre outward
     gsap.set(stars, { opacity: 0 });
@@ -704,7 +703,7 @@ function revealMoreCities() {
     gsap.to('.hero-scroll-hint', { opacity: 1, y: 0, duration: 0.8, delay: 3.0, ease: 'power2.out' });
 
     // Phase 3 — Perpetual slow rotation around viewport centre
-    gsap.to('#morocco-geo', {
+    gsap.to('#morocco-pattern-group', {
       rotation: 360,
       svgOrigin: '720 450',
       duration: 180,
