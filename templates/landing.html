@@ -69,6 +69,7 @@
 
 <!-- Hero -->
 <section class="hero">
+  <canvas id="morocco-constellation" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:all;z-index:1;"></canvas>
   <div class="container">
     <div class="hero__inner">
       <div>
@@ -532,6 +533,327 @@ function revealMoreCities() {
     }, i * 60);
   });
 }
+</script>
+
+<script>
+/* ── Morocco Constellation ─────────────────────────────────────── */
+(function () {
+  var canvas = document.getElementById('morocco-constellation');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+
+  var CITIES = [
+    { name: 'Casablanca',  x: 0.32, y: 0.42, size: 5,   primary: true  },
+    { name: 'Rabat',       x: 0.30, y: 0.34, size: 4,   primary: true  },
+    { name: 'Marrakech',   x: 0.35, y: 0.58, size: 4,   primary: true  },
+    { name: 'Agadir',      x: 0.22, y: 0.68, size: 4,   primary: true  },
+    { name: 'Tanger',      x: 0.28, y: 0.18, size: 3.5, primary: true  },
+    { name: 'Fes',         x: 0.44, y: 0.30, size: 3.5, primary: true  },
+    { name: 'Oujda',       x: 0.62, y: 0.28, size: 3,   primary: false },
+    { name: 'Tétouan',     x: 0.33, y: 0.16, size: 3,   primary: false },
+    { name: 'Al Hoceima',  x: 0.50, y: 0.18, size: 2.5, primary: false },
+    { name: 'Meknès',      x: 0.40, y: 0.32, size: 2.5, primary: false },
+    { name: 'Essaouira',   x: 0.22, y: 0.56, size: 2.5, primary: false },
+    { name: 'El Jadida',   x: 0.26, y: 0.48, size: 2.5, primary: false },
+    { name: 'Ouarzazate',  x: 0.44, y: 0.64, size: 2.5, primary: false },
+    { name: 'Dakhla',      x: 0.20, y: 0.88, size: 2.5, primary: false },
+    { name: 'Laayoune',    x: 0.18, y: 0.76, size: 2.5, primary: false },
+    { name: 'Saidia',      x: 0.66, y: 0.22, size: 2,   primary: false },
+    { name: 'Nador',       x: 0.60, y: 0.20, size: 2,   primary: false },
+    { name: 'Kenitra',     x: 0.28, y: 0.36, size: 2,   primary: false },
+    { name: 'Ifrane',      x: 0.44, y: 0.38, size: 2,   primary: false },
+    { name: 'Merzouga',    x: 0.58, y: 0.62, size: 2,   primary: false },
+  ];
+
+  var CONNECTIONS_RAW = [
+    ['Casablanca','Rabat'],['Casablanca','El Jadida'],
+    ['Casablanca','Marrakech'],['Casablanca','Kenitra'],
+    ['Rabat','Kenitra'],['Rabat','Meknès'],['Rabat','Tanger'],
+    ['Tanger','Tétouan'],['Tétouan','Al Hoceima'],
+    ['Al Hoceima','Nador'],['Nador','Oujda'],['Oujda','Saidia'],
+    ['Meknès','Fes'],['Meknès','Ifrane'],['Fes','Ifrane'],
+    ['Fes','Al Hoceima'],['Marrakech','Essaouira'],
+    ['Marrakech','Agadir'],['Marrakech','Ouarzazate'],
+    ['Agadir','Essaouira'],['Agadir','Laayoune'],
+    ['Laayoune','Dakhla'],['Ouarzazate','Merzouga'],
+    ['El Jadida','Essaouira'],
+  ];
+
+  var CITY_HOTEL_COUNTS = {
+    'Casablanca':47,'Marrakech':68,'Agadir':32,'Rabat':18,'Tanger':22,
+    'Fes':15,'Oujda':8,'Tétouan':6,'Al Hoceima':5,'Meknès':7,
+    'Essaouira':9,'El Jadida':5,'Ouarzazate':6,'Dakhla':8,'Laayoune':4,
+    'Saidia':4,'Nador':3,'Kenitra':5,'Ifrane':4,'Merzouga':6,
+  };
+
+  // Build city index lookup
+  var cityMap = {};
+  CITIES.forEach(function (c, i) {
+    cityMap[c.name] = i;
+    c.opacity = 0; c.scale = 0;
+  });
+
+  var primaryCities   = CITIES.filter(function (c) { return c.primary; });
+  var secondaryCities = CITIES.filter(function (c) { return !c.primary; });
+
+  // Build connections with animation state
+  var CONNECTIONS = CONNECTIONS_RAW.map(function (pair) {
+    return { a: cityMap[pair[0]], b: cityMap[pair[1]], progress: 0 };
+  });
+
+  // Adjacency map: cityIndex → [connIndex, ...]
+  var adjacency = {};
+  CONNECTIONS.forEach(function (conn, ci) {
+    [conn.a, conn.b].forEach(function (idx) {
+      if (!adjacency[idx]) adjacency[idx] = [];
+      adjacency[idx].push(ci);
+    });
+  });
+
+  var W, H, isMobile;
+  var startTime = null;
+  var rafId = null;
+  var hoveredCity = -1;
+  var pulse = null;        // { connIdx, progress }
+  var lastPulseElapsed = 0;
+  var PULSE_INTERVAL = 3500;
+
+  // Tooltip element
+  var tooltip = document.createElement('div');
+  tooltip.style.cssText =
+    'position:absolute;pointer-events:none;' +
+    'background:rgba(20,20,20,0.9);border:1px solid #B87860;' +
+    'border-radius:999px;padding:4px 12px;' +
+    'font-family:"Space Mono",monospace;font-size:10px;' +
+    'text-transform:uppercase;letter-spacing:0.08em;color:#F0F0EE;' +
+    'white-space:nowrap;opacity:0;transition:opacity 180ms ease;' +
+    'z-index:10;transform:translateX(-50%);';
+  canvas.parentElement.appendChild(tooltip);
+
+  function resize() {
+    var rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width  = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    isMobile = W < 768;
+  }
+
+  function pos(city) {
+    return { x: city.x * W, y: city.y * H };
+  }
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function draw(ts) {
+    if (!startTime) startTime = ts;
+    var el = ts - startTime;
+    var idleEl = Math.max(0, el - 2000);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // ── Phase 1: animate dot opacities ──
+    CITIES.forEach(function (city, i) {
+      var t;
+      if (city.primary) {
+        var pi = primaryCities.indexOf(city);
+        t = Math.max(0, Math.min(1, (el - pi * 65) / 300));
+      } else {
+        var si = secondaryCities.indexOf(city);
+        t = Math.max(0, Math.min(1, (el - (400 + si * 22)) / 250));
+      }
+      city.opacity = easeOut(t);
+      city.scale   = easeOut(t);
+    });
+
+    // ── Phase 2: animate line progress ──
+    CONNECTIONS.forEach(function (conn, ci) {
+      var t = Math.max(0, Math.min(1, (el - (800 + ci * 50)) / 300));
+      conn.progress = easeOut(t);
+    });
+
+    // ── Phase 3: data pulse ──
+    if (idleEl > 300) {
+      if (!pulse && el - lastPulseElapsed > PULSE_INTERVAL) {
+        pulse = { connIdx: Math.floor(Math.random() * CONNECTIONS.length), progress: 0 };
+        lastPulseElapsed = el;
+      }
+      if (pulse) {
+        pulse.progress += 1 / 90; // 1.5 s at 60 fps
+        if (pulse.progress >= 1) pulse = null;
+      }
+    }
+
+    // ── Draw lines ──
+    CONNECTIONS.forEach(function (conn, ci) {
+      if (conn.progress <= 0) return;
+      var a = CITIES[conn.a], b = CITIES[conn.b];
+      var pa = pos(a), pb = pos(b);
+      var isHighlighted = hoveredCity !== -1 &&
+        adjacency[hoveredCity] && adjacency[hoveredCity].indexOf(ci) !== -1;
+
+      var baseAlpha = 0.25 + 0.08 * Math.sin(idleEl * 0.0012 + ci * 0.31);
+      var alpha = isHighlighted ? 0.7 : baseAlpha;
+      ctx.strokeStyle = 'rgba(184,120,96,' + alpha + ')';
+      ctx.lineWidth = isHighlighted ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(
+        pa.x + (pb.x - pa.x) * conn.progress,
+        pa.y + (pb.y - pa.y) * conn.progress
+      );
+      ctx.stroke();
+
+      // Data pulse dot travelling along complete line
+      if (pulse && pulse.connIdx === ci && conn.progress >= 1) {
+        var t = pulse.progress;
+        var px = pa.x + (pb.x - pa.x) * t;
+        var py = pa.y + (pb.y - pa.y) * t;
+        var grd = ctx.createRadialGradient(px, py, 0, px, py, 7);
+        grd.addColorStop(0, 'rgba(255,255,255,0.95)');
+        grd.addColorStop(0.35, 'rgba(184,120,96,0.75)');
+        grd.addColorStop(1, 'rgba(184,120,96,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    // ── Draw dots and labels ──
+    CITIES.forEach(function (city, i) {
+      if (city.opacity <= 0) return;
+      var p    = pos(city);
+      var base = isMobile ? city.size * 0.7 : city.size;
+      var isHovered = hoveredCity === i;
+
+      // Idle breathing
+      var breathAmp   = city.primary ? 0.05 : 0.03;
+      var breathFreq  = city.primary ? 0.0008 : 0.001;
+      var breathScale = 1 + breathAmp * Math.sin(idleEl * breathFreq + i * 0.7);
+      var breathAlpha = 0.7 + 0.3 * Math.sin(idleEl * breathFreq * 0.7 + i * 0.5);
+      if (idleEl === 0) { breathScale = 1; breathAlpha = 1; }
+
+      var dispScale   = city.scale * (idleEl > 0 ? breathScale : 1) * (isHovered ? 1.5 : 1);
+      var dispAlpha   = isHovered ? 1.0
+                        : city.primary ? (idleEl > 0 ? breathAlpha : city.opacity)
+                        : city.opacity * 0.5;
+      var r = base * dispScale;
+
+      // Glow for primary cities
+      if (city.primary) {
+        var glowR = r * 2.8;
+        var ga    = isHovered ? 0.5 : 0.3;
+        var grd   = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
+        grd.addColorStop(0, 'rgba(184,120,96,' + (ga * dispAlpha) + ')');
+        grd.addColorStop(1, 'rgba(184,120,96,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Core dot
+      var dotAlpha = city.primary ? dispAlpha : dispAlpha;
+      ctx.fillStyle = city.primary
+        ? 'rgba(240,240,238,' + dotAlpha + ')'
+        : 'rgba(240,240,238,' + (dispAlpha * 0.7) + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Labels (primary: fade in during idle; secondary: only on hover)
+      if (!isMobile) {
+        var labelAlpha = 0;
+        if (city.primary && idleEl > 0) {
+          labelAlpha = Math.min(1, idleEl / 600) * (isHovered ? 1.0 : 0.6);
+        } else if (!city.primary && isHovered) {
+          labelAlpha = 1.0;
+        }
+        if (labelAlpha > 0) {
+          ctx.fillStyle = 'rgba(240,240,238,' + labelAlpha + ')';
+          ctx.font = '9px "Space Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(city.name.toUpperCase(), p.x, p.y + base + 8);
+        }
+      }
+    });
+
+    rafId = requestAnimationFrame(draw);
+  }
+
+  // ── Hover / tooltip ──
+  canvas.addEventListener('mousemove', function (e) {
+    var rect = canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var closest = -1, minDist = 20;
+
+    CITIES.forEach(function (city, i) {
+      if (city.opacity < 0.5) return;
+      var p = pos(city);
+      var d = Math.hypot(mx - p.x, my - p.y);
+      if (d < minDist) { minDist = d; closest = i; }
+    });
+
+    hoveredCity = closest;
+    canvas.style.cursor = closest !== -1 ? 'pointer' : 'default';
+
+    if (closest !== -1) {
+      var city  = CITIES[closest];
+      var p     = pos(city);
+      var count = CITY_HOTEL_COUNTS[city.name] || '—';
+      tooltip.textContent  = city.name + ' · ' + count + ' HOTELS';
+      tooltip.style.left   = p.x + 'px';
+      tooltip.style.top    = (p.y - 36) + 'px';
+      tooltip.style.opacity = '1';
+    } else {
+      tooltip.style.opacity = '0';
+    }
+  });
+
+  canvas.addEventListener('mouseleave', function () {
+    hoveredCity = -1;
+    tooltip.style.opacity = '0';
+    canvas.style.cursor = 'default';
+  });
+
+  // ── Pause when off-screen ──
+  var hero = canvas.closest('.hero');
+  if (hero) {
+    var visObs = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) {
+        if (!rafId) rafId = requestAnimationFrame(draw);
+      } else {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    }, { threshold: 0.05 });
+    visObs.observe(hero);
+  }
+
+  // ── Resize ──
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      resize();
+      tooltip.style.opacity = '0';
+    }, 150);
+  });
+
+  resize();
+  rafId = requestAnimationFrame(draw);
+})();
 </script>
 
 </body>
