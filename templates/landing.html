@@ -32,7 +32,7 @@
 <!-- Fullscreen geometric hero -->
 <section class="hero-fullscreen">
   <div class="hero-geo-bg">
-    <svg id="morocco-geo" viewBox="-500 -500 3440 2900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"></svg>
+    <svg id="morocco-geo" viewBox="-1500 -1500 5440 4900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"></svg>
   </div>
   <div class="hero-overlay-content">
     <div class="hero-logo-mark">KŌDŌ</div>
@@ -533,16 +533,16 @@ function revealMoreCities() {
   'use strict';
 
   function generateMoroccanPattern(svg) {
-    var W    = 2440;
-    var H    = 1900;
+    var W    = 5440;
+    var H    = 4900;
     var TILE = window.innerWidth < 768 ? 70 : 100;
     var NS   = 'http://www.w3.org/2000/svg';
 
     // Clear any previous content
     while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-    var colMin = -5, colMax = Math.ceil(W / TILE) + 5;
-    var rowMin = -5, rowMax = Math.ceil(H / TILE) + 5;
+    var colMin = -15, colMax = Math.ceil(W / TILE) + 15;
+    var rowMin = -15, rowMax = Math.ceil(H / TILE) + 15;
 
     for (var col = colMin; col < colMax; col++) {
       for (var row = rowMin; row < rowMax; row++) {
@@ -703,10 +703,10 @@ function revealMoreCities() {
     gsap.to('.hero-tagline',     { opacity: 1, y: 0, duration: 0.8, delay: 2.4, ease: 'power2.out' });
     gsap.to('.hero-scroll-hint', { opacity: 1, y: 0, duration: 0.8, delay: 3.0, ease: 'power2.out' });
 
-    // Phase 3 — Perpetual slow rotation
+    // Phase 3 — Perpetual slow rotation around viewport centre
     gsap.to('#morocco-geo', {
       rotation: 360,
-      transformOrigin: '50% 50%',
+      svgOrigin: '720 450',
       duration: 180,
       repeat: -1,
       ease: 'none'
