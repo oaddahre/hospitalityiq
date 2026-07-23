@@ -32,7 +32,7 @@
 <!-- Fullscreen geometric hero -->
 <section class="hero-fullscreen">
   <div class="hero-geo-bg">
-    <svg id="morocco-geo" width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"></svg>
+    <svg id="morocco-geo" viewBox="-500 -500 3440 2900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;"></svg>
   </div>
   <div class="hero-overlay-content">
     <div class="hero-logo-mark">KŌDŌ</div>
@@ -421,20 +421,6 @@ window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.8);
 }, { passive: true });
 
-// ── Hero fade on scroll ───────────────────────────────────────
-window.addEventListener('scroll', () => {
-  const scrollY  = window.scrollY;
-  const geoBg    = document.querySelector('.hero-geo-bg');
-  const overlay  = document.querySelector('.hero-overlay-content');
-  const hint     = document.querySelector('.hero-scroll-hint');
-  if (scrollY < window.innerHeight) {
-    const opacity = Math.max(0, 1 - scrollY / (window.innerHeight * 0.7));
-    if (geoBg)   geoBg.style.opacity   = opacity;
-    if (overlay) overlay.style.opacity = opacity;
-    if (hint)    hint.style.opacity    = opacity;
-  }
-}, { passive: true });
-
 // ── Scroll-reveal (fade + slide up) ───────────────────────────
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -542,180 +528,229 @@ function revealMoreCities() {
 </script>
 
 <script>
-/* ── Morocco Geometric Pattern ─────────────────────────────────── */
+/* ── Morocco Geometric Pattern v2 ──────────────────────────────── */
 (function () {
-  var NS = 'http://www.w3.org/2000/svg';
+  'use strict';
 
-  function generateMoroccanPattern(svg, W, H, TILE_SIZE) {
-    var outerR = TILE_SIZE * 0.48;
-    var innerR = TILE_SIZE * 0.20;
+  function generateMoroccanPattern(svg) {
+    var W    = 2440;
+    var H    = 1900;
+    var TILE = window.innerWidth < 768 ? 70 : 100;
+    var NS   = 'http://www.w3.org/2000/svg';
 
-    for (var x = -TILE_SIZE; x < W + TILE_SIZE; x += TILE_SIZE) {
-      for (var y = -TILE_SIZE; y < H + TILE_SIZE; y += TILE_SIZE) {
-        var cx = x + TILE_SIZE / 2;
-        var cy = y + TILE_SIZE / 2;
+    // Clear any previous content
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-        // 8-pointed star (16 vertices alternating outer/inner radii)
-        var starPts = [];
+    var colMin = -5, colMax = Math.ceil(W / TILE) + 5;
+    var rowMin = -5, rowMax = Math.ceil(H / TILE) + 5;
+
+    for (var col = colMin; col < colMax; col++) {
+      for (var row = rowMin; row < rowMax; row++) {
+        var cx = col * TILE + TILE / 2;
+        var cy = row * TILE + TILE / 2;
+        var g  = document.createElementNS(NS, 'g');
+
+        var outerR = TILE * 0.46;
+        var midR   = TILE * 0.30;
+        var innerR = TILE * 0.18;
+
+        // Layer 1 — 12-pointed star
+        var pts12 = [];
+        for (var i = 0; i < 24; i++) {
+          var a = (i * Math.PI / 12) - Math.PI / 2;
+          var r = i % 2 === 0 ? outerR : midR;
+          pts12.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
+        }
+        var star12 = document.createElementNS(NS, 'polygon');
+        star12.setAttribute('points', pts12.join(' '));
+        star12.setAttribute('fill', 'none');
+        star12.setAttribute('stroke', 'rgba(255,255,255,0.18)');
+        star12.setAttribute('stroke-width', '0.7');
+        star12.classList.add('geo-star');
+        g.appendChild(star12);
+
+        // Layer 2 — 8-pointed star
+        var pts8 = [];
         for (var i = 0; i < 16; i++) {
-          var angle = (i * Math.PI / 8) - Math.PI / 2;
-          var r = i % 2 === 0 ? outerR : innerR;
-          starPts.push(
-            (cx + r * Math.cos(angle)).toFixed(2) + ',' +
-            (cy + r * Math.sin(angle)).toFixed(2)
-          );
+          var a = (i * Math.PI / 8) - Math.PI / 8;
+          var r = i % 2 === 0 ? midR * 0.9 : innerR;
+          pts8.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
         }
-        var star = document.createElementNS(NS, 'polygon');
-        star.setAttribute('points', starPts.join(' '));
-        star.setAttribute('fill', 'none');
-        star.setAttribute('stroke', 'rgba(184,120,96,0.15)');
-        star.setAttribute('stroke-width', '0.8');
-        star.classList.add('geo-star');
-        svg.appendChild(star);
+        var star8 = document.createElementNS(NS, 'polygon');
+        star8.setAttribute('points', pts8.join(' '));
+        star8.setAttribute('fill', 'none');
+        star8.setAttribute('stroke', 'rgba(255,255,255,0.25)');
+        star8.setAttribute('stroke-width', '0.6');
+        star8.classList.add('geo-star');
+        g.appendChild(star8);
 
-        // Inner octagon connecting star tips
-        var octPts = [];
-        for (var j = 0; j < 8; j++) {
-          var a2 = (j * Math.PI / 4) - Math.PI / 8;
-          octPts.push(
-            (cx + outerR * 0.6 * Math.cos(a2)).toFixed(2) + ',' +
-            (cy + outerR * 0.6 * Math.sin(a2)).toFixed(2)
-          );
+        // Layer 3 — Decorative diamond ring
+        var ptsD = [];
+        for (var i = 0; i < 8; i++) {
+          var a = i * Math.PI / 4;
+          var r = i % 2 === 0 ? midR * 0.65 : midR * 0.45;
+          ptsD.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
         }
-        var oct = document.createElementNS(NS, 'polygon');
-        oct.setAttribute('points', octPts.join(' '));
-        oct.setAttribute('fill', 'none');
-        oct.setAttribute('stroke', 'rgba(184,120,96,0.08)');
-        oct.setAttribute('stroke-width', '0.5');
-        svg.appendChild(oct);
+        var diamond = document.createElementNS(NS, 'polygon');
+        diamond.setAttribute('points', ptsD.join(' '));
+        diamond.setAttribute('fill', 'none');
+        diamond.setAttribute('stroke', 'rgba(255,255,255,0.12)');
+        diamond.setAttribute('stroke-width', '0.5');
+        g.appendChild(diamond);
 
-        // Centre intersection dot
+        // Layer 4 — Spoke lines
+        for (var i = 0; i < 12; i++) {
+          var a = (i * Math.PI / 6) - Math.PI / 2;
+          var ln = document.createElementNS(NS, 'line');
+          ln.setAttribute('x1', (cx + innerR * Math.cos(a)).toFixed(2));
+          ln.setAttribute('y1', (cy + innerR * Math.sin(a)).toFixed(2));
+          ln.setAttribute('x2', (cx + outerR * 0.55 * Math.cos(a)).toFixed(2));
+          ln.setAttribute('y2', (cy + outerR * 0.55 * Math.sin(a)).toFixed(2));
+          ln.setAttribute('stroke', 'rgba(255,255,255,0.08)');
+          ln.setAttribute('stroke-width', '0.4');
+          g.appendChild(ln);
+        }
+
+        // Layer 5 — Connecting arcs to adjacent tiles
+        for (var i = 0; i < 4; i++) {
+          var a  = i * Math.PI / 2;
+          var x1 = cx + outerR * Math.cos(a - 0.3);
+          var y1 = cy + outerR * Math.sin(a - 0.3);
+          var x2 = cx + outerR * Math.cos(a + 0.3);
+          var y2 = cy + outerR * Math.sin(a + 0.3);
+          var mx = cx + TILE * 0.5 * Math.cos(a);
+          var my = cy + TILE * 0.5 * Math.sin(a);
+          var arc = document.createElementNS(NS, 'path');
+          arc.setAttribute('d', 'M ' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+            ' Q ' + mx.toFixed(2) + ' ' + my.toFixed(2) +
+            ' ' + x2.toFixed(2) + ' ' + y2.toFixed(2));
+          arc.setAttribute('fill', 'none');
+          arc.setAttribute('stroke', 'rgba(255,255,255,0.10)');
+          arc.setAttribute('stroke-width', '0.5');
+          g.appendChild(arc);
+        }
+
+        // Layer 6 — Centre rosette circle
+        var ros = document.createElementNS(NS, 'circle');
+        ros.setAttribute('cx', cx.toFixed(2));
+        ros.setAttribute('cy', cy.toFixed(2));
+        ros.setAttribute('r', (innerR * 0.35).toFixed(2));
+        ros.setAttribute('fill', 'none');
+        ros.setAttribute('stroke', 'rgba(255,255,255,0.35)');
+        ros.setAttribute('stroke-width', '0.8');
+        g.appendChild(ros);
+
+        // Centre pinpoint dot
         var dot = document.createElementNS(NS, 'circle');
         dot.setAttribute('cx', cx.toFixed(2));
         dot.setAttribute('cy', cy.toFixed(2));
-        dot.setAttribute('r', '1.5');
-        dot.setAttribute('fill', 'rgba(184,120,96,0.3)');
-        dot.classList.add('geo-dot');
-        svg.appendChild(dot);
+        dot.setAttribute('r', '1.2');
+        dot.setAttribute('fill', 'rgba(255,255,255,0.4)');
+        g.appendChild(dot);
+
+        svg.appendChild(g);
       }
     }
 
-    // Faint grid lines connecting tile centres
-    for (var gx = 0; gx < W; gx += TILE_SIZE) {
-      for (var gy = 0; gy < H; gy += TILE_SIZE) {
-        var hLine = document.createElementNS(NS, 'line');
-        hLine.setAttribute('x1', gx);
-        hLine.setAttribute('y1', gy + TILE_SIZE / 2);
-        hLine.setAttribute('x2', gx + TILE_SIZE);
-        hLine.setAttribute('y2', gy + TILE_SIZE / 2);
-        hLine.setAttribute('stroke', 'rgba(184,120,96,0.06)');
-        hLine.setAttribute('stroke-width', '0.5');
-        svg.appendChild(hLine);
+    // Diagonal cross connectors between tile centres
+    for (var col2 = colMin; col2 < colMax; col2++) {
+      for (var row2 = rowMin; row2 < rowMax; row2++) {
+        var cx2 = col2 * TILE + TILE / 2;
+        var cy2 = row2 * TILE + TILE / 2;
+        var d   = TILE * 0.35;
 
-        var vLine = document.createElementNS(NS, 'line');
-        vLine.setAttribute('x1', gx + TILE_SIZE / 2);
-        vLine.setAttribute('y1', gy);
-        vLine.setAttribute('x2', gx + TILE_SIZE / 2);
-        vLine.setAttribute('y2', gy + TILE_SIZE);
-        vLine.setAttribute('stroke', 'rgba(184,120,96,0.06)');
-        vLine.setAttribute('stroke-width', '0.5');
-        svg.appendChild(vLine);
+        var d1 = document.createElementNS(NS, 'line');
+        d1.setAttribute('x1', (cx2 - d).toFixed(2)); d1.setAttribute('y1', (cy2 - d).toFixed(2));
+        d1.setAttribute('x2', (cx2 + d).toFixed(2)); d1.setAttribute('y2', (cy2 + d).toFixed(2));
+        d1.setAttribute('stroke', 'rgba(255,255,255,0.04)');
+        d1.setAttribute('stroke-width', '0.3');
+        svg.appendChild(d1);
+
+        var d2 = document.createElementNS(NS, 'line');
+        d2.setAttribute('x1', (cx2 + d).toFixed(2)); d2.setAttribute('y1', (cy2 - d).toFixed(2));
+        d2.setAttribute('x2', (cx2 - d).toFixed(2)); d2.setAttribute('y2', (cy2 + d).toFixed(2));
+        d2.setAttribute('stroke', 'rgba(255,255,255,0.04)');
+        d2.setAttribute('stroke-width', '0.3');
+        svg.appendChild(d2);
       }
     }
   }
 
-  function initGeoAnimation() {
+  document.addEventListener('DOMContentLoaded', function () {
     var svg = document.getElementById('morocco-geo');
     if (!svg || typeof gsap === 'undefined') return;
 
-    var W         = 1440;
-    var H         = 900;
-    var isMobile  = window.innerWidth < 768;
-    var TILE_SIZE = isMobile ? 80 : 120;
+    var isMobile = window.innerWidth < 768;
 
-    generateMoroccanPattern(svg, W, H, TILE_SIZE);
+    generateMoroccanPattern(svg);
 
-    // ── Phase 1: Stars draw in from centre (0 → 2 s) ─────────────
-    var DASHLEN = 900; // safely larger than any 16-pt star perimeter
-    gsap.set('.geo-star', { opacity: 0, strokeDasharray: DASHLEN, strokeDashoffset: DASHLEN });
-    gsap.to('.geo-star', {
+    var stars = svg.querySelectorAll('.geo-star');
+
+    // Phase 1 — Draw in from centre outward
+    gsap.set(stars, { opacity: 0 });
+    gsap.to(stars, {
       opacity: 1,
-      strokeDashoffset: 0,
-      duration: 1.5,
-      stagger: { amount: 1.5, from: 'center', grid: 'auto' },
+      duration: 0.8,
+      stagger: { amount: 2.0, from: 'center', grid: 'auto' },
       ease: 'power2.out'
     });
 
-    // ── Phase 2: Dots pop in (delay 1.5 s) ───────────────────────
-    gsap.set('.geo-dot', { opacity: 0, scale: 0, transformOrigin: '50% 50%' });
-    gsap.to('.geo-dot', {
-      opacity: 1,
-      scale: 2,
-      duration: 0.4,
-      stagger: { amount: 1, from: 'random' },
-      delay: 1.5,
-      ease: 'back.out(2)',
-      transformOrigin: '50% 50%'
-    });
-    gsap.to('.geo-dot', {
-      fill: '#B87860',
-      scale: 1,
-      duration: 0.5,
-      stagger: { amount: 0.5, from: 'random' },
-      delay: 2.3,
-      ease: 'power2.out',
-      transformOrigin: '50% 50%'
-    });
+    // Phase 2 — Hero text fades up
+    gsap.set('.hero-logo-mark',  { opacity: 0, y: 20 });
+    gsap.set('.hero-tagline',    { opacity: 0, y: 20 });
+    gsap.set('.hero-scroll-hint',{ opacity: 0, y: 10 });
+    gsap.to('.hero-logo-mark',   { opacity: 1, y: 0, duration: 0.8, delay: 2.0, ease: 'power2.out' });
+    gsap.to('.hero-tagline',     { opacity: 1, y: 0, duration: 0.8, delay: 2.4, ease: 'power2.out' });
+    gsap.to('.hero-scroll-hint', { opacity: 1, y: 0, duration: 0.8, delay: 3.0, ease: 'power2.out' });
 
-    // ── Phase 4: Idle ─────────────────────────────────────────────
-    // Slow whole-pattern rotation
+    // Phase 3 — Perpetual slow rotation
     gsap.to('#morocco-geo', {
       rotation: 360,
-      svgOrigin: '720 450',
-      duration: 140,
+      transformOrigin: '50% 50%',
+      duration: 180,
       repeat: -1,
-      ease: 'none',
-      delay: 2
+      ease: 'none'
     });
 
-    // Star breathing
+    // Phase 4 — Star breathing (perpetual)
     gsap.to('.geo-star', {
-      strokeOpacity: 0.3,
-      duration: 3,
-      stagger: { amount: 4, from: 'random' },
-      repeat: -1,
-      yoyo: true,
+      opacity: 0.35,
+      duration: 4,
+      stagger: { amount: 6, from: 'random' },
       ease: 'sine.inOut',
-      delay: 2
+      repeat: -1,
+      yoyo: true
     });
 
-    // Random bright dot pulse every 4 s
-    setTimeout(function () {
-      setInterval(function () {
-        var dots = document.querySelectorAll('.geo-dot');
-        if (!dots.length) return;
-        var d = dots[Math.floor(Math.random() * dots.length)];
-        gsap.timeline()
-          .to(d, { scale: 4, fill: '#F0F0EE', duration: 0.3, ease: 'back.out(2)', transformOrigin: '50% 50%' })
-          .to(d, { scale: 1, fill: '#B87860', duration: 0.6, ease: 'power2.in',   transformOrigin: '50% 50%' });
-      }, 4000);
-    }, 3500);
-
-    // Mouse parallax — desktop only
+    // Phase 5 — Mouse parallax (desktop only)
     if (!isMobile) {
       document.addEventListener('mousemove', function (e) {
-        var xPct = (e.clientX / window.innerWidth  - 0.5) * 15;
-        var yPct = (e.clientY / window.innerHeight - 0.5) * 15;
-        gsap.to('#morocco-geo', { x: xPct, y: yPct, duration: 1.5, ease: 'power2.out' });
+        var xPct = (e.clientX / window.innerWidth  - 0.5) * 20;
+        var yPct = (e.clientY / window.innerHeight - 0.5) * 20;
+        gsap.to('#morocco-geo', {
+          x: xPct, y: yPct,
+          duration: 2,
+          ease: 'power2.out',
+          overwrite: 'auto'
+        });
       });
     }
-  }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initGeoAnimation);
-  } else {
-    initGeoAnimation();
-  }
+    // Phase 6 — Scroll fade
+    window.addEventListener('scroll', function () {
+      var scrollY = window.scrollY;
+      var vh      = window.innerHeight;
+      if (scrollY < vh) {
+        var op      = Math.max(0, 1 - scrollY / (vh * 0.7));
+        var heroBg  = document.querySelector('.hero-geo-bg');
+        var heroTxt = document.querySelector('.hero-overlay-content');
+        var heroHnt = document.querySelector('.hero-scroll-hint');
+        if (heroBg)  heroBg.style.opacity  = op;
+        if (heroTxt) heroTxt.style.opacity = op;
+        if (heroHnt) heroHnt.style.opacity = op;
+      }
+    }, { passive: true });
+  });
 })();
 </script>
 
