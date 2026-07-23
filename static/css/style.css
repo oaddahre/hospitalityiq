@@ -435,6 +435,8 @@ body.light .nav-logout  { color: #8A8A8A; }
   width: 100%;
 }
 
+#screen-dashboard .kpi-value { font-size: 18px; }
+
 /* ─── Uppercase for all card values ──────────────────────────── */
 .kpi-value,
 .owner-stat-value,
@@ -1157,6 +1159,10 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 /* ─── Tourism screen ─────────────────────────────── */
+#screen-tourism .kpi-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .charts-row.tour-2col { grid-template-columns: 1fr 1fr; }
 
 .chart-year-tabs {
@@ -3548,7 +3554,9 @@ body.light .nav-logout  { color: #8A8A8A; }
   .screen-header { margin-bottom: 12px; }
   .screen-sub { font-size: 12px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  #screen-tourism .kpi-grid { grid-template-columns: repeat(3, 1fr); }
   .kpi-value { font-size: 20px; }
+  #screen-dashboard .kpi-value { font-size: 18px; }
   .kpi-card { padding: 10px 10px; }
   .brand-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; justify-items: stretch; }
   .hotels-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -3668,7 +3676,9 @@ body.light .nav-logout  { color: #8A8A8A; }
 @media (min-width: 768px) and (max-width: 1024px) {
   .main-content { padding: 20px 22px 40px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  #screen-tourism .kpi-grid { grid-template-columns: repeat(5, 1fr); }
   .kpi-value { font-size: 22px; }
+  #screen-dashboard .kpi-value { font-size: 18px; }
   .charts-row.tour-2col { grid-template-columns: 1fr; }
   .pipe-cards-grid { grid-template-columns: 1fr; }
   .bench-controls-row { grid-template-columns: 1fr; }
