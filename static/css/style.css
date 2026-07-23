@@ -403,7 +403,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .kpi-value {
   font-family: 'Space Mono', monospace;
   font-size: 24px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -609,7 +609,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .data-table tbody td:nth-child(n+3) {
   text-align: right;
   font-family: 'Space Mono', monospace;
-  font-weight: 500;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
@@ -752,7 +752,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hiq-popup-stat-val {
   font-family: 'Space Mono', monospace;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -1328,7 +1328,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .timeline-date__day {
   font-family: 'Space Mono', monospace;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   display: block;
   line-height: 1;
@@ -1679,7 +1679,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hotel-fin-val {
   font-family: 'Space Mono', monospace;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -1710,7 +1710,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .fin-range-meta { flex: 1; min-width: 0; }
 .fin-range-label { font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .fin-range-sub { font-family: 'Manrope', sans-serif; font-size: 10px; color: var(--text-muted); line-height: 1.4; }
-.fin-range-value { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); text-align: right; white-space: nowrap; flex-shrink: 0; }
+.fin-range-value { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 400; color: var(--accent); text-align: right; white-space: nowrap; flex-shrink: 0; }
 .fin-disclaimer { background: var(--surface); border-left: 2px solid var(--accent); padding: 8px 12px; margin: 0 20px 16px; font-family: 'Manrope', sans-serif; font-size: 10px; color: var(--text-muted); line-height: 1.5; }
 
 /* ── Rate source badge ── */
@@ -2023,7 +2023,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hbench-val {
   font-family: 'Space Mono', monospace;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   width: 80px;
   text-align: right;
@@ -2265,7 +2265,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   align-items: center;
   justify-content: center;
   font-family: 'Space Mono', monospace;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 20px;
   color: var(--bg);
   margin-bottom: 4px;
@@ -2636,7 +2636,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .pipe-card-year {
   font-family: 'Space Mono', monospace;
   font-size: 28px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-muted);
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -2653,7 +2653,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .pipe-card-metric-val, .pipe-metric-value {
   font-family: 'Space Mono', monospace;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -2947,7 +2947,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .ed-spons-logo-placeholder {
   width: 36px; height: 36px; background: var(--accent); border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: #0A0A0A;
+  font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 400; color: #0A0A0A;
 }
 .ed-spons-name {
   font-family: 'Manrope', sans-serif;
@@ -3295,14 +3295,14 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-kpi-title { font-family: var(--font-mono); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; }
 .bench-kpi-body { display: flex; align-items: center; gap: 8px; }
 .bench-kpi-mine { text-align: center; flex: 1; }
-.bench-kpi-mine-val { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 500; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-mine-val { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 400; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-mine-lbl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 400; margin-top: 3px; }
 .bench-kpi-sep { font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 400; color: var(--text-faint); flex-shrink: 0; }
 .bench-kpi-comp-blk { text-align: center; flex: 1; }
-.bench-kpi-comp-val { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-comp-val { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 400; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-comp-lbl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); font-weight: 400; margin-top: 3px; }
 .bench-kpi-index { text-align: center; padding: 6px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); flex-shrink: 0; min-width: 48px; }
-.bench-kpi-idx-val { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-idx-val { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-idx-lbl { font-family: var(--font-mono); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-top: 2px; }
 .bench-idx-green { background: rgba(90,138,90,0.10); border-color: rgba(90,138,90,0.25); }
 .bench-idx-green .bench-kpi-idx-val { color: var(--positive); }
@@ -3320,7 +3320,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 4px 11px; cursor: pointer; transition: color 0.14s, border-color 0.14s; line-height: 1;
 }
 .bench-cal-nav-btn:hover { color: var(--text); border-color: var(--accent); }
-.bench-cal-month-label { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); min-width: 130px; text-align: center; }
+.bench-cal-month-label { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 400; color: var(--text); min-width: 130px; text-align: center; }
 .bench-cal-view-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
 .bench-cal-view-btn {
   padding: 5px 14px; background: transparent; border: none; color: var(--text-muted);
@@ -3350,7 +3350,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-cal-day.bench-cal-empty   { background: transparent; border-color: transparent; }
 .bench-cal-day.bench-cal-nodata  { background: var(--surface-hover); opacity: 0.4; }
 .bench-cal-daynum { font-family: 'Manrope', sans-serif; font-size: 9px; font-weight: 400; opacity: 0.7; line-height: 1; }
-.bench-cal-dayval { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
+.bench-cal-dayval { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
 
 .bench-cal-tooltip {
   position: fixed; z-index: 1000;
@@ -3359,12 +3359,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-size: 12px; min-width: 160px; pointer-events: none;
   box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
-.bct-date { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.bct-date { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
 .bct-row  { display: flex; justify-content: space-between; gap: 16px; font-family: 'Manrope', sans-serif; color: var(--text-muted); font-size: 11px; margin-bottom: 2px; }
 .bct-row span:last-child { font-weight: 500; color: var(--text); }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
-.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
 
 .bench-ai-box { padding: 4px 0 8px; min-height: 60px; }
 .bench-loading { font-family: 'Manrope', sans-serif; color: var(--text-muted); font-size: 13px; padding: 12px 0; }
@@ -3392,7 +3392,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-insight-body { font-family: 'Manrope', sans-serif; font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
 .bench-insight-badge {
   display: inline-block; padding: 3px 9px; border-radius: 3px;
-  font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums;
+  font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums;
   align-self: flex-start; margin-top: 4px;
 }
 .bib-green { background: transparent; color: var(--positive); border: 1px solid rgba(90,138,90,0.40); }
@@ -3975,7 +3975,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   justify-content: center;
   font-family: 'Space Mono', monospace;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
   color: #fff;
   flex-shrink: 0;
 }
@@ -4014,7 +4014,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .brn-kpi-val {
   font-family: 'Space Mono', monospace;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
@@ -4134,7 +4134,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .brn-mkt-pct {
   font-family: 'Space Mono', monospace;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
@@ -4170,7 +4170,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .brni-value {
   font-family: 'Space Mono', monospace;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--accent);
   line-height: 1.2;
 }

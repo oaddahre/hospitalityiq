@@ -91,7 +91,7 @@ function getOwnerLogoImg(ownerName, size) {
     return '<img src="https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
   }
   var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#B87860;border-radius:4px;font-family:Space Mono,monospace;font-weight:700;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#B87860;border-radius:4px;font-family:Space Mono,monospace;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
 }
 
 function ownerTypeBadge(type) {
@@ -157,7 +157,7 @@ function getBrandLogoImg(brandGroup, size=24) {
   }
   const custom = BRAND_CUSTOM_LOGOS[brandGroup];
   if (custom) {
-    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:' + custom.bg + ';color:' + custom.color + ';border-radius:4px;font-family:Space Mono,monospace;font-weight:700;font-size:' + Math.round(size*0.55) + 'px;flex-shrink:0;vertical-align:middle;margin-right:6px;">' + custom.letter + '</span>';
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:' + custom.bg + ';color:' + custom.color + ';border-radius:4px;font-family:Space Mono,monospace;font-weight:400;font-size:' + Math.round(size*0.55) + 'px;flex-shrink:0;vertical-align:middle;margin-right:6px;">' + custom.letter + '</span>';
   }
   const domain = BRAND_DOMAINS[brandGroup];
   if (!domain) return '';
@@ -184,7 +184,7 @@ function getSegmentBadgeHtml(segment) {
     'Economy':       { bg: 'rgba(100,100,100,0.12)', color: '#666666', border: '#666666' },
   };
   const c = colors[segment] || { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' };
-  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:999px;font-family:Space Mono,monospace;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
+  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:999px;font-family:Space Mono,monospace;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
 }
 
 const CITY_COORDS = {
@@ -4296,7 +4296,7 @@ async function initReports() {
         <button class="report-generate-btn" data-city="${cityMeta.city}"
           style="width:100%;padding:9px;background:${canGenerate?'var(--accent)':'var(--border)'};
           color:${canGenerate?'#0A0A0A':'var(--muted)'};border:none;cursor:pointer;
-          font-family:Space Mono,monospace;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+          font-family:Space Mono,monospace;font-size:0.75rem;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;
           display:flex;align-items:center;justify-content:center;">
           ${lockIcon}Generate Dark Report
         </button>
