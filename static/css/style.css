@@ -63,14 +63,15 @@ body {
 }
 
 /* ─── Typography ─────────────────────────────────── */
-h1, h2, h3, h4,
+h1, h2, h3, h4, h5, h6,
 .ph h1, .screen-header h1,
 .ct, .card-title, .kpi-label-title,
 .screen-title, .section-title,
 .chart-title, .brand-name, .brand-about-title,
 .hotel-name, .pipeline-card-name, .owner-name,
 .landing-hero-title, .pricing-tier-name,
-.article-title, .feature-title {
+.article-title, .feature-title,
+.nav-logo, .hero-logo-mark {
   font-family: 'Manrope', sans-serif;
   font-weight: 400;
   letter-spacing: 0;

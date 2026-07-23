@@ -1822,7 +1822,7 @@ function renderTourismEvents() {
 
   if (!sorted.length) {
     document.getElementById('events-container').innerHTML =
-      '<p style="padding:24px 20px;font-family:\'Inter\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
+      '<p style="padding:24px 20px;font-family:\'Manrope\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
     return;
   }
 
@@ -4691,7 +4691,7 @@ function renderOwnerCards() {
           getOwnerLogoImg(o.name, 40) +
           '<div>' +
             '<div style="font-family:Manrope,sans-serif;font-size:17px;font-weight:400;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
-            '<div style="font-family:\'Inter\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">' + fmt.esc(o.parent || '') + '</div>' +
+            '<div style="font-family:\'Manrope\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">' + fmt.esc(o.parent || '') + '</div>' +
           '</div>' +
         '</div>' +
         ownerTypeBadge(o.type || 'Private') +
@@ -4702,7 +4702,7 @@ function renderOwnerCards() {
         '<div class="owner-stat-item"><span class="owner-stat-label">Cities</span><span class="owner-stat-value">' + (o.cities || []).length + '</span></div>' +
         '<div class="owner-stat-item"><span class="owner-stat-label">Operators</span><span class="owner-stat-value">' + (o.brands_operated || []).length + '</span></div>' +
       '</div>' +
-      '<div style="font-family:\'Inter\',sans-serif;font-size:10px;color:var(--text-muted)">' +
+      '<div style="font-family:\'Manrope\',sans-serif;font-size:10px;color:var(--text-muted)">' +
         (cities ? '<span style="color:var(--text-faint)">Cities: </span>' + fmt.esc(cities) : '') +
       '</div>' +
     '</div>';
@@ -4734,8 +4734,8 @@ function renderOwnerDetail(o) {
         '<h1 style="font-family:Manrope,sans-serif;font-size:26px;font-weight:400;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
           ownerTypeBadge(o.type || 'Private') +
-          (o.parent ? '<span style="font-family:\'Inter\',sans-serif;font-size:11px;color:var(--text-muted)">' + fmt.esc(o.parent) + '</span>' : '') +
-          (o.headquarters ? '<span style="font-family:\'Inter\',sans-serif;font-size:11px;color:var(--text-faint)">· ' + fmt.esc(o.headquarters) + '</span>' : '') +
+          (o.parent ? '<span style="font-family:\'Manrope\',sans-serif;font-size:11px;color:var(--text-muted)">' + fmt.esc(o.parent) + '</span>' : '') +
+          (o.headquarters ? '<span style="font-family:\'Manrope\',sans-serif;font-size:11px;color:var(--text-faint)">· ' + fmt.esc(o.headquarters) + '</span>' : '') +
         '</div>' +
       '</div>' +
     '</div>';
@@ -4744,7 +4744,7 @@ function renderOwnerDetail(o) {
   if (o.description) {
     document.getElementById('owner-about-slot').innerHTML =
       '<div class="brand-about-card" style="margin-bottom:20px">' +
-        '<p style="font-family:\'Inter\',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;margin:0">' + fmt.esc(o.description) + '</p>' +
+        '<p style="font-family:\'Manrope\',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;margin:0">' + fmt.esc(o.description) + '</p>' +
       '</div>';
   } else {
     document.getElementById('owner-about-slot').innerHTML = '';
