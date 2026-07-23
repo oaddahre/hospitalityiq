@@ -4,7 +4,7 @@
  * team.html, and contact.html exactly as they appear in the HTML.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -62,7 +62,7 @@ body {
 
 /* ── Typography ────────────────────────────────────────────── */
 .t-display {
-  font-family: 'Fraunces', serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 400;
   font-size: clamp(2rem, 4.5vw, 3.2rem);
   line-height: 1.1;
@@ -70,7 +70,7 @@ body {
   color: #F0F0EE;
 }
 .t-headline {
-  font-family: 'Fraunces', serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 400;
   font-size: clamp(1.5rem, 3vw, 2rem);
   line-height: 1.2;
@@ -185,11 +185,11 @@ body {
 }
 .mk-nav__logo { text-decoration: none; flex-shrink: 0; }
 .mk-nav__logo-text {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: 'Manrope', sans-serif;
+  font-style: normal;
+  font-weight: 800;
   font-size: 16px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: #F0F0EE;
 }
 .mk-nav__links {
@@ -302,7 +302,7 @@ body {
   display: block;
 }
 .hero__title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 400;
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.1;
@@ -899,11 +899,11 @@ body {
   font-size: 12px; font-weight: 700;
 }
 .mk-footer__logo-text {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: 'Manrope', sans-serif;
+  font-style: normal;
+  font-weight: 800;
   font-size: 15px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: #F0F0EE;
 }
 .mk-footer__tagline {

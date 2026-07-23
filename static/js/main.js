@@ -4281,7 +4281,7 @@ async function initReports() {
       const lockIcon = canGenerate ? '' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 
       card.innerHTML = `
-        <div style="font-family:Fraunces,serif;font-size:1.25rem;font-weight:400;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
+        <div style="font-family:Manrope,sans-serif;font-size:1.25rem;font-weight:400;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
         <div style="font-size:0.75rem;color:var(--muted);margin-bottom:12px;">Morocco Hotel Market</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" class="report-period-pills">${periodsHTML}</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;" class="report-theme-pills">
@@ -4690,7 +4690,7 @@ function renderOwnerCards() {
         '<div style="display:flex;align-items:center">' +
           getOwnerLogoImg(o.name, 40) +
           '<div>' +
-            '<div style="font-family:Fraunces,serif;font-size:17px;font-weight:400;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
+            '<div style="font-family:Manrope,sans-serif;font-size:17px;font-weight:400;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
             '<div style="font-family:\'Inter\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">' + fmt.esc(o.parent || '') + '</div>' +
           '</div>' +
         '</div>' +
@@ -4731,7 +4731,7 @@ function renderOwnerDetail(o) {
     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">' +
       getOwnerLogoImg(o.name, 52) +
       '<div>' +
-        '<h1 style="font-family:Fraunces,serif;font-size:26px;font-weight:400;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
+        '<h1 style="font-family:Manrope,sans-serif;font-size:26px;font-weight:400;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
           ownerTypeBadge(o.type || 'Private') +
           (o.parent ? '<span style="font-family:\'Inter\',sans-serif;font-size:11px;color:var(--text-muted)">' + fmt.esc(o.parent) + '</span>' : '') +
