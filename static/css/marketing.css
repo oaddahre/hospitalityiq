@@ -374,31 +374,41 @@ body {
 
 /* ── Hero content section (first scroll destination) ───────── */
 .hero-content-section {
-  background: #FFFFFF;
+  background: #0A0A0A;
   padding: 80px 0;
   position: relative;
   z-index: 3;
 }
 .hero-content-section .hero__eyebrow { color: #B87860; }
-.hero-content-section .hero__title {
-  background: none;
-  -webkit-text-fill-color: #0A0A0A;
-  color: #0A0A0A;
-  animation: none;
-}
-.hero-content-section .hero__title em {
-  -webkit-text-fill-color: #B87860;
-  color: #B87860;
-  font-style: italic;
-}
-.hero-content-section .hero__body { color: #444444; }
+.hero-content-section .hero__body { color: rgba(240,240,238,0.6); }
 .hero-content-section .hero__stat {
-  background: #F5F5F5;
-  border-color: #E0E0E0;
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
 }
-.hero-content-section .hero__stat-value { color: #0A0A0A; }
-.hero-content-section .hero__stat-label { color: #777777; }
-.hero-content-section .hero__note { color: #AAAAAA; }
+.hero-content-section .hero__stat-value { color: #F0F0EE; }
+.hero-content-section .hero__stat-label { color: rgba(240,240,238,0.5); }
+.hero-content-section .hero__note { color: rgba(240,240,238,0.35); }
+
+/* Shimmer headline — double-class beats .hero__title specificity */
+.hero__title.hero-headline-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(240,240,238,0.5) 0%,
+    rgba(240,240,238,1.0) 30%,
+    rgba(184,120,96,1.0)  50%,
+    rgba(240,240,238,1.0) 70%,
+    rgba(240,240,238,0.5) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerText 4s linear infinite;
+}
+@keyframes shimmerText {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
 
 /* ── Legacy .hero (no longer fullscreen — kept for fallback) ── */
 .hero { background: #0A0A0A; padding: 80px 0; position: relative; overflow: hidden; }
