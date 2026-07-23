@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -24,7 +24,9 @@
   --radius:        6px;
   --radius-sm:     4px;
   --font:          'Inter', system-ui, sans-serif;
-  --heading:       'Geist Mono', monospace;
+  --font-body:     'Inter', sans-serif;
+  --font-heading:  'Instrument Serif', serif;
+  --heading:       'Instrument Serif', serif;
   --font-mono:     'Geist Mono', monospace;
   --font-numeric:  'Geist Mono', monospace;
 }
@@ -61,10 +63,37 @@ body {
 }
 
 /* ─── Typography ─────────────────────────────────── */
-h1, h2, h3, .ph h1, .screen-header h1, .ct, .card-title, .kpi-label-title {
-  font-family: 'Geist Mono', monospace;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+h1, h2, h3, h4,
+.ph h1, .screen-header h1,
+.ct, .card-title, .kpi-label-title,
+.screen-title, .section-title,
+.chart-title, .brand-name, .brand-about-title,
+.hotel-name, .pipeline-card-name, .owner-name,
+.landing-hero-title, .pricing-tier-name,
+.article-title, .feature-title {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+body,
+.nav-link,
+.btn,
+button,
+p,
+.description,
+.brand-about-body, .brand-description, .brand-card-teaser,
+.search-result-name, .search-result-meta,
+.hotel-detail-description, .owner-description,
+.kpi-sub,
+.sidebar-item,
+.filter-pill,
+.dropdown,
+input, textarea, select,
+.form-label, .form-input,
+.tab-item,
+.news-excerpt, .methodology-body {
+  font-family: 'Inter', sans-serif;
 }
 
 /* ─── Navbar ─────────────────────────────────────── */
@@ -90,12 +119,12 @@ h1, h2, h3, .ph h1, .screen-header h1, .ct, .card-title, .kpi-label-title {
 .logo-mark { display: none; }
 
 .logo-text {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
   font-size: 16px;
-  font-weight: 700;
   color: #F0F0EE;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .navbar-links { display: flex; gap: 0; }
