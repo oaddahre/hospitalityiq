@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
 
@@ -28,12 +29,14 @@
   </div>
 </nav>
 
-<!-- Fullscreen constellation hero -->
+<!-- Fullscreen geometric hero -->
 <section class="hero-fullscreen">
-  <canvas id="morocco-constellation"></canvas>
+  <div class="hero-geo-bg">
+    <svg id="morocco-geo" width="100%" height="100%" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"></svg>
+  </div>
   <div class="hero-overlay-content">
     <div class="hero-logo-mark">KŌDŌ</div>
-    <div class="hero-tagline">Morocco Hotel Intelligence</div>
+    <div class="hero-tagline">The Data Layer for Moroccan Hospitality</div>
   </div>
   <div class="hero-scroll-hint">
     <span>Scroll to explore</span>
@@ -418,15 +421,15 @@ window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.8);
 }, { passive: true });
 
-// ── Constellation fade on scroll ──────────────────────────────
+// ── Hero fade on scroll ───────────────────────────────────────
 window.addEventListener('scroll', () => {
-  const scrollY = window.scrollY;
-  const canvas  = document.getElementById('morocco-constellation');
-  const overlay = document.querySelector('.hero-overlay-content');
-  const hint    = document.querySelector('.hero-scroll-hint');
+  const scrollY  = window.scrollY;
+  const geoBg    = document.querySelector('.hero-geo-bg');
+  const overlay  = document.querySelector('.hero-overlay-content');
+  const hint     = document.querySelector('.hero-scroll-hint');
   if (scrollY < window.innerHeight) {
     const opacity = Math.max(0, 1 - scrollY / (window.innerHeight * 0.7));
-    if (canvas)  canvas.style.opacity  = opacity;
+    if (geoBg)   geoBg.style.opacity   = opacity;
     if (overlay) overlay.style.opacity = opacity;
     if (hint)    hint.style.opacity    = opacity;
   }
@@ -539,323 +542,180 @@ function revealMoreCities() {
 </script>
 
 <script>
-/* ── Morocco Constellation ─────────────────────────────────────── */
+/* ── Morocco Geometric Pattern ─────────────────────────────────── */
 (function () {
-  var canvas = document.getElementById('morocco-constellation');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
+  var NS = 'http://www.w3.org/2000/svg';
 
-  var CITIES = [
-    { name: 'Casablanca',  x: 0.35, y: 0.48, size: 6,   primary: true  },
-    { name: 'Rabat',       x: 0.33, y: 0.38, size: 5,   primary: true  },
-    { name: 'Marrakech',   x: 0.38, y: 0.62, size: 5,   primary: true  },
-    { name: 'Agadir',      x: 0.25, y: 0.72, size: 5,   primary: true  },
-    { name: 'Tanger',      x: 0.30, y: 0.18, size: 4.5, primary: true  },
-    { name: 'Fes',         x: 0.50, y: 0.28, size: 4.5, primary: true  },
-    { name: 'Oujda',       x: 0.68, y: 0.26, size: 3.5, primary: false },
-    { name: 'Tétouan',     x: 0.36, y: 0.14, size: 3.5, primary: false },
-    { name: 'Al Hoceima',  x: 0.54, y: 0.16, size: 3,   primary: false },
-    { name: 'Meknès',      x: 0.44, y: 0.32, size: 3,   primary: false },
-    { name: 'Essaouira',   x: 0.24, y: 0.60, size: 3,   primary: false },
-    { name: 'El Jadida',   x: 0.28, y: 0.52, size: 3,   primary: false },
-    { name: 'Ouarzazate',  x: 0.48, y: 0.68, size: 3,   primary: false },
-    { name: 'Dakhla',      x: 0.22, y: 0.90, size: 3,   primary: false },
-    { name: 'Laayoune',    x: 0.20, y: 0.80, size: 3,   primary: false },
-    { name: 'Saidia',      x: 0.72, y: 0.20, size: 2.5, primary: false },
-    { name: 'Nador',       x: 0.64, y: 0.18, size: 2.5, primary: false },
-    { name: 'Kenitra',     x: 0.30, y: 0.40, size: 2.5, primary: false },
-    { name: 'Ifrane',      x: 0.48, y: 0.36, size: 2.5, primary: false },
-    { name: 'Merzouga',    x: 0.62, y: 0.66, size: 2.5, primary: false },
-  ];
+  function generateMoroccanPattern(svg, W, H, TILE_SIZE) {
+    var outerR = TILE_SIZE * 0.48;
+    var innerR = TILE_SIZE * 0.20;
 
-  var CONNECTIONS_RAW = [
-    ['Casablanca','Rabat'],['Casablanca','El Jadida'],
-    ['Casablanca','Marrakech'],['Casablanca','Kenitra'],
-    ['Rabat','Kenitra'],['Rabat','Meknès'],['Rabat','Tanger'],
-    ['Tanger','Tétouan'],['Tétouan','Al Hoceima'],
-    ['Al Hoceima','Nador'],['Nador','Oujda'],['Oujda','Saidia'],
-    ['Meknès','Fes'],['Meknès','Ifrane'],['Fes','Ifrane'],
-    ['Fes','Al Hoceima'],['Marrakech','Essaouira'],
-    ['Marrakech','Agadir'],['Marrakech','Ouarzazate'],
-    ['Agadir','Essaouira'],['Agadir','Laayoune'],
-    ['Laayoune','Dakhla'],['Ouarzazate','Merzouga'],
-    ['El Jadida','Essaouira'],
-  ];
+    for (var x = -TILE_SIZE; x < W + TILE_SIZE; x += TILE_SIZE) {
+      for (var y = -TILE_SIZE; y < H + TILE_SIZE; y += TILE_SIZE) {
+        var cx = x + TILE_SIZE / 2;
+        var cy = y + TILE_SIZE / 2;
 
-  var CITY_HOTEL_COUNTS = {
-    'Casablanca':47,'Marrakech':68,'Agadir':32,'Rabat':18,'Tanger':22,
-    'Fes':15,'Oujda':8,'Tétouan':6,'Al Hoceima':5,'Meknès':7,
-    'Essaouira':9,'El Jadida':5,'Ouarzazate':6,'Dakhla':8,'Laayoune':4,
-    'Saidia':4,'Nador':3,'Kenitra':5,'Ifrane':4,'Merzouga':6,
-  };
+        // 8-pointed star (16 vertices alternating outer/inner radii)
+        var starPts = [];
+        for (var i = 0; i < 16; i++) {
+          var angle = (i * Math.PI / 8) - Math.PI / 2;
+          var r = i % 2 === 0 ? outerR : innerR;
+          starPts.push(
+            (cx + r * Math.cos(angle)).toFixed(2) + ',' +
+            (cy + r * Math.sin(angle)).toFixed(2)
+          );
+        }
+        var star = document.createElementNS(NS, 'polygon');
+        star.setAttribute('points', starPts.join(' '));
+        star.setAttribute('fill', 'none');
+        star.setAttribute('stroke', 'rgba(184,120,96,0.15)');
+        star.setAttribute('stroke-width', '0.8');
+        star.classList.add('geo-star');
+        svg.appendChild(star);
 
-  // Build city index lookup
-  var cityMap = {};
-  CITIES.forEach(function (c, i) {
-    cityMap[c.name] = i;
-    c.opacity = 0; c.scale = 0;
-  });
+        // Inner octagon connecting star tips
+        var octPts = [];
+        for (var j = 0; j < 8; j++) {
+          var a2 = (j * Math.PI / 4) - Math.PI / 8;
+          octPts.push(
+            (cx + outerR * 0.6 * Math.cos(a2)).toFixed(2) + ',' +
+            (cy + outerR * 0.6 * Math.sin(a2)).toFixed(2)
+          );
+        }
+        var oct = document.createElementNS(NS, 'polygon');
+        oct.setAttribute('points', octPts.join(' '));
+        oct.setAttribute('fill', 'none');
+        oct.setAttribute('stroke', 'rgba(184,120,96,0.08)');
+        oct.setAttribute('stroke-width', '0.5');
+        svg.appendChild(oct);
 
-  var primaryCities   = CITIES.filter(function (c) { return c.primary; });
-  var secondaryCities = CITIES.filter(function (c) { return !c.primary; });
-
-  // Build connections with animation state
-  var CONNECTIONS = CONNECTIONS_RAW.map(function (pair) {
-    return { a: cityMap[pair[0]], b: cityMap[pair[1]], progress: 0 };
-  });
-
-  // Adjacency map: cityIndex → [connIndex, ...]
-  var adjacency = {};
-  CONNECTIONS.forEach(function (conn, ci) {
-    [conn.a, conn.b].forEach(function (idx) {
-      if (!adjacency[idx]) adjacency[idx] = [];
-      adjacency[idx].push(ci);
-    });
-  });
-
-  var W, H, isMobile;
-  var startTime = null;
-  var rafId = null;
-  var hoveredCity = -1;
-  var pulse = null;        // { connIdx, progress }
-  var lastPulseElapsed = 0;
-  var PULSE_INTERVAL = 3500;
-
-  // Tooltip element
-  var tooltip = document.createElement('div');
-  tooltip.style.cssText =
-    'position:absolute;pointer-events:none;' +
-    'background:rgba(20,20,20,0.9);border:1px solid #B87860;' +
-    'border-radius:999px;padding:4px 12px;' +
-    'font-family:"Space Mono",monospace;font-size:10px;' +
-    'text-transform:uppercase;letter-spacing:0.08em;color:#F0F0EE;' +
-    'white-space:nowrap;opacity:0;transition:opacity 180ms ease;' +
-    'z-index:10;transform:translateX(-50%);';
-  canvas.parentElement.appendChild(tooltip);
-
-  function resize() {
-    var rect = canvas.parentElement.getBoundingClientRect();
-    W = rect.width;
-    H = rect.height;
-    var dpr = window.devicePixelRatio || 1;
-    canvas.width  = Math.round(W * dpr);
-    canvas.height = Math.round(H * dpr);
-    canvas.style.width  = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    isMobile = W < 768;
-  }
-
-  function pos(city) {
-    return { x: city.x * W, y: city.y * H };
-  }
-
-  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
-
-  function draw(ts) {
-    if (!startTime) startTime = ts;
-    var el = ts - startTime;
-    var idleEl = Math.max(0, el - 2000);
-
-    ctx.clearRect(0, 0, W, H);
-
-    // ── Phase 1: animate dot opacities ──
-    CITIES.forEach(function (city, i) {
-      var t;
-      if (city.primary) {
-        var pi = primaryCities.indexOf(city);
-        t = Math.max(0, Math.min(1, (el - pi * 65) / 300));
-      } else {
-        var si = secondaryCities.indexOf(city);
-        t = Math.max(0, Math.min(1, (el - (400 + si * 22)) / 250));
-      }
-      city.opacity = easeOut(t);
-      city.scale   = easeOut(t);
-    });
-
-    // ── Phase 2: animate line progress ──
-    CONNECTIONS.forEach(function (conn, ci) {
-      var t = Math.max(0, Math.min(1, (el - (800 + ci * 50)) / 300));
-      conn.progress = easeOut(t);
-    });
-
-    // ── Phase 3: data pulse ──
-    if (idleEl > 300) {
-      if (!pulse && el - lastPulseElapsed > PULSE_INTERVAL) {
-        pulse = { connIdx: Math.floor(Math.random() * CONNECTIONS.length), progress: 0 };
-        lastPulseElapsed = el;
-      }
-      if (pulse) {
-        pulse.progress += 1 / 90; // 1.5 s at 60 fps
-        if (pulse.progress >= 1) pulse = null;
+        // Centre intersection dot
+        var dot = document.createElementNS(NS, 'circle');
+        dot.setAttribute('cx', cx.toFixed(2));
+        dot.setAttribute('cy', cy.toFixed(2));
+        dot.setAttribute('r', '1.5');
+        dot.setAttribute('fill', 'rgba(184,120,96,0.3)');
+        dot.classList.add('geo-dot');
+        svg.appendChild(dot);
       }
     }
 
-    // ── Draw lines ──
-    CONNECTIONS.forEach(function (conn, ci) {
-      if (conn.progress <= 0) return;
-      var a = CITIES[conn.a], b = CITIES[conn.b];
-      var pa = pos(a), pb = pos(b);
-      var isHighlighted = hoveredCity !== -1 &&
-        adjacency[hoveredCity] && adjacency[hoveredCity].indexOf(ci) !== -1;
+    // Faint grid lines connecting tile centres
+    for (var gx = 0; gx < W; gx += TILE_SIZE) {
+      for (var gy = 0; gy < H; gy += TILE_SIZE) {
+        var hLine = document.createElementNS(NS, 'line');
+        hLine.setAttribute('x1', gx);
+        hLine.setAttribute('y1', gy + TILE_SIZE / 2);
+        hLine.setAttribute('x2', gx + TILE_SIZE);
+        hLine.setAttribute('y2', gy + TILE_SIZE / 2);
+        hLine.setAttribute('stroke', 'rgba(184,120,96,0.06)');
+        hLine.setAttribute('stroke-width', '0.5');
+        svg.appendChild(hLine);
 
-      var baseAlpha = 0.25 + 0.08 * Math.sin(idleEl * 0.0012 + ci * 0.31);
-      var alpha = isHighlighted ? 0.7 : baseAlpha;
-      ctx.strokeStyle = 'rgba(184,120,96,' + alpha + ')';
-      ctx.lineWidth = isHighlighted ? 1.5 : 1;
-      ctx.beginPath();
-      ctx.moveTo(pa.x, pa.y);
-      ctx.lineTo(
-        pa.x + (pb.x - pa.x) * conn.progress,
-        pa.y + (pb.y - pa.y) * conn.progress
-      );
-      ctx.stroke();
-
-      // Data pulse dot travelling along complete line
-      if (pulse && pulse.connIdx === ci && conn.progress >= 1) {
-        var t = pulse.progress;
-        var px = pa.x + (pb.x - pa.x) * t;
-        var py = pa.y + (pb.y - pa.y) * t;
-        var grd = ctx.createRadialGradient(px, py, 0, px, py, 7);
-        grd.addColorStop(0, 'rgba(255,255,255,0.95)');
-        grd.addColorStop(0.35, 'rgba(184,120,96,0.75)');
-        grd.addColorStop(1, 'rgba(184,120,96,0)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(px, py, 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
-        ctx.fill();
+        var vLine = document.createElementNS(NS, 'line');
+        vLine.setAttribute('x1', gx + TILE_SIZE / 2);
+        vLine.setAttribute('y1', gy);
+        vLine.setAttribute('x2', gx + TILE_SIZE / 2);
+        vLine.setAttribute('y2', gy + TILE_SIZE);
+        vLine.setAttribute('stroke', 'rgba(184,120,96,0.06)');
+        vLine.setAttribute('stroke-width', '0.5');
+        svg.appendChild(vLine);
       }
-    });
-
-    // ── Draw dots and labels ──
-    CITIES.forEach(function (city, i) {
-      if (city.opacity <= 0) return;
-      var p    = pos(city);
-      var base = isMobile ? city.size * 0.6 : city.size;
-      var isHovered = hoveredCity === i;
-
-      // Idle breathing
-      var breathAmp   = city.primary ? 0.05 : 0.03;
-      var breathFreq  = city.primary ? 0.0008 : 0.001;
-      var breathScale = 1 + breathAmp * Math.sin(idleEl * breathFreq + i * 0.7);
-      var breathAlpha = 0.7 + 0.3 * Math.sin(idleEl * breathFreq * 0.7 + i * 0.5);
-      if (idleEl === 0) { breathScale = 1; breathAlpha = 1; }
-
-      var dispScale   = city.scale * (idleEl > 0 ? breathScale : 1) * (isHovered ? 1.5 : 1);
-      var dispAlpha   = isHovered ? 1.0
-                        : city.primary ? (idleEl > 0 ? breathAlpha : city.opacity)
-                        : city.opacity * 0.5;
-      var r = base * dispScale;
-
-      // Glow for primary cities
-      if (city.primary) {
-        var glowR = r * 2.8;
-        var ga    = isHovered ? 0.5 : 0.3;
-        var grd   = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
-        grd.addColorStop(0, 'rgba(184,120,96,' + (ga * dispAlpha) + ')');
-        grd.addColorStop(1, 'rgba(184,120,96,0)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Core dot
-      var dotAlpha = city.primary ? dispAlpha : dispAlpha;
-      ctx.fillStyle = city.primary
-        ? 'rgba(240,240,238,' + dotAlpha + ')'
-        : 'rgba(240,240,238,' + (dispAlpha * 0.7) + ')';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Labels (primary: fade in during idle; secondary: only on hover)
-      if (!isMobile) {
-        var labelAlpha = 0;
-        if (city.primary && idleEl > 0) {
-          labelAlpha = Math.min(1, idleEl / 600) * (isHovered ? 1.0 : 0.6);
-        } else if (!city.primary && isHovered) {
-          labelAlpha = 1.0;
-        }
-        if (labelAlpha > 0) {
-          ctx.fillStyle = 'rgba(240,240,238,' + labelAlpha + ')';
-          ctx.font = '9px "Space Mono", monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText(city.name.toUpperCase(), p.x, p.y + base + 8);
-        }
-      }
-    });
-
-    rafId = requestAnimationFrame(draw);
-  }
-
-  // ── Hover / tooltip ──
-  canvas.addEventListener('mousemove', function (e) {
-    var rect = canvas.getBoundingClientRect();
-    var mx = e.clientX - rect.left;
-    var my = e.clientY - rect.top;
-    var closest = -1, minDist = 20;
-
-    CITIES.forEach(function (city, i) {
-      if (city.opacity < 0.5) return;
-      var p = pos(city);
-      var d = Math.hypot(mx - p.x, my - p.y);
-      if (d < minDist) { minDist = d; closest = i; }
-    });
-
-    hoveredCity = closest;
-    canvas.style.cursor = closest !== -1 ? 'pointer' : 'default';
-
-    if (closest !== -1) {
-      var city  = CITIES[closest];
-      var p     = pos(city);
-      var count = CITY_HOTEL_COUNTS[city.name] || '—';
-      tooltip.textContent  = city.name + ' · ' + count + ' HOTELS';
-      tooltip.style.left   = p.x + 'px';
-      tooltip.style.top    = (p.y - 36) + 'px';
-      tooltip.style.opacity = '1';
-    } else {
-      tooltip.style.opacity = '0';
     }
-  });
-
-  canvas.addEventListener('mouseleave', function () {
-    hoveredCity = -1;
-    tooltip.style.opacity = '0';
-    canvas.style.cursor = 'default';
-  });
-
-  // ── Pause when off-screen ──
-  var hero = canvas.closest('.hero-fullscreen');
-  if (hero) {
-    var visObs = new IntersectionObserver(function (entries) {
-      if (entries[0].isIntersecting) {
-        if (!rafId) rafId = requestAnimationFrame(draw);
-      } else {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-    }, { threshold: 0.05 });
-    visObs.observe(hero);
   }
 
-  // ── Resize ──
-  var resizeTimer;
-  window.addEventListener('resize', function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () {
-      resize();
-      tooltip.style.opacity = '0';
-    }, 150);
-  });
+  function initGeoAnimation() {
+    var svg = document.getElementById('morocco-geo');
+    if (!svg || typeof gsap === 'undefined') return;
 
-  resize();
-  rafId = requestAnimationFrame(draw);
+    var W         = 1440;
+    var H         = 900;
+    var isMobile  = window.innerWidth < 768;
+    var TILE_SIZE = isMobile ? 80 : 120;
+
+    generateMoroccanPattern(svg, W, H, TILE_SIZE);
+
+    // ── Phase 1: Stars draw in from centre (0 → 2 s) ─────────────
+    var DASHLEN = 900; // safely larger than any 16-pt star perimeter
+    gsap.set('.geo-star', { opacity: 0, strokeDasharray: DASHLEN, strokeDashoffset: DASHLEN });
+    gsap.to('.geo-star', {
+      opacity: 1,
+      strokeDashoffset: 0,
+      duration: 1.5,
+      stagger: { amount: 1.5, from: 'center', grid: 'auto' },
+      ease: 'power2.out'
+    });
+
+    // ── Phase 2: Dots pop in (delay 1.5 s) ───────────────────────
+    gsap.set('.geo-dot', { opacity: 0, scale: 0, transformOrigin: '50% 50%' });
+    gsap.to('.geo-dot', {
+      opacity: 1,
+      scale: 2,
+      duration: 0.4,
+      stagger: { amount: 1, from: 'random' },
+      delay: 1.5,
+      ease: 'back.out(2)',
+      transformOrigin: '50% 50%'
+    });
+    gsap.to('.geo-dot', {
+      fill: '#B87860',
+      scale: 1,
+      duration: 0.5,
+      stagger: { amount: 0.5, from: 'random' },
+      delay: 2.3,
+      ease: 'power2.out',
+      transformOrigin: '50% 50%'
+    });
+
+    // ── Phase 4: Idle ─────────────────────────────────────────────
+    // Slow whole-pattern rotation
+    gsap.to('#morocco-geo', {
+      rotation: 360,
+      svgOrigin: '720 450',
+      duration: 140,
+      repeat: -1,
+      ease: 'none',
+      delay: 2
+    });
+
+    // Star breathing
+    gsap.to('.geo-star', {
+      strokeOpacity: 0.3,
+      duration: 3,
+      stagger: { amount: 4, from: 'random' },
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: 2
+    });
+
+    // Random bright dot pulse every 4 s
+    setTimeout(function () {
+      setInterval(function () {
+        var dots = document.querySelectorAll('.geo-dot');
+        if (!dots.length) return;
+        var d = dots[Math.floor(Math.random() * dots.length)];
+        gsap.timeline()
+          .to(d, { scale: 4, fill: '#F0F0EE', duration: 0.3, ease: 'back.out(2)', transformOrigin: '50% 50%' })
+          .to(d, { scale: 1, fill: '#B87860', duration: 0.6, ease: 'power2.in',   transformOrigin: '50% 50%' });
+      }, 4000);
+    }, 3500);
+
+    // Mouse parallax — desktop only
+    if (!isMobile) {
+      document.addEventListener('mousemove', function (e) {
+        var xPct = (e.clientX / window.innerWidth  - 0.5) * 15;
+        var yPct = (e.clientY / window.innerHeight - 0.5) * 15;
+        gsap.to('#morocco-geo', { x: xPct, y: yPct, duration: 1.5, ease: 'power2.out' });
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGeoAnimation);
+  } else {
+    initGeoAnimation();
+  }
 })();
 </script>
 

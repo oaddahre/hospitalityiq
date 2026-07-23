@@ -299,12 +299,18 @@ body {
   background: #0A0A0A;
   overflow: hidden;
 }
-#morocco-constellation {
+.hero-geo-bg {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: all;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
   z-index: 1;
+  pointer-events: none;
+}
+#morocco-geo {
+  width: 100%;
+  height: 100%;
 }
 .hero-overlay-content {
   position: absolute;
@@ -318,10 +324,10 @@ body {
 .hero-logo-mark {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 48px;
+  font-size: 52px;
   letter-spacing: 0.3em;
   color: #F0F0EE;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   opacity: 0;
   animation: heroFadeInUp 800ms ease 2000ms forwards;
 }
