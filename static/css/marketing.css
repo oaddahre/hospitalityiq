@@ -329,17 +329,18 @@ body {
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
+  gap: 16px;
 }
 
 .feature-card {
   background: var(--card);
-  padding: 36px 32px;
-  border-top: 2px solid var(--accent);
-  transition: background 0.2s;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 200ms ease, background 200ms ease;
 }
 
-.feature-card:hover { background: var(--surface); }
+.feature-card:hover { background: var(--surface); border-color: var(--accent); }
 
 .feature-card__title {
   font-family: var(--font);
@@ -361,14 +362,18 @@ body {
 .advisory-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 2px;
+  gap: 16px;
 }
 
 .advisory-block {
   background: var(--card);
-  padding: 40px 36px;
-  border-left: 2px solid var(--accent);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 200ms ease, background 200ms ease;
 }
+
+.advisory-block:hover { background: var(--surface); border-color: var(--accent); }
 
 .advisory-block__title {
   font-family: var(--font);
@@ -421,10 +426,11 @@ body {
 .report-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   display: grid;
   grid-template-columns: 1fr 280px;
   overflow: hidden;
+  transition: border-color 200ms ease;
 }
 
 .report-card__left {
@@ -519,23 +525,30 @@ body {
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
+  gap: 16px;
   align-items: start;
 }
 
 .pricing-card {
   background: var(--card);
-  padding: 40px 36px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 0;
+  transition: border-color 200ms ease, background 200ms ease;
 }
 
+.pricing-card:hover { background: var(--surface); border-color: var(--accent); }
+
 .pricing-card--featured {
-  border: 1px solid var(--accent);
+  border-color: var(--accent);
   background: var(--surface);
 }
+
+.pricing-card--featured:hover { border-color: var(--accent); }
 
 .pricing-popular {
   position: absolute;
@@ -654,16 +667,18 @@ body {
 .audience-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 2px;
+  gap: 16px;
 }
 
 .audience-card {
   background: var(--card);
-  padding: 40px 36px;
-  transition: background 0.2s;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 200ms ease, background 200ms ease;
 }
 
-.audience-card:hover { background: var(--surface); }
+.audience-card:hover { background: var(--surface); border-color: var(--accent); }
 
 .audience-card__title {
   font-family: var(--font);
@@ -699,6 +714,13 @@ body {
   padding: 12px 28px;
   transition: all 0.2s;
 }
+
+.btn-pill--accent {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  background: transparent;
+}
+.btn-pill--accent:hover { background: var(--accent); color: var(--bg); }
 
 .btn-pill--sm {
   font-size: 13px;
