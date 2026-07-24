@@ -54,15 +54,15 @@
     <p class="lp-subhead">One platform. 300+ hotels. Real intelligence.</p>
     <div class="stat-row">
       <div class="stat-item">
-        <span class="stat-value typewriter" data-value="300+"></span>
+        <span class="stat-value countup" data-target="300" data-suffix="+"></span>
         <span class="stat-label">Hotels Tracked</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value typewriter" data-value="23"></span>
+        <span class="stat-value countup" data-target="23" data-suffix=""></span>
         <span class="stat-label">Cities Covered</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value typewriter" data-value="35"></span>
+        <span class="stat-value countup" data-target="35" data-suffix=""></span>
         <span class="stat-label">Brand Groups Profiled</span>
       </div>
     </div>
@@ -551,26 +551,26 @@ document.querySelectorAll('.animate-hidden').forEach((el, i) => {
 
 <script>
 (function() {
-  function typeWriter(el, text, speed, delay, onDone) {
-    setTimeout(function() {
-      let i = 0;
-      el.textContent = '';
-      el.classList.add('typed');
-      function type() {
-        if (i < text.length) {
-          el.textContent += text.charAt(i);
-          i++;
-          setTimeout(type, speed);
-        } else {
-          if (onDone) onDone();
-        }
+  function countUp(el, target, suffix, duration) {
+    let start = 0;
+    const step = target / (duration / 16);
+
+    function update() {
+      start += step;
+      if (start >= target) {
+        el.textContent = target + suffix;
+        return;
       }
-      type();
-    }, delay);
+      el.textContent = Math.floor(start) + suffix;
+      requestAnimationFrame(update);
+    }
+
+    el.textContent = '0' + suffix;
+    requestAnimationFrame(update);
   }
 
-  function initTypewriters() {
-    const elements = document.querySelectorAll('.stat-value.typewriter');
+  function initCountUps() {
+    const elements = document.querySelectorAll('.stat-value.countup');
     if (!elements.length) return;
 
     const observer = new IntersectionObserver(function(entries) {
@@ -578,10 +578,14 @@ document.querySelectorAll('.animate-hidden').forEach((el, i) => {
         if (entry.isIntersecting) {
           observer.disconnect();
           elements.forEach(function(el, index) {
-            const value = el.getAttribute('data-value');
-            const speed = 80;
-            const delay = index * 500;
-            typeWriter(el, value, speed, delay);
+            const target = parseInt(el.getAttribute('data-target'));
+            const suffix = el.getAttribute('data-suffix') || '';
+            const duration = 1500;
+            const delay = index * 200;
+
+            setTimeout(function() {
+              countUp(el, target, suffix, duration);
+            }, delay);
           });
         }
       });
@@ -592,9 +596,9 @@ document.querySelectorAll('.animate-hidden').forEach((el, i) => {
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTypewriters);
+    document.addEventListener('DOMContentLoaded', initCountUps);
   } else {
-    initTypewriters();
+    initCountUps();
   }
 })();
 </script>
