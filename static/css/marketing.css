@@ -305,6 +305,7 @@ body {
   background: transparent;
   border: none;
   padding: 0;
+  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
 }
 
 .stat-value {
@@ -343,7 +344,7 @@ body {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  transition: border-color 200ms ease, background 200ms ease;
+  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
 }
 
 .feature-card:hover { background: var(--surface); border-color: var(--accent); }
@@ -376,7 +377,7 @@ body {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  transition: border-color 200ms ease, background 200ms ease;
+  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
 }
 
 .advisory-block:hover { background: var(--surface); border-color: var(--accent); }
@@ -436,7 +437,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 280px;
   overflow: hidden;
-  transition: border-color 200ms ease;
+  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
 }
 
 .report-card__left {
@@ -544,7 +545,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
-  transition: border-color 200ms ease, background 200ms ease;
+  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
 }
 
 .pricing-card:hover { background: var(--surface); border-color: var(--accent); }
@@ -681,7 +682,7 @@ body {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  transition: border-color 200ms ease, background 200ms ease;
+  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
 }
 
 .audience-card:hover { background: var(--surface); border-color: var(--accent); }
