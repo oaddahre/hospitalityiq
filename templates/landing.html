@@ -54,23 +54,16 @@
     <p class="lp-subhead">One platform. 300+ hotels. Real intelligence.</p>
     <div class="stat-row">
       <div class="stat-item">
-        <span class="stat-value">300+</span>
+        <span class="stat-value typewriter" data-value="300+"></span>
         <span class="stat-label">Hotels Tracked</span>
       </div>
-      <div class="stat-divider"></div>
       <div class="stat-item">
-        <span class="stat-value">23</span>
+        <span class="stat-value typewriter" data-value="23"></span>
         <span class="stat-label">Cities Covered</span>
       </div>
-      <div class="stat-divider"></div>
       <div class="stat-item">
-        <span class="stat-value">35</span>
+        <span class="stat-value typewriter" data-value="35"></span>
         <span class="stat-label">Brand Groups Profiled</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <span class="stat-value">MAD 118B</span>
-        <span class="stat-label">Tourism Economy</span>
       </div>
     </div>
   </div>
@@ -553,6 +546,56 @@ document.querySelectorAll('.animate-hidden').forEach((el, i) => {
       }
     }, { passive: true });
   });
+})();
+</script>
+
+<script>
+(function() {
+  function typeWriter(el, text, speed, delay, onDone) {
+    setTimeout(function() {
+      let i = 0;
+      el.textContent = '';
+      el.classList.add('typed');
+      function type() {
+        if (i < text.length) {
+          el.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        } else {
+          if (onDone) onDone();
+        }
+      }
+      type();
+    }, delay);
+  }
+
+  function initTypewriters() {
+    const elements = document.querySelectorAll('.stat-value.typewriter');
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          observer.disconnect();
+          elements.forEach(function(el, index) {
+            const value = el.getAttribute('data-value');
+            const speed = 80;
+            const delay = index * 500;
+            typeWriter(el, value, speed, delay);
+          });
+        }
+      });
+    }, { threshold: 0.3 });
+
+    const statRow = document.querySelector('.stat-row');
+    if (statRow) observer.observe(statRow);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTypewriters);
+  } else {
+    initTypewriters();
+  }
 })();
 </script>
 
