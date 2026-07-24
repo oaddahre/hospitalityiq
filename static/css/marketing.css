@@ -289,14 +289,14 @@ body {
 .stat-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
+  gap: 40px;
   margin-top: 16px;
 }
 
 .stat-item {
-  background: var(--card);
-  border-top: 2px solid var(--accent);
-  padding: 32px 28px;
+  background: transparent;
+  border: none;
+  padding: 20px 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
