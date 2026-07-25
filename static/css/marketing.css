@@ -344,7 +344,8 @@ body {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
+  transition: border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .feature-card:hover { background: var(--surface); border-color: var(--accent); }
@@ -377,7 +378,8 @@ body {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
+  transition: border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .advisory-block:hover { background: var(--surface); border-color: var(--accent); }
@@ -437,7 +439,8 @@ body {
   display: grid;
   grid-template-columns: 1fr 280px;
   overflow: hidden;
-  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
+  transition: border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .report-card__left {
@@ -545,7 +548,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
-  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
+  transition: border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pricing-card:hover { background: var(--surface); border-color: var(--accent); }
@@ -682,7 +686,8 @@ body {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  transition: border-color 150ms ease 200ms, background 150ms ease 200ms;
+  transition: border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .audience-card:hover { background: var(--surface); border-color: var(--accent); }
