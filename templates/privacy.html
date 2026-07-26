@@ -9,82 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css">
-  <style>
-    .legal-page {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 60px 24px 80px;
-    }
-    .legal-page__meta {
-      font-family: 'Manrope', sans-serif;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #888888;
-      margin-bottom: 12px;
-    }
-    .legal-page__title {
-      font-family: 'Space Mono', monospace;
-      font-size: 2rem;
-      font-weight: 700;
-      color: #F0F0EE;
-      margin: 0 0 8px;
-      line-height: 1.2;
-    }
-    .legal-page__updated {
-      font-family: 'Manrope', sans-serif;
-      font-size: 12px;
-      color: #666666;
-      margin-bottom: 40px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid #242424;
-    }
-    .legal-page__intro {
-      font-family: 'Manrope', sans-serif;
-      font-size: 13px;
-      line-height: 1.8;
-      color: #AAAAAA;
-      margin-bottom: 40px;
-    }
-    .legal-section {
-      margin-bottom: 36px;
-    }
-    .legal-section__heading {
-      font-family: 'Space Mono', monospace;
-      font-size: 14px;
-      font-weight: 600;
-      color: #F0F0EE;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin: 0 0 12px;
-    }
-    .legal-section__body {
-      font-family: 'Manrope', sans-serif;
-      font-size: 13px;
-      line-height: 1.8;
-      color: #AAAAAA;
-    }
-    .legal-section__body p { margin: 0 0 10px; }
-    .legal-section__body p:last-child { margin-bottom: 0; }
-    .legal-section__body ul {
-      margin: 8px 0 10px 18px;
-      padding: 0;
-    }
-    .legal-section__body ul li {
-      margin-bottom: 6px;
-    }
-    .legal-section__body a {
-      color: #B87860;
-      text-decoration: none;
-    }
-    .legal-section__body a:hover { text-decoration: underline; }
-    .legal-section__body strong { color: #D0D0CE; }
-    .legal-divider {
-      border: none;
-      border-top: 1px solid #1E1E1E;
-      margin: 32px 0;
-    }
-  </style>
 </head>
 <body>
 
@@ -103,27 +27,29 @@
   </div>
 </nav>
 
-<main class="legal-page">
-  <p class="legal-page__meta">Legal</p>
-  <h1 class="legal-page__title">Privacy Policy</h1>
-  <p class="legal-page__updated">Last updated: June 2026</p>
+<div class="page-header">
+  <div class="legal-page" style="padding-bottom:0;">
+    <span class="page-header-label">Kōdō · Legal</span>
+    <h1 class="page-header-title">Privacy Policy</h1>
+    <p class="page-header-sub">Last updated July 2026</p>
+  </div>
+</div>
 
-  <p class="legal-page__intro">Kōdō Hospitality ("we", "us", "our") is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and protect your information when you use the Kōdō platform.</p>
+<main class="legal-page">
+  <p class="legal-body" style="margin-bottom:40px;">Kōdō Hospitality ("we", "us", "our") is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and protect your information when you use the Kōdō platform.</p>
 
   <div class="legal-section">
-    <h2 class="legal-section__heading">1. Data Controller</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">1. Data Controller</h2>
+    <div class="legal-body">
       <p>Kōdō Hospitality<br>
       Casablanca, Morocco<br>
       <a href="mailto:legal@kodohospitality.com">legal@kodohospitality.com</a></p>
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">2. Data We Collect</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">2. Data We Collect</h2>
+    <div class="legal-body">
       <p>When you create an account we collect:</p>
       <ul>
         <li>Full name</li>
@@ -142,11 +68,9 @@
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">3. How We Use Your Data</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">3. How We Use Your Data</h2>
+    <div class="legal-body">
       <p>We use your data to:</p>
       <ul>
         <li>Provide and manage your subscription</li>
@@ -159,11 +83,9 @@
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">4. Data Sharing</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">4. Data Sharing</h2>
+    <div class="legal-body">
       <p>We share your data only with:</p>
       <ul>
         <li>Our payment processor (for billing purposes only)</li>
@@ -174,20 +96,16 @@
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">5. Data Retention</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">5. Data Retention</h2>
+    <div class="legal-body">
       <p>We retain your personal data for as long as your account is active. Upon account cancellation or deletion we delete your personal data immediately from our systems. Anonymised, aggregated usage statistics may be retained indefinitely.</p>
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">6. Data Security</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">6. Data Security</h2>
+    <div class="legal-body">
       <p>We implement appropriate technical and organisational measures to protect your data including:</p>
       <ul>
         <li>Encrypted passwords (bcrypt hashing)</li>
@@ -198,11 +116,9 @@
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">7. Your Rights</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">7. Your Rights</h2>
+    <div class="legal-body">
       <p>You have the right to:</p>
       <ul>
         <li>Access the personal data we hold about you</li>
@@ -215,11 +131,9 @@
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">8. EU/EEA Users — GDPR</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">8. EU/EEA Users — GDPR</h2>
+    <div class="legal-body">
       <p>If you are located in the European Union or European Economic Area, we process your personal data in accordance with the General Data Protection Regulation (GDPR). The legal basis for processing your data is:</p>
       <ul>
         <li><strong>Contract performance:</strong> to provide the service you subscribed to</li>
@@ -229,38 +143,30 @@
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">9. Cookies</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">9. Cookies</h2>
+    <div class="legal-body">
       <p>The Kōdō platform uses only essential cookies required for authentication and session management. We do not use tracking cookies, advertising cookies, or third-party analytics cookies.</p>
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">10. Moroccan Data Protection Law</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">10. Moroccan Data Protection Law</h2>
+    <div class="legal-body">
       <p>This Privacy Policy complies with Moroccan Law 09-08 on the protection of individuals with regard to the processing of personal data.</p>
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">11. Changes to This Policy</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">11. Changes to This Policy</h2>
+    <div class="legal-body">
       <p>We may update this Privacy Policy from time to time. We will notify you by email of material changes. The date at the top of this page indicates when it was last updated.</p>
     </div>
   </div>
 
-  <hr class="legal-divider">
-
   <div class="legal-section">
-    <h2 class="legal-section__heading">12. Contact</h2>
-    <div class="legal-section__body">
+    <h2 class="legal-section-title">12. Contact</h2>
+    <div class="legal-body">
       <p>For any privacy-related questions or data requests contact:<br>
       <a href="mailto:legal@kodohospitality.com">legal@kodohospitality.com</a><br>
       Kōdō Hospitality, Casablanca, Morocco</p>
@@ -269,32 +175,37 @@
 </main>
 
 <footer class="mk-footer">
-  <div class="mk-footer__inner">
-    <div class="mk-footer__top">
-      <div>
-        <div class="mk-footer__brand">
-          <span class="mk-footer__logo-mark">K</span>
-          <span class="mk-footer__logo-text">Kōdō</span>
-        </div>
-        <p class="mk-footer__tagline">Morocco's professional hotel intelligence platform.<br>250+ hotels · 18+ destinations · Institutional-grade data.</p>
+  <div class="lp-container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-logo">KŌDŌ</span>
+        <span class="footer-tagline">Morocco Hotel Intelligence</span>
       </div>
-      <div class="mk-footer__links">
-        <a href="/#modules">Platform</a>
-        <a href="/#pricing">Pricing</a>
+      <nav class="footer-links">
+        <a href="/">Platform</a>
+        <a href="/methodology">Methodology</a>
         <a href="/team">Team</a>
         <a href="/contact">Contact</a>
-        <a href="/dashboard">Open Platform</a>
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
+      </nav>
+      <div class="footer-contact">
+        <a href="mailto:contact@kodohospitality.com">contact@kodohospitality.com</a>
       </div>
     </div>
-    <div class="mk-footer__bottom">
-      <span class="mk-footer__copy">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</span>
-      <div class="mk-footer__legal">
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/terms">Terms of Service</a>
-      </div>
+    <div class="footer-bottom">
+      <span>© 2026 Kōdō Hospitality. All rights reserved.</span>
+      <span>Data updated July 2026</span>
     </div>
   </div>
 </footer>
+
+<script>
+const nav = document.querySelector('.mk-nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+}, { passive: true });
+</script>
 
 </body>
 </html>
