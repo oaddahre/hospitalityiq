@@ -4,7 +4,7 @@
 __pycache__/
 *.pyc
 .venv/
-.claude/settings.local.json
+.claude/
 users.json
 organisations.json
 scraped_rates.csv
