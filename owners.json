@@ -116,5 +116,25 @@
       {"name": "Valeria Les Jardins d'Agadir Resort", "brand_group": "Valeria Hotels", "city": "Agadir / Taghazout"},
       {"name": "Valeria Kasbah del Mar", "brand_group": "Valeria Hotels", "city": "Tamuda Bay / Tétouan"}
     ]
+  },
+  {
+    "id": "tikida",
+    "name": "Tikida Group",
+    "full_name": "Tikida Group",
+    "type": "Family-Owned",
+    "parent": "Tikida Group",
+    "headquarters": "Agadir, Morocco",
+    "logo_local": "/static/images/brands/tikida_logo.png",
+    "description": "Tikida Group is a Moroccan family-owned hospitality company and one of the largest private hotel owners in the kingdom, with a portfolio concentrated in Agadir and Marrakech. The group operates in partnership with TUI Hotels & Resorts for the majority of its properties, with TUI managing the Robinson Club and Tikida-branded resorts under its global all-inclusive concept. This long-standing partnership with one of Europe's largest travel groups has established Tikida as the dominant resort owner in Agadir, capturing a significant share of the city's European leisure tourism capacity. The group's flagship independent property, the Tikida Golf Palace in Agadir, operates outside the TUI partnership and represents the group's own luxury positioning in the upscale golf and leisure resort segment.",
+    "hotels": [
+      {"name": "Tikida Golf Palace", "brand_group": "Independent Luxury", "city": "Agadir / Taghazout"},
+      {"name": "Riu Tikida Palace Agadir", "brand_group": "RIU Hotels & Resorts", "city": "Agadir / Taghazout"},
+      {"name": "Riu Tikida Beach Adults Only", "brand_group": "RIU Hotels & Resorts", "city": "Agadir / Taghazout"},
+      {"name": "Riu Tikida Dunas", "brand_group": "RIU Hotels & Resorts", "city": "Agadir / Taghazout"},
+      {"name": "Riu Palace Tikida Taghazout", "brand_group": "RIU Hotels & Resorts", "city": "Agadir / Taghazout"},
+      {"name": "Riu Tikida Garden Marrakech", "brand_group": "RIU Hotels & Resorts", "city": "Marrakech"},
+      {"name": "Riu Tikida Palmeraie Marrakech", "brand_group": "RIU Hotels & Resorts", "city": "Marrakech"},
+      {"name": "Robinson Club Taghazout Bay", "brand_group": "TUI Hotels & Resorts", "city": "Agadir / Taghazout"}
+    ]
   }
 ]

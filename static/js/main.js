@@ -73,6 +73,7 @@ const OWNER_LOGOS = {
   'Madaëf': '/static/images/brands/madaef_logo.png',
   'Risma': '/static/images/brands/risma_logo.png',
   'Valeria Hotels': '/static/images/brands/valeria_logo.png',
+  'Tikida Group': '/static/images/brands/tikida_logo.png',
 };
 
 const OWNER_LOGO_DOMAINS = {
