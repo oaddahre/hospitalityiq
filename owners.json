@@ -136,5 +136,23 @@
       {"name": "Riu Tikida Palmeraie Marrakech", "brand_group": "RIU Hotels & Resorts", "city": "Marrakech"},
       {"name": "Robinson Club Taghazout Bay", "brand_group": "TUI Hotels & Resorts", "city": "Agadir / Taghazout"}
     ]
+  },
+  {
+    "id": "pickalbatros",
+    "name": "Pickalbatros",
+    "full_name": "Pickalbatros Hotels & Resorts",
+    "type": "Private",
+    "parent": "Pickalbatros Group",
+    "headquarters": "Cairo, Egypt",
+    "logo_local": "/static/images/brands/pickalbatros_logo.png",
+    "description": "Pickalbatros is an Egyptian hospitality group operating a portfolio of upscale and upper upscale all-inclusive resorts across North Africa and the Middle East, with a growing presence in Morocco. The group's Morocco portfolio is concentrated in Marrakech and Agadir, where it operates six large-scale resort properties ranging from family-oriented all-inclusive clubs to adults-only beachfront resorts and golf properties. Pickalbatros targets the European and regional leisure travel market with a consistent all-inclusive product offering that combines extensive amenities, entertainment programming, and prime resort locations. The group's expansion into Morocco reflects its confidence in the country's growing appeal as a year-round leisure destination for European and Middle Eastern travelers.",
+    "hotels": [
+      {"name": "Pickalbatros Aqua Fun Club Resort", "brand_group": "Pickalbatros", "city": "Marrakech"},
+      {"name": "Pickalbatros Sungo Club", "brand_group": "Pickalbatros", "city": "Marrakech"},
+      {"name": "Pickalbatros Hotel du Golf Palmeraie", "brand_group": "Pickalbatros", "city": "Marrakech"},
+      {"name": "Pickalbatros Savoy Le Grand Hotel", "brand_group": "Pickalbatros", "city": "Marrakech"},
+      {"name": "Pickalbatros White Beach Taghazout", "brand_group": "Pickalbatros", "city": "Agadir / Taghazout"},
+      {"name": "Pickalbatros Palais des Roses", "brand_group": "Pickalbatros", "city": "Agadir / Taghazout"}
+    ]
   }
 ]
