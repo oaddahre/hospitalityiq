@@ -4210,7 +4210,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   flex-direction: column;
   gap: 6px;
 }
-.brni-icon { font-size: 20px; line-height: 1; }
 .brni-title {
   font-family: var(--font-mono);
   font-size: 9px;
