@@ -953,10 +953,15 @@ def api_brands():
         cities   = sorted(grp['city'].unique().tolist())
         segments = sorted(grp['category'].unique().tolist())
 
-        newest_row = grp.loc[grp['year_opened'].idxmax()]
-        oldest_row = grp.loc[grp['year_opened'].idxmin()]
-        newest = f"{newest_row['name']} ({int(newest_row['year_opened'])})"
-        oldest = f"{oldest_row['name']} ({int(oldest_row['year_opened'])})"
+        dated = grp[grp['year_opened'].notna()]
+        if len(dated):
+            newest_row = dated.loc[dated['year_opened'].idxmax()]
+            oldest_row = dated.loc[dated['year_opened'].idxmin()]
+            newest = f"{newest_row['name']} ({int(newest_row['year_opened'])})"
+            oldest = f"{oldest_row['name']} ({int(oldest_row['year_opened'])})"
+        else:
+            newest = None
+            oldest = None
 
         owners     = grp['owner'].dropna().unique().tolist()
         disclosed  = [o for o in owners if o != 'Undisclosed']
