@@ -176,5 +176,20 @@
       {"name": "Kenzi Azghor Ouarzazate", "brand_group": "Kenzi Hotels Group", "city": "Ouarzazate"},
       {"name": "Kenzi Rissani", "brand_group": "Kenzi Hotels Group", "city": "Errachidia"}
     ]
+  },
+  {
+    "id": "babylon",
+    "name": "Babylon Invest",
+    "full_name": "Babylon Invest",
+    "type": "Private",
+    "parent": "Babylon Invest",
+    "headquarters": "Fes, Morocco",
+    "logo_local": null,
+    "description": "Babylon Invest is a Moroccan private investment group with a focused luxury hospitality portfolio spanning Fes and Casablanca. The group owns three prestigious hotel addresses — the Hotel Sahrai Fes, a contemporary design hotel perched above the Fes medina with panoramic views over the ancient city, the Villa Sahrai Casablanca, a luxury urban retreat in Morocco's economic capital, and the Riad Fès, a member of Relais & Châteaux and one of the finest riad hotels in Morocco. Babylon Invest's approach to hospitality reflects a conviction in Morocco's potential as a world-class luxury destination, combining architectural sensitivity with international brand partnerships to deliver experiences that attract the most discerning global travelers.",
+    "hotels": [
+      {"name": "Hotel Sahrai Fes", "brand_group": "Independent Luxury", "city": "Fes"},
+      {"name": "Riad Fes", "brand_group": "Relais & Châteaux", "city": "Fes"},
+      {"name": "Villa Sahrai Casablanca", "brand_group": "Independent Luxury", "city": "Casablanca"}
+    ]
   }
 ]
