@@ -81,6 +81,7 @@ const OWNER_LOGOS = {
 const OWNER_LOGO_DOMAINS = {
   'Risma': 'risma.ma',
   'Al Mada': 'almada.ma',
+  'Kenzi Hotels Group': 'kenzi-hotels.com',
 };
 
 function getOwnerLogoImg(ownerName, size) {

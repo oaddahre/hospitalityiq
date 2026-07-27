@@ -154,5 +154,27 @@
       {"name": "Pickalbatros White Beach Taghazout", "brand_group": "Pickalbatros", "city": "Agadir / Taghazout"},
       {"name": "Pickalbatros Palais des Roses", "brand_group": "Pickalbatros", "city": "Agadir / Taghazout"}
     ]
+  },
+  {
+    "id": "kenzi",
+    "name": "Kenzi Hotels Group",
+    "full_name": "Kenzi Hotels Group",
+    "type": "Private",
+    "parent": "Kenzi Hotels Group",
+    "headquarters": "Casablanca, Morocco",
+    "logo_domain": "kenzi-hotels.com",
+    "description": "Kenzi Hotels Group is Morocco's largest home-grown hotel chain, owning and operating a portfolio of upper upscale, upscale, and midscale properties exclusively within the kingdom. Founded in the 1970s and headquartered in Casablanca, Kenzi has built an iconic presence across Morocco's key destinations including Casablanca, Marrakech, Tanger, Agadir, Ouarzazate, and Errachidia. As both owner and operator of its entire portfolio, Kenzi maintains full control over its brand standards and guest experience, making it one of the few large-scale Moroccan hospitality groups to operate without international franchise agreements. The group's flagship Kenzi Tower Hotel in Casablanca and Kenzi Menara Palace in Marrakech are among the most recognized hotel addresses in Morocco.",
+    "hotels": [
+      {"name": "Kenzi Tower Hotel", "brand_group": "Kenzi Hotels Group", "city": "Casablanca"},
+      {"name": "Kenzi Basma", "brand_group": "Kenzi Hotels Group", "city": "Casablanca"},
+      {"name": "Kenzi Sidi Maarouf", "brand_group": "Kenzi Hotels Group", "city": "Casablanca"},
+      {"name": "Kenzi Menara Palace", "brand_group": "Kenzi Hotels Group", "city": "Marrakech"},
+      {"name": "Kenzi Rose Garden Hotel", "brand_group": "Kenzi Hotels Group", "city": "Marrakech"},
+      {"name": "Kenzi Club Agdal Medina", "brand_group": "Kenzi Hotels Group", "city": "Marrakech"},
+      {"name": "Kenzi Solazur Hotel Tanger", "brand_group": "Kenzi Hotels Group", "city": "Tanger"},
+      {"name": "TUI Suneo Kenzi Europa", "brand_group": "TUI Hotels & Resorts", "city": "Agadir / Taghazout"},
+      {"name": "Kenzi Azghor Ouarzazate", "brand_group": "Kenzi Hotels Group", "city": "Ouarzazate"},
+      {"name": "Kenzi Rissani", "brand_group": "Kenzi Hotels Group", "city": "Errachidia"}
+    ]
   }
 ]
