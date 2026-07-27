@@ -4696,7 +4696,6 @@ function renderOwnerCards() {
           getOwnerLogoImg(o.name, 40) +
           '<div>' +
             '<div style="font-family:\'Space Mono\',monospace;font-size:13px;font-weight:400;text-transform:uppercase;letter-spacing:0.04em;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
-            '<div style="font-family:\'Manrope\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">' + fmt.esc(o.parent || '') + '</div>' +
           '</div>' +
         '</div>' +
         ownerTypeBadge(o.type || 'Private') +
@@ -4739,8 +4738,6 @@ function renderOwnerDetail(o) {
         '<h1 style="font-family:\'Space Mono\',monospace;font-size:20px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
           ownerTypeBadge(o.type || 'Private') +
-          (o.parent ? '<span style="font-family:\'Manrope\',sans-serif;font-size:11px;color:var(--text-muted)">' + fmt.esc(o.parent) + '</span>' : '') +
-          (o.headquarters ? '<span style="font-family:\'Manrope\',sans-serif;font-size:11px;color:var(--text-faint)">· ' + fmt.esc(o.headquarters) + '</span>' : '') +
         '</div>' +
       '</div>' +
     '</div>';
