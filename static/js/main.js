@@ -245,6 +245,7 @@ Chart.defaults.scale.grid.display   = false;
 Chart.defaults.scale.grid.drawTicks = false;
 Chart.defaults.scale.border.display = false;
 Chart.defaults.font.family = "'Space Mono', monospace";
+Chart.defaults.scales.linear.ticks.font = { weight: '400', family: "'Space Mono', monospace" };
 
 // ─── State & cache ────────────────────────────────────────────────
 
@@ -488,7 +489,7 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
       scales: {
         x: {
           min: 0,
-          ticks: { color: cc.tick, font: { size: 11 }, padding: 4 }
+          ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Space Mono', monospace" }, padding: 4 }
         },
         y: {
           ticks: { color: cc.catLabel, font: { size: 12, weight: '500' }, padding: 10 }
@@ -1962,7 +1963,7 @@ function initTourismCharts() {
         },
         scales: {
           x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
-          y: { ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Space Mono', monospace" } } },
         },
       },
     };
@@ -2004,7 +2005,7 @@ function initTourismCharts() {
         },
         scales: {
           x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
-          y: { ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Space Mono', monospace" } } },
         },
       },
     });
@@ -2080,7 +2081,7 @@ function initTourismCharts() {
         },
         scales: {
           x: { ticks: { color: cc.tick, font: { size: 11 } } },
-          y: { min: 0, max: 115, ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { min: 0, max: 115, ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Space Mono', monospace" } } },
         },
       },
     });
@@ -3660,7 +3661,7 @@ function renderBenchTrends() {
         },
         scales: {
           x: { ticks: { color: cc.tick, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
-          y: { ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Space Mono', monospace" } } },
         },
       },
     };
@@ -3729,7 +3730,7 @@ function renderBenchDOW() {
         },
         scales: {
           x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
-          y: { suggestedMin: 0, suggestedMax: 100, ticks: { color: cc.tick, font: { size: 11 } } },
+          y: { suggestedMin: 0, suggestedMax: 100, ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Space Mono', monospace" } } },
         },
       },
     });
