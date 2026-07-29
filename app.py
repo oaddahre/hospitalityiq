@@ -10,6 +10,7 @@ import json
 import csv
 import io
 import os
+import re
 import uuid
 import subprocess
 import sys
@@ -2677,6 +2678,348 @@ def api_reports_generate():
                          as_attachment=True, download_name=filename)
     except Exception as e:
         app.logger.error(f"Report generation error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# ─── Valuation PDF export ─────────────────────────────────────────────────────
+
+def _fmt_mad(val: float) -> str:
+    val = float(val)
+    if abs(val) >= 1e9: return f"MAD {val/1e9:.1f}B"
+    if abs(val) >= 1e6: return f"MAD {val/1e6:.1f}M"
+    if abs(val) >= 1e3: return f"MAD {val/1e3:.0f}K"
+    return f"MAD {val:.0f}"
+
+
+def _fmt_pct(val: float) -> str:
+    return f"{float(val):.1f}%"
+
+
+def _valuation_market_rating(city: str) -> str:
+    try:
+        _, _, merged = load_data()
+        merged = merged.dropna(subset=["revpar_mad"])
+        national = float(merged["revpar_mad"].mean()) if not merged.empty else 0
+        city_df = merged[merged["city"] == city]
+        if city_df.empty or not national:
+            return "NEUTRAL"
+        city_revpar = float(city_df["revpar_mad"].mean())
+        if city_revpar >= national * 1.10:
+            return "OUTPERFORM"
+        if city_revpar <= national * 0.90:
+            return "UNDERPERFORM"
+        return "NEUTRAL"
+    except Exception:
+        return "NEUTRAL"
+
+
+def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
+                            sensitivity: dict, mode: str) -> bytes:
+    """Build the 6-page Hotel Valuation Report PDF using fpdf2 (dark theme)."""
+    name    = property_.get("name") or "Unnamed Property"
+    city    = property_.get("city") or "—"
+    segment = property_.get("segment") or "—"
+    keys    = int(property_.get("keys") or inputs.get("keys") or 0)
+
+    pdf = KodoPDF(city, "Valuation Report", theme="dark")
+    c   = pdf.c
+    generated_date = datetime.utcnow().strftime("%d %B %Y")
+
+    cash_flows   = results.get("cashFlows", [])
+    hold_period  = int(inputs.get("hold_period") or len(cash_flows) or 10)
+
+    # ─── PAGE 1 — COVER ─────────────────────────────────────────────────
+    pdf.add_page()
+    pdf.set_xy(_LM, 20)
+    pdf.set_font("Helvetica", "B", 28)
+    pdf.set_text_color(*c['white'])
+    pdf.cell(0, 10, "KODO", ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*c['accent'])
+    pdf.cell(0, 5, "HOSPITALITY INTELLIGENCE", ln=1)
+    pdf.set_draw_color(*c['accent'])
+    pdf.set_line_width(0.6)
+    pdf.line(_LM, pdf.get_y() + 2, _LM + 40, pdf.get_y() + 2)
+
+    pdf.set_xy(_LM, 90)
+    pdf.set_font("Helvetica", "B", 24)
+    pdf.set_text_color(*c['white'])
+    pdf.cell(0, 10, "HOTEL VALUATION REPORT", ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "B", 32)
+    pdf.cell(0, 14, _s(name), ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 13)
+    pdf.set_text_color(*c['muted'])
+    pdf.cell(0, 7, f"{_s(city)}  |  {_s(segment)}  |  {keys} keys", ln=1)
+    pdf.ln(4)
+    pdf.set_draw_color(*c['accent'])
+    pdf.set_line_width(1.5)
+    pdf.line(_LM, pdf.get_y(), _LM + _PW, pdf.get_y())
+    pdf.ln(6)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*c['muted'])
+    pdf.cell(0, 5, f"Generated {generated_date}", ln=1)
+
+    pdf.set_xy(_LM, 260)
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(*c['accent'])
+    pdf.cell(0, 5, "CONFIDENTIAL  \xb7  INDICATIVE ESTIMATES ONLY", ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(*c['faint'])
+    pdf.cell(0, 5, "Not for investment decisions  \xb7  kodohospitality.com", ln=1)
+
+    # ─── PAGE 2 — EXECUTIVE SUMMARY ─────────────────────────────────────
+    pdf.add_page()
+    pdf.section_title("01", "Executive Summary")
+    pdf.kpi_boxes([
+        ("Indicated Value", _fmt_mad(results.get("reconciled", 0))),
+        ("Value / Key",     _fmt_mad(results.get("value_per_key", 0))),
+        ("Project IRR",     _fmt_pct(results.get("irr", 0))),
+        ("Equity Multiple", f"{results.get('equity_multiple', 0):.2f}x"),
+    ], large=True)
+    pdf.ln(4)
+
+    rating = _valuation_market_rating(city)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*c['text'])
+    pdf.cell(0, 6, "Market Context", ln=1)
+    pdf.rating_box(rating)
+
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*c['text'])
+    pdf.cell(0, 6, "Key Assumptions", ln=1)
+    pdf.ln(1)
+    assumptions = [
+        ("Mode",                    "Custom Cash Flows" if mode == "custom" else "Quick Valuation"),
+        ("Hold Period",             f"{hold_period} years"),
+        ("Stabilized Occupancy",    _fmt_pct(inputs.get("stabilized_occ", 0))),
+        ("ADR",                     _fmt_mad(inputs.get("adr", 0))),
+        ("Revenue Growth",          _fmt_pct(inputs.get("growth_rate", 0)) + "/yr"),
+        ("Discount Rate (WACC)",    _fmt_pct(inputs.get("discount_rate", 0))),
+        ("Terminal Cap Rate",       _fmt_pct(inputs.get("terminal_cap_rate", 0))),
+        ("Purchase Price",          _fmt_mad((inputs.get("purchase_price") or 0) * 1e6) if inputs.get("purchase_price") else "Derived from DCF"),
+    ]
+    for label, val in assumptions:
+        pdf.kpi_row(label, str(val))
+
+    # ─── PAGE 3 — CASH FLOW TABLE ────────────────────────────────────────
+    pdf.add_page()
+    pdf.section_title("02", f"{hold_period}-Year Projected Cash Flows (MAD)")
+
+    cf_cols   = ["Year","Occ%","ADR","RevPAR","Total Rev","Rooms Rev","F&B Rev","GOP","GOP%","NOI","FCF","PV(FCF)"]
+    cf_widths = [12, 11, 15, 15, 18, 17, 15, 17, 12, 17, 17, 17]
+    pdf.set_font("Helvetica", "", 6)
+    pdf.table_header(cf_cols, cf_widths)
+    for i, cf in enumerate(cash_flows):
+        row = [
+            f"Yr {cf.get('yr', i+1)}",
+            f"{cf.get('occ', 0):.1f}",
+            f"{cf.get('adr', 0):,.0f}",
+            f"{cf.get('revpar', 0):,.0f}",
+            f"{cf.get('total_rev', 0):,.0f}",
+            f"{cf.get('rooms_rev', 0):,.0f}",
+            f"{cf.get('fb_rev', 0):,.0f}",
+            f"{cf.get('gop', 0):,.0f}",
+            f"{cf.get('gop_margin', 0):.1f}",
+            f"{cf.get('noi', 0):,.0f}",
+            f"{cf.get('fcf', 0):,.0f}",
+            f"{cf.get('pv_fcf', 0):,.0f}",
+        ]
+        pdf.table_row(row, cf_widths, fill=(i % 2 == 1))
+
+    terminal_row = ["Terminal Value", "", "", "", "", "", "", "", "", "",
+                     f"{results.get('terminal_value', 0):,.0f}",
+                     f"{results.get('pv_terminal', 0):,.0f}"]
+    pdf.table_row(terminal_row, cf_widths, fill=False, bold=True)
+
+    npv_total = results.get("total_pv_fcf", 0) + results.get("pv_terminal", 0)
+    total_row = ["NPV Total"] + [""] * 10 + [f"{npv_total:,.0f}"]
+    pdf.table_row(total_row, cf_widths, fill=True, bold=True)
+
+    pdf.ln(6)
+    if cash_flows:
+        max_fcf = max(cf.get("fcf", 0) for cf in cash_flows) or 1
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*c['muted'])
+        pdf.cell(0, 5, "FREE CASH FLOW TREND", ln=1)
+        pdf.ln(1)
+        pdf.bar_chart(
+            [{"yr": f"Year {cf.get('yr', i+1)}", "fcf": round(cf.get("fcf", 0))}
+             for i, cf in enumerate(cash_flows)],
+            "yr", "fcf", max_fcf, bar_h=4.5, bar_max_w=100,
+        )
+
+    # ─── PAGE 4 — VALUATION SUMMARY ──────────────────────────────────────
+    pdf.add_page()
+    pdf.section_title("03", "Valuation Summary")
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(*c['accent'])
+    pdf.cell(0, 6, "INCOME CAPITALIZATION", ln=1)
+    stab_idx = min(2, len(cash_flows) - 1) if cash_flows else 0
+    stab_noi = cash_flows[stab_idx]["noi"] if cash_flows else 0
+    pdf.kpi_row("Stabilized NOI", _fmt_mad(stab_noi))
+    pdf.kpi_row("Cap Rate", _fmt_pct(inputs.get("terminal_cap_rate", 0)))
+    pdf.kpi_row("Indicated Value", _fmt_mad(results.get("income_cap_value", 0)))
+    pdf.kpi_row("Value per Key", _fmt_mad(results.get("income_cap_value", 0) / keys) if keys else "—")
+    pdf.ln(4)
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(*c['accent'])
+    pdf.cell(0, 6, f"DCF ANALYSIS \xb7 {hold_period}-YEAR HOLD", ln=1)
+    pdf.kpi_row("PV of Cash Flows", _fmt_mad(results.get("total_pv_fcf", 0)))
+    pdf.kpi_row("PV Terminal Value", _fmt_mad(results.get("pv_terminal", 0)))
+    pdf.kpi_row("Total DCF Value", _fmt_mad(results.get("dcf_value", 0)))
+    pdf.kpi_row("IRR", _fmt_pct(results.get("irr", 0)))
+    pdf.kpi_row("Equity Multiple", f"{results.get('equity_multiple', 0):.2f}x")
+    pdf.kpi_row("Payback Period", f"{results.get('payback', 0):.1f} years")
+    pdf.ln(4)
+
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_text_color(*c['white'])
+    pdf.cell(0, 7, "KODO RECONCILED VALUE", ln=1)
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.set_text_color(*c['accent'])
+    pdf.cell(0, 9, f"{_fmt_mad(results.get('range_low', 0))} \x97 {_fmt_mad(results.get('range_high', 0))}", ln=1)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(*c['muted'])
+    eur_k = (results.get("value_per_key", 0) / 10.8 / 1000)
+    pdf.cell(0, 6, f"{_fmt_mad(results.get('value_per_key', 0))} / key  \xb7  EUR {eur_k:.0f}K equivalent", ln=1)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.cell(0, 5, "Weighting: Income Capitalization 40%  \xb7  DCF 60%", ln=1)
+
+    # ─── PAGE 5 — SENSITIVITY ANALYSIS ───────────────────────────────────
+    pdf.add_page()
+    pdf.section_title("04", "Sensitivity Analysis")
+
+    occs = sensitivity.get("occs", [])
+    caps = sensitivity.get("caps", [])
+    irr_table = sensitivity.get("irrTable", [])
+    val_table = sensitivity.get("valTable", [])
+
+    def sens_color(irr_val):
+        if irr_val > 18: return c['positive']
+        if irr_val >= 14: return c['amber']
+        if irr_val >= 10: return c['accent']
+        return c['negative']
+
+    def draw_sensitivity_grid(title, matrix, fmt_fn, color_matrix):
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*c['muted'])
+        pdf.cell(0, 5, title, ln=1)
+        pdf.ln(1)
+        col_w = min(14, (_PW - 16) / max(len(caps), 1))
+        row_h = 6
+        x0, y0 = pdf.get_x(), pdf.get_y()
+        pdf.set_font("Helvetica", "B", 6)
+        pdf.set_fill_color(*c['hdr_bg'])
+        pdf.set_text_color(*c['hdr_text'])
+        pdf.cell(16, row_h, "Occ\\Cap", border=0, fill=True, align="C")
+        for cap in caps:
+            pdf.cell(col_w, row_h, f"{cap:.1f}%", border=0, fill=True, align="C")
+        pdf.ln()
+        for i, occ in enumerate(occs):
+            pdf.set_x(x0)
+            pdf.set_font("Helvetica", "B", 6)
+            pdf.set_fill_color(*c['hdr_bg'])
+            pdf.set_text_color(*c['hdr_text'])
+            pdf.cell(16, row_h, f"{occ}%", border=0, fill=True, align="C")
+            for j, cap in enumerate(caps):
+                val = matrix[i][j] if i < len(matrix) and j < len(matrix[i]) else 0
+                pdf.set_fill_color(*color_matrix[i][j])
+                pdf.set_text_color(*c['white'])
+                pdf.set_font("Helvetica", "", 6)
+                pdf.cell(col_w, row_h, fmt_fn(val), border=0, fill=True, align="C")
+            pdf.ln()
+        pdf.set_y(pdf.get_y() + 4)
+
+    color_grid = [[sens_color(v) for v in row] for row in irr_table]
+    draw_sensitivity_grid("IRR SENSITIVITY \xb7 OCC VS CAP RATE", irr_table,
+                           lambda v: f"{v:.1f}%", color_grid)
+    draw_sensitivity_grid("VALUE SENSITIVITY \xb7 MAD M", val_table,
+                           lambda v: f"{v:.1f}M", color_grid)
+
+    # ─── PAGE 6 — BACK PAGE ───────────────────────────────────────────────
+    pdf._back_page = True
+    pdf.add_page()
+    pdf.set_fill_color(*c['bg'])
+    pdf.rect(0, 0, 210, 297, "F")
+    pdf.set_xy(_LM, 30)
+    pdf.set_font("Helvetica", "B", 20)
+    pdf.set_text_color(*c['white'])
+    pdf.cell(0, 10, "KODO", ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*c['accent'])
+    pdf.cell(0, 5, "HOSPITALITY INTELLIGENCE", ln=1)
+
+    pdf.set_xy(_LM, 120)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*c['muted'])
+    pdf.cell(0, 5, "DISCLAIMER", ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(*c['faint'])
+    disclaimer = (
+        "This Hotel Valuation Report is produced by Kodo Hospitality for informational purposes only. "
+        "All figures, including but not limited to indicated value, IRR, equity multiple, cash flow "
+        "projections, and sensitivity analysis, are indicative estimates derived from user-supplied "
+        "assumptions and Kodo's proprietary market models. They do not constitute a formal appraisal, "
+        "valuation opinion, or investment advice, and should not be relied upon as the sole basis for "
+        "any investment, financing, or transaction decision. Actual hotel performance may differ "
+        "materially from the projections shown. Kodo Hospitality accepts no liability for decisions "
+        "made in reliance on this report. Users should seek independent professional advice, including "
+        "a formal third-party appraisal, before making any investment decision."
+    )
+    pdf.set_x(_LM)
+    pdf.multi_cell(_PW, 4.5, _s(disclaimer), ln=1)
+
+    pdf.set_xy(_LM, 260)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*c['accent'])
+    pdf.cell(0, 5, "CONTACT", ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(*c['muted'])
+    pdf.cell(0, 5, "advisory@kodohospitality.com", ln=1)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(*c['faint'])
+    pdf.cell(0, 5, f"\xa9 2026 Kodo Hospitality \xb7 Generated {generated_date}", ln=1)
+
+    return bytes(pdf.output())
+
+
+@app.route("/api/valuation/export", methods=["POST"])
+@login_required
+@tier_required("advisory")
+def api_valuation_export():
+    if not PDF_AVAILABLE:
+        return jsonify({"error": "PDF generation temporarily unavailable", "fallback": True}), 503
+
+    body        = request.get_json(silent=True) or {}
+    property_   = body.get("property") or {}
+    inputs      = body.get("inputs") or {}
+    results     = body.get("results") or {}
+    sensitivity = body.get("sensitivity") or {}
+    mode        = body.get("mode") or "quick"
+
+    if not results.get("cashFlows"):
+        return jsonify({"error": "Missing valuation results — run a valuation before exporting"}), 400
+
+    try:
+        pdf_bytes = generate_valuation_pdf(property_, inputs, results, sensitivity, mode)
+        safe_name = re.sub(r'[^a-zA-Z0-9]+', '_', property_.get("name") or "Valuation")
+        filename  = f"Kodo_Valuation_{safe_name}.pdf"
+        buf = io.BytesIO(pdf_bytes)
+        buf.seek(0)
+        return send_file(buf, mimetype="application/pdf",
+                         as_attachment=True, download_name=filename)
+    except Exception as e:
+        app.logger.error(f"Valuation PDF export error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 

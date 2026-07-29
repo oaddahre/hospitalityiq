@@ -2655,6 +2655,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
     }
     if (screen === 'reports') initReports();
     if (screen === 'owners')  initOwners();
+    if (screen === 'valuation') initValuation();
   });
 });
 
@@ -4841,3 +4842,776 @@ document.getElementById('btn-export-bench')    ?.addEventListener('click', expor
 document.getElementById('btn-export-tourism')  ?.addEventListener('click', exportTourism);
 
 boot();
+
+// ═══════════════════════════════════════════════════════════════════
+// VALUATION SCREEN
+// ═══════════════════════════════════════════════════════════════════
+
+const SEGMENT_DEFAULTS = {
+  'Ultra Luxury': {
+    rooms_rev_pct: 55, fb_rev_pct: 30,
+    dept_expense_pct: 28, undist_expense_pct: 22,
+    mgmt_fee_pct: 4, ffe_reserve_pct: 5,
+    discount_rate: 8.5, terminal_cap_rate: 5.5,
+    base_occupancy: 68, base_adr: 8000,
+    revenue_growth: 3.5
+  },
+  'Luxury': {
+    rooms_rev_pct: 60, fb_rev_pct: 28,
+    dept_expense_pct: 30, undist_expense_pct: 24,
+    mgmt_fee_pct: 3.5, ffe_reserve_pct: 4.5,
+    discount_rate: 7.0, terminal_cap_rate: 6.0,
+    base_occupancy: 65, base_adr: 4500,
+    revenue_growth: 3.5
+  },
+  'Upper Upscale': {
+    rooms_rev_pct: 65, fb_rev_pct: 22,
+    dept_expense_pct: 32, undist_expense_pct: 26,
+    mgmt_fee_pct: 3.0, ffe_reserve_pct: 4.0,
+    discount_rate: 7.0, terminal_cap_rate: 6.5,
+    base_occupancy: 63, base_adr: 2800,
+    revenue_growth: 3.5
+  },
+  'Upscale': {
+    rooms_rev_pct: 70, fb_rev_pct: 18,
+    dept_expense_pct: 34, undist_expense_pct: 28,
+    mgmt_fee_pct: 3.0, ffe_reserve_pct: 4.0,
+    discount_rate: 7.5, terminal_cap_rate: 7.0,
+    base_occupancy: 60, base_adr: 1800,
+    revenue_growth: 3.5
+  },
+  'Midscale': {
+    rooms_rev_pct: 78, fb_rev_pct: 12,
+    dept_expense_pct: 36, undist_expense_pct: 30,
+    mgmt_fee_pct: 2.5, ffe_reserve_pct: 3.5,
+    discount_rate: 8.0, terminal_cap_rate: 7.5,
+    base_occupancy: 58, base_adr: 1000,
+    revenue_growth: 3.5
+  }
+};
+
+// ─── Number formatting helpers ───────────────────────────────────────
+function fmtMAD(val) {
+  if (val >= 1e9) return 'MAD ' + (val/1e9).toFixed(1) + 'B';
+  if (val >= 1e6) return 'MAD ' + (val/1e6).toFixed(1) + 'M';
+  if (val >= 1e3) return 'MAD ' + (val/1e3).toFixed(0) + 'K';
+  return 'MAD ' + val.toFixed(0);
+}
+function fmtPct(val) { return val.toFixed(1) + '%'; }
+function fmtMultiple(val) { return val.toFixed(2) + 'x'; }
+function fmtEUR(madVal) { return '€' + (madVal/10.8/1000).toFixed(0) + 'K'; }
+
+// ─── Calculation engine ──────────────────────────────────────────────
+function generateCashFlows(inputs) {
+  const { keys, stabilized_occ, adr, growth_rate, rampup,
+          rooms_rev_pct, fb_rev_pct, dept_exp_pct, undist_exp_pct,
+          mgmt_fee_pct, ffe_pct, discount_rate, terminal_cap_rate,
+          hold_period, capex_yr1, purchase_price, equity_pct } = inputs;
+
+  const cashFlows = [];
+
+  for (let yr = 1; yr <= hold_period; yr++) {
+    // Occupancy with ramp-up
+    let occ = stabilized_occ / 100;
+    if (rampup >= 1 && yr === 1) occ *= 0.70;
+    else if (rampup >= 2 && yr === 2) occ *= 0.85;
+    else if (rampup >= 3 && yr === 3) occ *= 0.92;
+
+    // Revenue
+    const adr_yr = adr * Math.pow(1 + growth_rate / 100, yr - 1);
+    const revpar = adr_yr * occ;
+    const rooms_rev = revpar * keys * 365;
+    const total_rev = rooms_rev / (rooms_rev_pct / 100);
+    const fb_rev = total_rev * (fb_rev_pct / 100);
+
+    // Expenses
+    const dept_exp = rooms_rev * (dept_exp_pct / 100);
+    const undist_exp = total_rev * (undist_exp_pct / 100);
+    const mgmt_fee = total_rev * (mgmt_fee_pct / 100);
+    const ffe = total_rev * (ffe_pct / 100);
+
+    // Profit
+    const gop = total_rev - dept_exp - undist_exp - mgmt_fee;
+    const gop_margin = gop / total_rev;
+    const noi = gop - ffe;
+    const fcf = noi - (yr === 1 ? capex_yr1 : 0);
+    const pv_fcf = fcf / Math.pow(1 + discount_rate / 100, yr);
+
+    cashFlows.push({
+      yr, occ: occ * 100, adr: adr_yr, revpar,
+      total_rev, rooms_rev, fb_rev,
+      gop, gop_margin: gop_margin * 100,
+      noi, fcf, pv_fcf
+    });
+  }
+
+  // Terminal Value
+  const last = cashFlows[cashFlows.length - 1];
+  const terminal_noi = last.noi * (1 + growth_rate / 100);
+  const terminal_value = terminal_noi / (terminal_cap_rate / 100);
+  const pv_terminal = terminal_value / Math.pow(1 + discount_rate / 100, hold_period);
+
+  // NPV
+  const total_pv_fcf = cashFlows.reduce((s, cf) => s + cf.pv_fcf, 0);
+  const dcf_value = total_pv_fcf + pv_terminal;
+
+  // Income Cap Value (stabilized year NOI / cap rate)
+  const stab_yr = cashFlows[Math.min(2, hold_period - 1)];
+  const income_cap_value = stab_yr.noi / (terminal_cap_rate / 100);
+
+  // Reconciled (60% DCF + 40% Income Cap)
+  const reconciled = dcf_value * 0.60 + income_cap_value * 0.40;
+  const value_per_key = reconciled / keys;
+
+  // IRR
+  const entry = purchase_price > 0 ? purchase_price * 1e6 : dcf_value;
+  const cf_series = [-entry, ...cashFlows.map(cf => cf.fcf), terminal_value];
+  const irr = calculateIRR(cf_series);
+
+  // Equity Multiple
+  const equity_invested = entry * ((equity_pct || 35) / 100);
+  const total_return = cashFlows.reduce((s, cf) => s + cf.fcf, 0) + terminal_value;
+  const equity_multiple = total_return / equity_invested;
+
+  // Payback period
+  let cumulative = -entry;
+  let payback = hold_period;
+  for (let i = 0; i < cashFlows.length; i++) {
+    cumulative += cashFlows[i].fcf;
+    if (cumulative >= 0) { payback = i + 1; break; }
+  }
+
+  return {
+    cashFlows, terminal_value, pv_terminal,
+    total_pv_fcf, dcf_value,
+    income_cap_value, reconciled,
+    value_per_key,
+    irr: irr * 100,
+    equity_multiple,
+    payback,
+    range_low: reconciled * 0.92,
+    range_high: reconciled * 1.08
+  };
+}
+
+function calculateIRR(cfs) {
+  let r = 0.10;
+  for (let i = 0; i < 200; i++) {
+    let npv = 0, dnpv = 0;
+    for (let t = 0; t < cfs.length; t++) {
+      const d = Math.pow(1 + r, t);
+      npv += cfs[t] / d;
+      dnpv -= t * cfs[t] / (d * (1 + r));
+    }
+    const r2 = r - npv / dnpv;
+    if (Math.abs(r2 - r) < 1e-6) return r2;
+    r = r2;
+  }
+  return r;
+}
+
+function generateSensitivityTables(inputs, baseResults) {
+  const occs = [55, 60, 65, 70, 75];
+  const caps = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
+
+  const irrTable = [];
+  const valTable = [];
+
+  occs.forEach(occ => {
+    const irrRow = [];
+    const valRow = [];
+    caps.forEach(cap => {
+      const res = generateCashFlows({
+        ...inputs,
+        stabilized_occ: occ,
+        terminal_cap_rate: cap
+      });
+      irrRow.push(res.irr);
+      valRow.push(res.reconciled / 1e6);
+    });
+    irrTable.push(irrRow);
+    valTable.push(valRow);
+  });
+
+  return { occs, caps, irrTable, valTable };
+}
+
+// ─── Screen state & DOM helpers ──────────────────────────────────────
+let valuationInited = false;
+const valState = {
+  mode: 'quick',
+  customCashFlows: null,   // array of row objects when in custom mode
+  lastInputs: null,
+  lastResults: null,
+};
+
+function valEl(id) { return document.getElementById(id); }
+function valNum(id) { return parseFloat(valEl(id).value) || 0; }
+
+function valSensClass(irrPct) {
+  if (irrPct > 18) return 'val-sens-high';
+  if (irrPct >= 14) return 'val-sens-mid-high';
+  if (irrPct >= 10) return 'val-sens-mid';
+  return 'val-sens-low';
+}
+
+function valNearestIdx(arr, target) {
+  let best = 0, bestDiff = Infinity;
+  arr.forEach((v, i) => {
+    const d = Math.abs(v - target);
+    if (d < bestDiff) { bestDiff = d; best = i; }
+  });
+  return best;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────
+function initValuation() {
+  if (!valuationInited) {
+    valuationInited = true;
+    valBuildCityOptions();
+    valWireEvents();
+    valApplySegmentDefaults('Luxury', /*silent=*/true);
+    valUpdateLiveMetrics();
+  }
+  valApplyTierGating();
+}
+
+function valBuildCityOptions() {
+  const sel = valEl('val-p-city');
+  if (!sel || sel.options.length > 1) return;
+  const cities = [...new Set((hotels || []).map(h => h.city))].sort();
+  cities.forEach(city => {
+    const o = document.createElement('option');
+    o.value = city; o.textContent = city;
+    sel.appendChild(o);
+  });
+}
+
+// ─── Tier gating ──────────────────────────────────────────────────────
+function valApplyTierGating() {
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  const panel = valEl('val-input-panel');
+
+  // Remove any existing overlay first
+  const existingOverlay = document.getElementById('val-observer-overlay');
+  if (existingOverlay) existingOverlay.remove();
+
+  if (tier === 'observer') {
+    panel.style.position = 'relative';
+    const overlay = document.createElement('div');
+    overlay.id = 'val-observer-overlay';
+    overlay.className = 'val-lock-overlay';
+    overlay.innerHTML = `
+      <div class="val-lock-card">
+        <div class="val-lock-label">Upgrade Required</div>
+        <div class="val-lock-title">Hotel Valuation Tool</div>
+        <div class="val-lock-body">DCF modelling, income capitalization, and sensitivity analysis are available on the Benchmarker and Advisory plans.</div>
+        <a href="/#pricing" class="val-lock-cta">Upgrade now →</a>
+      </div>`;
+    panel.appendChild(overlay);
+    panel.querySelectorAll('input, select, button').forEach(el => {
+      if (el.id !== 'val-mode-quick-btn') el.disabled = true;
+    });
+  } else {
+    panel.querySelectorAll('input, select, button').forEach(el => { el.disabled = false; });
+  }
+
+  const customLock = valEl('val-mode-custom-lock');
+  if (tier === 'observer' || tier === 'benchmarker') {
+    customLock.style.display = '';
+  } else {
+    customLock.style.display = 'none';
+  }
+
+  // If currently on custom mode but tier no longer allows it, bounce back
+  if (valState.mode === 'custom' && tier !== 'advisory') {
+    valSwitchMode('quick');
+  }
+
+  // Sensitivity — Advisory only
+  const sensSection = valEl('val-sensitivity-section');
+  const existingSensOverlay = document.getElementById('val-sens-overlay');
+  if (existingSensOverlay) existingSensOverlay.remove();
+  if (tier !== 'advisory') {
+    sensSection.style.position = 'relative';
+    const overlay = document.createElement('div');
+    overlay.id = 'val-sens-overlay';
+    overlay.className = 'val-lock-overlay';
+    overlay.style.position = 'absolute';
+    overlay.innerHTML = `
+      <div class="val-lock-card">
+        <div class="val-lock-label">Advisory Only</div>
+        <div class="val-lock-title">Sensitivity Tables</div>
+        <div class="val-lock-body">IRR and value sensitivity grids across occupancy and cap-rate scenarios are available on the Advisory plan.</div>
+        <a href="/#pricing" class="val-lock-cta">Upgrade now →</a>
+      </div>`;
+    sensSection.appendChild(overlay);
+  }
+
+  // Export — Advisory only
+  const exportBtn = valEl('val-export-btn');
+  exportBtn.disabled = (tier !== 'advisory');
+}
+
+// ─── Segment defaults ─────────────────────────────────────────────────
+function valApplySegmentDefaults(segment, silent) {
+  const d = SEGMENT_DEFAULTS[segment];
+  if (!d) return;
+  valEl('val-q-occ').value = d.base_occupancy;
+  valEl('val-q-adr').value = d.base_adr;
+  valEl('val-q-growth').value = d.revenue_growth;
+  valEl('val-q-rooms-pct').value = d.rooms_rev_pct;
+  valEl('val-q-fb-pct').value = d.fb_rev_pct;
+  valEl('val-q-dept-pct').value = d.dept_expense_pct;
+  valEl('val-q-undist-pct').value = d.undist_expense_pct;
+  valEl('val-q-mgmt-pct').value = d.mgmt_fee_pct;
+  valEl('val-q-ffe-pct').value = d.ffe_reserve_pct;
+  valEl('val-discount').value = d.discount_rate;
+  valEl('val-termcap').value = d.terminal_cap_rate;
+  valEl('val-gen-occ').value = d.base_occupancy;
+  valEl('val-gen-adr').value = d.base_adr;
+  valEl('val-gen-growth').value = d.revenue_growth;
+  valUpdateLiveMetrics();
+}
+
+// ─── Live readouts (before Run Valuation) ────────────────────────────
+function valUpdateLiveMetrics() {
+  const occ = valNum('val-q-occ');
+  const adr = valNum('val-q-adr');
+  valEl('val-q-occ-val').textContent = occ + '%';
+  valEl('val-q-growth-val').textContent = valNum('val-q-growth') + '%/yr';
+  valEl('val-q-rooms-pct-val').textContent = valNum('val-q-rooms-pct') + '%';
+  valEl('val-q-fb-pct-val').textContent = valNum('val-q-fb-pct') + '%';
+  valEl('val-q-dept-pct-val').textContent = valNum('val-q-dept-pct') + '%';
+  valEl('val-q-undist-pct-val').textContent = valNum('val-q-undist-pct') + '%';
+  valEl('val-q-mgmt-pct-val').textContent = valNum('val-q-mgmt-pct') + '%';
+  valEl('val-q-ffe-pct-val').textContent = valNum('val-q-ffe-pct') + '%';
+  valEl('val-txn-pct-val').textContent = valNum('val-txn-pct') + '%';
+  valEl('val-discount-val').textContent = fmtPct(valNum('val-discount'));
+  valEl('val-termcap-val').textContent = fmtPct(valNum('val-termcap'));
+  valEl('val-equity-val').textContent = valNum('val-equity') + '%';
+  valEl('val-debt').value = (100 - valNum('val-equity')) + '%';
+  valEl('val-loanrate-val').textContent = fmtPct(valNum('val-loanrate'));
+  valEl('val-taxrate-val').textContent = valNum('val-taxrate') + '%';
+
+  const revpar = adr * occ / 100;
+  valEl('val-q-revpar').value = fmtMAD(revpar) + ' /night';
+
+  // GOP / NOI margin preview using current P&L sliders
+  const roomsPct = valNum('val-q-rooms-pct') / 100;
+  const totalRevProxy = roomsPct > 0 ? 1 / roomsPct : 1; // per-unit-rooms-rev basis
+  const deptExp   = valNum('val-q-dept-pct') / 100;      // % of rooms rev
+  const undistExp = valNum('val-q-undist-pct') / 100;    // % of total rev
+  const mgmtFee   = valNum('val-q-mgmt-pct') / 100;
+  const ffe       = valNum('val-q-ffe-pct') / 100;
+  const gop = totalRevProxy - deptExp - undistExp * totalRevProxy - mgmtFee * totalRevProxy;
+  const gopMargin = gop / totalRevProxy;
+  const noiMargin = gopMargin - ffe;
+
+  const gopEl = valEl('val-q-gop-margin');
+  const noiEl = valEl('val-q-noi-margin');
+  gopEl.textContent = fmtPct(gopMargin * 100);
+  noiEl.textContent = fmtPct(noiMargin * 100);
+  gopEl.className = 'val-metric-value ' + (gopMargin >= 0.30 ? 'val-metric-good' : gopMargin >= 0.20 ? 'val-metric-mid' : 'val-metric-poor');
+  noiEl.className = 'val-metric-value ' + (noiMargin >= 0.26 ? 'val-metric-good' : noiMargin >= 0.16 ? 'val-metric-mid' : 'val-metric-poor');
+}
+
+// ─── Mode switching ───────────────────────────────────────────────────
+function valSwitchMode(mode) {
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  if (mode === 'custom' && tier !== 'advisory') {
+    if (typeof showUpgradeModal === 'function') {
+      showUpgradeModal('Advisory Only', 'Custom Cash Flows mode — build and edit a fully custom 10-year projection — is available on the Advisory plan.');
+    }
+    return;
+  }
+  valState.mode = mode;
+  document.querySelectorAll('.val-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.querySelectorAll('.val-mode-panel').forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
+}
+
+// ─── Gather inputs from the DOM ──────────────────────────────────────
+function valGatherInputs() {
+  const keys = Math.max(1, valNum('val-p-keys'));
+  const equity_pct = valNum('val-equity');
+  return {
+    keys,
+    stabilized_occ: valNum('val-q-occ'),
+    adr: valNum('val-q-adr'),
+    growth_rate: valNum('val-q-growth'),
+    rampup: valNum('val-q-rampup'),
+    rooms_rev_pct: valNum('val-q-rooms-pct'),
+    fb_rev_pct: valNum('val-q-fb-pct'),
+    dept_exp_pct: valNum('val-q-dept-pct'),
+    undist_exp_pct: valNum('val-q-undist-pct'),
+    mgmt_fee_pct: valNum('val-q-mgmt-pct'),
+    ffe_pct: valNum('val-q-ffe-pct'),
+    discount_rate: valNum('val-discount'),
+    terminal_cap_rate: valNum('val-termcap'),
+    hold_period: valState.holdPeriod || 10,
+    capex_yr1: valNum('val-capex'),
+    purchase_price: valNum('val-price'),
+    equity_pct,
+  };
+}
+
+// ─── Run Valuation ────────────────────────────────────────────────────
+function valRunValuation() {
+  const inputs = valGatherInputs();
+  valState.lastInputs = inputs;
+
+  let results;
+  if (valState.mode === 'custom' && valState.customCashFlows) {
+    results = valComputeFromCustomCashFlows(inputs, valState.customCashFlows);
+  } else {
+    results = generateCashFlows(inputs);
+    valState.customCashFlows = null;
+  }
+  valState.lastResults = results;
+
+  valEl('val-placeholder').style.display = 'none';
+  valEl('val-results').classList.add('active');
+
+  valRenderKPICards(inputs, results);
+  valRenderCashFlowTable(inputs, results, valState.mode === 'custom');
+  valRenderApproachCards(inputs, results);
+
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  if (tier === 'advisory') {
+    const sens = generateSensitivityTables(inputs, results);
+    valRenderSensitivityTables(inputs, sens);
+  }
+}
+
+// Recompute NPV/IRR/etc. from a (possibly hand-edited) cash flow array
+function valComputeFromCustomCashFlows(inputs, cashFlows) {
+  const last = cashFlows[cashFlows.length - 1];
+  const terminal_noi = last.noi * (1 + inputs.growth_rate / 100);
+  const terminal_value = terminal_noi / (inputs.terminal_cap_rate / 100);
+  const pv_terminal = terminal_value / Math.pow(1 + inputs.discount_rate / 100, inputs.hold_period);
+
+  const total_pv_fcf = cashFlows.reduce((s, cf) => s + cf.pv_fcf, 0);
+  const dcf_value = total_pv_fcf + pv_terminal;
+
+  const stab_yr = cashFlows[Math.min(2, cashFlows.length - 1)];
+  const income_cap_value = stab_yr.noi / (inputs.terminal_cap_rate / 100);
+
+  const reconciled = dcf_value * 0.60 + income_cap_value * 0.40;
+  const value_per_key = reconciled / inputs.keys;
+
+  const entry = inputs.purchase_price > 0 ? inputs.purchase_price * 1e6 : dcf_value;
+  const cf_series = [-entry, ...cashFlows.map(cf => cf.fcf), terminal_value];
+  const irr = calculateIRR(cf_series);
+
+  const equity_invested = entry * ((inputs.equity_pct || 35) / 100);
+  const total_return = cashFlows.reduce((s, cf) => s + cf.fcf, 0) + terminal_value;
+  const equity_multiple = total_return / equity_invested;
+
+  let cumulative = -entry;
+  let payback = inputs.hold_period;
+  for (let i = 0; i < cashFlows.length; i++) {
+    cumulative += cashFlows[i].fcf;
+    if (cumulative >= 0) { payback = i + 1; break; }
+  }
+
+  return {
+    cashFlows, terminal_value, pv_terminal,
+    total_pv_fcf, dcf_value,
+    income_cap_value, reconciled,
+    value_per_key,
+    irr: irr * 100,
+    equity_multiple,
+    payback,
+    range_low: reconciled * 0.92,
+    range_high: reconciled * 1.08,
+  };
+}
+
+// ─── Render: KPI cards ────────────────────────────────────────────────
+function valRenderKPICards(inputs, results) {
+  valEl('val-kpi-value').textContent = `${fmtMAD(results.range_low)} — ${fmtMAD(results.range_high)}`;
+  valEl('val-kpi-perkey').textContent = fmtMAD(results.value_per_key);
+  valEl('val-kpi-perkey-eur').textContent = `${fmtEUR(results.value_per_key)} equivalent (÷10.8)`;
+  valEl('val-kpi-irr').textContent = fmtPct(results.irr);
+  valEl('val-kpi-irr-sub').textContent = `${inputs.hold_period}-year hold period`;
+  valEl('val-kpi-multiple').textContent = fmtMultiple(results.equity_multiple);
+}
+
+// ─── Render: Cash flow table ──────────────────────────────────────────
+function valRenderCashFlowTable(inputs, results, editable) {
+  valEl('val-cf-title').textContent = `${inputs.hold_period}-Year Projected Cash Flows · MAD`;
+  valEl('val-reset-btn').style.display = editable ? '' : 'none';
+
+  const tbody = valEl('val-cf-tbody');
+  tbody.innerHTML = '';
+
+  results.cashFlows.forEach((cf, i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.row = i;
+    const ed = editable;
+    tr.innerHTML = `
+      <td>Year ${cf.yr}</td>
+      <td ${ed ? 'contenteditable="true" data-field="occ"' : ''}>${cf.occ.toFixed(1)}</td>
+      <td ${ed ? 'contenteditable="true" data-field="adr"' : ''}>${Math.round(cf.adr).toLocaleString('en')}</td>
+      <td data-field="revpar">${Math.round(cf.revpar).toLocaleString('en')}</td>
+      <td ${ed ? 'contenteditable="true" data-field="total_rev"' : ''}>${Math.round(cf.total_rev).toLocaleString('en')}</td>
+      <td>${Math.round(cf.rooms_rev).toLocaleString('en')}</td>
+      <td>${Math.round(cf.fb_rev).toLocaleString('en')}</td>
+      <td ${ed ? 'contenteditable="true" data-field="gop"' : ''}>${Math.round(cf.gop).toLocaleString('en')}</td>
+      <td data-field="gop_margin">${cf.gop_margin.toFixed(1)}</td>
+      <td ${ed ? 'contenteditable="true" data-field="noi"' : ''}>${Math.round(cf.noi).toLocaleString('en')}</td>
+      <td ${ed ? 'contenteditable="true" data-field="fcf"' : ''}>${Math.round(cf.fcf).toLocaleString('en')}</td>
+      <td data-field="pv_fcf">${Math.round(cf.pv_fcf).toLocaleString('en')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Terminal Value row — spans Occ..NOI, shows raw terminal value in the
+  // FCF column and its discounted value in PV(FCF)
+  const trTerm = document.createElement('tr');
+  trTerm.className = 'val-terminal-row';
+  trTerm.innerHTML =
+    '<td>Terminal Value</td>' +
+    '<td colspan="9"></td>' +
+    `<td>${Math.round(results.terminal_value).toLocaleString('en')}</td>` +
+    `<td>${Math.round(results.pv_terminal).toLocaleString('en')}</td>`;
+  tbody.appendChild(trTerm);
+
+  // NPV total row
+  const trTotal = document.createElement('tr');
+  trTotal.className = 'val-total-row';
+  const npvTotal = results.total_pv_fcf + results.pv_terminal;
+  trTotal.innerHTML = `<td>NPV Total</td><td colspan="10"></td><td>${Math.round(npvTotal).toLocaleString('en')}</td>`;
+  tbody.appendChild(trTotal);
+
+  if (editable) {
+    tbody.querySelectorAll('td[contenteditable="true"]').forEach(td => {
+      td.addEventListener('blur', valOnCellEdit);
+    });
+  }
+}
+
+// Re-derive a row + recompute totals when a Mode-2 cell is edited
+function valOnCellEdit(e) {
+  const td = e.target;
+  const tr = td.closest('tr');
+  const rowIdx = parseInt(tr.dataset.row, 10);
+  if (isNaN(rowIdx) || !valState.customCashFlows) return;
+
+  const field = td.dataset.field;
+  const raw = parseFloat(td.textContent.replace(/,/g, ''));
+  if (isNaN(raw)) { valRunValuation(); return; }
+
+  const row = valState.customCashFlows[rowIdx];
+  row[field] = raw;
+
+  // Derived, non-editable fields
+  row.revpar = row.adr * row.occ / 100;
+  row.gop_margin = row.total_rev ? (row.gop / row.total_rev) * 100 : 0;
+  const discount_rate = valNum('val-discount');
+  row.pv_fcf = row.fcf / Math.pow(1 + discount_rate / 100, row.yr);
+
+  valRunValuation();
+}
+
+// ─── Render: Valuation approach cards ─────────────────────────────────
+function valRenderApproachCards(inputs, results) {
+  const stab_yr = results.cashFlows[Math.min(2, results.cashFlows.length - 1)];
+  valEl('val-ic-noi').textContent   = fmtMAD(stab_yr.noi);
+  valEl('val-ic-cap').textContent   = fmtPct(inputs.terminal_cap_rate);
+  valEl('val-ic-value').textContent = fmtMAD(results.income_cap_value);
+  valEl('val-ic-perkey').textContent = fmtMAD(results.income_cap_value / inputs.keys);
+
+  valEl('val-dcf-title').textContent  = `DCF Analysis · ${inputs.hold_period}-Year Hold`;
+  valEl('val-dcf-pvcf').textContent   = fmtMAD(results.total_pv_fcf);
+  valEl('val-dcf-pvterm').textContent = fmtMAD(results.pv_terminal);
+  valEl('val-dcf-value').textContent  = fmtMAD(results.dcf_value);
+  valEl('val-dcf-irr').textContent    = fmtPct(results.irr);
+  valEl('val-dcf-multiple').textContent = fmtMultiple(results.equity_multiple);
+  valEl('val-dcf-payback').textContent  = results.payback.toFixed(1) + ' years';
+
+  valEl('val-rec-value').textContent  = `${fmtMAD(results.range_low)} — ${fmtMAD(results.range_high)}`;
+  valEl('val-rec-perkey').textContent = `${fmtMAD(results.value_per_key)} / key · ${fmtEUR(results.value_per_key)}`;
+}
+
+// ─── Render: Sensitivity tables ────────────────────────────────────────
+function valRenderSensitivityTables(inputs, sens) {
+  const curOccIdx = valNearestIdx(sens.occs, inputs.stabilized_occ);
+  const curCapIdx = valNearestIdx(sens.caps, inputs.terminal_cap_rate);
+
+  const buildTable = (table, matrix, fmt, currentSuffix) => {
+    let html = '<thead><tr><th>Occ \\ Cap</th>' +
+      sens.caps.map(c => `<th>${c.toFixed(1)}%</th>`).join('') + '</tr></thead><tbody>';
+    sens.occs.forEach((occ, i) => {
+      html += `<tr><th>${occ}%</th>`;
+      sens.caps.forEach((cap, j) => {
+        const irrVal = sens.irrTable[i][j];
+        const cls = valSensClass(irrVal);
+        const isCurrent = (i === curOccIdx && j === curCapIdx);
+        html += `<td class="${cls}${isCurrent ? ' val-sens-current' : ''}">${fmt(matrix[i][j])}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    table.innerHTML = html;
+  };
+
+  buildTable(valEl('val-sens-irr-table'), sens.irrTable, v => fmtPct(v));
+  buildTable(valEl('val-sens-val-table'), sens.valTable, v => v.toFixed(1) + 'M');
+}
+
+// ─── Generate starting point (Mode 2) ─────────────────────────────────
+function valGenerateCustomTable() {
+  const segment = valEl('val-gen-segment').value || 'Luxury';
+  // Keep the shared growth field in sync so valRunValuation()'s later
+  // re-gather (used for the terminal value extrapolation) matches
+  // what this table was actually generated with.
+  valEl('val-q-growth').value = valEl('val-gen-growth').value;
+  const inputs = valGatherInputs();
+  inputs.stabilized_occ = valNum('val-gen-occ');
+  inputs.adr = valNum('val-gen-adr');
+  inputs.growth_rate = valNum('val-gen-growth');
+  const d = SEGMENT_DEFAULTS[segment];
+  if (d) {
+    inputs.rooms_rev_pct   = d.rooms_rev_pct;
+    inputs.fb_rev_pct      = d.fb_rev_pct;
+    inputs.dept_exp_pct    = d.dept_expense_pct;
+    inputs.undist_exp_pct  = d.undist_expense_pct;
+    inputs.mgmt_fee_pct    = d.mgmt_fee_pct;
+    inputs.ffe_pct         = d.ffe_reserve_pct;
+  }
+  const results = generateCashFlows(inputs);
+  valState.customCashFlows = results.cashFlows.map(cf => ({ ...cf }));
+  valState.lastInputs = inputs;
+  valRunValuation();
+}
+
+// ─── Event wiring ──────────────────────────────────────────────────────
+function valWireEvents() {
+  // Mode toggle
+  valEl('val-mode-quick-btn').addEventListener('click', () => valSwitchMode('quick'));
+  valEl('val-mode-custom-btn').addEventListener('click', () => valSwitchMode('custom'));
+
+  // Segment auto-fill
+  valEl('val-p-segment').addEventListener('change', e => {
+    if (e.target.value) valApplySegmentDefaults(e.target.value, false);
+  });
+
+  // Live-updating sliders/inputs
+  ['val-q-occ','val-q-growth','val-q-rooms-pct','val-q-fb-pct','val-q-dept-pct',
+   'val-q-undist-pct','val-q-mgmt-pct','val-q-ffe-pct','val-q-adr','val-txn-pct',
+   'val-discount','val-termcap','val-equity','val-loanrate','val-taxrate']
+    .forEach(id => valEl(id).addEventListener('input', valUpdateLiveMetrics));
+
+  // Hold period toggle
+  valEl('val-hold-toggle').addEventListener('click', e => {
+    const btn = e.target.closest('.val-toggle-btn');
+    if (!btn) return;
+    valEl('val-hold-toggle').querySelectorAll('.val-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    valState.holdPeriod = parseInt(btn.dataset.hold, 10);
+  });
+  valState.holdPeriod = 10;
+
+  // Advanced financing
+  valEl('val-adv-toggle').addEventListener('click', () => {
+    valEl('val-adv-panel').classList.toggle('open');
+  });
+  valEl('val-recalc-wacc-btn').addEventListener('click', () => {
+    const equity = valNum('val-equity');
+    const debt = 100 - equity;
+    const loanRate = valNum('val-loanrate');
+    const taxRate = valNum('val-taxrate');
+    const segment = valEl('val-p-segment').value || 'Luxury';
+    const ke = (SEGMENT_DEFAULTS[segment] || SEGMENT_DEFAULTS['Luxury']).discount_rate;
+    const wacc = (equity / 100) * ke + (debt / 100) * loanRate * (1 - taxRate / 100);
+    valEl('val-discount').value = wacc.toFixed(1);
+    valUpdateLiveMetrics();
+  });
+
+  // Mode 2 — generate starting point
+  valEl('val-generate-toggle-btn').addEventListener('click', () => {
+    valEl('val-generate-form').classList.toggle('open');
+  });
+  valEl('val-generate-run-btn').addEventListener('click', valGenerateCustomTable);
+
+  // Reset (Mode 2)
+  valEl('val-reset-btn').addEventListener('click', () => {
+    if (valState.mode === 'custom') valGenerateCustomTable();
+  });
+
+  // Run valuation
+  valEl('val-run-btn').addEventListener('click', valRunValuation);
+
+  // Export
+  valEl('val-export-btn').addEventListener('click', valExportPDF);
+}
+
+// ─── PDF export ─────────────────────────────────────────────────────────
+async function valExportPDF() {
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  if (tier !== 'advisory') {
+    if (typeof showUpgradeModal === 'function') {
+      showUpgradeModal('Advisory Only', 'PDF valuation reports are available on the Advisory plan.');
+    }
+    return;
+  }
+  if (!valState.lastResults || !valState.lastInputs) {
+    if (typeof showUpgradeModal === 'function') {
+      showUpgradeModal('Run a valuation first', 'Configure your inputs and click Run Valuation before exporting a report.');
+    }
+    return;
+  }
+
+  const btn = valEl('val-export-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+
+  try {
+    const property = {
+      name: valEl('val-p-name').value || 'Unnamed Property',
+      city: valEl('val-p-city').value || '—',
+      segment: valEl('val-p-segment').value || '—',
+      keys: valNum('val-p-keys'),
+      year_built: valEl('val-p-year').value || null,
+    };
+
+    const sensitivity = generateSensitivityTables(valState.lastInputs, valState.lastResults);
+
+    const r = await fetch('/api/valuation/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        property,
+        inputs: valState.lastInputs,
+        results: valState.lastResults,
+        sensitivity,
+        mode: valState.mode,
+      }),
+    });
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(err.error || 'Export failed');
+    }
+
+    const blob = await r.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const safeName = property.name.replace(/[^a-z0-9]+/gi, '_');
+    a.href = url;
+    a.download = `Kodo_Valuation_${safeName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    if (typeof showUpgradeModal === 'function') {
+      showUpgradeModal('Export failed', err.message);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}

@@ -26,6 +26,7 @@
       <a href="#" class="nav-link" data-screen="hotels">Hotels</a>
       <a href="#" class="nav-link" data-screen="brands">Brands</a>
       <a href="#" class="nav-link" data-screen="owners">Owners</a>
+      <a href="#" class="nav-link" data-screen="valuation">Valuation</a>
       <a href="#" class="nav-link" data-screen="benchmarking">Benchmarking</a>
       <a href="#" class="nav-link" data-screen="reports">Reports</a>
       <a href="#" class="nav-link" data-screen="tourism">Tourism</a>
@@ -55,6 +56,7 @@
     <a href="#" class="nav-link mobile-nav-link" data-screen="hotels">Hotels</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="brands">Brands</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="owners">Owners</a>
+    <a href="#" class="nav-link mobile-nav-link" data-screen="valuation">Valuation</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="benchmarking">Benchmarking</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="reports">Reports</a>
     <a href="#" class="nav-link mobile-nav-link" data-screen="tourism">Tourism</a>
@@ -987,6 +989,348 @@
                 <tbody id="owner-portfolio-tbody"></tbody>
               </table>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Valuation ── -->
+      <section class="screen" id="screen-valuation">
+
+        <div class="val-input-panel" id="val-input-panel">
+          <div class="val-title">Hotel Valuation</div>
+          <div class="val-subtitle">DCF · Income Capitalization · Sensitivity</div>
+          <div class="val-disclaimer-row">
+            <span class="kodo-estimate-badge">Indicative estimates · Not for investment decisions</span>
+          </div>
+
+          <div class="val-mode-toggle">
+            <button class="val-mode-btn active" id="val-mode-quick-btn" data-mode="quick">Quick Valuation</button>
+            <button class="val-mode-btn" id="val-mode-custom-btn" data-mode="custom">
+              Custom Cash Flows
+              <span class="val-mode-lock" id="val-mode-custom-lock" style="display:none">Advisory</span>
+            </button>
+          </div>
+
+          <!-- SECTION 01 — PROPERTY (shared) -->
+          <div class="val-section">
+            <span class="val-section-label">01</span>
+            <div class="val-section-title">Property</div>
+            <div class="val-field">
+              <label class="val-field-label">Hotel Name <span style="font-weight:400">(optional)</span></label>
+              <input type="text" class="val-input" id="val-p-name" placeholder="e.g. Riad Fès">
+            </div>
+            <div class="val-row-2">
+              <div class="val-field">
+                <label class="val-field-label">City</label>
+                <select class="val-select" id="val-p-city"><option value="">Select…</option></select>
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Segment</label>
+                <select class="val-select" id="val-p-segment">
+                  <option value="">Select…</option>
+                  <option value="Ultra Luxury">Ultra Luxury</option>
+                  <option value="Luxury">Luxury</option>
+                  <option value="Upper Upscale">Upper Upscale</option>
+                  <option value="Upscale">Upscale</option>
+                  <option value="Midscale">Midscale</option>
+                </select>
+              </div>
+            </div>
+            <div class="val-row-2">
+              <div class="val-field">
+                <label class="val-field-label">Keys</label>
+                <input type="number" class="val-input" id="val-p-keys" min="1" value="100">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Year Built <span style="font-weight:400">(optional)</span></label>
+                <input type="number" class="val-input" id="val-p-year" placeholder="e.g. 2015">
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE 1 PANEL -->
+          <div class="val-mode-panel active" id="val-panel-quick" data-mode="quick">
+
+            <!-- SECTION 02 — OPERATING -->
+            <div class="val-section">
+              <span class="val-section-label">02</span>
+              <div class="val-section-title">Operating</div>
+              <div class="val-field">
+                <label class="val-field-label">Stabilized Occupancy <span class="val-field-value" id="val-q-occ-val">65%</span></label>
+                <input type="range" class="val-slider" id="val-q-occ" min="20" max="95" step="1" value="65">
+              </div>
+              <div class="val-row-2">
+                <div class="val-field">
+                  <label class="val-field-label">ADR (MAD)</label>
+                  <input type="number" class="val-input" id="val-q-adr" min="0" step="50" value="4500">
+                </div>
+                <div class="val-field">
+                  <label class="val-field-label">RevPAR</label>
+                  <input type="text" class="val-input-readonly" id="val-q-revpar" readonly>
+                </div>
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Revenue Growth <span class="val-field-value" id="val-q-growth-val">3.5%/yr</span></label>
+                <input type="range" class="val-slider" id="val-q-growth" min="1" max="10" step="0.5" value="3.5">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Ramp-up Period</label>
+                <select class="val-select" id="val-q-rampup">
+                  <option value="0">None</option>
+                  <option value="1">1 Year</option>
+                  <option value="2">2 Years</option>
+                  <option value="3">3 Years</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- SECTION 03 — P&L STRUCTURE -->
+            <div class="val-section">
+              <span class="val-section-label">03</span>
+              <div class="val-section-title">P&amp;L Structure</div>
+              <div class="val-field">
+                <label class="val-field-label">Rooms Revenue <span class="val-field-value" id="val-q-rooms-pct-val">60%</span></label>
+                <input type="range" class="val-slider" id="val-q-rooms-pct" min="40" max="90" step="1" value="60">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">F&amp;B Revenue <span class="val-field-value" id="val-q-fb-pct-val">28%</span></label>
+                <input type="range" class="val-slider" id="val-q-fb-pct" min="5" max="40" step="1" value="28">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Dept. Expense <span class="val-field-value" id="val-q-dept-pct-val">30%</span></label>
+                <input type="range" class="val-slider" id="val-q-dept-pct" min="20" max="50" step="1" value="30">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Undistributed Expense <span class="val-field-value" id="val-q-undist-pct-val">24%</span></label>
+                <input type="range" class="val-slider" id="val-q-undist-pct" min="15" max="35" step="1" value="24">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Management Fee <span class="val-field-value" id="val-q-mgmt-pct-val">3.5%</span></label>
+                <input type="range" class="val-slider" id="val-q-mgmt-pct" min="1" max="5" step="0.5" value="3.5">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">FF&amp;E Reserve <span class="val-field-value" id="val-q-ffe-pct-val">4.5%</span></label>
+                <input type="range" class="val-slider" id="val-q-ffe-pct" min="2" max="6" step="0.5" value="4.5">
+              </div>
+              <div class="val-metric-readout">
+                <span class="val-metric-label">GOP Margin</span>
+                <span class="val-metric-value" id="val-q-gop-margin">—</span>
+              </div>
+              <div class="val-metric-readout">
+                <span class="val-metric-label">NOI Margin</span>
+                <span class="val-metric-value" id="val-q-noi-margin">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE 2 PANEL -->
+          <div class="val-mode-panel" id="val-panel-custom" data-mode="custom">
+            <div class="val-section">
+              <span class="val-section-label">02</span>
+              <div class="val-section-title">Generate Starting Point</div>
+              <p class="val-section-note">Generate model projections as a starting point, then edit any cell.</p>
+              <button class="val-generate-btn" id="val-generate-toggle-btn">Generate from Assumptions →</button>
+              <div class="val-generate-form" id="val-generate-form">
+                <div class="val-field">
+                  <label class="val-field-label">Segment</label>
+                  <select class="val-select" id="val-gen-segment">
+                    <option value="Ultra Luxury">Ultra Luxury</option>
+                    <option value="Luxury" selected>Luxury</option>
+                    <option value="Upper Upscale">Upper Upscale</option>
+                    <option value="Upscale">Upscale</option>
+                    <option value="Midscale">Midscale</option>
+                  </select>
+                </div>
+                <div class="val-row-2">
+                  <div class="val-field">
+                    <label class="val-field-label">Occupancy %</label>
+                    <input type="number" class="val-input" id="val-gen-occ" min="20" max="95" value="65">
+                  </div>
+                  <div class="val-field">
+                    <label class="val-field-label">ADR (MAD)</label>
+                    <input type="number" class="val-input" id="val-gen-adr" min="0" value="4500">
+                  </div>
+                </div>
+                <div class="val-field">
+                  <label class="val-field-label">Growth Rate %/yr</label>
+                  <input type="number" class="val-input" id="val-gen-growth" min="0" max="15" step="0.5" value="3.5">
+                </div>
+                <button class="val-generate-btn" id="val-generate-run-btn">Generate Table →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 04 — INVESTMENT (shared) -->
+          <div class="val-section">
+            <span class="val-section-label">04</span>
+            <div class="val-section-title">Investment</div>
+            <div class="val-field">
+              <label class="val-field-label">Purchase Price (MAD M) <span style="font-weight:400">(optional)</span></label>
+              <input type="number" class="val-input" id="val-price" min="0" step="1" placeholder="Leave blank to use DCF value">
+            </div>
+            <div class="val-field">
+              <label class="val-field-label">Transaction Costs <span class="val-field-value" id="val-txn-pct-val">3%</span></label>
+              <input type="range" class="val-slider" id="val-txn-pct" min="2" max="5" step="0.5" value="3">
+            </div>
+            <div class="val-field">
+              <label class="val-field-label">CapEx Year 1 (MAD M)</label>
+              <input type="number" class="val-input" id="val-capex" min="0" step="0.5" value="0">
+            </div>
+          </div>
+
+          <!-- SECTION 05 — DCF (shared) -->
+          <div class="val-section">
+            <span class="val-section-label">05</span>
+            <div class="val-section-title">DCF</div>
+            <div class="val-field">
+              <label class="val-field-label">Hold Period</label>
+              <div class="val-toggle-group" id="val-hold-toggle">
+                <button class="val-toggle-btn" data-hold="5">5Y</button>
+                <button class="val-toggle-btn" data-hold="7">7Y</button>
+                <button class="val-toggle-btn active" data-hold="10">10Y</button>
+              </div>
+            </div>
+            <div class="val-field">
+              <label class="val-field-label">
+                Discount Rate (WACC) <span class="val-field-value" id="val-discount-val">7.0%</span>
+              </label>
+              <input type="range" class="val-slider" id="val-discount" min="5" max="15" step="0.1" value="7.0"
+                     title="Weighted Average Cost of Capital — minimum required return">
+            </div>
+            <div class="val-field">
+              <label class="val-field-label">
+                Terminal Cap Rate <span class="val-field-value" id="val-termcap-val">6.0%</span>
+              </label>
+              <input type="range" class="val-slider" id="val-termcap" min="4" max="10" step="0.1" value="6.0"
+                     title="Exit cap rate applied to Year 11 NOI to derive terminal value">
+            </div>
+
+            <button class="val-advanced-toggle" id="val-adv-toggle">Advanced Financing ▾</button>
+            <div class="val-advanced-panel" id="val-adv-panel">
+              <div class="val-field">
+                <label class="val-field-label">Equity <span class="val-field-value" id="val-equity-val">35%</span></label>
+                <input type="range" class="val-slider" id="val-equity" min="20" max="60" step="1" value="35">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Debt</label>
+                <input type="text" class="val-input-readonly" id="val-debt" readonly value="65%">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Loan Rate <span class="val-field-value" id="val-loanrate-val">6.5%</span></label>
+                <input type="range" class="val-slider" id="val-loanrate" min="4" max="10" step="0.1" value="6.5">
+              </div>
+              <div class="val-field">
+                <label class="val-field-label">Tax Rate <span class="val-field-value" id="val-taxrate-val">25%</span></label>
+                <input type="range" class="val-slider" id="val-taxrate" min="10" max="35" step="1" value="25">
+              </div>
+              <button class="val-recalc-btn" id="val-recalc-wacc-btn">Recalculate WACC</button>
+            </div>
+          </div>
+
+          <button class="val-run-btn" id="val-run-btn">Run Valuation →</button>
+        </div>
+
+        <div class="val-output-panel" id="val-output-panel">
+          <div class="val-placeholder" id="val-placeholder">
+            <div class="val-placeholder-title">Kōdō Valuation Model</div>
+            <div class="val-placeholder-sub">Configure inputs and click Run Valuation to generate analysis</div>
+          </div>
+
+          <div class="val-results" id="val-results">
+
+            <div class="val-kpi-row">
+              <div class="val-kpi-card">
+                <div class="val-kpi-label">Indicated Value</div>
+                <div class="val-kpi-value" id="val-kpi-value">—</div>
+                <div class="val-kpi-sub">Reconciled estimate</div>
+              </div>
+              <div class="val-kpi-card">
+                <div class="val-kpi-label">Value per Key</div>
+                <div class="val-kpi-value" id="val-kpi-perkey">—</div>
+                <div class="val-kpi-sub" id="val-kpi-perkey-eur">EUR equivalent (÷10.8)</div>
+              </div>
+              <div class="val-kpi-card">
+                <div class="val-kpi-label">Project IRR</div>
+                <div class="val-kpi-value" id="val-kpi-irr">—</div>
+                <div class="val-kpi-sub" id="val-kpi-irr-sub">hold period</div>
+              </div>
+              <div class="val-kpi-card">
+                <div class="val-kpi-label">Equity Multiple</div>
+                <div class="val-kpi-value" id="val-kpi-multiple">—</div>
+                <div class="val-kpi-sub">on total invested capital</div>
+              </div>
+            </div>
+
+            <div class="val-output-section">
+              <div class="val-output-header">
+                <span class="val-output-title" id="val-cf-title">10-Year Projected Cash Flows · MAD</span>
+                <button class="val-reset-btn" id="val-reset-btn" style="display:none">↺ Reset to Model Projections</button>
+              </div>
+              <div class="val-cf-table-wrap">
+                <table class="val-cf-table" id="val-cf-table">
+                  <thead>
+                    <tr>
+                      <th>Year</th><th>Occ%</th><th>ADR</th><th>RevPAR</th><th>Total Rev</th>
+                      <th>Rooms Rev</th><th>F&amp;B Rev</th><th>GOP</th><th>GOP%</th>
+                      <th>NOI</th><th>FCF</th><th>PV(FCF)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="val-cf-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="val-output-section">
+              <div class="val-output-header"><span class="val-output-title">Valuation Approaches</span></div>
+              <div class="val-approach-row">
+                <div class="val-approach-card">
+                  <div class="val-approach-title">Income Capitalization</div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">Stabilized NOI</span><span id="val-ic-noi">—</span></div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">Cap Rate</span><span id="val-ic-cap">—</span></div>
+                  <hr class="val-approach-divider">
+                  <div class="val-approach-row-item"><span class="val-ar-label">Indicated Value</span><span id="val-ic-value">—</span></div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">Value per Key</span><span id="val-ic-perkey">—</span></div>
+                </div>
+                <div class="val-approach-card">
+                  <div class="val-approach-title" id="val-dcf-title">DCF Analysis · 10-Year Hold</div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">PV of Cash Flows</span><span id="val-dcf-pvcf">—</span></div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">PV Terminal Value</span><span id="val-dcf-pvterm">—</span></div>
+                  <hr class="val-approach-divider">
+                  <div class="val-approach-row-item"><span class="val-ar-label">Total DCF Value</span><span id="val-dcf-value">—</span></div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">IRR</span><span id="val-dcf-irr">—</span></div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">Equity Multiple</span><span id="val-dcf-multiple">—</span></div>
+                  <div class="val-approach-row-item"><span class="val-ar-label">Payback Period</span><span id="val-dcf-payback">—</span></div>
+                </div>
+                <div class="val-approach-card val-approach-card--reconciled">
+                  <div class="val-approach-title">Kōdō Reconciled Value</div>
+                  <div class="val-reconciled-value" id="val-rec-value">—</div>
+                  <div class="val-reconciled-perkey" id="val-rec-perkey">—</div>
+                  <div class="val-reconciled-sub">Income Cap 40% · DCF 60%</div>
+                  <span class="kodo-estimate-badge">Kōdō Estimate</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="val-output-section" id="val-sensitivity-section">
+              <div class="val-output-header">
+                <span class="val-output-title">Sensitivity Analysis <span class="val-tier-pill">Advisory</span></span>
+              </div>
+              <div class="val-sens-row" id="val-sens-row">
+                <div class="val-sens-block">
+                  <div class="val-sens-title">IRR Sensitivity · Occ vs. Cap Rate</div>
+                  <div style="overflow-x:auto"><table class="val-sens-table" id="val-sens-irr-table"></table></div>
+                </div>
+                <div class="val-sens-block">
+                  <div class="val-sens-title">Value Sensitivity · MAD M</div>
+                  <div style="overflow-x:auto"><table class="val-sens-table" id="val-sens-val-table"></table></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="val-output-section" style="text-align:right">
+              <button class="val-export-btn" id="val-export-btn">↓ Export Valuation Report</button>
+            </div>
+
           </div>
         </div>
       </section>
