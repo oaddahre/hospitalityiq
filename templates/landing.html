@@ -3,604 +3,423 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kōdō — Morocco Hotel Intelligence</title>
-  <meta name="description" content="Kōdō is Morocco's professional hotel intelligence platform. 300+ hotels tracked across 23 destinations. Institutional-grade data for investors, operators, and advisors.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <title>Kōdō Hospitality — Morocco Hotel Intelligence</title>
+  <meta name="description" content="Morocco's first independent hotel market intelligence platform. 300+ hotels, 23 destinations, institutional-grade data.">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
-<body>
+<body class="lp-body">
 
-<!-- Nav -->
-<nav class="mk-nav">
-  <div class="mk-nav__inner">
-    <a href="/" class="mk-nav__logo">
-      <span class="mk-nav__logo-text">KŌDŌ</span>
-    </a>
-    <ul class="mk-nav__links">
-      <li><a href="#platform">Platform</a></li>
-      <li><a href="#advisory">Advisory</a></li>
-      <li><a href="#pricing">Pricing</a></li>
-      <li><a href="/contact">Contact</a></li>
-    </ul>
-    <a href="/dashboard" class="mk-nav__cta">Open Platform</a>
+<!-- NAV -->
+<nav class="mk-nav" id="mkNav">
+  <div class="mk-nav-inner">
+    <a href="/" class="mk-nav-logo">KŌDŌ</a>
+    <div class="mk-nav-links">
+      <a href="#platform" class="mk-nav-link">Platform</a>
+      <a href="#advisory" class="mk-nav-link">Advisory</a>
+      <a href="#pricing" class="mk-nav-link">Pricing</a>
+      <a href="/login" class="mk-nav-link">Sign In</a>
+    </div>
+    <a href="/register" class="mk-nav-cta">Request Access →</a>
   </div>
 </nav>
 
-<!-- Section 1: Fullscreen zellige hero — do not touch -->
-<section class="hero-fullscreen">
-  <div class="hero-geo-bg">
-    <svg id="morocco-geo" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
-         xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
-      <g id="morocco-pattern-group"></g>
-    </svg>
-  </div>
-  <div class="hero-overlay-content">
-    <div class="hero-logo-mark">KŌDŌ</div>
-    <div class="hero-tagline">The Data Layer for Moroccan Hospitality</div>
-  </div>
-  <div class="hero-scroll-hint">
-    <span>Scroll to explore</span>
-    <div class="hero-scroll-arrow">↓</div>
-  </div>
-</section>
+<!-- SECTION 1: REPORT HEADER HERO -->
+<section class="report-hero">
+  <div class="lp-inner">
 
-<!-- Section 2: The Platform -->
-<section class="lp-section" id="platform">
-  <div class="lp-container">
-    <h2 class="lp-headline">Everything You Need to Understand the Morocco Hotel Market</h2>
-    <p class="lp-subhead">One platform. 300+ hotels. Real intelligence.</p>
-    <div class="stat-row">
-      <div class="stat-item">
-        <span class="stat-value countup" data-target="300" data-suffix="+"></span>
-        <span class="stat-label">Hotels Tracked</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value countup" data-target="23" data-suffix=""></span>
-        <span class="stat-label">Cities Covered</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value countup" data-target="35" data-suffix=""></span>
-        <span class="stat-label">Brand Groups Profiled</span>
-      </div>
+    <!-- Zone A: report top bar -->
+    <div class="report-hero-topbar">
+      <span class="report-hero-meta">KŌDŌ HOSPITALITY INTELLIGENCE  ·  MOROCCO MARKET OVERVIEW  ·  ISSUE 01  ·  JULY 2026</span>
+      <span class="report-hero-meta">CONFIDENTIAL — FOR PROFESSIONAL USE</span>
     </div>
-  </div>
-</section>
 
-<!-- Section 3: What Kōdō Tracks -->
-<section class="lp-section" id="modules">
-  <div class="lp-container">
-    <p class="lp-section-label">Platform</p>
-    <h2 class="lp-title">The Most Complete Morocco Hotel Database</h2>
-    <p class="lp-subtitle">Six intelligence modules covering every dimension of the Morocco hotel market</p>
-    <div class="feature-grid">
-
-      <div class="feature-card animate-hidden">
-        <h3 class="feature-card__title">Hotel Directory</h3>
-        <p class="feature-card__body">300+ branded and independent hotels with verified key counts, segment classification, brand affiliation, ownership, and opening years across 23 Moroccan destinations.</p>
-      </div>
-
-      <div class="feature-card animate-hidden">
-        <h3 class="feature-card__title">Brand Intelligence</h3>
-        <p class="feature-card__body">35 hotel brand groups profiled with performance benchmarks, market share analysis, city presence, and Morocco-specific brand descriptions.</p>
-      </div>
-
-      <div class="feature-card animate-hidden">
-        <h3 class="feature-card__title">Development Pipeline</h3>
-        <p class="feature-card__body">Confirmed hotel pipeline projects with brand, operator, investment commitment, opening timeline, and an interactive pipeline map.</p>
-      </div>
-
-      <div class="feature-card animate-hidden">
-        <h3 class="feature-card__title">Ownership Intelligence</h3>
-        <p class="feature-card__body">Institutional hotel owner profiles including Madaëf, Risma, Al Mada, and Valeria Hotels with full portfolio breakdowns and key statistics.</p>
-      </div>
-
-      <div class="feature-card animate-hidden">
-        <h3 class="feature-card__title">Market Benchmarking</h3>
-        <p class="feature-card__body">ADR, occupancy, and RevPAR benchmarking against a custom comp set of up to 8 properties. Daily rate intelligence from live OTA scraping.</p>
-      </div>
-
-      <div class="feature-card animate-hidden">
-        <h3 class="feature-card__title">Intelligence Reports</h3>
-        <p class="feature-card__body">City-level PDF market intelligence reports with AI-powered narrative, supply analysis, pipeline tracking, investment perspective, and Kōdō market ratings.</p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- Section 4: Advisory Services -->
-<section class="lp-section" id="advisory">
-  <div class="lp-container">
-    <p class="lp-section-label">Advisory</p>
-    <h2 class="lp-title">Kōdō Advisory</h2>
-    <p class="lp-subtitle">Data-driven hospitality advisory across the asset life cycle</p>
-    <div class="advisory-grid">
-
-      <div class="advisory-block animate-hidden">
-        <h3 class="advisory-block__title">Investment &amp; Acquisition</h3>
-        <ul class="advisory-list">
-          <li>Hotel acquisition advisory</li>
-          <li>Investment analysis</li>
-          <li>Hotel valuation — income capitalization, DCF, sales comparison</li>
-          <li>Business planning</li>
-          <li>Due diligence support</li>
-          <li>Debt advisory and lender support</li>
-        </ul>
-      </div>
-
-      <div class="advisory-block animate-hidden">
-        <h3 class="advisory-block__title">Market Intelligence</h3>
-        <ul class="advisory-list">
-          <li>Feasibility studies</li>
-          <li>Market research and demand analysis</li>
-          <li>Competitive positioning</li>
-          <li>Data intelligence and benchmarking</li>
-          <li>Tourism strategy consulting</li>
-        </ul>
-      </div>
-
-      <div class="advisory-block animate-hidden">
-        <h3 class="advisory-block__title">Brand, Concept &amp; Operations</h3>
-        <ul class="advisory-list">
-          <li>Hotel concept development</li>
-          <li>Brand and management company selection</li>
-          <li>Contract negotiation — HMA and franchise agreements</li>
-          <li>Rebranding and asset repositioning advisory</li>
-          <li>Operator performance monitoring</li>
-        </ul>
-      </div>
-
-      <div class="advisory-block animate-hidden">
-        <h3 class="advisory-block__title">Asset Management</h3>
-        <ul class="advisory-list">
-          <li>Advisory across the full hotel asset life cycle</li>
-          <li>Owner representation</li>
-          <li>Strategic planning</li>
-        </ul>
-      </div>
-
-    </div>
-    <div class="section-cta">
-      <p class="section-cta__text">Discuss your project with our advisory team</p>
-      <a href="/contact" class="btn-pill btn-pill--accent">Contact Kōdō Advisory →</a>
-    </div>
-  </div>
-</section>
-
-<!-- Section 5: Intelligence Reports -->
-<section class="lp-section" id="reports">
-  <div class="lp-container">
-    <p class="lp-section-label">Reports</p>
-    <h2 class="lp-title">Kōdō Intelligence Reports</h2>
-    <p class="lp-subtitle">Institutional-grade market analysis for Morocco hospitality</p>
-    <p class="lp-body-text">Kōdō publishes regular market intelligence reports covering Morocco's key hotel destinations. Reports include supply analysis, performance benchmarks, pipeline tracking, investment perspective, and Kōdō's proprietary market rating. Available to Benchmarker and Advisory subscribers.</p>
-
-    <div class="report-card-wrap animate-hidden">
-      <div class="report-card">
-        <div class="report-card__left">
-          <span class="kodo-badge">Latest Report</span>
-          <h3 class="report-card__title">Tamuda Bay: The Rise of Morocco's Mediterranean Luxury Corridor</h3>
-          <p class="report-card__meta">July 2026 · 10 Pages · Tamuda Bay / Tétouan</p>
-          <p class="report-card__desc">An in-depth analysis of Tamuda Bay's emergence as Morocco's premier Mediterranean luxury destination. Covers supply evolution, demand drivers, performance estimates, pipeline, and investment perspective.</p>
-          <a href="/contact" class="btn-pill btn-pill--sm" style="margin-top:20px;display:inline-block;">Request Report →</a>
+    <!-- Zone B: headline + data panel -->
+    <div class="report-hero-zones">
+      <div class="report-hero-left">
+        <span class="report-hero-label">MARKET INTELLIGENCE PLATFORM</span>
+        <h1 class="report-hero-headline">The Data Layer<br>for Moroccan<br>Hospitality.</h1>
+        <p class="report-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations across Morocco, delivering the market intelligence that hospitality professionals need to make better decisions.</p>
+        <div class="report-hero-btns">
+          <a href="/register" class="btn-pill btn-pill-filled">Request Access →</a>
+          <a href="#platform" class="btn-pill btn-pill-outline">View Platform</a>
         </div>
-        <div class="report-card__right">
-          <div class="report-stats">
-            <div class="report-stat">
-              <span class="report-stat__label">Hotels Analysed</span>
-              <span class="report-stat__value">14</span>
+      </div>
+      <div class="report-hero-right">
+        <div class="lp-hero-data-panel">
+          <div class="lp-data-panel-header">MOROCCO HOTEL MARKET  ·  LIVE SNAPSHOT</div>
+          <div class="lp-data-rows">
+            <div class="lp-data-row">
+              <span class="lp-data-label">TRACKED HOTELS</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">300+</span>
             </div>
-            <div class="report-stat">
-              <span class="report-stat__label">Pipeline Projects</span>
-              <span class="report-stat__value">1</span>
+            <div class="lp-data-row">
+              <span class="lp-data-label">DESTINATIONS</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">23</span>
             </div>
-            <div class="report-stat">
-              <span class="report-stat__label">Kōdō Rating</span>
-              <span class="report-stat__value report-stat__value--accent">Outperform</span>
+            <div class="lp-data-row">
+              <span class="lp-data-label">BRAND GROUPS</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">35</span>
+            </div>
+            <div class="lp-data-row">
+              <span class="lp-data-label">PIPELINE PROJECTS</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">16</span>
+            </div>
+            <div class="lp-data-row">
+              <span class="lp-data-label">DATA UPDATED</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">JULY 2026</span>
             </div>
           </div>
+          <div class="lp-data-divider"></div>
+          <div class="lp-data-section-label">SEGMENT DISTRIBUTION</div>
+          <div class="lp-data-rows">
+            <div class="lp-data-row">
+              <span class="lp-data-label">LUXURY & ULTRA LUXURY</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">18%</span>
+            </div>
+            <div class="lp-data-row">
+              <span class="lp-data-label">UPPER UPSCALE</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">24%</span>
+            </div>
+            <div class="lp-data-row">
+              <span class="lp-data-label">UPSCALE</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">31%</span>
+            </div>
+            <div class="lp-data-row">
+              <span class="lp-data-label">MIDSCALE & ECONOMY</span>
+              <span class="lp-data-dots"></span>
+              <span class="lp-data-value">27%</span>
+            </div>
+          </div>
+          <div class="lp-data-panel-footer">KŌDŌ ESTIMATES · METHODOLOGY DISCLOSED</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone C: bottom bar -->
+    <div class="report-hero-bottombar">
+      <span class="report-hero-meta">SCROLL TO EXPLORE ↓</span>
+      <div class="report-hero-anchors">
+        <a href="#platform" class="report-hero-anchor">01 PLATFORM</a>
+        <a href="#advisory" class="report-hero-anchor">02 ADVISORY</a>
+        <a href="#reports" class="report-hero-anchor">03 REPORTS</a>
+        <a href="#pricing" class="report-hero-anchor">04 PRICING</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION 2: PLATFORM -->
+<section class="lp-section" id="platform">
+  <div class="lp-inner">
+    <div class="section-opener">
+      <span class="section-opener-tag">01 — PLATFORM</span>
+      <span class="section-opener-right">THE INTELLIGENCE SUITE</span>
+    </div>
+    <h2 class="lp-section-title">Six modules. One platform.<br>Every dimension of Morocco's hotel market.</h2>
+    <div class="platform-layout">
+      <div class="platform-intro">
+        <p class="lp-body-text">Kōdō is not a database. It is an intelligence platform — a system that transforms raw hotel supply data, live rate intelligence, and market benchmarks into actionable insight for investment decisions, asset management, and market strategy.</p>
+      </div>
+      <div class="platform-index">
+        <div class="platform-row">
+          <span class="platform-num">01</span>
+          <div class="platform-content">
+            <span class="platform-name">Hotel Directory</span>
+            <span class="platform-desc">300+ branded and independent hotels with verified room counts, segment classification, brand affiliation, ownership, and opening years across 23 Moroccan destinations.</span>
+          </div>
+          <span class="platform-arrow">→</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-num">02</span>
+          <div class="platform-content">
+            <span class="platform-name">Brand Intelligence</span>
+            <span class="platform-desc">35 hotel brand groups profiled with performance benchmarks, market share analysis, city presence, and Morocco-specific brand descriptions.</span>
+          </div>
+          <span class="platform-arrow">→</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-num">03</span>
+          <div class="platform-content">
+            <span class="platform-name">Development Pipeline</span>
+            <span class="platform-desc">Confirmed hotel pipeline projects with brand, operator, investment commitment, opening timeline, and an interactive pipeline map.</span>
+          </div>
+          <span class="platform-arrow">→</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-num">04</span>
+          <div class="platform-content">
+            <span class="platform-name">Ownership Intelligence</span>
+            <span class="platform-desc">Institutional hotel owner profiles including Madaëf, Risma, Al Mada, and Valeria Hotels with full portfolio breakdowns and key statistics.</span>
+          </div>
+          <span class="platform-arrow">→</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-num">05</span>
+          <div class="platform-content">
+            <span class="platform-name">Market Benchmarking</span>
+            <span class="platform-desc">ADR, occupancy, and RevPAR benchmarking against a custom comp set of up to 8 properties. Daily rate intelligence from live OTA scraping.</span>
+          </div>
+          <span class="platform-arrow">→</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-num">06</span>
+          <div class="platform-content">
+            <span class="platform-name">Intelligence Reports</span>
+            <span class="platform-desc">City-level PDF market intelligence reports with AI-powered narrative, supply analysis, pipeline tracking, investment perspective, and Kōdō market ratings.</span>
+          </div>
+          <span class="platform-arrow">→</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Section 6: Pricing -->
+<!-- SECTION 3: ADVISORY -->
+<section class="lp-section" id="advisory">
+  <div class="lp-inner">
+    <div class="section-opener">
+      <span class="section-opener-tag">02 — ADVISORY</span>
+      <span class="section-opener-right">ACROSS THE ASSET LIFECYCLE</span>
+    </div>
+    <h2 class="lp-section-title">Data-driven advisory across<br>the full hotel asset lifecycle.</h2>
+    <div class="svc-layout">
+      <div class="svc-intro">
+        <p class="lp-body-text">Kōdō Advisory combines proprietary market intelligence with institutional asset management expertise to serve hotel investors, owners, developers, and lenders at every stage of the investment process.</p>
+        <a href="/contact" class="btn-pill btn-pill-outline-accent" style="margin-top:28px;display:inline-block;">Contact Advisory Team →</a>
+      </div>
+      <div class="svc-grid">
+        <div class="svc-block">
+          <div class="svc-block-header">
+            <span class="svc-num">01</span>
+            <span class="svc-name">Investment &amp; Acquisition</span>
+          </div>
+          <ul class="svc-list">
+            <li>Hotel acquisition advisory</li>
+            <li>Investment analysis</li>
+            <li>Hotel valuation (income cap, DCF, sales comparison)</li>
+            <li>Business planning</li>
+            <li>Due diligence support</li>
+            <li>Debt advisory and lender support</li>
+          </ul>
+        </div>
+        <div class="svc-block">
+          <div class="svc-block-header">
+            <span class="svc-num">02</span>
+            <span class="svc-name">Market Intelligence</span>
+          </div>
+          <ul class="svc-list">
+            <li>Feasibility studies</li>
+            <li>Market research and demand analysis</li>
+            <li>Competitive positioning</li>
+            <li>Data intelligence and benchmarking</li>
+            <li>Tourism strategy consulting</li>
+          </ul>
+        </div>
+        <div class="svc-block">
+          <div class="svc-block-header">
+            <span class="svc-num">03</span>
+            <span class="svc-name">Brand, Concept &amp; Operations</span>
+          </div>
+          <ul class="svc-list">
+            <li>Hotel concept development</li>
+            <li>Brand and management company selection</li>
+            <li>Contract negotiation (HMA and franchise)</li>
+            <li>Rebranding and asset repositioning</li>
+            <li>Operator performance monitoring</li>
+          </ul>
+        </div>
+        <div class="svc-block">
+          <div class="svc-block-header">
+            <span class="svc-num">04</span>
+            <span class="svc-name">Asset Management</span>
+          </div>
+          <ul class="svc-list">
+            <li>Advisory across the full hotel asset lifecycle</li>
+            <li>Owner representation</li>
+            <li>Strategic planning</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: REPORTS -->
+<section class="lp-section lp-section-alt" id="reports">
+  <div class="lp-inner">
+    <div class="section-opener">
+      <span class="section-opener-tag">03 — REPORTS</span>
+      <span class="section-opener-right">MARKET INTELLIGENCE</span>
+    </div>
+    <h2 class="lp-section-title">Institutional-grade analysis<br>for Morocco hospitality.</h2>
+    <p class="lp-body-text" style="max-width:560px;margin-top:16px;">Kōdō publishes regular market intelligence reports covering Morocco's key hotel destinations. Reports include supply analysis, performance benchmarks, pipeline tracking, investment perspective, and Kōdō's proprietary market rating.</p>
+    <div class="report-card" style="max-width:760px;margin-top:48px;display:flex;gap:48px;align-items:flex-start;">
+      <div style="flex:1;">
+        <span class="kodo-estimate-badge">Latest Report</span>
+        <h3 style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:700;color:#F0F0EE;margin-top:16px;line-height:1.3;">Tamuda Bay: The Rise of Morocco's Mediterranean Luxury Corridor</h3>
+        <p style="font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#888888;margin-top:10px;">JULY 2026  ·  10 PAGES  ·  TAMUDA BAY / TÉTOUAN</p>
+        <p style="font-family:'Manrope',sans-serif;font-size:13px;color:#888888;line-height:1.7;margin-top:14px;">An in-depth analysis of Tamuda Bay's emergence as Morocco's premier Mediterranean luxury destination. Covers supply evolution, demand drivers, performance estimates, pipeline, and investment perspective.</p>
+        <a href="/contact" class="btn-pill btn-pill-outline-accent" style="margin-top:20px;display:inline-block;">Request Report →</a>
+      </div>
+      <div class="lp-report-stats">
+        <div class="lp-data-row">
+          <span class="lp-data-label">HOTELS ANALYSED</span>
+          <span class="lp-data-value">14</span>
+        </div>
+        <div class="lp-data-row">
+          <span class="lp-data-label">PIPELINE PROJECTS</span>
+          <span class="lp-data-value">1</span>
+        </div>
+        <div class="lp-data-row">
+          <span class="lp-data-label">KŌDŌ RATING</span>
+          <span class="lp-data-value" style="color:#5A8A5A;">OUTPERFORM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: PRICING -->
 <section class="lp-section" id="pricing">
-  <div class="lp-container">
-    <p class="lp-section-label">Pricing</p>
-    <h2 class="lp-title">Subscription Plans</h2>
-    <div class="pricing-grid">
-
-      <div class="pricing-card animate-hidden">
-        <span class="pricing-tier">Observer</span>
-        <div class="pricing-price-row">
-          <span class="pricing-amount">MAD 990</span>
-          <span class="pricing-period">/ month</span>
-        </div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li>Hotel Directory (300+ hotels)</li>
-          <li>Interactive Map</li>
-          <li>Development Pipeline</li>
-          <li>Brand Intelligence</li>
-          <li>Ownership Intelligence</li>
-          <li>Tourism Data</li>
-          <li>News &amp; Editorial</li>
-          <li>AI Analyst (10 queries/month)</li>
-        </ul>
-        <a href="/register" class="pricing-btn pricing-btn--outline">Get Started →</a>
-      </div>
-
-      <div class="pricing-card pricing-card--featured animate-hidden">
-        <span class="pricing-popular">Most Popular</span>
-        <span class="pricing-tier">Benchmarker</span>
-        <div class="pricing-price-row">
-          <span class="pricing-amount">MAD 2,490</span>
-          <span class="pricing-period">/ month</span>
-        </div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li>Everything in Observer</li>
-          <li>Market Benchmarking tool</li>
-          <li>Intelligence Reports (PDF)</li>
-          <li>Excel data export</li>
-          <li>Unlimited AI Analyst</li>
-          <li>Rate intelligence calendar</li>
-        </ul>
-        <a href="/register" class="pricing-btn pricing-btn--filled">Get Started →</a>
-      </div>
-
-      <div class="pricing-card animate-hidden">
-        <span class="pricing-tier">Advisory</span>
-        <div class="pricing-price-row">
-          <span class="pricing-amount">MAD 6,990</span>
-          <span class="pricing-period">/ month</span>
-        </div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li>Full platform access</li>
-          <li>Priority advisory team access</li>
-          <li>Custom market reports</li>
-          <li>Hotel valuation tool</li>
-          <li>Direct analyst support</li>
-        </ul>
-        <a href="/contact" class="pricing-btn pricing-btn--outline">Contact Us →</a>
-      </div>
-
+  <div class="lp-inner">
+    <div class="section-opener">
+      <span class="section-opener-tag">04 — PRICING</span>
+      <span class="section-opener-right">SUBSCRIPTION PLANS</span>
+    </div>
+    <h2 class="lp-section-title">Transparent pricing.<br>No hidden fees.</h2>
+    <div class="pricing-table-wrap" style="margin-top:48px;">
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th class="pricing-th-label"></th>
+            <th class="pricing-th">OBSERVER</th>
+            <th class="pricing-th pricing-th-featured">BENCHMARKER</th>
+            <th class="pricing-th">ADVISORY</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="pricing-price-row">
+            <td class="pricing-row-label">MONTHLY FEE</td>
+            <td class="pricing-cell">MAD 990</td>
+            <td class="pricing-cell pricing-cell-featured">MAD 2,490</td>
+            <td class="pricing-cell">MAD 6,990</td>
+          </tr>
+          <tr><td class="pricing-row-label">Hotel Directory</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Interactive Map</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Development Pipeline</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Brand Intelligence</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Ownership Intelligence</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Tourism Data</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">News &amp; Editorial</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">AI Analyst</td><td class="pricing-cell" style="font-size:11px;color:#888888;">10 queries/mo</td><td class="pricing-cell pricing-cell-featured">Unlimited</td><td class="pricing-cell">Unlimited</td></tr>
+          <tr><td class="pricing-row-label">Market Benchmarking</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Intelligence Reports</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Excel Data Export</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Hotel Valuation Tool</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-dash pricing-cell-featured">—</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Priority Advisory Access</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-dash pricing-cell-featured">—</td><td class="pricing-cell">✓</td></tr>
+          <tr><td class="pricing-row-label">Custom Reports</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-dash pricing-cell-featured">—</td><td class="pricing-cell">✓</td></tr>
+          <tr class="pricing-cta-row">
+            <td></td>
+            <td class="pricing-cell"><a href="/register" class="btn-pill btn-pill-outline" style="font-size:9px;padding:8px 20px;">Get Started →</a></td>
+            <td class="pricing-cell pricing-cell-featured"><a href="/register" class="btn-pill btn-pill-filled" style="font-size:9px;padding:8px 20px;">Get Started →</a></td>
+            <td class="pricing-cell"><a href="/contact" class="btn-pill btn-pill-outline-accent" style="font-size:9px;padding:8px 20px;">Contact Us →</a></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
 
-<!-- Section 7: Who It's For -->
-<section class="lp-section" id="who">
-  <div class="lp-container">
-    <p class="lp-section-label">For Who</p>
-    <h2 class="lp-title">Built for Morocco Hospitality Professionals</h2>
-    <div class="audience-grid">
-
-      <div class="audience-card animate-hidden">
-        <h3 class="audience-card__title">Hotel Investors &amp; Funds</h3>
-        <p class="audience-card__body">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
+<!-- SECTION 6: WHO IT'S FOR -->
+<section class="lp-section" id="clients">
+  <div class="lp-inner">
+    <div class="section-opener">
+      <span class="section-opener-tag">05 — CLIENTS</span>
+      <span class="section-opener-right">WHO WE SERVE</span>
+    </div>
+    <h2 class="lp-section-title">Built for Morocco<br>hospitality professionals.</h2>
+    <div class="audience-grid" style="margin-top:48px;">
+      <div class="audience-card">
+        <span class="audience-card-num">01</span>
+        <div class="audience-card-title">Hotel Investors &amp; Funds</div>
+        <p class="audience-card-body">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
       </div>
-
-      <div class="audience-card animate-hidden">
-        <h3 class="audience-card__title">Owners &amp; Asset Managers</h3>
-        <p class="audience-card__body">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
+      <div class="audience-card">
+        <span class="audience-card-num">02</span>
+        <div class="audience-card-title">Owners &amp; Asset Managers</div>
+        <p class="audience-card-body">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
       </div>
-
-      <div class="audience-card animate-hidden">
-        <h3 class="audience-card__title">Developers &amp; Operators</h3>
-        <p class="audience-card__body">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
+      <div class="audience-card">
+        <span class="audience-card-num">03</span>
+        <div class="audience-card-title">Developers &amp; Operators</div>
+        <p class="audience-card-body">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
       </div>
-
-      <div class="audience-card animate-hidden">
-        <h3 class="audience-card__title">Banks &amp; Financial Institutions</h3>
-        <p class="audience-card__body">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
+      <div class="audience-card">
+        <span class="audience-card-num">04</span>
+        <div class="audience-card-title">Banks &amp; Financial Institutions</div>
+        <p class="audience-card-body">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
       </div>
-
     </div>
   </div>
 </section>
 
-<!-- Section 8: Final CTA -->
-<section class="lp-section lp-section--cta">
-  <div class="lp-container lp-container--center">
-    <h2 class="lp-headline">Start with Kōdō</h2>
-    <p class="lp-subhead" style="margin-bottom:40px;">Join Morocco's leading hospitality intelligence platform</p>
-    <div class="cta-buttons">
-      <a href="/contact" class="btn-pill btn-pill--outline-lg">Request a Demo</a>
-      <a href="/register" class="btn-pill btn-pill--filled-lg">Subscribe Now</a>
+<!-- SECTION 7: FINAL CTA -->
+<section class="lp-cta-section">
+  <div class="lp-inner">
+    <span class="lp-cta-label">JOIN KŌDŌ</span>
+    <h2 class="lp-cta-title">Start with Kōdō.</h2>
+    <p class="lp-cta-sub">MOROCCO'S LEADING HOSPITALITY INTELLIGENCE PLATFORM</p>
+    <div class="lp-cta-buttons">
+      <a href="/contact" class="btn-pill btn-pill-outline-accent">Request a Demo</a>
+      <a href="/register" class="btn-pill btn-pill-filled">Subscribe Now</a>
     </div>
-    <p class="cta-signin"><a href="/login">Already have an account? Sign in →</a></p>
+    <span class="lp-cta-signin">ALREADY HAVE AN ACCOUNT? <a href="/login">SIGN IN →</a></span>
   </div>
 </section>
 
-<!-- Section 9: Footer -->
-<footer class="mk-footer">
-  <div class="lp-container">
+<!-- FOOTER -->
+<footer class="landing-footer">
+  <div class="footer-inner">
     <div class="footer-top">
       <div class="footer-brand">
-        <span class="footer-logo">KŌDŌ</span>
-        <span class="footer-tagline">Morocco Hotel Intelligence</span>
+        <span class="footer-brand-logo">KŌDŌ</span>
+        <span class="footer-brand-sub">Morocco Hotel Intelligence</span>
       </div>
-      <nav class="footer-links">
-        <a href="#platform">Platform</a>
-        <a href="#advisory">Advisory</a>
+      <div class="footer-links">
+        <a href="/#platform">Platform</a>
         <a href="/methodology">Methodology</a>
+        <a href="/team">Team</a>
+        <a href="/contact">Contact</a>
         <a href="/terms">Terms</a>
         <a href="/privacy">Privacy</a>
-      </nav>
-      <div class="footer-contact">
-        <a href="mailto:contact@kodohospitality.com">contact@kodohospitality.com</a>
       </div>
+      <div class="footer-contact">contact@kodohospitality.com</div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Kōdō Hospitality. All rights reserved.</span>
-      <span>Data updated July 2026</span>
+      <span>© 2026 KŌDŌ HOSPITALITY. ALL RIGHTS RESERVED.</span>
+      <span>DATA UPDATED JULY 2026</span>
     </div>
   </div>
 </footer>
 
+<!-- Smooth scroll -->
 <script>
-// ── Scroll progress bar ────────────────────────────────────────
-const progressBar = document.createElement('div');
-progressBar.className = 'scroll-progress';
-document.body.prepend(progressBar);
-window.addEventListener('scroll', () => {
-  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-  progressBar.style.width = (pct * 100) + '%';
-}, { passive: true });
-
-// ── Nav: transparent over hero → dark on scroll ────────────────
-const nav = document.querySelector('.mk-nav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.7);
-}, { passive: true });
-
-// ── Scroll-reveal ──────────────────────────────────────────────
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const delay = parseInt(entry.target.dataset.delay || 0);
-      setTimeout(() => entry.target.classList.add('animate-visible'), delay);
-      revealObserver.unobserve(entry.target);
-    }
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
   });
-}, { threshold: 0.10 });
-
-document.querySelectorAll('.animate-hidden').forEach((el, i) => {
-  el.dataset.delay = (i % 6) * 70;
-  revealObserver.observe(el);
 });
-</script>
-
-<script>
-/* ── Morocco Geometric Pattern v2 ─────────────────────────────── */
-(function () {
-  'use strict';
-
-  function generateMoroccanPattern(group) {
-    var NS    = 'http://www.w3.org/2000/svg';
-    var TILE  = window.innerWidth < 768 ? 42 : 60;
-    var CX    = 720, CY = 450;
-    var steps = Math.ceil(1600 / TILE) + 2;
-
-    while (group.firstChild) group.removeChild(group.firstChild);
-
-    for (var col = -steps; col <= steps; col++) {
-      for (var row = -steps; row <= steps; row++) {
-        var cx = CX + col * TILE, cy = CY + row * TILE;
-        var g  = document.createElementNS(NS, 'g');
-        var outerR = TILE * 0.46, midR = TILE * 0.30, innerR = TILE * 0.18;
-
-        var pts12 = [];
-        for (var i = 0; i < 24; i++) {
-          var a = (i * Math.PI / 12) - Math.PI / 2;
-          var r = i % 2 === 0 ? outerR : midR;
-          pts12.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
-        }
-        var star12 = document.createElementNS(NS, 'polygon');
-        star12.setAttribute('points', pts12.join(' '));
-        star12.setAttribute('fill', 'none');
-        star12.setAttribute('stroke', 'rgba(255,255,255,0.18)');
-        star12.setAttribute('stroke-width', '0.7');
-        star12.classList.add('geo-star');
-        g.appendChild(star12);
-
-        var pts8 = [];
-        for (var i = 0; i < 16; i++) {
-          var a = (i * Math.PI / 8) - Math.PI / 8;
-          var r = i % 2 === 0 ? midR * 0.9 : innerR;
-          pts8.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
-        }
-        var star8 = document.createElementNS(NS, 'polygon');
-        star8.setAttribute('points', pts8.join(' '));
-        star8.setAttribute('fill', 'none');
-        star8.setAttribute('stroke', 'rgba(255,255,255,0.25)');
-        star8.setAttribute('stroke-width', '0.6');
-        star8.classList.add('geo-star');
-        g.appendChild(star8);
-
-        var ptsD = [];
-        for (var i = 0; i < 8; i++) {
-          var a = i * Math.PI / 4;
-          var r = i % 2 === 0 ? midR * 0.65 : midR * 0.45;
-          ptsD.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
-        }
-        var diamond = document.createElementNS(NS, 'polygon');
-        diamond.setAttribute('points', ptsD.join(' '));
-        diamond.setAttribute('fill', 'none');
-        diamond.setAttribute('stroke', 'rgba(255,255,255,0.12)');
-        diamond.setAttribute('stroke-width', '0.5');
-        g.appendChild(diamond);
-
-        for (var i = 0; i < 12; i++) {
-          var a = (i * Math.PI / 6) - Math.PI / 2;
-          var ln = document.createElementNS(NS, 'line');
-          ln.setAttribute('x1', (cx + innerR * Math.cos(a)).toFixed(2));
-          ln.setAttribute('y1', (cy + innerR * Math.sin(a)).toFixed(2));
-          ln.setAttribute('x2', (cx + outerR * 0.55 * Math.cos(a)).toFixed(2));
-          ln.setAttribute('y2', (cy + outerR * 0.55 * Math.sin(a)).toFixed(2));
-          ln.setAttribute('stroke', 'rgba(255,255,255,0.08)');
-          ln.setAttribute('stroke-width', '0.4');
-          g.appendChild(ln);
-        }
-
-        for (var i = 0; i < 4; i++) {
-          var a = i * Math.PI / 2;
-          var x1 = cx + outerR * Math.cos(a - 0.3), y1 = cy + outerR * Math.sin(a - 0.3);
-          var x2 = cx + outerR * Math.cos(a + 0.3), y2 = cy + outerR * Math.sin(a + 0.3);
-          var mx = cx + TILE * 0.5 * Math.cos(a),   my = cy + TILE * 0.5 * Math.sin(a);
-          var arc = document.createElementNS(NS, 'path');
-          arc.setAttribute('d', 'M ' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
-            ' Q ' + mx.toFixed(2) + ' ' + my.toFixed(2) + ' ' + x2.toFixed(2) + ' ' + y2.toFixed(2));
-          arc.setAttribute('fill', 'none');
-          arc.setAttribute('stroke', 'rgba(255,255,255,0.10)');
-          arc.setAttribute('stroke-width', '0.5');
-          g.appendChild(arc);
-        }
-
-        var ros = document.createElementNS(NS, 'circle');
-        ros.setAttribute('cx', cx.toFixed(2)); ros.setAttribute('cy', cy.toFixed(2));
-        ros.setAttribute('r', (innerR * 0.35).toFixed(2));
-        ros.setAttribute('fill', 'none');
-        ros.setAttribute('stroke', 'rgba(255,255,255,0.35)');
-        ros.setAttribute('stroke-width', '0.8');
-        g.appendChild(ros);
-
-        var dot = document.createElementNS(NS, 'circle');
-        dot.setAttribute('cx', cx.toFixed(2)); dot.setAttribute('cy', cy.toFixed(2));
-        dot.setAttribute('r', '1.2'); dot.setAttribute('fill', 'rgba(255,255,255,0.4)');
-        g.appendChild(dot);
-
-        group.appendChild(g);
-      }
-    }
-
-    for (var col2 = -steps; col2 <= steps; col2++) {
-      for (var row2 = -steps; row2 <= steps; row2++) {
-        var cx2 = CX + col2 * TILE, cy2 = CY + row2 * TILE, d = TILE * 0.35;
-        var d1 = document.createElementNS(NS, 'line');
-        d1.setAttribute('x1', (cx2-d).toFixed(2)); d1.setAttribute('y1', (cy2-d).toFixed(2));
-        d1.setAttribute('x2', (cx2+d).toFixed(2)); d1.setAttribute('y2', (cy2+d).toFixed(2));
-        d1.setAttribute('stroke', 'rgba(255,255,255,0.04)'); d1.setAttribute('stroke-width', '0.3');
-        group.appendChild(d1);
-        var d2 = document.createElementNS(NS, 'line');
-        d2.setAttribute('x1', (cx2+d).toFixed(2)); d2.setAttribute('y1', (cy2-d).toFixed(2));
-        d2.setAttribute('x2', (cx2-d).toFixed(2)); d2.setAttribute('y2', (cy2+d).toFixed(2));
-        d2.setAttribute('stroke', 'rgba(255,255,255,0.04)'); d2.setAttribute('stroke-width', '0.3');
-        group.appendChild(d2);
-      }
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    var svg   = document.getElementById('morocco-geo');
-    var group = document.getElementById('morocco-pattern-group');
-    if (!svg || !group || typeof gsap === 'undefined') return;
-
-    generateMoroccanPattern(group);
-    var stars = group.querySelectorAll('.geo-star');
-
-    gsap.set(stars, { opacity: 0 });
-    gsap.to(stars, { opacity: 1, duration: 0.8,
-      stagger: { amount: 2.0, from: 'center', grid: 'auto' }, ease: 'power2.out' });
-
-    gsap.set('.hero-logo-mark',   { opacity: 0, y: 20 });
-    gsap.set('.hero-tagline',     { opacity: 0, y: 20 });
-    gsap.set('.hero-scroll-hint', { opacity: 0, y: 10 });
-    gsap.to('.hero-logo-mark',    { opacity: 1, y: 0, duration: 0.8, delay: 2.0, ease: 'power2.out' });
-    gsap.to('.hero-tagline',      { opacity: 1, y: 0, duration: 0.8, delay: 2.4, ease: 'power2.out' });
-    gsap.to('.hero-scroll-hint',  { opacity: 1, y: 0, duration: 0.8, delay: 3.0, ease: 'power2.out' });
-
-    gsap.to('#morocco-pattern-group', {
-      rotation: 360, svgOrigin: '720 450', duration: 180, repeat: -1, ease: 'none'
-    });
-
-    gsap.to('.geo-star', {
-      opacity: 0.35, duration: 4,
-      stagger: { amount: 6, from: 'random' }, ease: 'sine.inOut', repeat: -1, yoyo: true
-    });
-
-    if (window.innerWidth >= 768) {
-      document.addEventListener('mousemove', function (e) {
-        var xPct = (e.clientX / window.innerWidth  - 0.5) * 20;
-        var yPct = (e.clientY / window.innerHeight - 0.5) * 20;
-        gsap.to('#morocco-geo', { x: xPct, y: yPct, duration: 2, ease: 'power2.out', overwrite: 'auto' });
-      });
-    }
-
-    window.addEventListener('scroll', function () {
-      var op = Math.max(0, 1 - window.scrollY / (window.innerHeight * 0.7));
-      var heroBg  = document.querySelector('.hero-geo-bg');
-      var heroTxt = document.querySelector('.hero-overlay-content');
-      var heroHnt = document.querySelector('.hero-scroll-hint');
-      if (window.scrollY < window.innerHeight) {
-        if (heroBg)  heroBg.style.opacity  = op;
-        if (heroTxt) heroTxt.style.opacity = op;
-        if (heroHnt) heroHnt.style.opacity = op;
-      }
-    }, { passive: true });
-  });
-})();
-</script>
-
-<script>
-(function() {
-  function countUp(el, target, suffix, duration) {
-    let start = 0;
-    const step = target / (duration / 16);
-
-    function update() {
-      start += step;
-      if (start >= target) {
-        el.textContent = target + suffix;
-        return;
-      }
-      el.textContent = Math.floor(start) + suffix;
-      requestAnimationFrame(update);
-    }
-
-    el.textContent = '0' + suffix;
-    requestAnimationFrame(update);
-  }
-
-  function initCountUps() {
-    const elements = document.querySelectorAll('.stat-value.countup');
-    if (!elements.length) return;
-
-    const observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          observer.disconnect();
-          elements.forEach(function(el, index) {
-            const target = parseInt(el.getAttribute('data-target'));
-            const suffix = el.getAttribute('data-suffix') || '';
-            const duration = 1500;
-            const delay = index * 200;
-
-            setTimeout(function() {
-              countUp(el, target, suffix, duration);
-            }, delay);
-          });
-        }
-      });
-    }, { threshold: 0.3 });
-
-    const statRow = document.querySelector('.stat-row');
-    if (statRow) observer.observe(statRow);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCountUps);
-  } else {
-    initCountUps();
-  }
-})();
 </script>
 
 </body>
