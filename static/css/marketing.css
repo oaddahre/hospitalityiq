@@ -691,12 +691,12 @@ body.lp-light .mk-theme-toggle:hover {
 
 /* ── HERO ── */
 .lp-hero {
-  padding: 80px 48px 60px;
+  padding: 72px 48px 60px;
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 80px;
   align-items: end;
-  min-height: 100vh;
+  min-height: auto;
 }
 .lp-hero-eyebrow {
   font-family: 'Space Mono', monospace;
