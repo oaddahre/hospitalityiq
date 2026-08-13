@@ -691,7 +691,7 @@ body.lp-light .mk-theme-toggle:hover {
 
 /* ── HERO ── */
 .lp-hero {
-  padding: 132px 48px 72px;
+  padding: 80px 48px 60px;
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 80px;
@@ -723,7 +723,7 @@ body.lp-light .mk-theme-toggle:hover {
   font-size: 60px;
   line-height: 1.05;
   color: var(--lp-text);
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   letter-spacing: -0.025em;
 }
 .lp-hero-headline span { color: #B87860; }
@@ -733,13 +733,13 @@ body.lp-light .mk-theme-toggle:hover {
   color: var(--lp-text-muted);
   line-height: 1.8;
   max-width: 500px;
-  margin-bottom: 40px;
+  margin-bottom: 28px;
   font-weight: 400;
 }
 .lp-hero-btns {
   display: flex;
   gap: 12px;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 .lp-hero-stats {
   display: flex;
@@ -966,7 +966,7 @@ body.lp-light .mk-theme-toggle:hover {
   line-height: 1.1;
   color: var(--lp-text);
   max-width: 620px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   letter-spacing: -0.02em;
 }
 .lp-section-sub {
@@ -975,6 +975,7 @@ body.lp-light .mk-theme-toggle:hover {
   color: var(--lp-text-muted);
   max-width: 500px;
   line-height: 1.75;
+  margin-bottom: 0;
   font-weight: 400;
 }
 
@@ -1139,12 +1140,12 @@ body.lp-light .mk-theme-toggle:hover {
 /* ── REPORT CARD ── */
 .lp-report-card {
   max-width: 720px;
-  margin-top: 40px;
+  margin-top: 24px;
   border: 1px solid var(--lp-report-border);
   border-top: 1px solid #B87860;
   padding: 36px;
   display: grid;
-  grid-template-columns: 1fr 180px;
+  grid-template-columns: 1fr 220px;
   gap: 40px;
   align-items: start;
   transition: transform 300ms ease;
@@ -1194,6 +1195,17 @@ body.lp-light .mk-theme-toggle:hover {
   padding: 18px;
   background: var(--lp-report-stats-bg);
 }
+.lp-report-stat-header {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #B87860;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--lp-report-border);
+  font-weight: 400;
+}
 .lp-report-stat {
   display: flex;
   justify-content: space-between;
@@ -1217,6 +1229,7 @@ body.lp-light .mk-theme-toggle:hover {
   font-weight: 400;
 }
 .lp-report-stat-v.lp-green { color: var(--lp-ck); }
+.lp-report-stat-v.lp-accent { color: #B87860; }
 
 /* ── PRICING ── */
 .lp-pricing-table {
@@ -1226,13 +1239,16 @@ body.lp-light .mk-theme-toggle:hover {
 }
 .lp-pricing-table thead th {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.12em;
+  font-size: 11px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--lp-text-faint);
-  padding: 14px 20px;
+  padding: 16px 24px;
   text-align: center;
-  border-bottom: 1px solid var(--lp-pricing-border);
+  border-bottom: 2px solid var(--lp-pricing-border);
+  border-top: none;
+  border-left: none;
+  border-right: none;
   font-weight: 400;
 }
 .lp-pricing-table thead th:first-child {
@@ -1245,12 +1261,13 @@ body.lp-light .mk-theme-toggle:hover {
 }
 .lp-pricing-table tbody td {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--lp-text-faint);
-  padding: 11px 20px;
-  border-bottom: 1px solid var(--lp-pricing-row-border);
+  padding: 13px 24px;
+  border: none;
+  border-bottom: none;
   text-align: center;
   transition: background 200ms;
   font-weight: 400;
@@ -1259,21 +1276,23 @@ body.lp-light .mk-theme-toggle:hover {
   text-align: left;
   color: var(--lp-text-muted);
   font-family: 'Manrope', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   text-transform: none;
   letter-spacing: 0;
   font-weight: 400;
 }
+.lp-pricing-table tbody tr { border-bottom: none; }
 .lp-ft-col { background: var(--lp-pricing-ft); }
 .lp-ck { color: var(--lp-ck); }
 .lp-ds { color: var(--lp-ds); }
 .lp-price-row td {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 22px;
+  font-size: 24px;
   color: var(--lp-text);
-  padding: 18px 20px;
-  border-bottom: 2px solid var(--lp-price-row-border);
+  padding: 20px 24px;
+  border-bottom: 2px solid var(--lp-pricing-border);
+  border-top: none;
   letter-spacing: -0.02em;
 }
 .lp-price-row td:first-child {
