@@ -5,481 +5,364 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kōdō Hospitality — Morocco Hotel Intelligence</title>
   <meta name="description" content="Morocco's first independent hotel market intelligence platform. 300+ hotels, 23 destinations, institutional-grade data.">
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css">
 </head>
 <body class="lp-body">
 
-<!-- NAV -->
-<nav class="mk-nav" id="mkNav">
-  <div class="mk-nav-inner">
-    <a href="/" class="mk-nav-logo">KŌDŌ</a>
-    <div class="mk-nav-links">
-      <a href="#platform" class="mk-nav-link">Platform</a>
-      <a href="#advisory" class="mk-nav-link">Advisory</a>
-      <a href="#pricing" class="mk-nav-link">Pricing</a>
-      <a href="/login" class="mk-nav-link">Sign In</a>
-    </div>
-    <button class="mk-theme-toggle" id="themeToggle" aria-label="Toggle theme">
-      <span class="theme-icon-dark">☀</span>
-      <span class="theme-icon-light">☽</span>
-    </button>
-    <a href="/register" class="mk-nav-cta">Request Access →</a>
+<nav class="mk-nav">
+  <a href="/" class="mk-nav-logo">KŌDŌ</a>
+  <div class="mk-nav-links">
+    <a href="#platform" class="mk-nav-link">Platform</a>
+    <a href="#advisory" class="mk-nav-link">Advisory</a>
+    <a href="#reports" class="mk-nav-link">Reports</a>
+    <a href="#pricing" class="mk-nav-link">Pricing</a>
+    <a href="/login" class="mk-nav-link">Sign In</a>
   </div>
+  <a href="/register" class="mk-nav-cta">Request Access →</a>
+  <div class="nav-progress" id="navProgress"></div>
 </nav>
 
-<!-- SECTION 1: REPORT HEADER HERO -->
-<section class="report-hero">
-  <div class="lp-inner">
-
-    <!-- Zone A: report top bar -->
-    <div class="report-hero-topbar">
-      <span class="report-hero-meta">KŌDŌ HOSPITALITY INTELLIGENCE  ·  MOROCCO MARKET OVERVIEW  ·  ISSUE 01  ·  JULY 2026</span>
-      <span class="report-hero-meta">CONFIDENTIAL — FOR PROFESSIONAL USE</span>
+<!-- HERO -->
+<section class="lp-hero">
+  <div>
+    <div class="lp-hero-eyebrow">Morocco Hotel Intelligence</div>
+    <h1 class="lp-hero-headline">The data layer<br>for <span>Moroccan</span><br>hospitality.</h1>
+    <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations — delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
+    <div class="lp-hero-btns">
+      <a href="/register" class="btn-fill">Request Access →</a>
+      <a href="#platform" class="btn-outline">View Platform</a>
     </div>
-
-    <!-- Zone B: headline + data panel -->
-    <div class="report-hero-zones">
-      <div class="report-hero-left">
-        <span class="report-hero-label">MARKET INTELLIGENCE PLATFORM</span>
-        <h1 class="report-hero-headline">The Data Layer<br>for Moroccan<br>Hospitality.</h1>
-        <p class="report-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations across Morocco, delivering the market intelligence that hospitality professionals need to make better decisions.</p>
-        <div class="report-hero-btns">
-          <a href="/register" class="btn-pill btn-pill-filled">Request Access →</a>
-          <a href="#platform" class="btn-pill btn-pill-outline">View Platform</a>
-        </div>
+    <div class="lp-hero-stats">
+      <div class="lp-stat">
+        <span class="lp-stat-val" data-target="300" data-suffix="+">0+</span>
+        <span class="lp-stat-lbl">Hotels Tracked</span>
       </div>
-      <div class="report-hero-right">
-        <div class="lp-hero-data-panel">
-          <div class="lp-data-panel-header">MOROCCO HOTEL MARKET  ·  LIVE SNAPSHOT</div>
-          <div class="lp-data-rows">
-            <div class="lp-data-row">
-              <span class="lp-data-label">TRACKED HOTELS</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">300+</span>
-            </div>
-            <div class="lp-data-row">
-              <span class="lp-data-label">DESTINATIONS</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">23</span>
-            </div>
-            <div class="lp-data-row">
-              <span class="lp-data-label">BRAND GROUPS</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">35</span>
-            </div>
-            <div class="lp-data-row">
-              <span class="lp-data-label">PIPELINE PROJECTS</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">16</span>
-            </div>
-            <div class="lp-data-row">
-              <span class="lp-data-label">DATA UPDATED</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">JULY 2026</span>
-            </div>
-          </div>
-          <div class="lp-data-divider"></div>
-          <div class="lp-data-section-label">SEGMENT DISTRIBUTION</div>
-          <div class="lp-data-rows">
-            <div class="lp-data-row">
-              <span class="lp-data-label">LUXURY & ULTRA LUXURY</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">18%</span>
-            </div>
-            <div class="lp-data-row">
-              <span class="lp-data-label">UPPER UPSCALE</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">24%</span>
-            </div>
-            <div class="lp-data-row">
-              <span class="lp-data-label">UPSCALE</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">31%</span>
-            </div>
-            <div class="lp-data-row">
-              <span class="lp-data-label">MIDSCALE & ECONOMY</span>
-              <span class="lp-data-dots"></span>
-              <span class="lp-data-value">27%</span>
-            </div>
-          </div>
-          <div class="lp-data-panel-footer">KŌDŌ ESTIMATES · METHODOLOGY DISCLOSED</div>
-        </div>
+      <div class="lp-stat">
+        <span class="lp-stat-val" data-target="23" data-suffix="">0</span>
+        <span class="lp-stat-lbl">Destinations</span>
+      </div>
+      <div class="lp-stat">
+        <span class="lp-stat-val" data-target="35" data-suffix="">0</span>
+        <span class="lp-stat-lbl">Brand Groups</span>
       </div>
     </div>
+  </div>
 
-    <!-- Zone C: bottom bar -->
-    <div class="report-hero-bottombar">
-      <span class="report-hero-meta">SCROLL TO EXPLORE ↓</span>
-      <div class="report-hero-anchors">
-        <a href="#platform" class="report-hero-anchor">01 PLATFORM</a>
-        <a href="#advisory" class="report-hero-anchor">02 ADVISORY</a>
-        <a href="#reports" class="report-hero-anchor">03 REPORTS</a>
-        <a href="#pricing" class="report-hero-anchor">04 PRICING</a>
-      </div>
+  <div class="lp-data-card">
+    <div class="lp-data-header">
+      <span>Morocco Market · Live Snapshot</span>
+      <div class="lp-data-pulse"></div>
     </div>
-
+    <div class="lp-data-row"><span class="lp-data-k">Tracked Hotels</span><span class="lp-data-v">300+</span></div>
+    <div class="lp-data-row"><span class="lp-data-k">Pipeline Projects</span><span class="lp-data-v">16</span></div>
+    <div class="lp-data-row"><span class="lp-data-k">Brand Groups</span><span class="lp-data-v">35</span></div>
+    <div class="lp-data-row"><span class="lp-data-k">Data Updated</span><span class="lp-data-v lp-accent">July 2026</span></div>
+    <hr class="lp-divider">
+    <span class="lp-data-slbl">Segment Distribution</span>
+    <div class="lp-bar-row">
+      <div class="lp-bar-top"><span>Luxury & Ultra Luxury</span><strong>18%</strong></div>
+      <div class="lp-bar-track"><div class="lp-bar-fill" data-width="18" style="background:#B87860"></div></div>
+    </div>
+    <div class="lp-bar-row">
+      <div class="lp-bar-top"><span>Upper Upscale</span><strong>24%</strong></div>
+      <div class="lp-bar-track"><div class="lp-bar-fill" data-width="24" style="background:#6A5A68"></div></div>
+    </div>
+    <div class="lp-bar-row">
+      <div class="lp-bar-top"><span>Upscale</span><strong>31%</strong></div>
+      <div class="lp-bar-track"><div class="lp-bar-fill" data-width="31" style="background:#3A4A5A"></div></div>
+    </div>
+    <div class="lp-bar-row">
+      <div class="lp-bar-top"><span>Midscale & Economy</span><strong>27%</strong></div>
+      <div class="lp-bar-track"><div class="lp-bar-fill" data-width="27" style="background:#2A2A2A"></div></div>
+    </div>
+    <hr class="lp-divider">
+    <div class="lp-data-row"><span class="lp-data-k">Marrakech</span><span class="lp-data-v">68 hotels</span></div>
+    <div class="lp-data-row"><span class="lp-data-k">Casablanca</span><span class="lp-data-v">47 hotels</span></div>
+    <div class="lp-data-row"><span class="lp-data-k">Agadir / Taghazout</span><span class="lp-data-v">32 hotels</span></div>
   </div>
 </section>
 
-<!-- SECTION 2: PLATFORM -->
+<!-- PLATFORM -->
 <section class="lp-section" id="platform">
-  <div class="lp-inner">
-    <div class="section-opener reveal">
-      <span class="section-opener-tag">01 — PLATFORM</span>
-      <span class="section-opener-right">THE INTELLIGENCE SUITE</span>
+  <div class="lp-section-opener lp-reveal">
+    <span class="lp-section-tag">01 — Platform</span>
+    <span class="lp-section-meta">The Intelligence Suite</span>
+  </div>
+  <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Six modules. Every dimension of Morocco's hotel market.</h2>
+  <p class="lp-section-sub lp-reveal lp-reveal-d2">A system that transforms raw supply data, live rate intelligence, and market benchmarks into actionable insight.</p>
+  <div class="lp-modules lp-reveal lp-reveal-d3">
+    <div class="lp-module">
+      <span class="lp-module-n">01</span>
+      <div class="lp-module-title">Hotel Directory</div>
+      <p class="lp-module-body">300+ hotels with verified room counts, segment classification, brand affiliation, ownership, and opening years across 23 destinations.</p>
+      <div class="lp-module-bar"></div>
     </div>
-    <h2 class="lp-section-title reveal reveal-delay-1">Six modules. One platform.<br>Every dimension of Morocco's hotel market.</h2>
-    <div class="platform-layout reveal reveal-delay-2">
-      <div class="platform-intro">
-        <p class="lp-body-text">Kōdō is not a database. It is an intelligence platform — a system that transforms raw hotel supply data, live rate intelligence, and market benchmarks into actionable insight for investment decisions, asset management, and market strategy.</p>
-      </div>
-      <div class="platform-index">
-        <div class="platform-row">
-          <span class="platform-num">01</span>
-          <div class="platform-content">
-            <span class="platform-name">Hotel Directory</span>
-            <span class="platform-desc">300+ branded and independent hotels with verified room counts, segment classification, brand affiliation, ownership, and opening years across 23 Moroccan destinations.</span>
-          </div>
-          <span class="platform-arrow">→</span>
-        </div>
-        <div class="platform-row">
-          <span class="platform-num">02</span>
-          <div class="platform-content">
-            <span class="platform-name">Brand Intelligence</span>
-            <span class="platform-desc">35 hotel brand groups profiled with performance benchmarks, market share analysis, city presence, and Morocco-specific brand descriptions.</span>
-          </div>
-          <span class="platform-arrow">→</span>
-        </div>
-        <div class="platform-row">
-          <span class="platform-num">03</span>
-          <div class="platform-content">
-            <span class="platform-name">Development Pipeline</span>
-            <span class="platform-desc">Confirmed hotel pipeline projects with brand, operator, investment commitment, opening timeline, and an interactive pipeline map.</span>
-          </div>
-          <span class="platform-arrow">→</span>
-        </div>
-        <div class="platform-row">
-          <span class="platform-num">04</span>
-          <div class="platform-content">
-            <span class="platform-name">Ownership Intelligence</span>
-            <span class="platform-desc">Institutional hotel owner profiles including Madaëf, Risma, Al Mada, and Valeria Hotels with full portfolio breakdowns and key statistics.</span>
-          </div>
-          <span class="platform-arrow">→</span>
-        </div>
-        <div class="platform-row">
-          <span class="platform-num">05</span>
-          <div class="platform-content">
-            <span class="platform-name">Market Benchmarking</span>
-            <span class="platform-desc">ADR, occupancy, and RevPAR benchmarking against a custom comp set of up to 8 properties. Daily rate intelligence from live OTA scraping.</span>
-          </div>
-          <span class="platform-arrow">→</span>
-        </div>
-        <div class="platform-row">
-          <span class="platform-num">06</span>
-          <div class="platform-content">
-            <span class="platform-name">Intelligence Reports</span>
-            <span class="platform-desc">City-level PDF market intelligence reports with AI-powered narrative, supply analysis, pipeline tracking, investment perspective, and Kōdō market ratings.</span>
-          </div>
-          <span class="platform-arrow">→</span>
-        </div>
-      </div>
+    <div class="lp-module">
+      <span class="lp-module-n">02</span>
+      <div class="lp-module-title">Brand Intelligence</div>
+      <p class="lp-module-body">35 brand groups profiled with performance benchmarks, market share analysis, city presence, and Morocco-specific descriptions.</p>
+      <div class="lp-module-bar"></div>
+    </div>
+    <div class="lp-module">
+      <span class="lp-module-n">03</span>
+      <div class="lp-module-title">Development Pipeline</div>
+      <p class="lp-module-body">Confirmed pipeline projects with brand, operator, investment commitment, opening timeline, and an interactive pipeline map.</p>
+      <div class="lp-module-bar"></div>
+    </div>
+    <div class="lp-module">
+      <span class="lp-module-n">04</span>
+      <div class="lp-module-title">Ownership Intelligence</div>
+      <p class="lp-module-body">Institutional owner profiles including Madaëf, Risma, Al Mada, and Valeria Hotels with full portfolio breakdowns and key statistics.</p>
+      <div class="lp-module-bar"></div>
+    </div>
+    <div class="lp-module">
+      <span class="lp-module-n">05</span>
+      <div class="lp-module-title">Market Benchmarking</div>
+      <p class="lp-module-body">ADR, occupancy, and RevPAR benchmarking against a custom comp set of up to 8 properties. Daily rate intelligence from live OTA scraping.</p>
+      <div class="lp-module-bar"></div>
+    </div>
+    <div class="lp-module">
+      <span class="lp-module-n">06</span>
+      <div class="lp-module-title">Intelligence Reports</div>
+      <p class="lp-module-body">City-level PDF reports with AI-powered narrative, supply analysis, pipeline tracking, investment perspective, and Kōdō market ratings.</p>
+      <div class="lp-module-bar"></div>
     </div>
   </div>
 </section>
 
-<!-- SECTION 3: ADVISORY -->
-<section class="lp-section" id="advisory">
-  <div class="lp-inner">
-    <div class="section-opener reveal">
-      <span class="section-opener-tag">02 — ADVISORY</span>
-      <span class="section-opener-right">ACROSS THE ASSET LIFECYCLE</span>
+<!-- ADVISORY -->
+<div class="lp-advisory-wrap" id="advisory">
+  <div class="lp-advisory-left lp-reveal">
+    <span class="lp-section-tag" style="margin-bottom:20px;display:block">02 — Advisory</span>
+    <h2 class="lp-advisory-headline">Data-driven advisory across the full asset lifecycle.</h2>
+    <p class="lp-advisory-desc">Institutional asset management expertise combined with Morocco's most comprehensive hotel database — at every stage of the investment process.</p>
+    <a href="/contact" class="btn-accent-outline">Contact Advisory →</a>
+  </div>
+  <div class="lp-advisory-items lp-reveal lp-reveal-d1">
+    <div class="lp-adv-item lp-adv-open">
+      <div class="lp-adv-header"><span class="lp-adv-num">01</span><span class="lp-adv-name">Investment & Acquisition</span><span class="lp-adv-plus">+</span></div>
+      <div class="lp-adv-body"><div class="lp-adv-body-inner"><ul class="lp-adv-list"><li>Hotel acquisition advisory</li><li>Investment analysis</li><li>Hotel valuation — income cap, DCF, sales comparison</li><li>Business planning</li><li>Due diligence support</li><li>Debt advisory and lender support</li></ul></div></div>
     </div>
-    <h2 class="lp-section-title reveal reveal-delay-1">Data-driven advisory across<br>the full hotel asset lifecycle.</h2>
-    <div class="svc-layout reveal reveal-delay-2">
-      <div class="svc-intro">
-        <p class="lp-body-text">Kōdō Advisory combines proprietary market intelligence with institutional asset management expertise to serve hotel investors, owners, developers, and lenders at every stage of the investment process.</p>
-        <a href="/contact" class="btn-pill btn-pill-outline-accent" style="margin-top:28px;display:inline-block;">Contact Advisory Team →</a>
-      </div>
-      <div class="svc-accordion" id="svcAccordion">
-
-        <div class="svc-item" data-index="0">
-          <div class="svc-item-header">
-            <span class="svc-num">01</span>
-            <span class="svc-name">Investment &amp; Acquisition</span>
-            <span class="svc-item-arrow">+</span>
-          </div>
-          <div class="svc-item-body">
-            <ul class="svc-list">
-              <li>Hotel acquisition advisory</li>
-              <li>Investment analysis</li>
-              <li>Hotel valuation (income cap, DCF, sales comparison)</li>
-              <li>Business planning</li>
-              <li>Due diligence support</li>
-              <li>Debt advisory and lender support</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="svc-item" data-index="1">
-          <div class="svc-item-header">
-            <span class="svc-num">02</span>
-            <span class="svc-name">Market Intelligence</span>
-            <span class="svc-item-arrow">+</span>
-          </div>
-          <div class="svc-item-body">
-            <ul class="svc-list">
-              <li>Feasibility studies</li>
-              <li>Market research and demand analysis</li>
-              <li>Competitive positioning</li>
-              <li>Data intelligence and benchmarking</li>
-              <li>Tourism strategy consulting</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="svc-item" data-index="2">
-          <div class="svc-item-header">
-            <span class="svc-num">03</span>
-            <span class="svc-name">Brand, Concept &amp; Operations</span>
-            <span class="svc-item-arrow">+</span>
-          </div>
-          <div class="svc-item-body">
-            <ul class="svc-list">
-              <li>Hotel concept development</li>
-              <li>Brand and management company selection</li>
-              <li>Contract negotiation (HMA and franchise)</li>
-              <li>Rebranding and asset repositioning</li>
-              <li>Operator performance monitoring</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="svc-item" data-index="3">
-          <div class="svc-item-header">
-            <span class="svc-num">04</span>
-            <span class="svc-name">Asset Management</span>
-            <span class="svc-item-arrow">+</span>
-          </div>
-          <div class="svc-item-body">
-            <ul class="svc-list">
-              <li>Advisory across the full hotel asset lifecycle</li>
-              <li>Owner representation</li>
-              <li>Strategic planning</li>
-            </ul>
-          </div>
-        </div>
-
-      </div>
+    <div class="lp-adv-item">
+      <div class="lp-adv-header"><span class="lp-adv-num">02</span><span class="lp-adv-name">Market Intelligence</span><span class="lp-adv-plus">+</span></div>
+      <div class="lp-adv-body"><div class="lp-adv-body-inner"><ul class="lp-adv-list"><li>Feasibility studies</li><li>Market research and demand analysis</li><li>Competitive positioning</li><li>Data intelligence and benchmarking</li><li>Tourism strategy consulting</li></ul></div></div>
+    </div>
+    <div class="lp-adv-item">
+      <div class="lp-adv-header"><span class="lp-adv-num">03</span><span class="lp-adv-name">Brand, Concept & Operations</span><span class="lp-adv-plus">+</span></div>
+      <div class="lp-adv-body"><div class="lp-adv-body-inner"><ul class="lp-adv-list"><li>Hotel concept development</li><li>Brand and management company selection</li><li>Contract negotiation (HMA and franchise)</li><li>Rebranding and asset repositioning</li><li>Operator performance monitoring</li></ul></div></div>
+    </div>
+    <div class="lp-adv-item">
+      <div class="lp-adv-header"><span class="lp-adv-num">04</span><span class="lp-adv-name">Asset Management</span><span class="lp-adv-plus">+</span></div>
+      <div class="lp-adv-body"><div class="lp-adv-body-inner"><ul class="lp-adv-list"><li>Advisory across the full hotel asset lifecycle</li><li>Owner representation</li><li>Strategic planning</li></ul></div></div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- SECTION 4: REPORTS -->
+<!-- REPORTS -->
 <section class="lp-section lp-section-alt" id="reports">
-  <div class="lp-inner">
-    <div class="section-opener reveal">
-      <span class="section-opener-tag">03 — REPORTS</span>
-      <span class="section-opener-right">MARKET INTELLIGENCE</span>
+  <div class="lp-section-opener lp-reveal">
+    <span class="lp-section-tag">03 — Reports</span>
+    <span class="lp-section-meta">Market Intelligence</span>
+  </div>
+  <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Institutional-grade analysis for Morocco hospitality.</h2>
+  <p class="lp-section-sub lp-reveal lp-reveal-d2">Regular reports covering Morocco's key hotel destinations — supply analysis, performance benchmarks, pipeline tracking, and Kōdō market ratings.</p>
+  <div class="lp-report-card lp-reveal lp-reveal-d3">
+    <div>
+      <span class="lp-report-badge">Latest Report</span>
+      <h3 class="lp-report-title">Tamuda Bay: The Rise of Morocco's Mediterranean Luxury Corridor</h3>
+      <p class="lp-report-meta">July 2026 · 10 Pages · Tamuda Bay / Tétouan</p>
+      <p class="lp-report-desc">An in-depth analysis of Tamuda Bay's emergence as Morocco's premier Mediterranean luxury destination. Covers supply evolution, demand drivers, performance estimates, pipeline, and investment perspective.</p>
+      <a href="/contact" class="btn-accent-outline">Request Report →</a>
     </div>
-    <h2 class="lp-section-title reveal reveal-delay-1">Institutional-grade analysis<br>for Morocco hospitality.</h2>
-    <p class="lp-body-text reveal reveal-delay-2" style="max-width:560px;margin-top:16px;">Kōdō publishes regular market intelligence reports covering Morocco's key hotel destinations. Reports include supply analysis, performance benchmarks, pipeline tracking, investment perspective, and Kōdō's proprietary market rating.</p>
-    <div class="report-card reveal reveal-delay-3" style="max-width:760px;margin-top:48px;display:flex;gap:48px;align-items:flex-start;">
-      <div style="flex:1;">
-        <span class="kodo-estimate-badge">Latest Report</span>
-        <h3 style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:700;color:var(--lp-text);margin-top:16px;line-height:1.3;">Tamuda Bay: The Rise of Morocco's Mediterranean Luxury Corridor</h3>
-        <p style="font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--lp-text-muted);margin-top:10px;">JULY 2026  ·  10 PAGES  ·  TAMUDA BAY / TÉTOUAN</p>
-        <p style="font-family:'Manrope',sans-serif;font-size:13px;color:var(--lp-text-muted);line-height:1.7;margin-top:14px;">An in-depth analysis of Tamuda Bay's emergence as Morocco's premier Mediterranean luxury destination. Covers supply evolution, demand drivers, performance estimates, pipeline, and investment perspective.</p>
-        <a href="/contact" class="btn-pill btn-pill-outline-accent" style="margin-top:20px;display:inline-block;">Request Report →</a>
-      </div>
-      <div class="lp-report-stats">
-        <div class="lp-data-row">
-          <span class="lp-data-label">HOTELS ANALYSED</span>
-          <span class="lp-data-value">14</span>
-        </div>
-        <div class="lp-data-row">
-          <span class="lp-data-label">PIPELINE PROJECTS</span>
-          <span class="lp-data-value">1</span>
-        </div>
-        <div class="lp-data-row">
-          <span class="lp-data-label">KŌDŌ RATING</span>
-          <span class="lp-data-value" style="color:var(--lp-check);">OUTPERFORM</span>
-        </div>
-      </div>
+    <div class="lp-report-stats">
+      <div class="lp-report-stat"><span class="lp-report-stat-k">Hotels</span><span class="lp-report-stat-v">14</span></div>
+      <div class="lp-report-stat"><span class="lp-report-stat-k">Pipeline</span><span class="lp-report-stat-v">1</span></div>
+      <div class="lp-report-stat"><span class="lp-report-stat-k">Rating</span><span class="lp-report-stat-v lp-green">Outperform</span></div>
     </div>
   </div>
 </section>
 
-<!-- SECTION 5: PRICING -->
+<!-- PRICING -->
 <section class="lp-section" id="pricing">
-  <div class="lp-inner">
-    <div class="section-opener reveal">
-      <span class="section-opener-tag">04 — PRICING</span>
-      <span class="section-opener-right">SUBSCRIPTION PLANS</span>
+  <div class="lp-section-opener lp-reveal">
+    <span class="lp-section-tag">04 — Pricing</span>
+    <span class="lp-section-meta">Subscription Plans</span>
+  </div>
+  <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Transparent pricing. No hidden fees.</h2>
+  <div style="overflow-x:auto;">
+    <table class="lp-pricing-table lp-reveal lp-reveal-d2">
+      <thead>
+        <tr>
+          <th style="text-align:left;width:38%"></th>
+          <th>Observer</th>
+          <th class="lp-ft">Benchmarker</th>
+          <th>Advisory</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="lp-price-row">
+          <td>Monthly fee</td>
+          <td style="text-align:center">MAD 990</td>
+          <td class="lp-ft-col" style="text-align:center">MAD 2,490</td>
+          <td style="text-align:center">MAD 6,990</td>
+        </tr>
+        <tr><td>Hotel Directory</td><td><span class="lp-ck">✓</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Interactive Map</td><td><span class="lp-ck">✓</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Brand Intelligence</td><td><span class="lp-ck">✓</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Ownership Intelligence</td><td><span class="lp-ck">✓</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Tourism Data & News</td><td><span class="lp-ck">✓</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>AI Analyst</td><td style="color:#444;font-size:8px;font-family:'Space Mono',monospace;text-align:center">10 / month</td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Market Benchmarking</td><td><span class="lp-ds">—</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Intelligence Reports</td><td><span class="lp-ds">—</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Excel Data Export</td><td><span class="lp-ds">—</span></td><td class="lp-ft-col"><span class="lp-ck">✓</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Hotel Valuation Tool</td><td><span class="lp-ds">—</span></td><td class="lp-ft-col"><span class="lp-ds">—</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Priority Advisory Access</td><td><span class="lp-ds">—</span></td><td class="lp-ft-col"><span class="lp-ds">—</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr><td>Custom Reports</td><td><span class="lp-ds">—</span></td><td class="lp-ft-col"><span class="lp-ds">—</span></td><td><span class="lp-ck">✓</span></td></tr>
+        <tr>
+          <td></td>
+          <td style="text-align:center;padding-top:20px;border-bottom:none"><a href="/register" class="btn-outline" style="font-size:8px;padding:8px 18px">Get Started →</a></td>
+          <td class="lp-ft-col" style="text-align:center;padding-top:20px;border-bottom:none"><a href="/register" class="btn-fill" style="font-size:8px;padding:8px 18px">Get Started →</a></td>
+          <td style="text-align:center;padding-top:20px;border-bottom:none"><a href="/contact" class="btn-accent-outline" style="font-size:8px;padding:8px 18px">Contact Us →</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="lp-section lp-section-alt" id="clients">
+  <div class="lp-section-opener lp-reveal">
+    <span class="lp-section-tag">05 — Clients</span>
+    <span class="lp-section-meta">Who We Serve</span>
+  </div>
+  <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Built for Morocco hospitality professionals.</h2>
+  <div class="lp-audience-grid lp-reveal lp-reveal-d2">
+    <div class="lp-audience-card">
+      <span class="lp-audience-num">01</span>
+      <div class="lp-audience-title">Hotel Investors & Funds</div>
+      <p class="lp-audience-body">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
     </div>
-    <h2 class="lp-section-title reveal reveal-delay-1">Transparent pricing.<br>No hidden fees.</h2>
-    <div class="pricing-table-wrap reveal reveal-delay-2" style="margin-top:48px;">
-      <table class="pricing-table">
-        <thead>
-          <tr>
-            <th class="pricing-th-label"></th>
-            <th class="pricing-th">OBSERVER</th>
-            <th class="pricing-th pricing-th-featured">BENCHMARKER</th>
-            <th class="pricing-th">ADVISORY</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="pricing-price-row">
-            <td class="pricing-row-label">MONTHLY FEE</td>
-            <td class="pricing-cell">MAD 990</td>
-            <td class="pricing-cell pricing-cell-featured">MAD 2,490</td>
-            <td class="pricing-cell">MAD 6,990</td>
-          </tr>
-          <tr><td class="pricing-row-label">Hotel Directory</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Interactive Map</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Development Pipeline</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Brand Intelligence</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Ownership Intelligence</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Tourism Data</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">News &amp; Editorial</td><td class="pricing-cell">✓</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">AI Analyst</td><td class="pricing-cell" style="font-size:11px;color:var(--lp-text-muted);">10 queries/mo</td><td class="pricing-cell pricing-cell-featured">Unlimited</td><td class="pricing-cell">Unlimited</td></tr>
-          <tr><td class="pricing-row-label">Market Benchmarking</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Intelligence Reports</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Excel Data Export</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-cell-featured">✓</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Hotel Valuation Tool</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-dash pricing-cell-featured">—</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Priority Advisory Access</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-dash pricing-cell-featured">—</td><td class="pricing-cell">✓</td></tr>
-          <tr><td class="pricing-row-label">Custom Reports</td><td class="pricing-cell pricing-dash">—</td><td class="pricing-cell pricing-dash pricing-cell-featured">—</td><td class="pricing-cell">✓</td></tr>
-          <tr class="pricing-cta-row">
-            <td></td>
-            <td class="pricing-cell"><a href="/register" class="btn-pill btn-pill-outline" style="font-size:9px;padding:8px 20px;">Get Started →</a></td>
-            <td class="pricing-cell pricing-cell-featured"><a href="/register" class="btn-pill btn-pill-filled" style="font-size:9px;padding:8px 20px;">Get Started →</a></td>
-            <td class="pricing-cell"><a href="/contact" class="btn-pill btn-pill-outline-accent" style="font-size:9px;padding:8px 20px;">Contact Us →</a></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="lp-audience-card">
+      <span class="lp-audience-num">02</span>
+      <div class="lp-audience-title">Owners & Asset Managers</div>
+      <p class="lp-audience-body">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
+    </div>
+    <div class="lp-audience-card">
+      <span class="lp-audience-num">03</span>
+      <div class="lp-audience-title">Developers & Operators</div>
+      <p class="lp-audience-body">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
+    </div>
+    <div class="lp-audience-card">
+      <span class="lp-audience-num">04</span>
+      <div class="lp-audience-title">Banks & Financial Institutions</div>
+      <p class="lp-audience-body">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
     </div>
   </div>
 </section>
 
-<!-- SECTION 6: WHO IT'S FOR -->
-<section class="lp-section" id="clients">
-  <div class="lp-inner">
-    <div class="section-opener reveal">
-      <span class="section-opener-tag">05 — CLIENTS</span>
-      <span class="section-opener-right">WHO WE SERVE</span>
-    </div>
-    <h2 class="lp-section-title reveal reveal-delay-1">Built for Morocco<br>hospitality professionals.</h2>
-    <div class="audience-grid reveal reveal-delay-2" style="margin-top:48px;">
-      <div class="audience-card">
-        <span class="audience-card-num">01</span>
-        <div class="audience-card-title">Hotel Investors &amp; Funds</div>
-        <p class="audience-card-body">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
-      </div>
-      <div class="audience-card">
-        <span class="audience-card-num">02</span>
-        <div class="audience-card-title">Owners &amp; Asset Managers</div>
-        <p class="audience-card-body">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
-      </div>
-      <div class="audience-card">
-        <span class="audience-card-num">03</span>
-        <div class="audience-card-title">Developers &amp; Operators</div>
-        <p class="audience-card-body">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
-      </div>
-      <div class="audience-card">
-        <span class="audience-card-num">04</span>
-        <div class="audience-card-title">Banks &amp; Financial Institutions</div>
-        <p class="audience-card-body">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
-      </div>
-    </div>
+<!-- CTA -->
+<section class="lp-cta lp-reveal">
+  <span class="lp-cta-eyebrow">Join Kōdō</span>
+  <h2 class="lp-cta-title">Start with Kōdō.</h2>
+  <p class="lp-cta-sub">Morocco's leading hospitality intelligence platform</p>
+  <div class="lp-cta-btns">
+    <a href="/contact" class="btn-outline">Request a Demo</a>
+    <a href="/register" class="btn-fill">Subscribe Now →</a>
   </div>
-</section>
-
-<!-- SECTION 7: FINAL CTA -->
-<section class="lp-cta-section">
-  <div class="lp-inner">
-    <span class="lp-cta-label reveal">JOIN KŌDŌ</span>
-    <h2 class="lp-cta-title reveal reveal-delay-1">Start with Kōdō.</h2>
-    <p class="lp-cta-sub reveal reveal-delay-2">MOROCCO'S LEADING HOSPITALITY INTELLIGENCE PLATFORM</p>
-    <div class="lp-cta-buttons reveal reveal-delay-3">
-      <a href="/contact" class="btn-pill btn-pill-outline-accent">Request a Demo</a>
-      <a href="/register" class="btn-pill btn-pill-filled">Subscribe Now</a>
-    </div>
-    <span class="lp-cta-signin">ALREADY HAVE AN ACCOUNT? <a href="/login">SIGN IN →</a></span>
-  </div>
+  <span class="lp-cta-signin">Already have an account? <a href="/login">Sign in →</a></span>
 </section>
 
 <!-- FOOTER -->
-<footer class="landing-footer">
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <span class="footer-brand-logo">KŌDŌ</span>
-        <span class="footer-brand-sub">Morocco Hotel Intelligence</span>
-      </div>
-      <div class="footer-links">
-        <a href="/#platform">Platform</a>
-        <a href="/methodology">Methodology</a>
-        <a href="/team">Team</a>
-        <a href="/contact">Contact</a>
-        <a href="/terms">Terms</a>
-        <a href="/privacy">Privacy</a>
-      </div>
-      <div class="footer-contact">contact@kodohospitality.com</div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 KŌDŌ HOSPITALITY. ALL RIGHTS RESERVED.</span>
-      <span>DATA UPDATED JULY 2026</span>
-    </div>
+<footer class="lp-footer">
+  <span class="lp-footer-logo">KŌDŌ</span>
+  <div class="lp-footer-links">
+    <a href="/#platform" class="lp-footer-link">Platform</a>
+    <a href="/methodology" class="lp-footer-link">Methodology</a>
+    <a href="/team" class="lp-footer-link">Team</a>
+    <a href="/contact" class="lp-footer-link">Contact</a>
+    <a href="/terms" class="lp-footer-link">Terms</a>
+    <a href="/privacy" class="lp-footer-link">Privacy</a>
   </div>
+  <span class="lp-footer-copy">© 2026 Kōdō Hospitality · All Rights Reserved</span>
 </footer>
 
-<!-- Smooth scroll -->
 <script>
+// NAV PROGRESS
+const navProg = document.getElementById('navProgress');
+function updateProgress() {
+  const scrolled = window.scrollY;
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  navProg.style.width = (total > 0 ? Math.min(100, (scrolled / total) * 100) : 0) + '%';
+}
+window.addEventListener('scroll', updateProgress, { passive: true });
+
+// COUNT-UP
+function countUp(el, target, suffix, duration) {
+  const start = performance.now();
+  function frame(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.floor(ease * target) + suffix;
+    if (progress < 1) requestAnimationFrame(frame);
+    else el.textContent = target + suffix;
+  }
+  requestAnimationFrame(frame);
+}
+const statEls = document.querySelectorAll('.lp-stat-val[data-target]');
+let statsRun = false;
+function tryStats() {
+  if (statsRun) return;
+  const first = statEls[0];
+  if (!first) return;
+  if (first.getBoundingClientRect().top < window.innerHeight) {
+    statsRun = true;
+    statEls.forEach((el, i) => {
+      setTimeout(() => countUp(el, parseInt(el.dataset.target), el.dataset.suffix || '', 1400), i * 150);
+    });
+  }
+}
+
+// STAGGER DATA ROWS
+const dataRows = document.querySelectorAll('.lp-data-row');
+dataRows.forEach((r, i) => {
+  setTimeout(() => r.classList.add('lp-visible'), 300 + i * 80);
+});
+
+// ANIMATE BARS
+document.querySelectorAll('.lp-bar-fill[data-width]').forEach((b, i) => {
+  setTimeout(() => { b.style.width = b.dataset.width + '%'; }, 600 + i * 120);
+});
+
+// SCROLL REVEAL
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('lp-visible'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.lp-reveal').forEach(el => revealObs.observe(el));
+
+// ACCORDION
+document.querySelectorAll('.lp-adv-header').forEach(h => {
+  h.addEventListener('click', () => {
+    const item = h.parentElement;
+    const isOpen = item.classList.contains('lp-adv-open');
+    document.querySelectorAll('.lp-adv-item').forEach(i => i.classList.remove('lp-adv-open'));
+    if (!isOpen) item.classList.add('lp-adv-open');
+  });
+});
+
+// SMOOTH SCROLL
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const target = document.querySelector(a.getAttribute('href'));
     if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
   });
 });
-</script>
 
-<!-- Dark / light mode toggle -->
-<script>
-const toggle = document.getElementById('themeToggle');
-const body = document.body;
-const saved = localStorage.getItem('lp-theme');
-if (saved === 'light') body.classList.add('light-mode');
-toggle.addEventListener('click', () => {
-  body.classList.toggle('light-mode');
-  localStorage.setItem('lp-theme', body.classList.contains('light-mode') ? 'light' : 'dark');
-});
-</script>
-
-<!-- Advisory accordion -->
-<script>
-document.querySelectorAll('.svc-item-header').forEach(header => {
-  header.addEventListener('click', () => {
-    const item = header.parentElement;
-    const isOpen = item.classList.contains('open');
-    document.querySelectorAll('.svc-item').forEach(i => i.classList.remove('open'));
-    if (!isOpen) item.classList.add('open');
-  });
-});
-// Open first item by default
-const first = document.querySelector('.svc-item');
-if (first) first.classList.add('open');
-</script>
-
-<!-- Scroll-reveal -->
-<script>
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+window.addEventListener('scroll', tryStats, { passive: true });
+tryStats();
+updateProgress();
 </script>
 
 </body>
