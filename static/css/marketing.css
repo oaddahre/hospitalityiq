@@ -1068,6 +1068,11 @@ body.lp-light .mk-theme-toggle:hover {
 .lp-adv-hover-list li:last-child { border: none; }
 .lp-adv-hover-list li::before { content: '·'; color: #B87860; flex-shrink: 0; }
 
+/* Mobile inline expand — hidden by default */
+.lp-adv-mobile-body {
+  display: none;
+}
+
 /* ── REPORT CARD ── */
 .lp-report-badge {
   font-family: 'Space Mono', monospace;
@@ -1495,8 +1500,26 @@ body.lp-light .mk-theme-toggle:hover {
   .lp-advisory-wrap { grid-template-columns: 1fr; }
   .lp-advisory-left { padding: 60px 20px 40px; }
   .lp-advisory-items { border-left: none; border-top: 1px solid var(--lp-border-light); }
-  .lp-adv-row-inner { padding: 20px; }
-  .lp-adv-hover-card { display: none; }
+  .lp-adv-hover-card { display: none !important; }
+  .lp-adv-mobile-body {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 400ms ease, padding 300ms ease;
+    padding: 0 20px;
+    background: var(--lp-adv-hover);
+  }
+  .lp-adv-row.lp-adv-mobile-open .lp-adv-mobile-body {
+    max-height: 400px;
+    padding: 16px 20px 20px;
+  }
+  .lp-adv-row.lp-adv-mobile-open .lp-adv-arrow {
+    transform: rotate(90deg);
+    color: #B87860;
+  }
+  .lp-adv-row.lp-adv-mobile-open .lp-adv-num { color: #B87860; }
+  .lp-adv-row.lp-adv-mobile-open .lp-adv-name { color: var(--lp-text); }
+  .lp-adv-row-inner { padding: 20px; cursor: pointer; }
   .lp-reports-grid { grid-template-columns: 1fr; }
   .lp-audience-grid { grid-template-columns: 1fr; }
   .lp-audience-card { border-right: none; padding: 24px 0; }

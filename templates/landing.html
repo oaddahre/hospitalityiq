@@ -156,6 +156,16 @@
           <li>Debt advisory and lender support</li>
         </ul>
       </div>
+      <div class="lp-adv-mobile-body">
+        <ul class="lp-adv-hover-list">
+          <li>Hotel acquisition advisory</li>
+          <li>Investment analysis</li>
+          <li>Hotel valuation — income cap, DCF, sales comparison</li>
+          <li>Business planning</li>
+          <li>Due diligence support</li>
+          <li>Debt advisory and lender support</li>
+        </ul>
+      </div>
     </div>
 
     <div class="lp-adv-row" data-index="1">
@@ -169,6 +179,15 @@
           <span class="lp-adv-hover-num">02</span>
           <span class="lp-adv-hover-title">Market Intelligence</span>
         </div>
+        <ul class="lp-adv-hover-list">
+          <li>Feasibility studies</li>
+          <li>Market research and demand analysis</li>
+          <li>Competitive positioning</li>
+          <li>Data intelligence and benchmarking</li>
+          <li>Tourism strategy consulting</li>
+        </ul>
+      </div>
+      <div class="lp-adv-mobile-body">
         <ul class="lp-adv-hover-list">
           <li>Feasibility studies</li>
           <li>Market research and demand analysis</li>
@@ -198,6 +217,15 @@
           <li>Operator performance monitoring</li>
         </ul>
       </div>
+      <div class="lp-adv-mobile-body">
+        <ul class="lp-adv-hover-list">
+          <li>Hotel concept development</li>
+          <li>Brand and management company selection</li>
+          <li>Contract negotiation (HMA and franchise)</li>
+          <li>Rebranding and asset repositioning</li>
+          <li>Operator performance monitoring</li>
+        </ul>
+      </div>
     </div>
 
     <div class="lp-adv-row" data-index="3">
@@ -211,6 +239,13 @@
           <span class="lp-adv-hover-num">04</span>
           <span class="lp-adv-hover-title">Asset Management</span>
         </div>
+        <ul class="lp-adv-hover-list">
+          <li>Advisory across the full hotel asset lifecycle</li>
+          <li>Owner representation</li>
+          <li>Strategic planning</li>
+        </ul>
+      </div>
+      <div class="lp-adv-mobile-body">
         <ul class="lp-adv-hover-list">
           <li>Advisory across the full hotel asset lifecycle</li>
           <li>Owner representation</li>
@@ -475,6 +510,23 @@ themeToggle.addEventListener('click', () => {
   localStorage.setItem('kodo-lp-theme',
     document.body.classList.contains('lp-light') ? 'light' : 'dark'
   );
+});
+</script>
+
+<script>
+// ADVISORY MOBILE TAP EXPAND
+function isTouchDevice() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
+  inner.addEventListener('click', () => {
+    if (!isTouchDevice()) return;
+    const row = inner.parentElement;
+    const isOpen = row.classList.contains('lp-adv-mobile-open');
+    document.querySelectorAll('.lp-adv-row').forEach(r => r.classList.remove('lp-adv-mobile-open'));
+    if (!isOpen) row.classList.add('lp-adv-mobile-open');
+  });
 });
 </script>
 
