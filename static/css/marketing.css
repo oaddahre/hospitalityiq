@@ -964,6 +964,7 @@ body.lp-light .mk-theme-toggle:hover {
   grid-template-columns: 300px 1fr;
   align-items: start;
   background: var(--lp-bg);
+  padding: 0 48px;
 }
 .lp-advisory-left {
   padding: 80px 48px 80px 0;
@@ -1516,7 +1517,7 @@ body.lp-light .mk-theme-toggle:hover {
   }
   .lp-platform-row-main { padding: 16px 0; }
   .lp-platform-title { font-size: 16px; }
-  .lp-advisory-wrap { grid-template-columns: 1fr; }
+  .lp-advisory-wrap { grid-template-columns: 1fr; padding: 0; }
   .lp-advisory-left { padding: 60px 20px 40px; }
   .lp-advisory-items { border-left: none; }
   .lp-adv-row-inner { cursor: pointer; padding: 20px; }
