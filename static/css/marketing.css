@@ -966,7 +966,7 @@ body.lp-light .mk-theme-toggle:hover {
   background: var(--lp-bg);
 }
 .lp-advisory-left {
-  padding: 80px 48px;
+  padding: 80px 48px 80px 0;
   position: sticky;
   top: 52px;
 }
@@ -989,6 +989,7 @@ body.lp-light .mk-theme-toggle:hover {
 }
 .lp-advisory-items {
   border-left: 1px solid var(--lp-border-light);
+  padding-top: 80px;
 }
 .lp-adv-row {
   border-bottom: 1px solid var(--lp-adv-border);
