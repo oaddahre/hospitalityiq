@@ -711,6 +711,12 @@ body.lp-light .mk-theme-toggle:hover {
   display: block;
   opacity: 0.75;
   background: #0A0A0A;
+  /* Force GPU compositing to prevent flash */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .lp-video-overlay {
   position: absolute;

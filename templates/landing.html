@@ -41,10 +41,11 @@
   <div class="lp-video-wrap">
     <video
       class="lp-promo-video"
-      id="kodoPormoVideo"
+      id="kodoPromoVideo"
       autoplay
       muted
-      playsinline>
+      playsinline
+      preload="auto">
       <source src="/static/videos/kodo_promo.mp4" type="video/mp4">
     </video>
     <div class="lp-video-overlay">
@@ -528,26 +529,33 @@ document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
 
 <script>
 (function() {
-  const video = document.getElementById('kodoPormoVideo');
+  const video = document.getElementById('kodoPromoVideo');
   if (!video) return;
 
-  // Preload the video fully before playing
-  video.load();
+  video.preload = 'auto';
 
-  // When video is nearly at the end jump back to start
-  // This prevents the gray flash by seeking before it ends
+  // Seek to near start before video actually ends — avoids the gray frame entirely
   video.addEventListener('timeupdate', function() {
-    if (video.duration && video.currentTime >= video.duration - 0.2) {
-      video.currentTime = 0;
-      video.play();
+    if (!video.duration) return;
+    if (video.currentTime >= video.duration - 0.15) {
+      video.currentTime = 0.01;
     }
   });
 
-  // Also handle the ended event as a fallback
+  // Fallback
   video.addEventListener('ended', function() {
-    video.currentTime = 0;
-    video.play();
+    video.currentTime = 0.01;
+    video.play().catch(() => {});
   });
+
+  // Ensure autoplay starts
+  const playPromise = video.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      video.muted = true;
+      video.play().catch(() => {});
+    });
+  }
 })();
 </script>
 
