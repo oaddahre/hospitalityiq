@@ -41,9 +41,9 @@
   <div class="lp-video-wrap">
     <video
       class="lp-promo-video"
+      id="kodoPormoVideo"
       autoplay
       muted
-      loop
       playsinline>
       <source src="/static/videos/kodo_promo.mp4" type="video/mp4">
     </video>
@@ -524,6 +524,31 @@ document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
     if (!isOpen) row.classList.add('lp-adv-tap-open');
   });
 });
+</script>
+
+<script>
+(function() {
+  const video = document.getElementById('kodoPormoVideo');
+  if (!video) return;
+
+  // Preload the video fully before playing
+  video.load();
+
+  // When video is nearly at the end jump back to start
+  // This prevents the gray flash by seeking before it ends
+  video.addEventListener('timeupdate', function() {
+    if (video.duration && video.currentTime >= video.duration - 0.2) {
+      video.currentTime = 0;
+      video.play();
+    }
+  });
+
+  // Also handle the ended event as a fallback
+  video.addEventListener('ended', function() {
+    video.currentTime = 0;
+    video.play();
+  });
+})();
 </script>
 
 </body>
