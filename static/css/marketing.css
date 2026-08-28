@@ -699,7 +699,7 @@ body.lp-light .mk-theme-toggle:hover {
 .lp-video-wrap {
   position: relative;
   width: 100%;
-  height: 70vh;
+  height: 100vh;
   overflow: hidden;
   background: #0A0A0A;
 }
@@ -707,6 +707,7 @@ body.lp-light .mk-theme-toggle:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
   display: block;
   opacity: 0.75;
   background: #0A0A0A;
@@ -1556,7 +1557,7 @@ body.lp-light .mk-theme-toggle:hover {
 @media (max-width: 768px) {
   .mk-nav { padding: 0 20px; }
   .mk-nav-links { display: none; }
-  .lp-video-wrap { height: 50vh; }
+  .lp-video-wrap { height: 60vh; }
   .lp-video-overlay { padding: 24px; }
   .lp-video-tagline { font-size: 9px; }
   .lp-hero { padding: 100px 20px 60px; }
