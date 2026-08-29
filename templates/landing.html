@@ -40,13 +40,20 @@
 <section class="lp-video-section">
   <div class="lp-video-wrap">
     <video
-      class="lp-promo-video"
-      id="kodoPromoVideo"
-      autoplay
+      class="lp-promo-video lp-video-a"
+      id="kodoVideoA"
       muted
       playsinline
       preload="auto">
-      <source src="/static/videos/kodo_promo.mp4" type="video/mp4">
+      <source src="/static/videos/full.mp4" type="video/mp4">
+    </video>
+    <video
+      class="lp-promo-video lp-video-b"
+      id="kodoVideoB"
+      muted
+      playsinline
+      preload="auto">
+      <source src="/static/videos/full.mp4" type="video/mp4">
     </video>
     <div class="lp-video-overlay">
       <div class="lp-video-overlay-content">
@@ -529,33 +536,48 @@ document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
 
 <script>
 (function() {
-  const video = document.getElementById('kodoPromoVideo');
-  if (!video) return;
+  const videoA = document.getElementById('kodoVideoA');
+  const videoB = document.getElementById('kodoVideoB');
+  if (!videoA || !videoB) return;
 
-  video.preload = 'auto';
+  const CROSSFADE_DURATION = 0.8;
+  let active = 'a';
 
-  // Seek to near start before video actually ends — avoids the gray frame entirely
-  video.addEventListener('timeupdate', function() {
-    if (!video.duration) return;
-    if (video.currentTime >= video.duration - 0.15) {
-      video.currentTime = 0.01;
-    }
-  });
+  function getActive() { return active === 'a' ? videoA : videoB; }
+  function getInactive() { return active === 'a' ? videoB : videoA; }
 
-  // Fallback
-  video.addEventListener('ended', function() {
-    video.currentTime = 0.01;
-    video.play().catch(() => {});
-  });
+  function swap() {
+    const incoming = getInactive();
+    const outgoing = getActive();
 
-  // Ensure autoplay starts
-  const playPromise = video.play();
-  if (playPromise !== undefined) {
-    playPromise.catch(() => {
-      video.muted = true;
-      video.play().catch(() => {});
-    });
+    // Prepare incoming video from start
+    incoming.currentTime = 0;
+    incoming.play().catch(() => {});
+
+    // Crossfade
+    incoming.style.opacity = '0.75';
+    outgoing.style.opacity = '0';
+
+    active = active === 'a' ? 'b' : 'a';
   }
+
+  // Watch active video — swap near end
+  function tick() {
+    const current = getActive();
+    if (current.duration && current.currentTime >= current.duration - CROSSFADE_DURATION - 0.1) {
+      swap();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Start both videos — A plays first, B preloads
+  videoA.style.opacity = '0.75';
+  videoB.style.opacity = '0';
+
+  videoA.play().catch(() => {});
+  videoB.load();
+
+  requestAnimationFrame(tick);
 })();
 </script>
 
