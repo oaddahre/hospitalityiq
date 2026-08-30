@@ -59,8 +59,8 @@
 }
 
 body.lp-light {
-  --lp-bg: #F5F5F3;
-  --lp-bg-alt: #EFEFED;
+  --lp-bg: #FFFFFF;
+  --lp-bg-alt: #FFFFFF;
   --lp-nav-bg: #FFFFFF;
   --lp-surface: #FFFFFF;
   --lp-border: #E0E0DC;
@@ -71,26 +71,26 @@ body.lp-light {
   --lp-text-faint: #888888;
   --lp-text-vfaint: #AAAAAA;
   --lp-text-dot: #DDDDDD;
-  --lp-module-bg: #F5F5F3;
-  --lp-module-hover: #ECECEA;
+  --lp-module-bg: #FFFFFF;
+  --lp-module-hover: #F5F5F5;
   --lp-modules-gap: #DDDDD9;
   --lp-panel-bg: #FFFFFF;
   --lp-panel-border: #E0E0DC;
   --lp-stat-border: #E0E0DC;
   --lp-row-dot: #DEDEDE;
   --lp-adv-border: #E8E8E4;
-  --lp-adv-hover: #ECECEA;
+  --lp-adv-hover: #F5F5F5;
   --lp-adv-body-border: #E8E8E4;
   --lp-adv-li-border: #F0F0EC;
   --lp-report-border: #E0E0DC;
-  --lp-report-stats-bg: #F5F5F3;
+  --lp-report-stats-bg: #FFFFFF;
   --lp-pricing-border: #E0E0DC;
   --lp-pricing-row-border: #EEEEEA;
   --lp-pricing-ft: rgba(184,120,96,0.06);
   --lp-pricing-ft-hover: rgba(184,120,96,0.10);
   --lp-audience-border: #E0E0DC;
-  --lp-cta-bg: #ECECEA;
-  --lp-footer-bg: #E8E8E4;
+  --lp-cta-bg: #FFFFFF;
+  --lp-footer-bg: #FAFAFA;
   --lp-footer-border: #DDDDD9;
   --lp-hero-stat-border: #E0E0DC;
   --lp-divider: #E0E0DC;
@@ -114,6 +114,24 @@ body.lp-light {
   --lp-data-row-border: #EEEEEA;
   --lp-price-row-border: #E0E0DC;
 }
+
+/* Light mode — pure white overrides for elements with hardcoded
+   or accent-tinted backgrounds not covered by the variable block above */
+body.lp-light .lp-advisory-wrap { background: #FFFFFF; }
+body.lp-light .lp-advisory-left { background: #FFFFFF; }
+body.lp-light .lp-advisory-items { background: #FFFFFF; }
+body.lp-light .lp-adv-row { background: #FFFFFF; }
+body.lp-light .lp-platform-row { background: #FFFFFF; }
+body.lp-light .lp-platform-row:hover { background: #F5F5F5; }
+body.lp-light .lp-plan-card { background: #FFFFFF; }
+body.lp-light .lp-plan-featured { background: #FAFAFA; }
+body.lp-light .lp-report-card-v2 { background: #FFFFFF; }
+body.lp-light .lp-report-card-v2:hover { background: #F5F5F5; }
+body.lp-light .lp-audience-card { background: #FFFFFF; }
+body.lp-light .lp-section { background: #FFFFFF; }
+body.lp-light .lp-section-alt { background: #FFFFFF; }
+body.lp-light .lp-cta { background: #FFFFFF; }
+body.lp-light .lp-video-section { background: #FFFFFF; }
 
 /* ═══════════════════════════════════════════════════════════
    SHARED — used by team.html, contact.html, methodology.html,
