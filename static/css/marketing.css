@@ -973,7 +973,7 @@ body.lp-light .mk-theme-toggle:hover {
 }
 .lp-platform-row {
   border-bottom: 1px solid var(--lp-border);
-  overflow: hidden;
+  overflow: visible;
   transition: background 250ms;
 }
 .lp-platform-row:hover {
@@ -1614,8 +1614,11 @@ body.lp-light .mk-theme-toggle:hover {
     color: #B87860;
   }
   .lp-platform-row.lp-platform-open .lp-platform-arrow {
-    transform: translateX(6px);
+    transform: none;
     color: #B87860;
+  }
+  .lp-platform-row:hover .lp-platform-arrow {
+    transform: none;
   }
   .lp-platform-row-main { padding: 16px 0; cursor: pointer; }
   .lp-platform-title { font-size: 16px; }
