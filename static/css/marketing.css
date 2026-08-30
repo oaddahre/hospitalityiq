@@ -1015,7 +1015,11 @@ body.lp-light .mk-theme-toggle:hover {
   font-weight: 400;
 }
 .lp-platform-row:hover .lp-platform-arrow {
-  transform: translateX(6px);
+  transform: rotate(180deg);
+  color: #B87860;
+}
+.lp-platform-row.lp-platform-open .lp-platform-arrow {
+  transform: rotate(180deg);
   color: #B87860;
 }
 /* Description slides down on hover */
@@ -1614,7 +1618,7 @@ body.lp-light .mk-theme-toggle:hover {
     color: #B87860;
   }
   .lp-platform-row.lp-platform-open .lp-platform-arrow {
-    transform: none;
+    transform: rotate(180deg);
     color: #B87860;
   }
   .lp-platform-row:hover .lp-platform-arrow {
@@ -1622,9 +1626,22 @@ body.lp-light .mk-theme-toggle:hover {
   }
   .lp-platform-row-main { padding: 16px 0; cursor: pointer; }
   .lp-platform-title { font-size: 16px; }
-  .lp-advisory-wrap { grid-template-columns: 1fr; padding: 0; }
-  .lp-advisory-left { padding: 60px 20px 40px; }
-  .lp-advisory-items { border-left: none; }
+  .lp-advisory-wrap {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+  .lp-advisory-left {
+    position: static;
+    top: auto;
+    padding: 40px 20px 24px;
+  }
+  .lp-advisory-items {
+    border-left: none;
+    border-top: 1px solid var(--lp-border-light);
+    padding-top: 0;
+  }
   .lp-adv-row-inner { cursor: pointer; padding: 20px; }
   .lp-adv-row:hover .lp-adv-dropdown { max-height: 0; opacity: 0; padding: 0 20px; }
   .lp-adv-row.lp-adv-tap-open .lp-adv-dropdown {
