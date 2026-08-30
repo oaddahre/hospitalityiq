@@ -581,5 +581,20 @@ document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
 })();
 </script>
 
+<script>
+// PLATFORM MOBILE TAP EXPAND
+document.querySelectorAll('.lp-platform-row-main').forEach(main => {
+  main.addEventListener('click', () => {
+    if (window.innerWidth > 768) return;
+    const row = main.parentElement;
+    const isOpen = row.classList.contains('lp-platform-open');
+    document.querySelectorAll('.lp-platform-row').forEach(r => {
+      r.classList.remove('lp-platform-open');
+    });
+    if (!isOpen) row.classList.add('lp-platform-open');
+  });
+});
+</script>
+
 </body>
 </html>
