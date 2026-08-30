@@ -1035,8 +1035,7 @@ body.lp-light .mk-theme-toggle:hover {
   padding-left: 52px;
   padding-right: 24px;
   transition: max-height 350ms cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 300ms ease,
-              padding 300ms ease;
+              opacity 300ms ease;
 }
 .lp-platform-row:hover .lp-platform-desc {
   max-height: 120px;
@@ -1607,8 +1606,7 @@ body.lp-light .mk-theme-toggle:hover {
     padding-top: 0;
     padding-bottom: 0;
     transition: max-height 350ms cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 300ms ease,
-                padding 300ms ease;
+                opacity 300ms ease;
   }
   .lp-platform-row.lp-platform-open .lp-platform-desc {
     max-height: 160px;
