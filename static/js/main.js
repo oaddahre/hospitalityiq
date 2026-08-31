@@ -2433,7 +2433,7 @@ function renderEditorialMain() {
         </div>
         <div class="ed-hero-img-wrap">
           <img src="${newsCoverUrl(f.slug, f.cover_image_query)}" alt="${fmt.esc(f.title || '')}"
-               class="ed-hero-img" loading="lazy" onerror="this.closest('.ed-hero-img-wrap').style.background='var(--surface-hover)'">
+               class="ed-hero-img" loading="lazy" onerror="this.onerror=null;this.src='/static/images/news-placeholder.svg'">
         </div>
       </div>`;
     heroWrap.style.display = '';
@@ -2485,7 +2485,7 @@ function renderArticleGrid() {
       <div class="ed-card-img-wrap">
         <img src="${newsCoverUrl(a.slug, a.cover_image_query)}"
              alt="${fmt.esc(a.title || a.headline || '')}" class="ed-card-img" loading="lazy"
-             onerror="this.closest('.ed-card-img-wrap').classList.add('ed-img-error')">
+             onerror="this.onerror=null;this.src='/static/images/news-placeholder.svg'">
       </div>
       <div class="ed-card-body">
         ${edCatPill(a.category, a.type)}
@@ -2538,7 +2538,7 @@ async function showArticleDetail(id) {
   document.getElementById('art-cover').innerHTML =
     `<img src="${newsCoverUrl(art.slug, art.cover_image_query)}"
           alt="${fmt.esc(art.title || '')}" class="art-cover-img" loading="lazy"
-          onerror="this.style.display='none'">`;
+          onerror="this.onerror=null;this.src='/static/images/news-placeholder.svg'">`;
 
   document.getElementById('art-body').innerHTML = art.content || art.body || '';
 

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <rect width="800" height="450" fill="#141414"/>
+  <rect x="0.5" y="0.5" width="799" height="449" fill="none" stroke="#242424"/>
+  <text x="400" y="235" font-family="'Space Mono', monospace" font-size="14" letter-spacing="6" fill="#B87860" text-anchor="middle" dominant-baseline="middle">KŌDŌ</text>
+</svg>
