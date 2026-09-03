@@ -574,6 +574,11 @@ def favicon():
     )
 
 
+@app.route('/googleaee534fa29a4d1ca.html')
+def google_verification():
+    return 'google-site-verification: googleaee534fa29a4d1ca.html'
+
+
 @app.route("/")
 def landing():
     return render_template("landing.html")
