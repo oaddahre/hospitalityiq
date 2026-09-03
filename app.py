@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, send_file
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, send_file, send_from_directory
 from flask_login import (
     LoginManager, UserMixin, login_user, logout_user,
     login_required, current_user,
@@ -564,6 +564,15 @@ def accept_invite():
 
 
 # ─── App routes ───────────────────────────────────────────────────────────────
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static', 'images'),
+        'kodo.png',
+        mimetype='image/png'
+    )
+
 
 @app.route("/")
 def landing():
