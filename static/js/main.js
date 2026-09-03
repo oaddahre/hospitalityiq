@@ -99,14 +99,14 @@ function getOwnerLogoImg(ownerName, size) {
 }
 
 function ownerTypeBadge(type) {
-  var styles = {
-    'State-Owned':  'background:rgba(90,138,90,0.12);color:#5A8A5A;border-color:#5A8A5A',
-    'Listed':       'background:rgba(184,120,96,0.12);color:#B87860;border-color:#B87860',
-    'Private':      'background:rgba(136,136,136,0.12);color:#888888;border-color:#888888',
-    'Family-Owned': 'background:rgba(200,146,42,0.12);color:#C8922A;border-color:#C8922A',
+  var colors = {
+    'State-Owned':  '#5A8A5A',
+    'Listed':       '#B87860',
+    'Private':      '#888888',
+    'Family-Owned': '#C8922A',
   };
-  var s = styles[type] || styles['Private'];
-  return '<span class="owner-type-badge" style="' + s + '">' + fmt.esc(type) + '</span>';
+  var c = colors[type] || colors['Private'];
+  return '<span class="owner-type-badge" style="color:' + c + '">' + fmt.esc(type) + '</span>';
 }
 
 const BRAND_DESCRIPTIONS = {
@@ -180,16 +180,16 @@ const SEG_COLORS = {
 
 function getSegmentBadgeHtml(segment) {
   if (!segment) return '—';
-  const colors = {
-    'Ultra Luxury':  { bg: 'rgba(200,146,42,0.15)',  color: '#C8922A', border: '#C8922A' },
-    'Luxury':        { bg: 'rgba(184,120,96,0.15)',  color: '#B87860', border: '#B87860' },
-    'Upper Upscale': { bg: 'rgba(90,138,90,0.15)',   color: '#5A8A5A', border: '#5A8A5A' },
-    'Upscale':       { bg: 'rgba(100,130,180,0.15)', color: '#6482B4', border: '#6482B4' },
-    'Midscale':      { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' },
-    'Economy':       { bg: 'rgba(100,100,100,0.12)', color: '#666666', border: '#666666' },
+  const segmentColors = {
+    'Ultra Luxury': '#C8922A',
+    'Luxury': '#B87860',
+    'Upper Upscale': '#5A8A5A',
+    'Upscale': '#6482B4',
+    'Midscale': '#888888',
+    'Economy': '#666666'
   };
-  const c = colors[segment] || { bg: 'rgba(136,136,136,0.15)', color: '#888888', border: '#888888' };
-  return '<span style="display:inline-block;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + ';border-radius:999px;font-family:Space Mono,monospace;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;white-space:nowrap;">' + fmt.esc(segment) + '</span>';
+  const color = segmentColors[segment] || '#888888';
+  return `<span style="color:${color};font-family:'Space Mono',monospace;font-size:8px;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;background:transparent;border:none;padding:0;white-space:nowrap;">[${fmt.esc(segment).toUpperCase()}]</span>`;
 }
 
 const CITY_COORDS = {
@@ -2192,8 +2192,8 @@ function initPipelineMap() {
 function pipelinePopupHTML(p) {
   const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
   const statusPill = p.status === 'Under Construction'
-    ? `<span style="background:transparent;color:#B87860;border:1px solid #B87860;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`
-    : `<span style="background:transparent;color:#888888;border:1px solid #444444;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:500;white-space:nowrap;display:inline-block">${p.status}</span>`;
+    ? `<span style="color:#B87860;font-family:'Space Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap;">[${fmt.esc(p.status)}]</span>`
+    : `<span style="color:#888888;font-family:'Space Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap;">[${fmt.esc(p.status)}]</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${getSegmentBadgeHtml(p.category)}</div>

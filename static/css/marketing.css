@@ -535,7 +535,7 @@ body {
   color: var(--accent);
   background: transparent;
   border: 1px solid var(--accent);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 1px 8px;
   display: inline-block;
   width: fit-content;
@@ -1174,17 +1174,7 @@ body.lp-light .mk-theme-toggle:hover {
 
 /* ── REPORT CARD ── */
 .lp-report-badge {
-  font-family: 'Space Mono', monospace;
-  font-size: 7px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #B87860;
-  border: 1px solid #B87860;
-  border-radius: 999px;
-  padding: 3px 10px;
-  display: inline-block;
   margin-bottom: 16px;
-  font-weight: 400;
 }
 .lp-report-title {
   font-family: 'Manrope', sans-serif;
@@ -1279,7 +1269,6 @@ body.lp-light .mk-theme-toggle:hover {
 
 .lp-report-badge-muted {
   color: var(--lp-text-faint);
-  border-color: var(--lp-border);
 }
 
 .lp-report-card-stats {
@@ -1346,17 +1335,7 @@ body.lp-light .mk-theme-toggle:hover {
   background: var(--lp-pricing-ft);
 }
 .lp-plan-badge {
-  position: absolute;
-  top: -12px;
-  left: 32px;
-  font-family: 'Space Mono', monospace;
-  font-size: 7px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #0A0A0A;
-  background: #B87860;
-  padding: 5px 10px;
-  font-weight: 400;
+  margin-bottom: 12px;
 }
 .lp-plan-header {
   margin-bottom: 20px;
@@ -1572,18 +1551,35 @@ body.lp-light .mk-theme-toggle:hover {
 .lp-reveal-d2 { transition-delay: 200ms; }
 .lp-reveal-d3 { transition-delay: 300ms; }
 
-/* ── KODO ESTIMATE BADGE ── */
+/* ── SQUARE-BRACKET BADGES ── */
+.lp-report-badge,
+.lp-report-badge-muted,
+.lp-plan-badge,
 .kodo-estimate-badge {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
   font-family: 'Space Mono', monospace;
-  font-size: 7px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #B87860;
-  border: 1px solid #B87860;
-  border-radius: 999px;
-  padding: 3px 10px;
-  display: inline-block;
+  font-size: 8px;
   font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #B87860;
+  display: inline-flex;
+  align-items: center;
+}
+.lp-report-badge::before,
+.lp-plan-badge::before {
+  content: '[';
+  margin-right: 2px;
+  opacity: 0.5;
+}
+.lp-report-badge::after,
+.lp-plan-badge::after {
+  content: ']';
+  margin-left: 2px;
+  opacity: 0.5;
 }
 
 /* ── MOBILE ── */

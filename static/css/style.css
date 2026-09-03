@@ -232,38 +232,11 @@ body.light .nav-logout  { color: #8A8A8A; }
   display: inline-block;
 }
 
-.kodo-estimate-badge,
-.powered-by-kodo-badge {
-  background: transparent;
-  color: #B87860;
-  border: 1px solid #B87860;
-  border-radius: 999px;
-  font-family: 'Space Mono', monospace;
-  font-size: 8px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 8px;
-  display: inline-block;
-  white-space: nowrap;
-}
-
 /* ─── Tier badges ─────────────────────────────────── */
 .tier-badge {
-  background: var(--accent-dim);
-  border: 1px solid var(--accent);
   color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 2px 8px;
-  border-radius: 999px;
   flex-shrink: 0;
 }
-.tier-badge--observer    { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-.tier-badge--benchmarker { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-.tier-badge--advisory    { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
 /* ─── Nav account/logout ──────────────────────────── */
 .nav-account {
@@ -463,7 +436,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   text-transform: uppercase;
 }
 
-/* ─── Oval border-radius for all badges and pills ─────────────── */
+/* ─── Oval border-radius (chart legend dot only — badges below are square-bracket format) ─── */
+.pipeline-legend-dot {
+  border-radius: 999px;
+}
+
+/* ─── Square-bracket badges/pills ─────────────────────────────── */
 .segment-badge,
 .segment-ultra-luxury,
 .segment-luxury,
@@ -486,15 +464,98 @@ body.light .nav-logout  { color: #8A8A8A; }
 .brand-cities-more,
 .owner-city-pill,
 .search-result-category,
-.pipeline-legend-dot,
-.cal-legend-item,
-.bench-card-label,
-.events-filter-pill,
-.hotel-status-badge,
-.hotel-dq-badge,
-.bench-idx-badge {
-  border-radius: 999px;
+.kodo-estimate-badge,
+.powered-by-kodo-badge {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 8px !important;
+  font-weight: 400 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
+.segment-badge::before,
+.segment-ultra-luxury::before,
+.segment-luxury::before,
+.segment-upper-upscale::before,
+.segment-upscale::before,
+.segment-midscale::before,
+.segment-economy::before,
+.owner-type-badge::before,
+.status-badge::before,
+.tier-badge::before,
+.data-quality-badge::before,
+.category-pill::before,
+.city-pill::before,
+.pipeline-status-badge::before,
+.bench-mode-badge::before,
+.confidence-badge::before,
+.filter-pill::before,
+.nav-tier-badge::before,
+.brand-city-pill::before,
+.brand-cities-more::before,
+.owner-city-pill::before,
+.search-result-category::before,
+.kodo-estimate-badge::before,
+.powered-by-kodo-badge::before {
+  content: '[';
+  margin-right: 2px;
+  opacity: 0.5;
+}
+.segment-badge::after,
+.segment-ultra-luxury::after,
+.segment-luxury::after,
+.segment-upper-upscale::after,
+.segment-upscale::after,
+.segment-midscale::after,
+.segment-economy::after,
+.owner-type-badge::after,
+.status-badge::after,
+.tier-badge::after,
+.data-quality-badge::after,
+.category-pill::after,
+.city-pill::after,
+.pipeline-status-badge::after,
+.bench-mode-badge::after,
+.confidence-badge::after,
+.filter-pill::after,
+.nav-tier-badge::after,
+.brand-city-pill::after,
+.brand-cities-more::after,
+.owner-city-pill::after,
+.search-result-category::after,
+.kodo-estimate-badge::after,
+.powered-by-kodo-badge::after {
+  content: ']';
+  margin-left: 2px;
+  opacity: 0.5;
+}
+
+.segment-ultra-luxury { color: #C8922A; }
+.segment-luxury { color: #B87860; }
+.segment-upper-upscale { color: #5A8A5A; }
+.segment-upscale { color: #6482B4; }
+.segment-midscale { color: #888888; }
+.segment-economy { color: #666666; }
+.status-badge { color: #5A8A5A; }
+.owner-type-badge { color: #888888; }
+.kodo-estimate-badge { color: #B87860; }
+.powered-by-kodo-badge { color: #B87860; }
+.data-quality-badge { color: #888888; }
+.city-pill { color: var(--text-muted); }
+.brand-city-pill { color: var(--text-muted); }
+.owner-city-pill { color: var(--text-muted); }
+.filter-pill { color: var(--text-muted); }
+.search-result-category { color: #888888; }
+.bench-mode-badge { color: #888888; }
+.confidence-badge { color: #888888; }
+.nav-tier-badge { color: #B87860; }
+.pipeline-status-badge { color: #C8922A; }
 
 .kpi-meta, .kpi-delta {
   font-family: var(--font-mono);
@@ -1523,38 +1584,18 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .brand-city-pill {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-family: 'Manrope', sans-serif;
-  font-size: 10px;
-  color: var(--text-faint);
   cursor: pointer;
-  transition: border-color 150ms, color 150ms, background 150ms;
-  white-space: nowrap;
+  transition: color 150ms;
 }
-.brand-city-pill:hover { border-color: var(--border-light); color: var(--text-muted); }
-.brand-city-pill.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
+.brand-city-pill:hover { color: var(--text); }
+.brand-city-pill.active { color: var(--accent); }
 .brand-cities-hidden { display: none; }
 .brand-cities-hidden[style*="contents"] { display: contents; }
 .brand-cities-more {
-  background: transparent;
-  border: 1px solid var(--border);
   color: var(--accent);
-  font-family: 'Manrope', sans-serif;
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 999px;
   cursor: pointer;
-  transition: border-color 150ms;
-  white-space: nowrap;
 }
-.brand-cities-more:hover { border-color: var(--accent); }
+.brand-cities-more:hover { opacity: 0.7; }
 
 .brand-kpi-row {
   display: flex;
@@ -1664,7 +1705,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hotel-status-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 0;
   font-family: 'Manrope', sans-serif;
   font-size: 11px;
   font-weight: 500;
@@ -1677,7 +1718,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hotel-dq-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 0;
   font-family: 'Manrope', sans-serif;
   font-size: 11px;
   font-weight: 500;
@@ -2749,12 +2790,12 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .pipe-status-uc {
-  display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 500;
+  display: inline-block; padding: 2px 8px; border-radius: 0; font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 500;
   background: transparent; color: #B87860; border: 1px solid #B87860;
   white-space: nowrap; flex-shrink: 0;
 }
 .pipe-status-pl {
-  display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 500;
+  display: inline-block; padding: 2px 8px; border-radius: 0; font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 500;
   background: transparent; color: #666666; border: 1px solid #666666;
   white-space: nowrap; flex-shrink: 0;
 }
@@ -3409,7 +3450,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bct-row span:last-child { font-weight: 500; color: var(--text); }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
-.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 0; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
 
 .bench-ai-box { padding: 4px 0 8px; min-height: 60px; }
 .bench-loading { font-family: 'Manrope', sans-serif; color: var(--text-muted); font-size: 13px; padding: 12px 0; }
@@ -4245,26 +4286,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   .brn-card-kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 12px 0; }
 }
 
-/* ─── Segment badges ─────────────────────────────── */
-.segment-badge {
-  display: inline-block;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 2px 7px;
-  white-space: nowrap;
-  border: 1px solid;
-}
-.segment-ultra-luxury  { background: rgba(200,146,42,0.15);  color: #C8922A; border-color: #C8922A; }
-.segment-luxury        { background: rgba(184,120,96,0.15);  color: #B87860; border-color: #B87860; }
-.segment-upper-upscale { background: rgba(90,138,90,0.15);   color: #5A8A5A; border-color: #5A8A5A; }
-.segment-upscale       { background: rgba(100,130,180,0.15); color: #6482B4; border-color: #6482B4; }
-.segment-midscale      { background: rgba(136,136,136,0.15); color: #888888; border-color: #888888; }
-.segment-economy       { background: rgba(100,100,100,0.12); color: #666666; border-color: #666666; }
-
 /* ─── Owners screen ───────────────────────────────── */
 .owners-kpi-row {
   display: flex;
@@ -4291,17 +4312,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   gap: 12px;
 }
 .owner-card:hover { border-color: var(--accent); }
-.owner-type-badge {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid;
-  white-space: nowrap;
-}
 .owner-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -5003,7 +5013,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   letter-spacing: 0.06em;
   color: var(--text-faint);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 1px 7px;
   margin-left: 6px;
 }
