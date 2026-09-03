@@ -307,6 +307,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   flex-shrink: 0;
 }
 
+/* Badges rendered inside the top nav must match .nav-link's 11px */
+.navbar .tier-badge,
+.navbar .kodo-estimate-badge {
+  font-size: 11px !important;
+}
+
 /* ─── Nav account/logout ──────────────────────────── */
 .nav-account {
   font-size: 0.75rem;
@@ -511,7 +517,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border-radius: 999px;
 }
 
-/* ─── Square-bracket badges/pills ─────────────────────────────── */
+/* ─── Chevron-suffix badges/pills ─────────────────────────────── */
 .segment-badge,
 .segment-ultra-luxury,
 .segment-luxury,
@@ -541,41 +547,14 @@ body.light .nav-logout  { color: #8A8A8A; }
   border-radius: 0 !important;
   padding: 0 !important;
   font-family: 'Space Mono', monospace !important;
-  font-size: 8px !important;
   font-weight: 400 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   display: inline-flex !important;
   align-items: center !important;
   white-space: nowrap !important;
-}
-.segment-badge::before,
-.segment-ultra-luxury::before,
-.segment-luxury::before,
-.segment-upper-upscale::before,
-.segment-upscale::before,
-.segment-midscale::before,
-.segment-economy::before,
-.owner-type-badge::before,
-.status-badge::before,
-.tier-badge::before,
-.data-quality-badge::before,
-.category-pill::before,
-.city-pill::before,
-.pipeline-status-badge::before,
-.bench-mode-badge::before,
-.confidence-badge::before,
-.filter-pill::before,
-.nav-tier-badge::before,
-.brand-city-pill::before,
-.brand-cities-more::before,
-.owner-city-pill::before,
-.search-result-category::before,
-.kodo-estimate-badge::before,
-.powered-by-kodo-badge::before {
-  content: '[';
-  margin-right: 2px;
-  opacity: 0.5;
+  gap: 3px !important;
+  font-size: 8px !important;
 }
 .segment-badge::after,
 .segment-ultra-luxury::after,
@@ -601,9 +580,11 @@ body.light .nav-logout  { color: #8A8A8A; }
 .search-result-category::after,
 .kodo-estimate-badge::after,
 .powered-by-kodo-badge::after {
-  content: ']';
-  margin-left: 2px;
+  content: '›';
+  margin-left: 3px;
   opacity: 0.5;
+  font-size: 10px;
+  line-height: 1;
 }
 
 .segment-ultra-luxury { color: #C8922A; }
@@ -624,7 +605,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .search-result-category { color: #888888; }
 .bench-mode-badge { color: #888888; }
 .confidence-badge { color: #888888; }
-.nav-tier-badge { color: #B87860; }
+.nav-tier-badge { color: #B87860; font-size: 11px !important; }
 .pipeline-status-badge { color: #C8922A; }
 
 .kpi-meta, .kpi-delta {

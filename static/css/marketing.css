@@ -1551,7 +1551,7 @@ body.lp-light .mk-theme-toggle:hover {
 .lp-reveal-d2 { transition-delay: 200ms; }
 .lp-reveal-d3 { transition-delay: 300ms; }
 
-/* ── SQUARE-BRACKET BADGES ── */
+/* ── CHEVRON-SUFFIX BADGES ── */
 .lp-report-badge,
 .lp-report-badge-muted,
 .lp-plan-badge,
@@ -1568,18 +1568,14 @@ body.lp-light .mk-theme-toggle:hover {
   color: #B87860;
   display: inline-flex;
   align-items: center;
-}
-.lp-report-badge::before,
-.lp-plan-badge::before {
-  content: '[';
-  margin-right: 2px;
-  opacity: 0.5;
+  gap: 3px;
 }
 .lp-report-badge::after,
 .lp-plan-badge::after {
-  content: ']';
-  margin-left: 2px;
+  content: '›';
   opacity: 0.5;
+  font-size: 10px;
+  margin-left: 3px;
 }
 
 /* ── MOBILE ── */
