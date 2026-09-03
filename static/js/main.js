@@ -293,29 +293,53 @@ const BRANDS_COMP_STR = new Set(['brand_group']);
 
 // ─── Theme ────────────────────────────────────────────────────────
 
-const ICON_MOON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
-const ICON_SUN  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
-
 function applyTheme(mode) {
-  const icon = document.getElementById('theme-icon');
   if (mode === 'light') {
     document.body.classList.add('light');
-    icon.innerHTML = ICON_SUN;
   } else {
     document.body.classList.remove('light');
-    icon.innerHTML = ICON_MOON;
   }
+  document.querySelectorAll('#theme-toggle .kodo-toggle-opt').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.val === mode);
+  });
   swapMapTheme(mode);
 }
 
-document.getElementById('theme-toggle').addEventListener('click', () => {
-  const next = document.body.classList.contains('light') ? 'dark' : 'light';
-  localStorage.setItem('kodo-theme', next);
-  applyTheme(next);
-  redrawChartsForTheme();
+document.querySelectorAll('#theme-toggle .kodo-toggle-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    const next = opt.dataset.val;
+    if (document.body.classList.contains('light') === (next === 'light')) return;
+    localStorage.setItem('kodo-theme', next);
+    applyTheme(next);
+    redrawChartsForTheme();
+  });
 });
 
 applyTheme(localStorage.getItem('kodo-theme') || 'light');
+
+// ─── Loading state ──────────────────────────────────────────────────
+
+function showLoading(container) {
+  if (!container) return;
+  container.innerHTML = `
+    <div style="padding:40px 0;">
+      <div class="kodo-loader"></div>
+      <div class="kodo-loader-text">LOADING</div>
+    </div>
+  `;
+}
+
+// ─── Empty state ────────────────────────────────────────────────────
+
+function getEmptyStateHtml(message, subtext) {
+  return `
+    <div class="kodo-empty">
+      <span class="kodo-empty-msg">[ NO DATA ]</span>
+      <span class="kodo-empty-sub">${fmt.esc(message || 'No results found')}</span>
+      ${subtext ? `<span class="kodo-empty-hint">${fmt.esc(subtext)}</span>` : ''}
+    </div>
+  `;
+}
 
 // ─── Formatters ───────────────────────────────────────────────────
 
@@ -1130,7 +1154,7 @@ function renderHotelSegBench(h) {
 async function renderHotelPipeline(h) {
   const content = document.getElementById('hotel-pipe-content');
   if (!pipelineData) {
-    content.innerHTML = '<p class="hpipe-empty">Loading pipeline data…</p>';
+    showLoading(content);
     try {
       pipelineData = await fetch('/api/pipeline').then(r => r.json());
     } catch {
@@ -1665,10 +1689,10 @@ function renderHotelsTable() {
 
   const tbody = document.getElementById('hotels-tbody');
   if (!sorted.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="table-empty-state">
-      <p class="table-empty-title">No hotels match your filters</p>
-      <p class="table-empty-sub">Try adjusting your search or clearing filters</p>
-      <button class="btn btn-ghost" onclick="clearAllHotelsFilters()" style="font-size:12px;padding:6px 16px">Clear all filters</button>
+    tbody.innerHTML = `<tr><td colspan="9"><div class="kodo-empty" style="align-items:center;text-align:center">
+      <span class="kodo-empty-msg">[ NO DATA ]</span>
+      <span class="kodo-empty-sub">No hotels match your filters</span>
+      <button class="btn btn-ghost" onclick="clearAllHotelsFilters()" style="font-size:12px;padding:6px 16px;margin-top:8px">Clear all filters</button>
     </div></td></tr>`;
   } else {
     tbody.innerHTML = sorted.map(h => {
@@ -3212,7 +3236,7 @@ function renderBenchCompSetBuilder() {
   });
 
   if (!eligible.length) {
-    container.innerHTML = '<p style="font-size:11px;color:var(--text-muted);padding:4px 0">No comparable hotels in this city and segment.</p>';
+    container.innerHTML = getEmptyStateHtml('No comparable hotels in this city and segment');
   } else {
     container.innerHTML = eligible.map(h => {
       const checked = benchState.compSet.has(h.id);
@@ -4162,7 +4186,7 @@ function _srchRender(query) {
   });
 
   if (!groups.length) {
-    container.innerHTML = `<div class="search-empty">No results for &ldquo;${fmt.esc(query)}&rdquo;</div>`;
+    container.innerHTML = getEmptyStateHtml(`No results for "${fmt.esc(query)}"`);
     return;
   }
 
@@ -4662,7 +4686,7 @@ var ownerPortfolioSort = { col: null, dir: 1 };
 
 async function initOwners() {
   if (ownersData) { renderOwnerCards(); return; }
-  document.getElementById('owners-grid').innerHTML = '<p style="color:var(--text-muted);font-size:12px">Loading…</p>';
+  showLoading(document.getElementById('owners-grid'));
   try {
     const res = await fetch('/api/owners');
     ownersData = await res.json();
@@ -4721,7 +4745,7 @@ async function showOwnerDetail(ownerId) {
   document.getElementById('owners-grid').style.display = 'none';
   var detail = document.getElementById('screen-owner-detail');
   detail.style.display = '';
-  document.getElementById('owner-detail-header').innerHTML = '<p style="color:var(--text-muted);font-size:12px">Loading…</p>';
+  showLoading(document.getElementById('owner-detail-header'));
 
   try {
     const res = await fetch('/api/owners/' + ownerId);
