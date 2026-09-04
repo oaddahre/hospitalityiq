@@ -821,50 +821,78 @@ body.lp-light .mk-theme-toggle:hover {
   margin: 16px 0;
 }
 
-/* ── HERO ANNOTATED KPIs ── */
-.lp-anno-grid {
-  display: flex;
-  align-items: flex-start;
-  gap: 40px;
-  padding-top: 40px;
-  border-top: 1px solid var(--lp-hero-stat-border);
+/* ── HERO KPI FLOAT CARDS ── */
+.lp-float-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 64px;
+  align-items: end;
 }
-.lp-anno-item {
-  flex: 1;
+
+.lp-float-card {
+  opacity: 0;
+  transform: translateY(var(--offset, 40px));
+  transition: opacity 600ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--delay, 0ms);
+}
+
+.lp-float-card.lp-float-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lp-float-card-inner {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-top: 1px solid #B87860;
+  padding: 24px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  transition: border-color 400ms ease, background 300ms ease;
 }
-.lp-anno-label {
+
+.lp-float-card:hover .lp-float-card-inner {
+  border-color: #B87860;
+  background: var(--lp-bg-alt);
+}
+
+.lp-float-label {
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--lp-text-faint);
-  margin-bottom: 10px;
+  font-size: 8px;
   font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #B87860;
+  display: block;
+  line-height: 1.4;
 }
-.lp-anno-val {
+
+.lp-float-num {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 40px;
+  font-size: 56px;
   color: var(--lp-text);
   line-height: 1;
-  letter-spacing: -0.02em;
-  margin-bottom: 10px;
+  letter-spacing: -0.03em;
+  display: block;
 }
-.lp-anno-desc {
+
+.lp-float-desc {
   font-family: 'Manrope', sans-serif;
   font-size: 12px;
-  line-height: 1.6;
   color: var(--lp-text-muted);
+  line-height: 1.6;
   font-weight: 400;
+  display: block;
 }
-.lp-anno-divider {
-  width: 1px;
-  align-self: stretch;
-  background: var(--lp-hero-stat-border);
-  flex-shrink: 0;
-}
+
+/* Each card slightly different height by varying padding */
+.lp-float-card:nth-child(1) .lp-float-card-inner { padding-top: 32px; }
+.lp-float-card:nth-child(2) .lp-float-card-inner { padding-top: 48px; }
+.lp-float-card:nth-child(3) .lp-float-card-inner { padding-top: 40px; }
+.lp-float-card:nth-child(4) .lp-float-card-inner { padding-top: 28px; }
 
 /* ── BUTTONS ── */
 .btn-fill {
@@ -1587,8 +1615,15 @@ body.lp-light .mk-theme-toggle:hover {
   .lp-video-tagline { font-size: 9px; }
   .lp-hero { padding: 100px 20px 60px; }
   .lp-hero-headline { font-size: 38px; }
-  .lp-anno-grid { flex-direction: column; gap: 24px; }
-  .lp-anno-divider { display: none; }
+  .lp-float-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .lp-float-num { font-size: 40px; }
+  .lp-float-card:nth-child(1) .lp-float-card-inner,
+  .lp-float-card:nth-child(2) .lp-float-card-inner,
+  .lp-float-card:nth-child(3) .lp-float-card-inner,
+  .lp-float-card:nth-child(4) .lp-float-card-inner { padding-top: 24px; }
   .lp-section { padding: 60px 20px; }
   .lp-platform-desc {
     max-height: 0;

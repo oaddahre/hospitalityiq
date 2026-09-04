@@ -74,38 +74,35 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-anno-grid">
-
-    <div class="lp-anno-item">
-      <span class="lp-anno-label">Hotel Supply Database</span>
-      <span class="lp-anno-val" data-target="300" data-suffix="+">0+</span>
-      <span class="lp-anno-desc">Independent verified hotel records across Morocco's classified market</span>
+  <div class="lp-float-grid">
+    <div class="lp-float-card" style="--delay:0ms;--offset:40px">
+      <div class="lp-float-card-inner">
+        <span class="lp-float-label">Hotel Supply Database</span>
+        <span class="lp-float-num" data-target="300" data-suffix="+">0+</span>
+        <span class="lp-float-desc">Independent verified hotel records across Morocco's classified market</span>
+      </div>
     </div>
-
-    <div class="lp-anno-divider"></div>
-
-    <div class="lp-anno-item">
-      <span class="lp-anno-label">Destination Coverage</span>
-      <span class="lp-anno-val" data-target="23" data-suffix="">0</span>
-      <span class="lp-anno-desc">Cities and resort destinations actively tracked and updated</span>
+    <div class="lp-float-card" style="--delay:120ms;--offset:60px">
+      <div class="lp-float-card-inner">
+        <span class="lp-float-label">Destination Coverage</span>
+        <span class="lp-float-num" data-target="23" data-suffix="">0</span>
+        <span class="lp-float-desc">Cities and resort destinations actively tracked and updated</span>
+      </div>
     </div>
-
-    <div class="lp-anno-divider"></div>
-
-    <div class="lp-anno-item">
-      <span class="lp-anno-label">Brand Intelligence</span>
-      <span class="lp-anno-val" data-target="35" data-suffix="">0</span>
-      <span class="lp-anno-desc">International and domestic brand groups profiled and benchmarked</span>
+    <div class="lp-float-card" style="--delay:240ms;--offset:50px">
+      <div class="lp-float-card-inner">
+        <span class="lp-float-label">Brand Intelligence</span>
+        <span class="lp-float-num" data-target="35" data-suffix="">0</span>
+        <span class="lp-float-desc">International and domestic brand groups profiled and benchmarked</span>
+      </div>
     </div>
-
-    <div class="lp-anno-divider"></div>
-
-    <div class="lp-anno-item">
-      <span class="lp-anno-label">Development Pipeline</span>
-      <span class="lp-anno-val" data-target="16" data-suffix="">0</span>
-      <span class="lp-anno-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
+    <div class="lp-float-card" style="--delay:360ms;--offset:45px">
+      <div class="lp-float-card-inner">
+        <span class="lp-float-label">Development Pipeline</span>
+        <span class="lp-float-num" data-target="16" data-suffix="">0</span>
+        <span class="lp-float-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
+      </div>
     </div>
-
   </div>
 </section>
 
@@ -465,7 +462,11 @@ function updateProgress() {
 }
 window.addEventListener('scroll', updateProgress, { passive: true });
 
-// COUNT-UP
+/* Float cards animation + count-up */
+const floatCards = document.querySelectorAll('.lp-float-card');
+const floatNums = document.querySelectorAll('.lp-float-num[data-target]');
+let floatDone = false;
+
 function countUp(el, target, suffix, duration) {
   const start = performance.now();
   function frame(now) {
@@ -477,19 +478,29 @@ function countUp(el, target, suffix, duration) {
   }
   requestAnimationFrame(frame);
 }
-const statEls = document.querySelectorAll('.lp-anno-val[data-target]');
-let statsRun = false;
-function tryStats() {
-  if (statsRun) return;
-  const first = statEls[0];
-  if (!first) return;
-  if (first.getBoundingClientRect().top < window.innerHeight) {
-    statsRun = true;
-    statEls.forEach((el, i) => {
-      setTimeout(() => countUp(el, parseInt(el.dataset.target), el.dataset.suffix || '', 1400), i * 150);
-    });
-  }
-}
+
+const floatObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !floatDone) {
+      floatDone = true;
+      floatCards.forEach(card => card.classList.add('lp-float-visible'));
+      floatNums.forEach((el, i) => {
+        setTimeout(() => {
+          countUp(
+            el,
+            parseInt(el.dataset.target),
+            el.dataset.suffix || '',
+            1400
+          );
+        }, i * 150 + 400);
+      });
+      floatObserver.disconnect();
+    }
+  });
+}, { threshold: 0.2 });
+
+const floatGrid = document.querySelector('.lp-float-grid');
+if (floatGrid) floatObserver.observe(floatGrid);
 
 // SCROLL REVEAL
 const revealObs = new IntersectionObserver(entries => {
@@ -507,8 +518,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-window.addEventListener('scroll', tryStats, { passive: true });
-tryStats();
 updateProgress();
 
 // THEME TOGGLE
