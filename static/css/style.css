@@ -238,28 +238,30 @@ textarea::placeholder,
 
 .navbar-meta { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 
-.kodo-toggle {
+.mk-text-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  user-select: none;
   flex-shrink: 0;
 }
-.kodo-toggle-opt {
+.mk-toggle-opt {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-faint, #444444);
-  transition: color 150ms;
+  transition: color 200ms;
   cursor: pointer;
 }
-.kodo-toggle-opt.active { color: #B87860; }
-.kodo-toggle-sep {
+.mk-toggle-opt.mk-toggle-active { color: #B87860; }
+.mk-toggle-sep {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
-  color: var(--border);
+  font-size: 9px;
+  color: var(--text-faint);
+  opacity: 0.4;
 }
 
 /* Alias for #theme-btn */

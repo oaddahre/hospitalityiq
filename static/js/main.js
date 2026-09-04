@@ -299,23 +299,23 @@ function applyTheme(mode) {
   } else {
     document.body.classList.remove('light');
   }
-  document.querySelectorAll('#theme-toggle .kodo-toggle-opt').forEach(opt => {
-    opt.classList.toggle('active', opt.dataset.val === mode);
+  document.querySelectorAll('#theme-toggle .mk-toggle-opt').forEach(opt => {
+    opt.classList.toggle('mk-toggle-active', opt.dataset.val === mode);
   });
   swapMapTheme(mode);
 }
 
-document.querySelectorAll('#theme-toggle .kodo-toggle-opt').forEach(opt => {
+document.querySelectorAll('#theme-toggle .mk-toggle-opt').forEach(opt => {
   opt.addEventListener('click', () => {
     const next = opt.dataset.val;
     if (document.body.classList.contains('light') === (next === 'light')) return;
-    localStorage.setItem('kodo-theme', next);
+    localStorage.setItem('kodo-lp-theme', next);
     applyTheme(next);
     redrawChartsForTheme();
   });
 });
 
-applyTheme(localStorage.getItem('kodo-theme') || 'light');
+applyTheme(localStorage.getItem('kodo-lp-theme') || 'light');
 
 // ─── Loading state ──────────────────────────────────────────────────
 

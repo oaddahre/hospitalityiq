@@ -22,19 +22,11 @@
     <a href="#pricing" class="mk-nav-link">Pricing</a>
     <a href="/login" class="mk-nav-link">Sign In</a>
   </div>
-  <button class="mk-theme-toggle" id="themeToggle" aria-label="Toggle light mode" title="Toggle light mode">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1" x2="12" y2="3"/>
-      <line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/>
-      <line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-    </svg>
-  </button>
+  <div class="mk-text-toggle" id="themeToggle">
+    <span class="mk-toggle-opt" id="toggleDark">DARK</span>
+    <span class="mk-toggle-sep">/</span>
+    <span class="mk-toggle-opt" id="toggleLight">LIGHT</span>
+  </div>
   <a href="/register" class="mk-nav-cta">Request Access →</a>
   <div class="nav-progress" id="navProgress"></div>
 </nav>
@@ -74,33 +66,34 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-float-grid">
-    <div class="lp-float-card" style="--delay:0ms;--offset:40px">
-      <div class="lp-float-card-inner">
-        <span class="lp-float-label">Hotel Supply Database</span>
-        <span class="lp-float-num" data-target="300" data-suffix="+">0+</span>
-        <span class="lp-float-desc">Independent verified hotel records across Morocco's classified market</span>
-      </div>
+  <div class="lp-cinema-wrap" id="lpCinemaWrap">
+    <!-- Cinematic overlay stage -->
+    <div class="lp-cinema-stage" id="lpCinemaStage">
+      <span class="lp-cinema-big-num" id="lpCinemaBigNum">0</span>
+      <span class="lp-cinema-big-label" id="lpCinemaBigLabel"></span>
     </div>
-    <div class="lp-float-card" style="--delay:120ms;--offset:60px">
-      <div class="lp-float-card-inner">
-        <span class="lp-float-label">Destination Coverage</span>
-        <span class="lp-float-num" data-target="23" data-suffix="">0</span>
-        <span class="lp-float-desc">Cities and resort destinations actively tracked and updated</span>
+
+    <!-- Final assembled row -->
+    <div class="lp-cinema-grid" id="lpCinemaGrid">
+      <div class="lp-cinema-card" data-target="300" data-suffix="+" data-label="Hotel Supply Database" data-desc="Independent verified hotel records across Morocco's classified market">
+        <span class="lp-cinema-label">Hotel Supply Database</span>
+        <span class="lp-cinema-num">300+</span>
+        <span class="lp-cinema-desc">Independent verified hotel records across Morocco's classified market</span>
       </div>
-    </div>
-    <div class="lp-float-card" style="--delay:240ms;--offset:50px">
-      <div class="lp-float-card-inner">
-        <span class="lp-float-label">Brand Intelligence</span>
-        <span class="lp-float-num" data-target="35" data-suffix="">0</span>
-        <span class="lp-float-desc">International and domestic brand groups profiled and benchmarked</span>
+      <div class="lp-cinema-card" data-target="23" data-suffix="" data-label="Destination Coverage" data-desc="Cities and resort destinations actively tracked and updated">
+        <span class="lp-cinema-label">Destination Coverage</span>
+        <span class="lp-cinema-num">23</span>
+        <span class="lp-cinema-desc">Cities and resort destinations actively tracked and updated</span>
       </div>
-    </div>
-    <div class="lp-float-card" style="--delay:360ms;--offset:45px">
-      <div class="lp-float-card-inner">
-        <span class="lp-float-label">Development Pipeline</span>
-        <span class="lp-float-num" data-target="16" data-suffix="">0</span>
-        <span class="lp-float-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
+      <div class="lp-cinema-card" data-target="35" data-suffix="" data-label="Brand Intelligence" data-desc="International and domestic brand groups profiled and benchmarked">
+        <span class="lp-cinema-label">Brand Intelligence</span>
+        <span class="lp-cinema-num">35</span>
+        <span class="lp-cinema-desc">International and domestic brand groups profiled and benchmarked</span>
+      </div>
+      <div class="lp-cinema-card" data-target="16" data-suffix="" data-label="Development Pipeline" data-desc="Confirmed hotel pipeline projects tracked across Morocco">
+        <span class="lp-cinema-label">Development Pipeline</span>
+        <span class="lp-cinema-num">16</span>
+        <span class="lp-cinema-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
       </div>
     </div>
   </div>
@@ -462,46 +455,6 @@ function updateProgress() {
 }
 window.addEventListener('scroll', updateProgress, { passive: true });
 
-/* Float cards animation + count-up */
-const floatCards = document.querySelectorAll('.lp-float-card');
-const floatNums = document.querySelectorAll('.lp-float-num[data-target]');
-let floatDone = false;
-
-function countUp(el, target, suffix, duration) {
-  const start = performance.now();
-  function frame(now) {
-    const progress = Math.min((now - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.floor(ease * target) + suffix;
-    if (progress < 1) requestAnimationFrame(frame);
-    else el.textContent = target + suffix;
-  }
-  requestAnimationFrame(frame);
-}
-
-const floatObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting && !floatDone) {
-      floatDone = true;
-      floatCards.forEach(card => card.classList.add('lp-float-visible'));
-      floatNums.forEach((el, i) => {
-        setTimeout(() => {
-          countUp(
-            el,
-            parseInt(el.dataset.target),
-            el.dataset.suffix || '',
-            1400
-          );
-        }, i * 150 + 400);
-      });
-      floatObserver.disconnect();
-    }
-  });
-}, { threshold: 0.2 });
-
-const floatGrid = document.querySelector('.lp-float-grid');
-if (floatGrid) floatObserver.observe(floatGrid);
-
 // SCROLL REVEAL
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -522,15 +475,120 @@ updateProgress();
 
 // THEME TOGGLE
 const themeToggle = document.getElementById('themeToggle');
-const saved = localStorage.getItem('kodo-lp-theme');
-if (saved === 'light') document.body.classList.add('lp-light');
+const toggleDark = document.getElementById('toggleDark');
+const toggleLight = document.getElementById('toggleLight');
+
+function updateToggleState() {
+  const isLight = document.body.classList.contains('lp-light');
+  toggleDark.classList.toggle('mk-toggle-active', !isLight);
+  toggleLight.classList.toggle('mk-toggle-active', isLight);
+}
+
+const savedTheme = localStorage.getItem('kodo-lp-theme');
+if (savedTheme === 'light') document.body.classList.add('lp-light');
+updateToggleState();
 
 themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('lp-light');
   localStorage.setItem('kodo-lp-theme',
     document.body.classList.contains('lp-light') ? 'light' : 'dark'
   );
+  updateToggleState();
 });
+</script>
+
+<script>
+(function() {
+  const stats = [
+    { target: 300, suffix: '+', label: 'Hotel Supply Database' },
+    { target: 23,  suffix: '',  label: 'Destination Coverage' },
+    { target: 35,  suffix: '',  label: 'Brand Intelligence' },
+    { target: 16,  suffix: '',  label: 'Development Pipeline' },
+  ];
+
+  const stage     = document.getElementById('lpCinemaStage');
+  const bigNum    = document.getElementById('lpCinemaBigNum');
+  const bigLabel  = document.getElementById('lpCinemaBigLabel');
+  const grid      = document.getElementById('lpCinemaGrid');
+  const wrap      = document.getElementById('lpCinemaWrap');
+
+  if (!stage || !bigNum || !grid) return;
+
+  let played = false;
+
+  function countUp(el, target, suffix, duration, onDone) {
+    const start = performance.now();
+    function frame(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.floor(ease * target) + suffix;
+      if (p < 1) requestAnimationFrame(frame);
+      else { el.textContent = target + suffix; if (onDone) onDone(); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function runCinema() {
+    if (played) return;
+    played = true;
+
+    let i = 0;
+
+    function showStat() {
+      if (i >= stats.length) {
+        // All done — collapse stage, reveal grid
+        bigNum.classList.add('lp-num-exit');
+        bigLabel.classList.add('lp-num-exit');
+        setTimeout(() => {
+          stage.classList.add('lp-stage-hidden');
+          setTimeout(() => {
+            grid.classList.add('lp-grid-visible');
+          }, 200);
+        }, 350);
+        return;
+      }
+
+      const stat = stats[i];
+
+      // Reset exit classes
+      bigNum.classList.remove('lp-num-exit');
+      bigLabel.classList.remove('lp-num-exit');
+      bigNum.style.opacity = '0';
+      bigLabel.style.opacity = '0';
+
+      // Fade in
+      setTimeout(() => {
+        bigNum.style.opacity = '1';
+        bigLabel.style.opacity = '1';
+        bigLabel.textContent = stat.label;
+        bigNum.textContent = '0' + stat.suffix;
+
+        countUp(bigNum, stat.target, stat.suffix, 900, () => {
+          // Hold for 600ms then exit
+          setTimeout(() => {
+            bigNum.classList.add('lp-num-exit');
+            bigLabel.classList.add('lp-num-exit');
+            setTimeout(() => {
+              i++;
+              showStat();
+            }, 350);
+          }, 600);
+        });
+      }, 100);
+    }
+
+    showStat();
+  }
+
+  // Trigger when section enters viewport
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { runCinema(); obs.disconnect(); }
+    });
+  }, { threshold: 0.3 });
+
+  obs.observe(wrap);
+})();
 </script>
 
 <script>
