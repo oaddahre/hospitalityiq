@@ -66,35 +66,49 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-cinema-wrap" id="lpCinemaWrap">
-    <!-- Cinematic overlay stage -->
-    <div class="lp-cinema-stage" id="lpCinemaStage">
-      <span class="lp-cinema-big-num" id="lpCinemaBigNum">0</span>
-      <span class="lp-cinema-big-label" id="lpCinemaBigLabel"></span>
-    </div>
+  <div class="lp-slot-wrap" id="lpSlotWrap">
+    <div class="lp-slot-grid">
 
-    <!-- Final assembled row -->
-    <div class="lp-cinema-grid" id="lpCinemaGrid">
-      <div class="lp-cinema-card" data-target="300" data-suffix="+" data-label="Hotel Supply Database" data-desc="Independent verified hotel records across Morocco's classified market">
-        <span class="lp-cinema-label">Hotel Supply Database</span>
-        <span class="lp-cinema-num">300+</span>
-        <span class="lp-cinema-desc">Independent verified hotel records across Morocco's classified market</span>
+      <div class="lp-slot-item">
+        <span class="lp-slot-label">Hotel Supply Database</span>
+        <div class="lp-slot-reel-wrap">
+          <div class="lp-slot-reel" data-target="300" data-suffix="+">
+            <span class="lp-slot-digit">0+</span>
+          </div>
+        </div>
+        <span class="lp-slot-desc">Independent verified hotel records across Morocco's classified market</span>
       </div>
-      <div class="lp-cinema-card" data-target="23" data-suffix="" data-label="Destination Coverage" data-desc="Cities and resort destinations actively tracked and updated">
-        <span class="lp-cinema-label">Destination Coverage</span>
-        <span class="lp-cinema-num">23</span>
-        <span class="lp-cinema-desc">Cities and resort destinations actively tracked and updated</span>
+
+      <div class="lp-slot-item">
+        <span class="lp-slot-label">Destination Coverage</span>
+        <div class="lp-slot-reel-wrap">
+          <div class="lp-slot-reel" data-target="23" data-suffix="">
+            <span class="lp-slot-digit">0</span>
+          </div>
+        </div>
+        <span class="lp-slot-desc">Cities and resort destinations actively tracked and updated</span>
       </div>
-      <div class="lp-cinema-card" data-target="35" data-suffix="" data-label="Brand Intelligence" data-desc="International and domestic brand groups profiled and benchmarked">
-        <span class="lp-cinema-label">Brand Intelligence</span>
-        <span class="lp-cinema-num">35</span>
-        <span class="lp-cinema-desc">International and domestic brand groups profiled and benchmarked</span>
+
+      <div class="lp-slot-item">
+        <span class="lp-slot-label">Brand Intelligence</span>
+        <div class="lp-slot-reel-wrap">
+          <div class="lp-slot-reel" data-target="35" data-suffix="">
+            <span class="lp-slot-digit">0</span>
+          </div>
+        </div>
+        <span class="lp-slot-desc">International and domestic brand groups profiled and benchmarked</span>
       </div>
-      <div class="lp-cinema-card" data-target="16" data-suffix="" data-label="Development Pipeline" data-desc="Confirmed hotel pipeline projects tracked across Morocco">
-        <span class="lp-cinema-label">Development Pipeline</span>
-        <span class="lp-cinema-num">16</span>
-        <span class="lp-cinema-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
+
+      <div class="lp-slot-item">
+        <span class="lp-slot-label">Development Pipeline</span>
+        <div class="lp-slot-reel-wrap">
+          <div class="lp-slot-reel" data-target="16" data-suffix="">
+            <span class="lp-slot-digit">0</span>
+          </div>
+        </div>
+        <span class="lp-slot-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
       </div>
+
     </div>
   </div>
 </section>
@@ -499,91 +513,98 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const stats = [
-    { target: 300, suffix: '+', label: 'Hotel Supply Database' },
-    { target: 23,  suffix: '',  label: 'Destination Coverage' },
-    { target: 35,  suffix: '',  label: 'Brand Intelligence' },
-    { target: 16,  suffix: '',  label: 'Development Pipeline' },
-  ];
-
-  const stage     = document.getElementById('lpCinemaStage');
-  const bigNum    = document.getElementById('lpCinemaBigNum');
-  const bigLabel  = document.getElementById('lpCinemaBigLabel');
-  const grid      = document.getElementById('lpCinemaGrid');
-  const wrap      = document.getElementById('lpCinemaWrap');
-
-  if (!stage || !bigNum || !grid) return;
+  const wrap = document.getElementById('lpSlotWrap');
+  if (!wrap) return;
 
   let played = false;
 
-  function countUp(el, target, suffix, duration, onDone) {
-    const start = performance.now();
-    function frame(now) {
-      const p = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.floor(ease * target) + suffix;
-      if (p < 1) requestAnimationFrame(frame);
-      else { el.textContent = target + suffix; if (onDone) onDone(); }
+  function spinReel(reel, target, suffix, duration, delay, onDone) {
+    const wrap = reel.closest('.lp-slot-reel-wrap');
+    const height = wrap ? wrap.offsetHeight : 72;
+
+    // Build digits array — random numbers spinning then landing on target
+    const frames = [];
+    const steps = Math.max(12, Math.ceil(duration / 60));
+    for (let i = 0; i < steps; i++) {
+      const progress = i / steps;
+      const ease = 1 - Math.pow(1 - progress, 2);
+      const val = Math.round(ease * target);
+      // Add some randomness at the start, less toward the end
+      const noise = Math.round((1 - progress) * target * 0.3 * (Math.random() - 0.5));
+      frames.push(Math.max(0, val + noise));
     }
-    requestAnimationFrame(frame);
+    frames.push(target);
+
+    // Clear reel and build digit spans
+    reel.innerHTML = '';
+    [...frames, target].forEach(n => {
+      const span = document.createElement('span');
+      span.className = 'lp-slot-digit';
+      span.textContent = n + suffix;
+      reel.appendChild(span);
+    });
+
+    const totalHeight = frames.length * height;
+    reel.style.transform = 'translateY(0)';
+
+    let start = null;
+    let frame = 0;
+
+    setTimeout(() => {
+      function tick(ts) {
+        if (!start) start = ts;
+        const elapsed = ts - start;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Ease out — slow down toward the end
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const targetFrame = Math.floor(ease * frames.length);
+
+        if (targetFrame > frame) {
+          frame = targetFrame;
+          reel.style.transition = 'transform 60ms ease';
+          reel.style.transform = `translateY(-${frame * height}px)`;
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          // Land on final value
+          reel.style.transition = 'transform 200ms cubic-bezier(0.22,1,0.36,1)';
+          reel.style.transform = `translateY(-${frames.length * height}px)`;
+          setTimeout(() => {
+            if (onDone) onDone();
+          }, 250);
+        }
+      }
+      requestAnimationFrame(tick);
+    }, delay);
   }
 
-  function runCinema() {
+  function runSlots() {
     if (played) return;
     played = true;
 
-    let i = 0;
+    const items = wrap.querySelectorAll('.lp-slot-item');
 
-    function showStat() {
-      if (i >= stats.length) {
-        // All done — collapse stage, reveal grid
-        bigNum.classList.add('lp-num-exit');
-        bigLabel.classList.add('lp-num-exit');
-        setTimeout(() => {
-          stage.classList.add('lp-stage-hidden');
-          setTimeout(() => {
-            grid.classList.add('lp-grid-visible');
-          }, 200);
-        }, 350);
-        return;
-      }
+    items.forEach((item, i) => {
+      const reel = item.querySelector('.lp-slot-reel');
+      if (!reel) return;
 
-      const stat = stats[i];
+      const target = parseInt(reel.dataset.target);
+      const suffix = reel.dataset.suffix || '';
+      const delay = i * 200;
+      const duration = 1200 + i * 100;
 
-      // Reset exit classes
-      bigNum.classList.remove('lp-num-exit');
-      bigLabel.classList.remove('lp-num-exit');
-      bigNum.style.opacity = '0';
-      bigLabel.style.opacity = '0';
-
-      // Fade in
-      setTimeout(() => {
-        bigNum.style.opacity = '1';
-        bigLabel.style.opacity = '1';
-        bigLabel.textContent = stat.label;
-        bigNum.textContent = '0' + stat.suffix;
-
-        countUp(bigNum, stat.target, stat.suffix, 900, () => {
-          // Hold for 600ms then exit
-          setTimeout(() => {
-            bigNum.classList.add('lp-num-exit');
-            bigLabel.classList.add('lp-num-exit');
-            setTimeout(() => {
-              i++;
-              showStat();
-            }, 350);
-          }, 600);
-        });
-      }, 100);
-    }
-
-    showStat();
+      spinReel(reel, target, suffix, duration, delay, () => {
+        item.classList.add('lp-slot-done');
+      });
+    });
   }
 
-  // Trigger when section enters viewport
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting) { runCinema(); obs.disconnect(); }
+      if (e.isIntersecting) { runSlots(); obs.disconnect(); }
     });
   }, { threshold: 0.3 });
 

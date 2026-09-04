@@ -823,100 +823,34 @@ html { scroll-behavior: smooth; }
   margin: 16px 0;
 }
 
-/* ── HERO KPI CINEMATIC REVEAL ── */
-/* CINEMA WRAP */
-.lp-cinema-wrap {
+/* ── HERO KPI SLOT MACHINE REVEAL ── */
+.lp-slot-wrap {
   margin-top: 64px;
-  position: relative;
 }
 
-/* STAGE — full width cinematic overlay */
-.lp-cinema-stage {
-  width: 100%;
-  height: 180px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  opacity: 1;
-  transition: opacity 400ms ease;
-  pointer-events: none;
-}
-
-.lp-cinema-stage.lp-stage-hidden {
-  opacity: 0;
-  height: 0;
-  margin: 0;
-  transition: opacity 400ms ease, height 400ms ease;
-}
-
-.lp-cinema-big-num {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 120px;
-  color: var(--lp-text);
-  line-height: 1;
-  letter-spacing: -0.04em;
-  display: block;
-  text-align: center;
-  transition: opacity 300ms ease, transform 400ms cubic-bezier(0.22,1,0.36,1);
-}
-
-.lp-cinema-big-num.lp-num-exit {
-  opacity: 0;
-  transform: scale(0.6);
-}
-
-.lp-cinema-big-label {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #B87860;
-  display: block;
-  text-align: center;
-  margin-top: 8px;
-  transition: opacity 300ms ease;
-}
-
-.lp-cinema-big-label.lp-num-exit {
-  opacity: 0;
-}
-
-/* FINAL GRID */
-.lp-cinema-grid {
+.lp-slot-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   background: var(--lp-border);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 600ms ease, transform 600ms ease;
 }
 
-.lp-cinema-grid.lp-grid-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.lp-cinema-card {
+.lp-slot-item {
   background: var(--lp-bg);
   padding: 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
   border-top: 1px solid #B87860;
   transition: background 250ms ease;
+  overflow: hidden;
 }
 
-.lp-cinema-card:hover {
+.lp-slot-item:hover {
   background: var(--lp-bg-alt);
 }
 
-.lp-cinema-label {
+.lp-slot-label {
   font-family: 'Space Mono', monospace;
   font-size: 8px;
   font-weight: 400;
@@ -926,23 +860,45 @@ html { scroll-behavior: smooth; }
   display: block;
 }
 
-.lp-cinema-num {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 48px;
-  color: var(--lp-text);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  display: block;
+.lp-slot-reel-wrap {
+  height: 72px;
+  overflow: hidden;
+  position: relative;
 }
 
-.lp-cinema-desc {
+.lp-slot-reel {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0ms;
+}
+
+.lp-slot-digit {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 56px;
+  color: var(--lp-text);
+  line-height: 72px;
+  letter-spacing: -0.03em;
+  display: block;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.lp-slot-desc {
   font-family: 'Manrope', sans-serif;
   font-size: 12px;
   color: var(--lp-text-muted);
   line-height: 1.6;
   font-weight: 400;
   display: block;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.lp-slot-item.lp-slot-done .lp-slot-desc {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ── BUTTONS ── */
@@ -1666,10 +1622,11 @@ html { scroll-behavior: smooth; }
   .lp-video-tagline { font-size: 9px; }
   .lp-hero { padding: 100px 20px 60px; }
   .lp-hero-headline { font-size: 38px; }
-  .lp-cinema-grid { grid-template-columns: 1fr 1fr; }
-  .lp-cinema-big-num { font-size: 72px; }
-  .lp-cinema-stage { height: 140px; }
-  .lp-cinema-num { font-size: 36px; }
+  .lp-slot-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lp-slot-digit { font-size: 40px; line-height: 56px; }
+  .lp-slot-reel-wrap { height: 56px; }
   .lp-section { padding: 60px 20px; }
   .lp-platform-desc {
     max-height: 0;
