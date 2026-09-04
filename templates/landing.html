@@ -66,46 +66,32 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-flash-wrap" id="lpFlashWrap">
-    <div class="lp-flash-grid">
+  <div class="lp-spotlight-wrap" id="lpSpotlightWrap">
 
-      <div class="lp-flash-cell" data-index="0">
-        <div class="lp-flash-overlay"></div>
-        <div class="lp-flash-content">
-          <span class="lp-flash-num">300+</span>
-          <span class="lp-flash-label">Hotel Supply Database</span>
-          <span class="lp-flash-desc">Independent verified hotel records across Morocco's classified market</span>
-        </div>
+    <!-- Main display -->
+    <div class="lp-spotlight-stage">
+      <div class="lp-spotlight-label-wrap">
+        <span class="lp-spotlight-label" id="lpSpotlightLabel">Hotel Supply Database</span>
       </div>
-
-      <div class="lp-flash-cell" data-index="1">
-        <div class="lp-flash-overlay"></div>
-        <div class="lp-flash-content">
-          <span class="lp-flash-num">23</span>
-          <span class="lp-flash-label">Destination Coverage</span>
-          <span class="lp-flash-desc">Cities and resort destinations actively tracked and updated</span>
-        </div>
+      <div class="lp-spotlight-num-wrap">
+        <span class="lp-spotlight-num" id="lpSpotlightNum">300+</span>
       </div>
-
-      <div class="lp-flash-cell" data-index="2">
-        <div class="lp-flash-overlay"></div>
-        <div class="lp-flash-content">
-          <span class="lp-flash-num">35</span>
-          <span class="lp-flash-label">Brand Intelligence</span>
-          <span class="lp-flash-desc">International and domestic brand groups profiled and benchmarked</span>
-        </div>
+      <div class="lp-spotlight-desc-wrap">
+        <span class="lp-spotlight-desc" id="lpSpotlightDesc">Independent verified hotel records across Morocco's classified market</span>
       </div>
-
-      <div class="lp-flash-cell" data-index="3">
-        <div class="lp-flash-overlay"></div>
-        <div class="lp-flash-content">
-          <span class="lp-flash-num">16</span>
-          <span class="lp-flash-label">Development Pipeline</span>
-          <span class="lp-flash-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
-        </div>
-      </div>
-
     </div>
+
+    <!-- Progress indicators -->
+    <div class="lp-spotlight-nav">
+      <button class="lp-spotlight-dot lp-spotlight-dot-active" data-index="0"></button>
+      <button class="lp-spotlight-dot" data-index="1"></button>
+      <button class="lp-spotlight-dot" data-index="2"></button>
+      <button class="lp-spotlight-dot" data-index="3"></button>
+      <div class="lp-spotlight-progress-wrap">
+        <div class="lp-spotlight-progress-bar" id="lpSpotlightProgress"></div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -509,37 +495,134 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpFlashWrap');
+  const wrap = document.getElementById('lpSpotlightWrap');
   if (!wrap) return;
 
-  let played = false;
+  const stats = [
+    {
+      num: '300+',
+      label: 'Hotel Supply Database',
+      desc: 'Independent verified hotel records across Morocco\'s classified market'
+    },
+    {
+      num: '23',
+      label: 'Destination Coverage',
+      desc: 'Cities and resort destinations actively tracked and updated'
+    },
+    {
+      num: '35',
+      label: 'Brand Intelligence',
+      desc: 'International and domestic brand groups profiled and benchmarked'
+    },
+    {
+      num: '16',
+      label: 'Development Pipeline',
+      desc: 'Confirmed hotel pipeline projects tracked across Morocco'
+    }
+  ];
 
-  function flashOn(cell, delay) {
-    setTimeout(() => {
-      // Brief terracotta flash
-      cell.classList.add('lp-flashing');
-      setTimeout(() => {
-        cell.classList.remove('lp-flashing');
-        cell.classList.add('lp-flash-on');
-        // Add top border terracotta on reveal
-        cell.style.borderTopColor = '#B87860';
-      }, 120);
-    }, delay);
-  }
+  const numEl    = document.getElementById('lpSpotlightNum');
+  const labelEl  = document.getElementById('lpSpotlightLabel');
+  const descEl   = document.getElementById('lpSpotlightDesc');
+  const progress = document.getElementById('lpSpotlightProgress');
+  const dots     = wrap.querySelectorAll('.lp-spotlight-dot');
 
-  function runFlash() {
-    if (played) return;
-    played = true;
+  if (!numEl || !labelEl || !descEl) return;
 
-    const cells = wrap.querySelectorAll('.lp-flash-cell');
-    cells.forEach((cell, i) => {
-      flashOn(cell, i * 180);
+  const DURATION = 3000;
+  let current = 0;
+  let timer = null;
+  let progressTimer = null;
+  let started = false;
+
+  function setDot(index) {
+    dots.forEach((d, i) => {
+      d.classList.toggle('lp-spotlight-dot-active', i === index);
     });
   }
 
+  function startProgress() {
+    if (progress) {
+      progress.style.transition = 'none';
+      progress.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          progress.style.transition = `width ${DURATION}ms linear`;
+          progress.style.width = '100%';
+        });
+      });
+    }
+  }
+
+  function goTo(index, direction) {
+    const next = stats[index];
+
+    // Exit current
+    [numEl, labelEl, descEl].forEach(el => el.classList.add('lp-exit-up'));
+
+    setTimeout(() => {
+      // Set new content off-screen below
+      numEl.textContent = next.num;
+      labelEl.textContent = next.label;
+      descEl.textContent = next.desc;
+
+      [numEl, labelEl, descEl].forEach(el => {
+        el.classList.remove('lp-exit-up');
+        el.classList.add('lp-enter-down');
+      });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          [numEl, labelEl, descEl].forEach(el => {
+            el.classList.remove('lp-enter-down');
+          });
+        });
+      });
+
+      setDot(index);
+      startProgress();
+    }, 380);
+  }
+
+  function advance() {
+    const next = (current + 1) % stats.length;
+    goTo(next);
+    current = next;
+  }
+
+  function startCycle() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(advance, DURATION);
+    startProgress();
+  }
+
+  function init() {
+    if (started) return;
+    started = true;
+
+    // Set initial content
+    numEl.textContent = stats[0].num;
+    labelEl.textContent = stats[0].label;
+    descEl.textContent = stats[0].desc;
+    setDot(0);
+    startCycle();
+  }
+
+  // Dot click navigation
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      if (i === current) return;
+      clearInterval(timer);
+      goTo(i);
+      current = i;
+      timer = setInterval(advance, DURATION);
+    });
+  });
+
+  // Start when visible
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting) { runFlash(); obs.disconnect(); }
+      if (e.isIntersecting) { init(); obs.disconnect(); }
     });
   }, { threshold: 0.3 });
 
