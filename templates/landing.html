@@ -66,47 +66,43 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-slot-wrap" id="lpSlotWrap">
-    <div class="lp-slot-grid">
+  <div class="lp-flash-wrap" id="lpFlashWrap">
+    <div class="lp-flash-grid">
 
-      <div class="lp-slot-item">
-        <span class="lp-slot-label">Hotel Supply Database</span>
-        <div class="lp-slot-reel-wrap">
-          <div class="lp-slot-reel" data-target="300" data-suffix="+">
-            <span class="lp-slot-digit">0+</span>
-          </div>
+      <div class="lp-flash-cell" data-index="0">
+        <div class="lp-flash-overlay"></div>
+        <div class="lp-flash-content">
+          <span class="lp-flash-num">300+</span>
+          <span class="lp-flash-label">Hotel Supply Database</span>
+          <span class="lp-flash-desc">Independent verified hotel records across Morocco's classified market</span>
         </div>
-        <span class="lp-slot-desc">Independent verified hotel records across Morocco's classified market</span>
       </div>
 
-      <div class="lp-slot-item">
-        <span class="lp-slot-label">Destination Coverage</span>
-        <div class="lp-slot-reel-wrap">
-          <div class="lp-slot-reel" data-target="23" data-suffix="">
-            <span class="lp-slot-digit">0</span>
-          </div>
+      <div class="lp-flash-cell" data-index="1">
+        <div class="lp-flash-overlay"></div>
+        <div class="lp-flash-content">
+          <span class="lp-flash-num">23</span>
+          <span class="lp-flash-label">Destination Coverage</span>
+          <span class="lp-flash-desc">Cities and resort destinations actively tracked and updated</span>
         </div>
-        <span class="lp-slot-desc">Cities and resort destinations actively tracked and updated</span>
       </div>
 
-      <div class="lp-slot-item">
-        <span class="lp-slot-label">Brand Intelligence</span>
-        <div class="lp-slot-reel-wrap">
-          <div class="lp-slot-reel" data-target="35" data-suffix="">
-            <span class="lp-slot-digit">0</span>
-          </div>
+      <div class="lp-flash-cell" data-index="2">
+        <div class="lp-flash-overlay"></div>
+        <div class="lp-flash-content">
+          <span class="lp-flash-num">35</span>
+          <span class="lp-flash-label">Brand Intelligence</span>
+          <span class="lp-flash-desc">International and domestic brand groups profiled and benchmarked</span>
         </div>
-        <span class="lp-slot-desc">International and domestic brand groups profiled and benchmarked</span>
       </div>
 
-      <div class="lp-slot-item">
-        <span class="lp-slot-label">Development Pipeline</span>
-        <div class="lp-slot-reel-wrap">
-          <div class="lp-slot-reel" data-target="16" data-suffix="">
-            <span class="lp-slot-digit">0</span>
-          </div>
+      <div class="lp-flash-cell" data-index="3">
+        <div class="lp-flash-overlay"></div>
+        <div class="lp-flash-content">
+          <span class="lp-flash-num">16</span>
+          <span class="lp-flash-label">Development Pipeline</span>
+          <span class="lp-flash-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
         </div>
-        <span class="lp-slot-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
       </div>
 
     </div>
@@ -513,98 +509,37 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpSlotWrap');
+  const wrap = document.getElementById('lpFlashWrap');
   if (!wrap) return;
 
   let played = false;
 
-  function spinReel(reel, target, suffix, duration, delay, onDone) {
-    const wrap = reel.closest('.lp-slot-reel-wrap');
-    const height = wrap ? wrap.offsetHeight : 72;
-
-    // Build digits array — random numbers spinning then landing on target
-    const frames = [];
-    const steps = Math.max(12, Math.ceil(duration / 60));
-    for (let i = 0; i < steps; i++) {
-      const progress = i / steps;
-      const ease = 1 - Math.pow(1 - progress, 2);
-      const val = Math.round(ease * target);
-      // Add some randomness at the start, less toward the end
-      const noise = Math.round((1 - progress) * target * 0.3 * (Math.random() - 0.5));
-      frames.push(Math.max(0, val + noise));
-    }
-    frames.push(target);
-
-    // Clear reel and build digit spans
-    reel.innerHTML = '';
-    [...frames, target].forEach(n => {
-      const span = document.createElement('span');
-      span.className = 'lp-slot-digit';
-      span.textContent = n + suffix;
-      reel.appendChild(span);
-    });
-
-    const totalHeight = frames.length * height;
-    reel.style.transform = 'translateY(0)';
-
-    let start = null;
-    let frame = 0;
-
+  function flashOn(cell, delay) {
     setTimeout(() => {
-      function tick(ts) {
-        if (!start) start = ts;
-        const elapsed = ts - start;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // Ease out — slow down toward the end
-        const ease = 1 - Math.pow(1 - progress, 3);
-        const targetFrame = Math.floor(ease * frames.length);
-
-        if (targetFrame > frame) {
-          frame = targetFrame;
-          reel.style.transition = 'transform 60ms ease';
-          reel.style.transform = `translateY(-${frame * height}px)`;
-        }
-
-        if (progress < 1) {
-          requestAnimationFrame(tick);
-        } else {
-          // Land on final value
-          reel.style.transition = 'transform 200ms cubic-bezier(0.22,1,0.36,1)';
-          reel.style.transform = `translateY(-${frames.length * height}px)`;
-          setTimeout(() => {
-            if (onDone) onDone();
-          }, 250);
-        }
-      }
-      requestAnimationFrame(tick);
+      // Brief terracotta flash
+      cell.classList.add('lp-flashing');
+      setTimeout(() => {
+        cell.classList.remove('lp-flashing');
+        cell.classList.add('lp-flash-on');
+        // Add top border terracotta on reveal
+        cell.style.borderTopColor = '#B87860';
+      }, 120);
     }, delay);
   }
 
-  function runSlots() {
+  function runFlash() {
     if (played) return;
     played = true;
 
-    const items = wrap.querySelectorAll('.lp-slot-item');
-
-    items.forEach((item, i) => {
-      const reel = item.querySelector('.lp-slot-reel');
-      if (!reel) return;
-
-      const target = parseInt(reel.dataset.target);
-      const suffix = reel.dataset.suffix || '';
-      const delay = i * 200;
-      const duration = 1200 + i * 100;
-
-      spinReel(reel, target, suffix, duration, delay, () => {
-        item.classList.add('lp-slot-done');
-      });
+    const cells = wrap.querySelectorAll('.lp-flash-cell');
+    cells.forEach((cell, i) => {
+      flashOn(cell, i * 180);
     });
   }
 
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting) { runSlots(); obs.disconnect(); }
+      if (e.isIntersecting) { runFlash(); obs.disconnect(); }
     });
   }, { threshold: 0.3 });
 
