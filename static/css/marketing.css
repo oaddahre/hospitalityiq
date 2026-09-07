@@ -823,98 +823,59 @@ html { scroll-behavior: smooth; }
   margin: 16px 0;
 }
 
-/* ── HERO KPI SCATTERED CONSTELLATION ── */
-.lp-constellation-wrap {
+/* ── HERO KPI TYPEWRITER REVEAL ── */
+.lp-typewriter-wrap {
   margin-top: 64px;
-  position: relative;
-  width: 100%;
-  height: 360px;
+  padding: 48px 0;
+  border-top: 1px solid var(--lp-border);
+  border-bottom: 1px solid var(--lp-border);
   overflow: hidden;
 }
 
-.lp-constellation-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.lp-constellation-node {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  transform: translate(-50%, -50%);
+.lp-typewriter-line {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  opacity: 0;
-  transition: opacity 800ms ease, transform 800ms cubic-bezier(0.22,1,0.36,1);
-  z-index: 1;
-  max-width: 200px;
-  cursor: default;
+  align-items: baseline;
+  gap: 0;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.lp-constellation-node.lp-con-visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) translateY(0);
-}
-
-.lp-constellation-node:not(.lp-con-visible) {
-  transform: translate(-50%, calc(-50% + 16px));
-}
-
-/* Dot at node center */
-.lp-constellation-node::before {
-  content: '';
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #B87860;
-  display: block;
-  margin-bottom: 8px;
-  flex-shrink: 0;
-  transition: transform 300ms ease;
-}
-
-.lp-constellation-node:hover::before {
-  transform: scale(1.8);
-}
-
-.lp-con-num {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 52px;
-  color: var(--lp-text);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  display: block;
-  transition: color 200ms ease;
-}
-
-.lp-constellation-node:hover .lp-con-num {
-  color: #B87860;
-}
-
-.lp-con-label {
+.lp-typewriter-text {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
+  font-size: clamp(11px, 1.4vw, 16px);
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: #B87860;
+  letter-spacing: 0.12em;
+  color: var(--lp-text);
   display: block;
-  white-space: nowrap;
+  line-height: 1;
 }
 
-.lp-con-desc {
-  font-family: 'Manrope', sans-serif;
-  font-size: 11px;
-  color: var(--lp-text-muted);
-  line-height: 1.55;
+.lp-typewriter-cursor {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(11px, 1.4vw, 16px);
   font-weight: 400;
-  display: block;
+  color: #B87860;
+  display: inline-block;
+  margin-left: 2px;
+  animation: lp-blink 800ms steps(1) infinite;
+  line-height: 1;
+}
+
+@keyframes lp-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Highlight the numbers in terracotta */
+.lp-typewriter-num {
+  color: #B87860;
+}
+
+/* Separator dots */
+.lp-typewriter-sep {
+  color: var(--lp-text-faint);
+  margin: 0 6px;
 }
 
 /* ── BUTTONS ── */
@@ -1638,26 +1599,20 @@ html { scroll-behavior: smooth; }
   .lp-video-tagline { font-size: 9px; }
   .lp-hero { padding: 100px 20px 60px; }
   .lp-hero-headline { font-size: 38px; }
-  .lp-constellation-wrap {
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    padding: 0;
+  .lp-typewriter-line {
+    white-space: normal;
+    flex-wrap: wrap;
   }
-  .lp-constellation-lines { display: none; }
-  .lp-constellation-node {
-    position: static;
-    transform: none !important;
-    opacity: 0;
-    max-width: 100%;
-    transition: opacity 600ms ease;
+  .lp-typewriter-text {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    line-height: 1.8;
+    white-space: normal;
+    word-break: break-word;
   }
-  .lp-constellation-node.lp-con-visible {
-    opacity: 1;
-    transform: none !important;
+  .lp-typewriter-cursor {
+    font-size: 10px;
   }
-  .lp-con-num { font-size: 40px; }
   .lp-section { padding: 60px 20px; }
   .lp-platform-desc {
     max-height: 0;

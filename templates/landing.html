@@ -66,38 +66,10 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-constellation-wrap" id="lpConstellationWrap">
-    <svg class="lp-constellation-lines" id="lpConstellationLines"
-         xmlns="http://www.w3.org/2000/svg"
-         preserveAspectRatio="none">
-    </svg>
-
-    <div class="lp-constellation-node" id="lpNode0"
-         style="--x:8%;--y:20%">
-      <span class="lp-con-num" data-target="300" data-suffix="+">0+</span>
-      <span class="lp-con-label">Hotel Supply Database</span>
-      <span class="lp-con-desc">Independent verified hotel records across Morocco's classified market</span>
-    </div>
-
-    <div class="lp-constellation-node" id="lpNode1"
-         style="--x:38%;--y:55%">
-      <span class="lp-con-num" data-target="23" data-suffix="">0</span>
-      <span class="lp-con-label">Destination Coverage</span>
-      <span class="lp-con-desc">Cities and resort destinations actively tracked and updated</span>
-    </div>
-
-    <div class="lp-constellation-node" id="lpNode2"
-         style="--x:62%;--y:15%">
-      <span class="lp-con-num" data-target="35" data-suffix="">0</span>
-      <span class="lp-con-label">Brand Intelligence</span>
-      <span class="lp-con-desc">International and domestic brand groups profiled and benchmarked</span>
-    </div>
-
-    <div class="lp-constellation-node" id="lpNode3"
-         style="--x:82%;--y:50%">
-      <span class="lp-con-num" data-target="16" data-suffix="">0</span>
-      <span class="lp-con-label">Development Pipeline</span>
-      <span class="lp-con-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
+  <div class="lp-typewriter-wrap" id="lpTypewriterWrap">
+    <div class="lp-typewriter-line">
+      <span class="lp-typewriter-text" id="lpTypewriterText"></span>
+      <span class="lp-typewriter-cursor" id="lpTypewriterCursor">_</span>
     </div>
   </div>
 </section>
@@ -502,90 +474,90 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpConstellationWrap');
-  if (!wrap) return;
+  const wrap = document.getElementById('lpTypewriterWrap');
+  const textEl = document.getElementById('lpTypewriterText');
+  const cursor = document.getElementById('lpTypewriterCursor');
+  if (!wrap || !textEl) return;
+
+  // Full string to type — plain text version
+  const fullString = 'TRACKING 300+ HOTELS  ·  23 DESTINATIONS  ·  35 BRAND GROUPS  ·  16 PIPELINE PROJECTS  ·  MOROCCO';
+
+  // Segments with color info for the final render
+  const segments = [
+    { text: 'TRACKING ', highlight: false },
+    { text: '300+', highlight: true },
+    { text: ' HOTELS', highlight: false },
+    { text: '  ·  ', highlight: false, sep: true },
+    { text: '23', highlight: true },
+    { text: ' DESTINATIONS', highlight: false },
+    { text: '  ·  ', highlight: false, sep: true },
+    { text: '35', highlight: true },
+    { text: ' BRAND GROUPS', highlight: false },
+    { text: '  ·  ', highlight: false, sep: true },
+    { text: '16', highlight: true },
+    { text: ' PIPELINE PROJECTS', highlight: false },
+    { text: '  ·  ', highlight: false, sep: true },
+    { text: 'MOROCCO', highlight: false },
+  ];
 
   let played = false;
+  let charIndex = 0;
+  let typeTimer = null;
 
-  function countUp(el, target, suffix, duration) {
-    const start = performance.now();
-    function frame(now) {
-      const p = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.floor(ease * target) + suffix;
-      if (p < 1) requestAnimationFrame(frame);
-      else el.textContent = target + suffix;
+  // Build plain string for typing
+  const plain = segments.map(s => s.text).join('');
+
+  function renderColored(upTo) {
+    // Build colored HTML up to character index
+    let html = '';
+    let count = 0;
+    for (const seg of segments) {
+      if (count >= upTo) break;
+      const take = Math.min(seg.text.length, upTo - count);
+      const part = seg.text.slice(0, take);
+      if (seg.highlight) {
+        html += `<span style="color:#B87860">${part}</span>`;
+      } else if (seg.sep) {
+        html += `<span style="color:var(--lp-text-faint);margin:0 6px">${part}</span>`;
+      } else {
+        html += part;
+      }
+      count += take;
     }
-    requestAnimationFrame(frame);
+    return html;
   }
 
-  function getCenter(node) {
-    const wRect = wrap.getBoundingClientRect();
-    const nRect = node.getBoundingClientRect();
-    return {
-      x: nRect.left - wRect.left + nRect.width / 2,
-      y: nRect.top - wRect.top + nRect.height / 2
-    };
-  }
-
-  function drawLines(nodes) {
-    const svg = document.getElementById('lpConstellationLines');
-    if (!svg) return;
-    svg.innerHTML = '';
-
-    const centers = Array.from(nodes).map(n => getCenter(n));
-
-    // Connect each node to the next
-    for (let i = 0; i < centers.length - 1; i++) {
-      const a = centers[i];
-      const b = centers[i + 1];
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', a.x);
-      line.setAttribute('y1', a.y);
-      line.setAttribute('x2', b.x);
-      line.setAttribute('y2', b.y);
-      line.setAttribute('stroke', '#242424');
-      line.setAttribute('stroke-width', '1');
-      line.setAttribute('stroke-dasharray', '3 6');
-      line.style.opacity = '0';
-      line.style.transition = 'opacity 800ms ease';
-      svg.appendChild(line);
-
-      setTimeout(() => { line.style.opacity = '1'; }, 600 + i * 200);
+  function type() {
+    if (charIndex > plain.length) {
+      // Done — cursor keeps blinking
+      return;
     }
+
+    textEl.innerHTML = renderColored(charIndex);
+    charIndex++;
+
+    // Vary speed slightly for natural feel
+    const delay = charIndex < 10 ? 60 :
+                  plain[charIndex - 1] === '·' ? 120 :
+                  plain[charIndex - 1] === ' ' ? 25 :
+                  Math.random() * 20 + 25;
+
+    typeTimer = setTimeout(type, delay);
   }
 
   function run() {
     if (played) return;
     played = true;
 
-    const nodes = wrap.querySelectorAll('.lp-constellation-node');
-    const delays = [0, 200, 100, 300];
-
-    if (window.innerWidth > 768) {
-      // Draw connecting lines after nodes appear
-      setTimeout(() => drawLines(nodes), 400);
-    }
-
-    nodes.forEach((node, i) => {
-      const numEl = node.querySelector('.lp-con-num');
-      const target = parseInt(numEl.dataset.target);
-      const suffix = numEl.dataset.suffix || '';
-
-      setTimeout(() => {
-        node.classList.add('lp-con-visible');
-        setTimeout(() => {
-          countUp(numEl, target, suffix, 1200);
-        }, 300);
-      }, delays[i] * 1.5 + 200);
-    });
+    // Small initial pause before typing starts
+    setTimeout(type, 400);
   }
 
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) { run(); obs.disconnect(); }
     });
-  }, { threshold: 0.2 });
+  }, { threshold: 0.3 });
 
   obs.observe(wrap);
 })();
