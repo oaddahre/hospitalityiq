@@ -66,31 +66,30 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-morph-wrap" id="lpMorphWrap">
-    <div class="lp-morph-stage">
+  <div class="lp-spotlight-wrap" id="lpSpotlightWrap">
 
-      <div class="lp-morph-label-wrap">
-        <span class="lp-morph-index" id="lpMorphIndex">01 / 04</span>
+    <div class="lp-spotlight-stage">
+      <div class="lp-spotlight-label-wrap">
+        <span class="lp-spotlight-label" id="lpSpotlightLabel">Hotel Supply Database</span>
       </div>
-
-      <div class="lp-morph-num-wrap">
-        <span class="lp-morph-num" id="lpMorphNum">300+</span>
+      <div class="lp-spotlight-num-wrap">
+        <span class="lp-spotlight-num" id="lpSpotlightNum">300+</span>
       </div>
-
-      <div class="lp-morph-meta-wrap">
-        <span class="lp-morph-label" id="lpMorphLabel">Hotel Supply Database</span>
-        <span class="lp-morph-desc" id="lpMorphDesc">Independent verified hotel records across Morocco's classified market</span>
+      <div class="lp-spotlight-desc-wrap">
+        <span class="lp-spotlight-desc" id="lpSpotlightDesc">Independent verified hotel records across Morocco's classified market</span>
       </div>
-
-      <!-- Background ghost number for depth -->
-      <span class="lp-morph-ghost" id="lpMorphGhost">300+</span>
-
     </div>
 
-    <!-- Progress bar at bottom -->
-    <div class="lp-morph-progress-track">
-      <div class="lp-morph-progress-fill" id="lpMorphProgress"></div>
+    <div class="lp-spotlight-nav">
+      <button class="lp-spotlight-dot lp-spotlight-dot-active" data-index="0"></button>
+      <button class="lp-spotlight-dot" data-index="1"></button>
+      <button class="lp-spotlight-dot" data-index="2"></button>
+      <button class="lp-spotlight-dot" data-index="3"></button>
+      <div class="lp-spotlight-progress-wrap">
+        <div class="lp-spotlight-progress-bar" id="lpSpotlightProgress"></div>
+      </div>
     </div>
+
   </div>
 </section>
 
@@ -494,101 +493,89 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpMorphWrap');
+  const wrap = document.getElementById('lpSpotlightWrap');
   if (!wrap) return;
 
   const stats = [
     {
       num: '300+',
-      index: '01 / 04',
       label: 'Hotel Supply Database',
       desc: 'Independent verified hotel records across Morocco\'s classified market'
     },
     {
       num: '23',
-      index: '02 / 04',
       label: 'Destination Coverage',
       desc: 'Cities and resort destinations actively tracked and updated'
     },
     {
       num: '35',
-      index: '03 / 04',
       label: 'Brand Intelligence',
       desc: 'International and domestic brand groups profiled and benchmarked'
     },
     {
       num: '16',
-      index: '04 / 04',
       label: 'Development Pipeline',
       desc: 'Confirmed hotel pipeline projects tracked across Morocco'
     }
   ];
 
-  const numEl      = document.getElementById('lpMorphNum');
-  const labelEl    = document.getElementById('lpMorphLabel');
-  const descEl     = document.getElementById('lpMorphDesc');
-  const indexEl    = document.getElementById('lpMorphIndex');
-  const ghostEl    = document.getElementById('lpMorphGhost');
-  const progressEl = document.getElementById('lpMorphProgress');
+  const numEl    = document.getElementById('lpSpotlightNum');
+  const labelEl  = document.getElementById('lpSpotlightLabel');
+  const descEl   = document.getElementById('lpSpotlightDesc');
+  const progress = document.getElementById('lpSpotlightProgress');
+  const dots     = wrap.querySelectorAll('.lp-spotlight-dot');
 
-  if (!numEl) return;
+  if (!numEl || !labelEl || !descEl) return;
 
-  const DURATION = 3500;
+  const DURATION = 3000;
   let current = 0;
-  let cycling = false;
+  let timer = null;
   let started = false;
 
+  function setDot(index) {
+    dots.forEach((d, i) => {
+      d.classList.toggle('lp-spotlight-dot-active', i === index);
+    });
+  }
+
   function startProgress() {
-    if (!progressEl) return;
-    progressEl.style.transition = 'none';
-    progressEl.style.width = '0%';
+    if (!progress) return;
+    progress.style.transition = 'none';
+    progress.style.width = '0%';
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        progressEl.style.transition = `width ${DURATION}ms linear`;
-        progressEl.style.width = '100%';
+        progress.style.transition = `width ${DURATION}ms linear`;
+        progress.style.width = '100%';
       });
     });
   }
 
   function goTo(index) {
-    const stat = stats[index];
+    const next = stats[index];
 
-    // Fade out text elements
-    [labelEl, descEl, indexEl].forEach(el => {
-      if (el) el.classList.add('lp-morph-fade');
-    });
-
-    // Exit number upward
-    if (numEl) numEl.classList.add('lp-morph-exit');
-    if (ghostEl) ghostEl.style.opacity = '0';
+    [numEl, labelEl, descEl].forEach(el => el.classList.add('lp-exit-up'));
 
     setTimeout(() => {
-      // Update content
-      if (numEl) {
-        numEl.classList.remove('lp-morph-exit');
-        numEl.classList.add('lp-morph-enter');
-        numEl.textContent = stat.num;
-      }
-      if (ghostEl) ghostEl.textContent = stat.num;
-      if (labelEl) labelEl.textContent = stat.label;
-      if (descEl) descEl.textContent = stat.desc;
-      if (indexEl) indexEl.textContent = stat.index;
+      numEl.textContent = next.num;
+      labelEl.textContent = next.label;
+      descEl.textContent = next.desc;
+
+      [numEl, labelEl, descEl].forEach(el => {
+        el.classList.remove('lp-exit-up');
+        el.classList.add('lp-enter-down');
+      });
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          // Animate in
-          if (numEl) numEl.classList.remove('lp-morph-enter');
-          [labelEl, descEl, indexEl].forEach(el => {
-            if (el) el.classList.remove('lp-morph-fade');
+          [numEl, labelEl, descEl].forEach(el => {
+            el.classList.remove('lp-enter-down');
           });
-          setTimeout(() => {
-            if (ghostEl) ghostEl.style.opacity = '0.03';
-          }, 100);
         });
       });
 
+      setDot(index);
       startProgress();
-    }, 420);
+    }, 380);
   }
 
   function advance() {
@@ -600,17 +587,23 @@ themeToggle.addEventListener('click', () => {
     if (started) return;
     started = true;
 
-    // Set initial state
-    const first = stats[0];
-    if (numEl) numEl.textContent = first.num;
-    if (ghostEl) ghostEl.textContent = first.num;
-    if (labelEl) labelEl.textContent = first.label;
-    if (descEl) descEl.textContent = first.desc;
-    if (indexEl) indexEl.textContent = first.index;
-
+    numEl.textContent = stats[0].num;
+    labelEl.textContent = stats[0].label;
+    descEl.textContent = stats[0].desc;
+    setDot(0);
     startProgress();
-    setInterval(advance, DURATION);
+    timer = setInterval(advance, DURATION);
   }
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      if (i === current) return;
+      clearInterval(timer);
+      goTo(i);
+      current = i;
+      timer = setInterval(advance, DURATION);
+    });
+  });
 
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
