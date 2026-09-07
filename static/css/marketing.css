@@ -1116,95 +1116,126 @@ html { scroll-behavior: smooth; }
 .lp-takeover-panel {
   position: sticky;
   top: 80px;
-  border-left: 1px solid var(--lp-border);
-  padding-left: 32px;
-  min-height: 280px;
-}
-
-.lp-takeover-panel-inner {
-  position: relative;
-}
-
-.lp-takeover-panel-content {
-  display: none;
-  flex-direction: column;
-  gap: 16px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 350ms ease, transform 350ms ease;
-}
-
-.lp-takeover-panel-content.lp-panel-active {
+  padding-left: 48px;
+  min-height: 320px;
   display: flex;
-  opacity: 1;
-  transform: translateY(0);
+  align-items: flex-start;
 }
 
-.lp-takeover-panel-num {
+/* 3D FLIP SCENE */
+.lp-flip-scene {
+  width: 100%;
+  min-height: 320px;
+  perspective: 1000px;
+}
+
+.lp-flip-card {
+  width: 100%;
+  min-height: 320px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 600ms cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.lp-flip-card.lp-is-flipped {
+  transform: rotateY(180deg);
+}
+
+/* BOTH FACES */
+.lp-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px;
+  background: var(--lp-bg-alt);
+}
+
+/* FRONT FACE */
+.lp-flip-front {
+  transform: rotateY(0deg);
+}
+
+.lp-flip-num {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
   font-weight: 400;
-  letter-spacing: 0.2em;
   text-transform: uppercase;
+  letter-spacing: 0.2em;
   color: #B87860;
   display: block;
 }
 
-.lp-takeover-panel-title {
+.lp-flip-title {
   font-family: 'Manrope', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
+  font-weight: 800;
+  font-size: 28px;
   color: var(--lp-text);
   display: block;
-  letter-spacing: -0.01em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.lp-takeover-panel-desc {
+/* BACK FACE */
+.lp-flip-back {
+  transform: rotateY(180deg);
+  justify-content: space-between;
+}
+
+.lp-flip-back-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #B87860;
+  display: block;
+}
+
+.lp-flip-desc {
   font-family: 'Manrope', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--lp-text-muted);
   line-height: 1.75;
   font-weight: 400;
   margin: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
-.lp-takeover-panel-meta {
+.lp-flip-stats {
   display: flex;
   gap: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--lp-border);
-  margin-top: 4px;
+  margin-top: auto;
 }
 
-.lp-takeover-panel-stat {
+.lp-flip-stat {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.lp-takeover-panel-stat-val {
+.lp-flip-stat-val {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 24px;
+  font-size: 28px;
   color: var(--lp-text);
   letter-spacing: -0.02em;
   line-height: 1;
 }
 
-.lp-takeover-panel-stat-lbl {
+.lp-flip-stat-lbl {
   font-family: 'Space Mono', monospace;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--lp-text-faint);
-}
-
-/* Default state — show first panel */
-.lp-takeover-panel-content[data-index="0"] {
-  display: flex;
-  opacity: 0.4;
-  transform: none;
 }
 
 /* ── ADVISORY ── */
@@ -1776,7 +1807,27 @@ html { scroll-behavior: smooth; }
     grid-template-columns: 1fr;
   }
   .lp-takeover-panel {
-    display: none;
+    position: static;
+    padding-left: 0;
+    padding-top: 32px;
+    min-height: auto;
+    width: 100%;
+  }
+  .lp-flip-scene {
+    min-height: 280px;
+    width: 100%;
+  }
+  .lp-flip-card {
+    min-height: 280px;
+  }
+  .lp-flip-face {
+    padding: 24px;
+  }
+  .lp-flip-desc {
+    font-size: 14px;
+  }
+  .lp-flip-stat-val {
+    font-size: 24px;
   }
   .lp-takeover-modules {
     padding-right: 0;
@@ -1787,6 +1838,7 @@ html { scroll-behavior: smooth; }
   .lp-takeover-item {
     padding: 12px 0;
     border-bottom: 1px solid var(--lp-border);
+    cursor: pointer;
   }
   .lp-takeover-item:last-child {
     border-bottom: none;
