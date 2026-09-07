@@ -66,10 +66,30 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-typewriter-wrap" id="lpTypewriterWrap">
-    <div class="lp-typewriter-line">
-      <span class="lp-typewriter-text" id="lpTypewriterText"></span>
-      <span class="lp-typewriter-cursor" id="lpTypewriterCursor">_</span>
+  <div class="lp-morph-wrap" id="lpMorphWrap">
+    <div class="lp-morph-stage">
+
+      <div class="lp-morph-label-wrap">
+        <span class="lp-morph-index" id="lpMorphIndex">01 / 04</span>
+      </div>
+
+      <div class="lp-morph-num-wrap">
+        <span class="lp-morph-num" id="lpMorphNum">300+</span>
+      </div>
+
+      <div class="lp-morph-meta-wrap">
+        <span class="lp-morph-label" id="lpMorphLabel">Hotel Supply Database</span>
+        <span class="lp-morph-desc" id="lpMorphDesc">Independent verified hotel records across Morocco's classified market</span>
+      </div>
+
+      <!-- Background ghost number for depth -->
+      <span class="lp-morph-ghost" id="lpMorphGhost">300+</span>
+
+    </div>
+
+    <!-- Progress bar at bottom -->
+    <div class="lp-morph-progress-track">
+      <div class="lp-morph-progress-fill" id="lpMorphProgress"></div>
     </div>
   </div>
 </section>
@@ -474,88 +494,127 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpTypewriterWrap');
-  const textEl = document.getElementById('lpTypewriterText');
-  const cursor = document.getElementById('lpTypewriterCursor');
-  if (!wrap || !textEl) return;
+  const wrap = document.getElementById('lpMorphWrap');
+  if (!wrap) return;
 
-  // Full string to type — plain text version
-  const fullString = 'TRACKING 300+ HOTELS  ·  23 DESTINATIONS  ·  35 BRAND GROUPS  ·  16 PIPELINE PROJECTS  ·  MOROCCO';
-
-  // Segments with color info for the final render
-  const segments = [
-    { text: 'TRACKING ', highlight: false },
-    { text: '300+', highlight: true },
-    { text: ' HOTELS', highlight: false },
-    { text: '  ·  ', highlight: false, sep: true },
-    { text: '23', highlight: true },
-    { text: ' DESTINATIONS', highlight: false },
-    { text: '  ·  ', highlight: false, sep: true },
-    { text: '35', highlight: true },
-    { text: ' BRAND GROUPS', highlight: false },
-    { text: '  ·  ', highlight: false, sep: true },
-    { text: '16', highlight: true },
-    { text: ' PIPELINE PROJECTS', highlight: false },
-    { text: '  ·  ', highlight: false, sep: true },
-    { text: 'MOROCCO', highlight: false },
+  const stats = [
+    {
+      num: '300+',
+      index: '01 / 04',
+      label: 'Hotel Supply Database',
+      desc: 'Independent verified hotel records across Morocco\'s classified market'
+    },
+    {
+      num: '23',
+      index: '02 / 04',
+      label: 'Destination Coverage',
+      desc: 'Cities and resort destinations actively tracked and updated'
+    },
+    {
+      num: '35',
+      index: '03 / 04',
+      label: 'Brand Intelligence',
+      desc: 'International and domestic brand groups profiled and benchmarked'
+    },
+    {
+      num: '16',
+      index: '04 / 04',
+      label: 'Development Pipeline',
+      desc: 'Confirmed hotel pipeline projects tracked across Morocco'
+    }
   ];
 
-  let played = false;
-  let charIndex = 0;
-  let typeTimer = null;
+  const numEl      = document.getElementById('lpMorphNum');
+  const labelEl    = document.getElementById('lpMorphLabel');
+  const descEl     = document.getElementById('lpMorphDesc');
+  const indexEl    = document.getElementById('lpMorphIndex');
+  const ghostEl    = document.getElementById('lpMorphGhost');
+  const progressEl = document.getElementById('lpMorphProgress');
 
-  // Build plain string for typing
-  const plain = segments.map(s => s.text).join('');
+  if (!numEl) return;
 
-  function renderColored(upTo) {
-    // Build colored HTML up to character index
-    let html = '';
-    let count = 0;
-    for (const seg of segments) {
-      if (count >= upTo) break;
-      const take = Math.min(seg.text.length, upTo - count);
-      const part = seg.text.slice(0, take);
-      if (seg.highlight) {
-        html += `<span style="color:#B87860">${part}</span>`;
-      } else if (seg.sep) {
-        html += `<span style="color:var(--lp-text-faint);margin:0 6px">${part}</span>`;
-      } else {
-        html += part;
+  const DURATION = 3500;
+  let current = 0;
+  let cycling = false;
+  let started = false;
+
+  function startProgress() {
+    if (!progressEl) return;
+    progressEl.style.transition = 'none';
+    progressEl.style.width = '0%';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        progressEl.style.transition = `width ${DURATION}ms linear`;
+        progressEl.style.width = '100%';
+      });
+    });
+  }
+
+  function goTo(index) {
+    const stat = stats[index];
+
+    // Fade out text elements
+    [labelEl, descEl, indexEl].forEach(el => {
+      if (el) el.classList.add('lp-morph-fade');
+    });
+
+    // Exit number upward
+    if (numEl) numEl.classList.add('lp-morph-exit');
+    if (ghostEl) ghostEl.style.opacity = '0';
+
+    setTimeout(() => {
+      // Update content
+      if (numEl) {
+        numEl.classList.remove('lp-morph-exit');
+        numEl.classList.add('lp-morph-enter');
+        numEl.textContent = stat.num;
       }
-      count += take;
-    }
-    return html;
+      if (ghostEl) ghostEl.textContent = stat.num;
+      if (labelEl) labelEl.textContent = stat.label;
+      if (descEl) descEl.textContent = stat.desc;
+      if (indexEl) indexEl.textContent = stat.index;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Animate in
+          if (numEl) numEl.classList.remove('lp-morph-enter');
+          [labelEl, descEl, indexEl].forEach(el => {
+            if (el) el.classList.remove('lp-morph-fade');
+          });
+          setTimeout(() => {
+            if (ghostEl) ghostEl.style.opacity = '0.03';
+          }, 100);
+        });
+      });
+
+      startProgress();
+    }, 420);
   }
 
-  function type() {
-    if (charIndex > plain.length) {
-      // Done — cursor keeps blinking
-      return;
-    }
-
-    textEl.innerHTML = renderColored(charIndex);
-    charIndex++;
-
-    // Vary speed slightly for natural feel
-    const delay = charIndex < 10 ? 60 :
-                  plain[charIndex - 1] === '·' ? 120 :
-                  plain[charIndex - 1] === ' ' ? 25 :
-                  Math.random() * 20 + 25;
-
-    typeTimer = setTimeout(type, delay);
+  function advance() {
+    current = (current + 1) % stats.length;
+    goTo(current);
   }
 
-  function run() {
-    if (played) return;
-    played = true;
+  function init() {
+    if (started) return;
+    started = true;
 
-    // Small initial pause before typing starts
-    setTimeout(type, 400);
+    // Set initial state
+    const first = stats[0];
+    if (numEl) numEl.textContent = first.num;
+    if (ghostEl) ghostEl.textContent = first.num;
+    if (labelEl) labelEl.textContent = first.label;
+    if (descEl) descEl.textContent = first.desc;
+    if (indexEl) indexEl.textContent = first.index;
+
+    startProgress();
+    setInterval(advance, DURATION);
   }
 
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting) { run(); obs.disconnect(); }
+      if (e.isIntersecting) { init(); obs.disconnect(); }
     });
   }, { threshold: 0.3 });
 
