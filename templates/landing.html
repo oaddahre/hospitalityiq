@@ -66,32 +66,39 @@
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:64px;display:inline-block;">Request Access →</a>
 
-  <div class="lp-spotlight-wrap" id="lpSpotlightWrap">
+  <div class="lp-constellation-wrap" id="lpConstellationWrap">
+    <svg class="lp-constellation-lines" id="lpConstellationLines"
+         xmlns="http://www.w3.org/2000/svg"
+         preserveAspectRatio="none">
+    </svg>
 
-    <!-- Main display -->
-    <div class="lp-spotlight-stage">
-      <div class="lp-spotlight-label-wrap">
-        <span class="lp-spotlight-label" id="lpSpotlightLabel">Hotel Supply Database</span>
-      </div>
-      <div class="lp-spotlight-num-wrap">
-        <span class="lp-spotlight-num" id="lpSpotlightNum">300+</span>
-      </div>
-      <div class="lp-spotlight-desc-wrap">
-        <span class="lp-spotlight-desc" id="lpSpotlightDesc">Independent verified hotel records across Morocco's classified market</span>
-      </div>
+    <div class="lp-constellation-node" id="lpNode0"
+         style="--x:8%;--y:20%">
+      <span class="lp-con-num" data-target="300" data-suffix="+">0+</span>
+      <span class="lp-con-label">Hotel Supply Database</span>
+      <span class="lp-con-desc">Independent verified hotel records across Morocco's classified market</span>
     </div>
 
-    <!-- Progress indicators -->
-    <div class="lp-spotlight-nav">
-      <button class="lp-spotlight-dot lp-spotlight-dot-active" data-index="0"></button>
-      <button class="lp-spotlight-dot" data-index="1"></button>
-      <button class="lp-spotlight-dot" data-index="2"></button>
-      <button class="lp-spotlight-dot" data-index="3"></button>
-      <div class="lp-spotlight-progress-wrap">
-        <div class="lp-spotlight-progress-bar" id="lpSpotlightProgress"></div>
-      </div>
+    <div class="lp-constellation-node" id="lpNode1"
+         style="--x:38%;--y:55%">
+      <span class="lp-con-num" data-target="23" data-suffix="">0</span>
+      <span class="lp-con-label">Destination Coverage</span>
+      <span class="lp-con-desc">Cities and resort destinations actively tracked and updated</span>
     </div>
 
+    <div class="lp-constellation-node" id="lpNode2"
+         style="--x:62%;--y:15%">
+      <span class="lp-con-num" data-target="35" data-suffix="">0</span>
+      <span class="lp-con-label">Brand Intelligence</span>
+      <span class="lp-con-desc">International and domestic brand groups profiled and benchmarked</span>
+    </div>
+
+    <div class="lp-constellation-node" id="lpNode3"
+         style="--x:82%;--y:50%">
+      <span class="lp-con-num" data-target="16" data-suffix="">0</span>
+      <span class="lp-con-label">Development Pipeline</span>
+      <span class="lp-con-desc">Confirmed hotel pipeline projects tracked across Morocco</span>
+    </div>
   </div>
 </section>
 
@@ -495,136 +502,90 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpSpotlightWrap');
+  const wrap = document.getElementById('lpConstellationWrap');
   if (!wrap) return;
 
-  const stats = [
-    {
-      num: '300+',
-      label: 'Hotel Supply Database',
-      desc: 'Independent verified hotel records across Morocco\'s classified market'
-    },
-    {
-      num: '23',
-      label: 'Destination Coverage',
-      desc: 'Cities and resort destinations actively tracked and updated'
-    },
-    {
-      num: '35',
-      label: 'Brand Intelligence',
-      desc: 'International and domestic brand groups profiled and benchmarked'
-    },
-    {
-      num: '16',
-      label: 'Development Pipeline',
-      desc: 'Confirmed hotel pipeline projects tracked across Morocco'
+  let played = false;
+
+  function countUp(el, target, suffix, duration) {
+    const start = performance.now();
+    function frame(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.floor(ease * target) + suffix;
+      if (p < 1) requestAnimationFrame(frame);
+      else el.textContent = target + suffix;
     }
-  ];
-
-  const numEl    = document.getElementById('lpSpotlightNum');
-  const labelEl  = document.getElementById('lpSpotlightLabel');
-  const descEl   = document.getElementById('lpSpotlightDesc');
-  const progress = document.getElementById('lpSpotlightProgress');
-  const dots     = wrap.querySelectorAll('.lp-spotlight-dot');
-
-  if (!numEl || !labelEl || !descEl) return;
-
-  const DURATION = 3000;
-  let current = 0;
-  let timer = null;
-  let progressTimer = null;
-  let started = false;
-
-  function setDot(index) {
-    dots.forEach((d, i) => {
-      d.classList.toggle('lp-spotlight-dot-active', i === index);
-    });
+    requestAnimationFrame(frame);
   }
 
-  function startProgress() {
-    if (progress) {
-      progress.style.transition = 'none';
-      progress.style.width = '0%';
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          progress.style.transition = `width ${DURATION}ms linear`;
-          progress.style.width = '100%';
-        });
-      });
+  function getCenter(node) {
+    const wRect = wrap.getBoundingClientRect();
+    const nRect = node.getBoundingClientRect();
+    return {
+      x: nRect.left - wRect.left + nRect.width / 2,
+      y: nRect.top - wRect.top + nRect.height / 2
+    };
+  }
+
+  function drawLines(nodes) {
+    const svg = document.getElementById('lpConstellationLines');
+    if (!svg) return;
+    svg.innerHTML = '';
+
+    const centers = Array.from(nodes).map(n => getCenter(n));
+
+    // Connect each node to the next
+    for (let i = 0; i < centers.length - 1; i++) {
+      const a = centers[i];
+      const b = centers[i + 1];
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', a.x);
+      line.setAttribute('y1', a.y);
+      line.setAttribute('x2', b.x);
+      line.setAttribute('y2', b.y);
+      line.setAttribute('stroke', '#242424');
+      line.setAttribute('stroke-width', '1');
+      line.setAttribute('stroke-dasharray', '3 6');
+      line.style.opacity = '0';
+      line.style.transition = 'opacity 800ms ease';
+      svg.appendChild(line);
+
+      setTimeout(() => { line.style.opacity = '1'; }, 600 + i * 200);
     }
   }
 
-  function goTo(index, direction) {
-    const next = stats[index];
+  function run() {
+    if (played) return;
+    played = true;
 
-    // Exit current
-    [numEl, labelEl, descEl].forEach(el => el.classList.add('lp-exit-up'));
+    const nodes = wrap.querySelectorAll('.lp-constellation-node');
+    const delays = [0, 200, 100, 300];
 
-    setTimeout(() => {
-      // Set new content off-screen below
-      numEl.textContent = next.num;
-      labelEl.textContent = next.label;
-      descEl.textContent = next.desc;
+    if (window.innerWidth > 768) {
+      // Draw connecting lines after nodes appear
+      setTimeout(() => drawLines(nodes), 400);
+    }
 
-      [numEl, labelEl, descEl].forEach(el => {
-        el.classList.remove('lp-exit-up');
-        el.classList.add('lp-enter-down');
-      });
+    nodes.forEach((node, i) => {
+      const numEl = node.querySelector('.lp-con-num');
+      const target = parseInt(numEl.dataset.target);
+      const suffix = numEl.dataset.suffix || '';
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          [numEl, labelEl, descEl].forEach(el => {
-            el.classList.remove('lp-enter-down');
-          });
-        });
-      });
-
-      setDot(index);
-      startProgress();
-    }, 380);
-  }
-
-  function advance() {
-    const next = (current + 1) % stats.length;
-    goTo(next);
-    current = next;
-  }
-
-  function startCycle() {
-    if (timer) clearInterval(timer);
-    timer = setInterval(advance, DURATION);
-    startProgress();
-  }
-
-  function init() {
-    if (started) return;
-    started = true;
-
-    // Set initial content
-    numEl.textContent = stats[0].num;
-    labelEl.textContent = stats[0].label;
-    descEl.textContent = stats[0].desc;
-    setDot(0);
-    startCycle();
-  }
-
-  // Dot click navigation
-  dots.forEach((dot, i) => {
-    dot.addEventListener('click', () => {
-      if (i === current) return;
-      clearInterval(timer);
-      goTo(i);
-      current = i;
-      timer = setInterval(advance, DURATION);
+      setTimeout(() => {
+        node.classList.add('lp-con-visible');
+        setTimeout(() => {
+          countUp(numEl, target, suffix, 1200);
+        }, 300);
+      }, delays[i] * 1.5 + 200);
     });
-  });
+  }
 
-  // Start when visible
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting) { init(); obs.disconnect(); }
+      if (e.isIntersecting) { run(); obs.disconnect(); }
     });
-  }, { threshold: 0.3 });
+  }, { threshold: 0.2 });
 
   obs.observe(wrap);
 })();
