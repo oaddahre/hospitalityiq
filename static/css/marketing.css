@@ -1068,15 +1068,23 @@ html { scroll-behavior: smooth; }
   font-weight: 400;
 }
 
-/* ── PLATFORM MODULES: FULL SCREEN TAKEOVER ── */
-.lp-takeover-modules {
+/* ── PLATFORM MODULES: TAKEOVER + STICKY PANEL ── */
+.lp-takeover-wrap {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 0;
   margin-top: 56px;
-  position: relative;
+  align-items: start;
 }
 
-/* When any item is hovered dim all siblings */
+/* LEFT — titles */
+.lp-takeover-modules {
+  position: relative;
+  padding-right: 48px;
+}
+
 .lp-takeover-modules.lp-takeover-active .lp-takeover-item {
-  opacity: 0.18;
+  opacity: 0.2;
 }
 
 .lp-takeover-modules.lp-takeover-active .lp-takeover-item.lp-takeover-focused {
@@ -1084,16 +1092,9 @@ html { scroll-behavior: smooth; }
 }
 
 .lp-takeover-item {
-  transition: opacity 300ms ease;
+  transition: opacity 250ms ease;
   cursor: default;
-  padding: 6px 0;
-}
-
-.lp-takeover-name-row {
-  display: flex;
-  align-items: baseline;
-  gap: 40px;
-  flex-wrap: nowrap;
+  padding: 8px 0;
 }
 
 .lp-takeover-name {
@@ -1101,42 +1102,109 @@ html { scroll-behavior: smooth; }
   font-weight: 800;
   font-size: clamp(32px, 5vw, 56px);
   color: var(--lp-text);
-  line-height: 1.15;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   display: block;
-  white-space: nowrap;
-  flex-shrink: 0;
   transition: color 200ms ease;
 }
 
 .lp-takeover-item.lp-takeover-focused .lp-takeover-name {
-  color: var(--lp-text);
+  color: #B87860;
 }
 
-/* Description appears inline beside the name */
-.lp-takeover-desc {
-  font-family: 'Manrope', sans-serif;
-  font-size: 14px;
-  color: var(--lp-text-muted);
-  line-height: 1.7;
-  font-weight: 400;
-  max-width: 400px;
+/* RIGHT — sticky panel */
+.lp-takeover-panel {
+  position: sticky;
+  top: 80px;
+  border-left: 1px solid var(--lp-border);
+  padding-left: 32px;
+  min-height: 280px;
+}
+
+.lp-takeover-panel-inner {
+  position: relative;
+}
+
+.lp-takeover-panel-content {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
   opacity: 0;
-  transform: translateX(16px);
-  transition: opacity 350ms ease,
-              transform 350ms cubic-bezier(0.22,1,0.36,1);
-  flex-shrink: 1;
+  transform: translateY(10px);
+  transition: opacity 350ms ease, transform 350ms ease;
+}
+
+.lp-takeover-panel-content.lp-panel-active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lp-takeover-panel-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #B87860;
   display: block;
 }
 
-.lp-takeover-item.lp-takeover-focused .lp-takeover-desc {
-  opacity: 1;
-  transform: translateX(0);
+.lp-takeover-panel-title {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--lp-text);
+  display: block;
+  letter-spacing: -0.01em;
 }
 
-/* Terracotta accent on focused name */
-.lp-takeover-item.lp-takeover-focused .lp-takeover-name {
-  color: #B87860;
+.lp-takeover-panel-desc {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  color: var(--lp-text-muted);
+  line-height: 1.75;
+  font-weight: 400;
+  margin: 0;
+}
+
+.lp-takeover-panel-meta {
+  display: flex;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--lp-border);
+  margin-top: 4px;
+}
+
+.lp-takeover-panel-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-takeover-panel-stat-val {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--lp-text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.lp-takeover-panel-stat-lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--lp-text-faint);
+}
+
+/* Default state — show first panel */
+.lp-takeover-panel-content[data-index="0"] {
+  display: flex;
+  opacity: 0.4;
+  transform: none;
 }
 
 /* ── ADVISORY ── */
@@ -1704,23 +1772,17 @@ html { scroll-behavior: smooth; }
     font-size: clamp(64px, 18vw, 100px);
   }
   .lp-section { padding: 60px 20px; }
+  .lp-takeover-wrap {
+    grid-template-columns: 1fr;
+  }
+  .lp-takeover-panel {
+    display: none;
+  }
+  .lp-takeover-modules {
+    padding-right: 0;
+  }
   .lp-takeover-modules.lp-takeover-active .lp-takeover-item {
     opacity: 1;
-  }
-  .lp-takeover-name-row {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .lp-takeover-name {
-    font-size: clamp(24px, 7vw, 36px);
-    white-space: normal;
-    color: var(--lp-text) !important;
-  }
-  .lp-takeover-desc {
-    opacity: 1 !important;
-    transform: none !important;
-    font-size: 13px;
-    max-width: 100%;
   }
   .lp-takeover-item {
     padding: 12px 0;
@@ -1728,6 +1790,10 @@ html { scroll-behavior: smooth; }
   }
   .lp-takeover-item:last-child {
     border-bottom: none;
+  }
+  .lp-takeover-name {
+    font-size: clamp(22px, 7vw, 32px);
+    color: var(--lp-text) !important;
   }
   .lp-advisory-wrap {
     grid-template-columns: 1fr;
