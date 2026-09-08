@@ -1186,166 +1186,98 @@ html { scroll-behavior: smooth; }
   color: var(--lp-text-faint);
 }
 
-/* ── ADVISORY: ROTATING DRUM ── */
-.lp-drum-wrap {
+/* ── ADVISORY: MANIFESTO ── */
+.lp-manifesto-wrap {
   margin-top: 56px;
 }
 
-.lp-drum-stage {
-  display: flex;
-  align-items: center;
-  gap: 24px;
+/* Dim siblings on hover */
+.lp-manifesto-wrap.lp-manifesto-active .lp-manifesto-item {
+  opacity: 0.18;
 }
 
-/* ARROWS */
-.lp-drum-arrow {
-  font-family: 'Space Mono', monospace;
-  font-size: 18px;
-  font-weight: 400;
-  color: var(--lp-text-faint);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 12px;
-  flex-shrink: 0;
-  transition: color 200ms ease, transform 200ms ease;
-  line-height: 1;
-  user-select: none;
+.lp-manifesto-wrap.lp-manifesto-active .lp-manifesto-item.lp-manifesto-hovered {
+  opacity: 1;
 }
 
-.lp-drum-arrow:hover {
-  color: #B87860;
+.lp-manifesto-item {
+  padding: 20px 0;
+  cursor: default;
+  transition: opacity 250ms ease;
 }
 
-.lp-drum-prev:hover {
-  transform: translateX(-4px);
-}
-
-.lp-drum-next:hover {
-  transform: translateX(4px);
-}
-
-/* VIEWPORT */
-.lp-drum-center {
-  flex: 1;
+.lp-manifesto-statement-wrap {
   overflow: hidden;
 }
 
-.lp-drum-viewport {
-  display: flex;
-  transition: transform 500ms cubic-bezier(0.4,0,0.2,1);
-  will-change: transform;
-}
-
-/* SLIDES */
-.lp-drum-slide {
-  min-width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 16px;
-  padding: 0 24px;
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 400ms ease, transform 400ms ease;
-  pointer-events: none;
-}
-
-.lp-drum-slide.lp-drum-active {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
-}
-
-.lp-drum-num {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #B87860;
-  display: block;
-}
-
-.lp-drum-name {
+.lp-manifesto-statement {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: clamp(24px, 3.5vw, 44px);
   color: var(--lp-text);
   line-height: 1.15;
   letter-spacing: -0.02em;
   display: block;
+  transition: color 250ms ease;
 }
 
-.lp-drum-list {
-  list-style: none;
-  padding: 20px 0 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  max-width: 480px;
-  width: 100%;
-  text-align: left;
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-statement {
+  color: #B87860;
 }
 
-.lp-drum-list li {
-  font-family: 'Manrope', sans-serif;
-  font-size: 15px;
-  color: var(--lp-text-muted);
-  line-height: 1;
-  padding: 10px 0;
-  font-weight: 400;
+/* Services list — hidden by default */
+.lp-manifesto-services {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 0;
+  max-height: 0;
+  overflow: hidden;
   opacity: 0;
-  transform: translateY(8px);
+  transition: max-height 400ms cubic-bezier(0.4,0,0.2,1),
+              opacity 300ms ease,
+              margin-top 300ms ease;
+}
+
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-services {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: 16px;
+}
+
+.lp-manifesto-service {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lp-text-faint);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(4px);
   transition: opacity 300ms ease, transform 300ms ease;
 }
 
-.lp-drum-slide.lp-drum-active .lp-drum-list li {
+.lp-manifesto-service::before {
+  content: '·';
+  color: #B87860;
+  font-size: 14px;
+}
+
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service {
   opacity: 1;
   transform: translateY(0);
 }
 
-.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(1) { transition-delay: 150ms; }
-.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(2) { transition-delay: 210ms; }
-.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(3) { transition-delay: 270ms; }
-.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(4) { transition-delay: 330ms; }
-.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(5) { transition-delay: 390ms; }
-.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(6) { transition-delay: 450ms; }
-
-.lp-drum-list li::before {
-  content: '·';
-  color: #B87860;
-  flex-shrink: 0;
-  font-size: 18px;
-}
-
-/* DOTS */
-.lp-drum-dots {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 32px;
-}
-
-.lp-drum-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--lp-border);
-  cursor: pointer;
-  transition: background 250ms ease, transform 250ms ease;
-  display: inline-block;
-}
-
-.lp-drum-dot-active {
-  background: #B87860;
-  transform: scale(1.4);
-}
+/* Stagger services */
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(1) { transition-delay: 80ms; }
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(2) { transition-delay: 130ms; }
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(3) { transition-delay: 180ms; }
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(4) { transition-delay: 230ms; }
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(5) { transition-delay: 280ms; }
+.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(6) { transition-delay: 330ms; }
 
 /* ── REPORT CARD ── */
 .lp-report-badge {
@@ -1804,18 +1736,25 @@ html { scroll-behavior: smooth; }
   .lp-expand-stat-val {
     font-size: 22px;
   }
-  .lp-drum-arrow {
-    font-size: 14px;
-    padding: 8px;
+  .lp-manifesto-wrap.lp-manifesto-active .lp-manifesto-item {
+    opacity: 1;
   }
-  .lp-drum-name {
-    font-size: clamp(22px, 6vw, 32px);
+  .lp-manifesto-item {
+    cursor: pointer;
+    padding: 16px 0;
   }
-  .lp-drum-list li {
-    font-size: 13px;
+  .lp-manifesto-statement {
+    font-size: clamp(20px, 5vw, 28px);
   }
-  .lp-drum-slide {
-    padding: 0 8px;
+  .lp-manifesto-services {
+    max-height: 300px !important;
+    opacity: 1 !important;
+    margin-top: 12px !important;
+  }
+  .lp-manifesto-service {
+    opacity: 1 !important;
+    transform: none !important;
+    font-size: 8px;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
   .lp-audience-grid { grid-template-columns: 1fr; }
