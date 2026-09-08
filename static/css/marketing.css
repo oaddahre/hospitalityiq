@@ -1122,45 +1122,36 @@ html { scroll-behavior: smooth; }
   align-items: flex-start;
 }
 
-/* 3D FLIP SCENE */
-.lp-flip-scene {
+/* INK SPREAD PANEL */
+.lp-ink-panel {
   width: 100%;
-  min-height: 320px;
-  perspective: 1000px;
-}
-
-.lp-flip-card {
-  width: 100%;
-  min-height: 320px;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 600ms cubic-bezier(0.4, 0.2, 0.2, 1);
-}
-
-.lp-flip-card.lp-is-flipped {
-  transform: rotateY(180deg);
-}
-
-/* BOTH FACES */
-.lp-flip-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 16px;
+  gap: 20px;
   padding: 32px;
   background: var(--lp-bg-alt);
+  position: relative;
+  overflow: hidden;
 }
 
-/* FRONT FACE */
-.lp-flip-front {
-  transform: rotateY(0deg);
+/* Ink spread overlay — clips content left to right */
+.lp-ink-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--lp-bg-alt);
+  transform: translateX(0%);
+  transition: transform 0ms;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.lp-flip-num {
+.lp-ink-panel.lp-ink-spreading::before {
+  transform: translateX(100%);
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lp-ink-num {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
   font-weight: 400;
@@ -1168,68 +1159,69 @@ html { scroll-behavior: smooth; }
   letter-spacing: 0.2em;
   color: #B87860;
   display: block;
+  position: relative;
+  z-index: 1;
 }
 
-.lp-flip-title {
+.lp-ink-title {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 28px;
+  font-size: 24px;
   color: var(--lp-text);
   display: block;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
 }
 
-/* BACK FACE */
-.lp-flip-back {
-  transform: rotateY(180deg);
-  justify-content: space-between;
-}
-
-.lp-flip-back-num {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #B87860;
-  display: block;
-}
-
-.lp-flip-desc {
+.lp-ink-desc {
   font-family: 'Manrope', sans-serif;
   font-size: 15px;
   color: var(--lp-text-muted);
   line-height: 1.75;
   font-weight: 400;
   margin: 0;
-  flex: 1;
-  display: flex;
-  align-items: center;
+  position: relative;
+  z-index: 1;
+  filter: blur(0px);
+  transition: filter 400ms ease;
 }
 
-.lp-flip-stats {
-  display: flex;
-  gap: 24px;
-  margin-top: auto;
+.lp-ink-panel.lp-ink-updating .lp-ink-desc {
+  filter: blur(8px);
 }
 
-.lp-flip-stat {
+.lp-ink-stats {
+  display: flex;
+  gap: 28px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.lp-ink-stat {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.lp-flip-stat-val {
+.lp-ink-stat-val {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
   font-size: 28px;
   color: var(--lp-text);
   letter-spacing: -0.02em;
   line-height: 1;
+  filter: blur(0px);
+  transition: filter 400ms ease;
 }
 
-.lp-flip-stat-lbl {
+.lp-ink-panel.lp-ink-updating .lp-ink-stat-val {
+  filter: blur(6px);
+}
+
+.lp-ink-stat-lbl {
   font-family: 'Space Mono', monospace;
   font-size: 8px;
   font-weight: 400;
@@ -1813,21 +1805,14 @@ html { scroll-behavior: smooth; }
     min-height: auto;
     width: 100%;
   }
-  .lp-flip-scene {
-    min-height: 280px;
-    width: 100%;
-  }
-  .lp-flip-card {
-    min-height: 280px;
-  }
-  .lp-flip-face {
+  .lp-ink-panel {
     padding: 24px;
   }
-  .lp-flip-desc {
+  .lp-ink-desc {
     font-size: 14px;
   }
-  .lp-flip-stat-val {
-    font-size: 24px;
+  .lp-ink-stat-val {
+    font-size: 22px;
   }
   .lp-takeover-modules {
     padding-right: 0;

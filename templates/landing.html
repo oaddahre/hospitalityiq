@@ -132,30 +132,23 @@
     </div>
 
     <div class="lp-takeover-panel" id="lpTakeoverPanel">
-      <div class="lp-flip-scene" id="lpFlipScene">
-        <div class="lp-flip-card" id="lpFlipCard">
+      <div class="lp-ink-panel" id="lpInkPanel">
 
-          <div class="lp-flip-face lp-flip-front" id="lpFlipFront">
-            <span class="lp-flip-num" id="lpFlipNum">01</span>
-            <span class="lp-flip-title" id="lpFlipTitle">Hotel Directory</span>
+        <span class="lp-ink-num" id="lpInkNum">01</span>
+        <span class="lp-ink-title" id="lpInkTitle">Hotel Directory</span>
+        <p class="lp-ink-desc" id="lpInkDesc">300+ hotels with verified room counts, segment classification, brand affiliation, ownership, and opening years across 23 destinations.</p>
+
+        <div class="lp-ink-stats" id="lpInkStats">
+          <div class="lp-ink-stat">
+            <span class="lp-ink-stat-val" id="lpInkStat1Val">300+</span>
+            <span class="lp-ink-stat-lbl" id="lpInkStat1Lbl">Hotels</span>
           </div>
-
-          <div class="lp-flip-face lp-flip-back" id="lpFlipBack">
-            <span class="lp-flip-back-num" id="lpFlipBackNum">01</span>
-            <p class="lp-flip-desc" id="lpFlipDesc">300+ hotels with verified room counts, segment classification, brand affiliation, ownership, and opening years across 23 destinations.</p>
-            <div class="lp-flip-stats" id="lpFlipStats">
-              <span class="lp-flip-stat">
-                <span class="lp-flip-stat-val" id="lpFlipStat1Val">300+</span>
-                <span class="lp-flip-stat-lbl" id="lpFlipStat1Lbl">Hotels</span>
-              </span>
-              <span class="lp-flip-stat">
-                <span class="lp-flip-stat-val" id="lpFlipStat2Val">23</span>
-                <span class="lp-flip-stat-lbl" id="lpFlipStat2Lbl">Destinations</span>
-              </span>
-            </div>
+          <div class="lp-ink-stat">
+            <span class="lp-ink-stat-val" id="lpInkStat2Val">23</span>
+            <span class="lp-ink-stat-lbl" id="lpInkStat2Lbl">Destinations</span>
           </div>
-
         </div>
+
       </div>
     </div>
 
@@ -668,8 +661,8 @@ document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
 <script>
 (function() {
   const container = document.getElementById('lpTakeoverModules');
-  const flipCard  = document.getElementById('lpFlipCard');
-  if (!container || !flipCard) return;
+  const inkPanel  = document.getElementById('lpInkPanel');
+  if (!container || !inkPanel) return;
 
   const moduleData = [
     {
@@ -718,74 +711,58 @@ document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
 
   const items = container.querySelectorAll('.lp-takeover-item');
 
-  const flipNumEl    = document.getElementById('lpFlipNum');
-  const flipTitleEl  = document.getElementById('lpFlipTitle');
-  const flipBackNum  = document.getElementById('lpFlipBackNum');
-  const flipDescEl   = document.getElementById('lpFlipDesc');
-  const flipStat1Val = document.getElementById('lpFlipStat1Val');
-  const flipStat1Lbl = document.getElementById('lpFlipStat1Lbl');
-  const flipStat2Val = document.getElementById('lpFlipStat2Val');
-  const flipStat2Lbl = document.getElementById('lpFlipStat2Lbl');
+  const inkNum    = document.getElementById('lpInkNum');
+  const inkTitle  = document.getElementById('lpInkTitle');
+  const inkDesc   = document.getElementById('lpInkDesc');
+  const inkS1Val  = document.getElementById('lpInkStat1Val');
+  const inkS1Lbl  = document.getElementById('lpInkStat1Lbl');
+  const inkS2Val  = document.getElementById('lpInkStat2Val');
+  const inkS2Lbl  = document.getElementById('lpInkStat2Lbl');
 
   let currentIndex = null;
-  let isFlipped = false;
-  let flipTimeout = null;
+  let spreadTimeout = null;
 
-  function updateContent(data) {
-    if (flipNumEl)    flipNumEl.textContent    = data.num;
-    if (flipTitleEl)  flipTitleEl.textContent  = data.title;
-    if (flipBackNum)  flipBackNum.textContent  = data.num;
-    if (flipDescEl)   flipDescEl.textContent   = data.desc;
-    if (flipStat1Val) flipStat1Val.textContent = data.stat1val;
-    if (flipStat1Lbl) flipStat1Lbl.textContent = data.stat1lbl;
-    if (flipStat2Val) flipStat2Val.textContent = data.stat2val;
-    if (flipStat2Lbl) flipStat2Lbl.textContent = data.stat2lbl;
-  }
-
-  function activateModule(index) {
+  function spread(index) {
     if (index === currentIndex) return;
     currentIndex = index;
 
     const data = moduleData[index];
 
-    // Highlight titles
     container.classList.add('lp-takeover-active');
     items.forEach((it, i) => {
       it.classList.toggle('lp-takeover-focused', i === index);
     });
 
-    // Clear any pending flip
-    if (flipTimeout) clearTimeout(flipTimeout);
+    if (spreadTimeout) clearTimeout(spreadTimeout);
 
-    if (isFlipped) {
-      // Flip back to front first
-      flipCard.classList.remove('lp-is-flipped');
-      isFlipped = false;
+    inkPanel.classList.add('lp-ink-updating');
+    inkPanel.classList.remove('lp-ink-spreading');
 
-      // Wait for flip back to complete then update and flip again
-      flipTimeout = setTimeout(() => {
-        updateContent(data);
-        flipCard.classList.add('lp-is-flipped');
-        isFlipped = true;
-      }, 320);
-    } else {
-      // Update content and flip to back
-      updateContent(data);
-      flipTimeout = setTimeout(() => {
-        flipCard.classList.add('lp-is-flipped');
-        isFlipped = true;
-      }, 60);
-    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        spreadTimeout = setTimeout(() => {
+          if (inkNum)   inkNum.textContent   = data.num;
+          if (inkTitle) inkTitle.textContent = data.title;
+          if (inkDesc)  inkDesc.textContent  = data.desc;
+          if (inkS1Val) inkS1Val.textContent = data.stat1val;
+          if (inkS1Lbl) inkS1Lbl.textContent = data.stat1lbl;
+          if (inkS2Val) inkS2Val.textContent = data.stat2val;
+          if (inkS2Lbl) inkS2Lbl.textContent = data.stat2lbl;
+
+          inkPanel.classList.add('lp-ink-spreading');
+          inkPanel.classList.remove('lp-ink-updating');
+        }, 80);
+      });
+    });
   }
 
-  function resetModule() {
+  function reset() {
     container.classList.remove('lp-takeover-active');
     items.forEach(it => it.classList.remove('lp-takeover-focused'));
 
-    // Flip back to front
-    if (flipTimeout) clearTimeout(flipTimeout);
-    flipCard.classList.remove('lp-is-flipped');
-    isFlipped = false;
+    if (spreadTimeout) clearTimeout(spreadTimeout);
+    inkPanel.classList.remove('lp-ink-spreading');
+    inkPanel.classList.remove('lp-ink-updating');
     currentIndex = null;
   }
 
@@ -794,18 +771,18 @@ document.querySelectorAll('.lp-adv-row-inner').forEach(inner => {
   items.forEach((item, i) => {
     // Desktop hover
     item.addEventListener('mouseenter', () => {
-      if (!isMobile()) activateModule(i);
+      if (!isMobile()) spread(i);
     });
 
     // Mobile tap
     item.addEventListener('click', () => {
-      if (isMobile()) activateModule(i);
+      if (isMobile()) spread(i);
     });
   });
 
   // Reset on mouse leave (desktop only)
   container.addEventListener('mouseleave', () => {
-    if (!isMobile()) resetModule();
+    if (!isMobile()) reset();
   });
 
 })();
