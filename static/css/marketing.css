@@ -1186,98 +1186,167 @@ html { scroll-behavior: smooth; }
   color: var(--lp-text-faint);
 }
 
-/* ── ADVISORY: MANIFESTO ── */
-.lp-manifesto-wrap {
+/* ── ADVISORY: MAGNETIC PULL ── */
+.lp-magnetic-wrap {
   margin-top: 56px;
-}
-
-/* Dim siblings on hover */
-.lp-manifesto-wrap.lp-manifesto-active .lp-manifesto-item {
-  opacity: 0.18;
-}
-
-.lp-manifesto-wrap.lp-manifesto-active .lp-manifesto-item.lp-manifesto-hovered {
-  opacity: 1;
-}
-
-.lp-manifesto-item {
-  padding: 20px 0;
-  cursor: default;
-  transition: opacity 250ms ease;
-}
-
-.lp-manifesto-statement-wrap {
+  position: relative;
+  width: 100%;
+  height: 480px;
   overflow: hidden;
+  background: var(--lp-bg-alt);
 }
 
-.lp-manifesto-statement {
+.lp-magnetic-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+.lp-magnetic-items {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Each floating item */
+.lp-magnetic-item {
+  position: absolute;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease;
+  z-index: 2;
+  user-select: none;
+}
+
+.lp-magnetic-item.lp-mag-snapped {
+  position: fixed;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 100;
+  cursor: default;
+  transition: all 400ms cubic-bezier(0.22,1,0.36,1);
+}
+
+.lp-magnetic-name {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: clamp(24px, 3.5vw, 44px);
+  font-size: clamp(18px, 2.5vw, 32px);
   color: var(--lp-text);
-  line-height: 1.15;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   display: block;
-  transition: color 250ms ease;
+  white-space: nowrap;
+  transition: color 200ms ease, font-size 400ms ease;
+  pointer-events: none;
 }
 
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-statement {
+.lp-magnetic-item:hover .lp-magnetic-name {
   color: #B87860;
 }
 
-/* Services list — hidden by default */
-.lp-manifesto-services {
+.lp-magnetic-item.lp-mag-near .lp-magnetic-name {
+  color: #B87860;
+}
+
+/* Detail panel — appears when snapped */
+.lp-magnetic-detail {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+  width: 90vw;
+  background: var(--lp-bg-alt);
+  padding: 32px;
+  position: relative;
+}
+
+.lp-magnetic-item.lp-mag-snapped .lp-magnetic-name {
+  display: none;
+}
+
+.lp-magnetic-item.lp-mag-snapped .lp-magnetic-detail {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-  margin-top: 0;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 400ms cubic-bezier(0.4,0,0.2,1),
-              opacity 300ms ease,
-              margin-top 300ms ease;
 }
 
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-services {
-  max-height: 200px;
-  opacity: 1;
-  margin-top: 16px;
-}
-
-.lp-manifesto-service {
+.lp-magnetic-detail-num {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--lp-text-faint);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 300ms ease, transform 300ms ease;
+  letter-spacing: 0.2em;
+  color: #B87860;
+  display: block;
 }
 
-.lp-manifesto-service::before {
+.lp-magnetic-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-magnetic-list li {
+  font-family: 'Manrope', sans-serif;
+  font-size: 16px;
+  color: var(--lp-text-muted);
+  padding: 9px 0;
+  font-weight: 400;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.lp-magnetic-list li::before {
   content: '·';
   color: #B87860;
-  font-size: 14px;
+  flex-shrink: 0;
+  font-size: 18px;
+  line-height: 1.4;
 }
 
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service {
+.lp-magnetic-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--lp-text-faint);
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 200ms;
+}
+
+.lp-magnetic-close:hover { color: #B87860; }
+
+/* Overlay when item is snapped */
+.lp-magnetic-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+
+.lp-magnetic-overlay.lp-overlay-visible {
   opacity: 1;
-  transform: translateY(0);
+  pointer-events: auto;
 }
 
-/* Stagger services */
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(1) { transition-delay: 80ms; }
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(2) { transition-delay: 130ms; }
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(3) { transition-delay: 180ms; }
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(4) { transition-delay: 230ms; }
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(5) { transition-delay: 280ms; }
-.lp-manifesto-item.lp-manifesto-hovered .lp-manifesto-service:nth-child(6) { transition-delay: 330ms; }
+/* MOBILE FALLBACK */
+.lp-magnetic-mobile {
+  display: none;
+}
 
 /* ── REPORT CARD ── */
 .lp-report-badge {
@@ -1736,25 +1805,74 @@ html { scroll-behavior: smooth; }
   .lp-expand-stat-val {
     font-size: 22px;
   }
-  .lp-manifesto-wrap.lp-manifesto-active .lp-manifesto-item {
-    opacity: 1;
+  .lp-magnetic-wrap {
+    height: auto;
+    background: transparent;
   }
-  .lp-manifesto-item {
-    cursor: pointer;
-    padding: 16px 0;
+
+  .lp-magnetic-items,
+  .lp-magnetic-canvas {
+    display: none;
   }
-  .lp-manifesto-statement {
-    font-size: clamp(20px, 5vw, 28px);
+
+  .lp-magnetic-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
-  .lp-manifesto-services {
-    max-height: 300px !important;
-    opacity: 1 !important;
-    margin-top: 12px !important;
+
+  .lp-mag-mob-item {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--lp-border);
   }
-  .lp-manifesto-service {
-    opacity: 1 !important;
-    transform: none !important;
+
+  .lp-mag-mob-item:last-child { border-bottom: none; }
+
+  .lp-mag-mob-num {
+    font-family: 'Space Mono', monospace;
     font-size: 8px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #B87860;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .lp-mag-mob-name {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--lp-text);
+    display: block;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .lp-mag-mob-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .lp-mag-mob-list li {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    color: var(--lp-text-muted);
+    padding: 7px 0;
+    font-weight: 400;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+  }
+
+  .lp-mag-mob-list li::before {
+    content: '·';
+    color: #B87860;
+    flex-shrink: 0;
+    font-size: 16px;
+    line-height: 1.4;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
   .lp-audience-grid { grid-template-columns: 1fr; }

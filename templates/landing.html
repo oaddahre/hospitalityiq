@@ -251,56 +251,120 @@
     <p class="lp-section-sub lp-reveal lp-reveal-d2">Institutional asset management expertise combined with Morocco's most comprehensive hotel database, applied at every stage of the investment process.</p>
     <a href="/contact" class="btn-accent-outline lp-reveal lp-reveal-d2" style="margin-top:24px;display:inline-block;">Contact Advisory →</a>
 
-    <div class="lp-manifesto-wrap" id="lpManifestoWrap">
+    <div class="lp-magnetic-wrap" id="lpMagneticWrap">
+      <canvas class="lp-magnetic-canvas" id="lpMagneticCanvas"></canvas>
 
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We find the deal before anyone else knows it exists.</span>
+      <div class="lp-magnetic-items" id="lpMagneticItems">
+
+        <div class="lp-magnetic-item" id="lpMagItem0"
+             data-base-x="15" data-base-y="25">
+          <span class="lp-magnetic-name">Investment &amp; Acquisition</span>
+          <div class="lp-magnetic-detail" id="lpMagDetail0">
+            <span class="lp-magnetic-detail-num">01</span>
+            <ul class="lp-magnetic-list">
+              <li>Hotel acquisition advisory</li>
+              <li>Investment analysis</li>
+              <li>Hotel valuation — income cap, DCF, sales comparison</li>
+              <li>Business planning</li>
+              <li>Due diligence support</li>
+              <li>Debt advisory and lender support</li>
+            </ul>
+            <button class="lp-magnetic-close" data-for="0">✕</button>
+          </div>
         </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Hotel acquisition advisory</span>
-          <span class="lp-manifesto-service">Investment analysis</span>
-          <span class="lp-manifesto-service">Hotel valuation — income cap, DCF, sales comparison</span>
-          <span class="lp-manifesto-service">Business planning</span>
-          <span class="lp-manifesto-service">Due diligence support</span>
-          <span class="lp-manifesto-service">Debt advisory and lender support</span>
+
+        <div class="lp-magnetic-item" id="lpMagItem1"
+             data-base-x="55" data-base-y="15">
+          <span class="lp-magnetic-name">Market Intelligence</span>
+          <div class="lp-magnetic-detail" id="lpMagDetail1">
+            <span class="lp-magnetic-detail-num">02</span>
+            <ul class="lp-magnetic-list">
+              <li>Feasibility studies</li>
+              <li>Market research and demand analysis</li>
+              <li>Competitive positioning</li>
+              <li>Data intelligence and benchmarking</li>
+              <li>Tourism strategy consulting</li>
+            </ul>
+            <button class="lp-magnetic-close" data-for="1">✕</button>
+          </div>
         </div>
+
+        <div class="lp-magnetic-item" id="lpMagItem2"
+             data-base-x="25" data-base-y="60">
+          <span class="lp-magnetic-name">Brand, Concept &amp; Operations</span>
+          <div class="lp-magnetic-detail" id="lpMagDetail2">
+            <span class="lp-magnetic-detail-num">03</span>
+            <ul class="lp-magnetic-list">
+              <li>Hotel concept development</li>
+              <li>Brand and management company selection</li>
+              <li>Contract negotiation (HMA and franchise)</li>
+              <li>Rebranding and asset repositioning</li>
+              <li>Operator performance monitoring</li>
+            </ul>
+            <button class="lp-magnetic-close" data-for="2">✕</button>
+          </div>
+        </div>
+
+        <div class="lp-magnetic-item" id="lpMagItem3"
+             data-base-x="65" data-base-y="60">
+          <span class="lp-magnetic-name">Asset Management</span>
+          <div class="lp-magnetic-detail" id="lpMagDetail3">
+            <span class="lp-magnetic-detail-num">04</span>
+            <ul class="lp-magnetic-list">
+              <li>Advisory across the full hotel asset lifecycle</li>
+              <li>Owner representation</li>
+              <li>Strategic planning</li>
+            </ul>
+            <button class="lp-magnetic-close" data-for="3">✕</button>
+          </div>
+        </div>
+
       </div>
 
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We tell you what the market actually looks like, not what you want to hear.</span>
+      <!-- Mobile fallback -->
+      <div class="lp-magnetic-mobile" id="lpMagneticMobile">
+        <div class="lp-mag-mob-item">
+          <span class="lp-mag-mob-num">01</span>
+          <span class="lp-mag-mob-name">Investment &amp; Acquisition</span>
+          <ul class="lp-mag-mob-list">
+            <li>Hotel acquisition advisory</li>
+            <li>Investment analysis</li>
+            <li>Hotel valuation — income cap, DCF, sales comparison</li>
+            <li>Business planning</li>
+            <li>Due diligence support</li>
+            <li>Debt advisory and lender support</li>
+          </ul>
         </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Feasibility studies</span>
-          <span class="lp-manifesto-service">Market research and demand analysis</span>
-          <span class="lp-manifesto-service">Competitive positioning</span>
-          <span class="lp-manifesto-service">Data intelligence and benchmarking</span>
-          <span class="lp-manifesto-service">Tourism strategy consulting</span>
+        <div class="lp-mag-mob-item">
+          <span class="lp-mag-mob-num">02</span>
+          <span class="lp-mag-mob-name">Market Intelligence</span>
+          <ul class="lp-mag-mob-list">
+            <li>Feasibility studies</li>
+            <li>Market research and demand analysis</li>
+            <li>Competitive positioning</li>
+            <li>Data intelligence and benchmarking</li>
+            <li>Tourism strategy consulting</li>
+          </ul>
         </div>
-      </div>
-
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We choose the right brand for your asset, not the most convenient one.</span>
+        <div class="lp-mag-mob-item">
+          <span class="lp-mag-mob-num">03</span>
+          <span class="lp-mag-mob-name">Brand, Concept &amp; Operations</span>
+          <ul class="lp-mag-mob-list">
+            <li>Hotel concept development</li>
+            <li>Brand and management company selection</li>
+            <li>Contract negotiation (HMA and franchise)</li>
+            <li>Rebranding and asset repositioning</li>
+            <li>Operator performance monitoring</li>
+          </ul>
         </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Hotel concept development</span>
-          <span class="lp-manifesto-service">Brand and management company selection</span>
-          <span class="lp-manifesto-service">Contract negotiation (HMA and franchise)</span>
-          <span class="lp-manifesto-service">Rebranding and asset repositioning</span>
-          <span class="lp-manifesto-service">Operator performance monitoring</span>
-        </div>
-      </div>
-
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We protect your asset's value long after the deal is done.</span>
-        </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Advisory across the full hotel asset lifecycle</span>
-          <span class="lp-manifesto-service">Owner representation</span>
-          <span class="lp-manifesto-service">Strategic planning</span>
+        <div class="lp-mag-mob-item">
+          <span class="lp-mag-mob-num">04</span>
+          <span class="lp-mag-mob-name">Asset Management</span>
+          <ul class="lp-mag-mob-list">
+            <li>Advisory across the full hotel asset lifecycle</li>
+            <li>Owner representation</li>
+            <li>Strategic planning</li>
+          </ul>
         </div>
       </div>
 
@@ -673,32 +737,166 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpManifestoWrap');
-  if (!wrap) return;
+  const wrap    = document.getElementById('lpMagneticWrap');
+  const itemsEl = document.getElementById('lpMagneticItems');
+  const canvas  = document.getElementById('lpMagneticCanvas');
 
-  const items = wrap.querySelectorAll('.lp-manifesto-item');
-  const isMobile = () => window.innerWidth <= 768;
+  if (!wrap || !itemsEl || window.innerWidth <= 768) return;
 
-  items.forEach(item => {
-    item.addEventListener('mouseenter', () => {
-      if (isMobile()) return;
-      wrap.classList.add('lp-manifesto-active');
-      items.forEach(i => i.classList.remove('lp-manifesto-hovered'));
-      item.classList.add('lp-manifesto-hovered');
-    });
+  const ctx    = canvas.getContext('2d');
+  const items  = Array.from(itemsEl.querySelectorAll('.lp-magnetic-item'));
 
-    item.addEventListener('click', () => {
-      if (!isMobile()) return;
-      const isHovered = item.classList.contains('lp-manifesto-hovered');
-      items.forEach(i => i.classList.remove('lp-manifesto-hovered'));
-      if (!isHovered) item.classList.add('lp-manifesto-hovered');
-    });
+  // Overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'lp-magnetic-overlay';
+  document.body.appendChild(overlay);
+
+  let W = wrap.offsetWidth;
+  let H = wrap.offsetHeight;
+  canvas.width  = W;
+  canvas.height = H;
+
+  // State for each item
+  const state = items.map((el, i) => {
+    const bx = parseFloat(el.dataset.baseX) / 100;
+    const by = parseFloat(el.dataset.baseY) / 100;
+    return {
+      el,
+      bx, by,
+      x: bx * W,
+      y: by * H,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      snapped: false,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.3 + Math.random() * 0.2
+    };
+  });
+
+  let mouseX = -999, mouseY = -999;
+  let snappedIndex = null;
+  const MAGNETIC_RADIUS = 160;
+  const MAGNETIC_STRENGTH = 0.35;
+
+  wrap.addEventListener('mousemove', e => {
+    const rect = wrap.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
   });
 
   wrap.addEventListener('mouseleave', () => {
-    if (isMobile()) return;
-    wrap.classList.remove('lp-manifesto-active');
-    items.forEach(i => i.classList.remove('lp-manifesto-hovered'));
+    mouseX = -999;
+    mouseY = -999;
+  });
+
+  // Click to snap
+  items.forEach((el, i) => {
+    el.addEventListener('click', () => {
+      if (state[i].snapped) return;
+      snapItem(i);
+    });
+  });
+
+  // Close buttons
+  itemsEl.querySelectorAll('.lp-magnetic-close').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      unsnap();
+    });
+  });
+
+  overlay.addEventListener('click', unsnap);
+
+  function snapItem(i) {
+    if (snappedIndex !== null) unsnap();
+    snappedIndex = i;
+    state[i].snapped = true;
+    state[i].el.classList.add('lp-mag-snapped');
+    overlay.classList.add('lp-overlay-visible');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function unsnap() {
+    if (snappedIndex === null) return;
+    state[snappedIndex].snapped = false;
+    state[snappedIndex].el.classList.remove('lp-mag-snapped');
+    state[snappedIndex].el.style.cssText = '';
+    overlay.classList.remove('lp-overlay-visible');
+    document.body.style.overflow = '';
+    snappedIndex = null;
+  }
+
+  function drawConnections() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = '#B87860';
+    ctx.lineWidth = 0.5;
+
+    for (let i = 0; i < state.length; i++) {
+      for (let j = i + 1; j < state.length; j++) {
+        const a = state[i];
+        const b = state[j];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (dist < 320) {
+          ctx.globalAlpha = (1 - dist / 320) * 0.4;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  let t = 0;
+
+  function tick() {
+    t += 0.008;
+    W = wrap.offsetWidth;
+    H = wrap.offsetHeight;
+    canvas.width  = W;
+    canvas.height = H;
+
+    state.forEach((s, i) => {
+      if (s.snapped) return;
+
+      // Gentle drift
+      const driftX = Math.sin(t * s.speed + s.phase) * 18;
+      const driftY = Math.cos(t * s.speed * 0.7 + s.phase) * 12;
+
+      let tx = s.bx * W + driftX;
+      let ty = s.by * H + driftY;
+
+      // Magnetic pull toward cursor
+      const dx = mouseX - tx;
+      const dy = mouseY - ty;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < MAGNETIC_RADIUS && dist > 0) {
+        const force = (1 - dist / MAGNETIC_RADIUS) * MAGNETIC_STRENGTH;
+        tx += dx * force;
+        ty += dy * force;
+        s.el.classList.add('lp-mag-near');
+      } else {
+        s.el.classList.remove('lp-mag-near');
+      }
+
+      s.x = tx;
+      s.y = ty;
+
+      s.el.style.left = tx + 'px';
+      s.el.style.top  = ty + 'px';
+    });
+
+    drawConnections();
+    requestAnimationFrame(tick);
+  }
+
+  tick();
+
+  window.addEventListener('resize', () => {
+    W = wrap.offsetWidth;
+    H = wrap.offsetHeight;
   });
 })();
 </script>
