@@ -251,87 +251,74 @@
     <p class="lp-section-sub lp-reveal lp-reveal-d2">Institutional asset management expertise combined with Morocco's most comprehensive hotel database, applied at every stage of the investment process.</p>
     <a href="/contact" class="btn-accent-outline lp-reveal lp-reveal-d2" style="margin-top:24px;display:inline-block;">Contact Advisory →</a>
 
-    <div class="lp-timeline-wrap" id="lpTimelineWrap">
+    <div class="lp-fullscreen-wrap" id="lpFullscreenWrap">
 
-      <div class="lp-timeline-track">
-        <div class="lp-timeline-line"></div>
+      <div class="lp-fullscreen-left">
+        <div class="lp-fullscreen-item" data-index="0">
+          <span class="lp-fullscreen-name">Investment &amp; Acquisition</span>
+        </div>
+        <div class="lp-fullscreen-item" data-index="1">
+          <span class="lp-fullscreen-name">Market Intelligence</span>
+        </div>
+        <div class="lp-fullscreen-item" data-index="2">
+          <span class="lp-fullscreen-name">Brand, Concept &amp; Operations</span>
+        </div>
+        <div class="lp-fullscreen-item" data-index="3">
+          <span class="lp-fullscreen-name">Asset Management</span>
+        </div>
+      </div>
 
-        <div class="lp-timeline-stage" data-index="0">
-          <div class="lp-timeline-stage-top">
-            <div class="lp-timeline-dot"></div>
-            <span class="lp-timeline-num">01</span>
-          </div>
-          <div class="lp-timeline-stage-body">
-            <span class="lp-timeline-name">Investment &amp; Acquisition</span>
-            <div class="lp-timeline-expand">
-              <ul class="lp-timeline-list">
-                <li>Hotel acquisition advisory</li>
-                <li>Investment analysis</li>
-                <li>Hotel valuation — income cap, DCF, sales comparison</li>
-                <li>Business planning</li>
-                <li>Due diligence support</li>
-                <li>Debt advisory and lender support</li>
-              </ul>
-            </div>
-          </div>
+      <div class="lp-fullscreen-right" id="lpFullscreenRight">
+
+        <div class="lp-fullscreen-content" data-index="0">
+          <span class="lp-fullscreen-content-num">01</span>
+          <span class="lp-fullscreen-content-title">Investment &amp; Acquisition</span>
+          <ul class="lp-fullscreen-list">
+            <li>Hotel acquisition advisory</li>
+            <li>Investment analysis</li>
+            <li>Hotel valuation — income cap, DCF, sales comparison</li>
+            <li>Business planning</li>
+            <li>Due diligence support</li>
+            <li>Debt advisory and lender support</li>
+          </ul>
         </div>
 
-        <div class="lp-timeline-stage" data-index="1">
-          <div class="lp-timeline-stage-top">
-            <div class="lp-timeline-dot"></div>
-            <span class="lp-timeline-num">02</span>
-          </div>
-          <div class="lp-timeline-stage-body">
-            <span class="lp-timeline-name">Market Intelligence</span>
-            <div class="lp-timeline-expand">
-              <ul class="lp-timeline-list">
-                <li>Feasibility studies</li>
-                <li>Market research and demand analysis</li>
-                <li>Competitive positioning</li>
-                <li>Data intelligence and benchmarking</li>
-                <li>Tourism strategy consulting</li>
-              </ul>
-            </div>
-          </div>
+        <div class="lp-fullscreen-content" data-index="1">
+          <span class="lp-fullscreen-content-num">02</span>
+          <span class="lp-fullscreen-content-title">Market Intelligence</span>
+          <ul class="lp-fullscreen-list">
+            <li>Feasibility studies</li>
+            <li>Market research and demand analysis</li>
+            <li>Competitive positioning</li>
+            <li>Data intelligence and benchmarking</li>
+            <li>Tourism strategy consulting</li>
+          </ul>
         </div>
 
-        <div class="lp-timeline-stage" data-index="2">
-          <div class="lp-timeline-stage-top">
-            <div class="lp-timeline-dot"></div>
-            <span class="lp-timeline-num">03</span>
-          </div>
-          <div class="lp-timeline-stage-body">
-            <span class="lp-timeline-name">Brand, Concept &amp; Operations</span>
-            <div class="lp-timeline-expand">
-              <ul class="lp-timeline-list">
-                <li>Hotel concept development</li>
-                <li>Brand and management company selection</li>
-                <li>Contract negotiation (HMA and franchise)</li>
-                <li>Rebranding and asset repositioning</li>
-                <li>Operator performance monitoring</li>
-              </ul>
-            </div>
-          </div>
+        <div class="lp-fullscreen-content" data-index="2">
+          <span class="lp-fullscreen-content-num">03</span>
+          <span class="lp-fullscreen-content-title">Brand, Concept &amp; Operations</span>
+          <ul class="lp-fullscreen-list">
+            <li>Hotel concept development</li>
+            <li>Brand and management company selection</li>
+            <li>Contract negotiation (HMA and franchise)</li>
+            <li>Rebranding and asset repositioning</li>
+            <li>Operator performance monitoring</li>
+          </ul>
         </div>
 
-        <div class="lp-timeline-stage" data-index="3">
-          <div class="lp-timeline-stage-top">
-            <div class="lp-timeline-dot"></div>
-            <span class="lp-timeline-num">04</span>
-          </div>
-          <div class="lp-timeline-stage-body">
-            <span class="lp-timeline-name">Asset Management</span>
-            <div class="lp-timeline-expand">
-              <ul class="lp-timeline-list">
-                <li>Advisory across the full hotel asset lifecycle</li>
-                <li>Owner representation</li>
-                <li>Strategic planning</li>
-              </ul>
-            </div>
-          </div>
+        <div class="lp-fullscreen-content" data-index="3">
+          <span class="lp-fullscreen-content-num">04</span>
+          <span class="lp-fullscreen-content-title">Asset Management</span>
+          <ul class="lp-fullscreen-list">
+            <li>Advisory across the full hotel asset lifecycle</li>
+            <li>Owner representation</li>
+            <li>Strategic planning</li>
+          </ul>
         </div>
 
       </div>
+
     </div>
   </div>
 </section>
@@ -701,45 +688,83 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap  = document.getElementById('lpTimelineWrap');
-  if (!wrap) return;
+  const wrap     = document.getElementById('lpFullscreenWrap');
+  const right    = document.getElementById('lpFullscreenRight');
+  if (!wrap || !right) return;
 
-  const track  = wrap.querySelector('.lp-timeline-track');
-  const stages = wrap.querySelectorAll('.lp-timeline-stage');
+  const items    = wrap.querySelectorAll('.lp-fullscreen-item');
+  const contents = right.querySelectorAll('.lp-fullscreen-content');
   const isMobile = () => window.innerWidth <= 768;
 
-  let currentOpen = null;
+  let currentIndex = null;
 
-  function open(stage) {
-    if (currentOpen === stage) return;
-    if (currentOpen) currentOpen.classList.remove('lp-timeline-open');
-    stage.classList.add('lp-timeline-open');
-    currentOpen = stage;
+  function showContent(index) {
+    contents.forEach((c, i) => {
+      if (i === index) {
+        c.style.display = 'flex';
+        c.style.opacity = '0';
+        c.style.transform = 'translateY(16px)';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            c.style.transition = 'opacity 400ms ease, transform 400ms cubic-bezier(0.22,1,0.36,1)';
+            c.style.opacity = '1';
+            c.style.transform = 'translateY(0)';
+            c.classList.add('lp-fs-content-active');
+          });
+        });
+      } else {
+        c.style.opacity = '0';
+        setTimeout(() => {
+          c.style.display = 'none';
+          c.classList.remove('lp-fs-content-active');
+        }, 200);
+      }
+    });
+    currentIndex = index;
   }
 
-  function closeAll() {
-    stages.forEach(s => s.classList.remove('lp-timeline-open'));
-    track.classList.remove('lp-timeline-active');
-    currentOpen = null;
+  function reset() {
+    wrap.classList.remove('lp-fs-active');
+    items.forEach(i => i.classList.remove('lp-fs-hovered'));
+    contents.forEach(c => {
+      c.style.opacity = '0';
+      c.style.display = 'none';
+      c.classList.remove('lp-fs-content-active');
+    });
+    currentIndex = null;
   }
 
-  stages.forEach(stage => {
-    stage.addEventListener('mouseenter', () => {
+  items.forEach((item, i) => {
+    item.addEventListener('mouseenter', () => {
       if (isMobile()) return;
-      track.classList.add('lp-timeline-active');
-      open(stage);
+      if (i === currentIndex) return;
+      wrap.classList.add('lp-fs-active');
+      items.forEach(it => it.classList.remove('lp-fs-hovered'));
+      item.classList.add('lp-fs-hovered');
+      showContent(i);
     });
 
-    stage.addEventListener('click', () => {
+    item.addEventListener('click', () => {
       if (!isMobile()) return;
-      const isOpen = stage.classList.contains('lp-timeline-open');
-      stages.forEach(s => s.classList.remove('lp-timeline-open'));
-      if (!isOpen) stage.classList.add('lp-timeline-open');
+      const isActive = item.classList.contains('lp-fs-hovered');
+      items.forEach(it => it.classList.remove('lp-fs-hovered'));
+      contents.forEach(c => {
+        c.style.display = 'none';
+        c.classList.remove('lp-fs-content-active');
+      });
+      if (!isActive) {
+        item.classList.add('lp-fs-hovered');
+        const content = right.querySelector(`.lp-fullscreen-content[data-index="${i}"]`);
+        if (content) {
+          content.style.display = 'flex';
+          content.classList.add('lp-fs-content-active');
+        }
+      }
     });
   });
 
   wrap.addEventListener('mouseleave', () => {
-    if (!isMobile()) closeAll();
+    if (!isMobile()) reset();
   });
 })();
 </script>
