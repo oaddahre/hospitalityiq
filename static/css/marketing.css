@@ -1186,100 +1186,113 @@ html { scroll-behavior: smooth; }
   color: var(--lp-text-faint);
 }
 
-/* ── ADVISORY: SPLIT NAME REVEAL ── */
-.lp-split-services {
+/* ── ADVISORY: ROTATING DRUM ── */
+.lp-drum-wrap {
   margin-top: 56px;
 }
 
-/* Dim siblings on hover */
-.lp-split-services.lp-split-active .lp-split-item {
-  opacity: 0.2;
+.lp-drum-stage {
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
-.lp-split-services.lp-split-active .lp-split-item.lp-split-open {
+/* ARROWS */
+.lp-drum-arrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--lp-text-faint);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 12px;
+  flex-shrink: 0;
+  transition: color 200ms ease, transform 200ms ease;
+  line-height: 1;
+  user-select: none;
+}
+
+.lp-drum-arrow:hover {
+  color: #B87860;
+}
+
+.lp-drum-prev:hover {
+  transform: translateX(-4px);
+}
+
+.lp-drum-next:hover {
+  transform: translateX(4px);
+}
+
+/* VIEWPORT */
+.lp-drum-center {
+  flex: 1;
+  overflow: hidden;
+}
+
+.lp-drum-viewport {
+  display: flex;
+  transition: transform 500ms cubic-bezier(0.4,0,0.2,1);
+  will-change: transform;
+}
+
+/* SLIDES */
+.lp-drum-slide {
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 0 24px;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 400ms ease, transform 400ms ease;
+  pointer-events: none;
+}
+
+.lp-drum-slide.lp-drum-active {
   opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
 }
 
-.lp-split-item {
-  overflow: hidden;
-  cursor: default;
-  transition: opacity 250ms ease;
-  padding: 4px 0;
+.lp-drum-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #B87860;
+  display: block;
 }
 
-/* Name wrap — clips top and bottom halves */
-.lp-split-name-wrap {
-  position: relative;
-  overflow: hidden;
-  line-height: 1.15;
-}
-
-/* Both halves show the same text */
-.lp-split-top,
-.lp-split-bottom {
+.lp-drum-name {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: clamp(32px, 5vw, 56px);
+  font-size: clamp(28px, 4vw, 48px);
   color: var(--lp-text);
+  line-height: 1.15;
   letter-spacing: -0.02em;
   display: block;
-  transition: transform 400ms cubic-bezier(0.22,1,0.36,1),
-              color 200ms ease;
-  will-change: transform;
-  line-height: 1.2;
 }
 
-/* Top half — clips bottom portion */
-.lp-split-top {
-  clip-path: inset(0 0 50% 0);
-  position: relative;
-  z-index: 1;
-}
-
-/* Bottom half — clips top portion, sits behind */
-.lp-split-bottom {
-  clip-path: inset(50% 0 0 0);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1;
-}
-
-/* On hover — top slides up, bottom slides down */
-.lp-split-item.lp-split-open .lp-split-top {
-  transform: translateY(-100%);
-  color: #B87860;
-}
-
-.lp-split-item.lp-split-open .lp-split-bottom {
-  transform: translateY(100%);
-  color: #B87860;
-}
-
-/* Reveal area — bullet list appears in the gap */
-.lp-split-reveal {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 450ms cubic-bezier(0.4,0,0.2,1);
-}
-
-.lp-split-item.lp-split-open .lp-split-reveal {
-  max-height: 320px;
-}
-
-.lp-split-list {
+.lp-drum-list {
   list-style: none;
-  padding: 20px 0 28px;
+  padding: 20px 0 0;
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
+  max-width: 480px;
+  width: 100%;
+  text-align: left;
 }
 
-.lp-split-list li {
+.lp-drum-list li {
   font-family: 'Manrope', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--lp-text-muted);
   line-height: 1;
   padding: 10px 0;
@@ -1288,28 +1301,50 @@ html { scroll-behavior: smooth; }
   align-items: center;
   gap: 12px;
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(8px);
   transition: opacity 300ms ease, transform 300ms ease;
 }
 
-.lp-split-item.lp-split-open .lp-split-list li {
+.lp-drum-slide.lp-drum-active .lp-drum-list li {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Stagger list items */
-.lp-split-item.lp-split-open .lp-split-list li:nth-child(1) { transition-delay: 120ms; }
-.lp-split-item.lp-split-open .lp-split-list li:nth-child(2) { transition-delay: 180ms; }
-.lp-split-item.lp-split-open .lp-split-list li:nth-child(3) { transition-delay: 240ms; }
-.lp-split-item.lp-split-open .lp-split-list li:nth-child(4) { transition-delay: 300ms; }
-.lp-split-item.lp-split-open .lp-split-list li:nth-child(5) { transition-delay: 360ms; }
-.lp-split-item.lp-split-open .lp-split-list li:nth-child(6) { transition-delay: 420ms; }
+.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(1) { transition-delay: 150ms; }
+.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(2) { transition-delay: 210ms; }
+.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(3) { transition-delay: 270ms; }
+.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(4) { transition-delay: 330ms; }
+.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(5) { transition-delay: 390ms; }
+.lp-drum-slide.lp-drum-active .lp-drum-list li:nth-child(6) { transition-delay: 450ms; }
 
-.lp-split-list li::before {
+.lp-drum-list li::before {
   content: '·';
   color: #B87860;
   flex-shrink: 0;
   font-size: 18px;
+}
+
+/* DOTS */
+.lp-drum-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.lp-drum-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lp-border);
+  cursor: pointer;
+  transition: background 250ms ease, transform 250ms ease;
+  display: inline-block;
+}
+
+.lp-drum-dot-active {
+  background: #B87860;
+  transform: scale(1.4);
 }
 
 /* ── REPORT CARD ── */
@@ -1769,24 +1804,18 @@ html { scroll-behavior: smooth; }
   .lp-expand-stat-val {
     font-size: 22px;
   }
-  .lp-split-services.lp-split-active .lp-split-item {
-    opacity: 1;
-  }
-  .lp-split-item {
-    cursor: pointer;
-    padding: 8px 0;
-  }
-  .lp-split-top {
-    font-size: clamp(24px, 6vw, 36px);
-  }
-  .lp-split-bottom {
-    font-size: clamp(24px, 6vw, 36px);
-  }
-  .lp-split-item.lp-split-open .lp-split-reveal {
-    max-height: 400px;
-  }
-  .lp-split-list li {
+  .lp-drum-arrow {
     font-size: 14px;
+    padding: 8px;
+  }
+  .lp-drum-name {
+    font-size: clamp(22px, 6vw, 32px);
+  }
+  .lp-drum-list li {
+    font-size: 13px;
+  }
+  .lp-drum-slide {
+    padding: 0 8px;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
   .lp-audience-grid { grid-template-columns: 1fr; }
