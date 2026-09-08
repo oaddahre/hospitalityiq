@@ -1186,94 +1186,109 @@ html { scroll-behavior: smooth; }
   color: var(--lp-text-faint);
 }
 
-/* ── ADVISORY: MAGNETIC PULL ── */
-.lp-magnetic-wrap {
-  margin-top: 56px;
+/* ── ADVISORY: SCROLL NARRATIVE ── */
+.lp-scroll-narrative {
   position: relative;
-  width: 100%;
-  height: 480px;
+  height: 400vh;
+  margin-top: 56px;
+}
+
+.lp-scroll-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   overflow: hidden;
-  background: var(--lp-bg-alt);
+  padding: 0 48px;
 }
 
-.lp-magnetic-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0.15;
+/* PROGRESS INDICATOR */
+.lp-scroll-progress {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 48px;
+  align-items: center;
 }
 
-.lp-magnetic-items {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* Each floating item */
-.lp-magnetic-item {
-  position: absolute;
-  cursor: pointer;
-  transform: translate(-50%, -50%);
-  transition: transform 0.15s ease;
-  z-index: 2;
-  user-select: none;
-}
-
-.lp-magnetic-item.lp-mag-snapped {
-  position: fixed;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 100;
+.lp-scroll-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.25;
+  transition: opacity 400ms ease;
   cursor: default;
-  transition: all 400ms cubic-bezier(0.22,1,0.36,1);
 }
 
-.lp-magnetic-name {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: clamp(18px, 2.5vw, 32px);
-  color: var(--lp-text);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+.lp-scroll-progress-item.lp-scroll-active {
+  opacity: 1;
+}
+
+.lp-scroll-progress-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #B87860;
+  display: block;
+}
+
+.lp-scroll-progress-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lp-text-faint);
   display: block;
   white-space: nowrap;
-  transition: color 200ms ease, font-size 400ms ease;
+}
+
+.lp-scroll-progress-item.lp-scroll-active .lp-scroll-progress-label {
+  color: var(--lp-text-muted);
+}
+
+/* PANELS */
+.lp-scroll-panels {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.lp-scroll-panel {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  opacity: 0;
+  transition: opacity 500ms ease, transform 500ms cubic-bezier(0.22,1,0.36,1);
   pointer-events: none;
 }
 
-.lp-magnetic-item:hover .lp-magnetic-name {
-  color: #B87860;
+.lp-scroll-panel.lp-panel-entering {
+  opacity: 0;
+  transform: translateY(calc(-50% + 40px));
 }
 
-.lp-magnetic-item.lp-mag-near .lp-magnetic-name {
-  color: #B87860;
+.lp-scroll-panel.lp-panel-active {
+  opacity: 1;
+  transform: translateY(-50%);
+  pointer-events: auto;
 }
 
-/* Detail panel — appears when snapped */
-.lp-magnetic-detail {
-  display: none;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 480px;
-  width: 90vw;
-  background: var(--lp-bg-alt);
-  padding: 32px;
-  position: relative;
+.lp-scroll-panel.lp-panel-exiting {
+  opacity: 0;
+  transform: translateY(calc(-50% - 40px));
 }
 
-.lp-magnetic-item.lp-mag-snapped .lp-magnetic-name {
-  display: none;
-}
-
-.lp-magnetic-item.lp-mag-snapped .lp-magnetic-detail {
-  display: flex;
-}
-
-.lp-magnetic-detail-num {
+.lp-scroll-panel-num {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
   font-weight: 400;
@@ -1283,69 +1298,43 @@ html { scroll-behavior: smooth; }
   display: block;
 }
 
-.lp-magnetic-list {
+.lp-scroll-panel-name {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: clamp(40px, 7vw, 96px);
+  color: var(--lp-text);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  display: block;
+  max-width: 800px;
+}
+
+.lp-scroll-panel-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 4px 32px;
+  max-width: 800px;
 }
 
-.lp-magnetic-list li {
+.lp-scroll-panel-list li {
   font-family: 'Manrope', sans-serif;
   font-size: 16px;
   color: var(--lp-text-muted);
-  padding: 9px 0;
   font-weight: 400;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  line-height: 1.4;
+  align-items: center;
+  gap: 8px;
+  line-height: 2;
 }
 
-.lp-magnetic-list li::before {
+.lp-scroll-panel-list li::before {
   content: '·';
   color: #B87860;
   flex-shrink: 0;
   font-size: 18px;
-  line-height: 1.4;
-}
-
-.lp-magnetic-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  font-family: 'Space Mono', monospace;
-  font-size: 12px;
-  color: var(--lp-text-faint);
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 200ms;
-}
-
-.lp-magnetic-close:hover { color: #B87860; }
-
-/* Overlay when item is snapped */
-.lp-magnetic-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 99;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 400ms ease;
-}
-
-.lp-magnetic-overlay.lp-overlay-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* MOBILE FALLBACK */
-.lp-magnetic-mobile {
-  display: none;
 }
 
 /* ── REPORT CARD ── */
@@ -1805,74 +1794,41 @@ html { scroll-behavior: smooth; }
   .lp-expand-stat-val {
     font-size: 22px;
   }
-  .lp-magnetic-wrap {
+  .lp-scroll-narrative {
     height: auto;
-    background: transparent;
   }
 
-  .lp-magnetic-items,
-  .lp-magnetic-canvas {
-    display: none;
+  .lp-scroll-sticky {
+    position: static;
+    height: auto;
+    padding: 0;
   }
 
-  .lp-magnetic-mobile {
+  .lp-scroll-progress { display: none; }
+
+  .lp-scroll-panels {
+    position: static;
     display: flex;
     flex-direction: column;
-    gap: 0;
-  }
-
-  .lp-mag-mob-item {
-    padding: 20px 0;
-    border-bottom: 1px solid var(--lp-border);
-  }
-
-  .lp-mag-mob-item:last-child { border-bottom: none; }
-
-  .lp-mag-mob-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 8px;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #B87860;
-    display: block;
-    margin-bottom: 6px;
-  }
-
-  .lp-mag-mob-name {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    color: var(--lp-text);
-    display: block;
-    margin-bottom: 12px;
-    letter-spacing: -0.01em;
-  }
-
-  .lp-mag-mob-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .lp-mag-mob-list li {
-    font-family: 'Manrope', sans-serif;
-    font-size: 13px;
-    color: var(--lp-text-muted);
-    padding: 7px 0;
-    font-weight: 400;
-    display: flex;
+    gap: 48px;
     align-items: flex-start;
-    gap: 8px;
-    line-height: 1.4;
   }
 
-  .lp-mag-mob-list li::before {
-    content: '·';
-    color: #B87860;
-    flex-shrink: 0;
-    font-size: 16px;
-    line-height: 1.4;
+  .lp-scroll-panel {
+    position: static;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: auto;
+    gap: 16px;
+  }
+
+  .lp-scroll-panel-name {
+    font-size: clamp(28px, 8vw, 48px);
+  }
+
+  .lp-scroll-panel-list li {
+    font-size: 14px;
+    line-height: 1.8;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
   .lp-audience-grid { grid-template-columns: 1fr; }

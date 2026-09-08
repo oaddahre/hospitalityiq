@@ -251,17 +251,38 @@
     <p class="lp-section-sub lp-reveal lp-reveal-d2">Institutional asset management expertise combined with Morocco's most comprehensive hotel database, applied at every stage of the investment process.</p>
     <a href="/contact" class="btn-accent-outline lp-reveal lp-reveal-d2" style="margin-top:24px;display:inline-block;">Contact Advisory →</a>
 
-    <div class="lp-magnetic-wrap" id="lpMagneticWrap">
-      <canvas class="lp-magnetic-canvas" id="lpMagneticCanvas"></canvas>
+    <div class="lp-scroll-narrative" id="lpScrollNarrative">
 
-      <div class="lp-magnetic-items" id="lpMagneticItems">
+      <!-- Sticky viewport that stays fixed while scrolling -->
+      <div class="lp-scroll-sticky" id="lpScrollSticky">
 
-        <div class="lp-magnetic-item" id="lpMagItem0"
-             data-base-x="15" data-base-y="25">
-          <span class="lp-magnetic-name">Investment &amp; Acquisition</span>
-          <div class="lp-magnetic-detail" id="lpMagDetail0">
-            <span class="lp-magnetic-detail-num">01</span>
-            <ul class="lp-magnetic-list">
+        <!-- Progress indicator -->
+        <div class="lp-scroll-progress">
+          <div class="lp-scroll-progress-item" data-index="0">
+            <span class="lp-scroll-progress-num">01</span>
+            <span class="lp-scroll-progress-label">Investment &amp; Acquisition</span>
+          </div>
+          <div class="lp-scroll-progress-item" data-index="1">
+            <span class="lp-scroll-progress-num">02</span>
+            <span class="lp-scroll-progress-label">Market Intelligence</span>
+          </div>
+          <div class="lp-scroll-progress-item" data-index="2">
+            <span class="lp-scroll-progress-num">03</span>
+            <span class="lp-scroll-progress-label">Brand, Concept &amp; Operations</span>
+          </div>
+          <div class="lp-scroll-progress-item" data-index="3">
+            <span class="lp-scroll-progress-num">04</span>
+            <span class="lp-scroll-progress-label">Asset Management</span>
+          </div>
+        </div>
+
+        <!-- Content panels -->
+        <div class="lp-scroll-panels" id="lpScrollPanels">
+
+          <div class="lp-scroll-panel" data-index="0">
+            <span class="lp-scroll-panel-num">01</span>
+            <span class="lp-scroll-panel-name">Investment &amp; Acquisition</span>
+            <ul class="lp-scroll-panel-list">
               <li>Hotel acquisition advisory</li>
               <li>Investment analysis</li>
               <li>Hotel valuation — income cap, DCF, sales comparison</li>
@@ -269,103 +290,44 @@
               <li>Due diligence support</li>
               <li>Debt advisory and lender support</li>
             </ul>
-            <button class="lp-magnetic-close" data-for="0">✕</button>
           </div>
-        </div>
 
-        <div class="lp-magnetic-item" id="lpMagItem1"
-             data-base-x="55" data-base-y="15">
-          <span class="lp-magnetic-name">Market Intelligence</span>
-          <div class="lp-magnetic-detail" id="lpMagDetail1">
-            <span class="lp-magnetic-detail-num">02</span>
-            <ul class="lp-magnetic-list">
+          <div class="lp-scroll-panel" data-index="1">
+            <span class="lp-scroll-panel-num">02</span>
+            <span class="lp-scroll-panel-name">Market Intelligence</span>
+            <ul class="lp-scroll-panel-list">
               <li>Feasibility studies</li>
               <li>Market research and demand analysis</li>
               <li>Competitive positioning</li>
               <li>Data intelligence and benchmarking</li>
               <li>Tourism strategy consulting</li>
             </ul>
-            <button class="lp-magnetic-close" data-for="1">✕</button>
           </div>
-        </div>
 
-        <div class="lp-magnetic-item" id="lpMagItem2"
-             data-base-x="25" data-base-y="60">
-          <span class="lp-magnetic-name">Brand, Concept &amp; Operations</span>
-          <div class="lp-magnetic-detail" id="lpMagDetail2">
-            <span class="lp-magnetic-detail-num">03</span>
-            <ul class="lp-magnetic-list">
+          <div class="lp-scroll-panel" data-index="2">
+            <span class="lp-scroll-panel-num">03</span>
+            <span class="lp-scroll-panel-name">Brand, Concept &amp; Operations</span>
+            <ul class="lp-scroll-panel-list">
               <li>Hotel concept development</li>
               <li>Brand and management company selection</li>
               <li>Contract negotiation (HMA and franchise)</li>
               <li>Rebranding and asset repositioning</li>
               <li>Operator performance monitoring</li>
             </ul>
-            <button class="lp-magnetic-close" data-for="2">✕</button>
           </div>
-        </div>
 
-        <div class="lp-magnetic-item" id="lpMagItem3"
-             data-base-x="65" data-base-y="60">
-          <span class="lp-magnetic-name">Asset Management</span>
-          <div class="lp-magnetic-detail" id="lpMagDetail3">
-            <span class="lp-magnetic-detail-num">04</span>
-            <ul class="lp-magnetic-list">
+          <div class="lp-scroll-panel" data-index="3">
+            <span class="lp-scroll-panel-num">04</span>
+            <span class="lp-scroll-panel-name">Asset Management</span>
+            <ul class="lp-scroll-panel-list">
               <li>Advisory across the full hotel asset lifecycle</li>
               <li>Owner representation</li>
               <li>Strategic planning</li>
             </ul>
-            <button class="lp-magnetic-close" data-for="3">✕</button>
           </div>
+
         </div>
 
-      </div>
-
-      <!-- Mobile fallback -->
-      <div class="lp-magnetic-mobile" id="lpMagneticMobile">
-        <div class="lp-mag-mob-item">
-          <span class="lp-mag-mob-num">01</span>
-          <span class="lp-mag-mob-name">Investment &amp; Acquisition</span>
-          <ul class="lp-mag-mob-list">
-            <li>Hotel acquisition advisory</li>
-            <li>Investment analysis</li>
-            <li>Hotel valuation — income cap, DCF, sales comparison</li>
-            <li>Business planning</li>
-            <li>Due diligence support</li>
-            <li>Debt advisory and lender support</li>
-          </ul>
-        </div>
-        <div class="lp-mag-mob-item">
-          <span class="lp-mag-mob-num">02</span>
-          <span class="lp-mag-mob-name">Market Intelligence</span>
-          <ul class="lp-mag-mob-list">
-            <li>Feasibility studies</li>
-            <li>Market research and demand analysis</li>
-            <li>Competitive positioning</li>
-            <li>Data intelligence and benchmarking</li>
-            <li>Tourism strategy consulting</li>
-          </ul>
-        </div>
-        <div class="lp-mag-mob-item">
-          <span class="lp-mag-mob-num">03</span>
-          <span class="lp-mag-mob-name">Brand, Concept &amp; Operations</span>
-          <ul class="lp-mag-mob-list">
-            <li>Hotel concept development</li>
-            <li>Brand and management company selection</li>
-            <li>Contract negotiation (HMA and franchise)</li>
-            <li>Rebranding and asset repositioning</li>
-            <li>Operator performance monitoring</li>
-          </ul>
-        </div>
-        <div class="lp-mag-mob-item">
-          <span class="lp-mag-mob-num">04</span>
-          <span class="lp-mag-mob-name">Asset Management</span>
-          <ul class="lp-mag-mob-list">
-            <li>Advisory across the full hotel asset lifecycle</li>
-            <li>Owner representation</li>
-            <li>Strategic planning</li>
-          </ul>
-        </div>
       </div>
 
     </div>
@@ -737,167 +699,63 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap    = document.getElementById('lpMagneticWrap');
-  const itemsEl = document.getElementById('lpMagneticItems');
-  const canvas  = document.getElementById('lpMagneticCanvas');
+  const narrative = document.getElementById('lpScrollNarrative');
+  const sticky    = document.getElementById('lpScrollSticky');
+  const panels    = document.querySelectorAll('.lp-scroll-panel');
+  const progItems = document.querySelectorAll('.lp-scroll-progress-item');
 
-  if (!wrap || !itemsEl || window.innerWidth <= 768) return;
+  if (!narrative || window.innerWidth <= 768) return;
 
-  const ctx    = canvas.getContext('2d');
-  const items  = Array.from(itemsEl.querySelectorAll('.lp-magnetic-item'));
+  const TOTAL = panels.length;
+  let currentIndex = -1;
 
-  // Overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'lp-magnetic-overlay';
-  document.body.appendChild(overlay);
+  function showPanel(index) {
+    if (index === currentIndex) return;
 
-  let W = wrap.offsetWidth;
-  let H = wrap.offsetHeight;
-  canvas.width  = W;
-  canvas.height = H;
-
-  // State for each item
-  const state = items.map((el, i) => {
-    const bx = parseFloat(el.dataset.baseX) / 100;
-    const by = parseFloat(el.dataset.baseY) / 100;
-    return {
-      el,
-      bx, by,
-      x: bx * W,
-      y: by * H,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      snapped: false,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.3 + Math.random() * 0.2
-    };
-  });
-
-  let mouseX = -999, mouseY = -999;
-  let snappedIndex = null;
-  const MAGNETIC_RADIUS = 160;
-  const MAGNETIC_STRENGTH = 0.35;
-
-  wrap.addEventListener('mousemove', e => {
-    const rect = wrap.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
-  });
-
-  wrap.addEventListener('mouseleave', () => {
-    mouseX = -999;
-    mouseY = -999;
-  });
-
-  // Click to snap
-  items.forEach((el, i) => {
-    el.addEventListener('click', () => {
-      if (state[i].snapped) return;
-      snapItem(i);
-    });
-  });
-
-  // Close buttons
-  itemsEl.querySelectorAll('.lp-magnetic-close').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      unsnap();
-    });
-  });
-
-  overlay.addEventListener('click', unsnap);
-
-  function snapItem(i) {
-    if (snappedIndex !== null) unsnap();
-    snappedIndex = i;
-    state[i].snapped = true;
-    state[i].el.classList.add('lp-mag-snapped');
-    overlay.classList.add('lp-overlay-visible');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function unsnap() {
-    if (snappedIndex === null) return;
-    state[snappedIndex].snapped = false;
-    state[snappedIndex].el.classList.remove('lp-mag-snapped');
-    state[snappedIndex].el.style.cssText = '';
-    overlay.classList.remove('lp-overlay-visible');
-    document.body.style.overflow = '';
-    snappedIndex = null;
-  }
-
-  function drawConnections() {
-    ctx.clearRect(0, 0, W, H);
-    ctx.strokeStyle = '#B87860';
-    ctx.lineWidth = 0.5;
-
-    for (let i = 0; i < state.length; i++) {
-      for (let j = i + 1; j < state.length; j++) {
-        const a = state[i];
-        const b = state[j];
-        const dist = Math.hypot(a.x - b.x, a.y - b.y);
-        if (dist < 320) {
-          ctx.globalAlpha = (1 - dist / 320) * 0.4;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
+    panels.forEach((panel, i) => {
+      panel.classList.remove('lp-panel-active', 'lp-panel-entering', 'lp-panel-exiting');
+      if (i === index) {
+        panel.classList.add('lp-panel-entering');
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            panel.classList.remove('lp-panel-entering');
+            panel.classList.add('lp-panel-active');
+          });
+        });
+      } else if (i === currentIndex) {
+        panel.classList.add('lp-panel-exiting');
+        setTimeout(() => panel.classList.remove('lp-panel-exiting'), 500);
       }
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  let t = 0;
-
-  function tick() {
-    t += 0.008;
-    W = wrap.offsetWidth;
-    H = wrap.offsetHeight;
-    canvas.width  = W;
-    canvas.height = H;
-
-    state.forEach((s, i) => {
-      if (s.snapped) return;
-
-      // Gentle drift
-      const driftX = Math.sin(t * s.speed + s.phase) * 18;
-      const driftY = Math.cos(t * s.speed * 0.7 + s.phase) * 12;
-
-      let tx = s.bx * W + driftX;
-      let ty = s.by * H + driftY;
-
-      // Magnetic pull toward cursor
-      const dx = mouseX - tx;
-      const dy = mouseY - ty;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist < MAGNETIC_RADIUS && dist > 0) {
-        const force = (1 - dist / MAGNETIC_RADIUS) * MAGNETIC_STRENGTH;
-        tx += dx * force;
-        ty += dy * force;
-        s.el.classList.add('lp-mag-near');
-      } else {
-        s.el.classList.remove('lp-mag-near');
-      }
-
-      s.x = tx;
-      s.y = ty;
-
-      s.el.style.left = tx + 'px';
-      s.el.style.top  = ty + 'px';
     });
 
-    drawConnections();
-    requestAnimationFrame(tick);
+    progItems.forEach((item, i) => {
+      item.classList.toggle('lp-scroll-active', i === index);
+    });
+
+    currentIndex = index;
   }
 
-  tick();
+  function onScroll() {
+    const rect  = narrative.getBoundingClientRect();
+    const total = narrative.offsetHeight - window.innerHeight;
+    const scrolled = -rect.top;
 
-  window.addEventListener('resize', () => {
-    W = wrap.offsetWidth;
-    H = wrap.offsetHeight;
-  });
+    if (scrolled < 0 || scrolled > total) return;
+
+    const progress = scrolled / total;
+    const index    = Math.min(
+      Math.floor(progress * TOTAL),
+      TOTAL - 1
+    );
+
+    showPanel(index);
+  }
+
+  // Init first panel
+  showPanel(0);
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 })();
 </script>
 
