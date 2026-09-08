@@ -251,59 +251,87 @@
     <p class="lp-section-sub lp-reveal lp-reveal-d2">Institutional asset management expertise combined with Morocco's most comprehensive hotel database, applied at every stage of the investment process.</p>
     <a href="/contact" class="btn-accent-outline lp-reveal lp-reveal-d2" style="margin-top:24px;display:inline-block;">Contact Advisory →</a>
 
-    <div class="lp-manifesto-wrap" id="lpManifestoWrap">
+    <div class="lp-timeline-wrap" id="lpTimelineWrap">
 
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We find the deal before anyone else knows it exists.</span>
+      <div class="lp-timeline-track">
+        <div class="lp-timeline-line"></div>
+
+        <div class="lp-timeline-stage" data-index="0">
+          <div class="lp-timeline-stage-top">
+            <div class="lp-timeline-dot"></div>
+            <span class="lp-timeline-num">01</span>
+          </div>
+          <div class="lp-timeline-stage-body">
+            <span class="lp-timeline-name">Investment &amp; Acquisition</span>
+            <div class="lp-timeline-expand">
+              <ul class="lp-timeline-list">
+                <li>Hotel acquisition advisory</li>
+                <li>Investment analysis</li>
+                <li>Hotel valuation — income cap, DCF, sales comparison</li>
+                <li>Business planning</li>
+                <li>Due diligence support</li>
+                <li>Debt advisory and lender support</li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Hotel acquisition advisory</span>
-          <span class="lp-manifesto-service">Investment analysis</span>
-          <span class="lp-manifesto-service">Hotel valuation — income cap, DCF, sales comparison</span>
-          <span class="lp-manifesto-service">Business planning</span>
-          <span class="lp-manifesto-service">Due diligence support</span>
-          <span class="lp-manifesto-service">Debt advisory and lender support</span>
+
+        <div class="lp-timeline-stage" data-index="1">
+          <div class="lp-timeline-stage-top">
+            <div class="lp-timeline-dot"></div>
+            <span class="lp-timeline-num">02</span>
+          </div>
+          <div class="lp-timeline-stage-body">
+            <span class="lp-timeline-name">Market Intelligence</span>
+            <div class="lp-timeline-expand">
+              <ul class="lp-timeline-list">
+                <li>Feasibility studies</li>
+                <li>Market research and demand analysis</li>
+                <li>Competitive positioning</li>
+                <li>Data intelligence and benchmarking</li>
+                <li>Tourism strategy consulting</li>
+              </ul>
+            </div>
+          </div>
         </div>
+
+        <div class="lp-timeline-stage" data-index="2">
+          <div class="lp-timeline-stage-top">
+            <div class="lp-timeline-dot"></div>
+            <span class="lp-timeline-num">03</span>
+          </div>
+          <div class="lp-timeline-stage-body">
+            <span class="lp-timeline-name">Brand, Concept &amp; Operations</span>
+            <div class="lp-timeline-expand">
+              <ul class="lp-timeline-list">
+                <li>Hotel concept development</li>
+                <li>Brand and management company selection</li>
+                <li>Contract negotiation (HMA and franchise)</li>
+                <li>Rebranding and asset repositioning</li>
+                <li>Operator performance monitoring</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="lp-timeline-stage" data-index="3">
+          <div class="lp-timeline-stage-top">
+            <div class="lp-timeline-dot"></div>
+            <span class="lp-timeline-num">04</span>
+          </div>
+          <div class="lp-timeline-stage-body">
+            <span class="lp-timeline-name">Asset Management</span>
+            <div class="lp-timeline-expand">
+              <ul class="lp-timeline-list">
+                <li>Advisory across the full hotel asset lifecycle</li>
+                <li>Owner representation</li>
+                <li>Strategic planning</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
       </div>
-
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We tell you what the market actually looks like, not what you want to hear.</span>
-        </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Feasibility studies</span>
-          <span class="lp-manifesto-service">Market research and demand analysis</span>
-          <span class="lp-manifesto-service">Competitive positioning</span>
-          <span class="lp-manifesto-service">Data intelligence and benchmarking</span>
-          <span class="lp-manifesto-service">Tourism strategy consulting</span>
-        </div>
-      </div>
-
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We choose the right brand for your asset, not the most convenient one.</span>
-        </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Hotel concept development</span>
-          <span class="lp-manifesto-service">Brand and management company selection</span>
-          <span class="lp-manifesto-service">Contract negotiation (HMA and franchise)</span>
-          <span class="lp-manifesto-service">Rebranding and asset repositioning</span>
-          <span class="lp-manifesto-service">Operator performance monitoring</span>
-        </div>
-      </div>
-
-      <div class="lp-manifesto-item">
-        <div class="lp-manifesto-statement-wrap">
-          <span class="lp-manifesto-statement">We protect your asset's value long after the deal is done.</span>
-        </div>
-        <div class="lp-manifesto-services">
-          <span class="lp-manifesto-service">Advisory across the full hotel asset lifecycle</span>
-          <span class="lp-manifesto-service">Owner representation</span>
-          <span class="lp-manifesto-service">Strategic planning</span>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
@@ -673,32 +701,45 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpManifestoWrap');
+  const wrap  = document.getElementById('lpTimelineWrap');
   if (!wrap) return;
 
-  const items = wrap.querySelectorAll('.lp-manifesto-item');
+  const track  = wrap.querySelector('.lp-timeline-track');
+  const stages = wrap.querySelectorAll('.lp-timeline-stage');
   const isMobile = () => window.innerWidth <= 768;
 
-  items.forEach(item => {
-    item.addEventListener('mouseenter', () => {
+  let currentOpen = null;
+
+  function open(stage) {
+    if (currentOpen === stage) return;
+    if (currentOpen) currentOpen.classList.remove('lp-timeline-open');
+    stage.classList.add('lp-timeline-open');
+    currentOpen = stage;
+  }
+
+  function closeAll() {
+    stages.forEach(s => s.classList.remove('lp-timeline-open'));
+    track.classList.remove('lp-timeline-active');
+    currentOpen = null;
+  }
+
+  stages.forEach(stage => {
+    stage.addEventListener('mouseenter', () => {
       if (isMobile()) return;
-      wrap.classList.add('lp-manifesto-active');
-      items.forEach(i => i.classList.remove('lp-manifesto-hovered'));
-      item.classList.add('lp-manifesto-hovered');
+      track.classList.add('lp-timeline-active');
+      open(stage);
     });
 
-    item.addEventListener('click', () => {
+    stage.addEventListener('click', () => {
       if (!isMobile()) return;
-      const isHovered = item.classList.contains('lp-manifesto-hovered');
-      items.forEach(i => i.classList.remove('lp-manifesto-hovered'));
-      if (!isHovered) item.classList.add('lp-manifesto-hovered');
+      const isOpen = stage.classList.contains('lp-timeline-open');
+      stages.forEach(s => s.classList.remove('lp-timeline-open'));
+      if (!isOpen) stage.classList.add('lp-timeline-open');
     });
   });
 
   wrap.addEventListener('mouseleave', () => {
-    if (isMobile()) return;
-    wrap.classList.remove('lp-manifesto-active');
-    items.forEach(i => i.classList.remove('lp-manifesto-hovered'));
+    if (!isMobile()) closeAll();
   });
 })();
 </script>
