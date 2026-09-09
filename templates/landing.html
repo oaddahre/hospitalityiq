@@ -336,10 +336,48 @@
   </div>
 </section>
 
+<!-- WHO IT'S FOR -->
+<section class="lp-section" id="clients">
+  <div class="lp-inner">
+
+    <div class="lp-section-opener lp-reveal">
+      <span class="lp-section-tag">03 — Clients</span>
+      <span class="lp-section-meta">Who We Serve</span>
+    </div>
+
+    <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Built for Morocco hospitality professionals.</h2>
+
+    <div class="lp-audience-takeover" id="lpAudienceTakeover">
+
+      <div class="lp-audience-item">
+        <span class="lp-audience-name">Hotel Investors &amp; Funds</span>
+        <span class="lp-audience-line">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</span>
+      </div>
+
+      <div class="lp-audience-item">
+        <span class="lp-audience-name">Owners &amp; Asset Managers</span>
+        <span class="lp-audience-line">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</span>
+      </div>
+
+      <div class="lp-audience-item">
+        <span class="lp-audience-name">Developers &amp; Operators</span>
+        <span class="lp-audience-line">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</span>
+      </div>
+
+      <div class="lp-audience-item">
+        <span class="lp-audience-name">Banks &amp; Financial Institutions</span>
+        <span class="lp-audience-line">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</span>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
 <!-- REPORTS -->
 <section class="lp-section lp-section-alt" id="reports">
   <div class="lp-section-opener lp-reveal">
-    <span class="lp-section-tag">03. Reports</span>
+    <span class="lp-section-tag">04 — Reports</span>
     <span class="lp-section-meta">Market Intelligence</span>
   </div>
   <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Institutional-grade analysis for Morocco hospitality.</h2>
@@ -384,7 +422,7 @@
 <!-- PRICING -->
 <section class="lp-section" id="pricing">
   <div class="lp-section-opener lp-reveal">
-    <span class="lp-section-tag">04. Pricing</span>
+    <span class="lp-section-tag">05 — Pricing</span>
     <span class="lp-section-meta">Subscription Plans</span>
   </div>
   <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Transparent pricing. No hidden fees.</h2>
@@ -463,37 +501,6 @@
       <a href="/contact" class="btn-accent-outline lp-plan-cta">Contact Us →</a>
     </div>
 
-  </div>
-</section>
-
-<!-- WHO IT'S FOR -->
-<section class="lp-section lp-section-alt" id="clients">
-  <div class="lp-section-opener lp-reveal">
-    <span class="lp-section-tag">05. Clients</span>
-    <span class="lp-section-meta">Who We Serve</span>
-  </div>
-  <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Built for Morocco hospitality professionals.</h2>
-  <div class="lp-audience-grid lp-reveal lp-reveal-d2">
-    <div class="lp-audience-card">
-      <span class="lp-audience-num">01</span>
-      <div class="lp-audience-title">Hotel Investors & Funds</div>
-      <p class="lp-audience-body">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
-    </div>
-    <div class="lp-audience-card">
-      <span class="lp-audience-num">02</span>
-      <div class="lp-audience-title">Owners & Asset Managers</div>
-      <p class="lp-audience-body">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
-    </div>
-    <div class="lp-audience-card">
-      <span class="lp-audience-num">03</span>
-      <div class="lp-audience-title">Developers & Operators</div>
-      <p class="lp-audience-body">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
-    </div>
-    <div class="lp-audience-card">
-      <span class="lp-audience-num">04</span>
-      <div class="lp-audience-title">Banks & Financial Institutions</div>
-      <p class="lp-audience-body">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
-    </div>
   </div>
 </section>
 
@@ -832,6 +839,30 @@ themeToggle.addEventListener('click', () => {
 
   modules.addEventListener('mouseleave', () => {
     if (!isMobile()) closeAll();
+  });
+})();
+</script>
+
+<script>
+(function() {
+  const wrap = document.getElementById('lpAudienceTakeover');
+  if (!wrap) return;
+
+  if (window.innerWidth <= 768) return;
+
+  const items = wrap.querySelectorAll('.lp-audience-item');
+
+  items.forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      wrap.classList.add('lp-aud-active');
+      items.forEach(i => i.classList.remove('lp-aud-hovered'));
+      item.classList.add('lp-aud-hovered');
+    });
+  });
+
+  wrap.addEventListener('mouseleave', () => {
+    wrap.classList.remove('lp-aud-active');
+    items.forEach(i => i.classList.remove('lp-aud-hovered'));
   });
 })();
 </script>
