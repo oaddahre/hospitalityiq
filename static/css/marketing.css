@@ -1018,6 +1018,10 @@ html { scroll-behavior: smooth; }
 
 /* ── SECTIONS ── */
 .lp-section { padding: 80px 48px; }
+#platform.lp-section {
+  padding-top: 56px;
+  padding-bottom: 56px;
+}
 .lp-section-alt { background: var(--lp-bg-alt); }
 .lp-inner { max-width: 1200px; margin: 0 auto; }
 
@@ -1065,7 +1069,7 @@ html { scroll-behavior: smooth; }
 
 /* ── PLATFORM MODULES: EXPANDING BAR ── */
 .lp-expand-modules {
-  margin-top: 56px;
+  margin-top: 24px;
 }
 
 /* When any item is hovered dim siblings */
@@ -1080,6 +1084,7 @@ html { scroll-behavior: smooth; }
 .lp-expand-item {
   transition: opacity 250ms ease;
   overflow: hidden;
+  padding: 6px 0;
 }
 
 .lp-expand-title-row {
@@ -1118,8 +1123,8 @@ html { scroll-behavior: smooth; }
 .lp-expand-bar-inner {
   display: flex;
   align-items: flex-start;
-  gap: 48px;
-  padding: 24px 0 32px;
+  gap: 32px;
+  padding: 16px 0 20px;
   opacity: 0;
   transform: translateY(-8px);
   transition: opacity 300ms ease 150ms,
