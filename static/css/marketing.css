@@ -1206,7 +1206,7 @@ html { scroll-behavior: smooth; }
   left: 12px;
   right: 12px;
   height: 1px;
-  background: var(--lp-border);
+  background: var(--lp-text-muted);
   z-index: 0;
 }
 
