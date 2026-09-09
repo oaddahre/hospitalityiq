@@ -1566,101 +1566,123 @@ html { scroll-behavior: smooth; }
   box-sizing: border-box;
 }
 
-/* ── AUDIENCE: HORIZONTAL SCROLL STRIP ── */
-.lp-aud-strip-wrap {
+/* ── AUDIENCE: REDACTED INTELLIGENCE BRIEF ── */
+.lp-redacted-wrap {
   margin-top: 56px;
-  overflow: hidden;
-  position: relative;
-}
-
-.lp-aud-strip {
-  display: flex;
-  gap: 0;
-  cursor: grab;
-  user-select: none;
-  will-change: transform;
-  transition: transform 0ms;
-}
-
-.lp-aud-strip.lp-strip-dragging {
-  cursor: grabbing;
-  transition: none;
-}
-
-.lp-aud-strip-item {
-  flex: 0 0 38vw;
-  min-width: 320px;
-  padding: 40px 40px 40px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  border-right: 1px solid var(--lp-border);
-  transition: opacity 300ms ease;
-}
-
-.lp-aud-strip-item:last-child {
-  border-right: none;
-  padding-right: 0;
-}
-
-.lp-aud-strip-item:first-child {
-  padding-left: 0;
-}
-
-.lp-aud-strip:not(.lp-strip-dragging) .lp-aud-strip-item:hover {
-  opacity: 0.7;
-}
-
-.lp-aud-strip-num {
   font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #B87860;
-  display: block;
 }
 
-.lp-aud-strip-name {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: clamp(22px, 2.8vw, 36px);
-  color: var(--lp-text);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  display: block;
-}
-
-.lp-aud-strip-desc {
-  font-family: 'Manrope', sans-serif;
-  font-size: 14px;
-  color: var(--lp-text-muted);
-  line-height: 1.7;
-  font-weight: 400;
-  margin: 0;
-  max-width: 280px;
-}
-
-/* Drag hint */
-.lp-aud-strip-hint {
-  margin-top: 20px;
+/* Document header */
+.lp-redacted-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  padding-bottom: 16px;
+  margin-bottom: 32px;
 }
 
-.lp-aud-strip-hint-text {
+.lp-redacted-classification {
   font-family: 'Space Mono', monospace;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--lp-text-faint);
-  animation: lp-hint-slide 2s ease-in-out infinite;
+  letter-spacing: 0.2em;
+  color: #B87860;
 }
 
-@keyframes lp-hint-slide {
-  0%, 100% { opacity: 0.4; transform: translateX(0); }
-  50% { opacity: 1; transform: translateX(6px); }
+.lp-redacted-ref {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--lp-text-faint);
+}
+
+/* Document body */
+.lp-redacted-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Each entry */
+.lp-redacted-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: default;
+}
+
+.lp-redacted-entry-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.lp-redacted-entry-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: #B87860;
+  flex-shrink: 0;
+}
+
+.lp-redacted-entry-who {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: clamp(20px, 3vw, 36px);
+  color: var(--lp-text);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+/* Redacted text paragraph */
+.lp-redacted-text {
+  font-family: 'Manrope', sans-serif;
+  font-size: 18px;
+  color: var(--lp-text-muted);
+  line-height: 1.8;
+  font-weight: 400;
+  margin: 0;
+  max-width: 720px;
+}
+
+/* Individual words */
+.lp-redact-word {
+  display: inline;
+  transition: all 0ms;
+  position: relative;
+}
+
+/* Redacted state — black bar over word */
+.lp-redact-word.lp-redacted {
+  color: transparent;
+  background: var(--lp-text);
+  border-radius: 1px;
+  cursor: pointer;
+  position: relative;
+  padding: 0 2px;
+  transition: background 200ms ease, color 200ms ease;
+  user-select: none;
+}
+
+/* Light mode redaction */
+body.lp-light .lp-redact-word.lp-redacted {
+  background: #1A1A1A;
+}
+
+/* Revealed state */
+.lp-redact-word.lp-revealed {
+  color: var(--lp-text-muted);
+  background: transparent;
+  cursor: default;
+}
+
+/* Hover on redacted word */
+.lp-redact-word.lp-redacted:hover {
+  background: #B87860;
 }
 
 /* ── CTA ── */
@@ -1879,31 +1901,17 @@ html { scroll-behavior: smooth; }
     font-size: 13px;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
-  .lp-aud-strip {
+  .lp-redacted-header {
     flex-direction: column;
-    cursor: default;
-    gap: 0;
+    align-items: flex-start;
+    gap: 4px;
   }
-  .lp-aud-strip-item {
-    flex: none;
-    min-width: 0;
-    width: 100%;
-    padding: 24px 0;
-    border-right: none;
-    border-bottom: 1px solid var(--lp-border);
-    gap: 12px;
+  .lp-redacted-entry-who {
+    font-size: clamp(18px, 5vw, 26px);
   }
-  .lp-aud-strip-item:last-child {
-    border-bottom: none;
+  .lp-redacted-text {
+    font-size: 15px;
   }
-  .lp-aud-strip-name {
-    font-size: clamp(20px, 5vw, 28px);
-  }
-  .lp-aud-strip-desc {
-    max-width: 100%;
-    font-size: 13px;
-  }
-  .lp-aud-strip-hint { display: none; }
   .lp-plan-grid { grid-template-columns: 1fr; }
   .lp-cta { padding: 60px 20px; }
   .lp-cta-title { font-size: 32px; }
