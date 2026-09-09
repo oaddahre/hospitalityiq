@@ -347,32 +347,38 @@
 
     <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Built for Morocco hospitality professionals.</h2>
 
-    <div class="lp-aud-spotlight-wrap" id="lpAudSpotlightWrap">
+    <div class="lp-aud-strip-wrap" id="lpAudStripWrap">
+      <div class="lp-aud-strip" id="lpAudStrip">
 
-      <div class="lp-aud-spotlight-stage">
-
-        <div class="lp-aud-spotlight-label-wrap">
-          <span class="lp-aud-spotlight-num" id="lpAudNum">01</span>
+        <div class="lp-aud-strip-item">
+          <span class="lp-aud-strip-num">01</span>
+          <span class="lp-aud-strip-name">Hotel Investors &amp; Funds</span>
+          <p class="lp-aud-strip-desc">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
         </div>
 
-        <div class="lp-aud-spotlight-name-wrap">
-          <span class="lp-aud-spotlight-name" id="lpAudName">Hotel Investors &amp; Funds</span>
+        <div class="lp-aud-strip-item">
+          <span class="lp-aud-strip-num">02</span>
+          <span class="lp-aud-strip-name">Owners &amp; Asset Managers</span>
+          <p class="lp-aud-strip-desc">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
         </div>
 
-        <div class="lp-aud-spotlight-desc-wrap">
-          <span class="lp-aud-spotlight-desc" id="lpAudDesc">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</span>
+        <div class="lp-aud-strip-item">
+          <span class="lp-aud-strip-num">03</span>
+          <span class="lp-aud-strip-name">Developers &amp; Operators</span>
+          <p class="lp-aud-strip-desc">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
+        </div>
+
+        <div class="lp-aud-strip-item">
+          <span class="lp-aud-strip-num">04</span>
+          <span class="lp-aud-strip-name">Banks &amp; Financial Institutions</span>
+          <p class="lp-aud-strip-desc">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
         </div>
 
       </div>
 
-      <div class="lp-aud-spotlight-nav">
-        <button class="lp-aud-dot lp-aud-dot-active" data-index="0"></button>
-        <button class="lp-aud-dot" data-index="1"></button>
-        <button class="lp-aud-dot" data-index="2"></button>
-        <button class="lp-aud-dot" data-index="3"></button>
-        <div class="lp-aud-progress-wrap">
-          <div class="lp-aud-progress-bar" id="lpAudProgress"></div>
-        </div>
+      <!-- Drag hint -->
+      <div class="lp-aud-strip-hint">
+        <span class="lp-aud-strip-hint-text">Drag to explore →</span>
       </div>
 
     </div>
@@ -851,125 +857,91 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpAudSpotlightWrap');
-  if (!wrap) return;
+  const strip = document.getElementById('lpAudStrip');
+  if (!strip || window.innerWidth <= 768) return;
 
-  const audiences = [
-    {
-      num: '01',
-      name: 'Hotel Investors &amp; Funds',
-      desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.'
-    },
-    {
-      num: '02',
-      name: 'Owners &amp; Asset Managers',
-      desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.'
-    },
-    {
-      num: '03',
-      name: 'Developers &amp; Operators',
-      desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.'
-    },
-    {
-      num: '04',
-      name: 'Banks &amp; Financial Institutions',
-      desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.'
-    }
-  ];
+  let isDragging = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let currentX = 0;
+  let velocity = 0;
+  let lastX = 0;
+  let rafId = null;
 
-  const numEl    = document.getElementById('lpAudNum');
-  const nameEl   = document.getElementById('lpAudName');
-  const descEl   = document.getElementById('lpAudDesc');
-  const progress = document.getElementById('lpAudProgress');
-  const dots     = wrap.querySelectorAll('.lp-aud-dot');
-
-  if (!numEl || !nameEl || !descEl) return;
-
-  const DURATION = 3000;
-  let current = 0;
-  let timer = null;
-  let started = false;
-
-  function setDot(index) {
-    dots.forEach((d, i) => {
-      d.classList.toggle('lp-aud-dot-active', i === index);
-    });
+  function getMaxScroll() {
+    return strip.scrollWidth - strip.parentElement.offsetWidth;
   }
 
-  function startProgress() {
-    if (!progress) return;
-    progress.style.transition = 'none';
-    progress.style.width = '0%';
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        progress.style.transition = `width ${DURATION}ms linear`;
-        progress.style.width = '100%';
-      });
-    });
+  function setTranslate(x) {
+    const max = getMaxScroll();
+    x = Math.max(-max, Math.min(0, x));
+    strip.style.transform = `translateX(${x}px)`;
+    currentX = x;
   }
 
-  function goTo(index) {
-    const next = audiences[index];
-
-    [numEl, nameEl, descEl].forEach(el => el.classList.add('lp-aud-exit'));
-
-    setTimeout(() => {
-      numEl.textContent  = next.num;
-      nameEl.innerHTML   = next.name;
-      descEl.textContent = next.desc;
-
-      [numEl, nameEl, descEl].forEach(el => {
-        el.classList.remove('lp-aud-exit');
-        el.classList.add('lp-aud-enter');
-      });
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          [numEl, nameEl, descEl].forEach(el => {
-            el.classList.remove('lp-aud-enter');
-          });
-        });
-      });
-
-      setDot(index);
-      startProgress();
-    }, 380);
-  }
-
-  function advance() {
-    current = (current + 1) % audiences.length;
-    goTo(current);
-  }
-
-  function init() {
-    if (started) return;
-    started = true;
-
-    numEl.textContent  = audiences[0].num;
-    nameEl.innerHTML   = audiences[0].name;
-    descEl.textContent = audiences[0].desc;
-    setDot(0);
-    startProgress();
-    timer = setInterval(advance, DURATION);
-  }
-
-  dots.forEach((dot, i) => {
-    dot.addEventListener('click', () => {
-      if (i === current) return;
-      clearInterval(timer);
-      goTo(i);
-      current = i;
-      timer = setInterval(advance, DURATION);
-    });
+  strip.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.pageX;
+    lastX = e.pageX;
+    scrollLeft = currentX;
+    velocity = 0;
+    strip.classList.add('lp-strip-dragging');
+    cancelAnimationFrame(rafId);
   });
 
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { init(); obs.disconnect(); }
-    });
-  }, { threshold: 0.3 });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.pageX - startX;
+    velocity = e.pageX - lastX;
+    lastX = e.pageX;
+    setTranslate(scrollLeft + dx);
+  });
 
-  obs.observe(wrap);
+  window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    strip.classList.remove('lp-strip-dragging');
+    // Momentum
+    function momentum() {
+      if (Math.abs(velocity) < 0.5) return;
+      velocity *= 0.92;
+      setTranslate(currentX + velocity);
+      rafId = requestAnimationFrame(momentum);
+    }
+    momentum();
+  });
+
+  // Touch support
+  strip.addEventListener('touchstart', e => {
+    startX = e.touches[0].pageX;
+    lastX = startX;
+    scrollLeft = currentX;
+    velocity = 0;
+    cancelAnimationFrame(rafId);
+  }, { passive: true });
+
+  strip.addEventListener('touchmove', e => {
+    const dx = e.touches[0].pageX - startX;
+    velocity = e.touches[0].pageX - lastX;
+    lastX = e.touches[0].pageX;
+    setTranslate(scrollLeft + dx);
+  }, { passive: true });
+
+  strip.addEventListener('touchend', () => {
+    function momentum() {
+      if (Math.abs(velocity) < 0.5) return;
+      velocity *= 0.92;
+      setTranslate(currentX + velocity);
+      rafId = requestAnimationFrame(momentum);
+    }
+    momentum();
+  });
+
+  // Hide hint after first drag
+  const hint = document.querySelector('.lp-aud-strip-hint');
+  strip.addEventListener('mousedown', () => {
+    if (hint) hint.style.opacity = '0';
+  }, { once: true });
 })();
 </script>
 
