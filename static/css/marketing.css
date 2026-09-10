@@ -678,6 +678,26 @@ html { scroll-behavior: smooth; }
   font-weight: 400;
 }
 .mk-nav-cta:hover { background: #B87860; color: #0A0A0A; }
+
+.mk-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mk-nav-login {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lp-text-muted);
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+.mk-nav-login:hover { color: var(--lp-text); }
+
 .nav-progress {
   position: absolute;
   bottom: 0;
@@ -2164,6 +2184,7 @@ a.lp-contact-info-val:hover { color: #B87860; }
     overflow: visible;
   }
   .mk-nav-links { display: none; }
+  .mk-nav-actions { display: none; }
   .mk-nav-logo { flex-shrink: 0; }
   .mk-text-toggle { flex-shrink: 0; }
   .mk-nav-cta {
