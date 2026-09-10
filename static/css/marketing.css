@@ -1249,7 +1249,7 @@ html { scroll-behavior: smooth; }
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--lp-border);
+  background: var(--lp-text-muted);
   transition: background 250ms ease,
               transform 250ms ease;
   margin-top: 3px;
