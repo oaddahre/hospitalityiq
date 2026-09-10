@@ -2237,24 +2237,56 @@ a.lp-contact-info-val:hover { color: #B87860; }
     opacity: 1;
   }
   .lp-timeline-stage {
-    padding: 16px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    padding: 0 0 0 16px;
     cursor: pointer;
-    border-bottom: 1px solid var(--lp-border);
+    border-left: 2px solid transparent;
+    transition: border-color 200ms;
   }
-  .lp-timeline-stage:last-child {
-    border-bottom: none;
+  .lp-timeline-stage.lp-timeline-open {
+    border-left-color: #B87860;
   }
   .lp-timeline-stage-top {
     flex-direction: row;
     align-items: center;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
+    padding: 16px 0;
+    flex-shrink: 0;
+  }
+  .lp-timeline-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+  }
+  .lp-timeline-num {
+    font-size: 8px;
+    flex-shrink: 0;
   }
   .lp-timeline-name {
-    font-size: 18px;
+    font-size: 17px;
+    flex: 1;
+  }
+  /* Unwrap so .lp-timeline-name and .lp-timeline-expand become
+     direct flex items of .lp-timeline-stage, letting the name
+     sit inline with the dot/number row above */
+  .lp-timeline-stage-body {
+    display: contents;
+  }
+  .lp-timeline-expand {
+    flex-basis: 100%;
+    width: 100%;
+    padding-left: 0;
+  }
+  .lp-timeline-stage.lp-timeline-open .lp-timeline-expand {
+    max-height: 400px;
   }
   .lp-timeline-list li {
     font-size: 13px;
+    padding: 8px 0;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
   .lp-ticker-track { padding: 12px 0; }
