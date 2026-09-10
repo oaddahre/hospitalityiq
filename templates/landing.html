@@ -64,6 +64,10 @@
       <a href="/register" class="lp-mobile-panel-register">Register →</a>
     </div>
 
+    <div class="lp-mobile-panel-footer">
+      <span class="lp-mobile-panel-copy">© 2026 Kōdō Hospitality</span>
+    </div>
+
   </div>
 </div>
 
@@ -950,6 +954,10 @@ themeToggle.addEventListener('click', () => {
 
   overlay.addEventListener('click', e => {
     if (e.target === overlay) closePanel();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePanel();
   });
 })();
 </script>

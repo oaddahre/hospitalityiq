@@ -18,6 +18,9 @@
 <nav class="mk-nav">
   <a href="/" class="mk-nav-logo">KŌDŌ</a>
   <div class="mk-nav-links">
+    <a href="/#platform" class="mk-nav-link">Platform</a>
+    <a href="/#advisory" class="mk-nav-link">Advisory</a>
+    <a href="/#pricing" class="mk-nav-link">Pricing</a>
     <a href="/team" class="mk-nav-link">Team</a>
     <a href="/contact" class="mk-nav-link">Contact</a>
   </div>
@@ -30,8 +33,44 @@
     <span class="mk-toggle-sep">/</span>
     <span class="mk-toggle-opt" id="toggleLight">LIGHT</span>
   </div>
-  <div class="nav-progress" id="navProgress"></div>
+  <button class="lp-mobile-panel-btn" id="lpMobilePanelBtn"
+          aria-label="Open menu" aria-expanded="false">
+    <span class="lp-mobile-panel-bar"></span>
+    <span class="lp-mobile-panel-bar"></span>
+    <span class="lp-mobile-panel-bar"></span>
+  </button>
 </nav>
+
+<!-- Mobile nav slide-in panel -->
+<div class="lp-mobile-panel-overlay" id="lpMobilePanelOverlay">
+  <div class="lp-mobile-panel" id="lpMobilePanel">
+
+    <div class="lp-mobile-panel-header">
+      <span class="lp-mobile-panel-logo">KŌDŌ</span>
+      <button class="lp-mobile-panel-close" id="lpMobilePanelClose"
+              aria-label="Close menu">✕</button>
+    </div>
+
+    <nav class="lp-mobile-panel-nav" role="navigation" aria-label="Mobile navigation">
+      <a href="/#platform" class="lp-mobile-panel-link">Platform</a>
+      <a href="/#advisory" class="lp-mobile-panel-link">Advisory</a>
+      <a href="/#pricing" class="lp-mobile-panel-link">Pricing</a>
+      <a href="/team" class="lp-mobile-panel-link">Team</a>
+      <a href="/contact" class="lp-mobile-panel-link">Contact</a>
+      <a href="/methodology" class="lp-mobile-panel-link">Methodology</a>
+    </nav>
+
+    <div class="lp-mobile-panel-actions">
+      <a href="/login" class="lp-mobile-panel-login">Log In</a>
+      <a href="/register" class="lp-mobile-panel-register">Register →</a>
+    </div>
+
+    <div class="lp-mobile-panel-footer">
+      <span class="lp-mobile-panel-copy">© 2026 Kōdō Hospitality</span>
+    </div>
+
+  </div>
+</div>
 
 <div class="page-header">
   <div class="legal-page" style="padding-bottom:0;">
@@ -199,27 +238,66 @@ window.addEventListener('scroll', () => {
 
 <script>
 (function() {
+  // Theme toggle
   const themeToggle = document.getElementById('themeToggle');
   const toggleDark  = document.getElementById('toggleDark');
   const toggleLight = document.getElementById('toggleLight');
-  if (!themeToggle) return;
-
-  function updateToggleState() {
-    const isLight = document.body.classList.contains('lp-light');
-    if (toggleDark)  toggleDark.classList.toggle('mk-toggle-active', !isLight);
-    if (toggleLight) toggleLight.classList.toggle('mk-toggle-active', isLight);
+  if (themeToggle) {
+    var updateToggleState = function() {
+      const isLight = document.body.classList.contains('lp-light');
+      if (toggleDark)  toggleDark.classList.toggle('mk-toggle-active', !isLight);
+      if (toggleLight) toggleLight.classList.toggle('mk-toggle-active', isLight);
+    };
+    const saved = localStorage.getItem('kodo-lp-theme');
+    if (saved === 'light') document.body.classList.add('lp-light');
+    updateToggleState();
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('lp-light');
+      localStorage.setItem('kodo-lp-theme',
+        document.body.classList.contains('lp-light') ? 'light' : 'dark'
+      );
+      updateToggleState();
+    });
   }
 
-  const saved = localStorage.getItem('kodo-lp-theme');
-  if (saved === 'light') document.body.classList.add('lp-light');
-  updateToggleState();
+  // Mobile nav panel
+  const btn      = document.getElementById('lpMobilePanelBtn');
+  const overlay  = document.getElementById('lpMobilePanelOverlay');
+  const closeBtn = document.getElementById('lpMobilePanelClose');
+  if (!btn || !overlay) return;
 
-  themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('lp-light');
-    localStorage.setItem('kodo-lp-theme',
-      document.body.classList.contains('lp-light') ? 'light' : 'dark'
-    );
-    updateToggleState();
+  function openPanel() {
+    overlay.style.display = 'block';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        overlay.classList.add('lp-overlay-open');
+        btn.classList.add('lp-panel-open');
+        btn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+  }
+
+  function closePanel() {
+    overlay.classList.remove('lp-overlay-open');
+    btn.classList.remove('lp-panel-open');
+    btn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    setTimeout(() => { overlay.style.display = 'none'; }, 350);
+  }
+
+  btn.addEventListener('click', () => {
+    overlay.classList.contains('lp-overlay-open') ? closePanel() : openPanel();
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closePanel();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePanel();
   });
 })();
 </script>

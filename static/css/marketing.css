@@ -873,6 +873,21 @@ html { scroll-behavior: smooth; }
 
 .lp-mobile-panel-register:hover { background: #B87860; color: #0A0A0A; }
 
+.lp-mobile-panel-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--lp-border);
+  flex-shrink: 0;
+}
+
+.lp-mobile-panel-copy {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lp-text-faint);
+}
+
 .mk-text-toggle {
   display: flex;
   align-items: center;
