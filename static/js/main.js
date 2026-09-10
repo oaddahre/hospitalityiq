@@ -2621,25 +2621,46 @@ function setSidebar(screen) {
 // ─── Mobile nav ───────────────────────────────────────────────────
 
 function closeMobileNav() {
-  const overlay = document.getElementById('mobile-nav-overlay');
-  const btn     = document.getElementById('hamburger-btn');
-  overlay.classList.remove('open');
-  btn.textContent = '☰';
+  const overlay = document.getElementById('mobileMenuOverlay');
+  const btn     = document.getElementById('mobileMenuBtn');
+  if (!overlay || !btn) return;
+  overlay.classList.remove('lp-overlay-open');
+  btn.classList.remove('lp-menu-open');
   btn.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+  setTimeout(() => { overlay.style.display = 'none'; }, 350);
+}
+
+function openMobileNav() {
+  const overlay = document.getElementById('mobileMenuOverlay');
+  const btn     = document.getElementById('mobileMenuBtn');
+  if (!overlay || !btn) return;
+  overlay.style.display = 'block';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.classList.add('lp-overlay-open');
+      btn.classList.add('lp-menu-open');
+      btn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    });
+  });
 }
 
 function syncMobileNav(screen) {
-  document.querySelectorAll('.mobile-nav-link').forEach(l =>
+  document.querySelectorAll('.mobile-menu-link').forEach(l =>
     l.classList.toggle('active', l.dataset.screen === screen)
   );
 }
 
-document.getElementById('hamburger-btn').addEventListener('click', () => {
-  const overlay = document.getElementById('mobile-nav-overlay');
-  const btn     = document.getElementById('hamburger-btn');
-  const isOpen  = overlay.classList.toggle('open');
-  btn.textContent = isOpen ? '✕' : '☰';
-  btn.setAttribute('aria-expanded', String(isOpen));
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  const overlay = document.getElementById('mobileMenuOverlay');
+  overlay.classList.contains('lp-overlay-open') ? closeMobileNav() : openMobileNav();
+});
+
+document.getElementById('mobileMenuClose').addEventListener('click', closeMobileNav);
+
+document.getElementById('mobileMenuOverlay').addEventListener('click', e => {
+  if (e.target.id === 'mobileMenuOverlay') closeMobileNav();
 });
 
 // ─── Events ───────────────────────────────────────────────────────

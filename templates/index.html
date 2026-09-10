@@ -41,7 +41,12 @@
       <span class="tier-badge" id="tier-badge" style="display:none"></span>
       <a href="/account" class="nav-account" title="Account settings">Account</a>
       <a href="/logout" class="nav-logout" title="Sign out">←</a>
-      <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn"
+              aria-label="Open menu" aria-expanded="false">
+        <span class="mobile-menu-bar"></span>
+        <span class="mobile-menu-bar"></span>
+        <span class="mobile-menu-bar"></span>
+      </button>
       <button id="search-nav-btn" class="search-nav-btn" title="Search (⌘K)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </button>
@@ -53,20 +58,37 @@
     </div>
   </header>
 
-  <!-- Mobile nav dropdown -->
-  <div class="mobile-nav-overlay" id="mobile-nav-overlay" role="navigation" aria-label="Mobile navigation">
-    <a href="#" class="nav-link mobile-nav-link active" data-screen="dashboard">Dashboard</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="map">Map</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="pipeline">Pipeline</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="hotels">Hotels</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="brands">Brands</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="owners">Owners</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="valuation">Valuation</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="benchmarking">Benchmarking</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="reports">Reports</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="tourism">Tourism</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="news">News</a>
-    <a href="#" class="nav-link mobile-nav-link" data-screen="ai">AI Analyst</a>
+  <!-- Mobile nav slide-in panel -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+
+      <div class="mobile-menu-header">
+        <span class="mobile-menu-logo">KŌDŌ</span>
+        <button class="mobile-menu-close" id="mobileMenuClose"
+                aria-label="Close menu">✕</button>
+      </div>
+
+      <nav class="mobile-menu-nav" role="navigation" aria-label="Mobile navigation">
+        <a href="#" class="nav-link mobile-menu-link active" data-screen="dashboard">Dashboard</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="map">Map</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="pipeline">Pipeline</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="hotels">Hotels</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="brands">Brands</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="owners">Owners</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="valuation">Valuation</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="benchmarking">Benchmarking</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="reports">Reports</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="tourism">Tourism</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="news">News</a>
+        <a href="#" class="nav-link mobile-menu-link" data-screen="ai">AI Analyst</a>
+      </nav>
+
+      <div class="mobile-menu-footer">
+        <a href="/account" class="mobile-menu-footer-link">Account</a>
+        <a href="/logout" class="mobile-menu-footer-link">Sign Out</a>
+      </div>
+
+    </div>
   </div>
 
   <div class="app-body">
