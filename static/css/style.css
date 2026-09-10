@@ -3763,13 +3763,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   color: #B87860;
 }
 
-.mobile-menu-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 12px 20px;
-  flex-shrink: 0;
-}
-
 /* FOOTER */
 .mobile-menu-footer {
   padding: 16px 20px;
