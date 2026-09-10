@@ -140,7 +140,6 @@ body.lp-light .lp-report-card-v2:hover { background: #F5F5F5; }
 body.lp-light .lp-section { background: #FFFFFF; }
 body.lp-light .lp-section-alt { background: #FFFFFF; }
 body.lp-light .lp-cta { background: #FFFFFF; }
-body.lp-light .lp-video-section { background: #FFFFFF; }
 
 /* ═══════════════════════════════════════════════════════════
    SHARED — used by team.html, contact.html, methodology.html,
@@ -904,73 +903,9 @@ html { scroll-behavior: smooth; }
   opacity: 0.4;
 }
 
-/* ── VIDEO ── */
-.lp-video-section {
-  width: 100%;
-  margin-top: 52px;
-  position: relative;
-  background: #0A0A0A;
-}
-.lp-video-wrap {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  background: #0A0A0A;
-}
-.lp-promo-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-  display: block;
-  opacity: 0;
-  background: #0A0A0A;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: opacity;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transition: opacity 800ms ease;
-}
-.lp-video-a { opacity: 0.75; }
-.lp-video-b { opacity: 0; }
-.lp-video-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(10,10,10,0.2) 0%,
-    rgba(10,10,10,0.5) 60%,
-    rgba(10,10,10,0.85) 100%
-  );
-  display: flex;
-  align-items: flex-end;
-  padding: 48px;
-}
-.lp-video-overlay-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-  max-width: 600px;
-}
-.lp-video-tagline {
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #F0F0EE;
-}
-
 /* ── HERO ── */
 .lp-hero {
   padding: 80px 48px 72px;
-  padding-top: 48px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -2360,10 +2295,7 @@ a.lp-contact-info-val:hover { color: #B87860; }
     padding: 6px 12px;
     font-size: 8px;
   }
-  .lp-video-wrap { height: 60vh; }
-  .lp-video-overlay { padding: 24px; }
-  .lp-video-tagline { font-size: 9px; }
-  .lp-hero { padding: 100px 20px 60px; }
+  .lp-hero { padding: 64px 20px 60px; }
   .lp-hero-headline { font-size: 38px; }
   .lp-spotlight-stage {
     min-height: 220px;

@@ -67,34 +67,6 @@
   </div>
 </div>
 
-<!-- VIDEO -->
-<section class="lp-video-section">
-  <div class="lp-video-wrap">
-    <video
-      class="lp-promo-video lp-video-a"
-      id="kodoVideoA"
-      muted
-      playsinline
-      preload="auto">
-      <source src="/static/videos/kodo.mp4" type="video/mp4">
-    </video>
-    <video
-      class="lp-promo-video lp-video-b"
-      id="kodoVideoB"
-      muted
-      playsinline
-      preload="auto">
-      <source src="/static/videos/kodo.mp4" type="video/mp4">
-    </video>
-    <div class="lp-video-overlay">
-      <div class="lp-video-overlay-content">
-        <span class="lp-video-tagline">The Data Layer for Moroccan Hospitality</span>
-        <a href="/register" class="btn-fill">Request Access →</a>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- HERO -->
 <section class="lp-hero">
   <div class="lp-hero-eyebrow">Morocco Hotel Intelligence</div>
@@ -853,53 +825,6 @@ themeToggle.addEventListener('click', () => {
   wrap.addEventListener('mouseleave', () => {
     if (!isMobile()) closeAll();
   });
-})();
-</script>
-
-<script>
-(function() {
-  const videoA = document.getElementById('kodoVideoA');
-  const videoB = document.getElementById('kodoVideoB');
-  if (!videoA || !videoB) return;
-
-  const CROSSFADE_DURATION = 0.8;
-  let active = 'a';
-
-  function getActive() { return active === 'a' ? videoA : videoB; }
-  function getInactive() { return active === 'a' ? videoB : videoA; }
-
-  function swap() {
-    const incoming = getInactive();
-    const outgoing = getActive();
-
-    // Prepare incoming video from start
-    incoming.currentTime = 0;
-    incoming.play().catch(() => {});
-
-    // Crossfade
-    incoming.style.opacity = '0.75';
-    outgoing.style.opacity = '0';
-
-    active = active === 'a' ? 'b' : 'a';
-  }
-
-  // Watch active video, swap near end
-  function tick() {
-    const current = getActive();
-    if (current.duration && current.currentTime >= current.duration - CROSSFADE_DURATION - 0.1) {
-      swap();
-    }
-    requestAnimationFrame(tick);
-  }
-
-  // Start both videos, A plays first, B preloads
-  videoA.style.opacity = '0.75';
-  videoB.style.opacity = '0';
-
-  videoA.play().catch(() => {});
-  videoB.load();
-
-  requestAnimationFrame(tick);
 })();
 </script>
 
