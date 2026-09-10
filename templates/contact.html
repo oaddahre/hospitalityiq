@@ -4,295 +4,175 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact — Kōdō Hospitality</title>
-  <meta name="description" content="Get in touch with Kōdō Hospitality — request access, ask about enterprise plans, or explore a partnership.">
   <link rel="icon" type="image/png" href="/static/images/kodologo.png">
-  <link rel="apple-touch-icon" href="/static/images/kodologo.png">
-  <meta name="theme-color" content="#B87860">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css">
 </head>
-<body>
+<body class="lp-body">
 
-<!-- Nav -->
 <nav class="mk-nav">
-  <div class="mk-nav__inner">
-    <a href="/" class="mk-nav__logo">
-      <span class="mk-nav__logo-text">Kōdō</span>
-    </a>
-    <ul class="mk-nav__links">
-      <li><a href="/#modules">Platform</a></li>
-      <li><a href="/#pricing">Pricing</a></li>
-      <li><a href="/team">Team</a></li>
-      <li><a href="/contact" class="active">Contact</a></li>
-    </ul>
-    <a href="/dashboard" class="mk-nav__cta">Open Platform</a>
+  <a href="/" class="mk-nav-logo">KŌDŌ</a>
+  <div class="mk-nav-links">
+    <a href="/team" class="mk-nav-link">Team</a>
+    <a href="/contact" class="mk-nav-link">Contact</a>
+    <a href="/login" class="mk-nav-link">Sign In</a>
   </div>
+  <a href="/register" class="mk-nav-cta">Request Access →</a>
 </nav>
 
-<!-- Page Header -->
-<div class="page-header">
-  <div class="container">
-    <div class="page-header__breadcrumb">
-      <a href="/">Kōdō</a>
-      <span>→</span>
-      <span>Contact</span>
+<section class="lp-section" style="padding-top:120px;min-height:100vh;">
+  <div class="lp-inner">
+
+    <div class="lp-section-opener">
+      <span class="lp-section-tag">Contact</span>
+      <span class="lp-section-meta">Get in Touch</span>
     </div>
-    <p class="t-subhead" style="margin-bottom:12px;">Get in Touch</p>
-    <h1 class="t-display" style="max-width:560px;">Talk to us.</h1>
-    <p class="t-body" style="max-width:500px;margin-top:16px;">
-      Whether you're evaluating a subscription, exploring an enterprise arrangement, or interested in joining the team — we respond to every message.
-    </p>
-  </div>
-</div>
 
-<!-- Contact Form + Info -->
-<section class="section">
-  <div class="container">
-    <div class="contact-cols">
+    <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(36px,6vw,72px);color:var(--lp-text);letter-spacing:-0.03em;line-height:1.05;max-width:700px;margin-bottom:64px;">
+      Talk to the Kōdō team.
+    </h1>
 
-      <!-- Form -->
-      <div>
-        <form class="contact-form" id="contact-form" novalidate>
-          <div class="contact-form-row">
-            <div class="form-group">
-              <label class="form-label" for="name">Full Name <span style="color:#B87860">*</span></label>
-              <input class="form-input" type="text" id="name" name="name" placeholder="Youssef Benali" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="email">Email Address <span style="color:#B87860">*</span></label>
-              <input class="form-input" type="email" id="email" name="email" placeholder="y.benali@company.ma" required>
-            </div>
+    <div class="lp-contact-layout">
+
+      <!-- LEFT — Form -->
+      <div class="lp-contact-form-wrap">
+        <form class="lp-contact-form" id="lpContactForm" method="POST" action="/contact">
+
+          <div class="lp-contact-field">
+            <label class="lp-contact-label">Full Name</label>
+            <input class="lp-contact-input" type="text" name="name"
+                   placeholder="YOUR NAME" required autocomplete="name">
           </div>
-          <div class="contact-form-row">
-            <div class="form-group">
-              <label class="form-label" for="organisation">Organisation</label>
-              <input class="form-input" type="text" id="organisation" name="organisation" placeholder="Groupe Alliances">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="role">Role</label>
-              <select class="form-select" id="role" name="role">
-                <option value="">Select role…</option>
-                <option value="Investor / Fund Manager">Investor / Fund Manager</option>
-                <option value="Hotel Operator / GM">Hotel Operator / GM</option>
-                <option value="Developer">Developer</option>
-                <option value="Consultant / Advisor">Consultant / Advisor</option>
-                <option value="Lender / Bank">Lender / Bank</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+
+          <div class="lp-contact-field">
+            <label class="lp-contact-label">Email Address</label>
+            <input class="lp-contact-input" type="email" name="email"
+                   placeholder="YOUR@EMAIL.COM" required autocomplete="email">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="message">Message <span style="color:#B87860">*</span></label>
-            <textarea class="form-textarea" id="message" name="message" placeholder="Tell us what you're working on and how Kōdō can help…" required></textarea>
+
+          <div class="lp-contact-field">
+            <label class="lp-contact-label">Organisation</label>
+            <input class="lp-contact-input" type="text" name="organisation"
+                   placeholder="YOUR ORGANISATION">
           </div>
-          <div id="form-error" style="display:none;font-family:'Manrope',sans-serif;font-size:12px;color:#8B3A3A;padding:10px 12px;border:1px solid #8B3A3A;background:transparent;border-radius:4px;"></div>
-          <button type="submit" class="btn btn-primary" id="submit-btn" style="align-self:flex-start;padding:12px 28px;">
-            <span id="submit-text">Send Message</span>
+
+          <div class="lp-contact-field">
+            <label class="lp-contact-label">Subject</label>
+            <select class="lp-contact-input lp-contact-select" name="subject">
+              <option value="">SELECT A SUBJECT</option>
+              <option value="platform">Platform subscription</option>
+              <option value="advisory">Advisory services</option>
+              <option value="demo">Request a demo</option>
+              <option value="report">Intelligence report</option>
+              <option value="data">Data partnership</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="lp-contact-field">
+            <label class="lp-contact-label">Message</label>
+            <textarea class="lp-contact-input lp-contact-textarea"
+                      name="message" rows="5"
+                      placeholder="YOUR MESSAGE" required></textarea>
+          </div>
+
+          <button type="submit" class="btn-fill" style="margin-top:8px;width:100%;text-align:center;">
+            Send Message →
           </button>
-        </form>
 
-        <!-- Success state -->
-        <div class="form-success" id="form-success">
-          <div class="form-success__icon">✓</div>
-          <div>
-            <h3 style="font-family:'Space Mono', monospace;font-size:1.25rem;font-weight:600;margin-bottom:6px;color:#F0F0EE;">Message received.</h3>
-            <p style="font-family:'Manrope',sans-serif;font-size:14px;color:#888888;line-height:1.6;">We'll get back to you within one business day. In the meantime, you can <a href="/dashboard" style="color:#A06848;text-decoration:underline;">explore the platform</a>.</p>
+          <div id="lpContactSuccess" style="display:none;margin-top:16px;">
+            <span style="font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:#5A8A5A;">
+              ✓ Message sent. We will respond within 24 hours.
+            </span>
           </div>
-        </div>
+
+          <div id="lpContactError" style="display:none;margin-top:16px;">
+            <span style="font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:#C86060;">
+              Something went wrong. Please email us directly.
+            </span>
+          </div>
+
+        </form>
       </div>
 
-      <!-- Info block -->
-      <div>
-        <div class="contact-info">
-          <div class="contact-item">
-            <span class="contact-item__label">Email</span>
-            <span class="contact-item__value">hello@kodo.ma</span>
-          </div>
-          <div class="contact-item">
-            <span class="contact-item__label">Location</span>
-            <span class="contact-item__value">Casablanca, Morocco</span>
-          </div>
-          <div class="contact-item">
-            <span class="contact-item__label">Platform Access</span>
-            <span class="contact-item__value contact-item__value--muted">Subscriptions are reviewed and activated within 24 hours of submission. Enterprise and custom data arrangements are discussed on a call.</span>
-          </div>
-          <div class="contact-item">
-            <span class="contact-item__label">Response Time</span>
-            <span class="contact-item__value">Within 1 business day</span>
+      <!-- RIGHT — Info -->
+      <div class="lp-contact-info">
+
+        <div class="lp-contact-info-block">
+          <span class="lp-contact-info-label">Email</span>
+          <a href="mailto:contact@kodohospitality.com"
+             class="lp-contact-info-val">contact@kodohospitality.com</a>
+        </div>
+
+        <div class="lp-contact-info-block">
+          <span class="lp-contact-info-label">Response Time</span>
+          <span class="lp-contact-info-val">Within 24 hours</span>
+        </div>
+
+        <div class="lp-contact-info-block">
+          <span class="lp-contact-info-label">Based in</span>
+          <span class="lp-contact-info-val">Casablanca, Morocco</span>
+        </div>
+
+        <div class="lp-contact-info-block" style="margin-top:40px;">
+          <span class="lp-contact-info-label">What to expect</span>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="font-family:'Space Mono',monospace;font-size:8px;color:#B87860;flex-shrink:0;padding-top:2px;">01</span>
+              <p style="font-family:'Manrope',sans-serif;font-size:13px;color:var(--lp-text-muted);line-height:1.6;font-weight:400;margin:0;">We respond to every inquiry personally within 24 hours.</p>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="font-family:'Space Mono',monospace;font-size:8px;color:#B87860;flex-shrink:0;padding-top:2px;">02</span>
+              <p style="font-family:'Manrope',sans-serif;font-size:13px;color:var(--lp-text-muted);line-height:1.6;font-weight:400;margin:0;">For platform inquiries we offer a 30-minute walkthrough of the modules most relevant to your use case.</p>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="font-family:'Space Mono',monospace;font-size:8px;color:#B87860;flex-shrink:0;padding-top:2px;">03</span>
+              <p style="font-family:'Manrope',sans-serif;font-size:13px;color:var(--lp-text-muted);line-height:1.6;font-weight:400;margin:0;">Serious inquiries can access the platform before committing to a subscription.</p>
+            </div>
           </div>
         </div>
-        <div class="contact-platform-card">
-          <p class="contact-platform-card__title">Kōdō Platform</p>
-          <p class="contact-platform-card__body">250+ hotels tracked across 18+ Moroccan destinations. Institutional-grade RevPAR, ADR, occupancy, and GOP data — updated quarterly.</p>
-          <a href="/dashboard" class="contact-platform-card__link">Open Platform →</a>
-        </div>
+
       </div>
 
     </div>
+
   </div>
 </section>
 
-<!-- Footer -->
-<footer class="mk-footer">
-  <div class="lp-container">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <span class="footer-logo">KŌDŌ</span>
-        <span class="footer-tagline">Morocco Hotel Intelligence</span>
-      </div>
-      <nav class="footer-links">
-        <a href="/">Platform</a>
-        <a href="/methodology">Methodology</a>
-        <a href="/team">Team</a>
-        <a href="/contact">Contact</a>
-        <a href="/terms">Terms</a>
-        <a href="/privacy">Privacy</a>
-      </nav>
-      <div class="footer-contact">
-        <a href="mailto:contact@kodohospitality.com">contact@kodohospitality.com</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Kōdō Hospitality. All rights reserved.</span>
-      <span>Data updated July 2026</span>
-    </div>
+<footer class="lp-footer">
+  <span class="lp-footer-logo">KŌDŌ</span>
+  <div class="lp-footer-links">
+    <a href="/terms" class="lp-footer-link">Terms</a>
+    <a href="/privacy" class="lp-footer-link">Privacy</a>
+    <a href="/methodology" class="lp-footer-link">Methodology</a>
   </div>
+  <span class="lp-footer-copy">© 2026 Kōdō Hospitality · All Rights Reserved</span>
 </footer>
 
 <script>
-  const form       = document.getElementById('contact-form');
-  const successEl  = document.getElementById('form-success');
-  const errorEl    = document.getElementById('form-error');
-  const submitBtn  = document.getElementById('submit-btn');
-  const submitText = document.getElementById('submit-text');
-
-  form.addEventListener('submit', async (e) => {
+const form = document.getElementById('lpContactForm');
+if (form) {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
-    errorEl.style.display = 'none';
-
-    const name    = form.name.value.trim();
-    const email   = form.email.value.trim();
-    const message = form.message.value.trim();
-
-    if (!name || !email || !message) {
-      errorEl.textContent = 'Please complete all required fields.';
-      errorEl.style.display = 'block';
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errorEl.textContent = 'Please enter a valid email address.';
-      errorEl.style.display = 'block';
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitText.textContent = 'Sending…';
-
+    const data = Object.fromEntries(new FormData(form));
     try {
       const res = await fetch('/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          email,
-          organisation: form.organisation.value.trim(),
-          role: form.role.value,
-          message,
-        }),
+        body: JSON.stringify(data)
       });
-
-      if (!res.ok) throw new Error('Server error');
-
-      form.style.display = 'none';
-      successEl.classList.add('visible');
+      if (res.ok) {
+        document.getElementById('lpContactSuccess').style.display = 'block';
+        document.getElementById('lpContactError').style.display = 'none';
+        form.reset();
+      } else {
+        document.getElementById('lpContactError').style.display = 'block';
+      }
     } catch {
-      errorEl.textContent = 'Something went wrong. Please try again or email us directly.';
-      errorEl.style.display = 'block';
-      submitBtn.disabled = false;
-      submitText.textContent = 'Send Message';
+      document.getElementById('lpContactError').style.display = 'block';
     }
   });
-</script>
-
-<script>
-// Scroll progress bar
-const progressBar = document.createElement('div');
-progressBar.className = 'scroll-progress';
-document.body.prepend(progressBar);
-
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  progressBar.style.width = (scrollTop / docHeight) * 100 + '%';
-}, { passive: true });
-
-// Nav frosted-glass blur on scroll
-const nav = document.querySelector('.mk-nav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 20);
-}, { passive: true });
-
-// Intersection Observer for scroll animations
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      setTimeout(() => {
-        entry.target.classList.add('animate-visible');
-      }, entry.target.dataset.delay || 0);
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.12 });
-
-// Apply animations to elements
-const animateSelectors = [
-  '.module-card',
-  '.audience-card',
-  '.dest-card',
-  '.pricing-card',
-  '.team-card',
-  '.mk-section-title',
-  '.mk-section-sub',
-  '.hero__title',
-  '.hero__body',
-  '.hero__ctas',
-  '.hero__stat'
-];
-
-animateSelectors.forEach(selector => {
-  document.querySelectorAll(selector).forEach((el, index) => {
-    el.classList.add('animate-hidden');
-    el.dataset.delay = (index % 6) * 80;
-    observer.observe(el);
-  });
-});
-
-// Hero entrance animations on load
-window.addEventListener('load', () => {
-  const heroElements = document.querySelectorAll('.hero__title, .hero__body, .hero__actions');
-  heroElements.forEach((el, index) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 600ms ease-out, transform 600ms ease-out';
-    setTimeout(() => {
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    }, 100 + index * 150);
-  });
-});
-
-// Hover lift effect on cards
-document.querySelectorAll('.module-card, .pricing-card, .team-card').forEach(card => {
-  card.addEventListener('mouseenter', () => {
-    card.style.transform = 'translateY(-4px)';
-    card.style.transition = 'transform 200ms ease';
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = 'translateY(0)';
-  });
-});
+}
 </script>
 
 </body>

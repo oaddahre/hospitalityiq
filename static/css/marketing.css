@@ -1809,6 +1809,296 @@ html { scroll-behavior: smooth; }
   font-weight: 400;
 }
 
+/* ── TEAM PAGE ── */
+.lp-team-founder {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 80px;
+  align-items: start;
+  padding-bottom: 80px;
+  border-bottom: 1px solid var(--lp-border);
+}
+
+.lp-team-role {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #B87860;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.lp-team-name {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: clamp(28px, 4vw, 48px);
+  color: var(--lp-text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.lp-team-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lp-text-faint);
+  display: block;
+  margin-bottom: 24px;
+}
+
+.lp-team-bio {
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  color: var(--lp-text-muted);
+  line-height: 1.8;
+  font-weight: 400;
+  max-width: 520px;
+}
+
+.lp-team-founder-card {
+  background: var(--lp-bg-alt);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lp-team-card-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #B87860;
+  display: block;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--lp-border);
+}
+
+.lp-team-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--lp-border);
+}
+
+.lp-team-card-row:last-child { border-bottom: none; }
+
+.lp-team-card-key {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lp-text-faint);
+}
+
+.lp-team-card-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--lp-text);
+}
+
+.lp-team-positions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--lp-border);
+  margin-top: 40px;
+}
+
+.lp-team-position {
+  background: var(--lp-bg);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-team-position-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.lp-team-position-title {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--lp-text);
+  letter-spacing: -0.01em;
+}
+
+.lp-team-position-type {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #B87860;
+}
+
+.lp-team-position-desc {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  color: var(--lp-text-muted);
+  line-height: 1.7;
+  font-weight: 400;
+  margin: 0;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .lp-team-founder {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .lp-team-positions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── CONTACT PAGE ── */
+.lp-contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 80px;
+  align-items: start;
+}
+
+.lp-contact-form-wrap {
+  max-width: 560px;
+}
+
+.lp-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.lp-contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-contact-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--lp-text-faint);
+  display: block;
+}
+
+.lp-contact-input {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--lp-border) !important;
+  border-radius: 0 !important;
+  padding: 10px 0 !important;
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 14px !important;
+  color: var(--lp-text) !important;
+  outline: none !important;
+  width: 100%;
+  transition: border-color 200ms;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.lp-contact-input:focus {
+  border-bottom-color: #B87860 !important;
+  box-shadow: none !important;
+}
+
+.lp-contact-input::placeholder {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lp-text-faint);
+}
+
+.lp-contact-textarea {
+  resize: none;
+  line-height: 1.7;
+  min-height: 120px;
+}
+
+.lp-contact-select {
+  cursor: pointer;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 9px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lp-contact-select option {
+  background: var(--lp-bg);
+  color: var(--lp-text);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+}
+
+.lp-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: sticky;
+  top: 80px;
+}
+
+.lp-contact-info-block {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--lp-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lp-contact-info-block:last-child { border-bottom: none; }
+
+.lp-contact-info-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--lp-text-faint);
+  display: block;
+}
+
+.lp-contact-info-val {
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--lp-text);
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+a.lp-contact-info-val:hover { color: #B87860; }
+
+@media (max-width: 768px) {
+  .lp-contact-layout {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .lp-contact-info {
+    position: static;
+  }
+}
+
 /* ── SCROLL REVEAL ── */
 .lp-reveal {
   opacity: 0;
