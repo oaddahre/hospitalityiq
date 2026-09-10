@@ -211,12 +211,12 @@ textarea::placeholder,
 .logo-mark { display: none; }
 
 .logo-text {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Mono', monospace;
   font-style: normal;
-  font-weight: 800;
-  font-size: 16px;
-  color: #F0F0EE;
-  letter-spacing: 0.08em;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text);
+  letter-spacing: 0.22em;
 }
 
 .navbar-links { display: flex; gap: 0; }
@@ -279,7 +279,6 @@ textarea::placeholder,
 
 /* ─── Nav light mode overrides ───────────────────── */
 body.light .navbar { border-bottom-color: #ECECEC; }
-body.light .logo-text { color: #0A0A0A; }
 body.light .nav-link { color: #8A8A8A; }
 body.light .nav-link:hover  { color: #0A0A0A; }
 body.light .nav-link.active { color: #0A0A0A; font-weight: 600; }
@@ -317,9 +316,12 @@ body.light .nav-logout  { color: #8A8A8A; }
 
 /* ─── Nav account/logout ──────────────────────────── */
 .nav-account {
+  font-family: 'Space Mono', monospace;
   font-size: 0.75rem;
   color: var(--text-muted);
   text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   padding: 4px 6px;
   border-radius: 0;
   transition: color 0.15s, background 0.15s;
@@ -392,6 +394,12 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .sidebar-item:hover, .si:hover { background: transparent; border-left-color: var(--border); color: var(--text); }
 .sidebar-item.active, .si.on { background: transparent; border-left-color: #B87860; color: #B87860; font-weight: 600; }
+
+/* City destination list only — not the segment sidebar, which shares .sidebar-item */
+#city-filter .sidebar-item {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 
 /* Sidebar count badge */
 .si-ct, .sidebar-count {
@@ -521,12 +529,6 @@ body.light .nav-logout  { color: #8A8A8A; }
 
 /* ─── Chevron-suffix badges/pills ─────────────────────────────── */
 .segment-badge,
-.segment-ultra-luxury,
-.segment-luxury,
-.segment-upper-upscale,
-.segment-upscale,
-.segment-midscale,
-.segment-economy,
 .owner-type-badge,
 .status-badge,
 .tier-badge,
@@ -559,12 +561,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-size: 8px !important;
 }
 .segment-badge::after,
-.segment-ultra-luxury::after,
-.segment-luxury::after,
-.segment-upper-upscale::after,
-.segment-upscale::after,
-.segment-midscale::after,
-.segment-economy::after,
 .owner-type-badge::after,
 .status-badge::after,
 .tier-badge::after,
@@ -589,12 +585,30 @@ body.light .nav-logout  { color: #8A8A8A; }
   line-height: 1;
 }
 
-.segment-ultra-luxury { color: #C8922A; }
-.segment-luxury { color: #B87860; }
-.segment-upper-upscale { color: #5A8A5A; }
-.segment-upscale { color: #6482B4; }
-.segment-midscale { color: #888888; }
-.segment-economy { color: #666666; }
+/* ─── Segment badges — original colored pill format ───────────── */
+.segment-ultra-luxury,
+.segment-luxury,
+.segment-upper-upscale,
+.segment-upscale,
+.segment-midscale,
+.segment-economy {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.segment-ultra-luxury  { background: rgba(200,146,42,0.15);  color: #C8922A; }
+.segment-luxury        { background: rgba(184,120,96,0.15);  color: #B87860; }
+.segment-upper-upscale { background: rgba(90,138,90,0.15);   color: #5A8A5A; }
+.segment-upscale       { background: rgba(100,130,180,0.15); color: #6482B4; }
+.segment-midscale      { background: rgba(136,136,136,0.15); color: #888888; }
+.segment-economy       { background: rgba(100,100,100,0.12); color: #666666; }
 .status-badge { color: #5A8A5A; }
 .owner-type-badge { color: #888888; }
 .kodo-estimate-badge { color: #B87860; }

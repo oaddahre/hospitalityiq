@@ -188,8 +188,17 @@ function getSegmentBadgeHtml(segment) {
     'Midscale': '#888888',
     'Economy': '#666666'
   };
+  const segmentBg = {
+    'Ultra Luxury': 'rgba(200,146,42,0.15)',
+    'Luxury': 'rgba(184,120,96,0.15)',
+    'Upper Upscale': 'rgba(90,138,90,0.15)',
+    'Upscale': 'rgba(100,130,180,0.15)',
+    'Midscale': 'rgba(136,136,136,0.15)',
+    'Economy': 'rgba(100,100,100,0.12)'
+  };
   const color = segmentColors[segment] || '#888888';
-  return `<span style="color:${color};font-family:'Space Mono',monospace;font-size:8px;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;background:transparent;border:none;padding:0;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(segment).toUpperCase()} <span style="opacity:0.5;font-size:10px;">›</span></span>`;
+  const bg = segmentBg[segment] || 'rgba(136,136,136,0.15)';
+  return `<span style="color:${color};background:${bg};font-family:'Space Mono',monospace;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;border-radius:4px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;">${fmt.esc(segment).toUpperCase()}</span>`;
 }
 
 const CITY_COORDS = {
@@ -4334,8 +4343,7 @@ async function initReports() {
       const lockIcon = canGenerate ? '' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 
       card.innerHTML = `
-        <div style="font-family:'Space Mono',monospace;font-size:0.875rem;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;color:var(--text);margin-bottom:3px;">${cityMeta.city}</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:12px;">Morocco Hotel Market</div>
+        <div style="font-family:'Space Mono',monospace;font-size:0.875rem;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;color:var(--text);margin-bottom:12px;">${cityMeta.city}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" class="report-period-pills">${periodsHTML}</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;" class="report-theme-pills">
           <button class="report-theme-pill active" data-theme="dark"

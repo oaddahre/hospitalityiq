@@ -817,12 +817,15 @@ html { scroll-behavior: smooth; }
 
 .lp-mobile-panel-link {
   font-family: 'Manrope', sans-serif;
-  font-size: 16px;
   font-weight: 600;
+  font-size: 18px;
   color: var(--lp-text-muted);
-  padding: 14px 20px;
+  padding: 16px 24px;
   text-decoration: none;
+  display: block;
   transition: color 200ms, background 200ms;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .lp-mobile-panel-link:hover {
