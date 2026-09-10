@@ -113,6 +113,22 @@ body.lp-light {
   --lp-data-header-border: #E0E0DC;
   --lp-data-row-border: #EEEEEA;
   --lp-price-row-border: #E0E0DC;
+
+  /* Legacy (non "lp-") tokens — used by the old mk-nav__*/legal-*/
+     method-*/page-header* system on team.html (pre-rebuild),
+     contact.html (pre-rebuild), methodology.html, terms.html,
+     privacy.html. Mirrors the --lp-* light values above so pages
+     still on this system respond to the same toggle. */
+  --bg: #FFFFFF;
+  --card: #F5F5F5;
+  --surface: #FFFFFF;
+  --surface-hover: #F5F5F5;
+  --border: #E0E0DC;
+  --border-light: #E8E8E4;
+  --text: #1A1A1A;
+  --muted: #666666;
+  --text-faint: #888888;
+  --deep: #FAFAFA;
 }
 
 /* Light mode — pure white overrides for elements with hardcoded

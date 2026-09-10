@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css">
 </head>
-<body>
+<body class="lp-body">
 
 <nav class="mk-nav">
   <div class="mk-nav__inner">
@@ -26,6 +26,11 @@
       <li><a href="/team">Team</a></li>
       <li><a href="/contact">Contact</a></li>
     </ul>
+    <div class="mk-text-toggle" id="themeToggle">
+      <span class="mk-toggle-opt" id="toggleDark">DARK</span>
+      <span class="mk-toggle-sep">/</span>
+      <span class="mk-toggle-opt" id="toggleLight">LIGHT</span>
+    </div>
     <a href="/dashboard" class="mk-nav__cta">Open Platform</a>
   </div>
 </nav>
@@ -162,6 +167,33 @@ const nav = document.querySelector('.mk-nav');
 window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > 20);
 }, { passive: true });
+</script>
+
+<script>
+(function() {
+  const themeToggle = document.getElementById('themeToggle');
+  const toggleDark  = document.getElementById('toggleDark');
+  const toggleLight = document.getElementById('toggleLight');
+  if (!themeToggle) return;
+
+  function updateToggleState() {
+    const isLight = document.body.classList.contains('lp-light');
+    if (toggleDark)  toggleDark.classList.toggle('mk-toggle-active', !isLight);
+    if (toggleLight) toggleLight.classList.toggle('mk-toggle-active', isLight);
+  }
+
+  const saved = localStorage.getItem('kodo-lp-theme');
+  if (saved === 'light') document.body.classList.add('lp-light');
+  updateToggleState();
+
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('lp-light');
+    localStorage.setItem('kodo-lp-theme',
+      document.body.classList.contains('lp-light') ? 'light' : 'dark'
+    );
+    updateToggleState();
+  });
+})();
 </script>
 
 </body>
