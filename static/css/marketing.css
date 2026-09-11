@@ -898,7 +898,7 @@ html { scroll-behavior: smooth; }
 
 .mk-toggle-opt {
   font-family: 'Space Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -913,7 +913,7 @@ html { scroll-behavior: smooth; }
 
 .mk-toggle-sep {
   font-family: 'Space Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--lp-text-faint);
   opacity: 0.4;
 }
@@ -1511,14 +1511,33 @@ html { scroll-behavior: smooth; }
 .lp-report-badge {
   margin-bottom: 16px;
 }
-.lp-report-title {
+.lp-report-title,
+.lp-report-city,
+.lp-report-name,
+.lp-report-subtitle,
+[class*="report-title"],
+[class*="report-name"] {
   font-family: 'Manrope', sans-serif;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 18px;
   color: var(--lp-text);
-  line-height: 1.3;
-  margin-bottom: 10px;
   letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.lp-report-title {
+  margin-bottom: 10px;
+}
+
+.lp-report-location,
+.lp-report-dest,
+[class*="report-location"],
+[class*="report-dest"] {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--lp-text-muted);
 }
 .lp-report-meta {
   font-family: 'Space Mono', monospace;
@@ -1592,15 +1611,6 @@ html { scroll-behavior: smooth; }
   margin-bottom: 16px;
 }
 .lp-report-card-top .lp-report-badge { margin-bottom: 0; }
-
-.lp-report-city {
-  font-family: 'Space Mono', monospace;
-  font-size: 7px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--lp-text-faint);
-  font-weight: 400;
-}
 
 .lp-report-badge-muted {
   color: var(--lp-text-faint);
@@ -1735,22 +1745,18 @@ html { scroll-behavior: smooth; }
 
 /* ── AUDIENCE: RADAR SCREEN ── */
 .lp-radar-wrap {
-  position: relative;
   margin-top: 48px;
+  position: relative;
   width: 100%;
-  max-width: 520px;
-  aspect-ratio: 1 / 1;
-  height: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  height: 720px;
 }
 
 .lp-radar-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  display: block;
-  border-radius: 50%;
-  cursor: pointer;
+  cursor: default;
 }
 
 .lp-radar-detail {

@@ -834,29 +834,29 @@ themeToggle.addEventListener('click', () => {
       num: '01',
       name: 'Hotel Investors & Funds',
       desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.',
-      angle: Math.PI * 0.15,
-      radius: 0.62
+      angle: Math.PI * 0.18,
+      radius: 0.58
     },
     {
       num: '02',
       name: 'Owners & Asset Managers',
       desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.',
-      angle: Math.PI * 0.85,
-      radius: 0.55
+      angle: Math.PI * 0.82,
+      radius: 0.54
     },
     {
       num: '03',
       name: 'Developers & Operators',
       desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.',
-      angle: Math.PI * 1.35,
-      radius: 0.60
+      angle: Math.PI * 1.28,
+      radius: 0.58
     },
     {
       num: '04',
       name: 'Banks & Financial Institutions',
       desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.',
-      angle: Math.PI * 1.75,
-      radius: 0.50
+      angle: Math.PI * 1.70,
+      radius: 0.52
     }
   ];
 
@@ -874,15 +874,25 @@ themeToggle.addEventListener('click', () => {
   const SWEEP_TRAIL = Math.PI * 0.45;
 
   function resize() {
-    W  = canvas.width  = wrap.offsetWidth;
-    H  = canvas.height = wrap.offsetHeight;
+    const dpr = window.devicePixelRatio || 1;
+    W = wrap.offsetWidth;
+    H = wrap.offsetHeight;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
     CX = W / 2;
     CY = H / 2;
     R  = Math.min(W, H) * 0.44;
   }
 
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', () => {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    resize();
+  });
 
   new MutationObserver(() => {
     isDark = !document.body.classList.contains('lp-light');
@@ -908,8 +918,8 @@ themeToggle.addEventListener('click', () => {
       ctx.beginPath();
       ctx.arc(CX, CY, R * (i / 4), 0, Math.PI * 2);
       ctx.strokeStyle = isDark
-        ? `rgba(184,120,96,${0.15 + i * 0.02})`
-        : `rgba(184,120,96,${0.18 + i * 0.02})`;
+        ? `rgba(184,120,96,${0.18 + i * 0.02})`
+        : `rgba(184,120,96,${0.22 + i * 0.02})`;
       ctx.lineWidth = 0.5;
       ctx.stroke();
     }
@@ -918,7 +928,7 @@ themeToggle.addEventListener('click', () => {
     [[CX-R, CY, CX+R, CY],[CX, CY-R, CX, CY+R]].forEach(([x1,y1,x2,y2]) => {
       ctx.beginPath();
       ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
-      ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.18)' : 'rgba(184,120,96,0.22)';
+      ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.20)' : 'rgba(184,120,96,0.25)';
       ctx.lineWidth = 0.5;
       ctx.stroke();
     });
@@ -926,7 +936,7 @@ themeToggle.addEventListener('click', () => {
     // Outer circle
     ctx.beginPath();
     ctx.arc(CX, CY, R, 0, Math.PI * 2);
-    ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.45)' : 'rgba(184,120,96,0.50)';
+    ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.50)' : 'rgba(184,120,96,0.55)';
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -940,8 +950,8 @@ themeToggle.addEventListener('click', () => {
     ctx.closePath();
     const grd = ctx.createRadialGradient(CX, CY, 0, CX, CY, R);
     grd.addColorStop(0, 'rgba(184,120,96,0)');
-    grd.addColorStop(0.5, 'rgba(184,120,96,0.10)');
-    grd.addColorStop(1, 'rgba(184,120,96,0.22)');
+    grd.addColorStop(0.5, 'rgba(184,120,96,0.12)');
+    grd.addColorStop(1, 'rgba(184,120,96,0.25)');
     ctx.fillStyle = grd;
     ctx.fill();
     ctx.restore();
@@ -964,7 +974,7 @@ themeToggle.addEventListener('click', () => {
     ctx.fill();
 
     ctx.font = '400 8px "Space Mono", monospace';
-    ctx.fillStyle = isDark ? 'rgba(240,240,238,0.65)' : 'rgba(26,26,26,0.65)';
+    ctx.fillStyle = isDark ? 'rgba(240,240,238,0.70)' : 'rgba(26,26,26,0.70)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('KŌDŌ', CX, CY + 16);
@@ -982,7 +992,7 @@ themeToggle.addEventListener('click', () => {
         const p = pulse.progress;
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 5 + p * 22, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(184,120,96,${(1 - p) * 0.8})`;
+        ctx.strokeStyle = `rgba(184,120,96,${(1 - p) * 0.9})`;
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -1000,36 +1010,42 @@ themeToggle.addEventListener('click', () => {
 
       // Main dot — always visible
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, isSelected ? 7 : isHovered ? 6 : 4, 0, Math.PI * 2);
-      ctx.fillStyle = isSelected || isHovered ? '#B87860' : isDark
-        ? 'rgba(184,120,96,1)'
-        : 'rgba(184,120,96,1)';
+      ctx.arc(pos.x, pos.y, isSelected ? 9 : isHovered ? 8 : 6, 0, Math.PI * 2);
+      ctx.fillStyle = isSelected || isHovered ? '#B87860' : '#B87860';
       ctx.fill();
 
-      // Label — always visible
+      // Label — always visible, kept within canvas bounds
       const isRight = pos.x > CX;
-      const lx = isRight ? pos.x + 14 : pos.x - 14;
+      const lx = isRight ? pos.x + 16 : pos.x - 16;
 
-      ctx.font = `${isSelected || isHovered ? '700' : '600'} 11px "Manrope", sans-serif`;
+      ctx.font = `${isSelected || isHovered ? '700' : '600'} 12px "Manrope", sans-serif`;
+      const labelWidth = ctx.measureText(aud.name).width;
+
+      let finalLx = lx;
+      if (isRight && finalLx + labelWidth > W - 16) {
+        finalLx = W - labelWidth - 16;
+      }
+      if (!isRight && finalLx < 16) {
+        finalLx = 16;
+      }
+
       ctx.textAlign = isRight ? 'left' : 'right';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = isSelected || isHovered
         ? '#B87860'
         : isDark ? 'rgba(240,240,238,1)' : 'rgba(26,26,26,1)';
-      ctx.fillText(aud.name, lx, pos.y);
+      ctx.fillText(aud.name, finalLx, pos.y);
 
-      // Number
-      ctx.font = '400 8px "Space Mono", monospace';
-      ctx.fillStyle = isSelected || isHovered
-        ? '#B87860'
-        : 'rgba(184,120,96,1)';
-      ctx.fillText(aud.num, lx, pos.y - 15);
+      ctx.font = '400 9px "Space Mono", monospace';
+      ctx.fillStyle = 'rgba(184,120,96,1)';
+      ctx.textAlign = isRight ? 'left' : 'right';
+      ctx.fillText(aud.num, finalLx, pos.y - 17);
 
-      // Click hint on hover
       if (isHovered && selectedIndex === null) {
         ctx.font = '400 8px "Space Mono", monospace';
-        ctx.fillStyle = 'rgba(184,120,96,0.5)';
-        ctx.fillText('CLICK TO EXPAND', lx, pos.y + 16);
+        ctx.fillStyle = 'rgba(184,120,96,0.6)';
+        ctx.textAlign = isRight ? 'left' : 'right';
+        ctx.fillText('CLICK TO EXPAND', finalLx, pos.y + 18);
       }
     });
   }
