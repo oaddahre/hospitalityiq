@@ -1733,161 +1733,98 @@ html { scroll-behavior: smooth; }
   box-sizing: border-box;
 }
 
-/* ── AUDIENCE: TICKER TAPE ── */
-.lp-ticker-clients {
+/* ── AUDIENCE: RADAR SCREEN ── */
+.lp-radar-wrap {
+  position: relative;
   margin-top: 48px;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 1 / 1;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lp-radar-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.lp-radar-detail {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  width: 62%;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease, transform 300ms ease;
   display: flex;
   flex-direction: column;
-  gap: 0;
-}
-
-.lp-ticker-row {
-  position: relative;
-  overflow: hidden;
-}
-
-.lp-ticker-row + .lp-ticker-row::before {
-  content: '';
-  display: block;
-  height: 1px;
-  width: 100%;
-  background: linear-gradient(
-    to right,
-    #B87860 0px,
-    rgba(184,120,96,0.3) 40px,
-    transparent 120px
-  );
-  margin-bottom: 0;
-}
-
-/* Ticker track — clips overflow */
-.lp-ticker-track {
-  overflow: hidden;
-  padding: 14px 0;
-  cursor: pointer;
-  position: relative;
-}
-
-.lp-ticker-track::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 80px;
-  background: linear-gradient(to right, transparent, var(--lp-bg));
-  pointer-events: none;
-  z-index: 1;
-}
-
-.lp-ticker-row.lp-ticker-open .lp-ticker-track::after {
-  background: linear-gradient(to right, transparent, var(--lp-bg-alt));
-}
-
-/* Scrolling belt */
-.lp-ticker-belt {
-  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  white-space: nowrap;
-  will-change: transform;
+  gap: 6px;
 }
 
-.lp-ticker-belt.lp-ticker-paused {
-  animation-play-state: paused !important;
+.lp-radar-detail.lp-radar-active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+  animation: lp-radar-fade 300ms ease;
 }
 
-/* Individual rows scroll at different speeds */
-#lpTicker0 { animation: lp-scroll 35s linear infinite; }
-#lpTicker1 { animation: lp-scroll 42s linear infinite; }
-#lpTicker2 { animation: lp-scroll 28s linear infinite; }
-#lpTicker3 { animation: lp-scroll 50s linear infinite; }
-
-@keyframes lp-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+@keyframes lp-radar-fade {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Ticker symbol */
-.lp-ticker-sym {
+.lp-radar-detail-num {
   font-family: 'Space Mono', monospace;
   font-size: 11px;
-  font-weight: 400;
   letter-spacing: 0.1em;
   color: #B87860;
-  flex-shrink: 0;
 }
 
-/* Separator dot */
-.lp-ticker-sep {
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  color: var(--lp-text-faint);
-  flex-shrink: 0;
-  opacity: 0.4;
-}
-
-/* Ticker description text */
-.lp-ticker-text {
-  font-family: 'Manrope', sans-serif;
-  font-size: 13px;
-  color: var(--lp-text-muted);
-  font-weight: 400;
-  flex-shrink: 0;
-}
-
-/* Row hover state */
-.lp-ticker-row:hover .lp-ticker-sym {
-  color: #B87860;
-}
-
-.lp-ticker-row:hover .lp-ticker-text {
-  color: var(--lp-text);
-}
-
-/* EXPAND PANEL */
-.lp-ticker-expand {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 450ms cubic-bezier(0.4,0,0.2,1),
-              padding 400ms ease,
-              background 200ms ease;
-  background: var(--lp-bg);
-  padding: 0 0;
-}
-
-.lp-ticker-row.lp-ticker-open .lp-ticker-expand {
-  max-height: 160px;
-  padding: 20px 24px 24px 24px;
-  background: var(--lp-bg-alt);
-}
-
-.lp-ticker-row.lp-ticker-open {
-  background: var(--lp-bg-alt);
-}
-
-.lp-ticker-expand-who {
+.lp-radar-detail-name {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 20px;
+  font-size: 18px;
   color: var(--lp-text);
-  display: block;
-  margin-bottom: 8px;
   letter-spacing: -0.01em;
-  padding-left: 0;
-  margin-left: 0;
 }
 
-.lp-ticker-expand-desc {
+.lp-radar-detail-desc {
   font-family: 'Manrope', sans-serif;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 1.6;
   color: var(--lp-text-muted);
-  line-height: 1.7;
   font-weight: 400;
   margin: 0;
-  padding-left: 0;
-  margin-left: 0;
-  max-width: 600px;
+}
+
+.lp-radar-close {
+  margin-top: 4px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--lp-text-faint);
+  background: none;
+  border: 1px solid var(--lp-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+
+.lp-radar-close:hover {
+  color: #B87860;
+  border-color: #B87860;
+}
+
+.lp-radar-mobile {
+  display: none;
 }
 
 /* ── CTA ── */
@@ -2428,21 +2365,44 @@ a.lp-contact-info-val:hover { color: #B87860; }
     padding: 8px 0;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
-  .lp-ticker-track { padding: 12px 0; }
-  .lp-ticker-sym { font-size: 10px; }
-  .lp-ticker-text { font-size: 12px; }
-  .lp-ticker-expand-who { font-size: 17px; }
-  .lp-ticker-expand-desc { font-size: 13px; }
-  .lp-ticker-row.lp-ticker-open .lp-ticker-expand {
-    padding: 16px 16px 20px 16px;
+  .lp-radar-wrap { display: none; }
+  .lp-radar-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 48px;
   }
-  .lp-ticker-row + .lp-ticker-row::before {
-    background: linear-gradient(
-      to right,
-      #B87860 0px,
-      rgba(184,120,96,0.3) 24px,
-      transparent 80px
-    );
+  .lp-radar-mob-item {
+    padding: 20px 0;
+    border-top: 1px solid var(--lp-border);
+  }
+  .lp-radar-mob-item:last-child {
+    border-bottom: 1px solid var(--lp-border);
+  }
+  .lp-radar-mob-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: #B87860;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .lp-radar-mob-name {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--lp-text);
+    display: block;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .lp-radar-mob-desc {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--lp-text-muted);
+    font-weight: 400;
+    margin: 0;
   }
   .lp-plan-grid { grid-template-columns: 1fr; }
   .lp-cta { padding: 60px 20px; }

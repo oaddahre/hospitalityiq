@@ -359,97 +359,38 @@
 
     <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Built for Morocco hospitality professionals.</h2>
 
-    <div class="lp-ticker-clients" id="lpTickerClients">
+    <div class="lp-radar-wrap" id="lpRadarWrap">
+      <canvas class="lp-radar-canvas" id="lpRadarCanvas"></canvas>
 
-      <div class="lp-ticker-row" data-index="0">
-        <div class="lp-ticker-track">
-          <div class="lp-ticker-belt" id="lpTicker0">
-            <span class="lp-ticker-sym">$INVESTORS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$INVESTORS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$INVESTORS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</span>
-            <span class="lp-ticker-sep">·</span>
-          </div>
-        </div>
-        <div class="lp-ticker-expand" id="lpTickerExpand0">
-          <span class="lp-ticker-expand-who">Hotel Investors &amp; Funds</span>
-          <p class="lp-ticker-expand-desc">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
-        </div>
+      <!-- Center detail — shown when blip is clicked -->
+      <div class="lp-radar-detail" id="lpRadarDetail">
+        <span class="lp-radar-detail-num" id="lpRadarNum"></span>
+        <span class="lp-radar-detail-name" id="lpRadarName"></span>
+        <p class="lp-radar-detail-desc" id="lpRadarDesc"></p>
+        <button class="lp-radar-close" id="lpRadarClose">✕ Resume scan</button>
       </div>
 
-      <div class="lp-ticker-row" data-index="1">
-        <div class="lp-ticker-track">
-          <div class="lp-ticker-belt" id="lpTicker1">
-            <span class="lp-ticker-sym">$OWNERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$OWNERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$OWNERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</span>
-            <span class="lp-ticker-sep">·</span>
-          </div>
+      <!-- Mobile fallback -->
+      <div class="lp-radar-mobile">
+        <div class="lp-radar-mob-item">
+          <span class="lp-radar-mob-num">01</span>
+          <span class="lp-radar-mob-name">Hotel Investors &amp; Funds</span>
+          <p class="lp-radar-mob-desc">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
         </div>
-        <div class="lp-ticker-expand" id="lpTickerExpand1">
-          <span class="lp-ticker-expand-who">Owners &amp; Asset Managers</span>
-          <p class="lp-ticker-expand-desc">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
+        <div class="lp-radar-mob-item">
+          <span class="lp-radar-mob-num">02</span>
+          <span class="lp-radar-mob-name">Owners &amp; Asset Managers</span>
+          <p class="lp-radar-mob-desc">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
         </div>
-      </div>
-
-      <div class="lp-ticker-row" data-index="2">
-        <div class="lp-ticker-track">
-          <div class="lp-ticker-belt" id="lpTicker2">
-            <span class="lp-ticker-sym">$DEVELOPERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$DEVELOPERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$DEVELOPERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</span>
-            <span class="lp-ticker-sep">·</span>
-          </div>
+        <div class="lp-radar-mob-item">
+          <span class="lp-radar-mob-num">03</span>
+          <span class="lp-radar-mob-name">Developers &amp; Operators</span>
+          <p class="lp-radar-mob-desc">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
         </div>
-        <div class="lp-ticker-expand" id="lpTickerExpand2">
-          <span class="lp-ticker-expand-who">Developers &amp; Operators</span>
-          <p class="lp-ticker-expand-desc">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
-        </div>
-      </div>
-
-      <div class="lp-ticker-row" data-index="3">
-        <div class="lp-ticker-track">
-          <div class="lp-ticker-belt" id="lpTicker3">
-            <span class="lp-ticker-sym">$LENDERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$LENDERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-sym">$LENDERS</span>
-            <span class="lp-ticker-sep">·</span>
-            <span class="lp-ticker-text">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</span>
-            <span class="lp-ticker-sep">·</span>
-          </div>
-        </div>
-        <div class="lp-ticker-expand" id="lpTickerExpand3">
-          <span class="lp-ticker-expand-who">Banks &amp; Financial Institutions</span>
-          <p class="lp-ticker-expand-desc">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
+        <div class="lp-radar-mob-item">
+          <span class="lp-radar-mob-num">04</span>
+          <span class="lp-radar-mob-name">Banks &amp; Financial Institutions</span>
+          <p class="lp-radar-mob-desc">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
         </div>
       </div>
 
@@ -879,43 +820,268 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpTickerClients');
+  const wrap = document.getElementById('lpRadarWrap');
   if (!wrap) return;
+  if (window.innerWidth <= 768) return;
 
-  const rows = wrap.querySelectorAll('.lp-ticker-row');
+  const canvas = document.getElementById('lpRadarCanvas');
+  const detail = document.getElementById('lpRadarDetail');
+  const numEl  = document.getElementById('lpRadarNum');
+  const nameEl = document.getElementById('lpRadarName');
+  const descEl = document.getElementById('lpRadarDesc');
+  const closeBtn = document.getElementById('lpRadarClose');
+  const ctx = canvas.getContext('2d');
 
-  rows.forEach((row, i) => {
-    const track = row.querySelector('.lp-ticker-track');
-    const belt  = row.querySelector('.lp-ticker-belt');
+  const audiences = [
+    { num: '01', name: 'Hotel Investors & Funds', desc: "Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.", angle: 0.4,  radius: 0.7 },
+    { num: '02', name: 'Owners & Asset Managers',  desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.', angle: 2.1,  radius: 0.5 },
+    { num: '03', name: 'Developers & Operators',   desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.', angle: 3.6,  radius: 0.8 },
+    { num: '04', name: 'Banks & Financial Institutions', desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.', angle: 5.2,  radius: 0.6 }
+  ];
 
-    // Pause on hover
-    track.addEventListener('mouseenter', () => {
-      belt.classList.add('lp-ticker-paused');
-    });
+  let size = 0, cx = 0, cy = 0, R = 0;
+  let sweepAngle = 0;
+  let frozen = false;
+  let activeAudience = null;
+  let hoveredBlip = null;
 
-    track.addEventListener('mouseleave', () => {
-      if (!row.classList.contains('lp-ticker-open')) {
-        belt.classList.remove('lp-ticker-paused');
+  function isLight() { return document.body.classList.contains('lp-light'); }
+
+  function resize() {
+    const rect = wrap.getBoundingClientRect();
+    size = rect.width;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx = size / 2;
+    cy = size / 2;
+    R = size / 2 - 4;
+  }
+
+  function getBlipPos(a) {
+    const r = a.radius * R;
+    return {
+      x: cx + Math.cos(a.angle) * r,
+      y: cy + Math.sin(a.angle) * r
+    };
+  }
+
+  function angleDiff(a, b) {
+    let d = Math.abs(a - b) % (Math.PI * 2);
+    if (d > Math.PI) d = Math.PI * 2 - d;
+    return d;
+  }
+
+  function drawRadarBase() {
+    const lineColor = isLight() ? 'rgba(20,20,20,0.08)' : 'rgba(255,255,255,0.08)';
+    ctx.clearRect(0, 0, size, size);
+
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, (R / 4) * i, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(cx - R, cy);
+    ctx.lineTo(cx + R, cy);
+    ctx.moveTo(cx, cy - R);
+    ctx.lineTo(cx, cy + R);
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.PI / 4);
+    ctx.beginPath();
+    ctx.moveTo(-R, 0);
+    ctx.lineTo(R, 0);
+    ctx.moveTo(0, -R);
+    ctx.lineTo(0, R);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function drawSweep() {
+    const grad = ctx.createConicGradient
+      ? ctx.createConicGradient(sweepAngle - Math.PI / 3, cx, cy)
+      : null;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    const trailGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+    trailGrad.addColorStop(0, 'rgba(184,120,96,0.25)');
+    trailGrad.addColorStop(1, 'rgba(184,120,96,0)');
+    ctx.fillStyle = trailGrad;
+    ctx.arc(cx, cy, R, sweepAngle - 0.5, sweepAngle);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(sweepAngle) * R, cy + Math.sin(sweepAngle) * R);
+    ctx.strokeStyle = '#B87860';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  function drawCenter() {
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#B87860';
+    ctx.fill();
+
+    if (!frozen) {
+      ctx.font = "10px 'Space Mono', monospace";
+      ctx.fillStyle = isLight() ? 'rgba(20,20,20,0.35)' : 'rgba(255,255,255,0.35)';
+      ctx.textAlign = 'center';
+      ctx.fillText('SCANNING', cx, cy + R - 12);
+    }
+  }
+
+  function updateBlips() {
+    audiences.forEach(a => {
+      const diff = angleDiff(sweepAngle % (Math.PI * 2), a.angle);
+      if (diff < 0.12 && !a.triggered) {
+        a.triggered = true;
+        a.visible = true;
+        a.opacity = 1;
+        a.pulseStart = performance.now();
+      }
+      if (diff > 0.6) {
+        a.triggered = false;
+      }
+      if (a.visible && !frozen) {
+        const elapsed = performance.now() - a.pulseStart;
+        if (elapsed > 1800) {
+          a.opacity -= 0.02;
+          if (a.opacity <= 0) {
+            a.opacity = 0;
+            a.visible = false;
+          }
+        }
       }
     });
+  }
 
-    // Click to expand
-    track.addEventListener('click', () => {
-      const isOpen = row.classList.contains('lp-ticker-open');
+  function drawBlips() {
+    audiences.forEach(a => {
+      if (!a.visible && a !== activeAudience) return;
+      const pos = getBlipPos(a);
+      const isActive = a === activeAudience;
+      const isHovered = a === hoveredBlip;
+      const opacity = isActive ? 1 : (a.opacity !== undefined ? a.opacity : 1);
 
-      // Close all
-      rows.forEach(r => {
-        r.classList.remove('lp-ticker-open');
-        r.querySelector('.lp-ticker-belt').classList.remove('lp-ticker-paused');
-      });
+      const elapsed = a.pulseStart ? performance.now() - a.pulseStart : 9999;
+      const pulseProgress = Math.min(elapsed / 900, 1);
+      if (pulseProgress < 1 && !frozen) {
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 4 + pulseProgress * 16, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(184,120,96,${(1 - pulseProgress) * 0.6})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
 
-      // Open clicked if it was closed
-      if (!isOpen) {
-        row.classList.add('lp-ticker-open');
-        belt.classList.add('lp-ticker-paused');
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, isHovered || isActive ? 5 : 4, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(184,120,96,${opacity})`;
+      ctx.fill();
+
+      if (isHovered || isActive || opacity > 0.5) {
+        ctx.font = "9px 'Space Mono', monospace";
+        ctx.fillStyle = isLight()
+          ? `rgba(20,20,20,${opacity * 0.7})`
+          : `rgba(255,255,255,${opacity * 0.7})`;
+        ctx.textAlign = pos.x > cx ? 'left' : 'right';
+        const labelX = pos.x + (pos.x > cx ? 10 : -10);
+        ctx.fillText('$' + a.num, labelX, pos.y + 3);
       }
     });
+  }
+
+  function tick() {
+    if (!frozen) {
+      sweepAngle += 0.012;
+      drawRadarBase();
+      drawSweep();
+      updateBlips();
+      drawBlips();
+      drawCenter();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function hitTestBlip(mx, my) {
+    for (const a of audiences) {
+      if (!a.visible && a !== activeAudience) continue;
+      const pos = getBlipPos(a);
+      if (Math.hypot(mx - pos.x, my - pos.y) < 12) return a;
+    }
+    return null;
+  }
+
+  function openDetail(a) {
+    frozen = true;
+    activeAudience = a;
+    numEl.textContent = '$' + a.num;
+    nameEl.textContent = a.name;
+    descEl.textContent = a.desc;
+    detail.classList.add('lp-radar-active');
+    drawRadarBase();
+    drawBlips();
+    drawCenter();
+  }
+
+  function closeDetail() {
+    frozen = false;
+    activeAudience = null;
+    detail.classList.remove('lp-radar-active');
+    audiences.forEach(a => {
+      a.visible = false;
+      a.triggered = false;
+      a.opacity = 0;
+    });
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (frozen) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const hit = hitTestBlip(mx, my);
+    hoveredBlip = hit;
+    canvas.style.cursor = hit ? 'pointer' : 'default';
   });
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const hit = hitTestBlip(mx, my);
+    if (hit) openDetail(hit);
+  });
+
+  closeBtn.addEventListener('click', closeDetail);
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) return;
+    resize();
+  });
+
+  new MutationObserver(() => {
+    if (!frozen) drawRadarBase();
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  resize();
+  requestAnimationFrame(tick);
 })();
 </script>
 
