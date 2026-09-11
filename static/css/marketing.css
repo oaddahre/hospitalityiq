@@ -970,7 +970,7 @@ html { scroll-behavior: smooth; }
 
 /* ── HERO KPI SPOTLIGHT CENTERPIECE ── */
 .lp-spotlight-wrap {
-  margin-top: 64px;
+  margin-top: 24px;
   padding: 0;
 }
 
@@ -2322,6 +2322,7 @@ a.lp-contact-info-val:hover { color: #B87860; }
   }
   .lp-hero { padding: 64px 20px 60px; }
   .lp-hero-headline { font-size: 38px; }
+  .lp-spotlight-wrap { margin-top: 16px; }
   .lp-spotlight-stage {
     min-height: 220px;
     padding: 40px 0 32px;
