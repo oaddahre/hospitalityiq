@@ -815,21 +815,21 @@ html { scroll-behavior: smooth; }
 }
 
 .lp-mobile-panel-link {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 600;
-  font-size: 18px;
+  font-family: 'Space Mono', monospace;
+  font-weight: 400;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
   color: var(--lp-text-muted);
-  padding: 16px 24px;
+  padding: 18px 24px;
   text-decoration: none;
   display: block;
   transition: color 200ms, background 200ms;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .lp-mobile-panel-link:hover {
   color: var(--lp-text);
-  background: var(--lp-module-hover);
+  background: var(--lp-bg-alt);
 }
 
 .lp-mobile-panel-actions {
@@ -843,10 +843,10 @@ html { scroll-behavior: smooth; }
 
 .lp-mobile-panel-login {
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: var(--lp-text-muted);
   text-decoration: none;
   text-align: center;
@@ -858,10 +858,10 @@ html { scroll-behavior: smooth; }
 
 .lp-mobile-panel-register {
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: #B87860;
   border: 1px solid #B87860;
   border-radius: 999px;
