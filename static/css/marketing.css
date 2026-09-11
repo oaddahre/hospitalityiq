@@ -1740,6 +1740,7 @@ html { scroll-behavior: smooth; }
   width: 100%;
   max-width: 520px;
   aspect-ratio: 1 / 1;
+  height: 600px;
   margin-left: auto;
   margin-right: auto;
 }

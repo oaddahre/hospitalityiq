@@ -6,12 +6,12 @@
 :root {
   --bg:            #0A0A0A;
   --surface:       #141414;
-  --surface-hover: #1C1C1C;
-  --border:        #242424;
+  --surface-hover: #1E1E1E;
+  --border:        #2A2A2A;
   --border-light:  #2E2E2E;
   --text:          #F0F0EE;
   --text-muted:    #888888;
-  --text-faint:    #444444;
+  --text-faint:    #555555;
   --accent:        #B87860;
   --accent-dim:    #1E1210;
   --accent-hover:  #C88870;
@@ -252,7 +252,7 @@ textarea::placeholder,
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-faint, #444444);
+  color: var(--text-faint, #555555);
   transition: color 200ms;
   cursor: pointer;
 }
@@ -261,7 +261,7 @@ textarea::placeholder,
   font-family: 'Space Mono', monospace;
   font-size: 9px;
   color: var(--text-faint);
-  opacity: 0.4;
+  opacity: 0.6;
 }
 
 /* Alias for #theme-btn */
@@ -4946,12 +4946,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #444444;
+  color: #777777;
 }
 .val-placeholder-sub {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
-  color: #333333;
+  color: #555555;
 }
 
 .val-results { display: none; }

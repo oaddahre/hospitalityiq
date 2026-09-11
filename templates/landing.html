@@ -73,7 +73,7 @@
 
 <!-- HERO -->
 <section class="lp-hero">
-  <div class="lp-hero-eyebrow">Morocco Hotel Intelligence</div>
+  <div class="lp-section-tag">Morocco Hotel Intelligence</div>
   <h1 class="lp-hero-headline">The data layer<br>for <span>Moroccan</span><br>hospitality.</h1>
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:0;display:inline-block;">Request Access →</a>
@@ -412,7 +412,7 @@
     <!-- CARD 1: Featured report (existing) -->
     <div class="lp-report-card-v2">
       <div class="lp-report-card-top">
-        <span class="lp-report-badge">Latest Report</span>
+        <span class="lp-section-tag">Latest Report</span>
         <span class="lp-report-city">Tamuda Bay / Tétouan</span>
       </div>
       <h3 class="lp-report-title">Tamuda Bay: The Rise of Morocco's Mediterranean Luxury Corridor</h3>
@@ -429,7 +429,7 @@
     <!-- CARD 2: Coming next / subscribe -->
     <div class="lp-report-card-v2 lp-report-card-next">
       <div class="lp-report-card-top">
-        <span class="lp-report-badge lp-report-badge-muted">Coming Next</span>
+        <span class="lp-section-tag">Coming Next</span>
         <span class="lp-report-city">Marrakech</span>
       </div>
       <h3 class="lp-report-title">Marrakech: Supply Pressure and the Luxury Repositioning Wave</h3>
@@ -878,7 +878,7 @@ themeToggle.addEventListener('click', () => {
     H  = canvas.height = wrap.offsetHeight;
     CX = W / 2;
     CY = H / 2;
-    R  = Math.min(W, H) * 0.40;
+    R  = Math.min(W, H) * 0.44;
   }
 
   resize();
@@ -908,8 +908,8 @@ themeToggle.addEventListener('click', () => {
       ctx.beginPath();
       ctx.arc(CX, CY, R * (i / 4), 0, Math.PI * 2);
       ctx.strokeStyle = isDark
-        ? `rgba(184,120,96,${0.06 + i * 0.02})`
-        : `rgba(184,120,96,${0.08 + i * 0.02})`;
+        ? `rgba(184,120,96,${0.15 + i * 0.02})`
+        : `rgba(184,120,96,${0.18 + i * 0.02})`;
       ctx.lineWidth = 0.5;
       ctx.stroke();
     }
@@ -918,7 +918,7 @@ themeToggle.addEventListener('click', () => {
     [[CX-R, CY, CX+R, CY],[CX, CY-R, CX, CY+R]].forEach(([x1,y1,x2,y2]) => {
       ctx.beginPath();
       ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
-      ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.07)' : 'rgba(184,120,96,0.10)';
+      ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.18)' : 'rgba(184,120,96,0.22)';
       ctx.lineWidth = 0.5;
       ctx.stroke();
     });
@@ -926,7 +926,7 @@ themeToggle.addEventListener('click', () => {
     // Outer circle
     ctx.beginPath();
     ctx.arc(CX, CY, R, 0, Math.PI * 2);
-    ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.22)' : 'rgba(184,120,96,0.28)';
+    ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.45)' : 'rgba(184,120,96,0.50)';
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -940,8 +940,8 @@ themeToggle.addEventListener('click', () => {
     ctx.closePath();
     const grd = ctx.createRadialGradient(CX, CY, 0, CX, CY, R);
     grd.addColorStop(0, 'rgba(184,120,96,0)');
-    grd.addColorStop(0.5, 'rgba(184,120,96,0.04)');
-    grd.addColorStop(1, 'rgba(184,120,96,0.10)');
+    grd.addColorStop(0.5, 'rgba(184,120,96,0.10)');
+    grd.addColorStop(1, 'rgba(184,120,96,0.22)');
     ctx.fillStyle = grd;
     ctx.fill();
     ctx.restore();
@@ -952,7 +952,7 @@ themeToggle.addEventListener('click', () => {
     ctx.lineTo(CX + Math.cos(sweepAngle) * R, CY + Math.sin(sweepAngle) * R);
     ctx.strokeStyle = '#B87860';
     ctx.lineWidth = 1.5;
-    ctx.globalAlpha = 0.75;
+    ctx.globalAlpha = 1;
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
@@ -964,7 +964,7 @@ themeToggle.addEventListener('click', () => {
     ctx.fill();
 
     ctx.font = '400 8px "Space Mono", monospace';
-    ctx.fillStyle = isDark ? 'rgba(240,240,238,0.35)' : 'rgba(26,26,26,0.35)';
+    ctx.fillStyle = isDark ? 'rgba(240,240,238,0.65)' : 'rgba(26,26,26,0.65)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('KŌDŌ', CX, CY + 16);
@@ -982,7 +982,7 @@ themeToggle.addEventListener('click', () => {
         const p = pulse.progress;
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 5 + p * 22, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(184,120,96,${(1 - p) * 0.5})`;
+        ctx.strokeStyle = `rgba(184,120,96,${(1 - p) * 0.8})`;
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -1002,8 +1002,8 @@ themeToggle.addEventListener('click', () => {
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, isSelected ? 7 : isHovered ? 6 : 4, 0, Math.PI * 2);
       ctx.fillStyle = isSelected || isHovered ? '#B87860' : isDark
-        ? 'rgba(184,120,96,0.7)'
-        : 'rgba(184,120,96,0.8)';
+        ? 'rgba(184,120,96,1)'
+        : 'rgba(184,120,96,1)';
       ctx.fill();
 
       // Label — always visible
@@ -1015,14 +1015,14 @@ themeToggle.addEventListener('click', () => {
       ctx.textBaseline = 'middle';
       ctx.fillStyle = isSelected || isHovered
         ? '#B87860'
-        : isDark ? 'rgba(240,240,238,0.80)' : 'rgba(26,26,26,0.80)';
+        : isDark ? 'rgba(240,240,238,1)' : 'rgba(26,26,26,1)';
       ctx.fillText(aud.name, lx, pos.y);
 
       // Number
       ctx.font = '400 8px "Space Mono", monospace';
       ctx.fillStyle = isSelected || isHovered
         ? '#B87860'
-        : 'rgba(184,120,96,0.7)';
+        : 'rgba(184,120,96,1)';
       ctx.fillText(aud.num, lx, pos.y - 15);
 
       // Click hint on hover
