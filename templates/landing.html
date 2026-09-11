@@ -834,29 +834,29 @@ themeToggle.addEventListener('click', () => {
       num: '01',
       name: 'Hotel Investors & Funds',
       desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.',
-      angle: Math.PI * 0.18,
-      radius: 0.58
+      angle: Math.PI * 0.25,
+      radius: 0.45
     },
     {
       num: '02',
       name: 'Owners & Asset Managers',
       desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.',
-      angle: Math.PI * 0.82,
-      radius: 0.54
+      angle: Math.PI * 0.80,
+      radius: 0.42
     },
     {
       num: '03',
       name: 'Developers & Operators',
       desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.',
-      angle: Math.PI * 1.28,
-      radius: 0.58
+      angle: Math.PI * 1.25,
+      radius: 0.45
     },
     {
       num: '04',
       name: 'Banks & Financial Institutions',
       desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.',
-      angle: Math.PI * 1.70,
-      radius: 0.52
+      angle: Math.PI * 1.75,
+      radius: 0.40
     }
   ];
 
@@ -1014,38 +1014,56 @@ themeToggle.addEventListener('click', () => {
       ctx.fillStyle = isSelected || isHovered ? '#B87860' : '#B87860';
       ctx.fill();
 
-      // Label — always visible, kept within canvas bounds
-      const isRight = pos.x > CX;
-      const lx = isRight ? pos.x + 16 : pos.x - 16;
+      const isRight = pos.x >= CX;
+      const isBottom = pos.y >= CY;
 
-      ctx.font = `${isSelected || isHovered ? '700' : '600'} 12px "Manrope", sans-serif`;
-      const labelWidth = ctx.measureText(aud.name).width;
+      // Label offset from dot
+      const offsetX = isRight ? 14 : -14;
+      const offsetY = isBottom ? -18 : 18;
 
-      let finalLx = lx;
-      if (isRight && finalLx + labelWidth > W - 16) {
-        finalLx = W - labelWidth - 16;
+      ctx.font = `${isSelected || isHovered ? '700' : '600'} 11px "Manrope", sans-serif`;
+      const nameWidth = ctx.measureText(aud.name).width;
+
+      // Calculate label position
+      let labelX = pos.x + offsetX;
+      let labelY = pos.y + offsetY;
+
+      // Constrain label X inside circle
+      const maxLabelX = CX + R - nameWidth - 8;
+      const minLabelX = CX - R + 8;
+      if (isRight) {
+        labelX = Math.min(labelX, maxLabelX);
+      } else {
+        labelX = Math.max(labelX, minLabelX);
+        // For right-aligned text shift by label width
       }
-      if (!isRight && finalLx < 16) {
-        finalLx = 16;
-      }
 
+      // Constrain label Y inside circle
+      const maxLabelY = CY + R - 24;
+      const minLabelY = CY - R + 24;
+      labelY = Math.max(minLabelY, Math.min(maxLabelY, labelY));
+
+      // Draw number above name
+      ctx.font = '400 8px "Space Mono", monospace';
+      ctx.fillStyle = 'rgba(184,120,96,1)';
       ctx.textAlign = isRight ? 'left' : 'right';
       ctx.textBaseline = 'middle';
+      ctx.fillText(aud.num, labelX, labelY - 14);
+
+      // Draw name
+      ctx.font = `${isSelected || isHovered ? '700' : '600'} 11px "Manrope", sans-serif`;
       ctx.fillStyle = isSelected || isHovered
         ? '#B87860'
         : isDark ? 'rgba(240,240,238,1)' : 'rgba(26,26,26,1)';
-      ctx.fillText(aud.name, finalLx, pos.y);
-
-      ctx.font = '400 9px "Space Mono", monospace';
-      ctx.fillStyle = 'rgba(184,120,96,1)';
       ctx.textAlign = isRight ? 'left' : 'right';
-      ctx.fillText(aud.num, finalLx, pos.y - 17);
+      ctx.fillText(aud.name, labelX, labelY);
 
+      // Click hint
       if (isHovered && selectedIndex === null) {
         ctx.font = '400 8px "Space Mono", monospace';
         ctx.fillStyle = 'rgba(184,120,96,0.6)';
         ctx.textAlign = isRight ? 'left' : 'right';
-        ctx.fillText('CLICK TO EXPAND', finalLx, pos.y + 18);
+        ctx.fillText('CLICK TO EXPAND', labelX, labelY + 14);
       }
     });
   }
@@ -1129,8 +1147,18 @@ themeToggle.addEventListener('click', () => {
 
   function tick() {
     sweepAngle = (sweepAngle + SWEEP_SPEED) % (Math.PI * 2);
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw radar base elements clipped to circle
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CX, CY, R + 1, 0, Math.PI * 2);
+    ctx.clip();
     drawRadarBase();
     drawSweep();
+    ctx.restore();
+
+    // Draw center outside clip
     drawCenter();
     updatePulses();
 
@@ -1145,7 +1173,9 @@ themeToggle.addEventListener('click', () => {
     });
     if (hoveredIndex === null) canvas.style.cursor = 'default';
 
+    // Draw dots and labels — no clip so labels stay readable
     drawDots();
+
     requestAnimationFrame(tick);
   }
 
