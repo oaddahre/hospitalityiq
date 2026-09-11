@@ -992,10 +992,10 @@ html { scroll-behavior: smooth; }
 
 .lp-spotlight-label {
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.2em;
   color: #B87860;
   display: block;
   transform: translateY(0);
@@ -1179,35 +1179,45 @@ html { scroll-behavior: smooth; }
 
 .lp-section-opener {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 .lp-section-tag {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #B87860;
+  font-size: 13px;
   font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #B87860;
+  display: block;
 }
 .lp-section-meta {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--lp-section-meta);
+  font-size: 11px;
   font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--lp-text-faint);
+  display: block;
 }
 .lp-section-headline {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 42px;
-  line-height: 1.1;
+  font-size: clamp(36px, 5vw, 64px);
   color: var(--lp-text);
-  max-width: 620px;
-  margin-bottom: 10px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  max-width: 800px;
+  margin-bottom: 24px;
+}
+.lp-section h1,
+.lp-section h2 {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: clamp(36px, 5vw, 64px);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 .lp-section-sub {
   font-family: 'Manrope', sans-serif;
@@ -1249,7 +1259,7 @@ html { scroll-behavior: smooth; }
 .lp-expand-name {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: clamp(32px, 5vw, 56px);
+  font-size: clamp(24px, 3.5vw, 44px) !important;
   color: var(--lp-text);
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -1430,11 +1440,11 @@ html { scroll-behavior: smooth; }
 .lp-timeline-name {
   font-family: 'Manrope', sans-serif;
   font-weight: 700;
-  font-size: clamp(15px, 2vw, 20px);
+  font-size: clamp(24px, 3.5vw, 44px) !important;
   color: var(--lp-text);
-  line-height: 1.25;
+  line-height: 1.2;
   display: block;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   transition: color 250ms ease;
 }
 
@@ -2325,7 +2335,7 @@ a.lp-contact-info-val:hover { color: #B87860; }
     opacity: 1;
   }
   .lp-expand-name {
-    font-size: clamp(24px, 7vw, 36px);
+    font-size: clamp(20px, 6vw, 28px) !important;
     cursor: pointer;
   }
   .lp-expand-item.lp-expand-open .lp-expand-bar {
@@ -2381,7 +2391,7 @@ a.lp-contact-info-val:hover { color: #B87860; }
     flex-shrink: 0;
   }
   .lp-timeline-name {
-    font-size: 17px;
+    font-size: clamp(20px, 6vw, 28px) !important;
     flex: 1;
   }
   /* Unwrap so .lp-timeline-name and .lp-timeline-expand become
@@ -2413,5 +2423,11 @@ a.lp-contact-info-val:hover { color: #B87860; }
   .lp-cta-title { font-size: 32px; }
   .lp-cta-btns { flex-direction: column; align-items: center; }
   .lp-footer { flex-direction: column; gap: 20px; padding: 24px 20px; text-align: center; }
-  .lp-section-headline { font-size: 32px; }
+  .lp-section-headline,
+  .lp-section h1,
+  .lp-section h2 {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+  .lp-section-tag { font-size: 11px; }
+  .lp-section-meta { font-size: 9px; }
 }
