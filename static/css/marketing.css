@@ -1848,7 +1848,7 @@ html { scroll-behavior: smooth; }
 
 .lp-ticker-row.lp-ticker-open .lp-ticker-expand {
   max-height: 160px;
-  padding: 20px 0 24px;
+  padding: 20px 24px 24px 24px;
   background: var(--lp-bg-alt);
 }
 
@@ -1864,6 +1864,8 @@ html { scroll-behavior: smooth; }
   display: block;
   margin-bottom: 8px;
   letter-spacing: -0.01em;
+  padding-left: 0;
+  margin-left: 0;
 }
 
 .lp-ticker-expand-desc {
@@ -1873,6 +1875,8 @@ html { scroll-behavior: smooth; }
   line-height: 1.7;
   font-weight: 400;
   margin: 0;
+  padding-left: 0;
+  margin-left: 0;
   max-width: 600px;
 }
 
@@ -2419,6 +2423,9 @@ a.lp-contact-info-val:hover { color: #B87860; }
   .lp-ticker-text { font-size: 12px; }
   .lp-ticker-expand-who { font-size: 17px; }
   .lp-ticker-expand-desc { font-size: 13px; }
+  .lp-ticker-row.lp-ticker-open .lp-ticker-expand {
+    padding: 16px 16px 20px 16px;
+  }
   .lp-plan-grid { grid-template-columns: 1fr; }
   .lp-cta { padding: 60px 20px; }
   .lp-cta-title { font-size: 32px; }
