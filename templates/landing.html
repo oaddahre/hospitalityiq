@@ -820,267 +820,319 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap = document.getElementById('lpRadarWrap');
-  if (!wrap) return;
-  if (window.innerWidth <= 768) return;
-
-  const canvas = document.getElementById('lpRadarCanvas');
-  const detail = document.getElementById('lpRadarDetail');
-  const numEl  = document.getElementById('lpRadarNum');
-  const nameEl = document.getElementById('lpRadarName');
-  const descEl = document.getElementById('lpRadarDesc');
+  const wrap    = document.getElementById('lpRadarWrap');
+  const canvas  = document.getElementById('lpRadarCanvas');
+  const detail  = document.getElementById('lpRadarDetail');
   const closeBtn = document.getElementById('lpRadarClose');
+
+  if (!wrap || !canvas || window.innerWidth <= 768) return;
+
   const ctx = canvas.getContext('2d');
 
   const audiences = [
-    { num: '01', name: 'Hotel Investors & Funds', desc: "Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.", angle: 0.4,  radius: 0.7 },
-    { num: '02', name: 'Owners & Asset Managers',  desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.', angle: 2.1,  radius: 0.5 },
-    { num: '03', name: 'Developers & Operators',   desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.', angle: 3.6,  radius: 0.8 },
-    { num: '04', name: 'Banks & Financial Institutions', desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.', angle: 5.2,  radius: 0.6 }
+    {
+      num: '01',
+      name: 'Hotel Investors & Funds',
+      desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.',
+      angle: Math.PI * 0.15,
+      radius: 0.62
+    },
+    {
+      num: '02',
+      name: 'Owners & Asset Managers',
+      desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.',
+      angle: Math.PI * 0.85,
+      radius: 0.55
+    },
+    {
+      num: '03',
+      name: 'Developers & Operators',
+      desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.',
+      angle: Math.PI * 1.35,
+      radius: 0.60
+    },
+    {
+      num: '04',
+      name: 'Banks & Financial Institutions',
+      desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.',
+      angle: Math.PI * 1.75,
+      radius: 0.50
+    }
   ];
 
-  let size = 0, cx = 0, cy = 0, R = 0;
+  let W, H, CX, CY, R;
   let sweepAngle = 0;
-  let frozen = false;
-  let activeAudience = null;
-  let hoveredBlip = null;
+  let selectedIndex = null;
+  let mouseX = -999, mouseY = -999;
+  let hoveredIndex = null;
+  let isDark = !document.body.classList.contains('lp-light');
 
-  function isLight() { return document.body.classList.contains('lp-light'); }
+  // Pulse state per dot — triggered by sweep passing over
+  const pulses = audiences.map(() => ({ active: false, progress: 0 }));
+
+  const SWEEP_SPEED = 0.006;
+  const SWEEP_TRAIL = Math.PI * 0.45;
 
   function resize() {
-    const rect = wrap.getBoundingClientRect();
-    size = rect.width;
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    cx = size / 2;
-    cy = size / 2;
-    R = size / 2 - 4;
+    W  = canvas.width  = wrap.offsetWidth;
+    H  = canvas.height = wrap.offsetHeight;
+    CX = W / 2;
+    CY = H / 2;
+    R  = Math.min(W, H) * 0.40;
   }
 
-  function getBlipPos(a) {
-    const r = a.radius * R;
+  resize();
+  window.addEventListener('resize', resize);
+
+  new MutationObserver(() => {
+    isDark = !document.body.classList.contains('lp-light');
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  function getBlipPos(aud) {
     return {
-      x: cx + Math.cos(a.angle) * r,
-      y: cy + Math.sin(a.angle) * r
+      x: CX + Math.cos(aud.angle) * R * aud.radius,
+      y: CY + Math.sin(aud.angle) * R * aud.radius
     };
   }
 
-  function angleDiff(a, b) {
-    let d = Math.abs(a - b) % (Math.PI * 2);
-    if (d > Math.PI) d = Math.PI * 2 - d;
+  function angleDiff(sweep, target) {
+    let d = ((target - sweep) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
     return d;
   }
 
   function drawRadarBase() {
-    const lineColor = isLight() ? 'rgba(20,20,20,0.08)' : 'rgba(255,255,255,0.08)';
-    ctx.clearRect(0, 0, size, size);
+    ctx.clearRect(0, 0, W, H);
 
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = 1;
+    // Concentric rings
     for (let i = 1; i <= 4; i++) {
       ctx.beginPath();
-      ctx.arc(cx, cy, (R / 4) * i, 0, Math.PI * 2);
+      ctx.arc(CX, CY, R * (i / 4), 0, Math.PI * 2);
+      ctx.strokeStyle = isDark
+        ? `rgba(184,120,96,${0.06 + i * 0.02})`
+        : `rgba(184,120,96,${0.08 + i * 0.02})`;
+      ctx.lineWidth = 0.5;
       ctx.stroke();
     }
 
-    ctx.beginPath();
-    ctx.moveTo(cx - R, cy);
-    ctx.lineTo(cx + R, cy);
-    ctx.moveTo(cx, cy - R);
-    ctx.lineTo(cx, cy + R);
-    ctx.stroke();
+    // Cross hairs
+    [[CX-R, CY, CX+R, CY],[CX, CY-R, CX, CY+R]].forEach(([x1,y1,x2,y2]) => {
+      ctx.beginPath();
+      ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+      ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.07)' : 'rgba(184,120,96,0.10)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    });
 
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(Math.PI / 4);
+    // Outer circle
     ctx.beginPath();
-    ctx.moveTo(-R, 0);
-    ctx.lineTo(R, 0);
-    ctx.moveTo(0, -R);
-    ctx.lineTo(0, R);
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.arc(CX, CY, R, 0, Math.PI * 2);
+    ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.22)' : 'rgba(184,120,96,0.28)';
+    ctx.lineWidth = 1;
     ctx.stroke();
   }
 
   function drawSweep() {
-    const grad = ctx.createConicGradient
-      ? ctx.createConicGradient(sweepAngle - Math.PI / 3, cx, cy)
-      : null;
-
+    // Trail
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    const trailGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
-    trailGrad.addColorStop(0, 'rgba(184,120,96,0.25)');
-    trailGrad.addColorStop(1, 'rgba(184,120,96,0)');
-    ctx.fillStyle = trailGrad;
-    ctx.arc(cx, cy, R, sweepAngle - 0.5, sweepAngle);
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, sweepAngle - SWEEP_TRAIL, sweepAngle);
     ctx.closePath();
+    const grd = ctx.createRadialGradient(CX, CY, 0, CX, CY, R);
+    grd.addColorStop(0, 'rgba(184,120,96,0)');
+    grd.addColorStop(0.5, 'rgba(184,120,96,0.04)');
+    grd.addColorStop(1, 'rgba(184,120,96,0.10)');
+    ctx.fillStyle = grd;
     ctx.fill();
     ctx.restore();
 
+    // Sweep line
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + Math.cos(sweepAngle) * R, cy + Math.sin(sweepAngle) * R);
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(CX + Math.cos(sweepAngle) * R, CY + Math.sin(sweepAngle) * R);
     ctx.strokeStyle = '#B87860';
     ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.75;
     ctx.stroke();
+    ctx.globalAlpha = 1;
   }
 
   function drawCenter() {
     ctx.beginPath();
-    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.arc(CX, CY, 3, 0, Math.PI * 2);
     ctx.fillStyle = '#B87860';
     ctx.fill();
 
-    if (!frozen) {
-      ctx.font = "10px 'Space Mono', monospace";
-      ctx.fillStyle = isLight() ? 'rgba(20,20,20,0.35)' : 'rgba(255,255,255,0.35)';
-      ctx.textAlign = 'center';
-      ctx.fillText('SCANNING', cx, cy + R - 12);
-    }
+    ctx.font = '400 8px "Space Mono", monospace';
+    ctx.fillStyle = isDark ? 'rgba(240,240,238,0.35)' : 'rgba(26,26,26,0.35)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('KŌDŌ', CX, CY + 16);
   }
 
-  function updateBlips() {
-    audiences.forEach(a => {
-      const diff = angleDiff(sweepAngle % (Math.PI * 2), a.angle);
-      if (diff < 0.12 && !a.triggered) {
-        a.triggered = true;
-        a.visible = true;
-        a.opacity = 1;
-        a.pulseStart = performance.now();
-      }
-      if (diff > 0.6) {
-        a.triggered = false;
-      }
-      if (a.visible && !frozen) {
-        const elapsed = performance.now() - a.pulseStart;
-        if (elapsed > 1800) {
-          a.opacity -= 0.02;
-          if (a.opacity <= 0) {
-            a.opacity = 0;
-            a.visible = false;
-          }
-        }
-      }
-    });
-  }
+  function drawDots() {
+    audiences.forEach((aud, i) => {
+      const pos  = getBlipPos(aud);
+      const pulse = pulses[i];
+      const isSelected = selectedIndex === i;
+      const isHovered  = hoveredIndex === i;
 
-  function drawBlips() {
-    audiences.forEach(a => {
-      if (!a.visible && a !== activeAudience) return;
-      const pos = getBlipPos(a);
-      const isActive = a === activeAudience;
-      const isHovered = a === hoveredBlip;
-      const opacity = isActive ? 1 : (a.opacity !== undefined ? a.opacity : 1);
-
-      const elapsed = a.pulseStart ? performance.now() - a.pulseStart : 9999;
-      const pulseProgress = Math.min(elapsed / 900, 1);
-      if (pulseProgress < 1 && !frozen) {
+      // Pulse ring when sweep hits
+      if (pulse.active && pulse.progress < 1) {
+        const p = pulse.progress;
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 4 + pulseProgress * 16, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(184,120,96,${(1 - pulseProgress) * 0.6})`;
-        ctx.lineWidth = 1.5;
+        ctx.arc(pos.x, pos.y, 5 + p * 22, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(184,120,96,${(1 - p) * 0.5})`;
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
 
+      // Dot glow for selected
+      if (isSelected) {
+        const glow = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 20);
+        glow.addColorStop(0, 'rgba(184,120,96,0.3)');
+        glow.addColorStop(1, 'rgba(184,120,96,0)');
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = glow;
+        ctx.fill();
+      }
+
+      // Main dot — always visible
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, isHovered || isActive ? 5 : 4, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(184,120,96,${opacity})`;
+      ctx.arc(pos.x, pos.y, isSelected ? 7 : isHovered ? 6 : 4, 0, Math.PI * 2);
+      ctx.fillStyle = isSelected || isHovered ? '#B87860' : isDark
+        ? 'rgba(184,120,96,0.7)'
+        : 'rgba(184,120,96,0.8)';
       ctx.fill();
 
-      if (isHovered || isActive || opacity > 0.5) {
-        ctx.font = "9px 'Space Mono', monospace";
-        ctx.fillStyle = isLight()
-          ? `rgba(20,20,20,${opacity * 0.7})`
-          : `rgba(255,255,255,${opacity * 0.7})`;
-        ctx.textAlign = pos.x > cx ? 'left' : 'right';
-        const labelX = pos.x + (pos.x > cx ? 10 : -10);
-        ctx.fillText('$' + a.num, labelX, pos.y + 3);
+      // Label — always visible
+      const isRight = pos.x > CX;
+      const lx = isRight ? pos.x + 14 : pos.x - 14;
+
+      ctx.font = `${isSelected || isHovered ? '700' : '600'} 11px "Manrope", sans-serif`;
+      ctx.textAlign = isRight ? 'left' : 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isSelected || isHovered
+        ? '#B87860'
+        : isDark ? 'rgba(240,240,238,0.80)' : 'rgba(26,26,26,0.80)';
+      ctx.fillText(aud.name, lx, pos.y);
+
+      // Number
+      ctx.font = '400 8px "Space Mono", monospace';
+      ctx.fillStyle = isSelected || isHovered
+        ? '#B87860'
+        : 'rgba(184,120,96,0.7)';
+      ctx.fillText(aud.num, lx, pos.y - 15);
+
+      // Click hint on hover
+      if (isHovered && selectedIndex === null) {
+        ctx.font = '400 8px "Space Mono", monospace';
+        ctx.fillStyle = 'rgba(184,120,96,0.5)';
+        ctx.fillText('CLICK TO EXPAND', lx, pos.y + 16);
       }
     });
   }
 
-  function tick() {
-    if (!frozen) {
-      sweepAngle += 0.012;
-      drawRadarBase();
-      drawSweep();
-      updateBlips();
-      drawBlips();
-      drawCenter();
-    }
-    requestAnimationFrame(tick);
-  }
-
-  function hitTestBlip(mx, my) {
-    for (const a of audiences) {
-      if (!a.visible && a !== activeAudience) continue;
-      const pos = getBlipPos(a);
-      if (Math.hypot(mx - pos.x, my - pos.y) < 12) return a;
-    }
-    return null;
-  }
-
-  function openDetail(a) {
-    frozen = true;
-    activeAudience = a;
-    numEl.textContent = '$' + a.num;
-    nameEl.textContent = a.name;
-    descEl.textContent = a.desc;
-    detail.classList.add('lp-radar-active');
-    drawRadarBase();
-    drawBlips();
-    drawCenter();
-  }
-
-  function closeDetail() {
-    frozen = false;
-    activeAudience = null;
-    detail.classList.remove('lp-radar-active');
-    audiences.forEach(a => {
-      a.visible = false;
-      a.triggered = false;
-      a.opacity = 0;
+  function updatePulses() {
+    audiences.forEach((aud, i) => {
+      const diff = angleDiff(sweepAngle - 0.08, aud.angle);
+      if (diff < 0.12) {
+        pulses[i].active = true;
+        pulses[i].progress = 0;
+      }
+      if (pulses[i].active && pulses[i].progress < 1) {
+        pulses[i].progress += 0.018;
+        if (pulses[i].progress >= 1) pulses[i].active = false;
+      }
     });
   }
 
-  canvas.addEventListener('mousemove', (e) => {
-    if (frozen) return;
+  // Position detail card near clicked dot
+  function showDetailCard(index) {
+    const aud = audiences[index];
+    const pos = getBlipPos(aud);
+
+    document.getElementById('lpRadarNum').textContent  = aud.num;
+    document.getElementById('lpRadarName').textContent = aud.name;
+    document.getElementById('lpRadarDesc').textContent = aud.desc;
+
+    // Position card near the dot
+    // Convert canvas pos to wrap-relative percentage
+    const pctX = (pos.x / W) * 100;
+    const pctY = (pos.y / H) * 100;
+
+    // Decide card anchor based on quadrant
+    const isRight = pos.x > CX;
+    const isBottom = pos.y > CY;
+
+    detail.style.left   = isRight ? `${pctX - 2}%` : 'auto';
+    detail.style.right  = isRight ? 'auto' : `${100 - pctX - 2}%`;
+    detail.style.top    = isBottom ? 'auto' : `${pctY + 6}%`;
+    detail.style.bottom = isBottom ? `${100 - pctY + 4}%` : 'auto';
+    detail.style.transform = 'none';
+    detail.style.textAlign = isRight ? 'left' : 'right';
+    detail.style.alignItems = isRight ? 'flex-start' : 'flex-end';
+
+    detail.classList.add('lp-radar-active');
+    selectedIndex = index;
+  }
+
+  // Mouse tracking
+  canvas.addEventListener('mousemove', e => {
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const hit = hitTestBlip(mx, my);
-    hoveredBlip = hit;
-    canvas.style.cursor = hit ? 'pointer' : 'default';
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
   });
 
-  canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const hit = hitTestBlip(mx, my);
-    if (hit) openDetail(hit);
+  canvas.addEventListener('mouseleave', () => {
+    mouseX = -999; mouseY = -999;
+    hoveredIndex = null;
+    canvas.style.cursor = 'default';
   });
 
-  closeBtn.addEventListener('click', closeDetail);
-
-  window.addEventListener('resize', () => {
-    if (window.innerWidth <= 768) return;
-    resize();
+  canvas.addEventListener('click', () => {
+    if (hoveredIndex !== null) {
+      if (selectedIndex === hoveredIndex) {
+        // Collapse
+        detail.classList.remove('lp-radar-active');
+        selectedIndex = null;
+      } else {
+        showDetailCard(hoveredIndex);
+      }
+    } else if (selectedIndex !== null) {
+      detail.classList.remove('lp-radar-active');
+      selectedIndex = null;
+    }
   });
 
-  new MutationObserver(() => {
-    if (!frozen) drawRadarBase();
-  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  closeBtn.addEventListener('click', () => {
+    detail.classList.remove('lp-radar-active');
+    selectedIndex = null;
+  });
 
-  resize();
+  function tick() {
+    sweepAngle = (sweepAngle + SWEEP_SPEED) % (Math.PI * 2);
+    drawRadarBase();
+    drawSweep();
+    drawCenter();
+    updatePulses();
+
+    // Check hover
+    hoveredIndex = null;
+    audiences.forEach((aud, i) => {
+      const pos = getBlipPos(aud);
+      if (Math.hypot(mouseX - pos.x, mouseY - pos.y) < 28) {
+        hoveredIndex = i;
+        canvas.style.cursor = 'pointer';
+      }
+    });
+    if (hoveredIndex === null) canvas.style.cursor = 'default';
+
+    drawDots();
+    requestAnimationFrame(tick);
+  }
+
   requestAnimationFrame(tick);
 })();
 </script>

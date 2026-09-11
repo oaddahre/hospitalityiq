@@ -1754,30 +1754,27 @@ html { scroll-behavior: smooth; }
 
 .lp-radar-detail {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
-  width: 62%;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 300ms ease, transform 300ms ease;
-  display: flex;
+  max-width: 240px;
+  width: 40%;
+  display: none;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--lp-bg-alt);
+  padding: 20px;
 }
 
 .lp-radar-detail.lp-radar-active {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  display: flex;
   pointer-events: auto;
-  animation: lp-radar-fade 300ms ease;
+  animation: lp-radar-fade 300ms ease forwards;
 }
 
 @keyframes lp-radar-fade {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .lp-radar-detail-num {
@@ -1790,16 +1787,18 @@ html { scroll-behavior: smooth; }
 .lp-radar-detail-name {
   font-family: 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--lp-text);
+  display: block;
+  line-height: 1.2;
   letter-spacing: -0.01em;
 }
 
 .lp-radar-detail-desc {
   font-family: 'Manrope', sans-serif;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12px;
   color: var(--lp-text-muted);
+  line-height: 1.65;
   font-weight: 400;
   margin: 0;
 }
