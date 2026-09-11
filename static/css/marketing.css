@@ -1786,42 +1786,47 @@ html { scroll-behavior: smooth; }
 
 .lp-radar-detail-num {
   font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
   color: #B87860;
+  display: block;
 }
 
 .lp-radar-detail-name {
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 16px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
   color: var(--lp-text);
   display: block;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .lp-radar-detail-desc {
   font-family: 'Manrope', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--lp-text-muted);
-  line-height: 1.65;
+  line-height: 1.7;
   font-weight: 400;
   margin: 0;
 }
 
 .lp-radar-close {
-  margin-top: 4px;
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: 8px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--lp-text-faint);
-  background: none;
-  border: 1px solid var(--lp-border);
-  border-radius: 20px;
-  padding: 6px 14px;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: color 200ms ease, border-color 200ms ease;
+  padding: 4px 0;
+  margin-top: 4px;
+  transition: color 200ms;
 }
 
 .lp-radar-close:hover {

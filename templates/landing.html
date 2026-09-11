@@ -1021,8 +1021,8 @@ themeToggle.addEventListener('click', () => {
       const offsetX = isRight ? 14 : -14;
       const offsetY = isBottom ? -18 : 18;
 
-      ctx.font = `${isSelected || isHovered ? '700' : '600'} 11px "Manrope", sans-serif`;
-      const nameWidth = ctx.measureText(aud.name).width;
+      ctx.font = `400 10px "Space Mono", monospace`;
+      const nameWidth = ctx.measureText(aud.name.toUpperCase()).width;
 
       // Calculate label position
       let labelX = pos.x + offsetX;
@@ -1051,12 +1051,12 @@ themeToggle.addEventListener('click', () => {
       ctx.fillText(aud.num, labelX, labelY - 14);
 
       // Draw name
-      ctx.font = `${isSelected || isHovered ? '700' : '600'} 11px "Manrope", sans-serif`;
+      ctx.font = `400 10px "Space Mono", monospace`;
       ctx.fillStyle = isSelected || isHovered
         ? '#B87860'
         : isDark ? 'rgba(240,240,238,1)' : 'rgba(26,26,26,1)';
       ctx.textAlign = isRight ? 'left' : 'right';
-      ctx.fillText(aud.name, labelX, labelY);
+      ctx.fillText(aud.name.toUpperCase(), labelX, labelY);
 
       // Click hint
       if (isHovered && selectedIndex === null) {
