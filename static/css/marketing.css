@@ -1742,12 +1742,22 @@ html { scroll-behavior: smooth; }
 }
 
 .lp-ticker-row {
-  border-top: 1px solid var(--lp-border);
+  position: relative;
   overflow: hidden;
 }
 
-.lp-ticker-row:last-child {
-  border-bottom: 1px solid var(--lp-border);
+.lp-ticker-row + .lp-ticker-row::before {
+  content: '';
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    #B87860 0px,
+    rgba(184,120,96,0.3) 40px,
+    transparent 120px
+  );
+  margin-bottom: 0;
 }
 
 /* Ticker track — clips overflow */
@@ -2425,6 +2435,14 @@ a.lp-contact-info-val:hover { color: #B87860; }
   .lp-ticker-expand-desc { font-size: 13px; }
   .lp-ticker-row.lp-ticker-open .lp-ticker-expand {
     padding: 16px 16px 20px 16px;
+  }
+  .lp-ticker-row + .lp-ticker-row::before {
+    background: linear-gradient(
+      to right,
+      #B87860 0px,
+      rgba(184,120,96,0.3) 24px,
+      transparent 80px
+    );
   }
   .lp-plan-grid { grid-template-columns: 1fr; }
   .lp-cta { padding: 60px 20px; }
