@@ -1811,18 +1811,31 @@ html { scroll-behavior: smooth; }
   margin-top: 48px;
   position: relative;
   width: 100%;
-  height: 720px;
+  height: 520px;
   padding-left: 0;
   padding-right: 0;
   margin-left: 0;
   margin-right: 0;
 }
 
+@media (max-width: 768px) {
+  .lp-radar-wrap {
+    height: 420px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lp-radar-wrap {
+    height: 360px;
+  }
+}
+
 .lp-radar-canvas {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
   cursor: default;
 }
 
@@ -1899,10 +1912,6 @@ html { scroll-behavior: smooth; }
 .lp-radar-close:hover {
   color: #B87860;
   border-color: #B87860;
-}
-
-.lp-radar-mobile {
-  display: none;
 }
 
 /* ── CTA ── */
@@ -2479,68 +2488,24 @@ a.lp-contact-info-val:hover { color: #B87860; }
     padding: 8px 0;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
-  .lp-radar-wrap {
-    height: auto !important;
-    min-height: 0 !important;
-    position: relative;
-  }
-
-  .lp-radar-canvas {
-    display: none !important;
-  }
-
   .lp-radar-detail {
-    display: none !important;
+    max-width: 200px;
+    width: 60%;
+    padding: 14px;
+    gap: 6px;
   }
 
-  .lp-radar-mobile {
-    display: flex !important;
-    flex-direction: column;
-    gap: 0;
-    margin-top: 32px;
-    width: 100%;
+  .lp-radar-detail-name {
+    font-size: 10px;
   }
 
-  .lp-radar-mob-item {
-    padding: 20px 0;
-    border-bottom: 1px solid var(--lp-border);
-    display: flex !important;
-    flex-direction: column;
-    gap: 8px;
+  .lp-radar-detail-desc {
+    font-size: 11px;
+    line-height: 1.6;
   }
 
-  .lp-radar-mob-item:last-child {
-    border-bottom: none;
-  }
-
-  .lp-radar-mob-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 8px;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #B87860;
-    display: block !important;
-  }
-
-  .lp-radar-mob-name {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    color: var(--lp-text);
-    letter-spacing: -0.01em;
-    line-height: 1.2;
-    display: block !important;
-  }
-
-  .lp-radar-mob-desc {
-    font-family: 'Manrope', sans-serif;
-    font-size: 13px;
-    color: var(--lp-text-muted);
-    line-height: 1.65;
-    font-weight: 400;
-    margin: 0;
-    display: block !important;
+  .lp-radar-close {
+    font-size: 7px;
   }
   .lp-plan-grid { grid-template-columns: 1fr; }
   .lp-cta { padding: 60px 20px; }

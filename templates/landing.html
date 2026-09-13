@@ -375,30 +375,6 @@
         <button class="lp-radar-close" id="lpRadarClose">✕ Resume scan</button>
       </div>
 
-      <!-- Mobile fallback -->
-      <div class="lp-radar-mobile">
-        <div class="lp-radar-mob-item">
-          <span class="lp-radar-mob-num">01</span>
-          <span class="lp-radar-mob-name">Hotel Investors &amp; Funds</span>
-          <p class="lp-radar-mob-desc">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</p>
-        </div>
-        <div class="lp-radar-mob-item">
-          <span class="lp-radar-mob-num">02</span>
-          <span class="lp-radar-mob-name">Owners &amp; Asset Managers</span>
-          <p class="lp-radar-mob-desc">Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.</p>
-        </div>
-        <div class="lp-radar-mob-item">
-          <span class="lp-radar-mob-num">03</span>
-          <span class="lp-radar-mob-name">Developers &amp; Operators</span>
-          <p class="lp-radar-mob-desc">Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.</p>
-        </div>
-        <div class="lp-radar-mob-item">
-          <span class="lp-radar-mob-num">04</span>
-          <span class="lp-radar-mob-name">Banks &amp; Financial Institutions</span>
-          <p class="lp-radar-mob-desc">Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.</p>
-        </div>
-      </div>
-
     </div>
 
   </div>
@@ -859,7 +835,7 @@ themeToggle.addEventListener('click', () => {
   const detail  = document.getElementById('lpRadarDetail');
   const closeBtn = document.getElementById('lpRadarClose');
 
-  if (!wrap || !canvas || window.innerWidth <= 768) return;
+  if (!wrap || !canvas) return;
 
   const ctx = canvas.getContext('2d');
 
@@ -867,30 +843,34 @@ themeToggle.addEventListener('click', () => {
     {
       num: '01',
       name: 'Hotel Investors & Funds',
+      shortName: 'Investors',
       desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.',
-      angle: Math.PI * 0.25,
-      radius: 0.45
+      angle: Math.PI * 0.30,
+      radius: 0.42
     },
     {
       num: '02',
       name: 'Owners & Asset Managers',
+      shortName: 'Asset Managers',
       desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.',
-      angle: Math.PI * 0.80,
-      radius: 0.42
+      angle: Math.PI * 0.78,
+      radius: 0.40
     },
     {
       num: '03',
       name: 'Developers & Operators',
+      shortName: 'Developers',
       desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.',
-      angle: Math.PI * 1.25,
-      radius: 0.45
+      angle: Math.PI * 1.30,
+      radius: 0.42
     },
     {
       num: '04',
       name: 'Banks & Financial Institutions',
+      shortName: 'Lenders',
       desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.',
-      angle: Math.PI * 1.75,
-      radius: 0.40
+      angle: Math.PI * 1.72,
+      radius: 0.38
     }
   ];
 
@@ -919,7 +899,7 @@ themeToggle.addEventListener('click', () => {
     ctx.scale(dpr, dpr);
     CX = W / 2;
     CY = H / 2;
-    R  = Math.min(W, H) * 0.44;
+    R  = Math.min(W, H) * 0.38;
   }
 
   resize();
@@ -1042,9 +1022,18 @@ themeToggle.addEventListener('click', () => {
         ctx.fill();
       }
 
+      const isMob = W < 600;
+      const fontSize = isMob ? 8 : 10;
+      const dotSize = isSelected ? (isMob ? 6 : 9) :
+                      isHovered  ? (isMob ? 5 : 8) :
+                                   (isMob ? 4 : 6);
+      const displayName = isMob
+        ? aud.shortName || aud.name.split(' ').slice(0, 2).join(' ')
+        : aud.name;
+
       // Main dot — always visible
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, isSelected ? 9 : isHovered ? 8 : 6, 0, Math.PI * 2);
+      ctx.arc(pos.x, pos.y, dotSize, 0, Math.PI * 2);
       ctx.fillStyle = isSelected || isHovered ? '#B87860' : '#B87860';
       ctx.fill();
 
@@ -1055,8 +1044,8 @@ themeToggle.addEventListener('click', () => {
       const offsetX = isRight ? 14 : -14;
       const offsetY = isBottom ? -18 : 18;
 
-      ctx.font = `400 10px "Space Mono", monospace`;
-      const nameWidth = ctx.measureText(aud.name.toUpperCase()).width;
+      ctx.font = `400 ${fontSize}px "Space Mono", monospace`;
+      const nameWidth = ctx.measureText(displayName.toUpperCase()).width;
 
       // Calculate label position
       let labelX = pos.x + offsetX;
@@ -1085,12 +1074,12 @@ themeToggle.addEventListener('click', () => {
       ctx.fillText(aud.num, labelX, labelY - 14);
 
       // Draw name
-      ctx.font = `400 10px "Space Mono", monospace`;
+      ctx.font = `400 ${fontSize}px "Space Mono", monospace`;
       ctx.fillStyle = isSelected || isHovered
         ? '#B87860'
         : isDark ? 'rgba(240,240,238,1)' : 'rgba(26,26,26,1)';
       ctx.textAlign = isRight ? 'left' : 'right';
-      ctx.fillText(aud.name.toUpperCase(), labelX, labelY);
+      ctx.fillText(displayName.toUpperCase(), labelX, labelY);
 
       // Click hint
       if (isHovered && selectedIndex === null) {
@@ -1173,6 +1162,34 @@ themeToggle.addEventListener('click', () => {
       selectedIndex = null;
     }
   });
+
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.changedTouches[0];
+    const tx = touch.clientX - rect.left;
+    const ty = touch.clientY - rect.top;
+
+    let tappedIndex = null;
+    audiences.forEach((aud, i) => {
+      const pos = getBlipPos(aud);
+      if (Math.hypot(tx - pos.x, ty - pos.y) < 40) {
+        tappedIndex = i;
+      }
+    });
+
+    if (tappedIndex !== null) {
+      if (selectedIndex === tappedIndex) {
+        detail.classList.remove('lp-radar-active');
+        selectedIndex = null;
+      } else {
+        showDetailCard(tappedIndex);
+      }
+    } else if (selectedIndex !== null) {
+      detail.classList.remove('lp-radar-active');
+      selectedIndex = null;
+    }
+  }, { passive: false });
 
   closeBtn.addEventListener('click', () => {
     detail.classList.remove('lp-radar-active');
