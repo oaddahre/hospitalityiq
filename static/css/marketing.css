@@ -640,12 +640,31 @@ html { scroll-behavior: smooth; }
   display: contents;
 }
 .mk-nav-logo {
-  font-family: 'Space Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.22em;
-  color: var(--lp-text);
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  font-weight: 400;
+}
+
+.mk-nav-logo-img {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+.mk-nav-logo-img.logo-dark {
+  display: block;
+}
+
+.mk-nav-logo-img.logo-light {
+  display: none;
+}
+
+body.lp-light .mk-nav-logo-img.logo-dark {
+  display: none;
+}
+
+body.lp-light .mk-nav-logo-img.logo-light {
+  display: block;
 }
 .mk-nav-links {
   display: flex;
@@ -786,13 +805,22 @@ html { scroll-behavior: smooth; }
   flex-shrink: 0;
 }
 
-.lp-mobile-panel-logo {
-  font-family: 'Space Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  color: var(--lp-text);
-  font-weight: 400;
+.lp-mobile-panel-logo-wrap {
+  display: flex;
+  align-items: center;
 }
+
+.lp-mobile-panel-logo-img {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+.lp-mobile-panel-logo-img.logo-dark { display: block; }
+.lp-mobile-panel-logo-img.logo-light { display: none; }
+
+body.lp-light .lp-mobile-panel-logo-img.logo-dark { display: none; }
+body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 .lp-mobile-panel-close {
   background: transparent;
@@ -1981,13 +2009,22 @@ html { scroll-behavior: smooth; }
   background: var(--lp-footer-bg);
   border-top: 1px solid var(--lp-footer-border);
 }
-.lp-footer-logo {
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--lp-text);
-  font-weight: 400;
+.lp-footer-logo-wrap {
+  display: flex;
+  align-items: center;
 }
+
+.lp-footer-logo-img {
+  height: 20px;
+  width: auto;
+  display: block;
+}
+
+.lp-footer-logo-img.logo-dark { display: block; }
+.lp-footer-logo-img.logo-light { display: none; }
+
+body.lp-light .lp-footer-logo-img.logo-dark { display: none; }
+body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 .lp-footer-links {
   display: flex;
   gap: 20px;

@@ -219,6 +219,16 @@ textarea::placeholder,
   letter-spacing: 0.22em;
 }
 
+.navbar-logo-img {
+  height: 26px;
+  width: auto;
+  display: block;
+}
+
+/* Platform is always dark mode */
+.navbar-logo-img.logo-dark { display: block; }
+.navbar-logo-img.logo-light { display: none; }
+
 .navbar-links { display: flex; gap: 0; }
 
 .nav-link {
@@ -3730,6 +3740,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   letter-spacing: 0.2em;
   color: var(--text);
   font-weight: 400;
+}
+
+.mobile-menu-logo-img {
+  height: 22px;
+  width: auto;
+  display: block;
 }
 
 .mobile-menu-close {
