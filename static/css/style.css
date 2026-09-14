@@ -319,8 +319,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 /* Badges rendered inside the top nav must match .nav-link's 11px */
-.navbar .tier-badge,
-.navbar .kodo-estimate-badge {
+.navbar .tier-badge {
   font-size: 11px !important;
 }
 
@@ -3845,7 +3844,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   .navbar { padding: 0 12px; gap: 8px; overflow: hidden; }
   .navbar-links { display: none !important; }
   .badge { display: none; }
-  .kodo-estimate-badge,
   .nav-account,
   .nav-logout { display: none; }
   .mobile-menu-btn { display: flex; }

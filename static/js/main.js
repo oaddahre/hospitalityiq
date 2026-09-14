@@ -4352,21 +4352,13 @@ async function initReports() {
       card.innerHTML = `
         <div style="font-family:'Space Mono',monospace;font-size:0.875rem;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;color:var(--text);margin-bottom:12px;">${cityMeta.city}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" class="report-period-pills">${periodsHTML}</div>
-        <div style="display:flex;gap:6px;margin-bottom:12px;" class="report-theme-pills">
-          <button class="report-theme-pill active" data-theme="dark"
-            style="padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-size:0.6875rem;cursor:pointer;
-            background:var(--accent);color:#0A0A0A;font-family:'Manrope',sans-serif;transition:all 0.12s;">◐ Dark</button>
-          <button class="report-theme-pill" data-theme="light"
-            style="padding:4px 10px;border-radius:3px;border:1px solid var(--border);font-size:0.6875rem;cursor:pointer;
-            background:var(--surface);color:var(--muted);font-family:'Manrope',sans-serif;transition:all 0.12s;">○ Light</button>
-        </div>
         <div style="font-size:0.6875rem;color:var(--text-faint,#888);margin-bottom:12px;">${cityMeta.hotels} hotels tracked · ${cityMeta.keys?.toLocaleString() || '—'} keys</div>
         <button class="report-generate-btn" data-city="${cityMeta.city}"
           style="width:100%;padding:9px;background:${canGenerate?'var(--accent)':'var(--border)'};
           color:${canGenerate?'#0A0A0A':'var(--muted)'};border:none;cursor:pointer;
           font-family:Space Mono,monospace;font-size:0.75rem;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;
           display:flex;align-items:center;justify-content:center;">
-          ${lockIcon}Generate Dark Report
+          ${lockIcon}Generate Report
         </button>
         <div class="report-status" style="font-size:0.75rem;color:var(--muted);margin-top:8px;min-height:18px;text-align:center;"></div>
       `;
@@ -4386,30 +4378,13 @@ async function initReports() {
         });
       });
 
-      // Theme pill switching
+      // Reset the generate button back to its default label/state
       const updateGenBtn = () => {
-        const activeTheme = card.querySelector('.report-theme-pill.active')?.dataset.theme || 'dark';
         const btn = card.querySelector('.report-generate-btn');
         if (btn && !btn.disabled) {
-          const label = activeTheme === 'dark' ? 'Generate Dark Report' : 'Generate Light Report';
-          btn.innerHTML = `${lockIcon}${label}`;
+          btn.innerHTML = `${lockIcon}Generate Report`;
         }
       };
-      card.querySelectorAll('.report-theme-pill').forEach(pill => {
-        pill.addEventListener('click', () => {
-          card.querySelectorAll('.report-theme-pill').forEach(p => {
-            p.style.background = 'var(--surface)';
-            p.style.color = 'var(--muted)';
-            p.style.borderColor = 'var(--border)';
-            p.classList.remove('active');
-          });
-          pill.style.background = 'var(--accent)';
-          pill.style.color = '#0A0A0A';
-          pill.style.borderColor = 'var(--accent)';
-          pill.classList.add('active');
-          updateGenBtn();
-        });
-      });
 
       // Hover border
       card.addEventListener('mouseenter', () => { card.style.borderColor = 'var(--accent)'; });
@@ -4423,7 +4398,7 @@ async function initReports() {
         }
         const city   = cityMeta.city;
         const period = card.querySelector('.report-period-pill.active')?.dataset.period || data.periods[0];
-        const theme  = card.querySelector('.report-theme-pill.active')?.dataset.theme || 'dark';
+        const theme  = 'light'; // Reports are light-mode only.
         const btn    = card.querySelector('.report-generate-btn');
         const status = card.querySelector('.report-status');
 

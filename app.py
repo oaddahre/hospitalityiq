@@ -2254,7 +2254,7 @@ Return ONLY valid JSON, no markdown fences."""
         return placeholder
 
 
-def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'dark') -> bytes:
+def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') -> bytes:
     """Build a professional A4 PDF report using fpdf2."""
     mo     = data["market_overview"]
     perf   = data["performance"]
@@ -2675,9 +2675,7 @@ def api_reports_generate():
     body   = request.get_json(silent=True) or {}
     city   = body.get("city", "").strip()
     period = body.get("period", "").strip()
-    theme  = body.get("theme", "dark").strip()
-    if theme not in ("dark", "light"):
-        theme = "dark"
+    theme  = "light"  # Reports are light-mode only — ignore any theme sent by the client.
 
     valid_cities = REPORT_CITIES + ["Morocco"]
     if city not in valid_cities:
