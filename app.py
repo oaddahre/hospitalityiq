@@ -621,6 +621,19 @@ def index():
     return render_template("index.html", google_maps_key=google_maps_key)
 
 
+# TEMPORARY — remove after Maps debugging is done.
+@app.route('/debug-maps')
+def debug_maps():
+    key = os.environ.get('GOOGLE_MAPS_KEY') or os.environ.get('GOOGLE_MAPS_API_KEY', '')
+    return jsonify({
+        'key_present': bool(key),
+        'key_length': len(key),
+        'key_prefix': key[:10] if key else 'none',
+        'env_GOOGLE_MAPS_KEY': bool(os.environ.get('GOOGLE_MAPS_KEY')),
+        'env_GOOGLE_MAPS_API_KEY': bool(os.environ.get('GOOGLE_MAPS_API_KEY')),
+    })
+
+
 @app.route("/account")
 @login_required
 def account_page():
