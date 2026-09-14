@@ -1515,6 +1515,10 @@ function initGoogleMaps() {
     initMap();
   }
 }
+// Defensive: guarantee this is reachable as a global even if this file is
+// ever wrapped/bundled in a way that stops top-level functions from
+// attaching themselves to window automatically.
+window.initGoogleMaps = initGoogleMaps;
 
 function swapMapTheme(mode) {
   const styles = mode === 'light' ? GMAP_STYLE_LIGHT : GMAP_STYLE_DARK;

@@ -11,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <script>const GOOGLE_MAPS_KEY = '{{ google_maps_key }}';</script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initGoogleMaps&libraries=marker&region=MA&language=en"></script>
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
@@ -1732,6 +1730,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="/static/js/main.js"></script>
+  <!-- Loaded after main.js so window.initGoogleMaps already exists before
+       this async script can call it back (was previously in <head>, which
+       raced main.js and threw "initGoogleMaps is not a function"). -->
+  <script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initGoogleMaps&libraries=marker&region=MA&language=en&loading=async"></script>
 
   <footer class="platform-footer">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence · <a href="/methodology" style="color:inherit;opacity:0.6;text-decoration:none;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Methodology</a> · <a href="/terms" style="color:inherit;opacity:0.6;text-decoration:none;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Terms</a> · <a href="/privacy" style="color:inherit;opacity:0.6;text-decoration:none;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Privacy</a></footer>
 
