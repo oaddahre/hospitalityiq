@@ -15,6 +15,7 @@ import re
 import uuid
 import secrets
 import hashlib
+import html
 import subprocess
 import sys
 from datetime import datetime, timedelta
@@ -245,6 +246,77 @@ def _reset_email_html(reset_url: str) -> str:
           <tr>
             <td style="border-top:1px solid #242424;padding-top:24px;">
               <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you did not request a password reset you can safely ignore this email. Your password will not be changed.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#B87860;word-break:break-all;">{reset_url}</span></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
+
+
+def _welcome_email_html(name: str, active: bool) -> str:
+    # `active` accounts (Observer, self-serve) can log straight in; accounts
+    # created in "pending_approval" (paid tiers, activated manually today)
+    # get accurate copy instead of a false "you're all set" message.
+    if active:
+        status_line = "Your account is active — log in to start exploring."
+    else:
+        status_line = "Your subscription is currently pending activation. We will notify you as soon as your access is confirmed."
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
+          <tr>
+            <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#B87860;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:32px;padding-bottom:24px;">
+              <h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Welcome, {name}.</h1>
+              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0 0 12px;">Your account has been created. You now have access to Morocco's most comprehensive hotel market intelligence platform.</p>
+              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">{status_line}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:32px;">
+              <a href="https://www.kodohospitality.com/login" style="display:inline-block;background:#B87860;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Access Platform →</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">
+                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#B87860;margin:0 0 6px;">300+</p>
+                    <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Hotels</p>
+                  </td>
+                  <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;border-left:1px solid #141414;border-right:1px solid #141414;">
+                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#B87860;margin:0 0 6px;">23</p>
+                    <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Destinations</p>
+                  </td>
+                  <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">
+                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#B87860;margin:0 0 6px;">35</p>
+                    <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Brand Groups</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid #242424;padding-top:24px;">
+              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us at <a href="mailto:contact@kodohospitality.com" style="color:#B87860;text-decoration:none;">contact@kodohospitality.com</a><br><br>© 2026 Kōdō Hospitality · All Rights Reserved</p>
             </td>
           </tr>
         </table>
@@ -673,6 +745,21 @@ def register_page():
             db = load_users_db()
             db["users"].append(new_user_data)
             save_users_db(db)
+
+            resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
+            if not resend.api_key:
+                app.logger.error("Welcome email not sent: RESEND_API_KEY is not set.")
+            else:
+                try:
+                    resend.Emails.send({
+                        "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+                        "to":      email,
+                        "subject": "Welcome to Kōdō Hospitality",
+                        "html":    _welcome_email_html(html.escape(name), is_observer),
+                    })
+                except Exception as e:
+                    app.logger.error(f"Welcome email error: {e}")
+
             if is_observer:
                 login_user(User(new_user_data), remember=True)
                 return redirect(url_for("index"))
