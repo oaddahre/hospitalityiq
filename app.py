@@ -6,12 +6,15 @@ from flask_login import (
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 import anthropic
+import resend
 import json
 import csv
 import io
 import os
 import re
 import uuid
+import secrets
+import hashlib
 import subprocess
 import sys
 from datetime import datetime, timedelta
@@ -67,11 +70,13 @@ UPLOAD_LOG_FILE      = os.path.join(DATA_DIR, "upload_log.json")
 CONTACT_FILE         = os.path.join(DATA_DIR, "contact_submissions.json")
 USERS_FILE           = os.path.join(DATA_DIR, "users.json")
 ORGS_FILE            = os.path.join(DATA_DIR, "organisations.json")
+RESET_TOKENS_FILE    = os.path.join(DATA_DIR, "reset_tokens.json")
 
 TIER_ORDER  = {"observer": 0, "benchmarker": 1, "advisory": 2}
 PLAN_SEATS  = {"observer": 1, "benchmarker": 3, "advisory": 5}
 
 _login_failures: dict = {}   # {email: {"count": int, "since": datetime}}
+_reset_requests: dict = {}   # {email: datetime of last forgot-password request} — spam cooldown
 
 # ─── APScheduler — daily rate scraper at 03:00 Casablanca time ───────────────
 try:
@@ -181,6 +186,74 @@ def update_user_field(uid: str, fields: dict):
             u.update(fields)
             break
     save_users_db(db)
+
+
+# ─── Password reset tokens ─────────────────────────────────────────────────────
+# Tokens are stored hashed (sha256), never in plaintext — reset_tokens.json only
+# ever holds a value that's useless without the original link the user was
+# emailed, same principle as storing password hashes rather than passwords.
+
+def _hash_reset_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def load_reset_tokens() -> dict:
+    if not os.path.exists(RESET_TOKENS_FILE):
+        return {}
+    with open(RESET_TOKENS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_reset_tokens(tokens: dict):
+    with open(RESET_TOKENS_FILE, "w", encoding="utf-8") as f:
+        json.dump(tokens, f, indent=2)
+
+
+def cleanup_expired_tokens(tokens: dict) -> dict:
+    now = datetime.utcnow().isoformat()
+    return {k: v for k, v in tokens.items() if v["expires"] > now}
+
+
+def _reset_email_html(reset_url: str) -> str:
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
+          <tr>
+            <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#B87860;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:32px;padding-bottom:24px;">
+              <h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Reset your password</h1>
+              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">We received a request to reset the password for your Kōdō account. Click the button below to set a new password. This link expires in 1 hour.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:32px;">
+              <a href="{reset_url}" style="display:inline-block;background:#B87860;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Reset Password →</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid #242424;padding-top:24px;">
+              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you did not request a password reset you can safely ignore this email. Your password will not be changed.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#B87860;word-break:break-all;">{reset_url}</span></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
 
 
 # ─── Organisations storage ────────────────────────────────────────────────────
@@ -442,6 +515,116 @@ def login_page():
 def logout():
     logout_user()
     return redirect(url_for("landing"))
+
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "GET":
+        return render_template("forgot_password.html")
+
+    data  = request.get_json(silent=True) or request.form
+    email = (data.get("email") or "").strip().lower()
+
+    if not email:
+        return jsonify({"error": "Email required"}), 400
+
+    # Cooldown: at most one reset email per address per 60s, to stop this
+    # public endpoint being used to spam an arbitrary inbox. The response
+    # is identical either way, so this leaks nothing about account existence.
+    last_request = _reset_requests.get(email)
+    if last_request and (datetime.utcnow() - last_request).total_seconds() < 60:
+        return jsonify({"success": True,
+                         "message": "If an account exists with that email you will receive a reset link shortly."})
+    _reset_requests[email] = datetime.utcnow()
+
+    user = find_user_by_email(email)
+
+    # Always return the same success response either way, to prevent
+    # email enumeration via this endpoint.
+    if user:
+        token       = secrets.token_urlsafe(32)
+        expires     = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+        token_hash  = _hash_reset_token(token)
+
+        tokens = cleanup_expired_tokens(load_reset_tokens())
+        tokens[token_hash] = {
+            "email":   email,
+            "expires": expires,
+            "used":    False,
+        }
+        save_reset_tokens(tokens)
+
+        reset_url = f"https://www.kodohospitality.com/reset-password?token={token}"
+
+        resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
+        if not resend.api_key:
+            app.logger.error("Password reset email not sent: RESEND_API_KEY is not set.")
+        else:
+            try:
+                resend.Emails.send({
+                    "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+                    "to":      email,
+                    "subject": "Reset your Kōdō password",
+                    "html":    _reset_email_html(reset_url),
+                })
+            except Exception as e:
+                app.logger.error(f"Reset email error: {e}")
+
+    return jsonify({"success": True,
+                     "message": "If an account exists with that email you will receive a reset link shortly."})
+
+
+@app.route("/reset-password", methods=["GET"])
+def reset_password_page():
+    token = request.args.get("token", "")
+
+    tokens     = cleanup_expired_tokens(load_reset_tokens())
+    token_data = tokens.get(_hash_reset_token(token))
+    valid      = bool(token_data) and not token_data.get("used", False)
+
+    return render_template("reset_password.html", token=token, valid=valid)
+
+
+@app.route("/reset-password", methods=["POST"])
+def reset_password():
+    data              = request.get_json(silent=True) or request.form
+    token             = data.get("token", "")
+    new_password      = data.get("password", "")
+    confirm_password  = data.get("confirm_password", "")
+
+    if not token or not new_password:
+        return jsonify({"error": "Token and password required"}), 400
+    if new_password != confirm_password:
+        return jsonify({"error": "Passwords do not match"}), 400
+    if len(new_password) < 8:
+        return jsonify({"error": "Password must be at least 8 characters"}), 400
+
+    tokens     = cleanup_expired_tokens(load_reset_tokens())
+    token_hash = _hash_reset_token(token)
+    token_data = tokens.get(token_hash)
+
+    if not token_data or token_data.get("used", False):
+        return jsonify({"error": "Invalid or expired reset link"}), 400
+
+    email = token_data["email"]
+    user  = find_user_by_email(email)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    update_user_field(user.id, {
+        "password_hash":         generate_password_hash(new_password),
+        "force_password_change": False,
+    })
+
+    # Invalidate every outstanding token for this email, not just the one
+    # used — an unused older link (e.g. from a leaked/forwarded email)
+    # shouldn't still work after the password has already been changed.
+    for t, v in tokens.items():
+        if v["email"] == email:
+            v["used"] = True
+    save_reset_tokens(tokens)
+
+    return jsonify({"success": True, "message": "Password updated successfully"})
 
 
 @app.route("/register", methods=["GET", "POST"])
