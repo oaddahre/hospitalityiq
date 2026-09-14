@@ -617,7 +617,8 @@ def landing():
 @app.route("/dashboard")
 @login_required
 def index():
-    return render_template("index.html", google_maps_key=os.environ.get('GOOGLE_MAPS_KEY', ''))
+    google_maps_key = os.environ.get('GOOGLE_MAPS_KEY') or os.environ.get('GOOGLE_MAPS_API_KEY', '')
+    return render_template("index.html", google_maps_key=google_maps_key)
 
 
 @app.route("/account")
