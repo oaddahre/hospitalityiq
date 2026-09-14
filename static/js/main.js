@@ -1951,12 +1951,37 @@ const TOUR_ORIGINS_DATA = {
 function initTourismCharts() {
   if (tourismInited) return;
 
+  // Defensive: if this ever re-runs (e.g. after redrawChartsForTheme
+  // destroys and rebuilds these charts), drop any leftover year-tab rows
+  // instead of stacking a duplicate set in front of each chart.
+  document.querySelectorAll('.chart-year-tabs').forEach(el => el.remove());
+
   // Set chart-wrap height: also zeroes min-height so CSS 360px default doesn't interfere
   const setH = (id, h) => {
     const el = document.getElementById(id);
     el.style.minHeight = '0';
     el.style.height = h + 'px';
   };
+
+  // Charts with per-year data, registered here so the standalone year
+  // <select> above the KPI cards (previously wired to Excel export only)
+  // can drive all of them too, instead of only the individual tab rows.
+  const yearFilterableCharts = [];
+
+  function setTourismYear(yr) {
+    yearFilterableCharts.forEach(({ canvas, data, tabsDiv }) => {
+      const chart = Chart.getChart(canvas);
+      if (chart && data.years[yr]) {
+        chart.data.datasets[0].data = data.years[yr];
+        chart.update();
+      }
+      tabsDiv.querySelectorAll('.chart-year-tab').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.year) === Number(yr));
+      });
+    });
+    const exportSel = document.getElementById('tourism-export-year');
+    if (exportSel && exportSel.value !== String(yr)) exportSel.value = String(yr);
+  }
 
   const addYearTabs = (canvasId, data) => {
     const canvas = document.getElementById(canvasId);
@@ -1967,15 +1992,12 @@ function initTourismCharts() {
       const btn = document.createElement('button');
       btn.className = 'chart-year-tab' + (yr === 2025 ? ' active' : '');
       btn.textContent = yr;
-      btn.addEventListener('click', () => {
-        tabsDiv.querySelectorAll('.chart-year-tab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const chart = Chart.getChart(canvas);
-        if (chart) { chart.data.datasets[0].data = data.years[yr]; chart.update(); }
-      });
+      btn.dataset.year = yr;
+      btn.addEventListener('click', () => setTourismYear(yr));
       tabsDiv.appendChild(btn);
     });
     wrap.parentNode.insertBefore(tabsDiv, wrap);
+    yearFilterableCharts.push({ canvas, data, tabsDiv });
   };
 
   // ── Helper for vertical bar charts ──────────────────────────────
@@ -2077,6 +2099,13 @@ function initTourismCharts() {
   airCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M passengers';
   new Chart(document.getElementById('chart-tour-airports'), airCfg);
   addYearTabs('chart-tour-airports', TOUR_AIRPORT_DATA);
+
+  // Standalone year selector above the KPI cards — was previously read only
+  // at Excel-export time, so picking a year here had no visible effect on
+  // the charts. Now it drives the same per-year charts as the tab rows.
+  document.getElementById('tourism-export-year')?.addEventListener('change', e => {
+    setTourismYear(parseInt(e.target.value, 10));
+  });
 
   // 6. Tourism Revenue Trend
   setH('twrap-revenue', 290);
