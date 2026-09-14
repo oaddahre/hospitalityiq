@@ -1948,6 +1948,55 @@ const TOUR_ORIGINS_DATA = {
   },
 };
 
+// Hoisted out of initTourismCharts (where these were previously inline
+// consts) so the top KPI cards can reuse the exact same trend numbers
+// instead of duplicating them.
+const TOUR_ARRIVALS_TREND = {
+  labels: ['2020','2021','2022','2023','2024','2025','2026E'],
+  values: [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5],
+};
+const TOUR_REVENUE_TREND = {
+  labels: ['2020','2021','2022','2023','2024','2025','2026E'],
+  values: [34, 44, 76, 89, 105, 118, 132],
+};
+
+// Top KPI-card figures for each selectable year, derived from the same
+// series driving the charts above (TOUR_ARRIVALS_TREND, TOUR_REVENUE_TREND,
+// TOUR_NIGHTS_DATA, TOUR_ORIGINS_DATA) rather than separately hand-typed.
+const TOUR_KPI_BY_YEAR = {};
+(function buildTourKpiByYear() {
+  const pctDelta = (curr, prev) => {
+    if (curr == null || prev == null || !prev) return null;
+    const pct = Math.round(((curr / prev) - 1) * 100);
+    return (pct >= 0 ? '+' : '') + pct + '%';
+  };
+  const sum = arr => arr.reduce((a, b) => a + b, 0);
+
+  [2021, 2022, 2023, 2024, 2025].forEach(yr => {
+    const arrIdx     = TOUR_ARRIVALS_TREND.labels.indexOf(String(yr));
+    const prevArrIdx = TOUR_ARRIVALS_TREND.labels.indexOf(String(yr - 1));
+    const revIdx     = TOUR_REVENUE_TREND.labels.indexOf(String(yr));
+    const prevRevIdx = TOUR_REVENUE_TREND.labels.indexOf(String(yr - 1));
+    const nightsVals     = TOUR_NIGHTS_DATA.years[yr];
+    const prevNightsVals = TOUR_NIGHTS_DATA.years[yr - 1];
+    const originVals   = TOUR_ORIGINS_DATA.years[yr];
+    const topOriginIdx = originVals ? originVals.indexOf(Math.max(...originVals)) : -1;
+
+    TOUR_KPI_BY_YEAR[yr] = {
+      arrivals:      arrIdx > -1 ? TOUR_ARRIVALS_TREND.values[arrIdx] : null,
+      arrivalsDelta: (arrIdx > -1 && prevArrIdx > -1)
+        ? pctDelta(TOUR_ARRIVALS_TREND.values[arrIdx], TOUR_ARRIVALS_TREND.values[prevArrIdx]) : null,
+      revenue:      revIdx > -1 ? TOUR_REVENUE_TREND.values[revIdx] : null,
+      revenueDelta: (revIdx > -1 && prevRevIdx > -1)
+        ? pctDelta(TOUR_REVENUE_TREND.values[revIdx], TOUR_REVENUE_TREND.values[prevRevIdx]) : null,
+      nights:      nightsVals ? +sum(nightsVals).toFixed(1) : null,
+      nightsDelta: (nightsVals && prevNightsVals) ? pctDelta(sum(nightsVals), sum(prevNightsVals)) : null,
+      topOrigin:    topOriginIdx > -1 ? TOUR_ORIGINS_DATA.labels[topOriginIdx] : null,
+      topOriginPct: topOriginIdx > -1 ? originVals[topOriginIdx] : null,
+    };
+  });
+})();
+
 function initTourismCharts() {
   if (tourismInited) return;
 
@@ -1981,6 +2030,45 @@ function initTourismCharts() {
     });
     const exportSel = document.getElementById('tourism-export-year');
     if (exportSel && exportSel.value !== String(yr)) exportSel.value = String(yr);
+
+    // Update the top KPI cards to match the selected year
+    const kpi = TOUR_KPI_BY_YEAR[yr];
+    if (!kpi) return;
+
+    const setCard = (labelId, valueId, labelPrefix, value) => {
+      const labelEl = document.getElementById(labelId);
+      if (labelEl) labelEl.textContent = `${labelPrefix} ${yr}`;
+      const valueEl = document.getElementById(valueId);
+      if (valueEl && value != null) valueEl.textContent = value;
+    };
+    const setDelta = (deltaId, delta) => {
+      const deltaEl = document.getElementById(deltaId);
+      if (!deltaEl) return;
+      if (delta) {
+        deltaEl.textContent = `${delta} vs ${yr - 1}`;
+        deltaEl.className = 'kpi-delta ' + (delta.startsWith('-') ? 'down' : 'up');
+        deltaEl.style.display = '';
+      } else {
+        deltaEl.style.display = 'none';
+      }
+    };
+
+    setCard('tour-kpi-arrivals-label', 'tour-kpi-arrivals-value',
+      "Int'l Arrivals", kpi.arrivals != null ? kpi.arrivals + 'M' : null);
+    setDelta('tour-kpi-arrivals-delta', kpi.arrivalsDelta);
+
+    setCard('tour-kpi-nights-label', 'tour-kpi-nights-value',
+      'Tourist Nights', kpi.nights != null ? kpi.nights + 'M' : null);
+    setDelta('tour-kpi-nights-delta', kpi.nightsDelta);
+
+    setCard('tour-kpi-revenue-label', 'tour-kpi-revenue-value',
+      'Tourism Revenue', kpi.revenue != null ? 'MAD ' + kpi.revenue + 'B' : null);
+    setDelta('tour-kpi-revenue-delta', kpi.revenueDelta);
+
+    const originValueEl = document.getElementById('tour-kpi-origin-value');
+    if (originValueEl && kpi.topOrigin) originValueEl.textContent = kpi.topOrigin;
+    const originMetaEl = document.getElementById('tour-kpi-origin-meta');
+    if (originMetaEl && kpi.topOriginPct != null) originMetaEl.textContent = `${kpi.topOriginPct}% of arrivals`;
   }
 
   const addYearTabs = (canvasId, data) => {
@@ -2033,8 +2121,8 @@ function initTourismCharts() {
 
   // 1. International Arrivals Trend
   setH('twrap-arrivals', 290);
-  const arrLbls = ['2020','2021','2022','2023','2024','2025','2026E'];
-  const arrVals = [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5];
+  const arrLbls = TOUR_ARRIVALS_TREND.labels;
+  const arrVals = TOUR_ARRIVALS_TREND.values;
   new Chart(document.getElementById('chart-tour-arrivals'),
     vBar(arrLbls, arrVals, arrLbls.map(() => getChartColors().barColor),
       v => v + 'M', v => v + 'M arrivals'));
@@ -2109,8 +2197,8 @@ function initTourismCharts() {
 
   // 6. Tourism Revenue Trend
   setH('twrap-revenue', 290);
-  const revLbls = ['2020','2021','2022','2023','2024','2025','2026E'];
-  const revVals = [34, 44, 76, 89, 105, 118, 132];
+  const revLbls = TOUR_REVENUE_TREND.labels;
+  const revVals = TOUR_REVENUE_TREND.values;
   new Chart(document.getElementById('chart-tour-revenue'),
     vBar(revLbls, revVals, revLbls.map(() => getChartColors().barColor),
       v => v + 'B', v => 'MAD ' + v + 'B'));
