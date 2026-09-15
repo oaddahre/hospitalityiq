@@ -1868,7 +1868,7 @@ function renderTourismEvents() {
 
   if (!sorted.length) {
     document.getElementById('events-container').innerHTML =
-      '<p style="padding:24px 20px;font-family:\'Manrope\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
+      '<p style="padding:24px 20px;font-family:\'Sweet Sans Pro\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
     return;
   }
 
@@ -3500,7 +3500,7 @@ function isCompSetValid() {
 }
 
 function benchCompPlaceholder() {
-  return `<div style="display:flex;align-items:center;justify-content:center;padding:32px 16px;color:var(--text-muted);font-family:'Manrope',sans-serif;font-size:11px;text-align:center;">
+  return `<div style="display:flex;align-items:center;justify-content:center;padding:32px 16px;color:var(--text-muted);font-family:'Sweet Sans Pro',sans-serif;font-size:11px;text-align:center;">
     ⚠ Add at least ${BENCH_MIN_COMP} hotels to view comp set data
   </div>`;
 }
@@ -4460,7 +4460,7 @@ async function initReports() {
         `<button class="report-period-pill ${i===0?'active':''}" data-period="${p}"
           style="padding:4px 10px;border-radius:3px;border:1px solid var(--border);font-size:0.6875rem;cursor:pointer;
           background:${i===0?'var(--accent)':'var(--surface)'};color:${i===0?'#0A0A0A':'var(--muted)'};
-          font-family:'Manrope',sans-serif;transition:all 0.12s;">${p}</button>`
+          font-family:'Sweet Sans Pro',sans-serif;transition:all 0.12s;">${p}</button>`
       ).join('');
 
       const lockIcon = canGenerate ? '' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
@@ -4860,7 +4860,7 @@ function renderOwnerCards() {
         '<div class="owner-stat-item"><span class="owner-stat-label">Cities</span><span class="owner-stat-value">' + (o.cities || []).length + '</span></div>' +
         '<div class="owner-stat-item"><span class="owner-stat-label">Operators</span><span class="owner-stat-value">' + (o.brands_operated || []).length + '</span></div>' +
       '</div>' +
-      '<div style="font-family:\'Manrope\',sans-serif;font-size:10px;color:var(--text-muted)">' +
+      '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:10px;color:var(--text-muted)">' +
         (cities ? '<span style="color:var(--text-faint)">Cities: </span>' + fmt.esc(cities) : '') +
       '</div>' +
     '</div>';
@@ -4900,7 +4900,7 @@ function renderOwnerDetail(o) {
   if (o.description) {
     document.getElementById('owner-about-slot').innerHTML =
       '<div class="brand-about-card" style="margin-bottom:20px">' +
-        '<p style="font-family:\'Manrope\',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;margin:0">' + fmt.esc(o.description) + '</p>' +
+        '<p style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;margin:0">' + fmt.esc(o.description) + '</p>' +
       '</div>';
   } else {
     document.getElementById('owner-about-slot').innerHTML = '';
