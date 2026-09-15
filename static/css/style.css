@@ -151,8 +151,13 @@ button, .btn {
   font-weight: 500;
 }
 
-/* ─── Form fields: bottom-border-only (AI chat input excluded, styled separately) ─── */
-input[type="text"],
+/* ─── Form fields: bottom-border-only (AI chat input and the hotel
+   directory's boxed search bar excluded — .hotels-search-input has
+   its own dedicated box/icon-clearance styling further down, which
+   this !important reset was silently clobbering since input[type="text"]
+   still matched it even after being dropped from the class list here,
+   causing the search icon to overlap the input text) ─── */
+input[type="text"]:not(.hotels-search-input),
 input[type="email"],
 input[type="number"],
 input[type="password"],
@@ -162,7 +167,6 @@ select,
 .form-input,
 .filter-input,
 .search-input,
-.hotels-search-input,
 .brands-search-input {
   background: transparent !important;
   border: none !important;
