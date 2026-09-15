@@ -1415,6 +1415,8 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 .lp-modules-preview-stats {
   display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   gap: 32px;
   margin-top: 8px;
 }
@@ -1423,36 +1425,45 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: flex-start;
   min-width: 0;
 }
 
+/* Uniform size for every stat value — the previous approach (a smaller
+   --long variant for a few compound values) made sibling stats in the
+   same row different heights whenever only one of the two was "long",
+   which is what was actually throwing the row out of alignment. One
+   consistent size + the shortened copy below + the overflow guard at
+   the bottom keeps every stat the same height regardless of content. */
 .lp-modules-preview-stat-val {
   font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 24px;
+  font-weight: 700;
+  font-size: 20px;
   color: var(--lp-text);
   letter-spacing: -0.02em;
   line-height: 1;
-}
-
-/* For compound values ("CDG · Al Mada · Risma", "ADR · Occ · RevPAR",
-   "International + Domestic") that are far longer than the short
-   numeric metrics this was originally sized for — a smaller size that
-   wraps cleanly rather than overflowing at 24px/800. */
-.lp-modules-preview-stat-val--long {
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+  display: block;
+  white-space: nowrap;
 }
 
 .lp-modules-preview-stat-lbl {
   font-family: 'Space Mono', monospace;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;
   color: var(--lp-text-faint);
+  display: block;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.lp-modules-preview-stat-val,
+.lp-modules-preview-stat-lbl {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
 }
 
 /* ── ADVISORY: TIMELINE ── */
