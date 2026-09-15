@@ -2348,8 +2348,8 @@ function initPipelineMap() {
 function pipelinePopupHTML(p) {
   const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
   const statusPill = p.status === 'Under Construction'
-    ? `<span style="color:#B87860;font-family:'Space Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)} <span style="opacity:0.5;font-size:11px;">›</span></span>`
-    : `<span style="color:#888888;font-family:'Space Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)} <span style="opacity:0.5;font-size:11px;">›</span></span>`;
+    ? `<span style="color:#B87860;font-family:'Space Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)}</span>`
+    : `<span style="color:#888888;font-family:'Space Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${getSegmentBadgeHtml(p.category)}</div>

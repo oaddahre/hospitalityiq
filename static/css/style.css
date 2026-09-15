@@ -562,7 +562,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border-radius: 999px;
 }
 
-/* ─── Chevron-suffix badges/pills ─────────────────────────────── */
+/* ─── Compact text badges/pills (Space Mono format) ───────────── */
 .segment-badge,
 .owner-type-badge,
 .status-badge,
@@ -595,29 +595,16 @@ body.light .nav-logout  { color: #8A8A8A; }
   gap: 3px !important;
   font-size: 8px !important;
 }
-.segment-badge::after,
-.owner-type-badge::after,
-.status-badge::after,
-.tier-badge::after,
-.data-quality-badge::after,
-.category-pill::after,
-.city-pill::after,
-.pipeline-status-badge::after,
-.bench-mode-badge::after,
-.confidence-badge::after,
-.filter-pill::after,
-.nav-tier-badge::after,
-.brand-city-pill::after,
-.brand-cities-more::after,
-.owner-city-pill::after,
-.search-result-category::after,
-.kodo-estimate-badge::after,
-.powered-by-kodo-badge::after {
-  content: '›';
-  margin-left: 3px;
-  opacity: 0.5;
-  font-size: 10px;
-  line-height: 1;
+
+/* Plan/tier badges (Advisory, Benchmarker, Observer) — Sweet Sans Pro,
+   overriding the shared Space Mono rule above. Also covers the
+   valuation tool's "Advisory" lock pill (.val-tier-pill), which shows
+   the same tier labels but isn't part of the shared badge rule. */
+.tier-badge,
+.val-tier-pill {
+  font-family: 'Sweet Sans Pro', 'Manrope', sans-serif !important;
+  font-weight: 200;
+  letter-spacing: 0.12em !important;
 }
 
 /* ─── Segment badges — original colored pill format ───────────── */
