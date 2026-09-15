@@ -2102,6 +2102,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   gap: 12px;
   padding: 8px 20px 10px;
 }
+.rate-updated-note {
+  font-size: 10px;
+  color: var(--text-faint);
+  padding: 0 20px 12px;
+}
+.rate-updated-note:empty { display: none; }
 .bar-cal-leg-item {
   display: flex;
   align-items: center;

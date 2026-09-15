@@ -1034,7 +1034,7 @@ async function showHotelDetail(id) {
 
   // ── 2. KPI cards ──
   const setKv = (id, v) => document.getElementById(id).querySelector('.kpi-value').textContent = v;
-  setKv('hkpi-keys',   fmt.num(h.keys));
+  setKv('hkpi-detail-keys', fmt.num(h.keys));
   setKv('hkpi-occ',    fmt.pct(h.occupancy));
   setKv('hkpi-adr',    fmt.mad(h.adr_mad));
   setKv('hkpi-revpar', fmt.mad(h.revpar_mad));
