@@ -8,6 +8,30 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/static/fonts/SweetSansProRegular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/static/fonts/SweetSansProMedium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/static/fonts/SweetSansProBold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ─── Dark mode base (:root) ────────────────────── */
@@ -72,17 +96,25 @@ body {
 }
 
 /* ─── Typography ─────────────────────────────────── */
-h1, h2, h3, h4, h5, h6,
+/* Large headings/section titles — Bold */
+h1, h2,
 .ph h1, .screen-header h1,
+.screen-title, .section-title {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Subheadings and card-level titles — Medium */
+h3, h4, h5, h6,
 .ct, .card-title, .kpi-label-title,
-.screen-title, .section-title,
 .chart-title, .brand-name, .brand-about-title,
 .hotel-name, .pipeline-card-name, .owner-name,
 .landing-hero-title, .pricing-tier-name,
 .article-title, .feature-title,
 .nav-logo, .hero-logo-mark {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0;
 }
 
@@ -111,6 +143,14 @@ input, textarea, select,
 .tab-item,
 .news-excerpt, .methodology-body {
   font-family: 'Sweet Sans Pro', sans-serif;
+}
+
+/* Buttons — Medium (catches every plain <button> platform-wide;
+   .btn-primary/.btn-p/.btn.primary already set 500 explicitly below,
+   and anything with its own more specific weight, e.g. the mobile
+   menu's larger touch targets, still wins via specificity). */
+button, .btn {
+  font-weight: 500;
 }
 
 /* ─── Form fields: bottom-border-only (AI chat input excluded, styled separately) ─── */
@@ -178,22 +218,36 @@ textarea::placeholder,
 }
 
 /* ─── Data / badge / label elements → Space Mono ─── */
-.kpi-value, .kpi-label, .kpi-meta, .kpi-delta,
-.owner-stat-value, .owner-stat-label,
-.brn-kpi-val, .brni-value, .brni-title,
+/* Keep numeric/data displays on the platform's dedicated mono font
+   rather than switching to Sweet Sans Pro (same principle as chart
+   data values) — but still assign the requested value/label weight
+   hierarchy using Space Mono's own loaded weights (400/700; it has
+   no 200 face, so "labels" stay at the regular weight below). */
+.kpi-value, .brn-kpi-val, .brni-value,
 .hiq-popup-stat-val, .hotel-fin-val, .hbench-val,
 .pipe-card-year, .pipe-card-metric-val, .pipe-metric-value,
-.pipe-card-metric-lbl, .pipe-metric-label,
 .bench-kpi-mine-val, .bench-kpi-comp-val, .bench-kpi-idx-val,
-.bench-kpi-title, .bench-kpi-mine-lbl, .bench-kpi-comp-lbl, .bench-kpi-idx-lbl,
-.bench-cal-dayval, .bench-idx-badge, .bench-insight-badge,
-.bench-card-label, .bench-date-label,
+.bench-cal-dayval, .owner-stat-value,
 .brn-mkt-pct, .num-cell, .num-col, .rank-cell,
-.timeline-date__day, .chart-unit,
-.filter-pills-label, .brand-cities-label, .search-group-label,
+.data-table tbody td:nth-child(n+3) {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+}
+
+.kpi-label, .kpi-meta, .kpi-delta,
+.owner-stat-label, .brni-title,
+.pipe-card-metric-lbl, .pipe-metric-label,
+.bench-kpi-title, .bench-kpi-mine-lbl, .bench-kpi-comp-lbl, .bench-kpi-idx-lbl,
+.bench-card-label, .bench-date-label,
+.filter-pills-label, .brand-cities-label, .search-group-label {
+  font-family: 'Space Mono', monospace;
+  font-weight: 400;
+}
+
 .segment-badge, .owner-type-badge, .owner-portfolio-table th,
 .tier-badge, .cal-legend-label, .bench-cal-dow,
-.data-table tbody td:nth-child(n+3) {
+.timeline-date__day, .chart-unit,
+.bench-idx-badge, .bench-insight-badge {
   font-family: 'Space Mono', monospace;
 }
 
@@ -244,6 +298,7 @@ textarea::placeholder,
   padding: 6px 12px;
   text-decoration: none;
   font-family: 'Sweet Sans Pro', sans-serif;
+  font-weight: 400;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -600,11 +655,13 @@ body.light .nav-logout  { color: #8A8A8A; }
 /* Plan/tier badges (Advisory, Benchmarker, Observer) — Sweet Sans Pro,
    overriding the shared Space Mono rule above. Also covers the
    valuation tool's "Advisory" lock pill (.val-tier-pill), which shows
-   the same tier labels but isn't part of the shared badge rule. */
+   the same tier labels but isn't part of the shared badge rule.
+   Weight 400 — Regular, matching "badges and tags" elsewhere on the
+   platform (updated from the ExLight/200 set in an earlier pass). */
 .tier-badge,
 .val-tier-pill {
   font-family: 'Sweet Sans Pro', sans-serif !important;
-  font-weight: 200;
+  font-weight: 400;
   letter-spacing: 0.12em !important;
 }
 
@@ -759,7 +816,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   text-align: left;
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
-  font-weight: 400;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
