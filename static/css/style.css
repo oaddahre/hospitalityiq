@@ -32,7 +32,7 @@
   font-display: swap;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sweet Sans Pro', sans-serif; }
 
 /* ─── Dark mode base (:root) ────────────────────── */
 :root {
@@ -55,7 +55,7 @@
   --sidebar-w:     192px;
   --radius:        6px;
   --radius-sm:     4px;
-  --font:          'Sweet Sans Pro', system-ui, sans-serif;
+  --font:          'Sweet Sans Pro', sans-serif;
   --font-body:     'Sweet Sans Pro', sans-serif;
   --font-heading:  'Sweet Sans Pro', sans-serif;
   --heading:       'Sweet Sans Pro', sans-serif;
@@ -85,7 +85,7 @@ body.light {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Sweet Sans Pro', system-ui, sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 200;
   font-size: 14px;
   height: 100vh;
@@ -4264,7 +4264,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   .navbar, .sidebar, .noprint,
   #screen-dashboard, #screen-map, #screen-hotels, #screen-tourism,
   #screen-brand, #screen-pipeline, #screen-benchmarking, #screen-ai { display: none !important; }
-  body { background: #fff !important; color: #000 !important; font-family: Arial, sans-serif; }
+  body { background: #fff !important; color: #000 !important; font-family: 'Sweet Sans Pro', sans-serif; }
   .app-body { display: block !important; }
   .main-content { margin: 0 !important; padding: 20px !important; max-width: 100% !important; }
   #screen-news { display: block !important; padding: 0 !important; }
