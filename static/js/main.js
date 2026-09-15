@@ -454,10 +454,9 @@ function renderKPIs() {
   set('kpi-revpar', fmt.mad(kpis.revpar_mad));
 
   const sub = document.getElementById('dashboard-sub');
-  const badge = '<span class="kodo-estimate-badge">Kōdō Estimates</span>';
   sub.innerHTML = state.city === 'all'
-    ? 'Morocco branded hotel market · ' + badge
-    : fmt.esc(state.city) + ' · ' + badge + ' · ' + fmt.esc(hotelLabel);
+    ? 'Morocco branded hotel market'
+    : fmt.esc(state.city) + ' · ' + fmt.esc(hotelLabel);
 }
 
 // ─── Charts ───────────────────────────────────────────────────────
@@ -1029,7 +1028,7 @@ async function showHotelDetail(id) {
     dqEl.textContent = 'Verified';
     dqEl.className   = 'hotel-dq-badge dq-verified';
   } else {
-    dqEl.textContent = 'Kōdō Estimate';
+    dqEl.textContent = 'Estimated';
     dqEl.className   = 'hotel-dq-badge dq-estimate';
   }
 
@@ -1235,7 +1234,7 @@ const SOURCE_LABEL = {
   live_booking:    'Booking.com',
   live_expedia:    'Expedia',
   manual_override: 'Manual Override',
-  estimated:       'Kōdō Estimate',
+  estimated:       'Estimated',
   unavailable:     'Unavailable',
 };
 
@@ -1459,7 +1458,7 @@ function renderHotelFinancials(h) {
     `EUR at MAD/EUR 10.8 conversion`;
 
   document.getElementById('hfin-confidence-badge').textContent =
-    'Medium · Based on Kōdō static estimates';
+    "Medium · Based on Kōdō's statistical model";
 }
 
 
@@ -4622,7 +4621,7 @@ function exportHotels() {
     'RevPAR (MAD)':     h.revpar_mad || 'N/A',
     'Year Established': h.year_opened_verified === 'verified' ? h.year_opened : 'N/A',
     'Owner':            h.owner || 'Undisclosed',
-    'Data Quality':     h.data_quality || 'Kōdō Estimate',
+    'Data Quality':     h.data_quality || 'Estimated',
   }));
   exportToExcel([{ data, name: 'Hotels' }], `Kodo_Hotels_${cityLabel}_${date}`);
 }
