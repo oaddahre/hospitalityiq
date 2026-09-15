@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100;200;300;400;500;700&display=swap');
-
 @font-face {
   font-family: 'Sweet Sans Pro';
   src: url('/static/fonts/SweetSansProExLight.otf') format('opentype');
@@ -59,8 +57,8 @@
   --font-body:     'Sweet Sans Pro', sans-serif;
   --font-heading:  'Sweet Sans Pro', sans-serif;
   --heading:       'Sweet Sans Pro', sans-serif;
-  --font-mono:     'Geist Mono', monospace;
-  --font-numeric:  'Geist Mono', monospace;
+  --font-mono:     'Sweet Sans Pro', sans-serif;
+  --font-numeric:  'Sweet Sans Pro', sans-serif;
 }
 
 /* ─── Light mode overrides ───────────────────────── */
@@ -119,7 +117,7 @@ h3, h4, h5, h6,
 }
 
 .nav-logo {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -171,7 +169,7 @@ select,
   border-bottom: 1px solid var(--border) !important;
   border-radius: 0 !important;
   padding: 8px 0 !important;
-  font-family: 'Geist Mono', monospace !important;
+  font-family: 'Sweet Sans Pro', sans-serif !important;
   font-size: 11px !important;
   color: var(--text) !important;
   outline: none !important;
@@ -200,7 +198,7 @@ textarea::placeholder,
 .search-input::placeholder,
 .hotels-search-input::placeholder,
 .brands-search-input::placeholder {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -217,11 +215,10 @@ textarea::placeholder,
   background-position: right 4px center !important;
 }
 
-/* ─── Data / badge / label elements → Geist Mono ─── */
-/* Keep numeric/data displays on the platform's dedicated mono font
-   rather than switching to Sweet Sans Pro (same principle as chart
-   data values) — but still assign the requested value/label weight
-   hierarchy: Bold for values, Regular for their labels below. */
+/* ─── Data / badge / label elements ─── */
+/* Sweet Sans Pro platform-wide now (no more mono exception for
+   numbers) — kept the existing value/label weight hierarchy: Bold
+   for values, Regular for their labels below. */
 .kpi-value, .brn-kpi-val, .brni-value,
 .hiq-popup-stat-val, .hotel-fin-val, .hbench-val,
 .pipe-card-year, .pipe-card-metric-val, .pipe-metric-value,
@@ -229,7 +226,7 @@ textarea::placeholder,
 .bench-cal-dayval, .owner-stat-value,
 .brn-mkt-pct, .num-cell, .num-col, .rank-cell,
 .data-table tbody td:nth-child(n+3) {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 700;
 }
 
@@ -239,7 +236,7 @@ textarea::placeholder,
 .bench-kpi-title, .bench-kpi-mine-lbl, .bench-kpi-comp-lbl, .bench-kpi-idx-lbl,
 .bench-card-label, .bench-date-label,
 .filter-pills-label, .brand-cities-label, .search-group-label {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 400;
 }
 
@@ -247,7 +244,7 @@ textarea::placeholder,
 .tier-badge, .cal-legend-label, .bench-cal-dow,
 .timeline-date__day, .chart-unit,
 .bench-idx-badge, .bench-insight-badge {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
 }
 
 /* ─── Navbar ─────────────────────────────────────── */
@@ -273,7 +270,7 @@ textarea::placeholder,
 .logo-mark { display: none; }
 
 .logo-text {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 12px;
@@ -320,7 +317,7 @@ textarea::placeholder,
   flex-shrink: 0;
 }
 .mk-toggle-opt {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -331,7 +328,7 @@ textarea::placeholder,
 }
 .mk-toggle-opt.mk-toggle-active { color: #B87860; }
 .mk-toggle-sep {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   color: var(--text-faint);
   opacity: 0.6;
@@ -407,7 +404,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 
 /* ─── Nav account/logout ──────────────────────────── */
 .nav-account {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 0.75rem;
   color: var(--text-muted);
   text-decoration: none;
@@ -573,7 +570,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .kpi-value {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 24px;
   font-weight: 400;
   color: var(--text);
@@ -617,7 +614,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border-radius: 999px;
 }
 
-/* ─── Compact text badges/pills (Geist Mono format) ───────────── */
+/* ─── Compact text badges/pills ─────────────────────────────────── */
 .segment-badge,
 .owner-type-badge,
 .status-badge,
@@ -640,7 +637,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: none !important;
   border-radius: 0 !important;
   padding: 0 !important;
-  font-family: 'Geist Mono', monospace !important;
+  font-family: 'Sweet Sans Pro', sans-serif !important;
   font-weight: 400 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
@@ -651,12 +648,13 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-size: 8px !important;
 }
 
-/* Plan/tier badges (Advisory, Benchmarker, Observer) — Sweet Sans Pro,
-   overriding the shared Geist Mono rule above. Also covers the
-   valuation tool's "Advisory" lock pill (.val-tier-pill), which shows
-   the same tier labels but isn't part of the shared badge rule.
-   Weight 400 — Regular, matching "badges and tags" elsewhere on the
-   platform (updated from the ExLight/200 set in an earlier pass). */
+/* Plan/tier badges (Advisory, Benchmarker, Observer) — same Sweet
+   Sans Pro as the shared badge rule above now; this rule mainly
+   exists for the wider letter-spacing (0.12em vs 0.08em). Also
+   covers the valuation tool's "Advisory" lock pill (.val-tier-pill),
+   which shows the same tier labels but isn't part of the shared
+   badge rule. Weight 400 — Regular, matching "badges and tags"
+   elsewhere on the platform. */
 .tier-badge,
 .val-tier-pill {
   font-family: 'Sweet Sans Pro', sans-serif !important;
@@ -673,7 +671,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .segment-economy {
   display: inline-flex;
   align-items: center;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -746,7 +744,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 #screen-tourism .chart-title {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
@@ -848,19 +846,19 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .data-table tbody td:nth-child(n+3) {
   text-align: right;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
 .num-cell, .num-col {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
 .rank-cell {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   font-weight: 400;
   color: var(--text-faint);
@@ -990,7 +988,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 8px 10px;
 }
 .hiq-popup-stat-val {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: var(--text);
@@ -1374,7 +1372,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   gap: 8px;
 }
 .kodo-empty-msg {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1383,7 +1381,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   display: block;
 }
 .kodo-empty-sub {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1603,7 +1601,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-bottom: 3px;
 }
 .timeline-date__day {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 18px;
   font-weight: 400;
   color: var(--text);
@@ -1730,7 +1728,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .brand-detail-header h1 {
   margin-bottom: 0;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1940,7 +1938,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 14px 16px;
 }
 .hotel-fin-val {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 18px;
   font-weight: 400;
   color: var(--text);
@@ -1973,7 +1971,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .fin-range-meta { flex: 1; min-width: 0; }
 .fin-range-label { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .fin-range-sub { font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; color: var(--text-muted); line-height: 1.4; }
-.fin-range-value { font-family: 'Geist Mono', monospace; font-size: 13px; font-weight: 400; color: var(--accent); text-align: right; white-space: nowrap; flex-shrink: 0; }
+.fin-range-value { font-family: 'Sweet Sans Pro', sans-serif; font-size: 13px; font-weight: 400; color: var(--accent); text-align: right; white-space: nowrap; flex-shrink: 0; }
 .fin-disclaimer { background: var(--surface); border-left: 2px solid var(--accent); padding: 8px 12px; margin: 0 20px 16px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; color: var(--text-muted); line-height: 1.5; }
 
 /* ── Rate source badge ── */
@@ -2030,7 +2028,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .kodo-loader-text {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -2319,7 +2317,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .hbench-bar-fill.accent { background: var(--accent); }
 .hbench-bar-fill.muted  { background: var(--text-faint); }
 .hbench-val {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   font-weight: 400;
   color: var(--text);
@@ -2562,7 +2560,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 400;
   font-size: 20px;
   color: var(--bg);
@@ -2625,7 +2623,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border-bottom: 1px solid var(--border);
   border-radius: 0;
   padding: 10px 0 10px 20px;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   line-height: 1.6;
   color: var(--text);
@@ -2635,13 +2633,13 @@ body.light .nav-logout  { color: #8A8A8A; }
   position: absolute;
   left: 0;
   color: #B87860;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
 }
 
 .chat-msg-assistant { align-items: stretch; }
 
 .msg-label, .analyst-label {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2677,7 +2675,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--border);
   border-radius: 0;
   padding: 1px 5px;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   color: #B87860;
 }
@@ -2693,7 +2691,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .msg-bubble table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   margin-bottom: 10px;
 }
@@ -2718,7 +2716,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .typing-label {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2759,7 +2757,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .chat-input-bar::before {
   content: '>';
   color: #B87860;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   flex-shrink: 0;
 }
@@ -2770,7 +2768,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: none;
   border-bottom: 1px solid var(--border);
   border-radius: 0;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   color: var(--text);
   padding: 8px 0;
@@ -2794,7 +2792,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid #B87860;
   border-radius: 0;
   color: #B87860;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -2911,7 +2909,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   gap: 12px;
 }
 .pipe-card-name, .pipe-name {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2934,7 +2932,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-weight: 400;
 }
 .pipe-card-year {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 28px;
   font-weight: 400;
   color: var(--text-muted);
@@ -2951,7 +2949,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-top: 2px;
 }
 .pipe-card-metric-val, .pipe-metric-value {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 16px;
   font-weight: 400;
   color: var(--text);
@@ -3247,7 +3245,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .ed-spons-logo-placeholder {
   width: 36px; height: 36px; background: var(--accent); border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Geist Mono', monospace; font-size: 16px; font-weight: 400; color: #0A0A0A;
+  font-family: 'Sweet Sans Pro', sans-serif; font-size: 16px; font-weight: 400; color: #0A0A0A;
 }
 .ed-spons-name {
   font-family: 'Sweet Sans Pro', sans-serif;
@@ -3595,14 +3593,14 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-kpi-title { font-family: var(--font-mono); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; }
 .bench-kpi-body { display: flex; align-items: center; gap: 8px; }
 .bench-kpi-mine { text-align: center; flex: 1; }
-.bench-kpi-mine-val { font-family: 'Geist Mono', monospace; font-size: 20px; font-weight: 400; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-mine-val { font-family: 'Sweet Sans Pro', sans-serif; font-size: 20px; font-weight: 400; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-mine-lbl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 400; margin-top: 3px; }
 .bench-kpi-sep { font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 400; color: var(--text-faint); flex-shrink: 0; }
 .bench-kpi-comp-blk { text-align: center; flex: 1; }
-.bench-kpi-comp-val { font-family: 'Geist Mono', monospace; font-size: 15px; font-weight: 400; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-comp-val { font-family: 'Sweet Sans Pro', sans-serif; font-size: 15px; font-weight: 400; color: var(--text-muted); line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-comp-lbl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); font-weight: 400; margin-top: 3px; }
 .bench-kpi-index { text-align: center; padding: 6px 8px; border-radius: 0; border: 1px solid var(--border); flex-shrink: 0; min-width: 48px; }
-.bench-kpi-idx-val { font-family: 'Geist Mono', monospace; font-size: 17px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bench-kpi-idx-val { font-family: 'Sweet Sans Pro', sans-serif; font-size: 17px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 .bench-kpi-idx-lbl { font-family: var(--font-mono); font-size: 9px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-top: 2px; }
 .bench-idx-green { background: rgba(90,138,90,0.10); border-color: rgba(90,138,90,0.25); }
 .bench-idx-green .bench-kpi-idx-val { color: var(--positive); }
@@ -3620,7 +3618,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 4px 11px; cursor: pointer; transition: color 0.14s, border-color 0.14s; line-height: 1;
 }
 .bench-cal-nav-btn:hover { color: var(--text); border-color: var(--accent); }
-.bench-cal-month-label { font-family: 'Geist Mono', monospace; font-size: 14px; font-weight: 400; color: var(--text); min-width: 130px; text-align: center; }
+.bench-cal-month-label { font-family: 'Sweet Sans Pro', sans-serif; font-size: 14px; font-weight: 400; color: var(--text); min-width: 130px; text-align: center; }
 .bench-cal-view-toggle { display: flex; border: 1px solid var(--border); border-radius: 0; overflow: hidden; }
 .bench-cal-view-btn {
   padding: 5px 14px; background: transparent; border: none; color: var(--text-muted);
@@ -3650,7 +3648,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-cal-day.bench-cal-empty   { background: transparent; border-color: transparent; }
 .bench-cal-day.bench-cal-nodata  { background: var(--surface-hover); opacity: 0.4; }
 .bench-cal-daynum { font-family: 'Sweet Sans Pro', sans-serif; font-size: 9px; font-weight: 400; opacity: 0.7; line-height: 1; }
-.bench-cal-dayval { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
+.bench-cal-dayval { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
 
 .bench-cal-tooltip {
   position: fixed; z-index: 1000;
@@ -3661,12 +3659,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-size: 12px; min-width: 160px; pointer-events: none;
   box-shadow: none;
 }
-.bct-date { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+.bct-date { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
 .bct-row  { display: flex; justify-content: space-between; gap: 16px; font-family: 'Sweet Sans Pro', sans-serif; color: var(--text-muted); font-size: 11px; margin-bottom: 2px; }
 .bct-row span:last-child { font-weight: 500; color: var(--text); }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
-.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 0; font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 0; font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
 
 .bench-ai-box { padding: 4px 0 8px; min-height: 60px; }
 .bench-loading { font-family: 'Sweet Sans Pro', sans-serif; color: var(--text-muted); font-size: 13px; padding: 12px 0; }
@@ -3694,7 +3692,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-insight-body { font-family: 'Sweet Sans Pro', sans-serif; font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
 .bench-insight-badge {
   display: inline-block; padding: 3px 9px; border-radius: 0;
-  font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums;
+  font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums;
   align-self: flex-start; margin-top: 4px;
 }
 .bib-green { background: transparent; color: var(--positive); border: 1px solid rgba(90,138,90,0.40); }
@@ -3804,7 +3802,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .mobile-menu-logo {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   letter-spacing: 0.2em;
   color: var(--text);
@@ -3820,7 +3818,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .mobile-menu-close {
   background: transparent;
   border: none;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   color: var(--text-muted);
   cursor: pointer;
@@ -3872,7 +3870,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .mobile-menu-footer-link {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -4390,14 +4388,14 @@ body.light .nav-logout  { color: #8A8A8A; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: #fff;
   flex-shrink: 0;
 }
 .brn-card-name {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
   font-weight: 400;
   text-transform: uppercase;
@@ -4431,7 +4429,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-bottom: 4px;
 }
 .brn-kpi-val {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: var(--text);
@@ -4551,7 +4549,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   color: var(--text-muted);
 }
 .brn-mkt-pct {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   font-weight: 400;
   color: var(--text);
@@ -4586,7 +4584,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   letter-spacing: 0.08em;
 }
 .brni-value {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 18px;
   font-weight: 400;
   color: var(--accent);
@@ -4733,7 +4731,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .val-subtitle {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -4770,7 +4768,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .val-mode-btn .val-mode-lock {
   display: block;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -4790,7 +4788,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .val-section:last-child { border-bottom: none; }
 .val-section-label {
   display: block;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -4827,7 +4825,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-bottom: 6px;
 }
 .val-field-label .val-field-value {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   color: var(--accent);
 }
@@ -4846,7 +4844,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--border);
   border-radius: 0;
   color: var(--text);
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   padding: 8px 10px;
   outline: none;
@@ -4862,7 +4860,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--border);
   border-radius: 0;
   color: var(--text);
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   padding: 8px 10px;
 }
@@ -4907,7 +4905,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   padding: 4px 0;
 }
@@ -4926,7 +4924,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--border);
   border-radius: 0;
   color: var(--text-muted);
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   cursor: pointer;
   transition: border-color 150ms ease, color 150ms ease;
@@ -4938,7 +4936,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -4959,7 +4957,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--accent);
   border-radius: 0;
   color: var(--accent);
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -5025,7 +5023,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   gap: 8px;
 }
 .val-placeholder-title {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
@@ -5033,7 +5031,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   color: #777777;
 }
 .val-placeholder-sub {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   color: #555555;
 }
@@ -5055,7 +5053,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 16px;
 }
 .val-kpi-label {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -5064,7 +5062,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-bottom: 8px;
 }
 .val-kpi-value {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 18px;
   font-weight: 400;
   color: var(--text);
@@ -5096,7 +5094,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--border);
   border-radius: 0;
   color: var(--text-muted);
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   padding: 5px 10px;
   cursor: pointer;
@@ -5109,7 +5107,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .val-cf-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   margin-top: 16px;
 }
@@ -5174,7 +5172,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .val-approach-card--reconciled { border-top: 2px solid #B87860; }
 .val-approach-title {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -5185,7 +5183,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .val-approach-row-item {
   display: flex;
   justify-content: space-between;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   color: var(--text);
   padding: 5px 0;
@@ -5197,14 +5195,14 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin: 8px 0;
 }
 .val-reconciled-value {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 24px;
   font-weight: 400;
   color: #F0F0EE;
   margin: 6px 0 4px;
 }
 .val-reconciled-perkey {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   color: #888888;
   margin-bottom: 10px;
@@ -5224,7 +5222,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .val-sens-block { position: relative; }
 .val-sens-title {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -5235,7 +5233,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .val-sens-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
 }
 .val-sens-table th {
@@ -5266,7 +5264,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   border: 1px solid var(--accent);
   color: var(--accent);
   border-radius: 999px;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -5298,7 +5296,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   text-align: center;
 }
 .val-lock-label {
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -5333,7 +5331,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .val-section-locked { position: relative; }
 .val-tier-pill {
   display: inline-block;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   text-transform: uppercase;
   letter-spacing: 0.06em;

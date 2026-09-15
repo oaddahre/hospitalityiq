@@ -1007,7 +1007,7 @@ themeToggle.addEventListener('click', () => {
     ctx.fillStyle = '#B87860';
     ctx.fill();
 
-    ctx.font = '400 8px "Space Mono", monospace';
+    ctx.font = '400 8px "Sweet Sans Pro", sans-serif';
     ctx.fillStyle = isDark ? 'rgba(240,240,238,0.70)' : 'rgba(26,26,26,0.70)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1064,7 +1064,7 @@ themeToggle.addEventListener('click', () => {
       const offsetX = isRight ? 14 : -14;
       const offsetY = isBottom ? -18 : 18;
 
-      ctx.font = `400 ${fontSize}px "Space Mono", monospace`;
+      ctx.font = `400 ${fontSize}px "Sweet Sans Pro", sans-serif`;
       const nameWidth = ctx.measureText(displayName.toUpperCase()).width;
 
       // Calculate label position
@@ -1087,14 +1087,14 @@ themeToggle.addEventListener('click', () => {
       labelY = Math.max(minLabelY, Math.min(maxLabelY, labelY));
 
       // Draw number above name
-      ctx.font = '400 8px "Space Mono", monospace';
+      ctx.font = '400 8px "Sweet Sans Pro", sans-serif';
       ctx.fillStyle = 'rgba(184,120,96,1)';
       ctx.textAlign = isRight ? 'left' : 'right';
       ctx.textBaseline = 'middle';
       ctx.fillText(aud.num, labelX, labelY - 14);
 
       // Draw name
-      ctx.font = `400 ${fontSize}px "Space Mono", monospace`;
+      ctx.font = `400 ${fontSize}px "Sweet Sans Pro", sans-serif`;
       ctx.fillStyle = isSelected || isHovered
         ? '#B87860'
         : isDark ? 'rgba(240,240,238,1)' : 'rgba(26,26,26,1)';
@@ -1103,7 +1103,7 @@ themeToggle.addEventListener('click', () => {
 
       // Click hint
       if (isHovered && selectedIndex === null) {
-        ctx.font = '400 8px "Space Mono", monospace';
+        ctx.font = '400 8px "Sweet Sans Pro", sans-serif';
         ctx.fillStyle = 'rgba(184,120,96,0.6)';
         ctx.textAlign = isRight ? 'left' : 'right';
         ctx.fillText('CLICK TO EXPAND', labelX, labelY + 14);
