@@ -1423,6 +1423,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .lp-modules-preview-stat-val {
@@ -1432,6 +1433,17 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   color: var(--lp-text);
   letter-spacing: -0.02em;
   line-height: 1;
+}
+
+/* For compound values ("CDG · Al Mada · Risma", "ADR · Occ · RevPAR",
+   "International + Domestic") that are far longer than the short
+   numeric metrics this was originally sized for — a smaller size that
+   wraps cleanly rather than overflowing at 24px/800. */
+.lp-modules-preview-stat-val--long {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .lp-modules-preview-stat-lbl {
