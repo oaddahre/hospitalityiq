@@ -4454,7 +4454,7 @@ async function initReports() {
 
     allCities.forEach(cityMeta => {
       const card = document.createElement('div');
-      card.style.cssText = 'background:var(--surface);border-radius:0;padding:20px 22px;';
+      card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px 22px;transition:border-color 0.15s;';
 
       const periodsHTML = (data.periods || []).map((p, i) =>
         `<button class="report-period-pill ${i===0?'active':''}" data-period="${p}"
@@ -4501,6 +4501,10 @@ async function initReports() {
           btn.innerHTML = `${lockIcon}Generate Report`;
         }
       };
+
+      // Hover border
+      card.addEventListener('mouseenter', () => { card.style.borderColor = 'var(--accent)'; });
+      card.addEventListener('mouseleave', () => { card.style.borderColor = 'var(--border)'; });
 
       // Generate button
       card.querySelector('.report-generate-btn').addEventListener('click', async () => {
