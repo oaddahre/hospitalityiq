@@ -1,3 +1,53 @@
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/static/fonts/SweetSansProExLight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/static/fonts/SweetSansProRegular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/static/fonts/SweetSansProMedium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sweet Sans Pro';
+  src: url('/static/fonts/SweetSansProBold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Sweet Sans Pro — universal default (mono kept only for data labels) */
+.lp-body {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-weight: 200;
+}
+
+.lp-body * {
+  font-family: 'Sweet Sans Pro', sans-serif;
+}
+
+/* Weight hierarchy */
+h1, h2, .lp-section-headline, .lp-hero h1 { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 700; }
+h3, h4, h5, h6 { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 500; }
+p, li, span, a { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 200; }
+.mk-nav-link, .mk-nav-login, .lp-mobile-panel-link, .lp-section-tag, .mk-toggle-opt { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 400; }
+.lp-footer-link { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 200; }
+.btn-fill, .btn-outline, .btn-accent-outline, .mk-nav-cta { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 500; }
+
 /* ═══════════════════════════════════════
    LANDING PAGE — light/dark theme tokens
 ═══════════════════════════════════════ */
@@ -163,8 +213,8 @@ body.lp-light .lp-cta { background: #FFFFFF; }
   --text-faint:    #444444;
   --accent:        #B87860;
   --deep:          #050505;
-  --font:          'Manrope', sans-serif;
-  --mono:          'Space Mono', monospace;
+  --font:          'Sweet Sans Pro', sans-serif;
+  --mono:          'Sweet Sans Pro', sans-serif;
 }
 
 html { scroll-behavior: smooth; }
@@ -617,7 +667,7 @@ html { scroll-behavior: smooth; }
 .lp-body {
   background: var(--lp-bg);
   color: var(--lp-text);
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   overflow-x: hidden;
 }
 
@@ -672,7 +722,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
   gap: 32px;
 }
 .mk-nav-link {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -683,7 +733,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
 }
 .mk-nav-link:hover { color: var(--lp-text); }
 .mk-nav-cta {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -704,7 +754,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
 }
 
 .mk-nav-login {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   font-weight: 400;
   text-transform: uppercase;
@@ -825,7 +875,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 .lp-mobile-panel-close {
   background: transparent;
   border: none;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   color: var(--lp-text-muted);
   cursor: pointer;
@@ -843,7 +893,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-mobile-panel-link {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 400;
   font-size: 13px;
   text-transform: uppercase;
@@ -870,7 +920,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-mobile-panel-login {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -885,7 +935,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 .lp-mobile-panel-login:hover { color: var(--lp-text); }
 
 .lp-mobile-panel-register {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -908,7 +958,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-mobile-panel-copy {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
@@ -925,7 +975,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .mk-toggle-opt {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   font-weight: 400;
   text-transform: uppercase;
@@ -940,7 +990,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .mk-toggle-sep {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   color: var(--lp-text-faint);
   opacity: 0.4;
@@ -953,7 +1003,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   margin: 0 auto;
 }
 .lp-hero-eyebrow {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -972,7 +1022,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   flex-shrink: 0;
 }
 .lp-hero-headline {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: 72px;
   line-height: 1.05;
@@ -982,7 +1032,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 .lp-hero-headline span { color: #B87860; }
 .lp-hero-sub {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 16px;
   color: var(--lp-text-muted);
   line-height: 1.8;
@@ -1051,7 +1101,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-spotlight-num {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: clamp(80px, 14vw, 160px);
   color: var(--lp-text);
@@ -1080,7 +1130,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-spotlight-desc {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 14px;
   color: var(--lp-text-muted);
   line-height: 1.7;
@@ -1149,7 +1199,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 /* ── BUTTONS ── */
 .btn-fill {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1166,7 +1216,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 .btn-fill:hover { opacity: 0.85; }
 .btn-outline {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1183,7 +1233,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 .btn-outline:hover { border-color: var(--lp-text-muted); color: var(--lp-text); }
 .btn-accent-outline {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1222,7 +1272,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   margin-bottom: 24px;
 }
 .lp-section-tag {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1231,7 +1281,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   display: block;
 }
 .lp-section-meta {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1240,7 +1290,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   display: block;
 }
 .lp-section-headline {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: clamp(36px, 5vw, 64px);
   color: var(--lp-text);
@@ -1251,14 +1301,14 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 .lp-section h1,
 .lp-section h2 {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: clamp(36px, 5vw, 64px);
   letter-spacing: -0.03em;
   line-height: 1.05;
 }
 .lp-section-sub {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 14px;
   color: var(--lp-text-muted);
   max-width: 500px;
@@ -1313,7 +1363,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-modules-list-num {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   letter-spacing: 0.15em;
@@ -1328,7 +1378,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-modules-list-name {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 700;
   font-size: 16px;
   color: var(--lp-text-muted);
@@ -1373,7 +1423,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-modules-preview-num {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1383,7 +1433,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-modules-preview-metric {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: clamp(56px, 8vw, 96px);
   color: var(--lp-text);
@@ -1393,7 +1443,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-modules-preview-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1404,7 +1454,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-modules-preview-desc {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 15px;
   color: var(--lp-text-muted);
   line-height: 1.75;
@@ -1436,7 +1486,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
    consistent size + the shortened copy below + the overflow guard at
    the bottom keeps every stat the same height regardless of content. */
 .lp-modules-preview-stat-val {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 700;
   font-size: 20px;
   color: var(--lp-text);
@@ -1447,7 +1497,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-modules-preview-stat-lbl {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1537,7 +1587,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-timeline-num {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   letter-spacing: 0.15em;
@@ -1552,7 +1602,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 /* NAME */
 .lp-timeline-name {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 700;
   font-size: clamp(24px, 3.5vw, 44px) !important;
   color: var(--lp-text);
@@ -1587,7 +1637,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-timeline-list li {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
   color: var(--lp-text-muted);
   line-height: 1.4;
@@ -1631,7 +1681,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 .lp-report-subtitle,
 [class*="report-title"],
 [class*="report-name"] {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 700;
   font-size: 18px;
   color: var(--lp-text);
@@ -1646,7 +1696,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 .lp-report-dest,
 [class*="report-location"],
 [class*="report-dest"] {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1654,7 +1704,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   color: var(--lp-text-muted);
 }
 .lp-report-meta {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 7px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1663,7 +1713,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   font-weight: 400;
 }
 .lp-report-desc {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   color: var(--lp-text-muted);
   line-height: 1.7;
@@ -1679,7 +1729,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 .lp-report-stat:last-child { border: none; }
 .lp-report-stat-k {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 7px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1687,7 +1737,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   font-weight: 400;
 }
 .lp-report-stat-v {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   color: var(--lp-text);
   font-weight: 400;
@@ -1764,7 +1814,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-report-subscribe-label {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   color: var(--lp-text-muted);
   line-height: 1.6;
@@ -1800,7 +1850,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   margin-bottom: 20px;
 }
 .lp-plan-name {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -1815,7 +1865,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   gap: 8px;
 }
 .lp-plan-amount {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: 32px;
   color: var(--lp-text);
@@ -1823,7 +1873,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 .lp-plan-featured .lp-plan-amount { color: #B87860; }
 .lp-plan-currency {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   color: var(--lp-text-faint);
   font-weight: 400;
@@ -1838,7 +1888,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   margin-bottom: 28px;
 }
 .lp-plan-features li {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
   color: var(--lp-text-muted);
   padding: 9px 0;
@@ -1916,7 +1966,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-radar-detail-num {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1926,7 +1976,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-radar-detail-name {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1937,7 +1987,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-radar-detail-desc {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
   color: var(--lp-text-muted);
   line-height: 1.7;
@@ -1946,7 +1996,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-radar-close {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
@@ -1972,7 +2022,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   background: var(--lp-cta-bg);
 }
 .lp-cta-eyebrow {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
@@ -1982,7 +2032,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   font-weight: 400;
 }
 .lp-cta-title {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: 40px;
   line-height: 1.05;
@@ -1991,7 +2041,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   letter-spacing: -0.02em;
 }
 .lp-cta-sub {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2006,7 +2056,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   margin-bottom: 20px;
 }
 .lp-cta-signin {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2053,7 +2103,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
   gap: 20px;
 }
 .lp-footer-link {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 7px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2064,7 +2114,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 .lp-footer-link:hover { color: var(--lp-text-muted); }
 .lp-footer-copy {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 7px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2083,7 +2133,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-role {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2094,7 +2144,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-name {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 800;
   font-size: clamp(28px, 4vw, 48px);
   color: var(--lp-text);
@@ -2104,7 +2154,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-title {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2115,7 +2165,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-bio {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 15px;
   color: var(--lp-text-muted);
   line-height: 1.8;
@@ -2132,7 +2182,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-card-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 7px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2155,7 +2205,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 .lp-team-card-row:last-child { border-bottom: none; }
 
 .lp-team-card-key {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2164,7 +2214,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-card-val {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   font-weight: 400;
   color: var(--lp-text);
@@ -2193,7 +2243,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-position-title {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-weight: 700;
   font-size: 18px;
   color: var(--lp-text);
@@ -2201,7 +2251,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-position-type {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2210,7 +2260,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-team-position-desc {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
   color: var(--lp-text-muted);
   line-height: 1.7;
@@ -2274,7 +2324,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-contact-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2289,7 +2339,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
   border-bottom: 1px solid var(--lp-border) !important;
   border-radius: 0 !important;
   padding: 10px 0 !important;
-  font-family: 'Manrope', sans-serif !important;
+  font-family: 'Sweet Sans Pro', sans-serif !important;
   font-size: 14px !important;
   color: var(--lp-text) !important;
   outline: none !important;
@@ -2305,7 +2355,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-contact-input::placeholder {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2320,7 +2370,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 
 .lp-contact-select {
   cursor: pointer;
-  font-family: 'Space Mono', monospace !important;
+  font-family: 'Sweet Sans Pro', sans-serif !important;
   font-size: 9px !important;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2329,7 +2379,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 .lp-contact-select option {
   background: var(--lp-bg);
   color: var(--lp-text);
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
 }
 
@@ -2352,7 +2402,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 .lp-contact-info-block:last-child { border-bottom: none; }
 
 .lp-contact-info-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
@@ -2362,7 +2412,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-contact-info-val {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--lp-text);
@@ -2405,7 +2455,7 @@ a.lp-contact-info-val:hover { color: #B87860; }
   border: none !important;
   border-radius: 0 !important;
   padding: 0 !important;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
