@@ -377,15 +377,31 @@
 
     <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Built for Morocco hospitality professionals.</h2>
 
-    <div class="lp-radar-wrap" id="lpRadarWrap">
-      <canvas class="lp-radar-canvas" id="lpRadarCanvas"></canvas>
+    <div class="lp-rotating-wrap" id="lpRotatingWrap">
 
-      <!-- Center detail — shown when blip is clicked -->
-      <div class="lp-radar-detail" id="lpRadarDetail">
-        <span class="lp-radar-detail-num" id="lpRadarNum"></span>
-        <span class="lp-radar-detail-name" id="lpRadarName"></span>
-        <p class="lp-radar-detail-desc" id="lpRadarDesc"></p>
-        <button class="lp-radar-close" id="lpRadarClose">✕ Resume scan</button>
+      <div class="lp-rotating-stage">
+
+        <div class="lp-rotating-statement-wrap">
+          <p class="lp-rotating-statement" id="lpRotatingStatement">
+            Built for the investor deciding whether Casablanca still outperforms Marrakech.
+          </p>
+        </div>
+
+        <div class="lp-rotating-meta-wrap">
+          <span class="lp-rotating-audience" id="lpRotatingAudience">Hotel Investors & Funds</span>
+          <span class="lp-rotating-desc" id="lpRotatingDesc">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</span>
+        </div>
+
+      </div>
+
+      <div class="lp-rotating-nav">
+        <button class="lp-rotating-dot lp-rotating-dot-active" data-index="0"></button>
+        <button class="lp-rotating-dot" data-index="1"></button>
+        <button class="lp-rotating-dot" data-index="2"></button>
+        <button class="lp-rotating-dot" data-index="3"></button>
+        <div class="lp-rotating-progress-wrap">
+          <div class="lp-rotating-progress-bar" id="lpRotatingProgress"></div>
+        </div>
       </div>
 
     </div>
@@ -850,415 +866,124 @@ themeToggle.addEventListener('click', () => {
 
 <script>
 (function() {
-  const wrap    = document.getElementById('lpRadarWrap');
-  const canvas  = document.getElementById('lpRadarCanvas');
-  const detail  = document.getElementById('lpRadarDetail');
-  const closeBtn = document.getElementById('lpRadarClose');
-
-  if (!wrap || !canvas) return;
-
-  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('lpRotatingWrap');
+  if (!wrap) return;
 
   const audiences = [
     {
-      num: '01',
-      name: 'Hotel Investors & Funds',
-      shortName: 'Investors',
-      desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.',
-      angle: Math.PI * 0.30,
-      radius: 0.35
+      statement: 'Built for the investor deciding whether Casablanca still outperforms Marrakech.',
+      audience: 'Hotel Investors & Funds',
+      desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.'
     },
     {
-      num: '02',
-      name: 'Owners & Asset Managers',
-      shortName: 'Asset Managers',
-      desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.',
-      angle: Math.PI * 0.78,
-      radius: 0.33
+      statement: 'Built for the asset manager who suspects their operator is underperforming the market.',
+      audience: 'Owners & Asset Managers',
+      desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.'
     },
     {
-      num: '03',
-      name: 'Developers & Operators',
-      shortName: 'Developers',
-      desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.',
-      angle: Math.PI * 1.30,
-      radius: 0.35
+      statement: 'Built for the developer who needs to know what brand belongs in Agadir right now.',
+      audience: 'Developers & Operators',
+      desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.'
     },
     {
-      num: '04',
-      name: 'Banks & Financial Institutions',
-      shortName: 'Lenders',
-      desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.',
-      angle: Math.PI * 1.72,
-      radius: 0.30
+      statement: 'Built for the lender who needs an independent view before committing to a hotel deal.',
+      audience: 'Banks & Financial Institutions',
+      desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.'
     }
   ];
 
-  let W, H, CX, CY, R;
-  let sweepAngle = 0;
-  let selectedIndex = null;
-  let mouseX = -999, mouseY = -999;
-  let hoveredIndex = null;
-  let isDark = !document.body.classList.contains('lp-light');
+  const statementEl = document.getElementById('lpRotatingStatement');
+  const audienceEl  = document.getElementById('lpRotatingAudience');
+  const descEl      = document.getElementById('lpRotatingDesc');
+  const progressEl  = document.getElementById('lpRotatingProgress');
+  const dots        = wrap.querySelectorAll('.lp-rotating-dot');
 
-  // Pulse state per dot — triggered by sweep passing over
-  const pulses = audiences.map(() => ({ active: false, progress: 0 }));
+  if (!statementEl || !audienceEl || !descEl) return;
 
-  const SWEEP_SPEED = 0.006;
-  const SWEEP_TRAIL = Math.PI * 0.45;
+  const DURATION = 4000;
+  let current = 0;
+  let timer = null;
+  let started = false;
 
-  function resize() {
-    const dpr = window.devicePixelRatio || 1;
-    W = wrap.offsetWidth;
-    H = wrap.offsetHeight;
-    canvas.width  = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width  = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr, dpr);
-    CX = W / 2;
-    CY = H / 2;
-    R  = Math.min(W, H) * 0.38;
-  }
-
-  resize();
-  window.addEventListener('resize', () => {
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    resize();
-  });
-
-  new MutationObserver(() => {
-    isDark = !document.body.classList.contains('lp-light');
-  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-
-  function getBlipPos(aud) {
-    return {
-      x: CX + Math.cos(aud.angle) * R * aud.radius,
-      y: CY + Math.sin(aud.angle) * R * aud.radius
-    };
-  }
-
-  function angleDiff(sweep, target) {
-    let d = ((target - sweep) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-    return d;
-  }
-
-  function drawRadarBase() {
-    ctx.clearRect(0, 0, W, H);
-
-    // Concentric rings
-    for (let i = 1; i <= 4; i++) {
-      ctx.beginPath();
-      ctx.arc(CX, CY, R * (i / 4), 0, Math.PI * 2);
-      ctx.strokeStyle = isDark
-        ? `rgba(184,120,96,${0.18 + i * 0.02})`
-        : `rgba(184,120,96,${0.22 + i * 0.02})`;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    }
-
-    // Cross hairs
-    [[CX-R, CY, CX+R, CY],[CX, CY-R, CX, CY+R]].forEach(([x1,y1,x2,y2]) => {
-      ctx.beginPath();
-      ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
-      ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.20)' : 'rgba(184,120,96,0.25)';
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    });
-
-    // Outer circle
-    ctx.beginPath();
-    ctx.arc(CX, CY, R, 0, Math.PI * 2);
-    ctx.strokeStyle = isDark ? 'rgba(184,120,96,0.50)' : 'rgba(184,120,96,0.55)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-
-  function drawSweep() {
-    // Trail
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(CX, CY);
-    ctx.arc(CX, CY, R, sweepAngle - SWEEP_TRAIL, sweepAngle);
-    ctx.closePath();
-    const grd = ctx.createRadialGradient(CX, CY, 0, CX, CY, R);
-    grd.addColorStop(0, 'rgba(184,120,96,0)');
-    grd.addColorStop(0.5, 'rgba(184,120,96,0.12)');
-    grd.addColorStop(1, 'rgba(184,120,96,0.25)');
-    ctx.fillStyle = grd;
-    ctx.fill();
-    ctx.restore();
-
-    // Sweep line
-    ctx.beginPath();
-    ctx.moveTo(CX, CY);
-    ctx.lineTo(CX + Math.cos(sweepAngle) * R, CY + Math.sin(sweepAngle) * R);
-    ctx.strokeStyle = '#B87860';
-    ctx.lineWidth = 1.5;
-    ctx.globalAlpha = 1;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  function drawCenter() {
-    ctx.beginPath();
-    ctx.arc(CX, CY, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#B87860';
-    ctx.fill();
-
-    ctx.font = '400 8px "Sweet Sans Pro", sans-serif';
-    ctx.fillStyle = isDark ? 'rgba(240,240,238,0.70)' : 'rgba(26,26,26,0.70)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('KŌDŌ', CX, CY + 16);
-  }
-
-  function drawDots() {
-    audiences.forEach((aud, i) => {
-      const pos  = getBlipPos(aud);
-      const pulse = pulses[i];
-      const isSelected = selectedIndex === i;
-      const isHovered  = hoveredIndex === i;
-
-      // Pulse ring when sweep hits
-      if (pulse.active && pulse.progress < 1) {
-        const p = pulse.progress;
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 5 + p * 22, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(184,120,96,${(1 - p) * 0.9})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      // Dot glow for selected
-      if (isSelected) {
-        const glow = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 20);
-        glow.addColorStop(0, 'rgba(184,120,96,0.3)');
-        glow.addColorStop(1, 'rgba(184,120,96,0)');
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
-        ctx.fillStyle = glow;
-        ctx.fill();
-      }
-
-      const isMob = W < 600;
-      const fontSize = isMob ? 8 : 10;
-      const dotSize = isSelected ? (isMob ? 6 : 9) :
-                      isHovered  ? (isMob ? 5 : 8) :
-                                   (isMob ? 4 : 6);
-      const displayName = isMob
-        ? aud.shortName || aud.name.split(' ').slice(0, 2).join(' ')
-        : aud.name;
-
-      // Main dot — always visible
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y, dotSize, 0, Math.PI * 2);
-      ctx.fillStyle = isSelected || isHovered ? '#B87860' : '#B87860';
-      ctx.fill();
-
-      const isRight = pos.x >= CX;
-      const isBottom = pos.y >= CY;
-
-      // Label offset from dot
-      const offsetX = isRight ? 10 : -10;
-      const offsetY = isBottom ? -14 : 14;
-
-      ctx.font = `400 ${fontSize}px "Sweet Sans Pro", sans-serif`;
-      const nameWidth = ctx.measureText(displayName.toUpperCase()).width;
-
-      // Calculate label position
-      let labelX = pos.x + offsetX;
-      let labelY = pos.y + offsetY;
-
-      // Constrain label X inside circle
-      const maxLabelX = CX + R - nameWidth - 8;
-      const minLabelX = CX - R + 8;
-      if (isRight) {
-        labelX = Math.min(labelX, maxLabelX);
-      } else {
-        labelX = Math.max(labelX, minLabelX);
-        // For right-aligned text shift by label width
-      }
-
-      // Constrain label Y inside circle
-      const maxLabelY = CY + R - 24;
-      const minLabelY = CY - R + 24;
-      labelY = Math.max(minLabelY, Math.min(maxLabelY, labelY));
-
-      // Draw number above name
-      ctx.font = '400 8px "Sweet Sans Pro", sans-serif';
-      ctx.fillStyle = 'rgba(184,120,96,1)';
-      ctx.textAlign = isRight ? 'left' : 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(aud.num, labelX, labelY - 14);
-
-      // Draw name
-      ctx.font = `400 ${fontSize}px "Sweet Sans Pro", sans-serif`;
-      ctx.fillStyle = isSelected || isHovered
-        ? '#B87860'
-        : isDark ? 'rgba(240,240,238,1)' : 'rgba(26,26,26,1)';
-      ctx.textAlign = isRight ? 'left' : 'right';
-      ctx.fillText(displayName.toUpperCase(), labelX, labelY);
-
-      // Click hint
-      if (isHovered && selectedIndex === null) {
-        ctx.font = '400 8px "Sweet Sans Pro", sans-serif';
-        ctx.fillStyle = 'rgba(184,120,96,0.6)';
-        ctx.textAlign = isRight ? 'left' : 'right';
-        ctx.fillText('CLICK TO EXPAND', labelX, labelY + 14);
-      }
+  function setDot(index) {
+    dots.forEach((d, i) => {
+      d.classList.toggle('lp-rotating-dot-active', i === index);
     });
   }
 
-  function updatePulses() {
-    audiences.forEach((aud, i) => {
-      const diff = angleDiff(sweepAngle - 0.08, aud.angle);
-      if (diff < 0.12) {
-        pulses[i].active = true;
-        pulses[i].progress = 0;
-      }
-      if (pulses[i].active && pulses[i].progress < 1) {
-        pulses[i].progress += 0.018;
-        if (pulses[i].progress >= 1) pulses[i].active = false;
-      }
+  function startProgress() {
+    if (!progressEl) return;
+    progressEl.style.transition = 'none';
+    progressEl.style.width = '0%';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        progressEl.style.transition = `width ${DURATION}ms linear`;
+        progressEl.style.width = '100%';
+      });
     });
   }
 
-  // Position detail card near clicked dot
-  function showDetailCard(index) {
-    const aud = audiences[index];
-    const pos = getBlipPos(aud);
+  function goTo(index) {
+    const next = audiences[index];
+    const els = [statementEl, audienceEl, descEl];
 
-    document.getElementById('lpRadarNum').textContent  = aud.num;
-    document.getElementById('lpRadarName').textContent = aud.name;
-    document.getElementById('lpRadarDesc').textContent = aud.desc;
+    els.forEach(el => el.classList.add('lp-rot-exit'));
 
-    // Position card near the dot
-    // Convert canvas pos to wrap-relative percentage
-    const pctX = (pos.x / W) * 100;
-    const pctY = (pos.y / H) * 100;
+    setTimeout(() => {
+      statementEl.textContent = next.statement;
+      audienceEl.textContent  = next.audience;
+      descEl.textContent      = next.desc;
 
-    // Decide card anchor based on quadrant
-    const isRight = pos.x > CX;
-    const isBottom = pos.y > CY;
+      els.forEach(el => {
+        el.classList.remove('lp-rot-exit');
+        el.classList.add('lp-rot-enter');
+      });
 
-    detail.style.left   = isRight ? `${pctX - 2}%` : 'auto';
-    detail.style.right  = isRight ? 'auto' : `${100 - pctX - 2}%`;
-    detail.style.top    = isBottom ? 'auto' : `${pctY + 6}%`;
-    detail.style.bottom = isBottom ? `${100 - pctY + 4}%` : 'auto';
-    detail.style.transform = 'none';
-    detail.style.textAlign = isRight ? 'left' : 'right';
-    detail.style.alignItems = isRight ? 'flex-start' : 'flex-end';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          els.forEach(el => el.classList.remove('lp-rot-enter'));
+        });
+      });
 
-    detail.classList.add('lp-radar-active');
-    selectedIndex = index;
+      setDot(index);
+      startProgress();
+    }, 380);
   }
 
-  // Mouse tracking
-  canvas.addEventListener('mousemove', e => {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
-  });
-
-  canvas.addEventListener('mouseleave', () => {
-    mouseX = -999; mouseY = -999;
-    hoveredIndex = null;
-    canvas.style.cursor = 'default';
-  });
-
-  canvas.addEventListener('click', () => {
-    if (hoveredIndex !== null) {
-      if (selectedIndex === hoveredIndex) {
-        // Collapse
-        detail.classList.remove('lp-radar-active');
-        selectedIndex = null;
-      } else {
-        showDetailCard(hoveredIndex);
-      }
-    } else if (selectedIndex !== null) {
-      detail.classList.remove('lp-radar-active');
-      selectedIndex = null;
-    }
-  });
-
-  canvas.addEventListener('touchend', e => {
-    e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.changedTouches[0];
-    const tx = touch.clientX - rect.left;
-    const ty = touch.clientY - rect.top;
-
-    let tappedIndex = null;
-    audiences.forEach((aud, i) => {
-      const pos = getBlipPos(aud);
-      if (Math.hypot(tx - pos.x, ty - pos.y) < 40) {
-        tappedIndex = i;
-      }
-    });
-
-    if (tappedIndex !== null) {
-      if (selectedIndex === tappedIndex) {
-        detail.classList.remove('lp-radar-active');
-        selectedIndex = null;
-      } else {
-        showDetailCard(tappedIndex);
-      }
-    } else if (selectedIndex !== null) {
-      detail.classList.remove('lp-radar-active');
-      selectedIndex = null;
-    }
-  }, { passive: false });
-
-  closeBtn.addEventListener('click', () => {
-    detail.classList.remove('lp-radar-active');
-    selectedIndex = null;
-  });
-
-  function tick() {
-    sweepAngle = (sweepAngle + SWEEP_SPEED) % (Math.PI * 2);
-    ctx.clearRect(0, 0, W, H);
-
-    // Draw radar base elements clipped to circle
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CX, CY, R + 1, 0, Math.PI * 2);
-    ctx.clip();
-    drawRadarBase();
-    drawSweep();
-    ctx.restore();
-
-    // Draw center outside clip
-    drawCenter();
-    updatePulses();
-
-    // Check hover
-    hoveredIndex = null;
-    audiences.forEach((aud, i) => {
-      const pos = getBlipPos(aud);
-      if (Math.hypot(mouseX - pos.x, mouseY - pos.y) < 28) {
-        hoveredIndex = i;
-        canvas.style.cursor = 'pointer';
-      }
-    });
-    if (hoveredIndex === null) canvas.style.cursor = 'default';
-
-    // Draw dots and labels, clipped to the circle so label text can't
-    // spill past the radar's edge (previously drawn after ctx.restore()
-    // below with no clip at all, so overflowing text rendered straight
-    // onto the surrounding page instead of staying inside the disc).
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CX, CY, R + 1, 0, Math.PI * 2);
-    ctx.clip();
-    drawDots();
-    ctx.restore();
-
-    requestAnimationFrame(tick);
+  function advance() {
+    current = (current + 1) % audiences.length;
+    goTo(current);
   }
 
-  requestAnimationFrame(tick);
+  function init() {
+    if (started) return;
+    started = true;
+
+    statementEl.textContent = audiences[0].statement;
+    audienceEl.textContent  = audiences[0].audience;
+    descEl.textContent      = audiences[0].desc;
+    setDot(0);
+    startProgress();
+    timer = setInterval(advance, DURATION);
+  }
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      if (i === current) return;
+      clearInterval(timer);
+      goTo(i);
+      current = i;
+      timer = setInterval(advance, DURATION);
+    });
+  });
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { init(); obs.disconnect(); }
+    });
+  }, { threshold: 0.3 });
+
+  obs.observe(wrap);
 })();
 </script>
 
