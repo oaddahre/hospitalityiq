@@ -375,33 +375,34 @@
       <span class="lp-section-meta">Who We Serve</span>
     </div>
 
-    <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Built for Morocco hospitality professionals.</h2>
+    <div class="lp-transcript-wrap">
 
-    <div class="lp-rotating-wrap" id="lpRotatingWrap">
-
-      <div class="lp-rotating-stage">
-
-        <div class="lp-rotating-statement-wrap">
-          <p class="lp-rotating-statement" id="lpRotatingStatement">
-            Built for the investor deciding whether Casablanca still outperforms Marrakech.
-          </p>
-        </div>
-
-        <div class="lp-rotating-meta-wrap">
-          <span class="lp-rotating-audience" id="lpRotatingAudience">Hotel Investors & Funds</span>
-          <span class="lp-rotating-desc" id="lpRotatingDesc">Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco's hotel sector.</span>
-        </div>
-
+      <div class="lp-transcript-question">
+        <span class="lp-transcript-q">Who uses Kōdō?</span>
       </div>
 
-      <div class="lp-rotating-nav">
-        <button class="lp-rotating-dot lp-rotating-dot-active" data-index="0"></button>
-        <button class="lp-rotating-dot" data-index="1"></button>
-        <button class="lp-rotating-dot" data-index="2"></button>
-        <button class="lp-rotating-dot" data-index="3"></button>
-        <div class="lp-rotating-progress-wrap">
-          <div class="lp-rotating-progress-bar" id="lpRotatingProgress"></div>
+      <div class="lp-transcript-answers">
+
+        <div class="lp-transcript-item">
+          <span class="lp-transcript-role">Hotel Investors &amp; Funds</span>
+          <p class="lp-transcript-body">I need to know what comparable assets trade at before I move on an acquisition. Market data in Morocco is either unavailable or comes from the operator with a conflict of interest.</p>
         </div>
+
+        <div class="lp-transcript-item">
+          <span class="lp-transcript-role">Owners &amp; Asset Managers</span>
+          <p class="lp-transcript-body">I need to benchmark my portfolio against the market without relying on what my operator tells me. Independent data is the only data I trust.</p>
+        </div>
+
+        <div class="lp-transcript-item">
+          <span class="lp-transcript-role">Developers &amp; Operators</span>
+          <p class="lp-transcript-body">I need to know what brand belongs in this location, what the pipeline looks like, and whether the market can absorb another hotel before I commit to anything.</p>
+        </div>
+
+        <div class="lp-transcript-item">
+          <span class="lp-transcript-role">Banks &amp; Financial Institutions</span>
+          <p class="lp-transcript-body">I need an independent view of what this asset is worth and how the market around it is performing before I commit to a lending decision.</p>
+        </div>
+
       </div>
 
     </div>
@@ -861,129 +862,6 @@ themeToggle.addEventListener('click', () => {
 
   // Init first item
   activate(0);
-})();
-</script>
-
-<script>
-(function() {
-  const wrap = document.getElementById('lpRotatingWrap');
-  if (!wrap) return;
-
-  const audiences = [
-    {
-      statement: 'Built for the investor deciding whether Casablanca still outperforms Marrakech.',
-      audience: 'Hotel Investors & Funds',
-      desc: 'Market intelligence for acquisition screening, asset valuation, and investment decision-making across Morocco\'s hotel sector.'
-    },
-    {
-      statement: 'Built for the asset manager who suspects their operator is underperforming the market.',
-      audience: 'Owners & Asset Managers',
-      desc: 'Benchmarking and performance monitoring for your portfolio. Track your assets against the market in real time.'
-    },
-    {
-      statement: 'Built for the developer who needs to know what brand belongs in Agadir right now.',
-      audience: 'Developers & Operators',
-      desc: 'Pipeline tracking, feasibility data, brand selection support, and market positioning for new hotel developments.'
-    },
-    {
-      statement: 'Built for the lender who needs an independent view before committing to a hotel deal.',
-      audience: 'Banks & Financial Institutions',
-      desc: 'Hotel valuations, market data, and performance benchmarks to support lending decisions and portfolio monitoring.'
-    }
-  ];
-
-  const statementEl = document.getElementById('lpRotatingStatement');
-  const audienceEl  = document.getElementById('lpRotatingAudience');
-  const descEl      = document.getElementById('lpRotatingDesc');
-  const progressEl  = document.getElementById('lpRotatingProgress');
-  const dots        = wrap.querySelectorAll('.lp-rotating-dot');
-
-  if (!statementEl || !audienceEl || !descEl) return;
-
-  const DURATION = 4000;
-  let current = 0;
-  let timer = null;
-  let started = false;
-
-  function setDot(index) {
-    dots.forEach((d, i) => {
-      d.classList.toggle('lp-rotating-dot-active', i === index);
-    });
-  }
-
-  function startProgress() {
-    if (!progressEl) return;
-    progressEl.style.transition = 'none';
-    progressEl.style.width = '0%';
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        progressEl.style.transition = `width ${DURATION}ms linear`;
-        progressEl.style.width = '100%';
-      });
-    });
-  }
-
-  function goTo(index) {
-    const next = audiences[index];
-    const els = [statementEl, audienceEl, descEl];
-
-    els.forEach(el => el.classList.add('lp-rot-exit'));
-
-    setTimeout(() => {
-      statementEl.textContent = next.statement;
-      audienceEl.textContent  = next.audience;
-      descEl.textContent      = next.desc;
-
-      els.forEach(el => {
-        el.classList.remove('lp-rot-exit');
-        el.classList.add('lp-rot-enter');
-      });
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          els.forEach(el => el.classList.remove('lp-rot-enter'));
-        });
-      });
-
-      setDot(index);
-      startProgress();
-    }, 380);
-  }
-
-  function advance() {
-    current = (current + 1) % audiences.length;
-    goTo(current);
-  }
-
-  function init() {
-    if (started) return;
-    started = true;
-
-    statementEl.textContent = audiences[0].statement;
-    audienceEl.textContent  = audiences[0].audience;
-    descEl.textContent      = audiences[0].desc;
-    setDot(0);
-    startProgress();
-    timer = setInterval(advance, DURATION);
-  }
-
-  dots.forEach((dot, i) => {
-    dot.addEventListener('click', () => {
-      if (i === current) return;
-      clearInterval(timer);
-      goTo(i);
-      current = i;
-      timer = setInterval(advance, DURATION);
-    });
-  });
-
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { init(); obs.disconnect(); }
-    });
-  }, { threshold: 0.3 });
-
-  obs.observe(wrap);
 })();
 </script>
 
