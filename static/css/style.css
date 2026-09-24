@@ -601,6 +601,14 @@ body.light .nav-logout  { color: #8A8A8A; }
 
 #screen-dashboard .kpi-value { font-size: 18px; }
 
+/* Pipeline KPI cards used the plain .kpi-value base (24px) instead of
+   the 18px every other kpi-grid screen down-sizes to (dashboard,
+   brand-kpi-grid, brands-kpi-grid, hotels-kpi-row, owners-kpi-row),
+   which read as noticeably larger. This compound selector outranks
+   the plain .kpi-value rule inside the responsive breakpoints below
+   too, so it holds at every width without repeating it per query. */
+.pipe-kpi-grid .kpi-value { font-size: 18px; }
+
 /* ─── Uppercase for all card values ──────────────────────────── */
 .kpi-value,
 .owner-stat-value,
