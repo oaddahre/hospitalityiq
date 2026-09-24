@@ -1030,7 +1030,11 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   margin-bottom: 16px;
   letter-spacing: -0.025em;
 }
-.lp-hero-headline span { color: #B87860; }
+.lp-hero-em {
+  font-style: italic;
+  font-weight: 700;
+  color: var(--lp-text);
+}
 .lp-hero-sub {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 16px;
@@ -1537,7 +1541,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   left: 12px;
   right: 12px;
   height: 1px;
-  background: var(--lp-text-muted);
+  background: var(--lp-border);
   z-index: 0;
 }
 
@@ -1575,9 +1579,9 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--lp-text-muted);
-  transition: background 250ms ease,
-              transform 250ms ease;
+  background: var(--lp-border);
+  transition: background 200ms ease,
+              transform 200ms ease;
   margin-top: 3px;
 }
 
@@ -1588,7 +1592,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 .lp-timeline-num {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 400;
   letter-spacing: 0.15em;
   color: var(--lp-text-faint);
@@ -1603,13 +1607,13 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 /* NAME */
 .lp-timeline-name {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-weight: 700;
-  font-size: clamp(24px, 3.5vw, 44px) !important;
+  font-weight: 500;
+  font-size: clamp(13px, 1.4vw, 16px);
   color: var(--lp-text);
-  line-height: 1.2;
+  line-height: 1.25;
   display: block;
-  letter-spacing: -0.02em;
-  transition: color 250ms ease;
+  letter-spacing: -0.01em;
+  transition: color 200ms ease;
 }
 
 .lp-timeline-stage.lp-timeline-open .lp-timeline-name {
@@ -1638,11 +1642,11 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 .lp-timeline-list li {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--lp-text-muted);
   line-height: 1.4;
-  padding: 8px 0;
-  font-weight: 400;
+  padding: 7px 0;
+  font-weight: 200;
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -1877,6 +1881,13 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   font-size: 9px;
   color: var(--lp-text-faint);
   font-weight: 400;
+}
+.lp-price-custom {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--lp-text);
+  letter-spacing: -0.02em;
 }
 .lp-plan-divider {
   border-top: 1px solid var(--lp-pricing-border);
@@ -2557,7 +2568,7 @@ a.lp-contact-info-val:hover { color: #B87860; }
     flex-shrink: 0;
   }
   .lp-timeline-name {
-    font-size: clamp(20px, 6vw, 28px) !important;
+    font-size: 15px;
     flex: 1;
   }
   /* Unwrap so .lp-timeline-name and .lp-timeline-expand become
@@ -2575,8 +2586,8 @@ a.lp-contact-info-val:hover { color: #B87860; }
     max-height: 400px;
   }
   .lp-timeline-list li {
-    font-size: 13px;
-    padding: 8px 0;
+    font-size: 12px;
+    padding: 7px 0;
   }
   .lp-reports-grid { grid-template-columns: 1fr; }
   .lp-plan-grid { grid-template-columns: 1fr; }
