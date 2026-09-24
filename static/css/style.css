@@ -422,7 +422,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 /* ─── Nav account/logout ──────────────────────────── */
 .nav-account {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 0.75rem;
+  font-size: 11px;
   color: var(--text-muted);
   text-decoration: none;
   text-transform: uppercase;
