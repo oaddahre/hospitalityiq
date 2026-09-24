@@ -2087,6 +2087,16 @@ function initTourismCharts() {
     yearFilterableCharts.push({ canvas, data, tabsDiv });
   };
 
+  // Terracotta for historical bars, amber for the trailing "…E" forecast
+  // bar — used by the arrivals and revenue trend charts below so the
+  // forecast year reads as visually distinct instead of relying on a
+  // text subtitle to say so.
+  const FORECAST_BAR_COLOR = '#C8922A';
+  function forecastBarColors(labels) {
+    const base = getChartColors().barColor;
+    return labels.map(l => /E$/.test(String(l)) ? FORECAST_BAR_COLOR : base);
+  }
+
   // ── Helper for vertical bar charts ──────────────────────────────
   function vBar(labels, values, bgColors, lblFmt, tipFmt) {
     const cc = getChartColors();
@@ -2123,7 +2133,7 @@ function initTourismCharts() {
   const arrLbls = TOUR_ARRIVALS_TREND.labels;
   const arrVals = TOUR_ARRIVALS_TREND.values;
   new Chart(document.getElementById('chart-tour-arrivals'),
-    vBar(arrLbls, arrVals, arrLbls.map(() => getChartColors().barColor),
+    vBar(arrLbls, arrVals, forecastBarColors(arrLbls),
       v => v + 'M', v => v + 'M arrivals'));
 
   // 2. Arrivals by Mode of Transport (grouped)
@@ -2199,7 +2209,7 @@ function initTourismCharts() {
   const revLbls = TOUR_REVENUE_TREND.labels;
   const revVals = TOUR_REVENUE_TREND.values;
   new Chart(document.getElementById('chart-tour-revenue'),
-    vBar(revLbls, revVals, revLbls.map(() => getChartColors().barColor),
+    vBar(revLbls, revVals, forecastBarColors(revLbls),
       v => v + 'B', v => 'MAD ' + v + 'B'));
 
   // 7. Seasonality Index (line)
