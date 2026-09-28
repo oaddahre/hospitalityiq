@@ -6,7 +6,7 @@
   <title>Kōdō Admin — News</title>
   <link rel="icon" type="image/png" href="/static/images/kodologo.png">
   <link rel="apple-touch-icon" href="/static/images/kodologo.png">
-  <meta name="theme-color" content="#B87860">
+  <meta name="theme-color" content="#F2A33D">
   <style>
     @font-face {
       font-family: 'Sweet Sans Pro';
@@ -779,14 +779,14 @@
     }
     tbody.innerHTML = articles.map(a => {
       const status  = artStatus(a);
-      const typePill = a.type === 'sponsored' ? '<span class="status-pill" style="background:rgba(184,120,96,0.12);color:#B87860;border-color:rgba(184,120,96,0.3)">Sponsored</span>'
+      const typePill = a.type === 'sponsored' ? '<span class="status-pill" style="background:rgba(242,163,61,0.12);color:#F2A33D;border-color:rgba(242,163,61,0.3)">Sponsored</span>'
                      : a.type === 'partner'    ? '<span class="status-pill" style="background:rgba(79,126,248,0.12);color:#4f7ef8;border-color:rgba(79,126,248,0.3)">Partner</span>'
                      :                          '<span class="status-pill" style="background:rgba(140,140,140,0.08);color:#8a96b0;border-color:rgba(140,140,140,0.2)">Editorial</span>';
       return `<tr>
         <td style="color:var(--text-dim);font-size:12px">${a.id}</td>
         <td class="article-headline-cell">
           <div class="article-hl">${escHtml(artTitle(a))}</div>
-          ${a.featured ? '<span style="font-size:9px;font-weight:700;color:#B87860;text-transform:uppercase;letter-spacing:0.06em">★ Featured</span>' : ''}
+          ${a.featured ? '<span style="font-size:9px;font-weight:700;color:#F2A33D;text-transform:uppercase;letter-spacing:0.06em">★ Featured</span>' : ''}
         </td>
         <td><span class="cat-pill">${escHtml(a.category || '—')}</span></td>
         <td>${typePill}</td>

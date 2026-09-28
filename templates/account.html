@@ -6,7 +6,7 @@
   <title>Account — Kōdō</title>
   <link rel="icon" type="image/png" href="/static/images/kodologo.png">
   <link rel="apple-touch-icon" href="/static/images/kodologo.png">
-  <meta name="theme-color" content="#B87860">
+  <meta name="theme-color" content="#F2A33D">
   <link rel="stylesheet" href="/static/css/style.css">
   <style>
     body { display: flex; flex-direction: column; min-height: 100vh; }
@@ -48,8 +48,8 @@
 
     /* ── Welcome banner ── */
     .acc-welcome {
-      background: rgba(184,120,96,0.1);
-      border: 1px solid rgba(184,120,96,0.28);
+      background: rgba(242,163,61,0.1);
+      border: 1px solid rgba(242,163,61,0.28);
       border-radius: var(--radius);
       padding: 14px 18px;
       margin-bottom: 24px;
@@ -365,7 +365,7 @@
   function memberRow(m, isOwner) {
     const statusDot = {
       active:   '#5A8A5A',
-      invited:  '#B87860',
+      invited:  '#F2A33D',
       suspended:'#C86060',
     }[m.status] || '#888888';
     const joined = m.approved_at || m.created_at || '—';
@@ -396,7 +396,7 @@
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:8px 0;
                   border-bottom:1px solid var(--border)">
-        <span style="width:7px;height:7px;border-radius:50%;background:#B87860;flex-shrink:0"></span>
+        <span style="width:7px;height:7px;border-radius:50%;background:#F2A33D;flex-shrink:0"></span>
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;color:var(--text-muted);
                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.email)}</div>
