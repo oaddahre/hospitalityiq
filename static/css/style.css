@@ -546,6 +546,46 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-top: 3px;
 }
 
+/* Short tag-style subtitle — replaces long descriptive .screen-sub
+   sentences on several screens with a few small uppercase terms. */
+.screen-sub-tags {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 11px;
+  font-weight: 200;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+  margin-top: 3px;
+}
+.screen-sub-tags.accent { color: #B87860; }
+.screen-sub-tags.italic { font-style: italic; }
+
+/* Dot legend for a screen header, replacing a plain-text explainer */
+.screen-header-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+}
+.screen-header-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 11px;
+  font-weight: 200;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+.screen-header-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 /* ─── KPI cards ──────────────────────────────────── */
 .kpi-grid {
   display: grid;
@@ -967,6 +1007,10 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-weight: 400;
 }
 
+.map-viewport {
+  position: relative;
+}
+
 #map-container {
   width: 100%;
   height: calc(100vh - var(--nav-h) - 160px);
@@ -974,6 +1018,41 @@ body.light .nav-logout  { color: #8A8A8A; }
   border-radius: 0;
   overflow: hidden;
   border: 1px solid var(--border);
+}
+
+.map-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  z-index: 10;
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-legend-dot {
+  display: inline-block;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.map-legend-label {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 11px;
+  font-weight: 200;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
 /* ─── Mapbox GL JS overrides ─────────────────────── */

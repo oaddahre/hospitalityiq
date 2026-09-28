@@ -1037,7 +1037,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 .lp-hero-em {
   font-style: italic;
   font-weight: 700;
-  color: var(--lp-text);
+  color: #B87860;
 }
 .lp-hero-sub {
   font-family: 'Sweet Sans Pro', sans-serif;

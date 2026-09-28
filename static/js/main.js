@@ -539,6 +539,23 @@ function barColors(labels) {
   return labels.map(() => color);
 }
 
+// Lighten the y-axis city-name ticks and bar-end value labels on the
+// RevPAR/Occupancy-by-destination charts — chartConfig()'s defaults
+// (y ticks weight 500, datalabels weight 600) read too bold for these
+// two dense city-list charts specifically, so this is applied only to
+// their configs rather than changing the shared chartConfig() used by
+// every other bar chart on the platform.
+function lightenCityChartLabels(cfg) {
+  const dark = !document.body.classList.contains('light');
+  const color = dark ? 'rgba(240,240,238,0.5)' : 'rgba(0,0,0,0.45)';
+  const font = { family: 'Sweet Sans Pro', size: 11, weight: '200' };
+  cfg.options.scales.y.ticks.font = font;
+  cfg.options.scales.y.ticks.color = color;
+  cfg.options.plugins.datalabels.font = font;
+  cfg.options.plugins.datalabels.color = color;
+  return cfg;
+}
+
 function renderCharts() {
   const allCityData = cityAggs(hotels);
 
@@ -561,7 +578,7 @@ function renderCharts() {
   } else {
     revChart = new Chart(
       document.getElementById('chart-revpar'),
-      chartConfig(revLabels, revVals, ' MAD', barColors(revLabels), revLabelFmt)
+      lightenCityChartLabels(chartConfig(revLabels, revVals, ' MAD', barColors(revLabels), revLabelFmt))
     );
   }
 
@@ -577,7 +594,7 @@ function renderCharts() {
     occChart.data.datasets[0].backgroundColor = barColors(occLabels);
     occChart.update();
   } else {
-    const cfg = chartConfig(occLabels, occVals, '%', barColors(occLabels), occLabelFmt);
+    const cfg = lightenCityChartLabels(chartConfig(occLabels, occVals, '%', barColors(occLabels), occLabelFmt));
     cfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toFixed(1) + '%';
     occChart = new Chart(document.getElementById('chart-occ'), cfg);
   }

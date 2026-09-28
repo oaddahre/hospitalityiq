@@ -218,7 +218,6 @@
       <section class="screen" id="screen-map">
         <div class="screen-header">
           <h1>Hotel Map</h1>
-          <p class="screen-sub">Circle size = room count · click any marker for details</p>
         </div>
         <div class="map-seg-bar" id="map-seg-bar">
           <button class="seg-btn active" data-map-seg="all">All</button>
@@ -236,14 +235,37 @@
           </button>
           <span class="map-count" id="map-count"></span>
         </div>
-        <div id="map-container"></div>
+        <div class="map-viewport">
+          <div id="map-container"></div>
+          <div class="map-legend">
+            <div class="map-legend-item">
+              <span class="map-legend-dot" style="width:6px;height:6px;background:#B87860;"></span>
+              <span class="map-legend-label">Small · Under 100 rooms</span>
+            </div>
+            <div class="map-legend-item">
+              <span class="map-legend-dot" style="width:10px;height:10px;background:#B87860;"></span>
+              <span class="map-legend-label">Medium · 100–200 rooms</span>
+            </div>
+            <div class="map-legend-item">
+              <span class="map-legend-dot" style="width:14px;height:14px;background:#B87860;"></span>
+              <span class="map-legend-label">Large · 200+ rooms</span>
+            </div>
+            <div class="map-legend-item">
+              <span class="map-legend-dot" style="width:8px;height:8px;background:#B87860;opacity:0.4;"></span>
+              <span class="map-legend-label">Click marker for details</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ── Pipeline ── -->
       <section class="screen" id="screen-pipeline">
         <div class="screen-header">
           <h1>Morocco Hotel Pipeline</h1>
-          <p class="screen-sub">Confirmed and announced development projects · Kōdō proprietary tracking</p>
+          <div class="screen-header-legend">
+            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:#B87860;"></span>Under Construction</span>
+            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:#888888;"></span>Planning</span>
+          </div>
         </div>
 
         <!-- KPI Cards -->
@@ -468,7 +490,7 @@
       <section class="screen" id="screen-benchmarking">
         <div class="screen-header">
           <h1>Benchmarking</h1>
-          <p class="screen-sub">Your performance vs competitive set · <span class="powered-by-kodo-badge">Powered by Kōdō</span></p>
+          <p class="screen-sub-tags accent">ADR · Occupancy · RevPAR</p>
           <span class="bench-demo-badge" id="bench-mode-badge">Demo mode — sample Marrakech luxury comp set</span>
         </div>
         <div class="bench-freshness-bar" id="bench-freshness-bar">
@@ -702,7 +724,6 @@
       <section class="screen" id="screen-tourism">
         <div class="screen-header">
           <h1>Morocco — Tourism Intelligence</h1>
-          <p class="screen-sub">Source: ONMT, Ministère du Tourisme, ONDA · 2020–2025 official data · 2026E Kōdō forecast</p>
         </div>
         <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:8px">
           <select id="tourism-export-year" class="export-select" title="Export year">
@@ -875,6 +896,8 @@
           <div id="events-container" class="events-container"></div>
         </div>
 
+        <p class="screen-sub-tags">ONMT · Ministère du Tourisme · ONDA</p>
+
         <!-- Disclaimer -->
         <p class="tour-disclaimer">Tourism statistics: ONMT official publications 2020–2025. 2026E: Kōdō estimates based on YTD trends and forward bookings. Airport data: ONDA. Events: publicly announced programmes — dates subject to change.</p>
       </section>
@@ -991,7 +1014,7 @@
       <section class="screen" id="screen-owners">
         <div class="screen-header">
           <h1>Ownership Intelligence</h1>
-          <p class="screen-sub">Major hotel asset owners and institutional portfolios · Morocco</p>
+          <p class="screen-sub-tags">Morocco · Institutional Owners</p>
         </div>
         <!-- KPI row -->
         <div class="owners-kpi-row" id="owners-kpi-row">
@@ -1622,7 +1645,7 @@
         <div id="editorial-view">
           <div class="screen-header">
             <h1>Kōdō Editorial</h1>
-            <p class="screen-sub">Market intelligence, industry news and hotel spotlights for Morocco hospitality</p>
+            <p class="screen-sub-tags">Morocco · Hotel Market · Industry Intelligence</p>
           </div>
 
           <!-- Category filter pills -->
@@ -1675,7 +1698,7 @@
       <section class="screen" id="screen-reports">
         <div class="screen-header">
           <h1>Market Intelligence Reports</h1>
-          <p class="screen-sub">Institutional-grade hotel market analysis · <span class="powered-by-kodo-badge">Powered by Kōdō</span></p>
+          <p class="screen-sub-tags">City Intelligence · PDF Export · AI Narrative</p>
           <p style="font-size:0.75rem;color:var(--text-faint,#666);margin-top:4px;">Reports generated live from current database · Data reflects latest available estimates</p>
         </div>
 
@@ -1694,7 +1717,7 @@
       <section class="screen" id="screen-ai">
         <div class="screen-header">
           <h1>AI Analyst</h1>
-          <p class="screen-sub">Kōdō proprietary database</p>
+          <p class="screen-sub-tags italic">Powered by Kōdō Intelligence</p>
         </div>
 
         <div class="chat-outer">
