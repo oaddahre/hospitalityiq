@@ -178,27 +178,52 @@ const SEG_COLORS = {
   'Economy':      '#403028',
 };
 
+// Grayscale tier hierarchy (Notion-style monochrome base) — higher tiers
+// read slightly more prominent, lowest tier most muted. Orange is kept
+// off descriptive segment badges entirely since these label a fixed
+// property attribute rather than an interactive/selected state; theme-
+// aware because a fixed white-tint background (dark-mode-only) would be
+// invisible against a light-mode white surface.
 function getSegmentBadgeHtml(segment) {
   if (!segment) return '—';
-  const segmentColors = {
-    'Ultra Luxury': '#C8922A',
-    'Luxury': '#F2A33D',
-    'Upper Upscale': '#5A8A5A',
-    'Upscale': '#6482B4',
-    'Midscale': '#888888',
-    'Economy': '#666666'
+  const dark = !document.body.classList.contains('light');
+  const segmentColorsDark = {
+    'Ultra Luxury': '#AAAAAA',
+    'Luxury': '#999999',
+    'Upper Upscale': '#888888',
+    'Upscale': '#777777',
+    'Midscale': '#666666',
+    'Economy': '#555555',
   };
-  const segmentBg = {
-    'Ultra Luxury': 'rgba(200,146,42,0.15)',
-    'Luxury': 'rgba(242,163,61,0.15)',
-    'Upper Upscale': 'rgba(90,138,90,0.15)',
-    'Upscale': 'rgba(100,130,180,0.15)',
-    'Midscale': 'rgba(136,136,136,0.15)',
-    'Economy': 'rgba(100,100,100,0.12)'
+  const segmentColorsLight = {
+    'Ultra Luxury': '#555555',
+    'Luxury': '#666666',
+    'Upper Upscale': '#777777',
+    'Upscale': '#888888',
+    'Midscale': '#999999',
+    'Economy': '#AAAAAA',
   };
-  const color = segmentColors[segment] || '#888888';
-  const bg = segmentBg[segment] || 'rgba(136,136,136,0.15)';
-  return `<span style="color:${color};background:${bg};font-family:'Sweet Sans Pro',sans-serif;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;border-radius:4px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;">${fmt.esc(segment).toUpperCase()}</span>`;
+  const segmentBgDark = {
+    'Ultra Luxury': 'rgba(240,240,238,0.08)',
+    'Luxury': 'rgba(240,240,238,0.07)',
+    'Upper Upscale': 'rgba(240,240,238,0.06)',
+    'Upscale': 'rgba(240,240,238,0.05)',
+    'Midscale': 'rgba(240,240,238,0.04)',
+    'Economy': 'rgba(240,240,238,0.03)',
+  };
+  const segmentBgLight = {
+    'Ultra Luxury': 'rgba(10,10,10,0.06)',
+    'Luxury': 'rgba(10,10,10,0.05)',
+    'Upper Upscale': 'rgba(10,10,10,0.045)',
+    'Upscale': 'rgba(10,10,10,0.04)',
+    'Midscale': 'rgba(10,10,10,0.035)',
+    'Economy': 'rgba(10,10,10,0.03)',
+  };
+  const segmentColors = dark ? segmentColorsDark : segmentColorsLight;
+  const segmentBg = dark ? segmentBgDark : segmentBgLight;
+  const color = segmentColors[segment] || (dark ? '#777777' : '#888888');
+  const bg = segmentBg[segment] || (dark ? 'rgba(240,240,238,0.05)' : 'rgba(10,10,10,0.04)');
+  return `<span style="color:${color};background:${bg};font-family:'Sweet Sans Pro',sans-serif;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;border-radius:999px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;">${fmt.esc(segment).toUpperCase()}</span>`;
 }
 
 const CITY_COORDS = {
@@ -273,7 +298,7 @@ let occChart = null;
 let googleMap          = null;
 let googlePipelineMap  = null;
 let googleMapsApiReady = false;
-let hotelMarkers       = [];   // [{marker, hotel}]
+let hotelMarkers       = [];   // one marker per city: [{marker, city, hotels, count}]
 let pipelineMarkers    = [];   // [{marker, project}]
 let activeInfoWindow   = null;
 let brandChart      = null;
@@ -464,9 +489,15 @@ function renderKPIs() {
 function getChartColors() {
   const dark = !document.body.classList.contains('light');
   return {
-    barColor:   dark ? '#F2A33D' : '#A06848',
-    hoverColor: dark ? '#C98870' : '#B07858',
-    fillColor:  dark ? 'rgba(242,163,61,0.08)' : 'rgba(160,104,72,0.08)',
+    // Grayscale base — orange is reserved for the hover/highlight state
+    // only, so a chart at rest reads as monochrome and a bar "lights up"
+    // in the brand accent purely as an interaction cue.
+    barColor:   dark ? '#555555' : '#AAAAAA',
+    barColor2:  dark ? '#777777' : '#888888',
+    barColor3:  dark ? '#444444' : '#BBBBBB',
+    barColor4:  dark ? '#666666' : '#999999',
+    hoverColor: '#F2A33D',
+    fillColor:  dark ? 'rgba(85,85,85,0.10)' : 'rgba(170,170,170,0.14)',
     gridColor:  'transparent',
     tick:       dark ? '#888888' : '#888888',
     label:      dark ? '#888888' : '#888888',
@@ -1556,44 +1587,117 @@ function initMap() {
       styles: isDark ? GMAP_STYLE_DARK : GMAP_STYLE_LIGHT,
     });
 
-    hotelMarkers = hotels.map(h => {
-      const marker = new google.maps.Marker({
-        position: { lat: h.lat, lng: h.lng },
-        map:      googleMap,
-        icon: {
-          path:        google.maps.SymbolPath.CIRCLE,
-          scale:       markerRadius(h),
-          fillColor:   SEG_COLORS[h.category] || '#888888',
-          fillOpacity: 0.85,
-          strokeColor: 'rgba(255,255,255,0.6)',
-          strokeWeight: 1.2,
-        },
-      });
-      marker.addListener('click', () => {
-        if (activeInfoWindow) activeInfoWindow.close();
-        activeInfoWindow = new google.maps.InfoWindow({ content: popupHTML(h) });
-        activeInfoWindow.open({ map: googleMap, anchor: marker });
-      });
-      return { marker, hotel: h };
-    });
-
     updateMapMarkers();
   } catch (e) {
     console.error('Google Maps init failed:', e);
   }
 }
 
+// One dot per city (sized by matching hotel count) instead of one dot per
+// hotel. Rebuilt whenever the city or segment filter changes, since a
+// filter change can shrink a city's count and therefore its dot size.
+let selectedCityEntry = null; // {marker, city, hotels, count} — tracks the open panel's dot so it stays highlighted
+
+function cityDotIcon(count, highlighted) {
+  const size = count <= 3 ? 8 : count <= 8 ? 12 : count <= 15 ? 16 : 20;
+  return {
+    path:        google.maps.SymbolPath.CIRCLE,
+    scale:       size / 2,
+    fillColor:   highlighted ? '#F2A33D' : '#666666',
+    fillOpacity: 1,
+    strokeColor: 'rgba(255,255,255,0.15)',
+    strokeWeight: 1.5,
+  };
+}
+
 function updateMapMarkers() {
   if (!googleMap) return;
-  let visible = 0;
-  hotelMarkers.forEach(({ marker, hotel: h }) => {
-    const show = (state.city   === 'all' || h.city     === state.city) &&
-                 (state.mapSeg === 'all' || h.category === state.mapSeg);
-    marker.setMap(show ? googleMap : null);
-    if (show) visible++;
+
+  hotelMarkers.forEach(({ marker }) => marker.setMap(null));
+  hotelMarkers = [];
+  selectedCityEntry = null;
+  const existingPanel = document.getElementById('map-city-panel');
+  if (existingPanel) existingPanel.remove();
+
+  const filtered = hotels.filter(h =>
+    (state.city   === 'all' || h.city     === state.city) &&
+    (state.mapSeg === 'all' || h.category === state.mapSeg)
+  );
+
+  const hotelsByCity = {};
+  filtered.forEach(h => {
+    if (h.lat == null || h.lng == null) return;
+    const city = h.city;
+    if (!city) return;
+    if (!hotelsByCity[city]) hotelsByCity[city] = { hotels: [], latSum: 0, lngSum: 0 };
+    hotelsByCity[city].hotels.push(h);
+    hotelsByCity[city].latSum += h.lat;
+    hotelsByCity[city].lngSum += h.lng;
   });
+
+  Object.entries(hotelsByCity).forEach(([city, data]) => {
+    const count = data.hotels.length;
+    const marker = new google.maps.Marker({
+      position: { lat: data.latSum / count, lng: data.lngSum / count },
+      map:      googleMap,
+      icon:     cityDotIcon(count, false),
+      title:    `${city} — ${count} hotel${count !== 1 ? 's' : ''}`,
+    });
+    const entry = { marker, city, hotels: data.hotels, count };
+
+    marker.addListener('mouseover', () => {
+      if (selectedCityEntry !== entry) marker.setIcon(cityDotIcon(count, true));
+    });
+    marker.addListener('mouseout', () => {
+      if (selectedCityEntry !== entry) marker.setIcon(cityDotIcon(count, false));
+    });
+    marker.addListener('click', () => {
+      if (selectedCityEntry && selectedCityEntry !== entry) {
+        selectedCityEntry.marker.setIcon(cityDotIcon(selectedCityEntry.count, false));
+      }
+      selectedCityEntry = entry;
+      marker.setIcon(cityDotIcon(count, true));
+      showCityPanel(city, data.hotels);
+    });
+
+    hotelMarkers.push(entry);
+  });
+
   const countEl = document.getElementById('map-count');
-  if (countEl) countEl.textContent = visible + ' hotel' + (visible !== 1 ? 's' : '');
+  if (countEl) countEl.textContent = filtered.length + ' hotel' + (filtered.length !== 1 ? 's' : '');
+}
+
+function showCityPanel(city, cityHotels) {
+  const existing = document.getElementById('map-city-panel');
+  if (existing) existing.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'map-city-panel';
+  panel.className = 'map-city-panel';
+
+  const hotelRows = cityHotels
+    .slice()
+    .sort((a, b) => b.revpar_mad - a.revpar_mad)
+    .map(h => `
+      <div class="map-city-panel-row" onclick="showHotelDetail(${h.id})">
+        <div class="map-city-panel-row-name">${fmt.esc(h.name)}</div>
+        <div class="map-city-panel-row-meta">${fmt.esc(h.brand || '')} · ${h.keys || ''} rooms</div>
+      </div>
+    `).join('');
+
+  panel.innerHTML = `
+    <div class="map-city-panel-header">
+      <div>
+        <div class="map-city-panel-count">${cityHotels.length} Hotel${cityHotels.length !== 1 ? 's' : ''}</div>
+        <div class="map-city-panel-city">${fmt.esc(city)}</div>
+      </div>
+      <button class="map-city-panel-close" onclick="document.getElementById('map-city-panel').remove(); if (selectedCityEntry) { selectedCityEntry.marker.setIcon(cityDotIcon(selectedCityEntry.count, false)); selectedCityEntry = null; }">✕</button>
+    </div>
+    <div class="map-city-panel-list">${hotelRows}</div>
+  `;
+
+  const viewport = document.querySelector('#screen-map .map-viewport');
+  if (viewport) viewport.appendChild(panel);
 }
 
 function panMap() {
@@ -2162,9 +2266,9 @@ function initTourismCharts() {
       data: {
         labels: ['2022','2023','2024','2025','2026E'],
         datasets: [
-          { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: getChartColors().barColor, borderRadius: 3, borderSkipped: false },
-          { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: '#456B38',         borderRadius: 3, borderSkipped: false },
-          { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: '#705040',          borderRadius: 3, borderSkipped: false },
+          { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: cc.barColor,  borderRadius: 3, borderSkipped: false },
+          { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: cc.barColor2, borderRadius: 3, borderSkipped: false },
+          { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: cc.barColor3, borderRadius: 3, borderSkipped: false },
         ],
       },
       options: {
@@ -3840,12 +3944,15 @@ function renderBenchTrends() {
   function mkTrend(myData, compData, suffix) {
     const cc = getChartColors();
     const datasets = [
-      { label: 'My Property', data: myData, borderColor: getChartColors().barColor,
-        backgroundColor: getChartColors().fillColor, borderWidth: 2, fill: false,
-        tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: getChartColors().barColor },
+      // "My Property" is the one series this whole screen exists to read, so
+      // it keeps the orange highlight permanently rather than only on hover
+      // — the comp-set average stays a neutral gray dashed reference line.
+      { label: 'My Property', data: myData, borderColor: cc.hoverColor,
+        backgroundColor: 'rgba(242,163,61,0.08)', borderWidth: 2, fill: false,
+        tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: cc.hoverColor },
     ];
     if (isCompSetValid()) {
-      datasets.push({ label: 'Comp Set Avg', data: compData, borderColor: '#444444',
+      datasets.push({ label: 'Comp Set Avg', data: compData, borderColor: cc.barColor2,
         borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.3, pointRadius: 0 });
     }
     return {
@@ -3910,10 +4017,10 @@ function renderBenchDOW() {
   {
     const cc = getChartColors();
     const dowDatasets = [
-      { label: 'My Property', data: myDOW.map(avg), backgroundColor: getChartColors().barColor, hoverBackgroundColor: getChartColors().hoverColor, borderRadius: 4, borderSkipped: false },
+      { label: 'My Property', data: myDOW.map(avg), backgroundColor: cc.hoverColor, hoverBackgroundColor: cc.hoverColor, borderRadius: 4, borderSkipped: false },
     ];
     if (isCompSetValid()) {
-      dowDatasets.push({ label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(68,68,68,0.35)', borderRadius: 4, borderSkipped: false });
+      dowDatasets.push({ label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(119,119,119,0.35)', borderRadius: 4, borderSkipped: false });
     }
     benchDOWChart = new Chart(document.getElementById('bench-dow-chart'), {
       type: 'bar',

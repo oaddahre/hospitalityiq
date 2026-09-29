@@ -1673,7 +1673,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 .lp-timeline-list li::before {
   content: '·';
-  color: #F2A33D;
+  color: var(--lp-text-faint);
   flex-shrink: 0;
   font-size: 16px;
   line-height: 1.4;
@@ -2022,7 +2022,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   font-size: 8px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: #F2A33D;
+  color: var(--lp-text-faint);
   display: block;
   margin-bottom: 20px;
   font-weight: 400;
@@ -2134,7 +2134,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: #F2A33D;
+  color: var(--lp-text-faint);
   display: block;
   margin-bottom: 12px;
 }
@@ -2183,7 +2183,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: #F2A33D;
+  color: var(--lp-text-faint);
   display: block;
   margin-bottom: 16px;
   padding-bottom: 12px;
@@ -2252,7 +2252,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #F2A33D;
+  color: var(--lp-text-faint);
 }
 
 .lp-team-position-desc {
@@ -2456,7 +2456,7 @@ a.lp-contact-info-val:hover { color: #F2A33D; }
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #F2A33D;
+  color: var(--lp-text-faint);
   display: inline-flex;
   align-items: center;
   gap: 3px;
