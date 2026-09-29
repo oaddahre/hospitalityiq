@@ -239,24 +239,24 @@
           <div id="map-container"></div>
           <div class="map-legend">
             <div class="map-legend-item">
-              <span class="map-legend-dot" style="width:8px;height:8px;background:#666666;"></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:8px;height:8px;background:#666666;"></span></span>
               <span class="map-legend-label">1–3 Hotels</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot" style="width:12px;height:12px;background:#666666;"></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:12px;height:12px;background:#666666;"></span></span>
               <span class="map-legend-label">4–8 Hotels</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot" style="width:16px;height:16px;background:#666666;"></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:16px;height:16px;background:#666666;"></span></span>
               <span class="map-legend-label">9–15 Hotels</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot" style="width:20px;height:20px;background:#666666;"></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:20px;height:20px;background:#666666;"></span></span>
               <span class="map-legend-label">16+ Hotels</span>
             </div>
-            <div class="map-legend-item">
-              <span class="map-legend-dot" style="width:10px;height:10px;background:#4A7FA5;"></span>
-              <span class="map-legend-label">Click city for details</span>
+            <div class="map-legend-item" style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);">
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:10px;height:10px;background:#4A7FA5;"></span></span>
+              <span class="map-legend-label">Selected city</span>
             </div>
           </div>
         </div>
@@ -596,16 +596,20 @@
           <div class="bench-cal-wrap" id="bench-adr-grid"></div>
           <div class="cal-legend">
             <span class="cal-legend-item">
+              <span class="cal-legend-dot" style="background:#1A2A3A"></span>
+              <span class="cal-legend-label">Low</span>
+            </span>
+            <span class="cal-legend-item">
+              <span class="cal-legend-dot" style="background:#2A5A8A"></span>
+              <span class="cal-legend-label">Mid</span>
+            </span>
+            <span class="cal-legend-item">
               <span class="cal-legend-dot" style="background:#4A7FA5"></span>
-              <span class="cal-legend-label">High Rate</span>
+              <span class="cal-legend-label">High</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#2F5D7A"></span>
-              <span class="cal-legend-label">Mid Rate</span>
-            </span>
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#1C1C1A;border:1px solid #4A7FA5"></span>
-              <span class="cal-legend-label">Low Rate</span>
+              <span class="cal-legend-dot" style="background:#7AB0D0"></span>
+              <span class="cal-legend-label">Peak</span>
             </span>
             <span class="cal-legend-item cal-legend-source">
               <span class="cal-legend-dot" style="background:#4A7FA5"></span>
@@ -637,19 +641,23 @@
           <div class="bench-cal-wrap" id="bench-occ-grid"></div>
           <div class="cal-legend">
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#4A7FA5"></span>
-              <span class="cal-legend-label">High Occupancy</span>
+              <span class="cal-legend-dot" style="background:#1A2A1A"></span>
+              <span class="cal-legend-label">Low</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#2F5D7A"></span>
-              <span class="cal-legend-label">Mid Occupancy</span>
+              <span class="cal-legend-dot" style="background:#2A5A3A"></span>
+              <span class="cal-legend-label">Mid</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#1C1C1A;border:1px solid #2F5D7A"></span>
-              <span class="cal-legend-label">Low Occupancy</span>
+              <span class="cal-legend-dot" style="background:#3D7A5C"></span>
+              <span class="cal-legend-label">High</span>
+            </span>
+            <span class="cal-legend-item">
+              <span class="cal-legend-dot" style="background:#6AAF8A"></span>
+              <span class="cal-legend-label">Full</span>
             </span>
             <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:#4A7FA5"></span>
+              <span class="cal-legend-dot" style="background:#6AAF8A"></span>
               <span class="cal-legend-label">My Property</span>
             </span>
             <span class="cal-legend-item cal-legend-source">
@@ -1544,9 +1552,10 @@
               <div class="bar-cal-loading">Loading occupancy data…</div>
             </div>
             <div class="bar-cal-legend">
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#4A7FA5"></span>&gt;80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#2F5D7A"></span>60–80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#444"></span>&lt;60%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#6AAF8A"></span>&gt;80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#3D7A5C"></span>60–80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#2A5A3A"></span>40–60%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#1A2A1A"></span>&lt;40%</span>
             </div>
           </div>
         </div>

@@ -1416,12 +1416,14 @@ async function renderOccCalendar(hotelId) {
     let bg, col, fw = '', border = '';
     if (occ !== null) {
       if (dark) {
-        if (occ >= 80) { bg = '#4A7FA5'; col = '#0A0A0A'; fw = '600'; }
-        else if (occ >= 60) { bg = '#2F5D7A'; col = '#F0EDE6'; fw = '500'; }
-        else { bg = '#1C1C1A'; col = '#888888'; border = '1px solid #2F5D7A'; }
+        if (occ >= 80) { bg = '#6AAF8A'; col = '#0A0A0A'; fw = '600'; }
+        else if (occ >= 60) { bg = '#3D7A5C'; col = '#F0EDE6'; fw = '500'; }
+        else if (occ >= 40) { bg = '#2A5A3A'; col = '#B0D8C0'; fw = ''; }
+        else { bg = '#1A2A1A'; col = '#6A9A7A'; border = '1px solid #2A5A3A'; }
       } else {
-        if (occ >= 80) { bg = '#EAF2F8'; col = '#1A4A6B'; fw = '600'; border = '1px solid #4A7FA5'; }
-        else if (occ >= 60) { bg = '#F2F8FC'; col = '#3A6A8E'; border = '1px solid #9EC3DC'; }
+        if (occ >= 80) { bg = '#B0E0C8'; col = '#0A4A2A'; fw = '600'; border = '1px solid #6AAF8A'; }
+        else if (occ >= 60) { bg = '#D0EDE0'; col = '#1A5A3A'; fw = '500'; border = '1px solid #3D7A5C'; }
+        else if (occ >= 40) { bg = '#E5F5ED'; col = '#2A6A4A'; border = '1px solid #9ED0B8'; }
         else { bg = '#FFFFFF'; col = '#8A8A8A'; border = '1px solid #ECECEC'; }
       }
     } else {
@@ -3759,12 +3761,14 @@ function adrCellStyle(adr, isCompSet = false) {
     }
   }
   if (dark) {
-    if (adr >= 6000) return {bg:'#4A7FA5', col:'#0A0A0A', fw:'600', border:''};
-    if (adr >= 4000) return {bg:'#2F5D7A', col:'#F0EDE6', fw:'500', border:''};
-    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #4A7FA5'};
+    if (adr >= 6000) return {bg:'#7AB0D0', col:'#0A0A0A', fw:'600', border:''};
+    if (adr >= 4000) return {bg:'#4A7FA5', col:'#0A0A0A', fw:'500', border:''};
+    if (adr >= 2000) return {bg:'#2A5A8A', col:'#F0EDE6', fw:'', border:''};
+    return {bg:'#1A2A3A', col:'#7A9AB5', fw:'', border:'1px solid #2A5A8A'};
   } else {
-    if (adr >= 6000) return {bg:'#D8E8F2', col:'#1A4A6B', fw:'600', border:'1px solid #4A7FA5'};
-    if (adr >= 4000) return {bg:'#EAF2F8', col:'#3A6A8E', fw:'',    border:'1px solid #9EC3DC'};
+    if (adr >= 6000) return {bg:'#B8D8EC', col:'#0A3050', fw:'600', border:'1px solid #7AB0D0'};
+    if (adr >= 4000) return {bg:'#D8E8F2', col:'#1A4A6B', fw:'500', border:'1px solid #4A7FA5'};
+    if (adr >= 2000) return {bg:'#EAF2F8', col:'#2A5A8A', fw:'',   border:'1px solid #9EC3DC'};
     return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
   }
 }
@@ -3784,12 +3788,14 @@ function occCellStyle(occ, isCompSet = false) {
     }
   }
   if (dark) {
-    if (p >= 80) return {bg:'#4A7FA5', col:'#0A0A0A', fw:'600', border:''};
-    if (p >= 60) return {bg:'#2F5D7A', col:'#F0EDE6', fw:'500', border:''};
-    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #2F5D7A'};
+    if (p >= 80) return {bg:'#6AAF8A', col:'#0A0A0A', fw:'600', border:''};
+    if (p >= 60) return {bg:'#3D7A5C', col:'#F0EDE6', fw:'500', border:''};
+    if (p >= 40) return {bg:'#2A5A3A', col:'#B0D8C0', fw:'', border:''};
+    return {bg:'#1A2A1A', col:'#6A9A7A', fw:'', border:'1px solid #2A5A3A'};
   } else {
-    if (p >= 80) return {bg:'#EAF2F8', col:'#1A4A6B', fw:'600', border:'1px solid #4A7FA5'};
-    if (p >= 60) return {bg:'#F2F8FC', col:'#3A6A8E', fw:'',    border:'1px solid #9EC3DC'};
+    if (p >= 80) return {bg:'#B0E0C8', col:'#0A4A2A', fw:'600', border:'1px solid #6AAF8A'};
+    if (p >= 60) return {bg:'#D0EDE0', col:'#1A5A3A', fw:'500', border:'1px solid #3D7A5C'};
+    if (p >= 40) return {bg:'#E5F5ED', col:'#2A6A4A', fw:'',   border:'1px solid #9ED0B8'};
     return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
   }
 }

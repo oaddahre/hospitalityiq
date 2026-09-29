@@ -1071,7 +1071,20 @@ body.light .nav-logout  { color: #8A8A8A; }
 .map-legend-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  height: 20px;
+}
+
+/* Fixed-size slot the dot centers inside, so labels sit at the same
+   vertical position across rows no matter how large the dot itself
+   is (dot diameters range 6-18px across these rows). */
+.map-legend-dot-slot {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .map-legend-dot {
