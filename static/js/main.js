@@ -58,16 +58,16 @@ const LOCAL_BRAND_LOGOS = {
 };
 
 const BRAND_CUSTOM_LOGOS = {
-  'Zalagh Hotels Group':         { letter: 'Z',  bg: '#1A1A1A', color: '#F2A33D' },
-  'Farah Hotels':                { letter: 'F',  bg: '#1A1A1A', color: '#F2A33D' },
+  'Zalagh Hotels Group':         { letter: 'Z',  bg: '#1A1A1A', color: '#4A7FA5' },
+  'Farah Hotels':                { letter: 'F',  bg: '#1A1A1A', color: '#4A7FA5' },
   'Independent Ultra Luxury':    { letter: 'UL', bg: '#1A1A1A', color: '#C8A96E' },
-  'Independent Luxury':          { letter: 'IL', bg: '#1A1A1A', color: '#F2A33D' },
+  'Independent Luxury':          { letter: 'IL', bg: '#1A1A1A', color: '#4A7FA5' },
   'Independent Upper Upscale':   { letter: 'UU', bg: '#1A1A1A', color: '#888888' },
   'Independent Upscale':         { letter: 'IU', bg: '#1A1A1A', color: '#666666' },
   'Independent Midscale':        { letter: 'IM', bg: '#1A1A1A', color: '#555555' },
   'Independent Economy':         { letter: 'IE', bg: '#1A1A1A', color: '#444444' },
 
-  'Zephyr':                      { letter: 'Z',  bg: '#1A1A1A', color: '#F2A33D' },
+  'Zephyr':                      { letter: 'Z',  bg: '#1A1A1A', color: '#4A7FA5' },
 };
 
 const OWNER_LOGOS = {
@@ -95,13 +95,13 @@ function getOwnerLogoImg(ownerName, size) {
     return '<img src="https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
   }
   var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#F2A33D;border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#4A7FA5;border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
 }
 
 function ownerTypeBadge(type) {
   var colors = {
     'State-Owned':  '#5A8A5A',
-    'Listed':       '#F2A33D',
+    'Listed':       '#4A7FA5',
     'Private':      '#888888',
     'Family-Owned': '#C8922A',
   };
@@ -170,7 +170,7 @@ function getBrandLogoImg(brandGroup, size=24) {
 }
 
 const SEG_COLORS = {
-  'Ultra Luxury': '#F2A33D',
+  'Ultra Luxury': '#4A7FA5',
   'Luxury':       '#A06848',
   'Upper Upscale':'#886050',
   'Upscale':      '#705040',
@@ -245,7 +245,7 @@ const GMAP_STYLE_DARK = [
   {"elementType":"labels.text.stroke","stylers":[{"color":"#0A0A0A"}]},
   {"featureType":"administrative","elementType":"geometry","stylers":[{"color":"#242424"}]},
   {"featureType":"administrative.country","elementType":"geometry.stroke","stylers":[{"color":"#444444"}]},
-  {"featureType":"administrative.country","elementType":"labels.text.fill","stylers":[{"color":"#F2A33D"}]},
+  {"featureType":"administrative.country","elementType":"labels.text.fill","stylers":[{"color":"#4A7FA5"}]},
   {"featureType":"administrative.province","elementType":"geometry.stroke","stylers":[{"color":"#242424"}]},
   {"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#888888"}]},
   {"featureType":"road","elementType":"geometry","stylers":[{"color":"#242424"}]},
@@ -323,7 +323,7 @@ const brandsFilter   = { sort: 'total_keys', search: '', segment: 'all' };
 const brandsCompSort = { col: 'total_keys', dir: -1 };
 const BRANDS_STR_COLS = new Set(['brand_group']);
 const BRAND_PALETTE   = [
-  '#F2A33D','#A06848','#886050','#705040','#584038',
+  '#4A7FA5','#A06848','#886050','#705040','#584038',
   '#3E2E28','#6A8A6A','#4A6E8A','#7A6A8A','#8A6A4A',
 ];
 const BRANDS_COMP_STR = new Set(['brand_group']);
@@ -496,7 +496,7 @@ function getChartColors() {
     barColor2:  dark ? '#777777' : '#888888',
     barColor3:  dark ? '#444444' : '#BBBBBB',
     barColor4:  dark ? '#666666' : '#999999',
-    hoverColor: '#F2A33D',
+    hoverColor: '#4A7FA5',
     fillColor:  dark ? 'rgba(85,85,85,0.10)' : 'rgba(170,170,170,0.14)',
     gridColor:  'transparent',
     tick:       dark ? '#888888' : '#888888',
@@ -1603,7 +1603,7 @@ function cityDotIcon(count, highlighted) {
   return {
     path:        google.maps.SymbolPath.CIRCLE,
     scale:       size / 2,
-    fillColor:   highlighted ? '#F2A33D' : '#666666',
+    fillColor:   highlighted ? '#4A7FA5' : '#666666',
     fillOpacity: 1,
     strokeColor: 'rgba(255,255,255,0.15)',
     strokeWeight: 1.5,
@@ -1952,8 +1952,8 @@ const EVENT_TYPE_CLASS = {
 };
 
 const EVENT_DOT_COLORS = {
-  Sport: '#F2A33D', Culture: '#A06848', Music: '#C89070',
-  Business: '#886050', Religious: '#D0A888', Mega: '#F2A33D',
+  Sport: '#4A7FA5', Culture: '#A06848', Music: '#C89070',
+  Business: '#886050', Religious: '#D0A888', Mega: '#4A7FA5',
 };
 
 function parseEventDate(dateStr) {
@@ -2212,7 +2212,7 @@ function initTourismCharts() {
   // bar — used by the arrivals and revenue trend charts below so the
   // forecast year reads as visually distinct instead of relying on a
   // text subtitle to say so.
-  const FORECAST_BAR_COLOR = '#D4841A';
+  const FORECAST_BAR_COLOR = '#5B8DB8';
   function forecastBarColors(labels) {
     const base = getChartColors().barColor;
     return labels.map(l => /E$/.test(String(l)) ? FORECAST_BAR_COLOR : base);
@@ -2450,7 +2450,7 @@ function initPipelineMap() {
     });
 
     pipelineMarkers = pipelineData.map(p => {
-      const color  = p.status === 'Under Construction' ? '#F2A33D' : '#888888';
+      const color  = p.status === 'Under Construction' ? '#4A7FA5' : '#888888';
       const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
       const marker = new google.maps.Marker({
         position: { lat: p.lat, lng: p.lng },
@@ -2479,7 +2479,7 @@ function initPipelineMap() {
 function pipelinePopupHTML(p) {
   const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
   const statusPill = p.status === 'Under Construction'
-    ? `<span style="color:#F2A33D;font-family:'Sweet Sans Pro',sans-serif;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)}</span>`
+    ? `<span style="color:#4A7FA5;font-family:'Sweet Sans Pro',sans-serif;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)}</span>`
     : `<span style="color:#888888;font-family:'Sweet Sans Pro',sans-serif;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
@@ -3759,9 +3759,9 @@ function adrCellStyle(adr, isCompSet = false) {
     }
   }
   if (dark) {
-    if (adr >= 6000) return {bg:'#F2A33D', col:'#0A0A0A', fw:'600', border:''};
+    if (adr >= 6000) return {bg:'#4A7FA5', col:'#0A0A0A', fw:'600', border:''};
     if (adr >= 4000) return {bg:'#6B4838', col:'#F0EDE6', fw:'500', border:''};
-    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #F2A33D'};
+    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #4A7FA5'};
   } else {
     if (adr >= 6000) return {bg:'#F5EDE8', col:'#6B3828', fw:'600', border:'1px solid #A06848'};
     if (adr >= 4000) return {bg:'#FAF2EE', col:'#A06848', fw:'',    border:'1px solid #C88870'};
@@ -3948,7 +3948,7 @@ function renderBenchTrends() {
       // it keeps the orange highlight permanently rather than only on hover
       // — the comp-set average stays a neutral gray dashed reference line.
       { label: 'My Property', data: myData, borderColor: cc.hoverColor,
-        backgroundColor: 'rgba(242,163,61,0.08)', borderWidth: 2, fill: false,
+        backgroundColor: 'rgba(74,127,165,0.08)', borderWidth: 2, fill: false,
         tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: cc.hoverColor },
     ];
     if (isCompSetValid()) {

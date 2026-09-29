@@ -229,7 +229,7 @@ def _reset_email_html(reset_url: str) -> str:
         <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
           <tr>
             <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#F2A33D;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
             </td>
           </tr>
           <tr>
@@ -240,12 +240,12 @@ def _reset_email_html(reset_url: str) -> str:
           </tr>
           <tr>
             <td style="padding-bottom:32px;">
-              <a href="{reset_url}" style="display:inline-block;background:#F2A33D;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Reset Password →</a>
+              <a href="{reset_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Reset Password →</a>
             </td>
           </tr>
           <tr>
             <td style="border-top:1px solid #242424;padding-top:24px;">
-              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you did not request a password reset you can safely ignore this email. Your password will not be changed.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#F2A33D;word-break:break-all;">{reset_url}</span></p>
+              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you did not request a password reset you can safely ignore this email. Your password will not be changed.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#4A7FA5;word-break:break-all;">{reset_url}</span></p>
             </td>
           </tr>
         </table>
@@ -279,7 +279,7 @@ def _welcome_email_html(name: str, active: bool) -> str:
         <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
           <tr>
             <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#F2A33D;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
             </td>
           </tr>
           <tr>
@@ -291,7 +291,7 @@ def _welcome_email_html(name: str, active: bool) -> str:
           </tr>
           <tr>
             <td style="padding-bottom:32px;">
-              <a href="https://www.kodohospitality.com/login" style="display:inline-block;background:#F2A33D;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Access Platform →</a>
+              <a href="https://www.kodohospitality.com/login" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Access Platform →</a>
             </td>
           </tr>
           <tr>
@@ -299,15 +299,15 @@ def _welcome_email_html(name: str, active: bool) -> str:
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">
-                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#F2A33D;margin:0 0 6px;">300+</p>
+                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">300+</p>
                     <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Hotels</p>
                   </td>
                   <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;border-left:1px solid #141414;border-right:1px solid #141414;">
-                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#F2A33D;margin:0 0 6px;">23</p>
+                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">23</p>
                     <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Destinations</p>
                   </td>
                   <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">
-                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#F2A33D;margin:0 0 6px;">35</p>
+                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">35</p>
                     <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Brand Groups</p>
                   </td>
                 </tr>
@@ -316,7 +316,7 @@ def _welcome_email_html(name: str, active: bool) -> str:
           </tr>
           <tr>
             <td style="border-top:1px solid #242424;padding-top:24px;">
-              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us at <a href="mailto:contact@kodohospitality.com" style="color:#F2A33D;text-decoration:none;">contact@kodohospitality.com</a><br><br>© 2026 Kōdō Hospitality · All Rights Reserved</p>
+              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us at <a href="mailto:contact@kodohospitality.com" style="color:#4A7FA5;text-decoration:none;">contact@kodohospitality.com</a><br><br>© 2026 Kōdō Hospitality · All Rights Reserved</p>
             </td>
           </tr>
         </table>
@@ -2083,7 +2083,7 @@ _PALETTE_DARK = {
     'text':     (240, 240, 238),
     'muted':    (136, 136, 136),
     'faint':    (68, 68, 68),
-    'accent':   (242, 163, 61),
+    'accent':   (74, 127, 165),
     'positive': (90, 138, 90),
     'negative': (200, 96, 96),
     'amber':    (200, 146, 42),
