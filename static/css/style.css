@@ -47,7 +47,7 @@
   --text-muted:    #888888;
   --text-faint:    #555555;
   --accent:        #4A7FA5;
-  --accent-dim:    #1E1210;
+  --accent-dim:    #101820;
   --accent-hover:  #3A6A8E;
   --accent-muted:  rgba(74,127,165,0.12);
   --accent-border: rgba(74,127,165,0.25);
@@ -85,7 +85,7 @@ body.light {
   --text-muted:    #8A8A8A;
   --text-faint:    #CCCCCC;
   --accent:        #4A7FA5;
-  --accent-dim:    #F5EDE8;
+  --accent-dim:    #EAF2F8;
   --accent-hover:  #3A6A8E;
   --accent-muted:  rgba(74,127,165,0.12);
   --accent-border: rgba(74,127,165,0.25);
@@ -407,9 +407,9 @@ body.light .nav-link { color: #8A8A8A; }
 body.light .nav-link:hover  { color: #0A0A0A; }
 body.light .nav-link.active { color: #0A0A0A; font-weight: 600; }
 body.light .theme-toggle { border-color: #ECECEC; color: #8A8A8A; }
-body.light .theme-toggle:hover { border-color: #A06848; color: #A06848; }
+body.light .theme-toggle:hover { border-color: #4A7FA5; color: #4A7FA5; }
 body.light #theme-btn { border-color: #ECECEC; color: #8A8A8A; }
-body.light #theme-btn:hover { border-color: #A06848; color: #A06848; }
+body.light #theme-btn:hover { border-color: #4A7FA5; color: #4A7FA5; }
 body.light .nav-account { color: #8A8A8A; }
 body.light .nav-logout  { color: #8A8A8A; }
 
@@ -766,7 +766,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 2px 8px;
   white-space: nowrap;
 }
-.segment-ultra-luxury  { background: rgba(200,146,42,0.15);  color: #C8922A; }
+.segment-ultra-luxury  { background: rgba(74,127,165,0.15);  color: #4A7FA5; }
 .segment-luxury        { background: rgba(74,127,165,0.15);  color: #4A7FA5; }
 .segment-upper-upscale { background: rgba(90,138,90,0.15);   color: #5A8A5A; }
 .segment-upscale       { background: rgba(100,130,180,0.15); color: #6482B4; }
@@ -785,7 +785,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-mode-badge { color: #888888; }
 .confidence-badge { color: #888888; }
 .nav-tier-badge { color: #4A7FA5; font-size: 11px !important; }
-.pipeline-status-badge { color: #C8922A; }
+.pipeline-status-badge { color: #4A7FA5; }
 
 .kpi-meta, .kpi-delta {
   font-family: var(--font-mono);
@@ -1740,10 +1740,10 @@ body.light .nav-logout  { color: #8A8A8A; }
   white-space: nowrap;
 }
 .etype-sport    { border-color: #4A7FA5; color: #4A7FA5; background: rgba(74,127,165,0.08); }
-.etype-culture  { border-color: #A06848; color: #A06848; background: rgba(160,104,72,0.08); }
-.etype-music    { border-color: #C89070; color: #C89070; background: rgba(200,144,112,0.08); }
-.etype-business { border-color: #886050; color: #886050; background: rgba(136,96,80,0.08); }
-.etype-religious{ border-color: #D0A888; color: #D0A888; background: rgba(208,168,136,0.08); }
+.etype-culture  { border-color: #6B8CAA; color: #6B8CAA; background: rgba(107,140,170,0.08); }
+.etype-music    { border-color: #7A9CB8; color: #7A9CB8; background: rgba(122,156,184,0.08); }
+.etype-business { border-color: #3A6A8E; color: #3A6A8E; background: rgba(58,106,142,0.08); }
+.etype-religious{ border-color: #9EC3DC; color: #9EC3DC; background: rgba(158,195,220,0.08); }
 .etype-mega     { border-color: #4A7FA5; color: #4A7FA5; background: rgba(74,127,165,0.12); font-weight: 600; }
 
 .event-name {
@@ -2199,8 +2199,8 @@ body.light .nav-logout  { color: #8A8A8A; }
   letter-spacing: 0.4px;
   padding: 3px 8px;
   border-radius: 0;
-  background: rgba(160,104,72,0.12);
-  color: #A06848;
+  background: rgba(74,127,165,0.12);
+  color: #4A7FA5;
   white-space: nowrap;
 }
 
@@ -2281,10 +2281,10 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .bar-cal-day.src-live-google,
 .bar-cal-day.src-live-brand,
-.bar-cal-day.src-manual-override  { background: #A06848; color: #fff; }
-.bar-cal-day.src-live-booking      { background: #BC7A52; color: #fff; }
-.bar-cal-day.src-recent            { background: #C49A6C; color: #fff; }
-.bar-cal-day.src-live-expedia      { background: #A06848; color: #fff; }
+.bar-cal-day.src-manual-override  { background: #4A7FA5; color: #fff; }
+.bar-cal-day.src-live-booking      { background: #5A8CB0; color: #fff; }
+.bar-cal-day.src-recent            { background: #9EC3DC; color: #fff; }
+.bar-cal-day.src-live-expedia      { background: #4A7FA5; color: #fff; }
 .bar-cal-day.src-estimated         { background: rgba(255,255,255,0.04); color: var(--text-muted); border: 1px solid var(--border); }
 .bar-cal-day.src-unavailable       { background: transparent; color: var(--text-faint); border: 1px dashed var(--border); }
 
@@ -2333,8 +2333,8 @@ body.light .nav-logout  { color: #8A8A8A; }
   height: 8px;
   border-radius: 50%;
 }
-.dot-live-google, .dot-live-brand { background: #A06848; }
-.dot-live-booking                  { background: #BC7A52; }
+.dot-live-google, .dot-live-brand { background: #4A7FA5; }
+.dot-live-booking                  { background: #5A8CB0; }
 .dot-estimated                     { background: rgba(255,255,255,0.15); border: 1px solid var(--border); }
 .dot-unavailable                   { background: transparent; border: 1px dashed var(--border); }
 
@@ -2446,7 +2446,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding-bottom: 6px;
 }
 .fin-model-deduct td:not(:first-child) {
-  color: #C47A5A;
+  color: var(--text-muted);
 }
 .fin-rate-note {
   font-size: 10px;
@@ -2458,9 +2458,9 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 .fin-model-noi td {
   font-weight: 700;
-  color: #A06848;
-  background: rgba(160,104,72,0.08);
-  border-top: 2px solid rgba(160,104,72,0.25);
+  color: #4A7FA5;
+  background: rgba(74,127,165,0.08);
+  border-top: 2px solid rgba(74,127,165,0.25);
   font-size: 13px;
 }
 .fin-model-caprate td {
@@ -5159,7 +5159,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 .val-metric-readout .val-metric-label { color: var(--text-muted); }
 .val-metric-readout .val-metric-value { font-weight: 400; }
 .val-metric-good  { color: var(--positive); }
-.val-metric-mid   { color: #C8922A; }
+.val-metric-mid   { color: #4A7FA5; }
 .val-metric-poor  { color: var(--negative); }
 
 /* ── Hold period toggle ── */
@@ -5500,7 +5500,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   font-weight: 400;
 }
 .val-sens-high      { background: rgba(90,138,90,0.20);  color: #5A8A5A; }
-.val-sens-mid-high  { background: rgba(200,146,42,0.15); color: #C8922A; }
+.val-sens-mid-high  { background: rgba(74,127,165,0.15); color: #4A7FA5; }
 .val-sens-mid       { background: rgba(74,127,165,0.15); color: #4A7FA5; }
 .val-sens-low       { background: rgba(200,96,96,0.15);  color: #C86060; }
 .val-sens-current   { outline: 2px solid var(--accent); position: relative; z-index: 1; }

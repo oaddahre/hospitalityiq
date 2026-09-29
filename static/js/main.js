@@ -60,7 +60,7 @@ const LOCAL_BRAND_LOGOS = {
 const BRAND_CUSTOM_LOGOS = {
   'Zalagh Hotels Group':         { letter: 'Z',  bg: '#1A1A1A', color: '#4A7FA5' },
   'Farah Hotels':                { letter: 'F',  bg: '#1A1A1A', color: '#4A7FA5' },
-  'Independent Ultra Luxury':    { letter: 'UL', bg: '#1A1A1A', color: '#C8A96E' },
+  'Independent Ultra Luxury':    { letter: 'UL', bg: '#1A1A1A', color: '#4A7FA5' },
   'Independent Luxury':          { letter: 'IL', bg: '#1A1A1A', color: '#4A7FA5' },
   'Independent Upper Upscale':   { letter: 'UU', bg: '#1A1A1A', color: '#888888' },
   'Independent Upscale':         { letter: 'IU', bg: '#1A1A1A', color: '#666666' },
@@ -103,7 +103,7 @@ function ownerTypeBadge(type) {
     'State-Owned':  '#5A8A5A',
     'Listed':       '#4A7FA5',
     'Private':      '#888888',
-    'Family-Owned': '#C8922A',
+    'Family-Owned': '#4A7FA5',
   };
   var c = colors[type] || colors['Private'];
   return '<span class="owner-type-badge" style="color:' + c + '">' + fmt.esc(type) + '</span>';
@@ -171,11 +171,11 @@ function getBrandLogoImg(brandGroup, size=24) {
 
 const SEG_COLORS = {
   'Ultra Luxury': '#4A7FA5',
-  'Luxury':       '#A06848',
-  'Upper Upscale':'#886050',
-  'Upscale':      '#705040',
-  'Midscale':     '#584038',
-  'Economy':      '#403028',
+  'Luxury':       '#6B8CAA',
+  'Upper Upscale':'#7A9CB8',
+  'Upscale':      '#8CACC5',
+  'Midscale':     '#9EBDD0',
+  'Economy':      '#B0CDDD',
 };
 
 // Grayscale tier hierarchy (Notion-style monochrome base) — higher tiers
@@ -323,8 +323,8 @@ const brandsFilter   = { sort: 'total_keys', search: '', segment: 'all' };
 const brandsCompSort = { col: 'total_keys', dir: -1 };
 const BRANDS_STR_COLS = new Set(['brand_group']);
 const BRAND_PALETTE   = [
-  '#4A7FA5','#A06848','#886050','#705040','#584038',
-  '#3E2E28','#6A8A6A','#4A6E8A','#7A6A8A','#8A6A4A',
+  '#4A7FA5','#6B8CAA','#5A9AA8','#7A6A8A','#4A6E8A',
+  '#6A7A9A','#6A8A6A','#8A5A7A','#9A8A5A','#3A6A8E',
 ];
 const BRANDS_COMP_STR = new Set(['brand_group']);
 
@@ -1416,12 +1416,12 @@ async function renderOccCalendar(hotelId) {
     let bg, col, fw = '', border = '';
     if (occ !== null) {
       if (dark) {
-        if (occ >= 80) { bg = '#C8922A'; col = '#0A0A0A'; fw = '600'; }
-        else if (occ >= 60) { bg = '#7A5818'; col = '#F0EDE6'; fw = '500'; }
-        else { bg = '#1C1C1A'; col = '#888888'; border = '1px solid #7A5818'; }
+        if (occ >= 80) { bg = '#4A7FA5'; col = '#0A0A0A'; fw = '600'; }
+        else if (occ >= 60) { bg = '#2F5D7A'; col = '#F0EDE6'; fw = '500'; }
+        else { bg = '#1C1C1A'; col = '#888888'; border = '1px solid #2F5D7A'; }
       } else {
-        if (occ >= 80) { bg = '#FDF3E0'; col = '#6B4A10'; fw = '600'; border = '1px solid #C8922A'; }
-        else if (occ >= 60) { bg = '#FEF8EE'; col = '#8B6820'; border = '1px solid #E0B860'; }
+        if (occ >= 80) { bg = '#EAF2F8'; col = '#1A4A6B'; fw = '600'; border = '1px solid #4A7FA5'; }
+        else if (occ >= 60) { bg = '#F2F8FC'; col = '#3A6A8E'; border = '1px solid #9EC3DC'; }
         else { bg = '#FFFFFF'; col = '#8A8A8A'; border = '1px solid #ECECEC'; }
       }
     } else {
@@ -1952,8 +1952,8 @@ const EVENT_TYPE_CLASS = {
 };
 
 const EVENT_DOT_COLORS = {
-  Sport: '#4A7FA5', Culture: '#A06848', Music: '#C89070',
-  Business: '#886050', Religious: '#D0A888', Mega: '#4A7FA5',
+  Sport: '#4A7FA5', Culture: '#6B8CAA', Music: '#7A9CB8',
+  Business: '#3A6A8E', Religious: '#9EC3DC', Mega: '#4A7FA5',
 };
 
 function parseEventDate(dateStr) {
@@ -3760,11 +3760,11 @@ function adrCellStyle(adr, isCompSet = false) {
   }
   if (dark) {
     if (adr >= 6000) return {bg:'#4A7FA5', col:'#0A0A0A', fw:'600', border:''};
-    if (adr >= 4000) return {bg:'#6B4838', col:'#F0EDE6', fw:'500', border:''};
+    if (adr >= 4000) return {bg:'#2F5D7A', col:'#F0EDE6', fw:'500', border:''};
     return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #4A7FA5'};
   } else {
-    if (adr >= 6000) return {bg:'#F5EDE8', col:'#6B3828', fw:'600', border:'1px solid #A06848'};
-    if (adr >= 4000) return {bg:'#FAF2EE', col:'#A06848', fw:'',    border:'1px solid #C88870'};
+    if (adr >= 6000) return {bg:'#D8E8F2', col:'#1A4A6B', fw:'600', border:'1px solid #4A7FA5'};
+    if (adr >= 4000) return {bg:'#EAF2F8', col:'#3A6A8E', fw:'',    border:'1px solid #9EC3DC'};
     return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
   }
 }
@@ -3784,12 +3784,12 @@ function occCellStyle(occ, isCompSet = false) {
     }
   }
   if (dark) {
-    if (p >= 80) return {bg:'#C8922A', col:'#0A0A0A', fw:'600', border:''};
-    if (p >= 60) return {bg:'#7A5818', col:'#F0EDE6', fw:'500', border:''};
-    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #7A5818'};
+    if (p >= 80) return {bg:'#4A7FA5', col:'#0A0A0A', fw:'600', border:''};
+    if (p >= 60) return {bg:'#2F5D7A', col:'#F0EDE6', fw:'500', border:''};
+    return {bg:'#1C1C1A', col:'#888888', fw:'', border:'1px solid #2F5D7A'};
   } else {
-    if (p >= 80) return {bg:'#FDF3E0', col:'#6B4A10', fw:'600', border:'1px solid #C8922A'};
-    if (p >= 60) return {bg:'#FEF8EE', col:'#8B6820', fw:'',    border:'1px solid #E0B860'};
+    if (p >= 80) return {bg:'#EAF2F8', col:'#1A4A6B', fw:'600', border:'1px solid #4A7FA5'};
+    if (p >= 60) return {bg:'#F2F8FC', col:'#3A6A8E', fw:'',    border:'1px solid #9EC3DC'};
     return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
   }
 }
