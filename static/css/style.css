@@ -310,6 +310,20 @@ textarea::placeholder,
   display: block;
 }
 
+/* No CSS invert/brightness hacks needed — logo_white.png / logo_black.png
+   are dedicated dark/light assets, swapped via .logo-dark/.logo-light
+   below, not a single file tinted with a filter. */
+.nav-logo-img,
+.navbar-logo-img,
+.mk-nav-logo-img,
+.lp-footer-logo-img,
+.lp-mobile-panel-logo-img,
+.mobile-menu-logo-img,
+[class*="logo-img"],
+[class*="nav-logo"] img {
+  filter: none !important;
+}
+
 /* Dark mode (default): show the white wordmark. body.light flips these
    below — the "platform is always dark mode" assumption this used to
    encode no longer holds now that light mode is fully supported. */

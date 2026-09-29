@@ -705,6 +705,17 @@ html { scroll-behavior: smooth; }
   display: block;
 }
 
+/* No CSS invert/brightness hacks needed — logo_white.png / logo_black.png
+   are dedicated dark/light assets, swapped via .logo-dark/.logo-light
+   below, not a single file tinted with a filter. */
+.mk-nav-logo-img,
+.lp-footer-logo-img,
+.lp-mobile-panel-logo-img,
+[class*="logo-img"],
+[class*="nav-logo"] img {
+  filter: none !important;
+}
+
 .mk-nav-logo-img.logo-dark {
   display: block;
 }
