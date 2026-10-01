@@ -186,44 +186,7 @@ const SEG_COLORS = {
 // invisible against a light-mode white surface.
 function getSegmentBadgeHtml(segment) {
   if (!segment) return '—';
-  const dark = !document.body.classList.contains('light');
-  const segmentColorsDark = {
-    'Ultra Luxury': '#AAAAAA',
-    'Luxury': '#999999',
-    'Upper Upscale': '#888888',
-    'Upscale': '#777777',
-    'Midscale': '#666666',
-    'Economy': '#555555',
-  };
-  const segmentColorsLight = {
-    'Ultra Luxury': '#555555',
-    'Luxury': '#666666',
-    'Upper Upscale': '#777777',
-    'Upscale': '#888888',
-    'Midscale': '#999999',
-    'Economy': '#AAAAAA',
-  };
-  const segmentBgDark = {
-    'Ultra Luxury': 'rgba(240,240,238,0.08)',
-    'Luxury': 'rgba(240,240,238,0.07)',
-    'Upper Upscale': 'rgba(240,240,238,0.06)',
-    'Upscale': 'rgba(240,240,238,0.05)',
-    'Midscale': 'rgba(240,240,238,0.04)',
-    'Economy': 'rgba(240,240,238,0.03)',
-  };
-  const segmentBgLight = {
-    'Ultra Luxury': 'rgba(10,10,10,0.06)',
-    'Luxury': 'rgba(10,10,10,0.05)',
-    'Upper Upscale': 'rgba(10,10,10,0.045)',
-    'Upscale': 'rgba(10,10,10,0.04)',
-    'Midscale': 'rgba(10,10,10,0.035)',
-    'Economy': 'rgba(10,10,10,0.03)',
-  };
-  const segmentColors = dark ? segmentColorsDark : segmentColorsLight;
-  const segmentBg = dark ? segmentBgDark : segmentBgLight;
-  const color = segmentColors[segment] || (dark ? '#777777' : '#888888');
-  const bg = segmentBg[segment] || (dark ? 'rgba(240,240,238,0.05)' : 'rgba(10,10,10,0.04)');
-  return `<span style="color:${color};background:${bg};font-family:'Sweet Sans Pro',sans-serif;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;border-radius:999px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;">${fmt.esc(segment).toUpperCase()}</span>`;
+  return `<span style="color:#FFFFFF;background:#4A7FA5;font-family:'Sweet Sans Pro',sans-serif;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;border-radius:999px;padding:3px 10px;white-space:nowrap;display:inline-flex;align-items:center;">${fmt.esc(segment).toUpperCase()}</span>`;
 }
 
 const CITY_COORDS = {

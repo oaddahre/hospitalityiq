@@ -1292,12 +1292,15 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 .lp-section-tag {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: #4A7FA5;
-  display: block;
+  letter-spacing: 0.1em;
+  background: #4A7FA5;
+  color: #FFFFFF;
+  border-radius: 999px;
+  padding: 4px 12px;
+  display: inline-block;
 }
 .lp-section-meta {
   font-family: 'Sweet Sans Pro', sans-serif;
