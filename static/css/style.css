@@ -3129,7 +3129,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   flex-shrink: 0;
   transition: 150ms;
 }
-.chat-send-btn:hover, .chat-send:hover { background: #4A7FA5; color: #0A0A0A; }
+.chat-send-btn:hover, .chat-send:hover { background: #4A7FA5; color: #FFFFFF; }
 .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .insight-card {

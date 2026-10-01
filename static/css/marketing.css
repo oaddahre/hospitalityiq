@@ -760,7 +760,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
   transition: all 250ms;
   font-weight: 400;
 }
-.mk-nav-cta:hover { background: #4A7FA5; color: #0A0A0A; }
+.mk-nav-cta:hover { background: #4A7FA5; color: #FFFFFF; }
 
 .mk-nav-actions {
   display: flex;
@@ -964,7 +964,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   transition: background 200ms, color 200ms;
 }
 
-.lp-mobile-panel-register:hover { background: #4A7FA5; color: #0A0A0A; }
+.lp-mobile-panel-register:hover { background: #4A7FA5; color: #FFFFFF; }
 
 .lp-mobile-panel-footer {
   padding: 16px 20px;
@@ -1223,7 +1223,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   background: #4A7FA5;
-  color: #0A0A0A;
+  color: #FFFFFF;
   border: none;
   border-radius: 999px;
   padding: 13px 28px;
@@ -1267,7 +1267,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   transition: all 200ms;
   font-weight: 400;
 }
-.btn-accent-outline:hover { background: #4A7FA5; color: #0A0A0A; }
+.btn-accent-outline:hover { background: #4A7FA5; color: #FFFFFF; }
 
 /* ── SECTIONS ── */
 .lp-section { padding: 80px 48px; }
