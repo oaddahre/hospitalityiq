@@ -305,7 +305,7 @@ textarea::placeholder,
 }
 
 .navbar-logo-img {
-  height: 26px;
+  height: 20px;
   width: auto;
   display: block;
 }
@@ -4006,6 +4006,55 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-ai-commentary-label {
   font-family: 'Sweet Sans Pro', sans-serif; font-size: 9px; font-weight: 500; text-transform: uppercase;
   letter-spacing: 0.1em; color: var(--accent); margin-bottom: 8px;
+}
+
+/* ── AI Commentary follow-up question chips ── */
+.ai-followup-wrap {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 0.5px solid var(--border);
+}
+.ai-followup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ai-followup-chip {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 11px;
+  font-weight: 200;
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+  white-space: nowrap;
+}
+.ai-followup-chip:hover {
+  background: rgba(74,127,165,0.08);
+  color: #4A7FA5;
+  border-color: #4A7FA5;
+}
+.ai-followup-chip.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.ai-followup-response {
+  margin-top: 14px;
+  padding: 16px;
+  background: var(--surface);
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 200;
+  color: var(--text-muted);
+  line-height: 1.7;
+  border-left: 2px solid #4A7FA5;
+}
+.ai-followup-response.loading-text {
+  color: var(--text-faint);
+  font-style: italic;
 }
 
 .bench-refresh-btn {

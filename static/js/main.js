@@ -4186,6 +4186,10 @@ function renderBenchInsightCards() {
     <div id="bench-ai-commentary" class="bench-ai-commentary" style="display:none">
       <div class="bench-ai-commentary-label">✦ AI Commentary</div>
       <div id="bench-ai-commentary-body" class="bench-loading">Generating…</div>
+      <div class="ai-followup-wrap" id="benchFollowupWrap" style="display:none;">
+        <div class="ai-followup-chips" id="benchFollowupChips"></div>
+        <div id="benchFollowupResponse" class="ai-followup-response" style="display:none;"></div>
+      </div>
     </div>`;
 }
 
@@ -4200,9 +4204,15 @@ async function fetchBenchAICommentary() {
   const my   = aggDaily(getMyDaily());
   const comp = aggDaily(getCompDaily());
 
-  const prompt = `Brief strategic commentary on ${myH?.name} vs comp set (${compNames || 'none'}) — Marrakech Luxury, last ${benchState.dateRange} days.
+  // Shared data context, reused below both for the headline commentary
+  // and for grounding each follow-up question's own /api/chat call —
+  // without it the model has no idea which hotel or numbers a chip's
+  // short question ("why is this underperforming?") even refers to.
+  const dataContext = `${myH?.name || 'This hotel'} vs comp set (${compNames || 'none'}) — Marrakech Luxury, last ${benchState.dateRange} days.
 MY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
-COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}
+COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}`;
+
+  const prompt = `Brief strategic commentary on ${dataContext}
 2-3 sentences of strategic commentary. Cite specific numbers. Be direct.`;
 
   try {
@@ -4215,12 +4225,115 @@ COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.ad
     if (data.response) {
       body.className = 'bench-ai-content';
       body.innerHTML = mdRender(data.response);
+      renderBenchFollowupChips({ myH, compNames, my, comp, dataContext });
     } else {
       box.style.display = 'none';
     }
   } catch {
     box.style.display = 'none';
   }
+}
+
+// Suggested follow-up questions under the AI Commentary — context-aware
+// (named hotel, comp set, and whichever gap is actually live) rather
+// than generic placeholders, since benchState/benchmarkData are already
+// resolved by the time the commentary itself has rendered.
+function renderBenchFollowupChips({ myH, compNames, my, comp, dataContext }) {
+  const wrap  = document.getElementById('benchFollowupWrap');
+  const chipsEl = document.getElementById('benchFollowupChips');
+  if (!wrap || !chipsEl) return;
+
+  const hotelName = myH?.name || 'this hotel';
+  const compLabel = compNames || 'the comp set';
+  const hasComp   = benchState.compSet.size >= 3;
+
+  const adrDiffPct    = hasComp && comp.adr     ? (my.adr - comp.adr) / comp.adr * 100           : 0;
+  const occDiffPts    = hasComp                 ? (my.occupancy - comp.occupancy) * 100          : 0;
+  const revparDiffPct = hasComp && comp.revpar  ? (my.revpar - comp.revpar) / comp.revpar * 100  : 0;
+  // Compare ADR and occupancy gaps on a roughly common scale (both as a
+  // % swing) to pick which one the "driving the gap" question should
+  // actually ask about.
+  const biggerGapIsOcc = Math.abs(occDiffPts) > Math.abs(adrDiffPct);
+
+  const questions = hasComp ? [
+    {
+      label: revparDiffPct >= 0 ? `Why is ${hotelName} outperforming the comp set?` : `Why is ${hotelName} underperforming the comp set?`,
+      question: `Why is ${hotelName} ${revparDiffPct >= 0 ? 'outperforming' : 'underperforming'} the comp set (${compLabel})?`,
+    },
+    {
+      label: `How does this compare to last quarter?`,
+      question: `How does ${hotelName}'s current performance compare to last quarter?`,
+    },
+    {
+      label: biggerGapIsOcc ? `What is driving the occupancy gap?` : `What is driving the ADR gap?`,
+      question: `What is driving the ${biggerGapIsOcc ? 'occupancy' : 'ADR'} gap between ${hotelName} and ${compLabel}?`,
+    },
+  ] : [
+    { label: `How is ${hotelName} trending?`, question: `How is ${hotelName}'s recent performance trending?` },
+    { label: `How does this compare to last quarter?`, question: `How does ${hotelName}'s current performance compare to last quarter?` },
+    { label: `What should I watch for?`, question: `Given ${hotelName}'s current ADR and occupancy, what should I watch for?` },
+  ];
+
+  chipsEl.innerHTML = questions.map(q =>
+    `<button class="ai-followup-chip" data-question="${fmt.esc(q.question)}">${fmt.esc(q.label)}</button>`
+  ).join('');
+  wrap.style.display = 'block';
+
+  initBenchmarkFollowup(dataContext);
+}
+
+function initBenchmarkFollowup(dataContext) {
+  const chips     = document.querySelectorAll('#benchFollowupChips .ai-followup-chip');
+  const responseEl = document.getElementById('benchFollowupResponse');
+  if (!chips.length || !responseEl) return;
+
+  chips.forEach(chip => {
+    // Guard against double-binding if this ever re-renders onto the
+    // same DOM nodes instead of fresh innerHTML.
+    if (chip.dataset.wired) return;
+    chip.dataset.wired = '1';
+
+    chip.addEventListener('click', async () => {
+      const question = chip.dataset.question;
+
+      chips.forEach(c => c.classList.add('loading'));
+      responseEl.style.display = 'block';
+      responseEl.classList.add('loading-text');
+      responseEl.textContent = 'Thinking…';
+
+      // Ground the follow-up in the same benchmarking numbers the main
+      // commentary used — without this the model has no idea which
+      // hotel or comp set a short question like "why is this
+      // underperforming?" even refers to.
+      const content = dataContext
+        ? `${dataContext}\n\nQuestion: ${question}\n\nAnswer in 2-3 sentences, direct, citing specific numbers where relevant.`
+        : `${question}\n\nAnswer in 2-3 sentences, direct.`;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content }],
+          }),
+        });
+        const data = await res.json();
+        responseEl.classList.remove('loading-text');
+        if (data.response) {
+          responseEl.innerHTML = mdRender(data.response);
+        } else if (data.error === 'upgrade_required') {
+          responseEl.textContent = data.message || 'Upgrade required for more AI queries.';
+        } else {
+          responseEl.textContent = data.error || 'No response received.';
+        }
+      } catch (err) {
+        responseEl.classList.remove('loading-text');
+        responseEl.textContent = 'Something went wrong. Please try again.';
+      }
+
+      chips.forEach(c => c.classList.remove('loading'));
+    });
+  });
 }
 
 function renderBenchAIInsights() {
