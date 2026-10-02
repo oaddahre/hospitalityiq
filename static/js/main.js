@@ -102,7 +102,7 @@ function ownerTypeBadge(type) {
   var colors = {
     'State-Owned':  '#6B7A8D',
     'Listed':       '#4A7FA5',
-    'Private':      '#888888',
+    'Private':      '#4A9B6F',
     'Family-Owned': '#F2A33D',
   };
   var c = colors[type] || colors['Private'];
