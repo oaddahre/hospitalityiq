@@ -1060,26 +1060,6 @@ body.light .nav-logout  { color: #8A8A8A; }
 .seg-btn:hover  { border-color: var(--border-light); color: var(--text); }
 .seg-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
-/* Map segment filters only — plain functional pills, no color coding
-   (the city dots they filter are all the same gray now, so a colored
-   swatch per segment would no longer correspond to anything on the
-   map). Scoped to #map-seg-bar so the pipeline-status and brand-
-   segment filter bars, which share .seg-btn, keep their own look. */
-#map-seg-bar .seg-btn {
-  background: transparent;
-  font-size: 10px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 4px 12px;
-  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
-}
-#map-seg-bar .seg-btn.active {
-  background: #4A7FA5;
-  color: #FFFFFF;
-  border-color: #4A7FA5;
-}
-
 .seg-dot {
   width: 8px;
   height: 8px;
