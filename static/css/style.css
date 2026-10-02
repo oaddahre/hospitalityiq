@@ -1027,6 +1027,29 @@ body.light .nav-logout  { color: #8A8A8A; }
 .seg-btn:hover  { border-color: var(--border-light); color: var(--text); }
 .seg-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
+/* Map segment filters only — plain, monochrome functional pills, no
+   color coding by segment (the city dots they filter are all the
+   same gray, so a colored swatch here would no longer map to
+   anything on the map). Active state is pure text/bg contrast, not
+   an accent color, so it reads as "this filter is on" without
+   implying anything about segment colors. Scoped to #map-seg-bar so
+   the pipeline-status and brand-segment filter bars, which share
+   .seg-btn, keep their own look. */
+#map-seg-bar .seg-btn {
+  background: transparent;
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  transition: all 200ms ease;
+}
+#map-seg-bar .seg-btn.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
 .seg-dot {
   width: 8px;
   height: 8px;
