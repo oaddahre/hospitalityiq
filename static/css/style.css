@@ -762,36 +762,6 @@ body.light .nav-logout  { color: #8A8A8A; }
   letter-spacing: 0.12em !important;
 }
 
-/* Solid-fill pills, all tiers identical — overrides the transparent/
-   no-padding !important rule above specifically for .tier-badge,
-   which this rule's own !important + later position wins against. */
-.tier-badge {
-  background: #4A7FA5 !important;
-  color: #FFFFFF !important;
-  border: none !important;
-  border-radius: 999px !important;
-  padding: 3px 10px !important;
-  font-size: 10px !important;
-}
-.tier-badge--observer,
-.tier-badge--benchmarker,
-.tier-badge--advisory {
-  color: #FFFFFF !important;
-}
-.val-tier-pill {
-  background: #4A7FA5;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 999px;
-}
-.owner-type-badge {
-  background: #4A7FA5 !important;
-  color: #FFFFFF !important;
-  border: none !important;
-  border-radius: 999px !important;
-  padding: 3px 10px !important;
-}
-
 /* ─── Segment badges — original colored pill format ───────────── */
 .segment-ultra-luxury,
 .segment-luxury,
@@ -810,15 +780,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   padding: 2px 8px;
   white-space: nowrap;
 }
-.segment-ultra-luxury,
-.segment-luxury,
-.segment-upper-upscale,
-.segment-upscale,
-.segment-midscale,
-.segment-economy {
-  background: #4A7FA5;
-  color: #FFFFFF;
-}
+.segment-ultra-luxury  { background: rgba(74,127,165,0.15);  color: #4A7FA5; }
+.segment-luxury        { background: rgba(74,127,165,0.15);  color: #4A7FA5; }
+.segment-upper-upscale { background: rgba(90,138,90,0.15);   color: #5A8A5A; }
+.segment-upscale       { background: rgba(100,130,180,0.15); color: #6482B4; }
+.segment-midscale      { background: rgba(136,136,136,0.15); color: #888888; }
+.segment-economy       { background: rgba(100,100,100,0.12); color: #666666; }
 .status-badge { color: #5A8A5A; }
 .owner-type-badge { color: #888888; }
 .kodo-estimate-badge { color: var(--text-faint); }
@@ -1540,16 +1507,15 @@ body.light .nav-logout  { color: #8A8A8A; }
 /* ─── Pills and badges ────────────────────────────── */
 .badge, .pill, .event-type-pill, .news-cat, .pipe-status-pl,
 .dq-verified, .dq-estimate, .bench-demo-badge, .seg-pill {
-  background: #4A7FA5;
-  border: none;
-  color: #FFFFFF;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;
-  font-weight: 400;
-  padding: 3px 10px;
+  font-weight: 500;
+  padding: 2px 8px;
   border-radius: 999px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
@@ -1559,10 +1525,10 @@ body.light .nav-logout  { color: #8A8A8A; }
 .pill {
   cursor: pointer;
   white-space: nowrap;
-  transition: opacity 0.14s;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
 }
-.pill:hover  { opacity: 0.85; }
-.pill.active { background: #4A7FA5; color: #FFFFFF; }
+.pill:hover  { color: var(--text); border-color: var(--accent); }
+.pill.active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
 
 /* Status pills */
 .status-open, .status-active { border-color: #5A8A5A; color: #5A8A5A; }
@@ -2181,14 +2147,14 @@ body.light .nav-logout  { color: #8A8A8A; }
   white-space: nowrap;
 }
 .dq-verified {
-  background: #4A7FA5;
-  color: #FFFFFF;
-  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
 }
 .dq-estimate {
-  background: #4A7FA5;
-  color: #FFFFFF;
-  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
 }
 .hotel-hd-owner {
   font-family: 'Sweet Sans Pro', sans-serif;
@@ -3310,13 +3276,13 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .pipe-status-uc {
-  display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 400;
-  background: #4A7FA5; color: #FFFFFF; border: none;
+  display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 500;
+  background: transparent; color: #4A7FA5; border: 1px solid #4A7FA5;
   white-space: nowrap; flex-shrink: 0;
 }
 .pipe-status-pl {
-  display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 400;
-  background: #4A7FA5; color: #FFFFFF; border: none;
+  display: inline-block; padding: 2px 8px; border-radius: 999px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 500;
+  background: transparent; color: #666666; border: 1px solid #666666;
   white-space: nowrap; flex-shrink: 0;
 }
 
@@ -3343,9 +3309,9 @@ body.light .nav-logout  { color: #8A8A8A; }
 .news-author { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; color: var(--text-faint); }
 
 .news-cat {
-  display: inline-block; padding: 3px 10px; border-radius: 999px;
-  font-family: 'Sweet Sans Pro', sans-serif; font-size: 9px; font-weight: 400; text-transform: uppercase;
-  letter-spacing: 0.06em; border: none; background: #4A7FA5; color: #FFFFFF;
+  display: inline-block; padding: 2px 8px; border-radius: 0;
+  font-family: 'Sweet Sans Pro', sans-serif; font-size: 9px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.06em; border: 1px solid var(--border-light); background: transparent; color: var(--text-muted);
 }
 
 .news-headline {
@@ -3821,12 +3787,12 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-top: 5px;
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
-  font-weight: 400;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #4A7FA5;
-  color: #FFFFFF;
-  border: none;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
 }
 
 .bench-controls-row {
@@ -4759,11 +4725,11 @@ body.light .nav-logout  { color: #8A8A8A; }
 .brn-seg-pill {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 9px;
-  color: #FFFFFF;
-  background: #4A7FA5;
-  border: none;
-  border-radius: 999px;
-  padding: 3px 10px;
+  color: var(--text-muted);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 2px 6px;
 }
 
 .brn-card-share { display: flex; flex-direction: column; gap: 5px; }
