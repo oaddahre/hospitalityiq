@@ -4173,6 +4173,46 @@ function renderBenchInsightCards() {
   };
 
   const cards = [card1, card2, card3, card4];
+  const myH       = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
+  const hotelName = myH?.name || 'This hotel';
+  const compNames = [...benchState.compSet].map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
+  const compLabel = compNames || 'the comp set';
+
+  // Only ask about a gap when there actually is one to ask about — the
+  // ADR/occupancy tiles fall back to a plain "Snapshot" with no comp
+  // framing when noComp is true, so those two chips are skipped then;
+  // the RevPAR trend chip stands alone (first half vs second half of
+  // the same hotel) and doesn't depend on a comp set existing.
+  const followupChips = [];
+  if (!noComp) {
+    followupChips.push({
+      label: `Why is my ADR ${Math.abs(adrDiff).toFixed(1)}% ${adrDiff >= 0 ? 'above' : 'below'} the comp set?`,
+      question: `Why is ${hotelName}'s ADR ${Math.abs(adrDiff).toFixed(1)}% ${adrDiff >= 0 ? 'above' : 'below'} the comp set (${compLabel})?`,
+    });
+    followupChips.push({
+      label: occDiff >= 0
+        ? `What's driving my ${occDiff.toFixed(1)} pt occupancy lead?`
+        : `How can I close the ${Math.abs(occDiff).toFixed(1)} pt occupancy gap?`,
+      question: occDiff >= 0
+        ? `What is driving ${hotelName}'s ${occDiff.toFixed(1)} point occupancy lead over ${compLabel}?`
+        : `How can ${hotelName} close the ${Math.abs(occDiff).toFixed(1)} point occupancy gap vs ${compLabel}?`,
+    });
+  }
+  followupChips.push({
+    label: `What is driving the RevPAR ${improving ? 'improvement' : 'decline'}?`,
+    question: `What is driving ${hotelName}'s ${Math.abs(trendPct).toFixed(1)}% RevPAR ${improving ? 'improvement' : 'decline'} from the first to second half of the selected period?`,
+  });
+
+  // Same data context both the chips' /api/chat calls and the separate
+  // AI Commentary paragraph below ground their answers in — hotel,
+  // comp set, period, ADR/occupancy/RevPAR, and day-of-week spread,
+  // per the full context this screen actually has on hand.
+  const dataContext = `${hotelName} vs comp set (${compLabel}) — last ${benchState.dateRange} days.
+MY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
+COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}
+Best day: ${DOW_NAMES_FULL[bestDow.i]} (${bestDow.v.toFixed(1)}% occupancy), weakest day: ${DOW_NAMES_FULL[worstDow.i]} (${worstDow.v.toFixed(1)}% occupancy)
+RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixed(1)}% from first to second half (MAD ${Math.round(rev1).toLocaleString('en')} -> MAD ${Math.round(rev2).toLocaleString('en')})`;
+
   box.innerHTML = `
     <div class="bench-insight-grid">
       ${cards.map(c => `
@@ -4183,14 +4223,22 @@ function renderBenchInsightCards() {
           <span class="bench-insight-badge ${c.cls}">${fmt.esc(c.badge)}</span>
         </div>`).join('')}
     </div>
+    <div class="ai-followup-wrap" id="benchFollowupWrap">
+      <div class="ai-followup-chips" id="benchFollowupChips">
+        ${followupChips.map(q => `<button class="ai-followup-chip" data-question="${fmt.esc(q.question)}">${fmt.esc(q.label)}</button>`).join('')}
+      </div>
+      <div id="benchFollowupResponse" class="ai-followup-response" style="display:none;"></div>
+    </div>
     <div id="bench-ai-commentary" class="bench-ai-commentary" style="display:none">
       <div class="bench-ai-commentary-label">✦ AI Commentary</div>
       <div id="bench-ai-commentary-body" class="bench-loading">Generating…</div>
-      <div class="ai-followup-wrap" id="benchFollowupWrap" style="display:none;">
-        <div class="ai-followup-chips" id="benchFollowupChips"></div>
-        <div id="benchFollowupResponse" class="ai-followup-response" style="display:none;"></div>
-      </div>
     </div>`;
+
+  // Re-render safety: this whole box (tiles + chips + commentary) is
+  // rebuilt from scratch on every Refresh click and selection change,
+  // so handlers are re-attached fresh each time rather than assuming
+  // the DOM nodes from a previous render still exist.
+  initBenchmarkFollowup(dataContext);
 }
 
 async function fetchBenchAICommentary() {
@@ -4225,7 +4273,6 @@ COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.ad
     if (data.response) {
       body.className = 'bench-ai-content';
       body.innerHTML = mdRender(data.response);
-      renderBenchFollowupChips({ myH, compNames, my, comp, dataContext });
     } else {
       box.style.display = 'none';
     }
@@ -4234,54 +4281,11 @@ COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.ad
   }
 }
 
-// Suggested follow-up questions under the AI Commentary — context-aware
-// (named hotel, comp set, and whichever gap is actually live) rather
-// than generic placeholders, since benchState/benchmarkData are already
-// resolved by the time the commentary itself has rendered.
-function renderBenchFollowupChips({ myH, compNames, my, comp, dataContext }) {
-  const wrap  = document.getElementById('benchFollowupWrap');
-  const chipsEl = document.getElementById('benchFollowupChips');
-  if (!wrap || !chipsEl) return;
-
-  const hotelName = myH?.name || 'this hotel';
-  const compLabel = compNames || 'the comp set';
-  const hasComp   = benchState.compSet.size >= 3;
-
-  const adrDiffPct    = hasComp && comp.adr     ? (my.adr - comp.adr) / comp.adr * 100           : 0;
-  const occDiffPts    = hasComp                 ? (my.occupancy - comp.occupancy) * 100          : 0;
-  const revparDiffPct = hasComp && comp.revpar  ? (my.revpar - comp.revpar) / comp.revpar * 100  : 0;
-  // Compare ADR and occupancy gaps on a roughly common scale (both as a
-  // % swing) to pick which one the "driving the gap" question should
-  // actually ask about.
-  const biggerGapIsOcc = Math.abs(occDiffPts) > Math.abs(adrDiffPct);
-
-  const questions = hasComp ? [
-    {
-      label: revparDiffPct >= 0 ? `Why is ${hotelName} outperforming the comp set?` : `Why is ${hotelName} underperforming the comp set?`,
-      question: `Why is ${hotelName} ${revparDiffPct >= 0 ? 'outperforming' : 'underperforming'} the comp set (${compLabel})?`,
-    },
-    {
-      label: `How does this compare to last quarter?`,
-      question: `How does ${hotelName}'s current performance compare to last quarter?`,
-    },
-    {
-      label: biggerGapIsOcc ? `What is driving the occupancy gap?` : `What is driving the ADR gap?`,
-      question: `What is driving the ${biggerGapIsOcc ? 'occupancy' : 'ADR'} gap between ${hotelName} and ${compLabel}?`,
-    },
-  ] : [
-    { label: `How is ${hotelName} trending?`, question: `How is ${hotelName}'s recent performance trending?` },
-    { label: `How does this compare to last quarter?`, question: `How does ${hotelName}'s current performance compare to last quarter?` },
-    { label: `What should I watch for?`, question: `Given ${hotelName}'s current ADR and occupancy, what should I watch for?` },
-  ];
-
-  chipsEl.innerHTML = questions.map(q =>
-    `<button class="ai-followup-chip" data-question="${fmt.esc(q.question)}">${fmt.esc(q.label)}</button>`
-  ).join('');
-  wrap.style.display = 'block';
-
-  initBenchmarkFollowup(dataContext);
-}
-
+// Wires the follow-up chips built in renderBenchInsightCards() — called
+// there directly (not after the separate AI Commentary fetch above),
+// since the chips live under the 4 tiles and must survive/re-attach on
+// every Refresh or selection-change re-render regardless of whether the
+// commentary paragraph has loaded.
 function initBenchmarkFollowup(dataContext) {
   const chips     = document.querySelectorAll('#benchFollowupChips .ai-followup-chip');
   const responseEl = document.getElementById('benchFollowupResponse');
