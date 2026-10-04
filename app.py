@@ -58,6 +58,21 @@ print(
     f"secret_key_set={bool(os.environ.get('SECRET_KEY'))}"
 )
 
+@app.context_processor
+def inject_asset_version():
+    """Cache-busting query string for static CSS/JS — tied to each
+    file's own mtime, so it updates automatically on every future edit
+    instead of a hardcoded timestamp someone has to remember to bump.
+    Usage in templates: /static/css/style.css?v={{ asset_version('css/style.css') }}
+    """
+    def asset_version(path):
+        try:
+            full_path = os.path.join(app.static_folder, path)
+            return str(int(os.path.getmtime(full_path)))
+        except OSError:
+            return '1'
+    return dict(asset_version=asset_version)
+
 login_manager = LoginManager(app)
 login_manager.login_view = "login_page"
 login_manager.login_message = ""
