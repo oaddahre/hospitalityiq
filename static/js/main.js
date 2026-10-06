@@ -4100,6 +4100,9 @@ function renderBenchMonthlyTable() {
 const DOW_NAMES_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DOW_NAMES_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
+// Ledger row shape: { label, text, value, sign } — sign is 'pos'/'neg'/
+// null (neutral, default text color), decided from the underlying
+// number, never from which row it is.
 function renderBenchInsightCards() {
   const box    = document.getElementById('bench-ai-insights');
   const my     = aggDaily(getMyDaily());
@@ -4107,92 +4110,89 @@ function renderBenchInsightCards() {
   const noComp = benchState.compSet.size < 3;
   const myDailyData = getMyDaily();
 
-  // ── Card 1: ADR ──────────────────────────────────────────────
-  const adrDiff  = noComp ? 0 : (my.adr - comp.adr) / comp.adr * 100;
-  const card1 = {
-    icon: '📈',
-    headline: noComp ? 'ADR Snapshot' : adrDiff >= 0 ? 'ADR Leadership' : 'ADR Gap',
-    body: noComp
-      ? `Your ADR stands at MAD ${Math.round(my.adr).toLocaleString('en')}. Select a comp set to benchmark against the market.`
-      : adrDiff >= 0
-        ? `Your ADR leads the comp set by ${adrDiff.toFixed(1)}% — MAD ${Math.round(my.adr).toLocaleString('en')} vs comp avg MAD ${Math.round(comp.adr).toLocaleString('en')}.`
-        : `Your ADR trails the comp set by ${Math.abs(adrDiff).toFixed(1)}% — MAD ${Math.round(my.adr).toLocaleString('en')} vs comp avg MAD ${Math.round(comp.adr).toLocaleString('en')}.`,
-    badge: noComp ? `MAD ${Math.round(my.adr).toLocaleString('en')}` : (adrDiff >= 0 ? '+' : '') + adrDiff.toFixed(1) + '% vs comp',
-    cls: noComp ? 'bib-amber' : adrDiff >= 2 ? 'bib-green' : adrDiff > -2 ? 'bib-amber' : 'bib-red',
-  };
+  const myH       = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
+  const hotelName = myH?.name || 'This hotel';
+  const compNames = [...benchState.compSet].map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
+  const compLabel = compNames || 'the comp set';
 
-  // ── Card 2: Occupancy ────────────────────────────────────────
+  const rows = [];
+
+  // ── Row 1: ADR vs comp set ───────────────────────────────────
+  const adrDiff = noComp ? 0 : (my.adr - comp.adr) / comp.adr * 100;
+  rows.push(noComp ? {
+    label: 'ADR',
+    text: `MAD ${Math.round(my.adr).toLocaleString('en')}. Select a comp set to benchmark against the market.`,
+    value: `MAD ${Math.round(my.adr).toLocaleString('en')}`,
+    sign: null,
+  } : {
+    label: 'ADR vs comp set',
+    text: `MAD ${Math.round(my.adr).toLocaleString('en')} against a comp average of MAD ${Math.round(comp.adr).toLocaleString('en')}.`,
+    value: (adrDiff >= 0 ? '+' : '') + adrDiff.toFixed(1) + '%',
+    sign: adrDiff > 0 ? 'pos' : adrDiff < 0 ? 'neg' : null,
+  });
+
+  // ── Row 2: Occupancy vs comp set ─────────────────────────────
   const occDiff = noComp ? 0 : (my.occupancy - comp.occupancy) * 100;
-  const card2 = {
-    icon: '🏨',
-    headline: noComp ? 'Occupancy Snapshot' : occDiff >= 0 ? 'Occupancy Advantage' : 'Occupancy Gap',
-    body: noComp
-      ? `Running at ${(my.occupancy * 100).toFixed(1)}% occupancy. Add a comp set to see relative performance.`
-      : occDiff >= 0
-        ? `Occupancy leads comp by ${occDiff.toFixed(1)} pts (${(my.occupancy*100).toFixed(1)}% vs ${(comp.occupancy*100).toFixed(1)}%), indicating stronger demand capture.`
-        : `Occupancy trails comp by ${Math.abs(occDiff).toFixed(1)} pts (${(my.occupancy*100).toFixed(1)}% vs ${(comp.occupancy*100).toFixed(1)}%) — review pricing and distribution mix.`,
-    badge: noComp ? `${(my.occupancy*100).toFixed(1)}%` : (occDiff >= 0 ? '+' : '') + occDiff.toFixed(1) + ' pts vs comp',
-    cls: noComp ? 'bib-amber' : occDiff >= 2 ? 'bib-green' : occDiff > -2 ? 'bib-amber' : 'bib-red',
-  };
+  rows.push(noComp ? {
+    label: 'Occupancy',
+    text: `Running at ${(my.occupancy * 100).toFixed(1)}% occupancy. Add a comp set to see relative performance.`,
+    value: `${(my.occupancy * 100).toFixed(1)}%`,
+    sign: null,
+  } : {
+    label: 'Occupancy vs comp set',
+    text: `${(my.occupancy*100).toFixed(1)}% against a comp average of ${(comp.occupancy*100).toFixed(1)}%.`,
+    value: (occDiff >= 0 ? '+' : '') + occDiff.toFixed(1) + ' pts',
+    sign: occDiff > 0 ? 'pos' : occDiff < 0 ? 'neg' : null,
+  });
 
-  // ── Card 3: Best day of week ─────────────────────────────────
+  // ── Row 3: Day-of-week pattern (neutral — informational, not a gap) ──
   const dowBuckets = Array(7).fill(null).map(() => []);
   myDailyData.forEach(d => {
     const dow = (new Date(d.date + 'T00:00:00').getDay() + 6) % 7;
     dowBuckets[dow].push(d.occupancy * 100);
   });
-  const dowAvg     = dowBuckets.map(arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0);
-  const validDows  = dowAvg.map((v, i) => ({ v, i })).filter(x => x.v > 0);
-  const bestDow    = validDows.reduce((a, b) => b.v > a.v ? b : a, { v: 0, i: 0 });
-  const worstDow   = validDows.reduce((a, b) => b.v < a.v ? b : a, { v: 100, i: 0 });
-  const spread     = bestDow.v - worstDow.v;
-  const isWkndPeak = bestDow.i >= 4;
-  const card3 = {
-    icon: '📅',
-    headline: isWkndPeak ? 'Weekend Strength' : 'Midweek Leader',
-    body: `${DOW_NAMES_FULL[bestDow.i]} is your strongest day at ${bestDow.v.toFixed(1)}% vs ${DOW_NAMES_SHORT[worstDow.i]} at ${worstDow.v.toFixed(1)}%. ${spread > 15 ? 'Wide spread — targeted midweek promotions could close the gap.' : 'Consistent demand across the week.'}`,
-    badge: `${DOW_NAMES_SHORT[bestDow.i]} peaks at ${bestDow.v.toFixed(0)}%`,
-    cls: 'bib-amber',
-  };
+  const dowAvg    = dowBuckets.map(arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0);
+  const validDows = dowAvg.map((v, i) => ({ v, i })).filter(x => x.v > 0);
+  const bestDow   = validDows.reduce((a, b) => b.v > a.v ? b : a, { v: 0, i: 0 });
+  const worstDow  = validDows.reduce((a, b) => b.v < a.v ? b : a, { v: 100, i: 0 });
+  rows.push({
+    label: 'Day-of-week pattern',
+    text: `${DOW_NAMES_FULL[bestDow.i]} is the strongest day at ${bestDow.v.toFixed(1)}%, against ${DOW_NAMES_SHORT[worstDow.i]} at ${worstDow.v.toFixed(1)}%.`,
+    value: `${DOW_NAMES_SHORT[bestDow.i]} ${Math.round(bestDow.v)}%`,
+    sign: null,
+  });
 
-  // ── Card 4: RevPAR trend ─────────────────────────────────────
+  // ── Row 4: RevPAR trend ──────────────────────────────────────
   const sorted  = [...myDailyData].sort((a, b) => a.date.localeCompare(b.date));
   const half    = Math.floor(sorted.length / 2);
   const firstH  = sorted.slice(0, half);
   const secondH = sorted.slice(half);
   const rev1    = firstH.length  ? firstH.reduce((s,d)=>s+d.revpar,0)/firstH.length   : 0;
   const rev2    = secondH.length ? secondH.reduce((s,d)=>s+d.revpar,0)/secondH.length  : 0;
-  const trendPct = rev1 > 0 ? (rev2 - rev1) / rev1 * 100 : 0;
+  const trendPct  = rev1 > 0 ? (rev2 - rev1) / rev1 * 100 : 0;
   const improving = trendPct >= 0;
-  const card4 = {
-    icon: improving ? '💡' : '⚠️',
-    headline: improving ? 'Improving Momentum' : 'Declining Trend',
-    body: `RevPAR ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixed(1)}% from the first to second half of the selected period (MAD ${Math.round(rev1).toLocaleString('en')} → MAD ${Math.round(rev2).toLocaleString('en')}).`,
-    badge: (improving ? '+' : '') + trendPct.toFixed(1) + '% vs prior period',
-    cls: improving ? 'bib-green' : 'bib-red',
-  };
+  rows.push({
+    label: 'RevPAR trend',
+    text: `MAD ${Math.round(rev1).toLocaleString('en')} in the first half of the period against MAD ${Math.round(rev2).toLocaleString('en')} in the second half.`,
+    value: (trendPct >= 0 ? '+' : '') + trendPct.toFixed(1) + '%',
+    sign: trendPct > 0 ? 'pos' : trendPct < 0 ? 'neg' : null,
+  });
 
-  const cards = [card1, card2, card3, card4];
-  const myH       = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
-  const hotelName = myH?.name || 'This hotel';
-  const compNames = [...benchState.compSet].map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
-  const compLabel = compNames || 'the comp set';
-
-  // Only ask about a gap when there actually is one to ask about — the
-  // ADR/occupancy tiles fall back to a plain "Snapshot" with no comp
-  // framing when noComp is true, so those two chips are skipped then;
-  // the RevPAR trend chip stands alone (first half vs second half of
-  // the same hotel) and doesn't depend on a comp set existing.
+  // Follow-up chips — built from the exact same adrDiff/occDiff/trendPct
+  // used for the rows above, not re-fetched or hardcoded. Only ask about
+  // a gap when there's a real comp set to compare against; the RevPAR
+  // trend chip stands alone (first half vs second half of the same
+  // hotel) and doesn't depend on one existing.
   const followupChips = [];
   if (!noComp) {
     followupChips.push({
-      label: `Why is my ADR ${Math.abs(adrDiff).toFixed(1)}% ${adrDiff >= 0 ? 'above' : 'below'} the comp set?`,
+      label: `Why is ADR ${Math.abs(adrDiff).toFixed(1)}% ${adrDiff >= 0 ? 'above' : 'below'} the comp set?`,
       question: `Why is ${hotelName}'s ADR ${Math.abs(adrDiff).toFixed(1)}% ${adrDiff >= 0 ? 'above' : 'below'} the comp set (${compLabel})?`,
     });
     followupChips.push({
       label: occDiff >= 0
-        ? `What's driving my ${occDiff.toFixed(1)} pt occupancy lead?`
-        : `How can I close the ${Math.abs(occDiff).toFixed(1)} pt occupancy gap?`,
+        ? `What's driving the ${occDiff.toFixed(1)} pt occupancy lead?`
+        : `How can we close the occupancy gap?`,
       question: occDiff >= 0
         ? `What is driving ${hotelName}'s ${occDiff.toFixed(1)} point occupancy lead over ${compLabel}?`
         : `How can ${hotelName} close the ${Math.abs(occDiff).toFixed(1)} point occupancy gap vs ${compLabel}?`,
@@ -4203,10 +4203,8 @@ function renderBenchInsightCards() {
     question: `What is driving ${hotelName}'s ${Math.abs(trendPct).toFixed(1)}% RevPAR ${improving ? 'improvement' : 'decline'} from the first to second half of the selected period?`,
   });
 
-  // Same data context both the chips' /api/chat calls and the separate
-  // AI Commentary paragraph below ground their answers in — hotel,
-  // comp set, period, ADR/occupancy/RevPAR, and day-of-week spread,
-  // per the full context this screen actually has on hand.
+  // Full data context grounding each chip's /api/chat call — hotel,
+  // comp set, period, ADR/occupancy/RevPAR, and day-of-week spread.
   const dataContext = `${hotelName} vs comp set (${compLabel}) — last ${benchState.dateRange} days.
 MY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
 COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}
@@ -4214,13 +4212,12 @@ Best day: ${DOW_NAMES_FULL[bestDow.i]} (${bestDow.v.toFixed(1)}% occupancy), wea
 RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixed(1)}% from first to second half (MAD ${Math.round(rev1).toLocaleString('en')} -> MAD ${Math.round(rev2).toLocaleString('en')})`;
 
   box.innerHTML = `
-    <div class="bench-insight-grid">
-      ${cards.map(c => `
-        <div class="bench-insight-card">
-          <div class="bench-insight-icon">${c.icon}</div>
-          <div class="bench-insight-headline">${fmt.esc(c.headline)}</div>
-          <div class="bench-insight-body">${fmt.esc(c.body)}</div>
-          <span class="bench-insight-badge ${c.cls}">${fmt.esc(c.badge)}</span>
+    <div class="insight-rows">
+      ${rows.map(r => `
+        <div class="insight-row">
+          <span class="insight-label">${fmt.esc(r.label)}</span>
+          <span class="insight-text">${fmt.esc(r.text)}</span>
+          <span class="insight-value${r.sign ? ' is-' + r.sign : ''}">${fmt.esc(r.value)}</span>
         </div>`).join('')}
     </div>
     <div class="ai-followup-wrap" id="benchFollowupWrap">
@@ -4228,57 +4225,13 @@ RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixe
         ${followupChips.map(q => `<button class="ai-followup-chip" data-question="${fmt.esc(q.question)}">${fmt.esc(q.label)}</button>`).join('')}
       </div>
       <div id="benchFollowupResponse" class="ai-followup-response" style="display:none;"></div>
-    </div>
-    <div id="bench-ai-commentary" class="bench-ai-commentary" style="display:none">
-      <div class="bench-ai-commentary-label">✦ AI Commentary</div>
-      <div id="bench-ai-commentary-body" class="bench-loading">Generating…</div>
     </div>`;
 
-  // Re-render safety: this whole box (tiles + chips + commentary) is
-  // rebuilt from scratch on every Refresh click and selection change,
-  // so handlers are re-attached fresh each time rather than assuming
-  // the DOM nodes from a previous render still exist.
+  // Re-render safety: this whole box (rows + chips) is rebuilt from
+  // scratch on every Refresh click and selection change, so handlers
+  // are re-attached fresh each time rather than assuming the DOM nodes
+  // from a previous render still exist.
   initBenchmarkFollowup(dataContext);
-}
-
-async function fetchBenchAICommentary() {
-  const box  = document.getElementById('bench-ai-commentary');
-  const body = document.getElementById('bench-ai-commentary-body');
-  if (!box || !body) return;
-  box.style.display = 'block';
-
-  const myH      = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
-  const compNames = [...benchState.compSet].map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
-  const my   = aggDaily(getMyDaily());
-  const comp = aggDaily(getCompDaily());
-
-  // Shared data context, reused below both for the headline commentary
-  // and for grounding each follow-up question's own /api/chat call —
-  // without it the model has no idea which hotel or numbers a chip's
-  // short question ("why is this underperforming?") even refers to.
-  const dataContext = `${myH?.name || 'This hotel'} vs comp set (${compNames || 'none'}) — Marrakech Luxury, last ${benchState.dateRange} days.
-MY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
-COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}`;
-
-  const prompt = `Brief strategic commentary on ${dataContext}
-2-3 sentences of strategic commentary. Cite specific numbers. Be direct.`;
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
-    });
-    const data = await res.json();
-    if (data.response) {
-      body.className = 'bench-ai-content';
-      body.innerHTML = mdRender(data.response);
-    } else {
-      box.style.display = 'none';
-    }
-  } catch {
-    box.style.display = 'none';
-  }
 }
 
 // Wires the follow-up chips built in renderBenchInsightCards() — called
@@ -4342,7 +4295,6 @@ function initBenchmarkFollowup(dataContext) {
 
 function renderBenchAIInsights() {
   renderBenchInsightCards();
-  fetchBenchAICommentary();
 }
 
 // Date range pill events
