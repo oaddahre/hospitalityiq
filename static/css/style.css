@@ -178,8 +178,10 @@ button, .btn {
    its own dedicated box/icon-clearance styling further down, which
    this !important reset was silently clobbering since input[type="text"]
    still matched it even after being dropped from the class list here,
-   causing the search icon to overlap the input text) ─── */
-input[type="text"]:not(.hotels-search-input),
+   causing the search icon to overlap the input text). .report-search-
+   input excluded for the same reason — it hit the identical bug since
+   it was never added here when built. ─── */
+input[type="text"]:not(.hotels-search-input):not(.report-search-input),
 input[type="email"],
 input[type="number"],
 input[type="password"],
@@ -1301,14 +1303,18 @@ body.light .nav-logout  { color: #8A8A8A; }
 /* Hotels enhanced search */
 .hotels-search-wrap {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 .hotels-search-wrap .search-icon {
   position: absolute;
-  left: 13px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  flex-shrink: 0;
   color: var(--text-muted);
   pointer-events: none;
 }
@@ -1318,7 +1324,10 @@ body.light .nav-logout  { color: #8A8A8A; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0;
-  padding: 0 42px 0 42px;
+  padding-left: 42px !important;
+  padding-right: 16px;
+  padding-top: 0;
+  padding-bottom: 0;
   color: var(--text);
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 14px;
@@ -4009,16 +4018,20 @@ body.light .nav-logout  { color: #8A8A8A; }
 
 .report-search-wrap {
   position: relative;
+  display: flex;
+  align-items: center;
   max-width: 320px;
   margin-top: 14px;
 }
 .report-search-wrap .search-icon {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  flex-shrink: 0;
   color: var(--text-muted);
   pointer-events: none;
 }
@@ -4028,7 +4041,11 @@ body.light .nav-logout  { color: #8A8A8A; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 0 16px 0 42px;
+  padding-left: 42px !important;
+  padding-right: 16px;
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
   color: var(--text);
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
