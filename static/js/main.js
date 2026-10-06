@@ -4103,7 +4103,17 @@ const DOW_NAMES_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 // Ledger row shape: { label, text, value, sign } — sign is 'pos'/'neg'/
 // null (neutral, default text color), decided from the underlying
 // number, never from which row it is.
-function renderBenchInsightCards() {
+// Cache for the AI summary paragraph, keyed to the hotel/comp-set/date-
+// range combination it was generated for — so navigating away from and
+// back to this screen (which re-runs this whole function) reuses the
+// existing text instead of firing a new /api/chat call, and only an
+// actual selection change or an explicit Refresh click regenerates it.
+let benchCommentaryCache = { key: null, html: null };
+function benchSelectionKey() {
+  return `${benchState.myHotelId}|${[...benchState.compSet].sort().join(',')}|${benchState.dateRange}`;
+}
+
+function renderBenchInsightCards(forceRefresh = false) {
   const box    = document.getElementById('bench-ai-insights');
   const my     = aggDaily(getMyDaily());
   const comp   = aggDaily(getCompDaily());
@@ -4211,7 +4221,16 @@ COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.ad
 Best day: ${DOW_NAMES_FULL[bestDow.i]} (${bestDow.v.toFixed(1)}% occupancy), weakest day: ${DOW_NAMES_FULL[worstDow.i]} (${worstDow.v.toFixed(1)}% occupancy)
 RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixed(1)}% from first to second half (MAD ${Math.round(rev1).toLocaleString('en')} -> MAD ${Math.round(rev2).toLocaleString('en')})`;
 
+  // If this exact selection already has a cached summary and this
+  // isn't an explicit Refresh, render it immediately with no network
+  // call; otherwise show a loading placeholder and fetch fresh below.
+  const summaryKey  = benchSelectionKey();
+  const cacheHit    = !forceRefresh && benchCommentaryCache.key === summaryKey && benchCommentaryCache.html;
+  const summaryHtml = cacheHit ? benchCommentaryCache.html : 'Generating…';
+  const summaryCls  = cacheHit ? 'bench-ai-summary' : 'bench-ai-summary bench-loading';
+
   box.innerHTML = `
+    <div class="${summaryCls}" id="bench-ai-summary">${summaryHtml}</div>
     <div class="insight-rows">
       ${rows.map(r => `
         <div class="insight-row">
@@ -4227,11 +4246,49 @@ RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixe
       <div id="benchFollowupResponse" class="ai-followup-response" style="display:none;"></div>
     </div>`;
 
-  // Re-render safety: this whole box (rows + chips) is rebuilt from
-  // scratch on every Refresh click and selection change, so handlers
-  // are re-attached fresh each time rather than assuming the DOM nodes
-  // from a previous render still exist.
+  // Re-render safety: this whole box (summary + rows + chips) is
+  // rebuilt from scratch on every Refresh click and selection change,
+  // so handlers are re-attached fresh each time rather than assuming
+  // the DOM nodes from a previous render still exist.
   initBenchmarkFollowup(dataContext);
+  if (!cacheHit) fetchBenchAISummary(summaryKey, dataContext);
+}
+
+// Generates the plain-text strategic summary shown above the ledger.
+// Only called when renderBenchInsightCards() didn't already have a
+// cached result for this exact selection (see benchCommentaryCache).
+async function fetchBenchAISummary(key, dataContext) {
+  const el = document.getElementById('bench-ai-summary');
+  if (!el) return;
+
+  const prompt = `Brief strategic commentary on ${dataContext}
+2-3 sentences of strategic commentary. Cite specific numbers. Be direct.`;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+    });
+    const data = await res.json();
+    // Bail if the selection moved on while this request was in flight —
+    // don't overwrite a newer summary (or a newer "Generating…") with a
+    // stale response for a selection the user has already left.
+    if (benchSelectionKey() !== key) return;
+    if (data.response) {
+      const html = mdRender(data.response);
+      benchCommentaryCache = { key, html };
+      el.className = 'bench-ai-summary';
+      el.innerHTML = html;
+    } else {
+      el.className = 'bench-ai-summary';
+      el.textContent = '';
+    }
+  } catch {
+    if (benchSelectionKey() !== key) return;
+    el.className = 'bench-ai-summary';
+    el.textContent = '';
+  }
 }
 
 // Wires the follow-up chips built in renderBenchInsightCards() — called
@@ -4293,8 +4350,8 @@ function initBenchmarkFollowup(dataContext) {
   });
 }
 
-function renderBenchAIInsights() {
-  renderBenchInsightCards();
+function renderBenchAIInsights(forceRefresh = false) {
+  renderBenchInsightCards(forceRefresh);
 }
 
 // Date range pill events
@@ -4312,7 +4369,7 @@ document.getElementById('bench-date-bar').addEventListener('click', e => {
 });
 
 // AI refresh button
-document.getElementById('bench-ai-refresh').addEventListener('click', renderBenchAIInsights);
+document.getElementById('bench-ai-refresh').addEventListener('click', () => renderBenchAIInsights(true));
 
 // ─── Global Search ────────────────────────────────────────────────
 

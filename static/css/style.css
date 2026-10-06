@@ -3965,6 +3965,20 @@ body.light .nav-logout  { color: #8A8A8A; }
 .bench-ai-box { padding: 4px 0 8px; min-height: 60px; }
 .bench-loading { font-family: 'Sweet Sans Pro', sans-serif; color: var(--text-muted); font-size: 13px; padding: 12px 0; }
 
+/* AI Insights summary — plain text above the ledger, no box/background,
+   no label/glyph. */
+.bench-ai-summary {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 200;
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding: 0 0 16px;
+}
+.bench-ai-summary p { margin: 0 0 6px; }
+.bench-ai-summary p:last-child { margin-bottom: 0; }
+.bench-ai-summary strong { color: var(--text); }
+
 /* AI Insights header row — "INSIGHTS" reuses .chart-title/.chart-unit's
    base typography, these two just correct weight/size/case/spacing for
    this specific header without touching those shared classes. */
