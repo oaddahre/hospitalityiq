@@ -2689,11 +2689,14 @@ document.getElementById('pipe-cat-filter').addEventListener('change', e => {
 });
 
 // ─── Editorial / News screen ──────────────────────────────────────
+// Main list (renderNewsList etc.) follows the same filterable-list
+// framework as Reports (see initReports/renderReportList) — pills
+// instead of quadrants, one row per article, no tiles. The article
+// detail view below (showArticleDetail/closeArticleDetail) is
+// untouched by that redesign and still renders a full reading view.
 let newsData    = null;
 let newsInited  = false;
-let newsCatFilter = 'all';
-let newsPage    = 1;
-const NEWS_PER_PAGE = 6;
+let newsFilterState = { category: 'all', period: 'all', search: '' };
 
 function newsDateFmt(d) {
   if (!d) return '';
@@ -2712,6 +2715,34 @@ function edCatPill(cat, type) {
   return `<span class="${cls}">${fmt.esc(label)}</span>`;
 }
 
+// Category colors — same shared CATEGORY_COLORS palette as Owners'
+// portfolio types and Events' categories (see ownerTypeBadge/
+// EVENT_TYPE_COLOR above). Keys are the real `category` values seen
+// in news.json; anything else falls back to slate.
+const NEWS_CATEGORY_COLOR = {
+  'Market Intelligence': CATEGORY_COLORS.blue,
+  'Pipeline':            CATEGORY_COLORS.green,
+  'Openings':            CATEGORY_COLORS.orange,
+  'Interviews':          CATEGORY_COLORS.violet,
+};
+const NEWS_CATEGORY_COLOR_FALLBACK = CATEGORY_COLORS.slate;
+
+const NEWS_PERIOD_OPTIONS = [
+  { label: 'All time',      value: 'all' },
+  { label: 'This week',     value: 'week' },
+  { label: 'This month',    value: 'month' },
+  { label: 'Last 3 months', value: '3months' },
+];
+
+function newsMatchesPeriod(dateStr, period) {
+  if (period === 'all' || !dateStr) return true;
+  const days = (new Date() - new Date(dateStr + 'T00:00:00')) / 86400000;
+  if (period === 'week')     return days >= 0 && days <= 7;
+  if (period === 'month')    return days >= 0 && days <= 31;
+  if (period === '3months')  return days >= 0 && days <= 93;
+  return true;
+}
+
 async function initNews() {
   if (!newsInited) {
     try {
@@ -2720,124 +2751,111 @@ async function initNews() {
       newsInited = true;
       buildSearchIndex();
     } catch {
-      document.getElementById('ed-grid').innerHTML = '<p class="news-loading">Failed to load articles.</p>';
+      document.getElementById('news-list').innerHTML = '<p class="bench-loading">Failed to load articles.</p>';
       return;
     }
+    buildNewsFilters();
+    wireNewsSearch();
   }
-  renderEditorialMain();
+  renderNewsList();
 }
 
-function filteredEditorialArticles() {
-  if (!newsData) return [];
-  const all = newsData.all || [];
-  if (newsCatFilter === 'all') return all.filter(a => !a.featured);
-  if (newsCatFilter === 'Sponsored') return all.filter(a => a.type === 'sponsored' || a.type === 'partner');
-  return all.filter(a => a.category === newsCatFilter && a.type === 'editorial');
+// Builds the Category and Period pill rows from the real published
+// articles — category pills are derived from the actual `category`
+// values present (so a category with zero articles never appears);
+// Period is a fixed, evergreen set of options and always shows all
+// four regardless of current counts (dropping e.g. "This week" just
+// because nothing happens to be published this week would make the
+// filter look broken rather than merely empty).
+function buildNewsFilters() {
+  const catEl = document.getElementById('news-category-filters');
+  const perEl = document.getElementById('news-period-filters');
+  if (!catEl || !perEl) return;
+
+  const published = (newsData && newsData.all) || [];
+  const categories = [...new Set(published.map(a => a.category).filter(Boolean))];
+
+  catEl.innerHTML = ['All', ...categories].map((c, i) =>
+    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="category" data-value="${i === 0 ? 'all' : fmt.esc(c)}">${fmt.esc(c)}</button>`
+  ).join('');
+
+  perEl.innerHTML = NEWS_PERIOD_OPTIONS.map((p, i) =>
+    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="period" data-value="${p.value}">${fmt.esc(p.label)}</button>`
+  ).join('');
+
+  [catEl, perEl].forEach(container => {
+    container.addEventListener('click', e => {
+      const btn = e.target.closest('.list-pill');
+      if (!btn) return;
+      container.querySelectorAll('.list-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      newsFilterState[btn.dataset.filter] = btn.dataset.value;
+      renderNewsList();
+    });
+  });
 }
 
-function renderEditorialMain() {
-  if (!newsData) return;
-  newsPage = 1;
-
-  // Hero
-  const heroWrap = document.getElementById('ed-hero');
-  if (newsCatFilter === 'all' && newsData.featured) {
-    const f = newsData.featured;
-    heroWrap.innerHTML = `
-      <div class="ed-hero-card" data-art-id="${f.id}">
-        <div class="ed-hero-body">
-          <div class="ed-hero-top">
-            <span class="ed-featured-badge">FEATURED</span>
-            ${edCatPill(f.category, f.type)}
-          </div>
-          <h2 class="ed-hero-title">${fmt.esc(f.title || f.headline || '')}</h2>
-          <p class="ed-hero-excerpt">${fmt.esc(f.excerpt || f.summary || '')}</p>
-          <div class="ed-hero-meta">
-            <span>${fmt.esc(f.author || 'Kōdō Editorial')}</span>
-            <span class="ed-dot">·</span>
-            <span>${newsDateFmt(f.date)}</span>
-            <span class="ed-dot">·</span>
-            <span>${fmt.esc(f.read_time || '')}</span>
-          </div>
-          <button class="ed-read-btn" data-art-id="${f.id}">Read article →</button>
-        </div>
-        <div class="ed-hero-img-wrap">
-          <img src="${newsCoverUrl(f.slug, f.cover_image_query)}" alt="${fmt.esc(f.title || '')}"
-               class="ed-hero-img" loading="lazy" onerror="this.onerror=null;this.src='/static/images/news-placeholder.svg'">
-        </div>
-      </div>`;
-    heroWrap.style.display = '';
-  } else {
-    heroWrap.innerHTML = '';
-    heroWrap.style.display = 'none';
-  }
-
-  // Sponsored strip
-  const sponsWrap  = document.getElementById('ed-sponsored-wrap');
-  const sponsStrip = document.getElementById('ed-sponsored-strip');
-  if (newsCatFilter === 'all' && newsData.sponsored && newsData.sponsored.length) {
-    sponsStrip.innerHTML = newsData.sponsored.map(s => `
-      <div class="ed-spons-card" data-art-id="${s.id}">
-        <div class="ed-spons-badge">Partner</div>
-        ${s.sponsor_logo_domain
-          ? `<img src="https://cdn.brandfetch.io/domain/${s.sponsor_logo_domain}?c=1idptYpdMe9b8BdTIPC"
-                  alt="${fmt.esc(s.sponsor_name || '')}" class="ed-spons-logo"
-                  onerror="this.style.display='none'">`
-          : `<div class="ed-spons-logo-placeholder">${fmt.esc((s.sponsor_name || '?')[0])}</div>`}
-        <div class="ed-spons-name">${fmt.esc(s.title || s.headline || '')}</div>
-        <div class="ed-spons-by">${fmt.esc(s.sponsor_name || '')}</div>
-        <button class="ed-spons-cta" data-art-id="${s.id}">${fmt.esc(s.sponsor_cta_text || 'Learn More →')}</button>
-      </div>`).join('');
-    sponsWrap.style.display = '';
-  } else {
-    sponsWrap.style.display = 'none';
-  }
-
-  // Article grid
-  renderArticleGrid();
+function wireNewsSearch() {
+  const input = document.getElementById('news-search');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    newsFilterState.search = input.value.trim().toLowerCase();
+    renderNewsList();
+  });
 }
 
-function renderArticleGrid() {
-  const articles = filteredEditorialArticles();
-  const grid     = document.getElementById('ed-grid');
-  const loadBtn  = document.getElementById('ed-load-more');
-  const shown    = articles.slice(0, newsPage * NEWS_PER_PAGE);
+function resetNewsFilters() {
+  newsFilterState = { category: 'all', period: 'all', search: '' };
+  const searchInput = document.getElementById('news-search');
+  if (searchInput) searchInput.value = '';
+  document.querySelectorAll('#news-category-filters .list-pill, #news-period-filters .list-pill')
+    .forEach(b => b.classList.toggle('active', b.dataset.value === 'all'));
+  renderNewsList();
+}
 
-  if (!articles.length) {
-    grid.innerHTML = '<p class="news-loading">No articles in this category yet.</p>';
-    loadBtn.style.display = 'none';
+// Re-renders just the row list from the published articles + current
+// filter state — called on every filter-pill click and search
+// keystroke, and re-attaches nothing extra: article clicks are
+// handled by the existing delegated [data-art-id] listener on
+// #screen-news (see below), so a fresh row list just works.
+function renderNewsList() {
+  const listEl  = document.getElementById('news-list');
+  const countEl = document.getElementById('news-count');
+  if (!listEl || !newsData) return;
+
+  const { category, period, search } = newsFilterState;
+  const published = (newsData.all || []).filter(a => a.type !== 'sponsored' && a.type !== 'partner');
+  const filtered = published.filter(a => {
+    if (category !== 'all' && a.category !== category) return false;
+    if (!newsMatchesPeriod(a.date, period)) return false;
+    if (search) {
+      const hay = `${a.title || ''} ${a.excerpt || ''}`.toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  if (countEl) countEl.textContent = `${filtered.length} article${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    listEl.innerHTML = `<p class="list-empty">No articles match your filters.<button class="list-clear-btn" id="news-clear-filters">Clear filters</button></p>`;
+    document.getElementById('news-clear-filters')?.addEventListener('click', resetNewsFilters);
     return;
   }
 
-  grid.innerHTML = shown.map(a => {
-    const isSponsored = a.type === 'sponsored' || a.type === 'partner';
-    return `<div class="ed-card ${isSponsored ? 'ed-card-sponsored' : ''}" data-art-id="${a.id}">
-      <div class="ed-card-img-wrap">
-        <img src="${newsCoverUrl(a.slug, a.cover_image_query)}"
-             alt="${fmt.esc(a.title || a.headline || '')}" class="ed-card-img" loading="lazy"
-             onerror="this.onerror=null;this.src='/static/images/news-placeholder.svg'">
+  listEl.innerHTML = filtered.map(a => {
+    const catColor = NEWS_CATEGORY_COLOR[a.category] || NEWS_CATEGORY_COLOR_FALLBACK;
+    const metaBits = [a.author, newsDateFmt(a.date)].filter(Boolean);
+    return `
+    <div class="news-row">
+      <div class="news-main">
+        <a class="news-title" data-art-id="${a.id}">${fmt.esc(a.title || a.headline || '')}</a>
+        ${a.excerpt ? `<span class="news-desc">${fmt.esc(a.excerpt)}</span>` : ''}
       </div>
-      <div class="ed-card-body">
-        ${edCatPill(a.category, a.type)}
-        <div class="ed-card-title">${fmt.esc(a.title || a.headline || '')}</div>
-        <div class="ed-card-excerpt">${fmt.esc(a.excerpt || a.summary || '')}</div>
-        <div class="ed-card-footer">
-          <span>${fmt.esc(a.author || 'Kōdō Editorial')}</span>
-          <span class="ed-dot">·</span>
-          <span>${newsDateFmt(a.date)}</span>
-          <span class="ed-dot">·</span>
-          <span>${fmt.esc(a.read_time || '')}</span>
-        </div>
-      </div>
+      ${a.category ? `<span class="news-category"><span class="news-category-dot" style="background:${catColor};"></span>${fmt.esc(a.category)}</span>` : '<span></span>'}
+      <span class="news-meta">${fmt.esc(metaBits.join(' · '))}</span>
     </div>`;
   }).join('');
-
-  loadBtn.style.display = shown.length < articles.length ? '' : 'none';
-}
-
-function loadMoreArticles() {
-  newsPage++;
-  renderArticleGrid();
 }
 
 async function showArticleDetail(id) {
@@ -2899,17 +2917,9 @@ function closeArticleDetail() {
   document.getElementById('editorial-view').style.display      = '';
 }
 
-// Category pill filter
-document.getElementById('ed-cat-bar').addEventListener('click', e => {
-  const btn = e.target.closest('.ed-cat-pill');
-  if (!btn) return;
-  document.querySelectorAll('.ed-cat-pill').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  newsCatFilter = btn.dataset.cat;
-  if (newsInited) renderEditorialMain();
-});
-
-// Article clicks — hero, grid, sponsored
+// Article clicks — handled by delegation so a fresh row list from
+// renderNewsList (or the detail view's own elements) just works
+// without re-attaching anything after each render.
 document.getElementById('screen-news').addEventListener('click', e => {
   const btn = e.target.closest('[data-art-id]');
   if (!btn) return;
@@ -4799,19 +4809,19 @@ function buildReportFilters(periods) {
   // system, so those options are dropped rather than shown with 0 results.
   const typeOptions = ['All', 'City'];
   typeEl.innerHTML = typeOptions.map((t, i) =>
-    `<button class="report-pill${i === 0 ? ' active' : ''}" data-filter="type" data-value="${i === 0 ? 'all' : fmt.esc(t)}">${fmt.esc(t)}</button>`
+    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="type" data-value="${i === 0 ? 'all' : fmt.esc(t)}">${fmt.esc(t)}</button>`
   ).join('');
 
   const periodOptions = ['All', ...periods];
   periodEl.innerHTML = periodOptions.map((p, i) =>
-    `<button class="report-pill${i === 0 ? ' active' : ''}" data-filter="period" data-value="${i === 0 ? 'all' : fmt.esc(p)}">${fmt.esc(p)}</button>`
+    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="period" data-value="${i === 0 ? 'all' : fmt.esc(p)}">${fmt.esc(p)}</button>`
   ).join('');
 
   [typeEl, periodEl].forEach(container => {
     container.addEventListener('click', e => {
-      const btn = e.target.closest('.report-pill');
+      const btn = e.target.closest('.list-pill');
       if (!btn) return;
-      container.querySelectorAll('.report-pill').forEach(b => b.classList.remove('active'));
+      container.querySelectorAll('.list-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       reportsFilterState[btn.dataset.filter] = btn.dataset.value;
       renderReportList();
@@ -4832,7 +4842,7 @@ function resetReportFilters() {
   reportsFilterState = { type: 'all', period: 'all', search: '' };
   const searchInput = document.getElementById('report-search');
   if (searchInput) searchInput.value = '';
-  document.querySelectorAll('#report-type-filters .report-pill, #report-period-filters .report-pill')
+  document.querySelectorAll('#report-type-filters .list-pill, #report-period-filters .list-pill')
     .forEach(b => b.classList.toggle('active', b.dataset.value === 'all'));
   renderReportList();
 }
@@ -4857,7 +4867,7 @@ function renderReportList() {
   if (countEl) countEl.textContent = `${filtered.length} report${filtered.length !== 1 ? 's' : ''}`;
 
   if (!filtered.length) {
-    listEl.innerHTML = `<p class="report-empty">No reports match your filters.<button class="report-clear-btn" id="report-clear-filters">Clear filters</button></p>`;
+    listEl.innerHTML = `<p class="list-empty">No reports match your filters.<button class="list-clear-btn" id="report-clear-filters">Clear filters</button></p>`;
     document.getElementById('report-clear-filters')?.addEventListener('click', resetReportFilters);
     return;
   }

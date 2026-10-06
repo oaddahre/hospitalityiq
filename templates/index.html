@@ -1654,34 +1654,26 @@
             <p class="screen-sub-tags">Morocco · Hotel Market · Industry Intelligence</p>
           </div>
 
-          <!-- Category filter pills -->
-          <div class="ed-cat-bar" id="ed-cat-bar">
-            <button class="ed-cat-pill active" data-cat="all">All</button>
-            <button class="ed-cat-pill" data-cat="Market Intelligence">Market Intelligence</button>
-            <button class="ed-cat-pill" data-cat="Pipeline">Pipeline</button>
-            <button class="ed-cat-pill" data-cat="Openings">Openings</button>
-            <button class="ed-cat-pill" data-cat="Interviews">Interviews</button>
-            <button class="ed-cat-pill" data-cat="Sponsored">Sponsored</button>
+          <div class="report-list-header">
+            <span class="chart-title insight-header-title">NEWS</span>
+            <span class="report-count" id="news-count"></span>
           </div>
 
-          <!-- Featured hero -->
-          <div id="ed-hero" style="margin-bottom:24px"></div>
-
-          <!-- Sponsored strip -->
-          <div id="ed-sponsored-wrap" style="display:none;margin-bottom:24px">
-            <div class="ed-section-header">
-              <span class="ed-section-title">Partner Features</span>
-              <span class="ed-sponsored-label">Sponsored</span>
-            </div>
-            <div class="ed-sponsored-strip" id="ed-sponsored-strip"></div>
+          <div class="list-search-wrap">
+            <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
+            </svg>
+            <input type="text" id="news-search" class="list-search-input" placeholder="Search news" autocomplete="off" />
           </div>
 
-          <!-- Article grid -->
-          <div id="ed-grid" class="ed-grid"></div>
+          <div class="list-filter-label">Category</div>
+          <div class="list-filters" id="news-category-filters"></div>
 
-          <!-- Load more -->
-          <div style="text-align:center;margin-top:24px;margin-bottom:8px">
-            <button class="ed-load-more" id="ed-load-more" style="display:none" onclick="loadMoreArticles()">Load more articles</button>
+          <div class="list-filter-label">Period</div>
+          <div class="list-filters" id="news-period-filters"></div>
+
+          <div id="news-list">
+            <p class="bench-loading">Loading articles…</p>
           </div>
         </div>
 
@@ -1713,18 +1705,18 @@
           <span class="report-count" id="report-count"></span>
         </div>
 
-        <div class="report-search-wrap">
+        <div class="list-search-wrap">
           <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
             <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
           </svg>
-          <input type="text" id="report-search" class="report-search-input" placeholder="Search reports" autocomplete="off" />
+          <input type="text" id="report-search" class="list-search-input" placeholder="Search reports" autocomplete="off" />
         </div>
 
-        <div class="report-filter-label">Type</div>
-        <div class="report-filters" id="report-type-filters"></div>
+        <div class="list-filter-label">Type</div>
+        <div class="list-filters" id="report-type-filters"></div>
 
-        <div class="report-filter-label">Period</div>
-        <div class="report-filters" id="report-period-filters"></div>
+        <div class="list-filter-label">Period</div>
+        <div class="list-filters" id="report-period-filters"></div>
 
         <div id="reports-grid">
           <p class="bench-loading">Loading reports…</p>
