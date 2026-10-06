@@ -4700,137 +4700,204 @@ fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
 });
 
 // ── Reports ──────────────────────────────────────────────────────────────────
+// Real data model: /api/reports/available returns a fixed set of cities
+// (7 regions + "Morocco" national) and periods (currently "Q3 2026",
+// "Q4 2026", "Annual 2026") — there is no "report type" beyond city-level
+// market reports, no stored description/date, and no pre-existing file;
+// each city+period combination is generated on demand by POSTing to
+// /api/reports/generate, which returns a fresh PDF (server-cached 24h).
+// Flattened here into one row per city×period so the Period filter has
+// something real to filter by.
 let reportsInited = false;
+let reportsAllRows = [];
+let reportsFilterState = { type: 'all', period: 'all', search: '' };
 
 async function initReports() {
   if (reportsInited) return;
-  const grid = document.getElementById('reports-grid');
-  if (!grid) return;
-
-  const tier = (window._kodoUser && window._kodoUser.tier) || '';
-  const canGenerate = tier === 'benchmarker' || tier === 'advisory';
+  const listEl = document.getElementById('reports-grid');
+  if (!listEl) return;
 
   try {
     const res = await fetch('/api/reports/available');
     if (!res.ok) return;
     const data = await res.json();
 
-    grid.innerHTML = '';
-    const allCities = data.cities || [];
+    const periods = data.periods || [];
+    const cities  = data.cities  || [];
 
-    allCities.forEach(cityMeta => {
-      const card = document.createElement('div');
-      card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px 22px;transition:border-color 0.15s;';
-
-      const periodsHTML = (data.periods || []).map((p, i) =>
-        `<button class="report-period-pill ${i===0?'active':''}" data-period="${p}"
-          style="padding:4px 10px;border-radius:3px;border:1px solid var(--border);font-size:0.6875rem;cursor:pointer;
-          background:${i===0?'var(--accent)':'var(--surface)'};color:${i===0?'#0A0A0A':'var(--muted)'};
-          font-family:'Sweet Sans Pro',sans-serif;transition:all 0.12s;">${p}</button>`
-      ).join('');
-
-      const lockIcon = canGenerate ? '' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
-
-      card.innerHTML = `
-        <div style="font-family:'Sweet Sans Pro',sans-serif;font-size:0.875rem;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;color:var(--text);margin-bottom:12px;">${cityMeta.city}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" class="report-period-pills">${periodsHTML}</div>
-        <div style="font-size:0.6875rem;color:var(--text-faint,#888);margin-bottom:12px;">${cityMeta.hotels} hotels tracked · ${cityMeta.keys?.toLocaleString() || '—'} keys</div>
-        <button class="report-generate-btn" data-city="${cityMeta.city}"
-          style="width:100%;padding:9px;background:${canGenerate?'var(--accent)':'var(--border)'};
-          color:${canGenerate?'#0A0A0A':'var(--muted)'};border:none;cursor:pointer;
-          font-family:Sweet Sans Pro,sans-serif;font-size:0.75rem;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;
-          display:flex;align-items:center;justify-content:center;">
-          ${lockIcon}Generate Report
-        </button>
-        <div class="report-status" style="font-size:0.75rem;color:var(--muted);margin-top:8px;min-height:18px;text-align:center;"></div>
-      `;
-
-      // Period pill switching
-      card.querySelectorAll('.report-period-pill').forEach(pill => {
-        pill.addEventListener('click', () => {
-          card.querySelectorAll('.report-period-pill').forEach(p => {
-            p.style.background = 'var(--surface)';
-            p.style.color = 'var(--muted)';
-            p.style.borderColor = 'var(--border)';
-            p.classList.remove('active');
-          });
-          pill.style.background = 'var(--accent)';
-          pill.style.color = '#0A0A0A';
-          pill.classList.add('active');
+    reportsAllRows = [];
+    cities.forEach(cityMeta => {
+      periods.forEach(period => {
+        reportsAllRows.push({
+          city:   cityMeta.city,
+          hotels: cityMeta.hotels,
+          keys:   cityMeta.keys,
+          period,
+          type:   'City',
         });
       });
-
-      // Reset the generate button back to its default label/state
-      const updateGenBtn = () => {
-        const btn = card.querySelector('.report-generate-btn');
-        if (btn && !btn.disabled) {
-          btn.innerHTML = `${lockIcon}Generate Report`;
-        }
-      };
-
-      // Hover border
-      card.addEventListener('mouseenter', () => { card.style.borderColor = 'var(--accent)'; });
-      card.addEventListener('mouseleave', () => { card.style.borderColor = 'var(--border)'; });
-
-      // Generate button
-      card.querySelector('.report-generate-btn').addEventListener('click', async () => {
-        if (!canGenerate) {
-          showUpgradeModal('Benchmarker & Advisory Only', 'Reports are available on Benchmarker and Advisory plans. Upgrade to download institutional-grade PDF market reports.');
-          return;
-        }
-        const city   = cityMeta.city;
-        const period = card.querySelector('.report-period-pill.active')?.dataset.period || data.periods[0];
-        const theme  = 'light'; // Reports are light-mode only.
-        const btn    = card.querySelector('.report-generate-btn');
-        const status = card.querySelector('.report-status');
-
-        btn.disabled = true;
-        btn.textContent = 'Generating…';
-        btn.style.opacity = '0.6';
-        status.textContent = 'Generating your report… this may take 30–60 seconds';
-
-        try {
-          const r = await fetch('/api/reports/generate', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({city, period, theme}),
-          });
-
-          if (!r.ok) {
-            const err = await r.json().catch(() => ({error: 'Unknown error'}));
-            throw new Error(err.error || 'Generation failed');
-          }
-
-          const blob  = await r.blob();
-          const url   = URL.createObjectURL(blob);
-          const a     = document.createElement('a');
-          const safe  = city.replace(/ \/ /g, '-').replace(/ /g, '-');
-          const safep = period.replace(/ /g, '-');
-          a.href      = url;
-          a.download  = `Kodo_${safe}_${safep}_${theme}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-
-          status.textContent = '✓ Report ready — downloading now';
-          status.style.color = 'var(--positive, #2D6B3A)';
-        } catch (err) {
-          status.textContent = `Error: ${err.message}`;
-          status.style.color = 'var(--negative, #8B3A3A)';
-        } finally {
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          updateGenBtn();
-        }
-      });
-
-      grid.appendChild(card);
     });
+
+    buildReportFilters(periods);
+    wireReportSearch();
+    renderReportList();
 
     reportsInited = true;
   } catch (e) {
     console.error('initReports error:', e);
+  }
+}
+
+function buildReportFilters(periods) {
+  const typeEl   = document.getElementById('report-type-filters');
+  const periodEl = document.getElementById('report-period-filters');
+  if (!typeEl || !periodEl) return;
+
+  // Type: derived from the real data — every report here is a "City"
+  // report; no Brand/Owner/Pipeline/Tourism report type exists in this
+  // system, so those options are dropped rather than shown with 0 results.
+  const typeOptions = ['All', 'City'];
+  typeEl.innerHTML = typeOptions.map((t, i) =>
+    `<button class="report-pill${i === 0 ? ' active' : ''}" data-filter="type" data-value="${i === 0 ? 'all' : fmt.esc(t)}">${fmt.esc(t)}</button>`
+  ).join('');
+
+  const periodOptions = ['All', ...periods];
+  periodEl.innerHTML = periodOptions.map((p, i) =>
+    `<button class="report-pill${i === 0 ? ' active' : ''}" data-filter="period" data-value="${i === 0 ? 'all' : fmt.esc(p)}">${fmt.esc(p)}</button>`
+  ).join('');
+
+  [typeEl, periodEl].forEach(container => {
+    container.addEventListener('click', e => {
+      const btn = e.target.closest('.report-pill');
+      if (!btn) return;
+      container.querySelectorAll('.report-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      reportsFilterState[btn.dataset.filter] = btn.dataset.value;
+      renderReportList();
+    });
+  });
+}
+
+function wireReportSearch() {
+  const input = document.getElementById('report-search');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    reportsFilterState.search = input.value.trim().toLowerCase();
+    renderReportList();
+  });
+}
+
+function resetReportFilters() {
+  reportsFilterState = { type: 'all', period: 'all', search: '' };
+  const searchInput = document.getElementById('report-search');
+  if (searchInput) searchInput.value = '';
+  document.querySelectorAll('#report-type-filters .report-pill, #report-period-filters .report-pill')
+    .forEach(b => b.classList.toggle('active', b.dataset.value === 'all'));
+  renderReportList();
+}
+
+// Re-renders just the row list from reportsAllRows + the current filter
+// state — called on every filter-pill click and search keystroke, and
+// re-attaches each row's action handler since the list is rebuilt from
+// scratch each time (no stale DOM nodes to assume still exist).
+function renderReportList() {
+  const listEl  = document.getElementById('reports-grid');
+  const countEl = document.getElementById('report-count');
+  if (!listEl) return;
+
+  const { type, period, search } = reportsFilterState;
+  const filtered = reportsAllRows.filter(r => {
+    if (type !== 'all' && r.type !== type) return false;
+    if (period !== 'all' && r.period !== period) return false;
+    if (search && !r.city.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (countEl) countEl.textContent = `${filtered.length} report${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    listEl.innerHTML = `<p class="report-empty">No reports match your filters.<button class="report-clear-btn" id="report-clear-filters">Clear filters</button></p>`;
+    document.getElementById('report-clear-filters')?.addEventListener('click', resetReportFilters);
+    return;
+  }
+
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  const canGenerate = tier === 'benchmarker' || tier === 'advisory';
+
+  listEl.innerHTML = filtered.map(r => `
+    <div class="report-row">
+      <div class="report-main">
+        <span class="report-title">${fmt.esc(r.city)}</span>
+        <span class="report-desc">${r.hotels} hotels tracked · ${r.keys != null ? r.keys.toLocaleString('en') : '—'} keys</span>
+      </div>
+      <span class="report-type">${fmt.esc(r.type)}</span>
+      <span class="report-date">${fmt.esc(r.period)}</span>
+      <button class="report-action" data-city="${fmt.esc(r.city)}" data-period="${fmt.esc(r.period)}">Generate Report</button>
+    </div>`).join('');
+
+  listEl.querySelectorAll('.report-action').forEach(btn => {
+    btn.addEventListener('click', () => handleReportGenerate(btn, canGenerate));
+  });
+}
+
+// Same generate-and-download flow the old per-city cards used (POST
+// city+period to /api/reports/generate, download the returned PDF blob),
+// just reattached to a flat row's button instead of a card, with a
+// transient status line appended under the row instead of a fixed slot.
+async function handleReportGenerate(btn, canGenerate) {
+  if (!canGenerate) {
+    showUpgradeModal('Benchmarker & Advisory Only', 'Reports are available on Benchmarker and Advisory plans. Upgrade to download institutional-grade PDF market reports.');
+    return;
+  }
+
+  const city   = btn.dataset.city;
+  const period = btn.dataset.period;
+  const theme  = 'light'; // Reports are light-mode only.
+  const row    = btn.closest('.report-row');
+
+  let statusEl = row.querySelector('.report-row-status');
+  if (!statusEl) {
+    statusEl = document.createElement('div');
+    statusEl.className = 'report-row-status';
+    row.appendChild(statusEl);
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  statusEl.classList.remove('is-error');
+  statusEl.textContent = 'Generating your report — this may take 30–60 seconds.';
+
+  try {
+    const r = await fetch('/api/reports/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ city, period, theme }),
+    });
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(err.error || 'Generation failed');
+    }
+
+    const blob  = await r.blob();
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    const safe  = city.replace(/ \/ /g, '-').replace(/ /g, '-');
+    const safep = period.replace(/ /g, '-');
+    a.href     = url;
+    a.download = `Kodo_${safe}_${safep}_${theme}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    statusEl.textContent = 'Report ready — downloading now.';
+  } catch (err) {
+    statusEl.textContent = `Error: ${err.message}`;
+    statusEl.classList.add('is-error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Report';
   }
 }
 
