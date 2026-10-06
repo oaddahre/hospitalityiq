@@ -98,14 +98,27 @@ function getOwnerLogoImg(ownerName, size) {
   return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#4A7FA5;border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
 }
 
+// Shared category-color palette — the single source of truth for
+// "type" indicators platform-wide (Owners' portfolio types, Tourism's
+// event categories). Keep in sync with the literal hex values inlined
+// in the Portfolio Types KPI card (templates/index.html).
+const CATEGORY_COLORS = {
+  slate:  '#6B7A8D',
+  blue:   '#4A7FA5',
+  green:  '#4A9B6F',
+  orange: '#F2A33D',
+  violet: '#8A6FB0',
+};
+
+const OWNER_TYPE_COLOR = {
+  'State-Owned':  CATEGORY_COLORS.slate,
+  'Listed':       CATEGORY_COLORS.blue,
+  'Private':      CATEGORY_COLORS.green,
+  'Family-Owned': CATEGORY_COLORS.orange,
+};
+
 function ownerTypeBadge(type) {
-  var colors = {
-    'State-Owned':  '#6B7A8D',
-    'Listed':       '#4A7FA5',
-    'Private':      '#4A9B6F',
-    'Family-Owned': '#F2A33D',
-  };
-  var c = colors[type] || colors['Private'];
+  var c = OWNER_TYPE_COLOR[type] || OWNER_TYPE_COLOR['Private'];
   return '<span class="owner-type-badge" style="color:' + c + '">' + fmt.esc(type) + '</span>';
 }
 
@@ -1953,10 +1966,36 @@ const EVENT_TYPE_CLASS = {
   Business: 'etype-business', Religious: 'etype-religious', Mega: 'etype-mega',
 };
 
-const EVENT_DOT_COLORS = {
-  Sport: '#4A7FA5', Culture: '#6B8CAA', Music: '#7A9CB8',
-  Business: '#3A6A8E', Religious: '#9EC3DC', Mega: '#4A7FA5',
+// Event category colors — drawn from the same CATEGORY_COLORS palette
+// as Owners' portfolio types (see ownerTypeBadge above), so "type"
+// colors mean the same thing everywhere on the platform. Mega reuses
+// Music's violet since Mawazine (the only Mega event) is itself a
+// music festival; its bold weight/larger dot keep it visually set apart.
+const EVENT_TYPE_COLOR = {
+  Business:  CATEGORY_COLORS.blue,
+  Religious: CATEGORY_COLORS.slate,
+  Sport:     CATEGORY_COLORS.green,
+  Culture:   CATEGORY_COLORS.orange,
+  Music:     CATEGORY_COLORS.violet,
+  Mega:      CATEGORY_COLORS.violet,
 };
+const EVENT_TYPE_COLOR_FALLBACK = CATEGORY_COLORS.slate;
+
+// Display order for the events legend — only categories actually
+// present in the current (filtered) event list are shown.
+const EVENT_TYPE_ORDER = ['Sport', 'Culture', 'Business', 'Religious', 'Music', 'Mega'];
+
+function renderEventsLegend(events) {
+  const el = document.getElementById('events-legend');
+  if (!el) return;
+  const present = new Set(events.map(ev => ev.type));
+  const types = EVENT_TYPE_ORDER.filter(t => present.has(t));
+  el.innerHTML = types.map(t => `
+    <span class="events-legend-item">
+      <span class="events-legend-dot-slot"><span class="events-legend-dot" style="background:${EVENT_TYPE_COLOR[t] || EVENT_TYPE_COLOR_FALLBACK};"></span></span>
+      <span class="events-legend-label">${fmt.esc(t)}</span>
+    </span>`).join('');
+}
 
 function parseEventDate(dateStr) {
   const MONTH_NUM = {January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
@@ -1989,6 +2028,8 @@ function renderTourismEvents() {
   const filtered = eventsFilter === 'all' ? TOUR_EVENTS : TOUR_EVENTS.filter(ev => ev.city === eventsFilter);
   const sorted = [...filtered].sort((a, b) => parseEventDate(a.date).sortKey - parseEventDate(b.date).sortKey);
 
+  renderEventsLegend(sorted);
+
   if (!sorted.length) {
     document.getElementById('events-container').innerHTML =
       '<p style="padding:24px 20px;font-family:\'Sweet Sans Pro\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
@@ -1998,7 +2039,7 @@ function renderTourismEvents() {
   document.getElementById('events-container').innerHTML = `<div class="timeline-container">${
     sorted.map((ev, i) => {
       const pd = parseEventDate(ev.date);
-      const dotColor = EVENT_DOT_COLORS[ev.type] || 'var(--border-light)';
+      const dotColor = EVENT_TYPE_COLOR[ev.type] || EVENT_TYPE_COLOR_FALLBACK;
       const isMega = ev.type === 'Mega';
 
       const dateColHtml = pd.range
