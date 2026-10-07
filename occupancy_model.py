@@ -1,15 +1,20 @@
-import csv, json, math
+import csv, json, math, os
 from datetime import datetime, timedelta
 from pathlib import Path
 import pytz
 
 MOROCCO_TZ      = pytz.timezone('Africa/Casablanca')
 BASE_DIR        = Path(__file__).parent.resolve()
-HOTELS_CSV      = str(BASE_DIR / 'hotels.csv')
-PERFORMANCE_CSV = str(BASE_DIR / 'performance.csv')
-RATES_CSV       = str(BASE_DIR / 'scraped_rates.csv')
-OCCUPANCY_CSV   = str(BASE_DIR / 'estimated_occupancy.csv')
-PIPELINE_CSV    = str(BASE_DIR / 'pipeline.csv')
+# Runtime state and seed CSVs follow the DATA_DIR env var (inherited from
+# app.py's process when this script is launched as a subprocess),
+# defaulting to this script's own directory so nothing changes if it
+# isn't set.
+DATA_DIR        = Path(os.environ.get('DATA_DIR', '').strip() or BASE_DIR).resolve()
+HOTELS_CSV      = str(DATA_DIR / 'hotels.csv')
+PERFORMANCE_CSV = str(DATA_DIR / 'performance.csv')
+RATES_CSV       = str(DATA_DIR / 'scraped_rates.csv')
+OCCUPANCY_CSV   = str(DATA_DIR / 'estimated_occupancy.csv')
+PIPELINE_CSV    = str(DATA_DIR / 'pipeline.csv')
 
 EUR_TO_MAD = 10.8
 
@@ -468,7 +473,7 @@ def calibrate_model(calibration_csv_path):
         'details':        errors[:20],
     }
 
-    calib_path = str(BASE_DIR / 'calibration_results.json')
+    calib_path = str(DATA_DIR / 'calibration_results.json')
     with open(calib_path, 'w') as f:
         json.dump(result, f, indent=2)
 

@@ -18,6 +18,7 @@ import hashlib
 import hmac
 import html
 import subprocess
+import shutil
 import sys
 from datetime import datetime, timedelta
 from functools import wraps
@@ -79,7 +80,30 @@ login_manager.login_view = "login_page"
 login_manager.login_message = ""
 login_manager.remember_cookie_duration = timedelta(days=30)
 
-DATA_DIR = os.path.dirname(os.path.abspath(__file__))
+# APP_DIR is where this file (and the scraper.py/occupancy_model.py
+# scripts it launches as subprocesses) actually live — always fixed,
+# never configurable, since it's code, not data.
+#
+# DATA_DIR is where every runtime-written file (users.json, news.json,
+# scraper output, etc.) and the seed CSVs/JSON the app only reads are
+# located. It follows the DATA_DIR env var — e.g. a Railway persistent
+# volume's mount path — and defaults to APP_DIR so nothing changes for
+# anyone who doesn't set it.
+APP_DIR  = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.environ.get("DATA_DIR", "").strip() or APP_DIR
+
+# First start against a fresh/empty DATA_DIR (e.g. a brand-new volume):
+# copy in the repo's own tracked reference CSVs/JSON so the app has
+# something to read, but only files that don't already exist there —
+# this never overwrites real data already present at DATA_DIR.
+if os.path.abspath(DATA_DIR) != os.path.abspath(APP_DIR):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json"):
+        _src, _dst = os.path.join(APP_DIR, _seed_name), os.path.join(DATA_DIR, _seed_name)
+        if os.path.exists(_src) and not os.path.exists(_dst):
+            shutil.copy2(_src, _dst)
+            print(f"[DATA_DIR] Seeded {_seed_name} into {DATA_DIR}")
+
 NEWS_FILE            = os.path.join(DATA_DIR, "news.json")
 BENCH_FILE           = os.path.join(DATA_DIR, "demo_benchmarking.json")
 DAILY_PERF_FILE      = os.path.join(DATA_DIR, "daily_performance.csv")
@@ -101,12 +125,12 @@ try:
     from apscheduler.schedulers.background import BackgroundScheduler
 
     def _scheduled_scraper():
-        scraper_path = os.path.join(DATA_DIR, 'scraper.py')
+        scraper_path = os.path.join(APP_DIR, 'scraper.py')
         subprocess.Popen([sys.executable, scraper_path])
         app.logger.info('Daily rate scraper triggered by scheduler')
 
     def _scheduled_occ_model():
-        occ_path = os.path.join(DATA_DIR, 'occupancy_model.py')
+        occ_path = os.path.join(APP_DIR, 'occupancy_model.py')
         subprocess.Popen([sys.executable, occ_path])
         app.logger.info('Occupancy model triggered by scheduler')
 
@@ -3511,7 +3535,7 @@ def api_rates():
 @admin_required
 def api_scraper_run():
     try:
-        scraper_path = os.path.join(DATA_DIR, 'scraper.py')
+        scraper_path = os.path.join(APP_DIR, 'scraper.py')
         subprocess.Popen([sys.executable, scraper_path])
         return jsonify({'status': 'started', 'message': 'Scraper started in background'})
     except Exception as e:
@@ -3797,7 +3821,7 @@ def api_occupancy_city(city):
 @admin_required
 def api_occupancy_run():
     try:
-        occ_path = os.path.join(DATA_DIR, 'occupancy_model.py')
+        occ_path = os.path.join(APP_DIR, 'occupancy_model.py')
         subprocess.Popen([sys.executable, occ_path])
         return jsonify({'status': 'started', 'message': 'Occupancy model started in background'})
     except Exception as e:

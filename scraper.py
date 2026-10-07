@@ -10,11 +10,23 @@ from occupancy_model import (
     EUR_TO_MAD, REVENUE_MIX, EBITDA_MARGINS, CAP_RATES, classify_hotel_type,
 )
 
+# APP_DIR is where this script (and occupancy_model.py, which it launches
+# as a subprocess below) actually live — always fixed, never configurable.
+# DATA_DIR is where runtime state and seed CSVs are read/written, and
+# follows the DATA_DIR env var set on app.py's process (this script
+# inherits it, since app.py launches it via subprocess.Popen without
+# overriding the environment), defaulting to APP_DIR so nothing changes
+# if it isn't set.
+APP_DIR  = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.environ.get('DATA_DIR', '').strip() or APP_DIR
+
+SCRAPER_LOG_TXT = os.path.join(DATA_DIR, 'scraper_log.txt')
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
-        logging.FileHandler('scraper_log.txt'),
+        logging.FileHandler(SCRAPER_LOG_TXT),
         logging.StreamHandler()
     ]
 )
@@ -22,9 +34,9 @@ logger = logging.getLogger('kodo_scraper')
 
 MOROCCO_TZ  = pytz.timezone('Africa/Casablanca')
 SERPAPI_KEY = os.environ.get('SERPAPI_KEY', '')
-HOTELS_CSV  = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'hotels.csv')
-RATES_CSV   = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scraped_rates.csv')
-PROGRESS_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scraper_progress.json')
+HOTELS_CSV  = os.path.join(DATA_DIR, 'hotels.csv')
+RATES_CSV   = os.path.join(DATA_DIR, 'scraped_rates.csv')
+PROGRESS_JSON = os.path.join(DATA_DIR, 'scraper_progress.json')
 
 try:
     from playwright.sync_api import sync_playwright
@@ -459,15 +471,16 @@ class KodoScraper:
             self.cleanup_old_rates()
 
         self.stats['end_time'] = datetime.now().isoformat()
-        stats_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scraper_log.json')
+        stats_path = os.path.join(DATA_DIR, 'scraper_log.json')
         with open(stats_path, 'w') as f:
             json.dump(self.stats, f, indent=2)
 
         logger.info(f'Done — {self.stats["scraped"]} scraped, {self.stats["failed"]} failed')
 
-        # Trigger occupancy model after scraping completes
+        # Trigger occupancy model after scraping completes — a code file,
+        # so this always resolves from APP_DIR, not DATA_DIR.
         try:
-            occ_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'occupancy_model.py')
+            occ_path = os.path.join(APP_DIR, 'occupancy_model.py')
             subprocess.Popen([sys.executable, occ_path])
             logger.info('Occupancy model triggered after scraping')
         except Exception as e:
