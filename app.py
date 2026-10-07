@@ -462,7 +462,16 @@ ensure_seed_user()
 
 
 def ensure_seed_org():
-    """Create the default Kōdō org for the seed admin if not already present."""
+    """Create the default Kōdō org for the seed admin if not already present.
+
+    Idempotent across restarts: previously, if the admin user's
+    organisation_id was ever empty (e.g. it was never set, or the field
+    was lost), this unconditionally created a brand-new "Kōdō Hospitality"
+    org on every single boot — one per restart — leaving the user linked
+    to whichever one happened to be created last and all the earlier ones
+    orphaned. It now looks up an existing org by owner_id or billing_email
+    first and re-links to that instead of creating a duplicate.
+    """
     email = os.getenv("SEED_ADMIN_EMAIL", "").strip()
     if not email:
         return
@@ -470,12 +479,27 @@ def ensure_seed_org():
     if not admin_user:
         return
     org_db = load_orgs_db()
-    # If admin already points to an existing org, nothing to do
+
+    # Already correctly linked — nothing to do.
     if admin_user.organisation_id:
         if any(o["id"] == admin_user.organisation_id for o in org_db["organisations"]):
             return
-    # Reuse existing ID if admin_user has one (but org was wiped), else generate
-    org_id = admin_user.organisation_id or str(uuid.uuid4())
+
+    # Not linked (or the link is stale) — look for an org that already
+    # belongs to this exact admin before ever creating a new one.
+    existing = next(
+        (o for o in org_db["organisations"]
+         if o.get("owner_id") == admin_user.id
+         or (o.get("billing_email") or "").strip().lower() == email.lower()),
+        None,
+    )
+    if existing:
+        if admin_user.organisation_id != existing["id"]:
+            update_user_field(admin_user.id, {"organisation_id": existing["id"], "role": "owner"})
+            print(f"[SEED] Re-linked admin {email} to existing org '{existing['name']}' ({existing['id']}) instead of creating a duplicate")
+        return
+
+    org_id = str(uuid.uuid4())
     org_db["organisations"].append({
         "id":            org_id,
         "name":          "Kōdō Hospitality",
