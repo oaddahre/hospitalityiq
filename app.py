@@ -2284,11 +2284,31 @@ def admin_news_delete(article_id):
 
 # ─── Admin: user management ───────────────────────────────────────────────────
 
+def _is_unverified_over_7_days(u: dict) -> bool:
+    """True only for an unverified account whose created_at is at least
+    7 days old — the signal the (not-yet-built) redesigned admin view
+    would use to flag it. Never raises on a missing/malformed date."""
+    if u.get("email_verified", True):
+        return False
+    created = u.get("created_at")
+    if not created:
+        return False
+    try:
+        created_dt = datetime.strptime(created, "%Y-%m-%d")
+    except ValueError:
+        return False
+    return (datetime.utcnow() - created_dt).days >= 7
+
+
 @app.route("/admin/users")
 @admin_required
 def admin_users_list():
     db = load_users_db()
-    safe = [{k: v for k, v in u.items() if k != "password_hash"} for u in db["users"]]
+    safe = []
+    for u in db["users"]:
+        row = {k: v for k, v in u.items() if k != "password_hash"}
+        row["unverified_7d"] = _is_unverified_over_7_days(u)
+        safe.append(row)
     safe.sort(key=lambda u: u.get("created_at") or "", reverse=True)
     return jsonify(safe)
 
@@ -2319,6 +2339,8 @@ def admin_users_create():
         "organisation":          org,
         "tier":                  tier,
         "status":                "active",
+        "email_verified":        True,   # admin-created and vouched for; no confirmation step
+        "verified_at":           datetime.utcnow().isoformat(),
         "created_at":            datetime.utcnow().strftime("%Y-%m-%d"),
         "approved_at":           datetime.utcnow().strftime("%Y-%m-%d"),
         "invited_by":            "admin",
@@ -2363,6 +2385,50 @@ def admin_users_reset_password(uid):
             if sent:
                 return jsonify({"message": f"Password reset email sent to {u['email']}."})
             return jsonify({"message": f"Could not send the reset email to {u['email']} — check RESEND_API_KEY."}), 502
+    return jsonify({"error": "Not found"}), 404
+
+
+@app.route("/admin/users/<uid>/verify", methods=["POST"])
+@admin_required
+def admin_users_verify(uid):
+    """Marks a user verified directly — for an admin confirming ownership
+    some other way (phone call, known colleague, etc.) without waiting on
+    email. Applies the same tier-based activation /verify-email's POST
+    handler does if the account is still sitting at pending_verification,
+    so this doesn't leave it verified but otherwise stuck. Nothing is
+    deleted; a no-op (with a message saying so) if already verified."""
+    db = load_users_db()
+    for u in db["users"]:
+        if u["id"] == uid:
+            if u.get("email_verified"):
+                return jsonify({"message": f"{u['email']} is already verified.",
+                                 **{k: v for k, v in u.items() if k != "password_hash"}})
+            u["email_verified"] = True
+            u["verified_at"]    = datetime.utcnow().isoformat()
+            if u.get("status") == "pending_verification":
+                is_observer = u.get("tier") == "observer"
+                u["status"] = "active" if is_observer else "pending_approval"
+                if is_observer:
+                    u["approved_at"] = datetime.utcnow().strftime("%Y-%m-%d")
+            save_users_db(db)
+            print(f"[ADMIN] Manually verified {u['email']}")
+            return jsonify({k: v for k, v in u.items() if k != "password_hash"})
+    return jsonify({"error": "Not found"}), 404
+
+
+@app.route("/admin/users/<uid>/resend-verification", methods=["POST"])
+@admin_required
+def admin_users_resend_verification(uid):
+    db = load_users_db()
+    for u in db["users"]:
+        if u["id"] == uid:
+            if u.get("email_verified"):
+                return jsonify({"message": f"{u['email']} is already verified."})
+            sent = _issue_verification_email(u["email"], u.get("name", ""))
+            print(f"[ADMIN] Verification email {'sent' if sent else 'FAILED to send'} for {u['email']}")
+            if sent:
+                return jsonify({"message": f"Verification email sent to {u['email']}."})
+            return jsonify({"message": f"Could not send the verification email to {u['email']} — check RESEND_API_KEY."}), 502
     return jsonify({"error": "Not found"}), 404
 
 
