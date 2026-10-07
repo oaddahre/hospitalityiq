@@ -117,15 +117,28 @@ document.getElementById('admSectionNav').addEventListener('click', e => {
 // ─── Slide-in panel ────────────────────────────────────────────────────
 const panel = document.getElementById('admPanel');
 const panelOverlay = document.getElementById('admPanelOverlay');
+const PANEL_TRANSITION_MS = 220; // matches .adm-panel's transition duration in admin.css
+
 function openPanel(title, bodyHtml) {
   document.getElementById('admPanelTitle').textContent = title;
   document.getElementById('admPanelBody').innerHTML = bodyHtml;
-  panel.classList.add('open');
+  // .visible (display:flex) has to apply and paint *before* .open
+  // (the slide transform) for the transition to actually animate —
+  // toggling both on the same tick starts already-transformed, so
+  // there's nothing to transition from.
+  panel.classList.add('visible');
   panelOverlay.classList.add('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.add('open')));
 }
 function closePanel() {
   panel.classList.remove('open');
   panelOverlay.classList.remove('open');
+  // Only remove .visible (display:none) once the slide-out transition
+  // has actually finished, or the panel would just vanish instantly.
+  // Fully removing it from layout when closed (not just off-screen) is
+  // what keeps a fixed, positioned-off-screen element from still
+  // counting toward document.documentElement.scrollWidth.
+  setTimeout(() => panel.classList.remove('visible'), PANEL_TRANSITION_MS);
 }
 document.getElementById('admPanelClose').addEventListener('click', closePanel);
 panelOverlay.addEventListener('click', closePanel);
@@ -269,12 +282,16 @@ function renderUsers() {
     return true;
   });
 
+  const header = `<div class="adm-row-header adm-row-header-users">
+    <span>Name / Email</span><span>Organisation</span><span>Tier</span><span>Status</span><span>Verified</span><span></span>
+  </div>`;
+
   if (!filtered.length) {
-    ledger.innerHTML = '<p class="adm-empty">No users match your filters.</p>';
+    ledger.innerHTML = header + '<p class="adm-empty">No users match your filters.</p>';
     return;
   }
 
-  ledger.innerHTML = filtered.map(u => {
+  ledger.innerHTML = header + filtered.map(u => {
     const tierColor = TIER_COLOR[u.tier] || 'var(--text-muted)';
     const statusColor = STATUS_COLOR[u.status] || 'var(--text-muted)';
     const verColor = u.unverified_7d ? 'var(--negative)' : (u.email_verified ? 'var(--positive)' : 'var(--text-muted)');
@@ -296,10 +313,10 @@ function renderUsers() {
 
     return `<div class="adm-row adm-row-users">
       <div class="adm-row-main" data-label="Name / Email">
-        <span class="adm-row-name">${escHtml(u.name || '—')}</span>
-        <span class="adm-row-sub">${escHtml(u.email)}</span>
+        <span class="adm-row-name" title="${escHtml(u.name || u.email)}">${escHtml(u.name || '—')}</span>
+        <span class="adm-row-sub" title="${escHtml(u.email)}">${escHtml(u.email)}</span>
       </div>
-      <span class="adm-row-meta" data-label="Organisation">${escHtml(u.organisation || '—')}</span>
+      <span class="adm-row-meta" data-label="Organisation" title="${escHtml(u.organisation || '')}">${escHtml(u.organisation || '—')}</span>
       <span data-label="Tier"><span class="adm-pill" style="color:${tierColor}">${escHtml(u.tier)}</span></span>
       <span data-label="Status"><span class="adm-pill" style="color:${statusColor}">${escHtml((u.status || '').replace(/_/g, ' '))}</span></span>
       <span data-label="Verified"><span class="adm-pill" style="color:${verColor}">${verLabel}</span></span>
@@ -455,23 +472,27 @@ function renderOrgs() {
     return hay.includes(orgsSearch);
   });
 
+  const header = `<div class="adm-row-header adm-row-header-orgs">
+    <span>Name</span><span>Owner</span><span>Seats</span><span>Members</span><span></span>
+  </div>`;
+
   if (!filtered.length) {
-    ledger.innerHTML = '<p class="adm-empty">No organisations match your search.</p>';
+    ledger.innerHTML = header + '<p class="adm-empty">No organisations match your search.</p>';
     return;
   }
 
-  ledger.innerHTML = filtered.map(o => {
+  ledger.innerHTML = header + filtered.map(o => {
     const isDup = byName[o.name].length > 1;
     const memberCount = o.seats_used || 0;
     const canDelete = memberCount === 0;
     return `<div class="adm-row adm-row-orgs">
       <div class="adm-row-main" data-label="Name">
-        <span class="adm-row-name">${escHtml(o.name)}${isDup ? ' <span style="color:var(--negative)">(duplicate)</span>' : ''}</span>
+        <span class="adm-row-name" title="${escHtml(o.name)}">${escHtml(o.name)}${isDup ? ' <span style="color:var(--negative)">(duplicate)</span>' : ''}</span>
         <span class="adm-row-sub">${escHtml(o.plan || '')}</span>
       </div>
       <div class="adm-row-main" data-label="Owner">
-        <span class="adm-row-name" style="font-weight:400">${escHtml(o.owner_name || '—')}</span>
-        <span class="adm-row-sub">${escHtml(o.owner_email || '')}</span>
+        <span class="adm-row-name" style="font-weight:400" title="${escHtml(o.owner_email || '')}">${escHtml(o.owner_name || '—')}</span>
+        <span class="adm-row-sub" title="${escHtml(o.owner_email || '')}">${escHtml(o.owner_email || '')}</span>
       </div>
       <span class="adm-row-meta" data-label="Seats">${o.seats_used || 0} / ${o.seats_total || 1}</span>
       <span class="adm-row-meta" data-label="Members">${memberCount}</span>
@@ -565,16 +586,19 @@ function artStatus(a) { return a.status === 'published' || a.published ? 'publis
 function renderArticles() {
   const ledger = document.getElementById('news-ledger');
   const filtered = articles.filter(a => !newsSearch || artTitle(a).toLowerCase().includes(newsSearch));
+  const header = `<div class="adm-row-header adm-row-header-news">
+    <span>Title</span><span>Category</span><span>Type</span><span>Date</span><span>Views</span><span></span>
+  </div>`;
   if (!filtered.length) {
-    ledger.innerHTML = '<p class="adm-empty">No articles match your search.</p>';
+    ledger.innerHTML = header + '<p class="adm-empty">No articles match your search.</p>';
     return;
   }
-  ledger.innerHTML = filtered.map(a => {
+  ledger.innerHTML = header + filtered.map(a => {
     const status = artStatus(a);
     const statusColor = status === 'published' ? 'var(--positive)' : 'var(--text-muted)';
     return `<div class="adm-row adm-row-news">
       <div class="adm-row-main" data-label="Title">
-        <span class="adm-row-name">${escHtml(artTitle(a))}</span>
+        <span class="adm-row-name" title="${escHtml(artTitle(a))}">${escHtml(artTitle(a))}</span>
         ${a.featured ? '<span class="adm-row-sub" style="color:#4A7FA5">Featured</span>' : ''}
       </div>
       <span class="adm-row-meta" data-label="Category">${escHtml(a.category || '—')}</span>
@@ -794,15 +818,18 @@ document.getElementById('di-submit').addEventListener('click', async () => {
 
 async function loadRecentUploads() {
   const container = document.getElementById('di-recent');
+  const header = `<div class="adm-row-header adm-row-header-uploads">
+    <span>Hotel</span><span>Date range</span><span>Rows</span>
+  </div>`;
   try {
     const res = await fetch('/admin/recent-uploads', { headers: authHeaders() });
     const logs = await res.json();
-    if (!logs.length) { container.innerHTML = '<p class="adm-empty">No uploads yet.</p>'; return; }
-    container.innerHTML = logs.map(l => `
-      <div class="adm-row" style="grid-template-columns:1fr 1fr 60px">
-        <span class="adm-row-meta">${escHtml(l.hotel_name || l.hotel_id)}</span>
-        <span class="adm-row-meta">${escHtml(l.date_from)} – ${escHtml(l.date_to)}</span>
-        <span class="adm-row-meta">${l.rows}</span>
+    if (!logs.length) { container.innerHTML = header + '<p class="adm-empty">No uploads yet.</p>'; return; }
+    container.innerHTML = header + logs.map(l => `
+      <div class="adm-row adm-row-uploads">
+        <span class="adm-row-meta" data-label="Hotel" title="${escHtml(l.hotel_name || l.hotel_id)}">${escHtml(l.hotel_name || l.hotel_id)}</span>
+        <span class="adm-row-meta" data-label="Date range">${escHtml(l.date_from)} – ${escHtml(l.date_to)}</span>
+        <span class="adm-row-meta" data-label="Rows">${l.rows}</span>
       </div>
     `).join('');
   } catch { container.innerHTML = '<p class="adm-empty adm-error">Could not load.</p>'; }
@@ -908,23 +935,26 @@ document.getElementById('run-occ-btn').addEventListener('click', async () => {
 // ════════════════════════ DATA & SYSTEM ════════════════════════════════
 async function loadSystemInfo() {
   const el = document.getElementById('sys-info');
+  const header = `<div class="adm-row-header adm-row-header-system">
+    <span>File</span><span>Exists</span><span>Size</span><span>Modified</span>
+  </div>`;
   try {
     const res = await fetch('/admin/system-info', { headers: authHeaders() });
     if (!res.ok) { el.innerHTML = '<p class="adm-empty adm-error">Could not load system info.</p>'; return; }
     const data = await res.json();
     const rows = Object.entries(data.files).map(([name, info]) => `
-      <div class="adm-row" style="grid-template-columns:1fr 80px 100px 1fr">
+      <div class="adm-row adm-row-system">
         <span class="adm-row-meta" data-label="File">${escHtml(name)}</span>
         <span class="adm-row-meta" data-label="Exists" style="color:${info.exists ? 'var(--positive)' : 'var(--negative)'}">${info.exists ? 'Yes' : 'No'}</span>
         <span class="adm-row-meta" data-label="Size">${info.size_bytes != null ? info.size_bytes + ' B' : '—'}</span>
-        <span class="adm-row-meta" data-label="Modified">${escHtml(info.modified_at || '—')}</span>
+        <span class="adm-row-meta" data-label="Modified" title="${escHtml(info.modified_at || '')}">${escHtml(info.modified_at || '—')}</span>
       </div>
     `).join('');
     el.innerHTML = `
-      <p class="adm-row-meta" style="margin-bottom:4px"><strong>DATA_DIR:</strong> ${escHtml(data.data_dir)}</p>
-      <p class="adm-row-meta" style="margin-bottom:16px"><strong>APP_DIR:</strong> ${escHtml(data.app_dir)}</p>
+      <p class="adm-row-meta" style="margin-bottom:4px;word-break:break-all"><strong>DATA_DIR:</strong> ${escHtml(data.data_dir)}</p>
+      <p class="adm-row-meta" style="margin-bottom:16px;word-break:break-all"><strong>APP_DIR:</strong> ${escHtml(data.app_dir)}</p>
       <p class="adm-row-meta" style="margin-bottom:16px">${data.user_count} user(s) · ${data.org_count} organisation(s)</p>
-      ${rows}
+      ${header}${rows}
     `;
   } catch { el.innerHTML = '<p class="adm-empty adm-error">Error loading system info.</p>'; }
 }

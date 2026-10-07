@@ -95,10 +95,24 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 }
 
 /* ── Main layout ── */
+/* min-width:0 is the real fix for the 390px overflow found in every
+   section during the audit: body is display:flex;flex-direction:column
+   (style.css, shared with the rest of the platform), which makes
+   .adm-main a flex item. Flex items default to min-width:auto — i.e.
+   "never shrink narrower than your content's min-content size" — and
+   the section-pill row's 8 unwrapped pills have a min-content width
+   of ~693px, which was propagating up and forcing .adm-main (and
+   everything inside it) to that width regardless of the viewport.
+   min-width:0 removes that floor and lets .adm-section-nav's own
+   overflow-x:auto (below) handle the pills within whatever width
+   .adm-main actually has. */
 .adm-main {
+  width: 100%;
   max-width: 980px;
+  min-width: 0;
   margin: 0 auto;
   padding: 80px 24px 60px;
+  box-sizing: border-box;
 }
 .adm-header-row {
   display: flex;
@@ -151,6 +165,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
+.adm-toolbar > * { min-width: 0; }
 
 .adm-list-filter-label {
   font-family: 'Sweet Sans Pro', sans-serif;
@@ -187,21 +202,47 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-btn-destructive:hover { background: var(--negative-muted); }
 .adm-btn:disabled { opacity: 0.5; cursor: default; }
 
+/* A row of secondary buttons inside a flex toolbar — min-width:0 is
+   the fix for the group not shrinking/wrapping at narrow widths
+   (flex items default to a content-based minimum width, which is
+   what overflowed the Rates toolbar at 390px: the three buttons'
+   combined natural width refused to shrink below itself). */
+.adm-btn-group { display: flex; gap: 10px; flex-wrap: wrap; min-width: 0; }
+
+/* A text action must behave exactly like a tiny button: same font,
+   weight, color, height and baseline as every other one next to it,
+   and it must never wrap its own label onto a second line — if a row
+   doesn't have room for every action, the GROUP wraps (see
+   .adm-row-actions' flex-wrap below), not the individual label. This
+   is what was breaking "Reset password" in the Users list: at the old
+   90px actions column, its label alone was wider than the column, so
+   it wrapped to two lines (36px tall) while single-word actions next
+   to it stayed one line (22px tall). */
 .adm-btn-text {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
   background: none;
   border: none;
   color: var(--accent);
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   font-weight: 400;
+  line-height: 1;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 0;
+  white-space: nowrap;
   text-decoration: underline;
 }
 .adm-btn-text:hover { opacity: 0.8; }
 .adm-btn-text.destructive { color: var(--negative); }
 
 /* ── Ledger rows ── */
+/* Every ledger (Users, Organisations, News, Uploads, Data & System)
+   shares this one row layout: a grid with fixed column tracks, a
+   matching .adm-row-header using the same track list so header labels
+   and row cells always land in the same columns, and hairline
+   dividers only — no boxes, no double borders. */
 .adm-ledger { margin-bottom: 8px; }
 .adm-row {
   display: grid;
@@ -210,18 +251,38 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   padding: 14px 0;
   border-top: 0.5px solid var(--border);
   font-family: 'Sweet Sans Pro', sans-serif;
+  min-width: 0;
 }
 .adm-ledger .adm-row:first-of-type { border-top-color: var(--text-faint); }
+.adm-row > * { min-width: 0; }
+.adm-row-header {
+  display: grid;
+  gap: 14px;
+  padding: 0 0 8px;
+}
+.adm-row-header span {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 .adm-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .adm-row-name { font-size: 13px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-row-sub  { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.adm-row-meta { font-size: 12px; color: var(--text-muted); }
-.adm-row-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.adm-row-meta { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-row-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
 
-.adm-row-users   { grid-template-columns: 1fr 1fr 90px 120px 90px 90px; }
-.adm-row-orgs    { grid-template-columns: 1.4fr 1fr 80px 90px 1fr; }
-.adm-row-news    { grid-template-columns: 1fr 120px 90px 80px 50px 1fr; }
-.adm-row-uploads { grid-template-columns: 1fr 90px 90px 60px 1fr; }
+/* Column tracks — the actions column is sized for the longest real
+   label ("Resend verification") plus one more action next to it
+   without wrapping at desktop widths; narrower widths let the action
+   GROUP wrap (handled by .adm-row-actions above), never a label. */
+.adm-row-users, .adm-row-header-users   { grid-template-columns: 1.3fr 1fr 90px 120px 90px minmax(200px, 300px); }
+.adm-row-orgs,  .adm-row-header-orgs    { grid-template-columns: 1.4fr 1fr 80px 90px minmax(160px, 1fr); }
+.adm-row-news,  .adm-row-header-news    { grid-template-columns: 1fr 130px 90px 90px 60px minmax(180px, 1fr); }
+.adm-row-uploads, .adm-row-header-uploads { grid-template-columns: 1fr 1fr 70px; }
+.adm-row-system,  .adm-row-header-system  { grid-template-columns: 1fr 70px 90px 1fr; }
 
 /* ── Pills (tier / status / verified) ── */
 .adm-pill {
@@ -322,7 +383,17 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   z-index: 300;
 }
 .adm-panel-overlay.open { display: block; }
+/* display:none when fully closed — not just visually hidden. A
+   position:fixed element placed off-screen (whether via transform or
+   a negative right offset) still has a real layout box outside the
+   viewport, and that box counts toward
+   document.documentElement.scrollWidth regardless of how it's
+   invisible — this alone was forcing a horizontal scrollbar on every
+   section at 390px. admin.js toggles .visible (display) a frame
+   before/after .open (the slide transform), so the panel is only
+   ever in the layout while it's actually open or animating. */
 .adm-panel {
+  display: none;
   position: fixed;
   top: 0; right: 0; bottom: 0;
   width: 440px;
@@ -332,9 +403,9 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   z-index: 301;
   transform: translateX(100%);
   transition: transform 220ms ease;
-  display: flex;
   flex-direction: column;
 }
+.adm-panel.visible { display: flex; }
 .adm-panel.open { transform: translateX(0); }
 .adm-panel-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -419,11 +490,22 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   .adm-two-col { grid-template-columns: 1fr; }
   .adm-override-grid { grid-template-columns: 1fr 1fr; }
   .adm-override-grid .adm-btn { grid-column: 1 / -1; margin-top: 4px; }
+  .adm-btn-group { width: 100%; }
 
-  .adm-row-users, .adm-row-orgs, .adm-row-news, .adm-row-uploads {
+  /* Rows become stacked cards: each field gets its own line with a
+     small label above it (from data-label), and the actions row sits
+     on its own line at the end, left-aligned instead of right —
+     matching the "actions on their own line" requirement. The shared
+     header row has no equivalent in this layout (each field already
+     labels itself), so it's hidden rather than squeezed into one
+     column where it would just repeat "Name / Email" above a single
+     name. */
+  .adm-row-users, .adm-row-orgs, .adm-row-news, .adm-row-uploads, .adm-row-system {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 10px;
+    padding: 16px 0;
   }
+  .adm-row-header { display: none; }
   .adm-row-actions { justify-content: flex-start; }
   .adm-row [data-label]::before {
     content: attr(data-label);
@@ -437,5 +519,6 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 
   .adm-panel { width: 100vw; max-width: 100vw; }
 
-  .adm-btn, .adm-btn-text { min-height: 40px; }
+  .adm-btn { min-height: 40px; }
+  .adm-btn-text { min-height: 40px; padding: 9px 0; height: auto; }
 }
