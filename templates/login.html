@@ -144,16 +144,41 @@
     }
     .form-input::placeholder { color: #444444; }
 
-    /* ── Error ── */
-    .auth-error {
-      background: rgba(200,90,90,0.10);
-      border: 1px solid rgba(200,90,90,0.30);
-      color: #E07070;
+    /* ── Error / success ── */
+    .auth-error, .auth-success {
       font-size: 0.8125rem;
       padding: 10px 12px;
       border-radius: 6px;
       margin-bottom: 18px;
       line-height: 1.5;
+    }
+    .auth-error {
+      background: rgba(200,90,90,0.10);
+      border: 1px solid rgba(200,90,90,0.30);
+      color: #E07070;
+    }
+    .auth-success {
+      background: rgba(90,138,90,0.10);
+      border: 1px solid rgba(90,138,90,0.30);
+      color: #7AB07A;
+    }
+    .auth-resend-btn {
+      background: none;
+      border: none;
+      color: #4A7FA5;
+      font-family: 'Sweet Sans Pro', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+      margin: -10px 0 18px;
+      display: block;
+    }
+    .auth-resend-msg {
+      font-size: 0.75rem;
+      color: #888888;
+      margin: -10px 0 18px;
     }
 
     /* ── Button ── */
@@ -220,8 +245,16 @@
     <p class="auth-eyebrow">Platform Access</p>
     <h1 class="auth-heading">Welcome back.</h1>
 
+    {% if verified_notice %}
+    <div class="auth-success">✓ Your email is confirmed. You can log in now.</div>
+    {% endif %}
+
     {% if error %}
     <div class="auth-error">{{ error }}</div>
+    {% endif %}
+    {% if show_resend %}
+    <button type="button" class="auth-resend-btn" id="loginResendBtn" data-email="{{ resend_email }}">Resend verification email</button>
+    <p class="auth-resend-msg" id="loginResendMsg" style="display:none;"></p>
     {% endif %}
 
     <form method="POST" action="/login">
@@ -249,6 +282,36 @@
 </div>
 
 <p class="auth-note">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</p>
+
+{% if show_resend %}
+<script>
+(function() {
+  const btn = document.getElementById('loginResendBtn');
+  const msg = document.getElementById('loginResendMsg');
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'Sending…';
+    try {
+      const res = await fetch('/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: btn.dataset.email }),
+      });
+      const data = await res.json();
+      msg.textContent = data.message || 'If an account exists with that email, a confirmation link has been sent.';
+      msg.style.display = 'block';
+    } catch (e) {
+      msg.textContent = 'Something went wrong. Please try again in a moment.';
+      msg.style.display = 'block';
+    } finally {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+{% endif %}
 
 </body>
 </html>

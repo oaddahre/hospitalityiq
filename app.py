@@ -898,6 +898,9 @@ def login_page():
         return redirect(url_for("index"))
 
     error = None
+    show_resend = False
+    resend_email = ""
+    verified_notice = request.args.get("verified") == "1"
     if request.method == "POST":
         email    = (request.form.get("email", "") or "").strip().lower()
         password = request.form.get("password", "") or ""
@@ -909,7 +912,14 @@ def login_page():
         else:
             user = find_user_by_email(email)
             if user and check_password_hash(user.password_hash, password):
-                if user.status not in ("active",):
+                # Checked only after the password is confirmed correct —
+                # an unverified account must never leak its verification
+                # state to someone who doesn't already know the password.
+                if not user.email_verified:
+                    error = "Please verify your email before logging in."
+                    show_resend = True
+                    resend_email = email
+                elif user.status not in ("active",):
                     error = "Your account is pending activation. Check your email or contact support."
                 else:
                     org = find_org_by_id(user.organisation_id) if user.organisation_id else None
@@ -929,7 +939,8 @@ def login_page():
                 _login_failures[email] = rec
                 error = "Incorrect email or password."
 
-    return render_template("login.html", error=error)
+    return render_template("login.html", error=error, show_resend=show_resend,
+                           resend_email=resend_email, verified_notice=verified_notice)
 
 
 @app.route("/logout")
@@ -1007,10 +1018,27 @@ def reset_password():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    update_user_field(user.id, {
+    update_fields = {
         "password_hash":         generate_password_hash(new_password),
         "force_password_change": False,
-    })
+    }
+    # Completing an emailed password-reset link proves ownership of the
+    # inbox it was sent to, same as verifying via /verify-email — no
+    # separate confirmation step needed on top of it. If this account
+    # never went through /verify-email at all (status is still stuck at
+    # pending_verification — e.g. they went straight to "forgot password"
+    # without ever clicking the confirmation link), apply the same
+    # tier-based activation that route would have, so proving ownership
+    # here doesn't leave them verified but permanently unable to log in.
+    if not user.email_verified:
+        update_fields["email_verified"] = True
+        update_fields["verified_at"]    = datetime.utcnow().isoformat()
+        if user.status == "pending_verification":
+            is_observer = user.tier == "observer"
+            update_fields["status"] = "active" if is_observer else "pending_approval"
+            if is_observer:
+                update_fields["approved_at"] = datetime.utcnow().strftime("%Y-%m-%d")
+    update_user_field(user.id, update_fields)
 
     # Invalidate every outstanding token for this email, not just the one
     # used — an unused older link (e.g. from a leaked/forwarded email)
