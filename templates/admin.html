@@ -672,11 +672,11 @@
   let articles = [];
   // Reaching this page at all already required a logged-in Advisory-tier
   // session (admin_page() in app.py checks that before rendering this
-  // template at all). The admin API routes still also check this header
-  // (see admin_required/admin_ok() in app.py) as a second factor, so the
-  // server hands it to this already-authenticated page directly — no
-  // prompt, and no literal password string in this file.
-  const adminPwd = {{ admin_password|tojson }};
+  // template). This is a per-session CSRF token, not a secret — it's
+  // meaningless to anyone without the session cookie it's paired with.
+  // Every state-changing admin request below sends it back as
+  // X-CSRF-Token; admin_required checks it against the same session value.
+  const csrfToken = {{ csrf_token|tojson }};
 
   function getToday() {
     return new Date().toISOString().slice(0, 10);
@@ -832,7 +832,7 @@
     const method = id ? 'PUT' : 'POST';
     const res = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify(payload),
     });
     if (res.status === 401) { showMsg('Session expired — please reload.', true); return; }
@@ -848,7 +848,7 @@
     const newStatus = artStatus(a) === 'published' ? 'draft' : 'published';
     const res = await fetch('/admin/news/' + id, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ status: newStatus, published: newStatus === 'published' }),
     });
     if (!res.ok) { alert('Failed.'); return; }
@@ -860,7 +860,7 @@
     if (!confirm(`Delete "${artTitle(a)}"?`)) return;
     const res = await fetch('/admin/news/' + id, {
       method: 'DELETE',
-      headers: { 'X-Admin-Password': adminPwd },
+      headers: { 'X-CSRF-Token': csrfToken },
     });
     if (!res.ok) { alert('Delete failed.'); return; }
     await loadArticles();
@@ -955,7 +955,7 @@
 
     const res = await fetch('/admin/upload-performance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ hotel_id: hotelId, hotel_name: hotelName, rows: diParsed }),
     });
     const data = await res.json();
@@ -971,7 +971,7 @@
   async function loadRecentUploads() {
     const container = document.getElementById('di-recent');
     try {
-      const res  = await fetch('/admin/recent-uploads', { headers: { 'X-Admin-Password': adminPwd } });
+      const res  = await fetch('/admin/recent-uploads', { headers: { 'X-CSRF-Token': csrfToken } });
       const logs = await res.json();
       if (!logs.length) { container.innerHTML = '<div style="color:var(--text-muted);font-size:12px">No uploads yet.</div>'; return; }
       container.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:11.5px">
@@ -1000,7 +1000,7 @@
   async function loadUsers() {
     const tbody = document.getElementById('users-tbody');
     try {
-      const res = await fetch('/admin/users', { headers: { 'X-Admin-Password': adminPwd } });
+      const res = await fetch('/admin/users', { headers: { 'X-CSRF-Token': csrfToken } });
       if (!res.ok) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Could not load users.</td></tr>'; return; }
       usersData = await res.json();
       renderUsersTable();
@@ -1093,7 +1093,7 @@
   async function changeUserTier(uid, tier) {
     await fetch('/admin/users/' + uid, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ tier }),
     });
     await loadUsers();
@@ -1102,7 +1102,7 @@
   async function approveUser(uid) {
     await fetch('/admin/users/' + uid, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ status: 'active' }),
     });
     await loadUsers();
@@ -1112,7 +1112,7 @@
     if (!confirm('Reject this user? They will not be able to log in.')) return;
     await fetch('/admin/users/' + uid, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ status: 'rejected' }),
     });
     await loadUsers();
@@ -1122,7 +1122,7 @@
     if (!confirm('Suspend this user?')) return;
     await fetch('/admin/users/' + uid, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ status: 'suspended' }),
     });
     await loadUsers();
@@ -1131,7 +1131,7 @@
   async function reactivateUser(uid) {
     await fetch('/admin/users/' + uid, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ status: 'active' }),
     });
     await loadUsers();
@@ -1141,7 +1141,7 @@
     if (!confirm(`Reset password for ${email}? A new temporary password will be generated.`)) return;
     const res = await fetch(`/admin/users/${uid}/reset-password`, {
       method: 'POST',
-      headers: { 'X-Admin-Password': adminPwd },
+      headers: { 'X-CSRF-Token': csrfToken },
     });
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Failed to reset password.'); return; }
@@ -1186,7 +1186,7 @@
 
     const res = await fetch('/admin/users', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify({ name, email, organisation: org, tier }),
     });
     const data = await res.json();
@@ -1231,7 +1231,7 @@
   async function loadOrgs() {
     const tbody = document.getElementById('orgs-tbody');
     try {
-      const res = await fetch('/admin/organisations', { headers: { 'X-Admin-Password': adminPwd } });
+      const res = await fetch('/admin/organisations', { headers: { 'X-CSRF-Token': csrfToken } });
       if (!res.ok) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Could not load organisations.</td></tr>'; return; }
       orgsData = await res.json();
       renderOrgsTable();
@@ -1288,7 +1288,7 @@
   async function updateOrg(orgId, changes) {
     const res = await fetch(`/admin/organisations/${orgId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify(changes),
     });
     if (!res.ok) { const d = await res.json(); alert(d.error || 'Update failed.'); }
@@ -1303,7 +1303,7 @@
     tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Loading…</td></tr>';
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     try {
-      const res = await fetch(`/admin/organisations/${orgId}/members`, { headers: { 'X-Admin-Password': adminPwd } });
+      const res = await fetch(`/admin/organisations/${orgId}/members`, { headers: { 'X-CSRF-Token': csrfToken } });
       const members = await res.json();
       if (!members.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No members.</td></tr>'; return; }
       tbody.innerHTML = members.map(m => `
@@ -1326,7 +1326,7 @@
 
   async function loadScraperStatus() {
     try {
-      const res  = await fetch('/api/scraper/status', { headers: { 'X-Admin-Password': adminPwd } });
+      const res  = await fetch('/api/scraper/status', { headers: { 'X-CSRF-Token': csrfToken } });
       const data = await res.json();
 
       const statusEl = document.getElementById('ri-status');
@@ -1357,7 +1357,7 @@
 
   async function populateHotelSelect() {
     try {
-      const res    = await fetch('/api/hotels', { headers: { 'X-Admin-Password': adminPwd } });
+      const res    = await fetch('/api/hotels', { headers: { 'X-CSRF-Token': csrfToken } });
       const hotels = await res.json();
       const sel    = document.getElementById('ri-hotel-sel');
       (hotels.hotels || hotels).forEach(h => {
@@ -1376,7 +1376,7 @@
     try {
       const res  = await fetch('/api/scraper/run', {
         method: 'POST',
-        headers: { 'X-Admin-Password': adminPwd },
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       const data = await res.json();
       btn.textContent = data.status === 'started' ? '✓ Started' : '✗ Error';
@@ -1389,7 +1389,7 @@
 
   async function loadOccupancyStatus() {
     try {
-      const res  = await fetch('/api/occupancy/status', { headers: { 'X-Admin-Password': adminPwd } });
+      const res  = await fetch('/api/occupancy/status', { headers: { 'X-CSRF-Token': csrfToken } });
       const data = await res.json();
       document.getElementById('occ-last-run').textContent =
         data.model_run_date ? data.model_run_date : (data.has_data ? '—' : 'Not run yet');
@@ -1406,7 +1406,7 @@
     try {
       const res  = await fetch('/api/occupancy/run', {
         method: 'POST',
-        headers: { 'X-Admin-Password': adminPwd },
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       const data = await res.json();
       btn.textContent = data.status === 'started' ? '✓ Started' : '✗ Error';
@@ -1438,7 +1438,7 @@
     try {
       const res  = await fetch('/api/scraper/override', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPwd },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify({ hotel_id: hotelId, stay_date: stayDate, rate_mad: +rateMad, note }),
       });
       const data = await res.json();

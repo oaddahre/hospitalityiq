@@ -842,31 +842,27 @@ def save_contacts(contacts):
         json.dump(contacts, f, indent=2, ensure_ascii=False)
 
 
-# No literal default here on purpose — a hardcoded fallback password
-# committed to source control is exactly how an admin backend ends up
-# reachable by anyone who can read the repo. If ADMIN_PASSWORD isn't
-# configured, the admin API must fail closed, not quietly accept a
-# well-known default.
-if not os.getenv("ADMIN_PASSWORD", "").strip():
-    app.logger.warning(
-        "ADMIN_PASSWORD is not set — all /admin and admin-gated /api "
-        "routes will reject every request (fail closed) until it is configured."
-    )
+ADMIN_CSRF_SESSION_KEY = "admin_csrf_token"
 
 
-def admin_ok():
-    expected = os.getenv("ADMIN_PASSWORD", "").strip()
-    if not expected:
-        return False
-    provided = request.headers.get("X-Admin-Password", "").strip()
-    if not provided:
+def _admin_csrf_ok() -> bool:
+    expected = session.get(ADMIN_CSRF_SESSION_KEY, "")
+    provided = request.headers.get("X-CSRF-Token", "")
+    if not expected or not provided:
         return False
     return hmac.compare_digest(provided, expected)
 
 
 def admin_required(fn):
-    """Gate for the admin API: a logged-in Advisory-tier session AND the
-    admin header must both be present — neither one alone is enough.
+    """Gate for the admin API: a logged-in Advisory-tier session, always —
+    plus, for any state-changing request (POST/PUT/PATCH/DELETE), a valid
+    X-CSRF-Token header matching the per-session token admin_page() issued.
+    Replaces the old shared ADMIN_PASSWORD header: that value had to be
+    rendered into the page for its own JS to send it back, so it was never
+    really secret from anyone who could view source on an authenticated
+    session anyway — a per-session CSRF token sent the same way carries no
+    equivalent risk, since it's useless without the session cookie it's
+    paired with, which is the actual point of a CSRF token.
     The session+tier check mirrors tier_required's style (an explicit
     check, not the @login_required decorator) so unauthenticated API
     calls get a JSON 401 instead of a redirect to the login page."""
@@ -876,8 +872,8 @@ def admin_required(fn):
             return jsonify({"error": "Unauthorized"}), 401
         if current_user.tier != "advisory":
             return jsonify({"error": "Forbidden"}), 403
-        if not admin_ok():
-            return jsonify({"error": "Unauthorized"}), 401
+        if request.method in ("POST", "PUT", "PATCH", "DELETE") and not _admin_csrf_ok():
+            return jsonify({"error": "Invalid or missing CSRF token"}), 403
         return fn(*args, **kwargs)
     return wrapper
 
@@ -2192,12 +2188,19 @@ def api_chat():
 def admin_page():
     if current_user.tier != "advisory":
         return redirect(url_for("index"))
-    # The page's own fetches need the admin header too (admin_required
-    # checks session+tier AND this header — see admin_ok() above). We can
-    # hand it to the page here because we've just verified this exact
-    # session is an authenticated Advisory user; the browser never prompts
-    # for it and no password string is hardcoded in admin.html's source.
-    return render_template("admin.html", admin_password=os.getenv("ADMIN_PASSWORD", "").strip())
+    # One CSRF token per session, generated here and reused for as long as
+    # the session lasts (not rotated on every page load — a refresh or a
+    # second tab shouldn't invalidate the first). admin.html's JS reads it
+    # from the page and sends it back as X-CSRF-Token on every
+    # state-changing request; admin_required checks it against this same
+    # session value. Unlike the old ADMIN_PASSWORD, this is safe to render
+    # into the page — it's meaningless without the session cookie it's
+    # paired with, which is the actual CSRF protection.
+    csrf_token = session.get(ADMIN_CSRF_SESSION_KEY)
+    if not csrf_token:
+        csrf_token = secrets.token_urlsafe(32)
+        session[ADMIN_CSRF_SESSION_KEY] = csrf_token
+    return render_template("admin.html", csrf_token=csrf_token)
 
 
 def _article_fields(data, base=None):
