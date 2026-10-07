@@ -4,6 +4,9 @@ from flask_login import (
     login_required, current_user,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import pandas as pd
 import anthropic
 import resend
@@ -23,6 +26,7 @@ import sys
 from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
+from disposable_domains import is_disposable_email
 
 load_dotenv()
 
@@ -45,6 +49,16 @@ except Exception:
     PLAYWRIGHT_AVAILABLE = False
 
 app = Flask(__name__)
+
+# Railway puts one reverse proxy in front of this app, so without this,
+# every request's real IP (request.remote_addr) would just be the proxy's
+# own address — identical for every visitor — which is useless for rate
+# limiting (everyone would share one bucket) and would make the limits
+# below either block everyone together or nobody at all. x_for=1 trusts
+# exactly one hop of X-Forwarded-For, i.e. the proxy's own value, which is
+# what Railway actually sets it to.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
 app.config['SECRET_KEY']                = os.environ.get('SECRET_KEY', 'kodo-dev-fallback-key-2026')
 app.config['SESSION_PERMANENT']         = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
@@ -79,6 +93,20 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login_page"
 login_manager.login_message = ""
 login_manager.remember_cookie_duration = timedelta(days=30)
+
+# In-memory storage — counts are per worker process, not shared across
+# them. Fine for a single-process deployment (what this app currently
+# runs as); if this is ever run with multiple gunicorn/uwsgi workers, each
+# worker enforces its own separate counter, so the real effective limit
+# becomes limit × worker count. A shared backend (e.g. Redis, via
+# storage_uri="redis://...") would be needed to make it a true global
+# limit across workers.
+limiter = Limiter(get_remote_address, app=app, storage_uri="memory://", default_limits=[])
+
+
+@app.errorhandler(429)
+def rate_limit_exceeded(e):
+    return jsonify({"error": "Too many requests. Please wait and try again."}), 429
 
 # APP_DIR is where this file (and the scraper.py/occupancy_model.py
 # scripts it launches as subprocesses) actually live — always fixed,
@@ -676,6 +704,7 @@ def load_data():
 # ─── Auth routes ──────────────────────────────────────────────────────────────
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def login_page():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
@@ -722,6 +751,7 @@ def logout():
 
 
 @app.route("/forgot-password", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
 def forgot_password():
     if request.method == "GET":
         return render_template("forgot_password.html")
@@ -805,7 +835,25 @@ def reset_password():
     return jsonify({"success": True, "message": "Password updated successfully"})
 
 
+EMAIL_FORMAT_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+MAX_NAME_LEN    = 100
+MAX_ORG_LEN     = 200
+MAX_EMAIL_LEN   = 254   # RFC 5321 max mailbox length
+MAX_PASSWORD_LEN = 128  # sane upper bound, not a security requirement
+
+
+def _log_registration_attempt(outcome: str):
+    """stdout log line for every attempt, success or not. Only the email
+    domain is logged, never the full address, since this is effectively a
+    log of who's visiting a public endpoint."""
+    email_domain = (request.form.get("email", "") or "").strip().lower().rsplit("@", 1)[-1] or "-"
+    print(f"[REGISTER] {datetime.utcnow().isoformat()}Z ip={request.remote_addr or '-'} "
+          f"ua={request.headers.get('User-Agent', '-')!r} domain={email_domain} outcome={outcome}",
+          flush=True)
+
+
 @app.route("/register", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
 def register_page():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
@@ -818,18 +866,40 @@ def register_page():
         password = request.form.get("password", "") or ""
         confirm  = request.form.get("confirm_password", "") or ""
         agreed   = request.form.get("terms") == "on"
+        honeypot = (request.form.get("website", "") or "").strip()
 
-        if not name or not email or not password:
+        if honeypot:
+            # Bot tripped the hidden field — reject with the same generic
+            # error a real validation failure would show, no hint that
+            # this specific field is why.
+            error = "Something went wrong. Please check your details and try again."
+            _log_registration_attempt("honeypot")
+        elif len(name) > MAX_NAME_LEN or len(org) > MAX_ORG_LEN or len(email) > MAX_EMAIL_LEN or len(password) > MAX_PASSWORD_LEN:
+            error = "One of the fields is too long."
+            _log_registration_attempt("field_too_long")
+        elif not name or not email or not password:
             error = "Name, email and password are required."
+            _log_registration_attempt("missing_fields")
+        elif not EMAIL_FORMAT_RE.match(email):
+            error = "Please enter a valid email address."
+            _log_registration_attempt("invalid_email_format")
+        elif is_disposable_email(email):
+            error = "Please use a permanent email address — temporary/disposable inboxes aren't accepted."
+            _log_registration_attempt("disposable_domain")
         elif password != confirm:
             error = "Passwords do not match."
+            _log_registration_attempt("password_mismatch")
         elif len(password) < 8:
             error = "Password must be at least 8 characters."
+            _log_registration_attempt("password_too_short")
         elif not agreed:
             error = "You must agree to the Terms of Service."
+            _log_registration_attempt("terms_not_agreed")
         elif find_user_by_email(email):
             error = "An account with this email already exists."
+            _log_registration_attempt("duplicate_email")
         else:
+            _log_registration_attempt("success")
             reg_tier = request.form.get("tier", "observer")
             if reg_tier not in ("observer", "benchmarker"):
                 reg_tier = "observer"

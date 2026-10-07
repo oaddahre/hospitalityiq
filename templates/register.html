@@ -344,6 +344,15 @@
         <label for="terms">I agree to Kōdō's <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a></label>
       </div>
 
+      <!-- Honeypot — invisible to real visitors; bots that blindly fill
+           every field in a form will trip this. Server rejects any
+           submission where it's non-empty with the normal generic error,
+           no hint that this field is why. -->
+      <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
+        <label for="website">Leave this field blank</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
       <input type="hidden" name="tier" value="observer">
       <button type="submit" class="btn-primary">Create account</button>
       <p class="btn-note">Access activated immediately — billing handled separately</p>
