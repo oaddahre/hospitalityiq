@@ -124,13 +124,40 @@ DATA_DIR = os.environ.get("DATA_DIR", "").strip() or APP_DIR
 # copy in the repo's own tracked reference CSVs/JSON so the app has
 # something to read, but only files that don't already exist there —
 # this never overwrites real data already present at DATA_DIR.
+#
+# These four are pure read-only reference data (nothing in this file
+# ever writes to them), so "copy only if missing" is the whole rule.
+# demo_benchmarking.json was the same kind of tracked-but-missing gap
+# that caused the empty News page below — it's never written either,
+# just never had this same copy-in applied to it.
 if os.path.abspath(DATA_DIR) != os.path.abspath(APP_DIR):
     os.makedirs(DATA_DIR, exist_ok=True)
-    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json"):
+    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json", "demo_benchmarking.json"):
         _src, _dst = os.path.join(APP_DIR, _seed_name), os.path.join(DATA_DIR, _seed_name)
         if os.path.exists(_src) and not os.path.exists(_dst):
             shutil.copy2(_src, _dst)
             print(f"[DATA_DIR] Seeded {_seed_name} into {DATA_DIR}")
+
+    # news.json is the one tracked seed file that's also mutated at
+    # runtime (the admin news CRUD rewrites it), so it can't use the
+    # simple "missing only" rule above: a fresh DATA_DIR may already
+    # have an empty news.json on disk (e.g. a prior boot's admin news
+    # code path wrote `[]` before this copy-in ever ran), and that
+    # needs seeding too — but a news.json that already holds real
+    # articles must never be touched.
+    _news_src = os.path.join(APP_DIR, "news.json")
+    _news_dst = os.path.join(DATA_DIR, "news.json")
+    if os.path.exists(_news_src):
+        _news_dst_is_seedable = not os.path.exists(_news_dst)
+        if os.path.exists(_news_dst):
+            try:
+                with open(_news_dst, encoding="utf-8") as _f:
+                    _news_dst_is_seedable = json.load(_f) == []
+            except (json.JSONDecodeError, OSError):
+                _news_dst_is_seedable = False  # unreadable/corrupt — leave it alone, don't guess
+        if _news_dst_is_seedable:
+            shutil.copy2(_news_src, _news_dst)
+            print(f"[DATA_DIR] Seeded news.json into {DATA_DIR}")
 
 NEWS_FILE            = os.path.join(DATA_DIR, "news.json")
 BENCH_FILE           = os.path.join(DATA_DIR, "demo_benchmarking.json")
