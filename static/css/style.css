@@ -5911,12 +5911,12 @@ body.light .nav-logout  { color: #8A8A8A; }
 .val-lock-cta {
   display: inline-block;
   padding: 9px 20px;
-  background: var(--accent);
-  color: var(--bg);
+  background: #4A7FA5;
+  color: #fff;
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   font-weight: 600;
-  border-radius: 0;
+  border-radius: 999px;
   text-decoration: none;
 }
 .val-section-locked { position: relative; }
