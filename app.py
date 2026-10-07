@@ -167,12 +167,14 @@ CONTACT_FILE         = os.path.join(DATA_DIR, "contact_submissions.json")
 USERS_FILE           = os.path.join(DATA_DIR, "users.json")
 ORGS_FILE            = os.path.join(DATA_DIR, "organisations.json")
 RESET_TOKENS_FILE    = os.path.join(DATA_DIR, "reset_tokens.json")
+VERIFICATION_TOKENS_FILE = os.path.join(DATA_DIR, "verification_tokens.json")
 
 TIER_ORDER  = {"observer": 0, "benchmarker": 1, "advisory": 2}
 PLAN_SEATS  = {"observer": 1, "benchmarker": 3, "advisory": 5}
 
 _login_failures: dict = {}   # {email: {"count": int, "since": datetime}}
 _reset_requests: dict = {}   # {email: datetime of last forgot-password request} — spam cooldown
+_verification_resend_attempts: dict = {}  # {email: [datetime, ...]} — sliding 1h window, 3/hour/email
 
 # ─── APScheduler — daily rate scraper at 03:00 Casablanca time ───────────────
 try:
@@ -237,6 +239,12 @@ class User(UserMixin):
         self.force_password_change = data.get("force_password_change", False)
         self.organisation_id       = data.get("organisation_id")
         self.role                  = data.get("role", "member")
+        # Default True: every creation path except self-registration
+        # (admin-create, invite-accept, the seed admin, and any existing
+        # user predating this field) is already vouched for some other
+        # way, so the absence of this field must never mean "unverified".
+        self.email_verified        = data.get("email_verified", True)
+        self.verified_at           = data.get("verified_at")
 
     def get_id(self):
         return self.id
@@ -308,6 +316,134 @@ def save_reset_tokens(tokens: dict):
 def cleanup_expired_tokens(tokens: dict) -> dict:
     now = datetime.utcnow().isoformat()
     return {k: v for k, v in tokens.items() if v["expires"] > now}
+
+
+# ─── Email verification tokens ─────────────────────────────────────────────────
+# Same storage principle as reset tokens above (hash only, never plaintext),
+# in their own file since they're a different token type with a different
+# lifetime (24h vs 1h) and lookup path (hmac.compare_digest, not a dict-key
+# lookup — see _find_verification_token).
+
+def _hash_verification_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def load_verification_tokens() -> dict:
+    if not os.path.exists(VERIFICATION_TOKENS_FILE):
+        return {}
+    with open(VERIFICATION_TOKENS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_verification_tokens(tokens: dict):
+    with open(VERIFICATION_TOKENS_FILE, "w", encoding="utf-8") as f:
+        json.dump(tokens, f, indent=2)
+
+
+def cleanup_expired_verification_tokens(tokens: dict) -> dict:
+    now = datetime.utcnow().isoformat()
+    return {k: v for k, v in tokens.items() if v["expires"] > now}
+
+
+def _find_verification_token(token: str):
+    """Looks up a verification token, comparing hashes with
+    hmac.compare_digest rather than a dict-key lookup. Returns
+    (stored_hash, token_data, cleaned_tokens_dict) — the last so a caller
+    can mutate and save the same (already-expiry-cleaned) dict without a
+    second read. All three are None/{} on no match."""
+    computed = _hash_verification_token(token)
+    tokens = cleanup_expired_verification_tokens(load_verification_tokens())
+    for stored_hash, data in tokens.items():
+        if hmac.compare_digest(stored_hash, computed):
+            return stored_hash, data, tokens
+    return None, None, tokens
+
+
+def _issue_verification_email(email: str, name: str) -> bool:
+    """Generate a 24h, single-use verification token for `email`,
+    invalidate any older ones for the same address, store it (hashed)
+    and send the verification link via Resend. Returns whether the email
+    send actually succeeded — callers must not flip the account to
+    "sent" state on a False return."""
+    tokens = cleanup_expired_verification_tokens(load_verification_tokens())
+
+    # Invalidate older tokens for this email before issuing a new one —
+    # only one link should ever be live at a time.
+    for data in tokens.values():
+        if data.get("email", "").lower() == email.lower():
+            data["used"] = True
+
+    token      = secrets.token_urlsafe(32)
+    token_hash = _hash_verification_token(token)
+    now        = datetime.utcnow()
+    tokens[token_hash] = {
+        "email":      email,
+        "created_at": now.isoformat(),
+        "expires":    (now + timedelta(hours=24)).isoformat(),
+        "used":       False,
+    }
+    save_verification_tokens(tokens)
+
+    verify_url = f"https://www.kodohospitality.com/verify-email?token={token}"
+
+    resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if not resend.api_key:
+        app.logger.error("Verification email not sent: RESEND_API_KEY is not set.")
+        print(f"[VERIFY] RESEND_API_KEY not set — verification link for local testing: {verify_url}", flush=True)
+        return False
+    try:
+        resend.Emails.send({
+            "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+            "to":      email,
+            "subject": "Confirm your Kōdō Hospitality account",
+            "html":    _verification_email_html(verify_url, html.escape(name)),
+        })
+        return True
+    except Exception as e:
+        app.logger.error(f"Verification email error: {e}")
+        return False
+
+
+def _verification_email_html(verify_url: str, name: str) -> str:
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
+          <tr>
+            <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:32px;padding-bottom:24px;">
+              <h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Confirm your email, {name}.</h1>
+              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">One more step before you can log in — confirm this is your email address. This link expires in 24 hours and can only be used once.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:32px;">
+              <a href="{verify_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Confirm My Email →</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid #242424;padding-top:24px;">
+              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you didn't create a Kōdō account, you can ignore this email.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#4A7FA5;word-break:break-all;">{verify_url}</span></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
 
 
 def _issue_password_reset(email: str) -> bool:
@@ -596,6 +732,31 @@ def ensure_seed_org():
 
 
 ensure_seed_org()
+
+
+def migrate_grandfather_email_verified():
+    """Idempotent startup migration for the email-verification feature.
+
+    Every user record that predates this field (including the seed admin,
+    and anyone created via /admin/users or an org invite before today)
+    gets email_verified=True — grandfathered in, since they were never
+    asked to prove their email through this flow and shouldn't suddenly
+    be locked out of login because of it. Runs on every boot but only
+    ever touches records missing the field; a user already marked False
+    by the real registration flow is never changed. Safe to run forever.
+    """
+    db = load_users_db()
+    changed = 0
+    for u in db["users"]:
+        if "email_verified" not in u:
+            u["email_verified"] = True
+            changed += 1
+    if changed:
+        save_users_db(db)
+        print(f"[MIGRATE] Grandfathered email_verified=true for {changed} existing user(s)")
+
+
+migrate_grandfather_email_verified()
 
 
 @login_manager.user_loader
