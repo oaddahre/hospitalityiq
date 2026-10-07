@@ -15,6 +15,7 @@ import re
 import uuid
 import secrets
 import hashlib
+import hmac
 import html
 import subprocess
 import sys
@@ -228,6 +229,40 @@ def save_reset_tokens(tokens: dict):
 def cleanup_expired_tokens(tokens: dict) -> dict:
     now = datetime.utcnow().isoformat()
     return {k: v for k, v in tokens.items() if v["expires"] > now}
+
+
+def _issue_password_reset(email: str) -> bool:
+    """Generate a reset token for `email`, store it (hashed) and email the
+    reset link via Resend. Shared by the public forgot-password flow and
+    the admin "reset user password" action, so an admin-triggered reset
+    goes through the exact same secure link rather than ever handling or
+    returning the user's new password directly. Returns whether the email
+    send actually succeeded."""
+    token      = secrets.token_urlsafe(32)
+    expires    = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+    token_hash = _hash_reset_token(token)
+
+    tokens = cleanup_expired_tokens(load_reset_tokens())
+    tokens[token_hash] = {"email": email, "expires": expires, "used": False}
+    save_reset_tokens(tokens)
+
+    reset_url = f"https://www.kodohospitality.com/reset-password?token={token}"
+
+    resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if not resend.api_key:
+        app.logger.error("Password reset email not sent: RESEND_API_KEY is not set.")
+        return False
+    try:
+        resend.Emails.send({
+            "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+            "to":      email,
+            "subject": "Reset your Kōdō password",
+            "html":    _reset_email_html(reset_url),
+        })
+        return True
+    except Exception as e:
+        app.logger.error(f"Reset email error: {e}")
+        return False
 
 
 def _reset_email_html(reset_url: str) -> str:
@@ -543,10 +578,44 @@ def save_contacts(contacts):
         json.dump(contacts, f, indent=2, ensure_ascii=False)
 
 
+# No literal default here on purpose — a hardcoded fallback password
+# committed to source control is exactly how an admin backend ends up
+# reachable by anyone who can read the repo. If ADMIN_PASSWORD isn't
+# configured, the admin API must fail closed, not quietly accept a
+# well-known default.
+if not os.getenv("ADMIN_PASSWORD", "").strip():
+    app.logger.warning(
+        "ADMIN_PASSWORD is not set — all /admin and admin-gated /api "
+        "routes will reject every request (fail closed) until it is configured."
+    )
+
+
 def admin_ok():
-    expected = (os.getenv("ADMIN_PASSWORD") or "hiq2026").strip()
+    expected = os.getenv("ADMIN_PASSWORD", "").strip()
+    if not expected:
+        return False
     provided = request.headers.get("X-Admin-Password", "").strip()
-    return bool(provided) and provided == expected
+    if not provided:
+        return False
+    return hmac.compare_digest(provided, expected)
+
+
+def admin_required(fn):
+    """Gate for the admin API: a logged-in Advisory-tier session AND the
+    admin header must both be present — neither one alone is enough.
+    The session+tier check mirrors tier_required's style (an explicit
+    check, not the @login_required decorator) so unauthenticated API
+    calls get a JSON 401 instead of a redirect to the login page."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({"error": "Unauthorized"}), 401
+        if current_user.tier != "advisory":
+            return jsonify({"error": "Forbidden"}), 403
+        if not admin_ok():
+            return jsonify({"error": "Unauthorized"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
 
 
 def load_data():
@@ -629,33 +698,7 @@ def forgot_password():
     # Always return the same success response either way, to prevent
     # email enumeration via this endpoint.
     if user:
-        token       = secrets.token_urlsafe(32)
-        expires     = (datetime.utcnow() + timedelta(hours=1)).isoformat()
-        token_hash  = _hash_reset_token(token)
-
-        tokens = cleanup_expired_tokens(load_reset_tokens())
-        tokens[token_hash] = {
-            "email":   email,
-            "expires": expires,
-            "used":    False,
-        }
-        save_reset_tokens(tokens)
-
-        reset_url = f"https://www.kodohospitality.com/reset-password?token={token}"
-
-        resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
-        if not resend.api_key:
-            app.logger.error("Password reset email not sent: RESEND_API_KEY is not set.")
-        else:
-            try:
-                resend.Emails.send({
-                    "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
-                    "to":      email,
-                    "subject": "Reset your Kōdō password",
-                    "html":    _reset_email_html(reset_url),
-                })
-            except Exception as e:
-                app.logger.error(f"Reset email error: {e}")
+        _issue_password_reset(email)
 
     return jsonify({"success": True,
                      "message": "If an account exists with that email you will receive a reset link shortly."})
@@ -1699,7 +1742,12 @@ def api_chat():
 def admin_page():
     if current_user.tier != "advisory":
         return redirect(url_for("index"))
-    return render_template("admin.html")
+    # The page's own fetches need the admin header too (admin_required
+    # checks session+tier AND this header — see admin_ok() above). We can
+    # hand it to the page here because we've just verified this exact
+    # session is an authenticated Advisory user; the browser never prompts
+    # for it and no password string is hardcoded in admin.html's source.
+    return render_template("admin.html", admin_password=os.getenv("ADMIN_PASSWORD", "").strip())
 
 
 def _article_fields(data, base=None):
@@ -1739,9 +1787,8 @@ def _article_fields(data, base=None):
 
 
 @app.route("/admin/news", methods=["POST"])
+@admin_required
 def admin_news_create():
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json(silent=True) or {}
     articles = load_news()
     new_id = max((a.get("id", 0) for a in articles), default=0) + 1
@@ -1757,9 +1804,8 @@ def admin_news_create():
 
 
 @app.route("/admin/news/<int:article_id>", methods=["PUT"])
+@admin_required
 def admin_news_update(article_id):
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json(silent=True) or {}
     articles = load_news()
     if data.get("featured"):
@@ -1776,9 +1822,8 @@ def admin_news_update(article_id):
 
 
 @app.route("/admin/news/<int:article_id>", methods=["DELETE"])
+@admin_required
 def admin_news_delete(article_id):
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     articles = load_news()
     filtered = [a for a in articles if a["id"] != article_id]
     if len(filtered) == len(articles):
@@ -1790,9 +1835,8 @@ def admin_news_delete(article_id):
 # ─── Admin: user management ───────────────────────────────────────────────────
 
 @app.route("/admin/users")
+@admin_required
 def admin_users_list():
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     db = load_users_db()
     safe = [{k: v for k, v in u.items() if k != "password_hash"} for u in db["users"]]
     safe.sort(key=lambda u: u.get("created_at") or "", reverse=True)
@@ -1800,9 +1844,8 @@ def admin_users_list():
 
 
 @app.route("/admin/users", methods=["POST"])
+@admin_required
 def admin_users_create():
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json(silent=True) or {}
     name  = (data.get("name", "") or "").strip()
     email = (data.get("email", "") or "").strip().lower()
@@ -1842,9 +1885,8 @@ def admin_users_create():
 
 
 @app.route("/admin/users/<uid>", methods=["PUT"])
+@admin_required
 def admin_users_update(uid):
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json(silent=True) or {}
     db   = load_users_db()
     for u in db["users"]:
@@ -1861,17 +1903,16 @@ def admin_users_update(uid):
 
 
 @app.route("/admin/users/<uid>/reset-password", methods=["POST"])
+@admin_required
 def admin_users_reset_password(uid):
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     db = load_users_db()
     for u in db["users"]:
         if u["id"] == uid:
-            temp_password = f"Kodo{uuid.uuid4().hex[:8]}!"
-            u["password_hash"] = generate_password_hash(temp_password)
-            save_users_db(db)
-            print(f"[ADMIN] Password reset for {u['email']}")
-            return jsonify({"temp_password": temp_password})
+            sent = _issue_password_reset(u["email"])
+            print(f"[ADMIN] Password reset email {'sent' if sent else 'FAILED to send'} for {u['email']}")
+            if sent:
+                return jsonify({"message": f"Password reset email sent to {u['email']}."})
+            return jsonify({"message": f"Could not send the reset email to {u['email']} — check RESEND_API_KEY."}), 502
     return jsonify({"error": "Not found"}), 404
 
 
@@ -1890,10 +1931,8 @@ def save_upload_log(log):
 
 
 @app.route("/admin/upload-performance", methods=["POST"])
+@admin_required
 def admin_upload_performance():
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
-
     data       = request.get_json(silent=True) or {}
     hotel_id   = data.get("hotel_id", "").strip()
     hotel_name = data.get("hotel_name", hotel_id)
@@ -1957,18 +1996,16 @@ def admin_upload_performance():
 
 
 @app.route("/admin/recent-uploads")
+@admin_required
 def admin_recent_uploads():
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     return jsonify(load_upload_log()[:20])
 
 
 # ─── Admin: organisations ─────────────────────────────────────────────────────
 
 @app.route("/admin/organisations")
+@admin_required
 def admin_orgs_list():
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     db = load_orgs_db()
     result = []
     for o in db["organisations"]:
@@ -1984,9 +2021,8 @@ def admin_orgs_list():
 
 
 @app.route("/admin/organisations/<org_id>", methods=["PUT"])
+@admin_required
 def admin_orgs_update(org_id):
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json(silent=True) or {}
     db   = load_orgs_db()
     for o in db["organisations"]:
@@ -2011,9 +2047,8 @@ def admin_orgs_update(org_id):
 
 
 @app.route("/admin/organisations/<org_id>/members")
+@admin_required
 def admin_org_members(org_id):
-    if not admin_ok():
-        return jsonify({"error": "Unauthorized"}), 401
     safe = [
         {k: v for k, v in m.items() if k not in ("password_hash", "invite_token")}
         for m in org_members(org_id)
@@ -3449,10 +3484,8 @@ def api_rates():
 
 
 @app.route('/api/scraper/run', methods=['POST'])
-@login_required
+@admin_required
 def api_scraper_run():
-    if not admin_ok():
-        return jsonify({'error': 'Unauthorized'}), 401
     try:
         scraper_path = os.path.join(DATA_DIR, 'scraper.py')
         subprocess.Popen([sys.executable, scraper_path])
@@ -3462,7 +3495,7 @@ def api_scraper_run():
 
 
 @app.route('/api/scraper/status')
-@login_required
+@admin_required
 def api_scraper_status():
     stats = {}
     if os.path.exists(SCRAPER_LOG_PATH):
@@ -3523,11 +3556,8 @@ def api_scraper_status():
 
 
 @app.route('/api/scraper/override', methods=['POST'])
-@login_required
+@admin_required
 def api_scraper_override():
-    if not admin_ok():
-        return jsonify({'error': 'Unauthorized'}), 401
-
     body      = request.get_json(silent=True) or {}
     hotel_id  = str(body.get('hotel_id', '')).strip()
     stay_date = str(body.get('stay_date', '')).strip()
@@ -3579,10 +3609,8 @@ def api_scraper_override():
 
 
 @app.route('/api/scraper/download-rates')
-@login_required
+@admin_required
 def api_scraper_download_rates():
-    if not admin_ok():
-        return jsonify({'error': 'Unauthorized'}), 401
     if not os.path.exists(RATES_CSV_PATH):
         return jsonify({'status': 'no rates found — scraper has not run yet'})
     return send_file(RATES_CSV_PATH, mimetype='text/csv',
@@ -3590,10 +3618,8 @@ def api_scraper_download_rates():
 
 
 @app.route('/api/scraper/download-log')
-@login_required
+@admin_required
 def api_scraper_download_log():
-    if not admin_ok():
-        return jsonify({'error': 'Unauthorized'}), 401
     if not os.path.exists(SCRAPER_LOG_PATH):
         return jsonify({'status': 'no log found — scraper has not run yet'})
     return send_file(SCRAPER_LOG_PATH, mimetype='application/json',
@@ -3744,10 +3770,8 @@ def api_occupancy_city(city):
 
 
 @app.route('/api/occupancy/run', methods=['POST'])
-@login_required
+@admin_required
 def api_occupancy_run():
-    if not admin_ok():
-        return jsonify({'error': 'Unauthorized'}), 401
     try:
         occ_path = os.path.join(DATA_DIR, 'occupancy_model.py')
         subprocess.Popen([sys.executable, occ_path])
@@ -3757,10 +3781,8 @@ def api_occupancy_run():
 
 
 @app.route('/api/occupancy/status')
-@login_required
+@admin_required
 def api_occupancy_status():
-    if not admin_ok():
-        return jsonify({'error': 'Unauthorized'}), 401
     rows = _read_occupancy_csv()
     if not rows:
         return jsonify({

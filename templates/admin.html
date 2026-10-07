@@ -26,35 +26,7 @@
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font); font-weight: 200; font-size: 14px; min-height: 100vh; }
 
-    /* ── Auth overlay ── */
-    #auth-overlay {
-      position: fixed; inset: 0; background: var(--bg);
-      display: flex; align-items: center; justify-content: center; z-index: 999;
-    }
-    .auth-box {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 36px 40px; width: 340px; text-align: center;
-    }
-    .auth-logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
-    .auth-logo span { color: var(--accent); }
-    .auth-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
-    .auth-label { display: block; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
-    .auth-input {
-      width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--font);
-      margin-bottom: 16px; outline: none;
-    }
-    .auth-input:focus { border-color: var(--accent); }
-    .auth-btn {
-      width: 100%; padding: 9px; background: var(--accent); color: #fff; border: none;
-      border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font);
-    }
-    .auth-btn:hover { opacity: 0.9; }
-    .auth-error { font-size: 12px; color: var(--red); margin-top: 10px; display: none; }
-
     /* ── Layout ── */
-    #admin-ui { display: none; }
     .admin-header {
       background: var(--surface); border-bottom: 1px solid var(--border);
       padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
@@ -237,20 +209,10 @@
 </head>
 <body>
 
-<!-- Auth overlay -->
-<div id="auth-overlay">
-  <div class="auth-box">
-    <div class="auth-logo">Hospitality <span>IQ</span></div>
-    <p class="auth-sub">Admin Panel · Enter password to continue</p>
-    <label class="auth-label" for="auth-pw">Password</label>
-    <input type="password" id="auth-pw" class="auth-input" placeholder="••••••••" autocomplete="current-password" />
-    <button class="auth-btn" onclick="doAuth()">Sign In</button>
-    <p class="auth-error" id="auth-error">Incorrect password. Please try again.</p>
-  </div>
-</div>
-
-<!-- Admin UI -->
-<div id="admin-ui">
+<!-- Admin UI — reaching this page at all already required a logged-in
+     Advisory-tier session (see admin_page() in app.py); there is no
+     separate password prompt any more. -->
+<div id="admin-ui" style="display:block">
   <header class="admin-header">
     <div class="admin-title" style="display:flex;align-items:center;gap:10px;">
       <img src="/static/images/logo_white.png" alt="Kōdō Hospitality" style="height:18px;width:auto;display:block;">
@@ -708,50 +670,23 @@
 <script>
   const CATS = ['Market','Hotel Opening','Investment','Tourism','Policy','Luxury','Infrastructure'];
   let articles = [];
-  let adminPwd = '';
+  // Reaching this page at all already required a logged-in Advisory-tier
+  // session (admin_page() in app.py checks that before rendering this
+  // template at all). The admin API routes still also check this header
+  // (see admin_required/admin_ok() in app.py) as a second factor, so the
+  // server hands it to this already-authenticated page directly — no
+  // prompt, and no literal password string in this file.
+  const adminPwd = {{ admin_password|tojson }};
 
   function getToday() {
     return new Date().toISOString().slice(0, 10);
   }
 
-  // ── Auth ──────────────────────────────────────────
-  (function init() {
-    const stored = sessionStorage.getItem('hiqAdminAuth');
-    if (stored) { adminPwd = stored; showAdmin(); }
-    else document.getElementById('auth-pw').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(); });
-  })();
-
-  async function doAuth() {
-    const pw = document.getElementById('auth-pw').value.trim();
-    if (!pw) return;
-    // Validate by hitting a protected endpoint
-    const res = await fetch('/admin/news', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
-      body: JSON.stringify({ title: '__test__', published: false, date: getToday(), category: 'Market Intelligence', author: 'Kōdō Editorial', excerpt: '', content: '' }),
-    });
-    if (res.status === 401) {
-      document.getElementById('auth-error').style.display = 'block';
-      return;
-    }
-    // Auth succeeded — delete the test article we just created
-    if (res.ok) {
-      const created = await res.json();
-      await fetch('/admin/news/' + created.id, { method: 'DELETE', headers: { 'X-Admin-Password': pw } });
-    }
-    adminPwd = pw;
-    sessionStorage.setItem('hiqAdminAuth', pw);
-    showAdmin();
-  }
-
   function logout() {
-    sessionStorage.removeItem('hiqAdminAuth');
-    location.reload();
+    window.location.href = '/logout';
   }
 
-  function showAdmin() {
-    document.getElementById('auth-overlay').style.display = 'none';
-    document.getElementById('admin-ui').style.display = 'block';
+  (function init() {
     loadArticles();
     loadHotelsForDI();
     loadRecentUploads();
@@ -759,7 +694,7 @@
     loadScraperStatus();
     loadOccupancyStatus();
     populateHotelSelect();
-  }
+  })();
 
   // ── CRUD ──────────────────────────────────────────
   async function loadArticles() {
