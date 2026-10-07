@@ -1030,11 +1030,15 @@ MAX_EMAIL_LEN   = 254   # RFC 5321 max mailbox length
 MAX_PASSWORD_LEN = 128  # sane upper bound, not a security requirement
 
 
-def _log_registration_attempt(outcome: str):
+def _log_registration_attempt(outcome: str, email: str | None = None):
     """stdout log line for every attempt, success or not. Only the email
     domain is logged, never the full address, since this is effectively a
-    log of who's visiting a public endpoint."""
-    email_domain = (request.form.get("email", "") or "").strip().lower().rsplit("@", 1)[-1] or "-"
+    log of who's visiting a public endpoint. `email` lets callers outside
+    the register form's own request (JSON bodies, like /verify-email and
+    /resend-verification) pass it explicitly instead of reading
+    request.form, which won't be populated for those."""
+    source = email if email is not None else (request.form.get("email", "") or "")
+    email_domain = source.strip().lower().rsplit("@", 1)[-1] or "-"
     print(f"[REGISTER] {datetime.utcnow().isoformat()}Z ip={request.remote_addr or '-'} "
           f"ua={request.headers.get('User-Agent', '-')!r} domain={email_domain} outcome={outcome}",
           flush=True)
@@ -1087,11 +1091,14 @@ def register_page():
             error = "An account with this email already exists."
             _log_registration_attempt("duplicate_email")
         else:
-            _log_registration_attempt("success")
             reg_tier = request.form.get("tier", "observer")
             if reg_tier not in ("observer", "benchmarker"):
                 reg_tier = "observer"
-            is_observer = reg_tier == "observer"
+            # Every self-registered account starts pending_verification,
+            # regardless of tier, and is never logged in automatically —
+            # the old immediate-active-for-observer / pending_approval-for-
+            # benchmarker split now only happens once the email is
+            # confirmed (see api_verify_email below).
             new_user_data = {
                 "id":               str(uuid.uuid4()),
                 "email":            email,
@@ -1099,9 +1106,11 @@ def register_page():
                 "name":             name,
                 "organisation":     org,
                 "tier":             reg_tier,
-                "status":           "active" if is_observer else "pending_approval",
+                "status":           "pending_verification",
+                "email_verified":   False,
+                "verified_at":      None,
                 "created_at":       datetime.utcnow().strftime("%Y-%m-%d"),
-                "approved_at":      datetime.utcnow().strftime("%Y-%m-%d") if is_observer else None,
+                "approved_at":      None,
                 "invited_by":       "self",
                 "ai_queries_used":  0,
                 "ai_queries_reset": datetime.utcnow().strftime("%Y-%m"),
@@ -1110,24 +1119,16 @@ def register_page():
             db["users"].append(new_user_data)
             save_users_db(db)
 
-            resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
-            if not resend.api_key:
-                app.logger.error("Welcome email not sent: RESEND_API_KEY is not set.")
+            sent = _issue_verification_email(email, name)
+            if sent:
+                _log_registration_attempt("verification_sent")
+                return render_template("verify_email_sent.html", email=email)
             else:
-                try:
-                    resend.Emails.send({
-                        "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
-                        "to":      email,
-                        "subject": "Welcome to Kōdō Hospitality",
-                        "html":    _welcome_email_html(html.escape(name), is_observer),
-                    })
-                except Exception as e:
-                    app.logger.error(f"Welcome email error: {e}")
-
-            if is_observer:
-                login_user(User(new_user_data), remember=True)
-                return redirect(url_for("index"))
-            return redirect(url_for("payment_pending"))
+                # Keep the account pending — it's already created, so a
+                # resend (from /resend-verification or the register page
+                # itself) will still work once Resend is reachable again.
+                _log_registration_attempt("verification_failed")
+                error = "We couldn't send the email. Try again in a few minutes."
 
     return render_template("register.html", error=error)
 
@@ -1189,12 +1190,127 @@ def accept_invite():
             u["approved_at"]   = datetime.utcnow().strftime("%Y-%m-%d")
             u["invite_token"]  = None
             u["invite_expires"]= None
+            # Completing an emailed invite link proves ownership of the
+            # inbox it was sent to, same as verifying via /verify-email —
+            # no separate confirmation step needed on top of it.
+            if not u.get("email_verified"):
+                u["email_verified"] = True
+                u["verified_at"]    = datetime.utcnow().isoformat()
             save_users_db(db)
             recalc_seats(u.get("organisation_id"))
             login_user(User(u), remember=True)
             return jsonify({"ok": True})
 
     return jsonify({"error": "Invalid or already-used invite token."}), 400
+
+
+EMAIL_VERIFICATION_RESEND_LIMIT = 3  # per hour, per email — see resend_verification()
+
+
+def _resend_rate_limited(email: str) -> bool:
+    """3-per-hour sliding window per email, mirroring the per-IP limit
+    Flask-Limiter applies on the route itself. Returns True if this email
+    has already hit the limit in the last hour."""
+    now = datetime.utcnow()
+    attempts = [t for t in _verification_resend_attempts.get(email, []) if (now - t).total_seconds() < 3600]
+    _verification_resend_attempts[email] = attempts
+    return len(attempts) >= EMAIL_VERIFICATION_RESEND_LIMIT
+
+
+def _record_resend_attempt(email: str):
+    _verification_resend_attempts.setdefault(email, []).append(datetime.utcnow())
+
+
+_RESEND_GENERIC_RESPONSE = {
+    "success": True,
+    "message": "If an account exists with that email and isn't verified yet, a confirmation link has been sent.",
+}
+
+
+@app.route("/resend-verification", methods=["POST"])
+@limiter.limit("3 per hour", methods=["POST"])
+def resend_verification():
+    data  = request.get_json(silent=True) or request.form
+    email = (data.get("email") or "").strip().lower()
+
+    if not email:
+        return jsonify({"error": "Email required"}), 400
+
+    # Per-email limit, independent of the per-IP one the decorator above
+    # enforces — stops one attacker email being hammered from many IPs.
+    if _resend_rate_limited(email):
+        return jsonify(_RESEND_GENERIC_RESPONSE)
+    _record_resend_attempt(email)
+
+    user = find_user_by_email(email)
+    # Identical response whether the account exists, is already verified,
+    # or isn't — never reveal which, to a caller who only supplied an
+    # email address.
+    if user and not user.email_verified:
+        sent = _issue_verification_email(email, user.name)
+        _log_registration_attempt("verification_sent" if sent else "verification_failed", email=email)
+
+    return jsonify(_RESEND_GENERIC_RESPONSE)
+
+
+@app.route("/verify-email", methods=["GET"])
+def verify_email_page():
+    """Does NOT consume the token — email clients/scanners prefetch links
+    in GET requests, which would otherwise burn a single-use token before
+    the real recipient ever clicks it. Only POST (below, triggered by an
+    explicit button click) consumes it."""
+    token = request.args.get("token", "")
+    _, token_data, _ = _find_verification_token(token)
+    valid = bool(token_data) and not token_data.get("used", False)
+    return render_template("verify_email.html", token=token, valid=valid)
+
+
+@app.route("/verify-email", methods=["POST"])
+def api_verify_email():
+    data  = request.get_json(silent=True) or {}
+    token = (data.get("token") or "").strip()
+    if not token:
+        return jsonify({"error": "Missing token."}), 400
+
+    stored_hash, token_data, tokens = _find_verification_token(token)
+    if not token_data or token_data.get("used", False):
+        _log_registration_attempt("verification_failed")
+        return jsonify({"error": "This link is invalid or has expired."}), 400
+
+    email = token_data["email"]
+    user  = find_user_by_email(email)
+    if not user:
+        _log_registration_attempt("verification_failed", email=email)
+        return jsonify({"error": "Account not found."}), 404
+
+    tokens[stored_hash]["used"] = True
+    save_verification_tokens(tokens)
+
+    is_observer  = user.tier == "observer"
+    new_status   = "active" if is_observer else "pending_approval"
+    update_user_field(user.id, {
+        "email_verified": True,
+        "verified_at":    datetime.utcnow().isoformat(),
+        "status":         new_status,
+        "approved_at":    datetime.utcnow().strftime("%Y-%m-%d") if is_observer else None,
+    })
+    _log_registration_attempt("verified", email=email)
+
+    resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if resend.api_key:
+        try:
+            resend.Emails.send({
+                "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+                "to":      email,
+                "subject": "Welcome to Kōdō Hospitality",
+                "html":    _welcome_email_html(html.escape(user.name), is_observer),
+            })
+        except Exception as e:
+            app.logger.error(f"Welcome email error: {e}")
+
+    if is_observer:
+        return jsonify({"success": True, "redirect": "/login?verified=1"})
+    return jsonify({"success": True, "redirect": "/payment-pending"})
 
 
 # ─── App routes ───────────────────────────────────────────────────────────────

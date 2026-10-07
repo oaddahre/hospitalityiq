@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Your Email — Kōdō</title>
+  <link rel="icon" type="image/png" href="/static/images/kodologo.png">
+  <link rel="apple-touch-icon" href="/static/images/kodologo.png">
+  <meta name="theme-color" content="#4A7FA5">
+  <link rel="preload" href="/static/fonts/SweetSansProRegular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/SweetSansProMedium.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/SweetSansProBold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/SweetSansProExLight.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Sweet Sans Pro';
+      src: url('/static/fonts/SweetSansProExLight.woff2') format('woff2'),
+           url('/static/fonts/SweetSansProExLight.otf') format('opentype');
+      font-weight: 200;
+      font-style: normal;
+      font-display: block;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'Sweet Sans Pro', sans-serif;
+      font-weight: 200;
+      background: #0A0A0A;
+      color: #F0F0EE;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .top-bar {
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-bar__logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: #F0F0EE;
+    }
+    .top-bar-logo-img { height: 24px; width: auto; display: block; }
+    .top-bar__back { font-size: 13px; color: #888888; text-decoration: none; }
+    .top-bar__back:hover { color: #F0F0EE; }
+
+    .auth-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .auth-card {
+      background: #141414;
+      border: 1px solid #242424;
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .auth-eyebrow {
+      font-family: 'Sweet Sans Pro', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4A7FA5;
+      margin-bottom: 12px;
+    }
+    .auth-heading {
+      font-family: 'Sweet Sans Pro', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #F0F0EE;
+      margin-bottom: 12px;
+    }
+    .auth-sub {
+      font-size: 0.875rem;
+      color: #888888;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .form-group { margin-bottom: 18px; text-align: left; }
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #888888;
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-family: 'Sweet Sans Pro', sans-serif;
+      font-size: 0.9375rem;
+      color: #F0F0EE;
+      background: #1C1C1C;
+      border: 1px solid #242424;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+    .form-input:focus { border-color: #4A7FA5; }
+    .form-input::placeholder { color: #444444; }
+
+    .auth-error, .auth-success {
+      font-size: 0.8125rem;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 18px;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .auth-error {
+      background: rgba(200,90,90,0.10);
+      border: 1px solid rgba(200,90,90,0.30);
+      color: #E07070;
+    }
+    .auth-success {
+      background: rgba(90,138,90,0.10);
+      border: 1px solid rgba(90,138,90,0.30);
+      color: #7AB07A;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #4A7FA5;
+      color: #FFFFFF;
+      font-family: 'Sweet Sans Pro', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid #4A7FA5;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      margin-top: 4px;
+    }
+    .btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }
+    .btn-primary:disabled { opacity: 0.6; cursor: default; }
+
+    .auth-footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #242424;
+      text-align: center;
+    }
+    .auth-footer p { font-size: 0.8125rem; color: #888888; line-height: 1.6; }
+    .auth-footer a { color: #4A7FA5; text-decoration: none; font-weight: 500; }
+    .auth-footer a:hover { text-decoration: underline; }
+
+    .auth-note {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.75rem;
+      color: #444444;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/" class="top-bar__logo">
+    <img src="/static/images/logo_white.png" alt="Kōdō Hospitality" class="top-bar-logo-img">
+  </a>
+  <a href="/login" class="top-bar__back">← Back to log in</a>
+</div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    {% if valid %}
+
+    <p class="auth-eyebrow">Confirm Your Email</p>
+    <h1 class="auth-heading">One more step</h1>
+    <p class="auth-sub">Click below to confirm this is your email address and finish setting up your account.</p>
+
+    <div id="verifyError" class="auth-error" style="display:none;"></div>
+    <div id="verifySuccess" class="auth-success" style="display:none;">
+      ✓ Your email is confirmed. Redirecting…
+    </div>
+
+    <input type="hidden" id="verifyToken" value="{{ token }}">
+    <button type="button" class="btn-primary" id="confirmBtn">Confirm My Email →</button>
+
+    {% else %}
+
+    <p class="auth-eyebrow">Link Not Valid</p>
+    <h1 class="auth-heading">This link isn't valid</h1>
+    <p class="auth-sub">It may have already been used or expired. Request a new confirmation link below.</p>
+
+    <div id="resendError" class="auth-error" style="display:none;"></div>
+    <div id="resendSuccess" class="auth-success" style="display:none;">
+      ✓ If an account exists with that email, a confirmation link has been sent.
+    </div>
+
+    <form id="resendForm">
+      <div class="form-group">
+        <label class="form-label" for="resendEmail">Email address</label>
+        <input class="form-input" type="email" id="resendEmail" name="email"
+               placeholder="you@company.com" required autocomplete="email">
+      </div>
+      <button type="submit" class="btn-primary">Resend Confirmation Link →</button>
+    </form>
+
+    {% endif %}
+
+    <div class="auth-footer">
+      <p><a href="/login">← Back to log in</a></p>
+    </div>
+  </div>
+</div>
+
+<p class="auth-note">© 2026 Kōdō Hospitality · Morocco Hospitality Intelligence</p>
+
+{% if valid %}
+<script>
+(function() {
+  const btn = document.getElementById('confirmBtn');
+  const errorEl = document.getElementById('verifyError');
+  const successEl = document.getElementById('verifySuccess');
+  const token = document.getElementById('verifyToken').value;
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Confirming…';
+    errorEl.style.display = 'none';
+
+    try {
+      const res = await fetch('/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        successEl.style.display = 'block';
+        btn.style.display = 'none';
+        setTimeout(() => { window.location.href = data.redirect || '/login'; }, 1200);
+      } else {
+        errorEl.textContent = data.error || 'This link is no longer valid.';
+        errorEl.style.display = 'block';
+        btn.textContent = 'Confirm My Email →';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      errorEl.textContent = 'Something went wrong. Please try again.';
+      errorEl.style.display = 'block';
+      btn.textContent = 'Confirm My Email →';
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+{% else %}
+<script>
+(function() {
+  const form = document.getElementById('resendForm');
+  const errorEl = document.getElementById('resendError');
+  const successEl = document.getElementById('resendSuccess');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('resendEmail').value;
+    const btn = form.querySelector('button[type="submit"]');
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+    errorEl.style.display = 'none';
+
+    try {
+      const res = await fetch('/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        successEl.style.display = 'block';
+        form.style.display = 'none';
+      } else {
+        errorEl.textContent = data.message || data.error || 'Something went wrong. Please try again.';
+        errorEl.style.display = 'block';
+      }
+    } catch (err) {
+      errorEl.textContent = 'Something went wrong. Please try again.';
+      errorEl.style.display = 'block';
+    } finally {
+      btn.textContent = 'Resend Confirmation Link →';
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+{% endif %}
+
+</body>
+</html>
