@@ -2520,6 +2520,42 @@ def admin_recent_uploads():
     return jsonify(load_upload_log()[:20])
 
 
+@app.route("/admin/system-info")
+@admin_required
+def admin_system_info():
+    """Read-only visibility into DATA_DIR and the runtime files living in
+    it — existence/size/mtime only, never contents, so a password reset
+    or verification token file showing up here never leaks a secret.
+    This is how an admin confirms a Railway volume is actually mounted
+    and being written to, from the live app itself."""
+    tracked = {
+        "users.json":                USERS_FILE,
+        "organisations.json":        ORGS_FILE,
+        "reset_tokens.json":         RESET_TOKENS_FILE,
+        "verification_tokens.json":  VERIFICATION_TOKENS_FILE,
+        "news.json":                 NEWS_FILE,
+    }
+    files = {}
+    for name, path in tracked.items():
+        if os.path.exists(path):
+            st = os.stat(path)
+            files[name] = {
+                "exists":      True,
+                "size_bytes":  st.st_size,
+                "modified_at": datetime.utcfromtimestamp(st.st_mtime).isoformat(),
+            }
+        else:
+            files[name] = {"exists": False, "size_bytes": None, "modified_at": None}
+
+    return jsonify({
+        "data_dir":   DATA_DIR,
+        "app_dir":    APP_DIR,
+        "files":      files,
+        "user_count": len(load_users_db()["users"]),
+        "org_count":  len(load_orgs_db()["organisations"]),
+    })
+
+
 # ─── Admin: organisations ─────────────────────────────────────────────────────
 
 @app.route("/admin/organisations")
@@ -2573,6 +2609,25 @@ def admin_org_members(org_id):
         for m in org_members(org_id)
     ]
     return jsonify(safe)
+
+
+@app.route("/admin/organisations/<org_id>", methods=["DELETE"])
+@admin_required
+def admin_orgs_delete(org_id):
+    """Only ever deletes an organisation with zero members — enforced
+    here server-side, not just hidden in the UI, since a client-side-only
+    check is not a real guarantee."""
+    db  = load_orgs_db()
+    org = next((o for o in db["organisations"] if o["id"] == org_id), None)
+    if not org:
+        return jsonify({"error": "Not found"}), 404
+    members = org_members(org_id)
+    if members:
+        return jsonify({"error": f"Cannot delete — {len(members)} member(s) still in this organisation."}), 400
+    db["organisations"] = [o for o in db["organisations"] if o["id"] != org_id]
+    save_orgs_db(db)
+    print(f"[ADMIN] Deleted organisation '{org['name']}' ({org_id}) — had zero members")
+    return jsonify({"ok": True})
 
 
 # ─── Reports ──────────────────────────────────────────────────────────────────

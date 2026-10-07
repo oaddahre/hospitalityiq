@@ -192,14 +192,16 @@ button, .btn {
    input (Reports' search box — a shared class name in case another
    screen needs the same filterable-list search pattern later)
    excluded for the same reason — it hit the identical bug since it
-   was never added here when built. ─── */
-input[type="text"]:not(.hotels-search-input):not(.list-search-input),
-input[type="email"],
-input[type="number"],
-input[type="password"],
+   was never added here when built. .adm-input/.adm-select/.adm-textarea
+   (admin.html's boxed fields) excluded for the identical reason, caught
+   before shipping this time by checking against this exact rule. ─── */
+input[type="text"]:not(.hotels-search-input):not(.list-search-input):not(.adm-input),
+input[type="email"]:not(.adm-input),
+input[type="number"]:not(.adm-input),
+input[type="password"]:not(.adm-input),
 input[type="search"],
-textarea,
-select,
+textarea:not(.adm-textarea),
+select:not(.adm-select),
 .form-input,
 .filter-input,
 .search-input,
