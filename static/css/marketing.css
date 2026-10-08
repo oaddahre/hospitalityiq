@@ -700,7 +700,7 @@ html { scroll-behavior: smooth; }
 }
 
 .mk-nav-logo-img {
-  height: 22px;
+  height: 28px;
   width: auto;
   display: block;
 }
@@ -876,7 +876,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
 }
 
 .lp-mobile-panel-logo-img {
-  height: 22px;
+  height: 28px;
   width: auto;
   display: block;
 }
@@ -2095,7 +2095,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-footer-logo-img {
-  height: 20px;
+  height: 24px;
   width: auto;
   display: block;
 }

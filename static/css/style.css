@@ -323,7 +323,7 @@ textarea::placeholder,
 }
 
 .navbar-logo-img {
-  height: 20px;
+  height: 28px;
   width: auto;
   display: block;
 }
@@ -4405,7 +4405,7 @@ body.light .nav-logout  { color: #8A8A8A; }
 }
 
 .mobile-menu-logo-img {
-  height: 22px;
+  height: 28px;
   width: auto;
   display: block;
 }

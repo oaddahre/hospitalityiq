@@ -18,7 +18,7 @@ body {
   z-index: 100;
 }
 .adm-nav-logo { display: flex; align-items: center; text-decoration: none; }
-.adm-nav-logo-img { height: 20px; width: auto; display: block; }
+.adm-nav-logo-img { height: 28px; width: auto; display: block; }
 .adm-nav-logo-img.logo-dark  { display: block; }
 .adm-nav-logo-img.logo-light { display: none; }
 body.light .adm-nav-logo-img.logo-dark  { display: none; }
