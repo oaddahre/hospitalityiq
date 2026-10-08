@@ -245,6 +245,7 @@ class User(UserMixin):
         # way, so the absence of this field must never mean "unverified".
         self.email_verified        = data.get("email_verified", True)
         self.verified_at           = data.get("verified_at")
+        self.last_login            = data.get("last_login")  # set on successful login, see login_page()
 
     def get_id(self):
         return self.id
@@ -853,6 +854,14 @@ def _admin_csrf_ok() -> bool:
     return hmac.compare_digest(provided, expected)
 
 
+def is_admin_tier(tier: str) -> bool:
+    """The one place that defines what "is an admin" means, so the admin
+    UI's "Admin" tag can ask the server for this fact (via admin_users_list's
+    is_admin field) instead of re-deciding it itself from tier alone — if
+    this rule ever grows beyond a tier check, there's one place to change."""
+    return tier == "advisory"
+
+
 def admin_required(fn):
     """Gate for the admin API: a logged-in Advisory-tier session, always —
     plus, for any state-changing request (POST/PUT/PATCH/DELETE), a valid
@@ -870,12 +879,22 @@ def admin_required(fn):
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
             return jsonify({"error": "Unauthorized"}), 401
-        if current_user.tier != "advisory":
+        if not is_admin_tier(current_user.tier):
             return jsonify({"error": "Forbidden"}), 403
         if request.method in ("POST", "PUT", "PATCH", "DELETE") and not _admin_csrf_ok():
             return jsonify({"error": "Invalid or missing CSRF token"}), 403
         return fn(*args, **kwargs)
     return wrapper
+
+
+def _log_admin_action(action: str, target_email: str = "", detail: str = ""):
+    """One consistent log line for every admin mutation — who did it,
+    what, to whom, when. Distinct from the existing bare [ADMIN] prints
+    (which predate this and don't name the actor) so these are easy to
+    grep for specifically: [ADMIN-ACTION]."""
+    actor = current_user.email if current_user.is_authenticated else "unknown"
+    extra = f" {detail}" if detail else ""
+    print(f"[ADMIN-ACTION] {datetime.utcnow().isoformat()}Z actor={actor} action={action} target={target_email}{extra}", flush=True)
 
 
 def load_data():
@@ -923,6 +942,7 @@ def login_page():
                         error = "Your organisation account has been suspended. Contact support."
                     else:
                         _login_failures.pop(email, None)
+                        update_user_field(user.id, {"last_login": datetime.utcnow().isoformat()})
                         login_user(user, remember=True)
                         if user.force_password_change:
                             return redirect(url_for("account_page"))
@@ -2311,6 +2331,8 @@ def admin_users_list():
     for u in db["users"]:
         row = {k: v for k, v in u.items() if k != "password_hash"}
         row["unverified_7d"] = _is_unverified_over_7_days(u)
+        row["is_admin"] = is_admin_tier(u.get("tier", "observer"))
+        row["is_self"] = u["id"] == current_user.id
         safe.append(row)
     safe.sort(key=lambda u: u.get("created_at") or "", reverse=True)
     return jsonify(safe)
@@ -2353,28 +2375,69 @@ def admin_users_create():
     }
     db["users"].append(new_user)
     save_users_db(db)
+    _log_admin_action("create_user", email, f"tier={tier}")
 
     result = {k: v for k, v in new_user.items() if k != "password_hash"}
     result["temp_password"] = temp_password
     return jsonify(result), 201
 
 
+DISABLING_STATUSES = ("suspended", "rejected")
+
+
 @app.route("/admin/users/<uid>", methods=["PUT"])
 @admin_required
 def admin_users_update(uid):
     data = request.get_json(silent=True) or {}
-    db   = load_users_db()
+
+    # An admin disabling their own only session this way would be a
+    # self-lockout with no way back in (no one else to re-enable them) —
+    # reject it server-side regardless of what the UI shows.
+    if uid == current_user.id and data.get("status") in DISABLING_STATUSES:
+        return jsonify({"error": "You cannot disable your own account."}), 400
+
+    db = load_users_db()
     for u in db["users"]:
         if u["id"] == uid:
+            changes = []
+            if "name" in data and (data["name"] or "").strip():
+                u["name"] = data["name"].strip()
+                changes.append("name")
+            if "organisation" in data:
+                u["organisation"] = (data["organisation"] or "").strip()
+                changes.append("organisation")
             if "tier" in data and data["tier"] in TIER_ORDER:
                 u["tier"] = data["tier"]
+                changes.append(f"tier={data['tier']}")
             if "status" in data and data["status"] in ("active", "suspended", "pending_payment", "pending", "pending_approval", "rejected"):
                 u["status"] = data["status"]
+                changes.append(f"status={data['status']}")
                 if data["status"] == "active" and not u.get("approved_at"):
                     u["approved_at"] = datetime.utcnow().strftime("%Y-%m-%d")
             save_users_db(db)
+            if changes:
+                _log_admin_action("update_user", u["email"], ", ".join(changes))
             return jsonify({k: v for k, v in u.items() if k != "password_hash"})
     return jsonify({"error": "Not found"}), 404
+
+
+@app.route("/admin/users/<uid>", methods=["DELETE"])
+@admin_required
+def admin_users_delete(uid):
+    if uid == current_user.id:
+        return jsonify({"error": "You cannot delete your own account."}), 400
+
+    db = load_users_db()
+    target = next((u for u in db["users"] if u["id"] == uid), None)
+    if not target:
+        return jsonify({"error": "Not found"}), 404
+
+    db["users"] = [u for u in db["users"] if u["id"] != uid]
+    save_users_db(db)
+    if target.get("organisation_id"):
+        recalc_seats(target["organisation_id"])
+    _log_admin_action("delete_user", target["email"])
+    return jsonify({"ok": True})
 
 
 @app.route("/admin/users/<uid>/reset-password", methods=["POST"])
@@ -2384,7 +2447,7 @@ def admin_users_reset_password(uid):
     for u in db["users"]:
         if u["id"] == uid:
             sent = _issue_password_reset(u["email"])
-            print(f"[ADMIN] Password reset email {'sent' if sent else 'FAILED to send'} for {u['email']}")
+            _log_admin_action("reset_password", u["email"], "sent" if sent else "send_failed")
             if sent:
                 return jsonify({"message": f"Password reset email sent to {u['email']}."})
             return jsonify({"message": f"Could not send the reset email to {u['email']} — check RESEND_API_KEY."}), 502
@@ -2414,7 +2477,10 @@ def admin_users_verify(uid):
                 if is_observer:
                     u["approved_at"] = datetime.utcnow().strftime("%Y-%m-%d")
             save_users_db(db)
-            print(f"[ADMIN] Manually verified {u['email']}")
+            # Explicitly required: this one skips the normal email-ownership
+            # proof, so the log line needs to be unambiguous about who
+            # chose to trust the account without it.
+            _log_admin_action("mark_verified", u["email"], "bypassed email confirmation")
             return jsonify({k: v for k, v in u.items() if k != "password_hash"})
     return jsonify({"error": "Not found"}), 404
 
@@ -2428,7 +2494,7 @@ def admin_users_resend_verification(uid):
             if u.get("email_verified"):
                 return jsonify({"message": f"{u['email']} is already verified."})
             sent = _issue_verification_email(u["email"], u.get("name", ""))
-            print(f"[ADMIN] Verification email {'sent' if sent else 'FAILED to send'} for {u['email']}")
+            _log_admin_action("resend_verification", u["email"], "sent" if sent else "send_failed")
             if sent:
                 return jsonify({"message": f"Verification email sent to {u['email']}."})
             return jsonify({"message": f"Could not send the verification email to {u['email']} — check RESEND_API_KEY."}), 502
