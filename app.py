@@ -1389,8 +1389,8 @@ def api_verify_email():
 def favicon():
     return send_from_directory(
         os.path.join(app.root_path, 'static'),
-        'favicon-32.png',
-        mimetype='image/png'
+        'favicon.ico',
+        mimetype='image/x-icon'
     )
 
 
