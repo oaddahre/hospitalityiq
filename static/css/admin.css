@@ -439,6 +439,22 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
    without wrapping at desktop widths; narrower widths let the action
    GROUP wrap (handled by .adm-row-actions above), never a label. */
 .adm-row-users, .adm-row-header-users   { grid-template-columns: minmax(130px, 220px) 1fr 108px 92px 92px 92px 40px; }
+/* Users table only: the shared .adm-row-header border-bottom (above) and
+   .adm-row:first-of-type border-top (above) were both drawing a line
+   between the header and the first row — two lines, not one. Here the
+   header's own border-bottom is the only line at that edge: rows get a
+   border-bottom instead of a border-top (so the last row also gets a
+   line, with none needed on the header edge), and the header's own
+   padding/margin are balanced at 12px above and below its line. */
+#users-header {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.adm-row-users {
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+}
 .adm-row-orgs,  .adm-row-header-orgs    { grid-template-columns: 1.4fr 1fr 80px 90px 40px; }
 .adm-row-news,  .adm-row-header-news    { grid-template-columns: 1fr 130px 90px 90px 60px 40px; }
 .adm-row-uploads, .adm-row-header-uploads { grid-template-columns: 1fr 1fr 70px; }
