@@ -110,9 +110,78 @@ document.getElementById('admSectionNav').addEventListener('click', e => {
   try {
     const res = await fetch('/api/me');
     const data = await res.json();
-    document.getElementById('admSignedIn').textContent = data.email || '';
+    document.getElementById('admUserMenuEmail').textContent = data.email || '';
   } catch {}
 })();
+
+// ─── Nav user menu (top right: email → Back to platform / Log out) ───────
+(function wireUserMenu() {
+  const btn = document.getElementById('admUserMenuBtn');
+  const dropdown = document.getElementById('admUserMenuDropdown');
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+  document.addEventListener('click', e => {
+    if (!dropdown.contains(e.target) && e.target !== btn) dropdown.classList.remove('open');
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') dropdown.classList.remove('open');
+  });
+})();
+
+// ─── Generic per-row "⋯" menu — one #admRowMenu element, repositioned
+// under whichever trigger button opened it. Shared by Users and (later)
+// every other section's row actions, so there's one menu implementation
+// to get right instead of one per section. ──────────────────────────────
+const rowMenu = document.getElementById('admRowMenu');
+let rowMenuCleanup = [];
+
+function closeRowMenu() {
+  rowMenu.classList.remove('open');
+  rowMenu._trigger = null;
+  rowMenuCleanup.forEach(fn => fn());
+  rowMenuCleanup = [];
+}
+
+function openRowMenu(triggerBtn, items) {
+  const reopening = rowMenu._trigger === triggerBtn;
+  closeRowMenu();
+  if (reopening) return;
+
+  rowMenu.innerHTML = items.map((it, i) =>
+    `<button type="button" class="adm-row-menu-item${it.destructive ? ' destructive' : ''}" data-i="${i}">${escHtml(it.label)}</button>`
+  ).join('');
+  rowMenu._trigger = triggerBtn;
+  rowMenu.querySelectorAll('button').forEach((btn, i) => {
+    btn.addEventListener('click', () => { closeRowMenu(); items[i].onClick(triggerBtn); });
+  });
+
+  // Measure off-screen first (visibility:hidden, already display:flex via
+  // .open) so position is computed from the menu's real size, then reveal.
+  rowMenu.style.left = '-9999px';
+  rowMenu.style.top = '-9999px';
+  rowMenu.classList.add('open');
+  const trigRect = triggerBtn.getBoundingClientRect();
+  const menuRect = rowMenu.getBoundingClientRect();
+  let left = trigRect.right - menuRect.width;
+  let top = trigRect.bottom + 6;
+  left = Math.max(8, Math.min(left, window.innerWidth - menuRect.width - 8));
+  if (top + menuRect.height > window.innerHeight - 8) top = trigRect.top - menuRect.height - 6;
+  rowMenu.style.left = left + 'px';
+  rowMenu.style.top = top + 'px';
+
+  const onDocClick = e => {
+    if (!rowMenu.contains(e.target) && e.target !== triggerBtn && !triggerBtn.contains(e.target)) closeRowMenu();
+  };
+  const onKey = e => { if (e.key === 'Escape') closeRowMenu(); };
+  // capture:true so this runs before the trigger's own click handler could
+  // re-open a different menu while this one is still wired up.
+  document.addEventListener('click', onDocClick, true);
+  document.addEventListener('keydown', onKey);
+  rowMenuCleanup.push(() => document.removeEventListener('click', onDocClick, true));
+  rowMenuCleanup.push(() => document.removeEventListener('keydown', onKey));
+}
 
 // ─── Slide-in panel ────────────────────────────────────────────────────
 const panel = document.getElementById('admPanel');
@@ -220,26 +289,62 @@ async function loadOverview() {
 
 // ════════════════════════ USERS ════════════════════════════════════════
 let usersData = [];
-let usersFilterState = { tier: 'all', verified: 'all', search: '' };
+let usersFilterState = { tier: 'all', status: 'all', search: '' };
+let usersSort = { field: 'created_at', dir: 'desc' };
+let usersPage = 1;
+const USERS_PAGE_SIZE = 25;
+
+// The server has more status values than we want to show (pending_approval,
+// pending_verification, pending_payment, pending, suspended, rejected…).
+// This is the one place that collapses them into the three buckets the
+// redesigned Status column actually shows — mirrors "Active = verified and
+// enabled" in spirit: in this app "active" already implies verified+approved,
+// so anything that isn't active or disabled reads as Pending.
+function statusBucket(u) {
+  if (u.status === 'suspended' || u.status === 'rejected') return 'disabled';
+  if (u.status === 'active') return 'active';
+  return 'pending';
+}
+const STATUS_META = {
+  active:   { label: 'Active',   color: 'var(--positive)' },
+  pending:  { label: 'Pending',  color: 'var(--cat-orange)' },
+  disabled: { label: 'Disabled', color: 'var(--text-muted)' },
+};
+// Tier badges are neutral outlines, never orange (orange is reserved for
+// the Pending status above) — Advisory reads as an ink/white outline, not
+// a color, since being an admin is called out separately by .adm-admin-tag.
+const TIER_META = {
+  observer:    { label: 'Observer',    color: 'var(--text-muted)' },
+  benchmarker: { label: 'Benchmarker', color: 'var(--accent)' },
+  advisory:    { label: 'Advisory',    color: 'var(--text)' },
+};
+
+function shortDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 function buildUsersFilters() {
-  const tierEl = document.getElementById('users-tier-filters');
-  const verEl  = document.getElementById('users-verified-filters');
-  const tiers = ['All', 'Observer', 'Benchmarker', 'Advisory'];
-  tierEl.innerHTML = tiers.map((t, i) =>
-    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="tier" data-value="${i === 0 ? 'all' : t.toLowerCase()}">${t}</button>`
+  const tierEl   = document.getElementById('users-tier-filters');
+  const statusEl = document.getElementById('users-status-filters');
+  const tiers = [['All', 'all'], ['Observer', 'observer'], ['Benchmarker', 'benchmarker'], ['Advisory', 'advisory']];
+  tierEl.innerHTML = tiers.map(([label, val], i) =>
+    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="tier" data-value="${val}">${label}</button>`
   ).join('');
-  const vers = [['All', 'all'], ['Verified', 'verified'], ['Unverified', 'unverified']];
-  verEl.innerHTML = vers.map(([label, val], i) =>
-    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="verified" data-value="${val}">${label}</button>`
+  const statuses = [['All', 'all'], ['Active', 'active'], ['Pending', 'pending'], ['Disabled', 'disabled']];
+  statusEl.innerHTML = statuses.map(([label, val], i) =>
+    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="status" data-value="${val}">${label}</button>`
   ).join('');
-  [tierEl, verEl].forEach(container => {
+  [tierEl, statusEl].forEach(container => {
     container.addEventListener('click', e => {
       const btn = e.target.closest('.list-pill');
       if (!btn) return;
       container.querySelectorAll('.list-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       usersFilterState[btn.dataset.filter] = btn.dataset.value;
+      usersPage = 1;
       renderUsers();
     });
   });
@@ -247,9 +352,45 @@ function buildUsersFilters() {
 
 document.getElementById('users-search').addEventListener('input', e => {
   usersFilterState.search = e.target.value.trim().toLowerCase();
+  usersPage = 1;
   renderUsers();
 });
 document.getElementById('users-create-btn').addEventListener('click', openCreateUserPanel);
+
+document.getElementById('users-header').addEventListener('click', e => {
+  const th = e.target.closest('[data-sort]');
+  if (!th) return;
+  if (usersSort.field === th.dataset.sort) {
+    usersSort.dir = usersSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    usersSort.field = th.dataset.sort;
+    usersSort.dir = 'asc';
+  }
+  renderUsers();
+});
+
+function sortUsers(list) {
+  const { field, dir } = usersSort;
+  const mul = dir === 'asc' ? 1 : -1;
+  return [...list].sort((a, b) => {
+    let av, bv;
+    if (field === 'status') { av = statusBucket(a); bv = statusBucket(b); }
+    else { av = a[field]; bv = b[field]; }
+    av = (av || '').toString().toLowerCase();
+    bv = (bv || '').toString().toLowerCase();
+    if (av < bv) return -1 * mul;
+    if (av > bv) return 1 * mul;
+    return 0;
+  });
+}
+
+function updateUsersSortIndicator() {
+  document.querySelectorAll('#users-header [data-sort]').forEach(el => {
+    const active = el.dataset.sort === usersSort.field;
+    el.classList.toggle('adm-sort-active', active);
+    if (active) el.dataset.sortDir = usersSort.dir; else el.removeAttribute('data-sort-dir');
+  });
+}
 
 async function loadUsers() {
   buildUsersFilters();
@@ -262,19 +403,12 @@ async function loadUsers() {
   } catch { ledger.innerHTML = '<p class="adm-empty adm-error">Error loading users.</p>'; }
 }
 
-const TIER_COLOR = { observer: 'var(--text-muted)', benchmarker: 'var(--accent)', advisory: '#F2A33D' };
-const STATUS_COLOR = {
-  active: 'var(--positive)', pending_approval: '#F2A33D', pending_verification: '#F2A33D',
-  pending_payment: '#F2A33D', pending: '#F2A33D', suspended: 'var(--negative)', rejected: 'var(--negative)',
-};
-
 function renderUsers() {
   const ledger = document.getElementById('users-ledger');
-  const { tier, verified, search } = usersFilterState;
-  const filtered = usersData.filter(u => {
+  const { tier, status, search } = usersFilterState;
+  let filtered = usersData.filter(u => {
     if (tier !== 'all' && u.tier !== tier) return false;
-    if (verified === 'verified' && !u.email_verified) return false;
-    if (verified === 'unverified' && u.email_verified) return false;
+    if (status !== 'all' && statusBucket(u) !== status) return false;
     if (search) {
       const hay = `${u.name || ''} ${u.email || ''}`.toLowerCase();
       if (!hay.includes(search)) return false;
@@ -282,61 +416,92 @@ function renderUsers() {
     return true;
   });
 
-  const header = `<div class="adm-row-header adm-row-header-users">
-    <span>Name / Email</span><span>Organisation</span><span>Tier</span><span>Status</span><span>Verified</span><span></span>
-  </div>`;
+  document.getElementById('users-count').textContent = `${filtered.length} user${filtered.length === 1 ? '' : 's'}`;
+  filtered = sortUsers(filtered);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / USERS_PAGE_SIZE));
+  if (usersPage > totalPages) usersPage = totalPages;
+  const pageItems = filtered.slice((usersPage - 1) * USERS_PAGE_SIZE, usersPage * USERS_PAGE_SIZE);
 
   if (!filtered.length) {
-    ledger.innerHTML = header + '<p class="adm-empty">No users match your filters.</p>';
-    return;
+    ledger.innerHTML = '<p class="adm-empty">No users match your filters.</p>';
+  } else {
+    ledger.innerHTML = pageItems.map(u => {
+      const tierMeta = TIER_META[u.tier] || TIER_META.observer;
+      const statusMeta = STATUS_META[statusBucket(u)];
+      return `<div class="adm-row adm-row-users">
+        <div class="adm-row-main" data-label="Name" style="flex-direction:row;align-items:center;gap:6px">
+          <span class="adm-row-name" title="${escHtml(u.name || u.email)}">${escHtml(u.name || '—')}</span>
+          ${u.is_admin ? '<span class="adm-admin-tag">Admin</span>' : ''}
+        </div>
+        <span class="adm-row-email" data-label="Email" title="${escHtml(u.email)}">${escHtml(u.email)}</span>
+        <span data-label="Tier"><span class="adm-pill" style="color:${tierMeta.color}">${tierMeta.label}</span></span>
+        <span data-label="Status"><span class="adm-pill" style="color:${statusMeta.color}">${statusMeta.label}</span></span>
+        <span class="adm-row-meta" data-label="Joined">${shortDate(u.created_at)}</span>
+        <span class="adm-row-meta" data-label="Last login">${u.last_login ? shortDate(u.last_login) : 'Never'}</span>
+        <div class="adm-row-actions" data-label="Actions">
+          <button class="adm-row-menu-btn" type="button" data-uid="${u.id}" aria-label="Actions for ${escHtml(u.name || u.email)}">⋯</button>
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  ledger.innerHTML = header + filtered.map(u => {
-    const tierColor = TIER_COLOR[u.tier] || 'var(--text-muted)';
-    const statusColor = STATUS_COLOR[u.status] || 'var(--text-muted)';
-    const verColor = u.unverified_7d ? 'var(--negative)' : (u.email_verified ? 'var(--positive)' : 'var(--text-muted)');
-    const verLabel = u.email_verified ? 'Verified' : 'Unverified';
-    const isPending = ['pending_approval', 'pending', 'pending_payment'].includes(u.status);
-    const actions = [];
-    actions.push(`<button class="adm-btn-text" data-act="edit" data-uid="${u.id}">Edit</button>`);
-    if (!u.email_verified) {
-      actions.push(`<button class="adm-btn-text" data-act="verify" data-uid="${u.id}">Mark verified</button>`);
-      actions.push(`<button class="adm-btn-text" data-act="resend" data-uid="${u.id}">Resend verification</button>`);
-    }
-    actions.push(`<button class="adm-btn-text" data-act="reset-pw" data-uid="${u.id}" data-email="${escHtml(u.email)}">Reset password</button>`);
-    if (isPending) actions.push(`<button class="adm-btn-text" data-act="approve" data-uid="${u.id}">Approve</button>`);
-    if (u.status === 'active') {
-      actions.push(`<button class="adm-btn-text destructive" data-act="disable" data-uid="${u.id}">Disable</button>`);
-    } else if (u.status === 'suspended' || u.status === 'rejected') {
-      actions.push(`<button class="adm-btn-text" data-act="reactivate" data-uid="${u.id}">Reactivate</button>`);
-    }
+  renderUsersPagination(totalPages);
+  updateUsersSortIndicator();
+}
 
-    return `<div class="adm-row adm-row-users">
-      <div class="adm-row-main" data-label="Name / Email">
-        <span class="adm-row-name" title="${escHtml(u.name || u.email)}">${escHtml(u.name || '—')}</span>
-        <span class="adm-row-sub" title="${escHtml(u.email)}">${escHtml(u.email)}</span>
-      </div>
-      <span class="adm-row-meta" data-label="Organisation" title="${escHtml(u.organisation || '')}">${escHtml(u.organisation || '—')}</span>
-      <span data-label="Tier"><span class="adm-pill" style="color:${tierColor}">${escHtml(u.tier)}</span></span>
-      <span data-label="Status"><span class="adm-pill" style="color:${statusColor}">${escHtml((u.status || '').replace(/_/g, ' '))}</span></span>
-      <span data-label="Verified"><span class="adm-pill" style="color:${verColor}">${verLabel}</span></span>
-      <div class="adm-row-actions" data-label="Actions">${actions.join('')}</div>
-    </div>`;
-  }).join('');
+function renderUsersPagination(totalPages) {
+  const el = document.getElementById('users-pagination');
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <button class="adm-btn-text" id="users-prev-page" type="button"${usersPage === 1 ? ' disabled' : ''}>‹ Prev</button>
+    <span class="adm-pagination-label">Page ${usersPage} of ${totalPages}</span>
+    <button class="adm-btn-text" id="users-next-page" type="button"${usersPage === totalPages ? ' disabled' : ''}>Next ›</button>
+  `;
+  document.getElementById('users-prev-page').addEventListener('click', () => { if (usersPage > 1) { usersPage--; renderUsers(); } });
+  document.getElementById('users-next-page').addEventListener('click', () => { if (usersPage < totalPages) { usersPage++; renderUsers(); } });
+}
+
+// Builds this row's "⋯" menu items. Disable/Delete are left out entirely
+// for the signed-in admin's own row — mirrors the 400 app.py already
+// returns if either were attempted anyway (admin_users_update /
+// admin_users_delete), so the UI never offers what the API would refuse.
+function buildUserMenuItems(u) {
+  const bucket = statusBucket(u);
+  const items = [];
+  items.push({ label: 'Edit', onClick: () => openEditUserPanel(u.id) });
+  items.push({ label: 'Reset password', onClick: anchor => resetPasswordInline(anchor, u.id, u.email) });
+  if (!u.email_verified) {
+    items.push({
+      label: 'Mark verified',
+      onClick: anchor => confirmInline(anchor, 'This skips the email check. Only do this if you know this person.', () => userAction(u.id, 'verify')),
+    });
+    items.push({ label: 'Resend confirmation', onClick: () => userAction(u.id, 'resend-verification') });
+  }
+  if (!u.is_self && bucket !== 'disabled') {
+    items.push({
+      label: 'Disable', destructive: true,
+      onClick: anchor => confirmInline(anchor, 'Disable this user?', () => updateUser(u.id, { status: 'suspended' })),
+    });
+  }
+  if (bucket !== 'active') {
+    items.push({ label: 'Enable', onClick: () => updateUser(u.id, { status: 'active' }) });
+  }
+  if (!u.is_self) {
+    items.push({
+      label: 'Delete', destructive: true,
+      onClick: anchor => confirmInline(anchor, `Delete ${u.name || u.email}? This cannot be undone.`, () => deleteUser(u.id)),
+    });
+  }
+  return items;
 }
 
 document.getElementById('users-ledger').addEventListener('click', e => {
-  const btn = e.target.closest('button[data-act]');
+  const btn = e.target.closest('.adm-row-menu-btn');
   if (!btn) return;
-  const uid = btn.dataset.uid;
-  const act = btn.dataset.act;
-  if (act === 'edit') return openEditUserPanel(uid);
-  if (act === 'verify') return userAction(uid, 'verify');
-  if (act === 'resend') return userAction(uid, 'resend-verification');
-  if (act === 'reset-pw') return resetPasswordInline(btn, uid, btn.dataset.email);
-  if (act === 'approve') return updateUser(uid, { status: 'active' });
-  if (act === 'disable') return confirmInline(btn, 'Disable this user?', () => updateUser(uid, { status: 'suspended' }));
-  if (act === 'reactivate') return updateUser(uid, { status: 'active' });
+  const u = usersData.find(x => x.id === btn.dataset.uid);
+  if (!u) return;
+  openRowMenu(btn, buildUserMenuItems(u));
 });
 
 async function userAction(uid, path) {
@@ -360,9 +525,20 @@ async function resetPasswordInline(btn, uid, email) {
 async function updateUser(uid, changes) {
   try {
     const res = await fetch('/admin/users/' + uid, { method: 'PUT', headers: authHeaders(true), body: JSON.stringify(changes) });
-    if (!res.ok) { toast('Update failed.', 'error'); return; }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { toast(data.error || 'Update failed.', 'error'); return; }
     await loadUsers();
     toast('Updated.', 'success');
+  } catch { toast('Network error.', 'error'); }
+}
+
+async function deleteUser(uid) {
+  try {
+    const res = await fetch('/admin/users/' + uid, { method: 'DELETE', headers: authHeaders() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { toast(data.error || 'Delete failed.', 'error'); return; }
+    await loadUsers();
+    toast('User deleted.', 'success');
   } catch { toast('Network error.', 'error'); }
 }
 
@@ -419,9 +595,12 @@ function openEditUserPanel(uid) {
   const u = usersData.find(x => x.id === uid);
   if (!u) return;
   openPanel('Edit ' + (u.name || u.email), `
+    <div class="adm-field-group"><label class="adm-label">Full name</label><input class="adm-input" id="ue-name" value="${escHtml(u.name || '')}" /></div>
+    <div class="adm-field-group"><label class="adm-label">Email</label><input class="adm-input" value="${escHtml(u.email)}" disabled /></div>
+    <div class="adm-field-group"><label class="adm-label">Organisation</label><input class="adm-input" id="ue-org" value="${escHtml(u.organisation || '')}" /></div>
     <div class="adm-field-group"><label class="adm-label">Tier</label>
       <select class="adm-select" id="ue-tier">
-        ${['observer', 'benchmarker', 'advisory'].map(t => `<option value="${t}"${u.tier === t ? ' selected' : ''}>${t}</option>`).join('')}
+        ${['observer', 'benchmarker', 'advisory'].map(t => `<option value="${t}"${u.tier === t ? ' selected' : ''}>${t[0].toUpperCase() + t.slice(1)}</option>`).join('')}
       </select>
     </div>
     <div class="adm-field-group"><label class="adm-label">Status</label>
@@ -435,9 +614,11 @@ function openEditUserPanel(uid) {
     </div>
   `);
   document.getElementById('ue-submit').addEventListener('click', async () => {
+    const name = document.getElementById('ue-name').value.trim();
+    const org = document.getElementById('ue-org').value.trim();
     const tier = document.getElementById('ue-tier').value;
     const status = document.getElementById('ue-status').value;
-    await updateUser(uid, { tier, status });
+    await updateUser(uid, { name, organisation: org, tier, status });
     closePanel();
   });
 }
@@ -553,7 +734,7 @@ function openOrgMembersPanel(orgId, orgName) {
             <span class="adm-row-name">${escHtml(m.name || '—')}</span>
             <span class="adm-row-sub">${escHtml(m.email)} · ${escHtml(m.role || 'member')}</span>
           </div>
-          <span class="adm-pill" style="color:${STATUS_COLOR[m.status] || 'var(--text-muted)'}">${escHtml((m.status || '').replace(/_/g, ' '))}</span>
+          <span class="adm-pill" style="color:${STATUS_META[statusBucket(m)].color}">${escHtml((m.status || '').replace(/_/g, ' '))}</span>
         </div>
       `).join('');
     })

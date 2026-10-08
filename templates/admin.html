@@ -30,12 +30,19 @@
     </a>
   </div>
   <div class="adm-nav-right">
-    <a href="/dashboard" class="adm-nav-link">Back to dashboard</a>
-    <a href="/logout" class="adm-nav-link">Log out</a>
     <div class="adm-theme-toggle" id="admThemeToggle">
       <span class="adm-toggle-opt" id="admToggleDark">DARK</span>
       <span class="adm-toggle-sep">/</span>
       <span class="adm-toggle-opt" id="admToggleLight">LIGHT</span>
+    </div>
+    <div class="adm-user-menu">
+      <button class="adm-user-menu-btn" id="admUserMenuBtn" type="button">
+        <span id="admUserMenuEmail"></span> <span class="adm-caret">▾</span>
+      </button>
+      <div class="adm-user-menu-dropdown" id="admUserMenuDropdown">
+        <a href="/dashboard" class="adm-row-menu-item">Back to platform</a>
+        <a href="/logout" class="adm-row-menu-item">Log out</a>
+      </div>
     </div>
   </div>
   <button class="adm-hamburger-btn" id="admHamburgerBtn" aria-label="Open menu" aria-expanded="false">
@@ -66,7 +73,6 @@
 <main class="adm-main">
   <div class="adm-header-row">
     <span class="adm-page-title">ADMIN</span>
-    <span class="adm-signed-in" id="admSignedIn"></span>
   </div>
 
   <div class="list-filters adm-section-nav" id="admSectionNav">
@@ -109,10 +115,11 @@
 
   <!-- ══════════════════ USERS ══════════════════ -->
   <section class="adm-section" id="section-users" style="display:none">
-    <h1 class="adm-section-title">Users</h1>
-    <p class="adm-section-desc">Every registered account — tier, status and email verification.</p>
-
     <div class="adm-toolbar">
+      <div>
+        <h1 class="adm-section-title" style="margin-bottom:2px">Users</h1>
+        <span class="adm-count" id="users-count"></span>
+      </div>
       <div class="list-search-wrap" style="margin-top:0">
         <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
           <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
@@ -122,12 +129,30 @@
       <button class="adm-btn adm-btn-primary" id="users-create-btn">New User</button>
     </div>
 
-    <div class="list-filters" id="users-tier-filters"></div>
-    <div class="list-filters" id="users-verified-filters"></div>
+    <div class="adm-filters-row">
+      <div class="adm-filter-group">
+        <span class="adm-filter-label">Tier:</span>
+        <div class="list-filters" id="users-tier-filters"></div>
+      </div>
+      <div class="adm-filter-group">
+        <span class="adm-filter-label">Status:</span>
+        <div class="list-filters" id="users-status-filters"></div>
+      </div>
+    </div>
 
+    <div class="adm-row-header adm-row-header-users" id="users-header">
+      <span data-sort="name">Name</span>
+      <span data-sort="email">Email</span>
+      <span data-sort="tier">Tier</span>
+      <span data-sort="status">Status</span>
+      <span data-sort="created_at">Joined</span>
+      <span data-sort="last_login">Last login</span>
+      <span>Actions</span>
+    </div>
     <div class="adm-ledger" id="users-ledger">
       <p class="adm-loading">Loading…</p>
     </div>
+    <div class="adm-pagination" id="users-pagination"></div>
   </section>
 
   <!-- ══════════════════ ORGANISATIONS ══════════════════ -->
@@ -316,6 +341,9 @@
     </div>
   </div>
 </div>
+
+<!-- Shared "⋯" row-action menu (positioned per-click by admin.js) -->
+<div class="adm-row-menu" id="admRowMenu"></div>
 
 <!-- Toasts -->
 <div class="adm-toast-wrap" id="admToastWrap"></div>

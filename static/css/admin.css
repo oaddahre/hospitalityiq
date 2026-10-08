@@ -47,6 +47,95 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-toggle-opt { color: var(--text-faint); transition: color 0.15s; }
 .adm-toggle-opt.adm-toggle-active { color: var(--accent); font-weight: 500; }
 
+/* ── Nav user menu (top right) ── */
+.adm-user-menu { position: relative; }
+.adm-user-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+.adm-user-menu-btn:hover { background: var(--surface-hover); }
+.adm-caret { font-size: 9px; color: var(--text-muted); }
+.adm-user-menu-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  z-index: 150;
+}
+.adm-user-menu-dropdown.open { display: flex; }
+
+/* ── Generic dropdown menu item — shared by the nav user menu and every
+   per-row "⋯" menu below, so there's one visual style for "a menu". ── */
+.adm-row-menu-item {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 13px;
+  text-decoration: none;
+  padding: 9px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+.adm-row-menu-item:hover { background: var(--surface-hover); }
+.adm-row-menu-item.destructive { color: var(--negative); }
+
+/* ── Per-row "⋯" menu trigger + shared floating menu ──
+   One #admRowMenu element in the DOM, repositioned under whichever
+   trigger was clicked (admin.js) — position:fixed, but display:none
+   when closed, so it never contributes to scrollWidth while hidden
+   (same off-screen-fixed-element lesson as .adm-panel below). */
+.adm-row-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.adm-row-menu-btn:hover { background: var(--surface-hover); color: var(--text); border-color: var(--border); }
+.adm-row-menu {
+  display: none;
+  position: fixed;
+  flex-direction: column;
+  min-width: 170px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  z-index: 350;
+}
+.adm-row-menu.open { display: flex; }
+
 .adm-hamburger-btn {
   display: none;
   flex-direction: column;
@@ -167,6 +256,30 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 }
 .adm-toolbar > * { min-width: 0; }
 
+.adm-count {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* One row holding every filter group ("Tier: …", "Status: …") — wraps
+   as a whole on narrow screens rather than stacking label-over-pills. */
+.adm-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.adm-filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.adm-filter-label {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 .adm-list-filter-label {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
@@ -259,30 +372,71 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   display: grid;
   gap: 14px;
   padding: 0 0 8px;
+  margin-bottom: 8px;
+  border-bottom: 0.5px solid var(--border);
 }
 .adm-row-header span {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10.5px;
   font-weight: 500;
-  color: var(--text-faint);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+.adm-row-header span[data-sort] { cursor: pointer; user-select: none; }
+.adm-row-header span[data-sort]:hover { color: var(--text); }
+.adm-row-header span.adm-sort-active { color: var(--text); }
+.adm-row-header span.adm-sort-active[data-sort-dir="asc"]::after { content: " \2191"; }
+.adm-row-header span.adm-sort-active[data-sort-dir="desc"]::after { content: " \2193"; }
 .adm-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .adm-row-name { font-size: 13px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-row-sub  { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-row-meta { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-row-email { font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .adm-row-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+
+/* Small "Admin" tag next to a name — never relies on tier color alone
+   (is_admin comes from the server, see is_admin_tier() in app.py). */
+.adm-admin-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-muted);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 
 /* Column tracks — the actions column is sized for the longest real
    label ("Resend verification") plus one more action next to it
    without wrapping at desktop widths; narrower widths let the action
    GROUP wrap (handled by .adm-row-actions above), never a label. */
-.adm-row-users, .adm-row-header-users   { grid-template-columns: 1.3fr 1fr 90px 120px 90px minmax(200px, 300px); }
+.adm-row-users, .adm-row-header-users   { grid-template-columns: minmax(130px, 220px) 1fr 108px 92px 92px 92px 40px; }
 .adm-row-orgs,  .adm-row-header-orgs    { grid-template-columns: 1.4fr 1fr 80px 90px minmax(160px, 1fr); }
 .adm-row-news,  .adm-row-header-news    { grid-template-columns: 1fr 130px 90px 90px 60px minmax(180px, 1fr); }
 .adm-row-uploads, .adm-row-header-uploads { grid-template-columns: 1fr 1fr 70px; }
 .adm-row-system,  .adm-row-header-system  { grid-template-columns: 1fr 70px 90px 1fr; }
+
+/* ── Pagination ── */
+.adm-pagination {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+.adm-pagination-label {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.adm-btn-text:disabled { opacity: 0.4; cursor: default; }
+.adm-btn-text:disabled:hover { opacity: 0.4; }
 
 /* ── Pills (tier / status / verified) ── */
 .adm-pill {
@@ -321,6 +475,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   transition: border-color 0.15s;
 }
 .adm-input:focus, .adm-select:focus, .adm-textarea:focus { border-color: #4A7FA5; }
+.adm-input:disabled { opacity: 0.6; cursor: not-allowed; }
 .adm-textarea { resize: vertical; line-height: 1.6; }
 .adm-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
