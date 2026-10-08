@@ -293,8 +293,7 @@
     <h1 class="adm-section-title">Occupancy Model</h1>
     <p class="adm-section-desc">Estimated occupancy confidence and the last model run.</p>
 
-    <div class="adm-toolbar">
-      <span></span>
+    <div class="adm-toolbar" style="justify-content:flex-end">
       <button class="adm-btn adm-btn-primary" id="run-occ-btn">Run Model Now</button>
     </div>
 
@@ -348,7 +347,14 @@
 <!-- Toasts -->
 <div class="adm-toast-wrap" id="admToastWrap"></div>
 
-<script src="/static/js/admin.js?v={{ asset_version('js/admin.js') }}"></script>
+<!-- Must run before admin.js: a non-deferred external <script src> executes
+     synchronously the instant it finishes loading, before the browser moves
+     on to parse the next tag — so if this assignment came after admin.js's
+     <script src>, window.__ADMIN_CSRF__ would still be undefined when
+     admin.js's top-level `const CSRF = window.__ADMIN_CSRF__` ran, and every
+     state-changing request would silently send the literal string
+     "undefined" as its token. -->
 <script>window.__ADMIN_CSRF__ = {{ csrf_token|tojson }};</script>
+<script src="/static/js/admin.js?v={{ asset_version('js/admin.js') }}"></script>
 </body>
 </html>

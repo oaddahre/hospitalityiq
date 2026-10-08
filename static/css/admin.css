@@ -135,6 +135,18 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   z-index: 350;
 }
 .adm-row-menu.open { display: flex; }
+.adm-row-menu-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 8px 6px;
+  max-width: 220px;
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.adm-row-menu-confirm-actions { display: flex; gap: 14px; }
 
 .adm-hamburger-btn {
   display: none;
@@ -283,7 +295,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-list-filter-label {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
-  color: var(--text-faint);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0 0 8px;
@@ -418,8 +430,8 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
    without wrapping at desktop widths; narrower widths let the action
    GROUP wrap (handled by .adm-row-actions above), never a label. */
 .adm-row-users, .adm-row-header-users   { grid-template-columns: minmax(130px, 220px) 1fr 108px 92px 92px 92px 40px; }
-.adm-row-orgs,  .adm-row-header-orgs    { grid-template-columns: 1.4fr 1fr 80px 90px minmax(160px, 1fr); }
-.adm-row-news,  .adm-row-header-news    { grid-template-columns: 1fr 130px 90px 90px 60px minmax(180px, 1fr); }
+.adm-row-orgs,  .adm-row-header-orgs    { grid-template-columns: 1.4fr 1fr 80px 90px 40px; }
+.adm-row-news,  .adm-row-header-news    { grid-template-columns: 1fr 130px 90px 90px 60px 40px; }
 .adm-row-uploads, .adm-row-header-uploads { grid-template-columns: 1fr 1fr 70px; }
 .adm-row-system,  .adm-row-header-system  { grid-template-columns: 1fr 70px 90px 1fr; }
 
@@ -574,16 +586,6 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-panel-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
 .adm-panel-body .adm-field-group { margin-bottom: 16px; }
 .adm-panel-actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
-
-/* ── Inline confirm (replaces confirm()) ── */
-.adm-confirm-inline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 12px;
-  color: var(--text-muted);
-}
 
 /* ── Toasts ── */
 .adm-toast-wrap {

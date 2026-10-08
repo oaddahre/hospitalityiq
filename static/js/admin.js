@@ -4,7 +4,11 @@
 // CSRF token, not a secret — meaningless without the session cookie it's
 // paired with. Every state-changing request below sends it back as
 // X-CSRF-Token; admin_required (app.py) checks it against the session.
-const CSRF = window.__ADMIN_CSRF__;
+// Read live (not cached into a const at load time) — admin.html sets this
+// global in its own <script> tag, and reading it fresh here means the
+// order of that tag relative to this file's <script src> can never
+// silently send the literal string "undefined" as the token again.
+function csrfToken() { return window.__ADMIN_CSRF__; }
 
 function escHtml(s) {
   return String(s == null ? '' : s)
@@ -14,7 +18,7 @@ function escHtml(s) {
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 function authHeaders(json) {
-  const h = { 'X-CSRF-Token': CSRF };
+  const h = { 'X-CSRF-Token': csrfToken() };
   if (json) h['Content-Type'] = 'application/json';
   return h;
 }
@@ -144,24 +148,10 @@ function closeRowMenu() {
   rowMenuCleanup = [];
 }
 
-function openRowMenu(triggerBtn, items) {
-  const reopening = rowMenu._trigger === triggerBtn;
-  closeRowMenu();
-  if (reopening) return;
-
-  rowMenu.innerHTML = items.map((it, i) =>
-    `<button type="button" class="adm-row-menu-item${it.destructive ? ' destructive' : ''}" data-i="${i}">${escHtml(it.label)}</button>`
-  ).join('');
-  rowMenu._trigger = triggerBtn;
-  rowMenu.querySelectorAll('button').forEach((btn, i) => {
-    btn.addEventListener('click', () => { closeRowMenu(); items[i].onClick(triggerBtn); });
-  });
-
-  // Measure off-screen first (visibility:hidden, already display:flex via
-  // .open) so position is computed from the menu's real size, then reveal.
-  rowMenu.style.left = '-9999px';
-  rowMenu.style.top = '-9999px';
-  rowMenu.classList.add('open');
+// Repositions the (already-rendered) menu under triggerBtn, clamped to the
+// viewport. Called on open and again after swapping in a confirm prompt,
+// since that changes the menu's size.
+function positionRowMenu(triggerBtn) {
   const trigRect = triggerBtn.getBoundingClientRect();
   const menuRect = rowMenu.getBoundingClientRect();
   let left = trigRect.right - menuRect.width;
@@ -170,6 +160,59 @@ function openRowMenu(triggerBtn, items) {
   if (top + menuRect.height > window.innerHeight - 8) top = trigRect.top - menuRect.height - 6;
   rowMenu.style.left = left + 'px';
   rowMenu.style.top = top + 'px';
+}
+
+function renderRowMenuItems(triggerBtn, items) {
+  rowMenu.innerHTML = items.map((it, i) =>
+    `<button type="button" class="adm-row-menu-item${it.destructive ? ' destructive' : ''}" data-i="${i}">${escHtml(it.label)}</button>`
+  ).join('');
+  rowMenu.querySelectorAll('button').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      const item = items[i];
+      if (item.confirmMessage) {
+        renderRowMenuConfirm(triggerBtn, item.confirmMessage, item.onConfirm);
+      } else {
+        closeRowMenu();
+        item.onClick && item.onClick(triggerBtn);
+      }
+    });
+  });
+  positionRowMenu(triggerBtn);
+}
+
+// Confirm/Cancel swapped into the SAME floating menu — not inserted next
+// to the tiny "⋯" button, which sits in a ~40px Actions column far too
+// narrow for a "Delete this user? Confirm Cancel" prompt to expand into
+// without overflowing the row. This is the "existing inline confirm UI"
+// (same Confirm/Cancel look used throughout this file), just anchored to
+// the menu popover
+// instead of the table cell.
+function renderRowMenuConfirm(triggerBtn, message, onConfirm) {
+  rowMenu.innerHTML = `
+    <div class="adm-row-menu-confirm">
+      <span>${escHtml(message)}</span>
+      <div class="adm-row-menu-confirm-actions">
+        <button type="button" class="adm-btn-text destructive" id="rmConfirmYes">Confirm</button>
+        <button type="button" class="adm-btn-text" id="rmConfirmNo">Cancel</button>
+      </div>
+    </div>`;
+  document.getElementById('rmConfirmYes').addEventListener('click', () => { closeRowMenu(); onConfirm(); });
+  document.getElementById('rmConfirmNo').addEventListener('click', () => closeRowMenu());
+  positionRowMenu(triggerBtn);
+}
+
+function openRowMenu(triggerBtn, items) {
+  const reopening = rowMenu._trigger === triggerBtn;
+  closeRowMenu();
+  if (reopening) return;
+
+  rowMenu._trigger = triggerBtn;
+  // Measure off-screen first (visibility:hidden, already display:flex via
+  // .open) so position is computed from the menu's real size, then reveal.
+  rowMenu.style.left = '-9999px';
+  rowMenu.style.top = '-9999px';
+  rowMenu.classList.add('open');
+  renderRowMenuItems(triggerBtn, items);
 
   const onDocClick = e => {
     if (!rowMenu.contains(e.target) && e.target !== triggerBtn && !triggerBtn.contains(e.target)) closeRowMenu();
@@ -470,18 +513,24 @@ function buildUserMenuItems(u) {
   const bucket = statusBucket(u);
   const items = [];
   items.push({ label: 'Edit', onClick: () => openEditUserPanel(u.id) });
-  items.push({ label: 'Reset password', onClick: anchor => resetPasswordInline(anchor, u.id, u.email) });
+  items.push({
+    label: 'Reset password',
+    confirmMessage: `Send a password reset email to ${u.email}?`,
+    onConfirm: () => resetPassword(u.id),
+  });
   if (!u.email_verified) {
     items.push({
       label: 'Mark verified',
-      onClick: anchor => confirmInline(anchor, 'This skips the email check. Only do this if you know this person.', () => userAction(u.id, 'verify')),
+      confirmMessage: 'This skips the email check. Only do this if you know this person.',
+      onConfirm: () => userAction(u.id, 'verify'),
     });
     items.push({ label: 'Resend confirmation', onClick: () => userAction(u.id, 'resend-verification') });
   }
   if (!u.is_self && bucket !== 'disabled') {
     items.push({
       label: 'Disable', destructive: true,
-      onClick: anchor => confirmInline(anchor, 'Disable this user?', () => updateUser(u.id, { status: 'suspended' })),
+      confirmMessage: 'Disable this user?',
+      onConfirm: () => updateUser(u.id, { status: 'suspended' }),
     });
   }
   if (bucket !== 'active') {
@@ -490,7 +539,8 @@ function buildUserMenuItems(u) {
   if (!u.is_self) {
     items.push({
       label: 'Delete', destructive: true,
-      onClick: anchor => confirmInline(anchor, `Delete ${u.name || u.email}? This cannot be undone.`, () => deleteUser(u.id)),
+      confirmMessage: `Delete ${u.name || u.email}? This cannot be undone.`,
+      onConfirm: () => deleteUser(u.id),
     });
   }
   return items;
@@ -514,12 +564,12 @@ async function userAction(uid, path) {
   } catch { toast('Network error.', 'error'); }
 }
 
-async function resetPasswordInline(btn, uid, email) {
-  confirmInline(btn, `Send a password reset email to ${email}?`, async () => {
+async function resetPassword(uid) {
+  try {
     const res = await fetch(`/admin/users/${uid}/reset-password`, { method: 'POST', headers: authHeaders() });
     const data = await res.json();
     toast(data.message || (res.ok ? 'Done.' : 'Failed.'), res.ok ? 'success' : 'error');
-  });
+  } catch { toast('Network error.', 'error'); }
 }
 
 async function updateUser(uid, changes) {
@@ -540,22 +590,6 @@ async function deleteUser(uid) {
     await loadUsers();
     toast('User deleted.', 'success');
   } catch { toast('Network error.', 'error'); }
-}
-
-// Inline Confirm/Cancel — replaces confirm(), appended next to the button
-// that triggered it, removed on either choice.
-function confirmInline(triggerBtn, message, onConfirm) {
-  const existing = triggerBtn.parentElement.querySelector('.adm-confirm-inline');
-  if (existing) existing.remove();
-  const wrap = document.createElement('span');
-  wrap.className = 'adm-confirm-inline';
-  wrap.innerHTML = `<span>${escHtml(message)}</span>
-    <button class="adm-btn-text destructive" type="button">Confirm</button>
-    <button class="adm-btn-text" type="button">Cancel</button>`;
-  const [confirmBtn, cancelBtn] = wrap.querySelectorAll('button');
-  confirmBtn.addEventListener('click', () => { wrap.remove(); onConfirm(); });
-  cancelBtn.addEventListener('click', () => wrap.remove());
-  triggerBtn.insertAdjacentElement('afterend', wrap);
 }
 
 function openCreateUserPanel() {
@@ -654,7 +688,7 @@ function renderOrgs() {
   });
 
   const header = `<div class="adm-row-header adm-row-header-orgs">
-    <span>Name</span><span>Owner</span><span>Seats</span><span>Members</span><span></span>
+    <span>Name</span><span>Owner</span><span>Seats</span><span>Members</span><span>Actions</span>
   </div>`;
 
   if (!filtered.length) {
@@ -665,7 +699,6 @@ function renderOrgs() {
   ledger.innerHTML = header + filtered.map(o => {
     const isDup = byName[o.name].length > 1;
     const memberCount = o.seats_used || 0;
-    const canDelete = memberCount === 0;
     return `<div class="adm-row adm-row-orgs">
       <div class="adm-row-main" data-label="Name">
         <span class="adm-row-name" title="${escHtml(o.name)}">${escHtml(o.name)}${isDup ? ' <span style="color:var(--negative)">(duplicate)</span>' : ''}</span>
@@ -678,27 +711,37 @@ function renderOrgs() {
       <span class="adm-row-meta" data-label="Seats">${o.seats_used || 0} / ${o.seats_total || 1}</span>
       <span class="adm-row-meta" data-label="Members">${memberCount}</span>
       <div class="adm-row-actions" data-label="Actions">
-        <button class="adm-btn-text" data-act="members" data-oid="${o.id}" data-name="${escHtml(o.name)}">Members</button>
-        ${o.status === 'active'
-          ? `<button class="adm-btn-text destructive" data-act="suspend" data-oid="${o.id}">Suspend</button>`
-          : `<button class="adm-btn-text" data-act="reactivate-org" data-oid="${o.id}">Reactivate</button>`}
-        ${canDelete ? `<button class="adm-btn-text destructive" data-act="delete-org" data-oid="${o.id}" data-name="${escHtml(o.name)}">Delete</button>` : ''}
+        <button class="adm-row-menu-btn" type="button" data-oid="${o.id}" aria-label="Actions for ${escHtml(o.name)}">⋯</button>
       </div>
     </div>`;
   }).join('');
 }
 
-document.getElementById('orgs-ledger').addEventListener('click', e => {
-  const btn = e.target.closest('button[data-act]');
-  if (!btn) return;
-  const oid = btn.dataset.oid;
-  const act = btn.dataset.act;
-  if (act === 'members') return openOrgMembersPanel(oid, btn.dataset.name);
-  if (act === 'suspend') return updateOrg(oid, { status: 'suspended' });
-  if (act === 'reactivate-org') return updateOrg(oid, { status: 'active' });
-  if (act === 'delete-org') {
-    confirmInline(btn, `Delete "${btn.dataset.name}"? This cannot be undone.`, () => deleteOrg(oid));
+// Builds this org row's "⋯" menu — Delete only offered once it has no
+// members, same guard the old inline Delete link used (canDelete above).
+function buildOrgMenuItems(o) {
+  const items = [{ label: 'Members', onClick: () => openOrgMembersPanel(o.id, o.name) }];
+  if (o.status === 'active') {
+    items.push({ label: 'Suspend', destructive: true, onClick: () => updateOrg(o.id, { status: 'suspended' }) });
+  } else {
+    items.push({ label: 'Reactivate', onClick: () => updateOrg(o.id, { status: 'active' }) });
   }
+  if ((o.seats_used || 0) === 0) {
+    items.push({
+      label: 'Delete', destructive: true,
+      confirmMessage: `Delete "${o.name}"? This cannot be undone.`,
+      onConfirm: () => deleteOrg(o.id),
+    });
+  }
+  return items;
+}
+
+document.getElementById('orgs-ledger').addEventListener('click', e => {
+  const btn = e.target.closest('.adm-row-menu-btn');
+  if (!btn) return;
+  const o = orgsData.find(x => x.id === btn.dataset.oid);
+  if (!o) return;
+  openRowMenu(btn, buildOrgMenuItems(o));
 });
 
 async function updateOrg(orgId, changes) {
@@ -768,7 +811,7 @@ function renderArticles() {
   const ledger = document.getElementById('news-ledger');
   const filtered = articles.filter(a => !newsSearch || artTitle(a).toLowerCase().includes(newsSearch));
   const header = `<div class="adm-row-header adm-row-header-news">
-    <span>Title</span><span>Category</span><span>Type</span><span>Date</span><span>Views</span><span></span>
+    <span>Title</span><span>Category</span><span>Type</span><span>Date</span><span>Views</span><span>Actions</span>
   </div>`;
   if (!filtered.length) {
     ledger.innerHTML = header + '<p class="adm-empty">No articles match your search.</p>';
@@ -787,23 +830,32 @@ function renderArticles() {
       <span class="adm-row-meta" data-label="Date">${escHtml(a.date || '—')}</span>
       <span class="adm-row-meta" data-label="Views">${a.views || 0}</span>
       <div class="adm-row-actions" data-label="Actions">
-        <button class="adm-btn-text" data-act="edit-art" data-id="${a.id}">Edit</button>
-        <button class="adm-btn-text" data-act="toggle-pub" data-id="${a.id}">${status === 'published' ? 'Unpublish' : 'Publish'}</button>
-        <button class="adm-btn-text destructive" data-act="delete-art" data-id="${a.id}">Delete</button>
+        <button class="adm-row-menu-btn" type="button" data-id="${a.id}" aria-label="Actions for ${escHtml(artTitle(a))}">⋯</button>
       </div>
     </div>`;
   }).join('');
 }
 
+function buildArticleMenuItems(a) {
+  const status = artStatus(a);
+  return [
+    { label: 'Edit', onClick: () => openArticlePanel(a.id) },
+    { label: status === 'published' ? 'Unpublish' : 'Publish', onClick: () => togglePublish(a.id) },
+    {
+      label: 'Delete', destructive: true,
+      confirmMessage: `Delete "${artTitle(a)}"?`,
+      onConfirm: () => deleteArticle(a.id),
+    },
+  ];
+}
+
 document.getElementById('news-ledger').addEventListener('click', e => {
-  const btn = e.target.closest('button[data-act]');
+  const btn = e.target.closest('.adm-row-menu-btn');
   if (!btn) return;
   const id = parseInt(btn.dataset.id, 10);
-  if (btn.dataset.act === 'edit-art') return openArticlePanel(id);
-  if (btn.dataset.act === 'toggle-pub') return togglePublish(id);
-  if (btn.dataset.act === 'delete-art') {
-    confirmInline(btn, `Delete "${artTitle(articles.find(a => a.id === id))}"?`, () => deleteArticle(id));
-  }
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  openRowMenu(btn, buildArticleMenuItems(a));
 });
 
 function openArticlePanel(id) {
