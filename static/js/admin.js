@@ -539,7 +539,7 @@ function buildUserMenuItems(u) {
   if (!u.is_self) {
     items.push({
       label: 'Delete', destructive: true,
-      confirmMessage: `Delete ${u.name || u.email}? This cannot be undone.`,
+      confirmMessage: `Delete ${u.name || u.email}? This can't be undone.`,
       onConfirm: () => deleteUser(u.id),
     });
   }

@@ -346,6 +346,25 @@ def cleanup_expired_verification_tokens(tokens: dict) -> dict:
     return {k: v for k, v in tokens.items() if v["expires"] > now}
 
 
+def purge_user_tokens(email: str):
+    """Removes every outstanding password-reset and email-verification
+    token for this address. Called when a user is deleted so a leaked or
+    still-unopened email link for an account that no longer exists can't
+    be used for anything, instead of just sitting there until it expires
+    naturally (up to 24h for verification links)."""
+    email_lower = email.lower()
+
+    reset_tokens = load_reset_tokens()
+    kept_reset = {k: v for k, v in reset_tokens.items() if v.get("email", "").lower() != email_lower}
+    if len(kept_reset) != len(reset_tokens):
+        save_reset_tokens(kept_reset)
+
+    verification_tokens = load_verification_tokens()
+    kept_verification = {k: v for k, v in verification_tokens.items() if v.get("email", "").lower() != email_lower}
+    if len(kept_verification) != len(verification_tokens):
+        save_verification_tokens(kept_verification)
+
+
 def _find_verification_token(token: str):
     """Looks up a verification token, comparing hashes with
     hmac.compare_digest rather than a dict-key lookup. Returns
@@ -2432,18 +2451,37 @@ def admin_users_update(uid):
 @admin_required
 def admin_users_delete(uid):
     if uid == current_user.id:
-        return jsonify({"error": "You cannot delete your own account."}), 400
+        return jsonify({"error": "You can't delete your own account."}), 400
 
     db = load_users_db()
     target = next((u for u in db["users"] if u["id"] == uid), None)
     if not target:
         return jsonify({"error": "Not found"}), 404
 
+    # Allowed for anyone else in any status (pending, active, disabled) —
+    # the one other hard stop is the last admin account, or nobody could
+    # ever sign back in to this page again.
+    if is_admin_tier(target.get("tier", "observer")):
+        admin_count = sum(1 for u in db["users"] if is_admin_tier(u.get("tier", "observer")))
+        if admin_count <= 1:
+            return jsonify({"error": "You can't delete the last remaining admin."}), 400
+
     db["users"] = [u for u in db["users"] if u["id"] != uid]
     save_users_db(db)
     if target.get("organisation_id"):
+        # No explicit member list to edit — organisation membership is
+        # just "a user row with this organisation_id", so deleting the
+        # row above already removes them from it. This only recomputes
+        # the seat count; it deliberately never deletes the organisation
+        # itself, even at zero members (that's a separate, explicit
+        # action from the Organisations section).
         recalc_seats(target["organisation_id"])
-    _log_admin_action("delete_user", target["email"])
+    purge_user_tokens(target["email"])
+    # Logged as name + email domain only, not the full address — enough
+    # to identify who was deleted without the log itself becoming a
+    # record of a real email address.
+    domain = target["email"].rsplit("@", 1)[-1] if "@" in target["email"] else "unknown"
+    _log_admin_action("delete_user", f"{target.get('name') or '(no name)'} (@{domain})")
     return jsonify({"ok": True})
 
 

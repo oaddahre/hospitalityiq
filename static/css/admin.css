@@ -101,6 +101,15 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 }
 .adm-row-menu-item:hover { background: var(--surface-hover); }
 .adm-row-menu-item.destructive { color: var(--negative); }
+/* A hairline divider before the first destructive item in a menu (e.g.
+   Delete, or Disable followed by Delete) — only where it directly follows
+   a non-destructive one, so back-to-back destructive items share a single
+   divider instead of each getting their own. */
+.adm-row-menu-item:not(.destructive) + .adm-row-menu-item.destructive {
+  margin-top: 6px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
 
 /* ── Per-row "⋯" menu trigger + shared floating menu ──
    One #admRowMenu element in the DOM, repositioned under whichever
