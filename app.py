@@ -651,6 +651,13 @@ def ensure_seed_user():
     email    = os.getenv("SEED_ADMIN_EMAIL", "").strip()
     password = os.getenv("SEED_ADMIN_PASS",  "").strip()
     name     = os.getenv("SEED_ADMIN_NAME",  "Admin").strip()
+    # Guards against a misconfigured host env var literally being set to its
+    # own name (e.g. SEED_ADMIN_NAME=SEED_ADMIN_NAME, seen in production) —
+    # that's never a real name someone meant to use, so treat it the same
+    # as unset and fall back to "Admin" rather than seeding a visibly broken
+    # account name.
+    if not name or name.strip().upper() == "SEED_ADMIN_NAME":
+        name = "Admin"
     if not email or not password:
         return
     db = load_users_db()
