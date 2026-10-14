@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css?v={{ asset_version('css/marketing.css') }}">
 </head>
-<body class="lp-body">
+<body class="lp-body lp-landing">
 
 <nav class="mk-nav">
   <a href="/" class="mk-nav-logo">
@@ -93,7 +93,10 @@
 
 <!-- HERO -->
 <section class="lp-hero">
-  <h1 class="lp-hero-headline">The data layer<br>for <em class="lp-hero-em">Moroccan</em><br>hospitality.</h1>
+  <h1 class="lp-hero-headline">
+    <span class="lp-sr-only">The data layer for Moroccan hospitality.</span>
+    <span aria-hidden="true"><span class="lp-hero-l1"><span class="lp-hero-the">The</span> <span class="lp-pill" id="lpHeroPill" data-i="0" aria-live="off"><span class="lp-pill-dot"></span><span class="lp-pill-track"><span class="lp-pill-word lp-pill-cur">data layer</span><span class="lp-pill-word">benchmark</span><span class="lp-pill-word">market intelligence</span><span class="lp-pill-word">pricing signal</span></span></span></span> <span class="lp-hero-l2">for Moroccan hospitality.</span></span>
+  </h1>
   <p class="lp-hero-sub">Kōdō tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:0;display:inline-block;">Request Access →</a>
 
@@ -630,6 +633,84 @@ themeToggle.addEventListener('click', () => {
   );
   updateToggleState();
 });
+</script>
+
+<script>
+// HERO PILL — cycles data layer / benchmark / market intelligence / pricing signal
+(function() {
+  const pill = document.getElementById('lpHeroPill');
+  if (!pill) return;
+  const headline = pill.closest('.lp-hero-headline');
+  const track = pill.querySelector('.lp-pill-track');
+  const words = Array.from(pill.querySelectorAll('.lp-pill-word'));
+  const INTERVAL = 2600;
+  let current = 0;
+  let timer = null;
+
+  pill.classList.add('lp-pill-js');
+
+  function setWidth(i) {
+    track.style.width = words[i].getBoundingClientRect().width + 'px';
+  }
+
+  // Reserve the tallest headline across all states so wrapping changes never shift the page
+  function reserveHeight() {
+    headline.style.minHeight = '';
+    track.style.transition = 'none';
+    let max = 0;
+    words.forEach((w, i) => {
+      setWidth(i);
+      max = Math.max(max, headline.getBoundingClientRect().height);
+    });
+    setWidth(current);
+    void track.offsetWidth;
+    track.style.transition = '';
+    headline.style.minHeight = max + 'px';
+  }
+
+  function show(next) {
+    if (next === current) return;
+    const prev = words[current];
+    prev.classList.remove('lp-pill-cur');
+    prev.classList.add('lp-pill-out');
+    setTimeout(() => {
+      prev.style.transition = 'none';
+      prev.classList.remove('lp-pill-out');
+      void prev.offsetWidth;
+      prev.style.transition = '';
+    }, 400);
+    words[next].classList.add('lp-pill-cur');
+    pill.dataset.i = next;
+    current = next;
+    setWidth(next);
+  }
+
+  function start() {
+    if (timer) return;
+    timer = setInterval(() => show((current + 1) % words.length), INTERVAL);
+  }
+  function stop() { clearInterval(timer); timer = null; }
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function sync() {
+    if (reduced.matches) { stop(); show(0); }
+    else if (document.visibilityState === 'visible') start();
+    else stop();
+  }
+
+  reserveHeight();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reserveHeight);
+  let resizeT;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(reserveHeight, 150);
+  });
+  document.addEventListener('visibilitychange', sync);
+  if (reduced.addEventListener) reduced.addEventListener('change', sync);
+  sync();
+
+  pill.lpShow = show; // test hook
+})();
 </script>
 
 <script>

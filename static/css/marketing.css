@@ -2618,3 +2618,171 @@ a.lp-contact-info-val:hover { color: #4A7FA5; }
   .lp-section-tag { font-size: 11px; }
   .lp-section-meta { font-size: 9px; }
 }
+
+/* ═══════════════════════════════════════
+   LANDING — centered hero + rotating pill,
+   centered sections. Scoped to body.lp-landing
+   so shared lp-* classes on other pages are unaffected.
+═══════════════════════════════════════ */
+.lp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Hero ── */
+.lp-landing .lp-hero {
+  padding: 120px 48px 88px;
+  text-align: center;
+}
+.lp-landing .lp-hero-headline {
+  font-size: clamp(44px, 7vw, 88px);
+  font-style: normal;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  max-width: 1100px;
+  margin: 0 auto 28px;
+}
+/* Fixed line structure: "The [pill]" / "for Moroccan hospitality." —
+   the pill changing width never re-wraps the headline */
+.lp-hero-l1,
+.lp-hero-l2 { display: block; }
+.lp-hero-l1 { white-space: nowrap; margin-bottom: 0.08em; }
+.lp-landing .lp-hero-headline span { font-family: inherit; font-weight: inherit; }
+.lp-landing .lp-hero-sub {
+  max-width: 620px;
+  margin: 0 auto 36px;
+}
+.lp-landing .lp-spotlight-stage { align-items: center; text-align: center; }
+.lp-landing .lp-spotlight-desc-wrap { margin: 0 auto; }
+.lp-landing .lp-spotlight-nav { justify-content: center; }
+
+/* ── Rotating pill ── */
+.lp-pill {
+  --pill: #4A7FA5;
+  --pill-text: #4A7FA5;
+  --pill-bg: rgba(74,127,165,0.14);
+  --pill-border: rgba(74,127,165,0.45);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.08em 0.45em;
+  margin-block: -0.1em;
+  border-radius: 999px;
+  border: 1px solid var(--pill-border);
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  font: inherit;
+  font-style: normal;
+  white-space: nowrap;
+  vertical-align: 0.11em;
+  transition: color 350ms ease, background-color 350ms ease, border-color 350ms ease;
+}
+.lp-pill[data-i="1"] {
+  --pill: #4A9B6F;
+  --pill-text: #4A9B6F;
+  --pill-bg: rgba(74,155,111,0.14);
+  --pill-border: rgba(74,155,111,0.45);
+}
+.lp-pill[data-i="2"] {
+  --pill: #F2A33D;
+  --pill-text: #F2A33D;
+  --pill-bg: rgba(242,163,61,0.14);
+  --pill-border: rgba(242,163,61,0.45);
+}
+.lp-pill[data-i="3"] {
+  --pill: #8B7BC8;
+  --pill-text: #8B7BC8;
+  --pill-bg: rgba(139,123,200,0.14);
+  --pill-border: rgba(139,123,200,0.45);
+}
+/* Light mode: darker text for contrast on the pale tint */
+body.lp-light .lp-pill { --pill-text: #3A6A8C; }
+body.lp-light .lp-pill[data-i="1"] { --pill-text: #357A55; }
+body.lp-light .lp-pill[data-i="2"] { --pill-text: #A8640E; }
+body.lp-light .lp-pill[data-i="3"] { --pill-text: #6553A8; }
+
+.lp-pill-dot {
+  flex: none;
+  width: 0.32em;
+  height: 0.32em;
+  border-radius: 50%;
+  background: var(--pill);
+  transition: background-color 350ms ease;
+}
+.lp-pill-track {
+  position: relative;
+  display: block;
+  height: 1.15em;
+  line-height: 1.15em;
+  overflow: hidden;
+}
+.lp-pill-word { display: none; white-space: nowrap; }
+.lp-pill-word.lp-pill-cur { display: block; }
+
+/* With JS: stack all words, animate track width + vertical swap */
+.lp-pill-js .lp-pill-track {
+  transition: width 350ms cubic-bezier(0.22,1,0.36,1);
+}
+.lp-pill-js .lp-pill-word {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: transform 350ms cubic-bezier(0.22,1,0.36,1), opacity 350ms ease;
+}
+.lp-pill-js .lp-pill-word.lp-pill-cur { opacity: 1; transform: translateY(0); }
+.lp-pill-js .lp-pill-word.lp-pill-out { opacity: 0; transform: translateY(-100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-pill,
+  .lp-pill-dot,
+  .lp-pill-js .lp-pill-track,
+  .lp-pill-js .lp-pill-word { transition: none; }
+}
+
+/* ── Centered sections ── */
+.lp-landing .lp-section .lp-inner { text-align: center; }
+.lp-landing .lp-section-opener {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.lp-landing .lp-section-headline { margin-left: auto; margin-right: auto; }
+.lp-landing .lp-section-sub {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.lp-landing .lp-transcript-question { text-align: center; }
+
+/* Body content inside grids/cards stays left-aligned for readability */
+.lp-landing .lp-modules-split,
+.lp-landing .lp-timeline-wrap,
+.lp-landing .lp-transcript-answers,
+.lp-landing .lp-report-card-v2,
+.lp-landing .lp-plan-features { text-align: left; }
+
+/* Pricing cards: center name, price and button; feature list stays left */
+.lp-landing .lp-plan-header,
+.lp-landing .lp-plan-badge { text-align: center; }
+.lp-landing .lp-plan-price { justify-content: center; }
+
+@media (max-width: 768px) {
+  .lp-landing .lp-hero { padding: 96px 20px 60px; }
+  .lp-landing .lp-hero-headline { font-size: clamp(44px, 7vw, 88px); }
+}
+/* Phones: "The" on its own line, and the type scales down just enough
+   that the widest pill ("market intelligence") fits the screen */
+@media (max-width: 640px) {
+  .lp-landing .lp-hero-headline { font-size: min(44px, calc(9.3vw - 4px)); }
+  .lp-hero-l1 { white-space: normal; }
+  .lp-hero-the { display: block; }
+}
