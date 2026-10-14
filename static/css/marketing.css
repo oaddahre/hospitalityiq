@@ -2668,39 +2668,37 @@ a.lp-contact-info-val:hover { color: #4A7FA5; }
   --pill: #4A7FA5;
   --pill-text: #4A7FA5;
   --pill-bg: rgba(74,127,165,0.14);
-  --pill-border: rgba(74,127,165,0.45);
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
   padding: 0.08em 0.45em;
   margin-block: -0.1em;
   border-radius: 999px;
-  border: 1px solid var(--pill-border);
+  border: none;
+  outline: none;
+  box-shadow: none;
   background: var(--pill-bg);
   color: var(--pill-text);
   font: inherit;
   font-style: normal;
   white-space: nowrap;
   vertical-align: 0.11em;
-  transition: color 350ms ease, background-color 350ms ease, border-color 350ms ease;
+  transition: color 350ms ease, background-color 350ms ease;
 }
 .lp-pill[data-i="1"] {
   --pill: #4A9B6F;
   --pill-text: #4A9B6F;
   --pill-bg: rgba(74,155,111,0.14);
-  --pill-border: rgba(74,155,111,0.45);
 }
 .lp-pill[data-i="2"] {
   --pill: #F2A33D;
   --pill-text: #F2A33D;
   --pill-bg: rgba(242,163,61,0.14);
-  --pill-border: rgba(242,163,61,0.45);
 }
 .lp-pill[data-i="3"] {
   --pill: #8B7BC8;
   --pill-text: #8B7BC8;
   --pill-bg: rgba(139,123,200,0.14);
-  --pill-border: rgba(139,123,200,0.45);
 }
 /* Light mode: darker text for contrast on the pale tint */
 body.lp-light .lp-pill { --pill-text: #3A6A8C; }
@@ -2780,7 +2778,7 @@ body.lp-light .lp-pill[data-i="3"] { --pill-text: #6553A8; }
   .lp-landing .lp-hero-headline { font-size: clamp(44px, 7vw, 88px); }
 }
 /* Phones: "The" on its own line, and the type scales down just enough
-   that the widest pill ("market intelligence") fits the screen */
+   that the widest pill fits the screen */
 @media (max-width: 640px) {
   .lp-landing .lp-hero-headline { font-size: min(44px, calc(9.3vw - 4px)); }
   .lp-hero-l1 { white-space: normal; }
