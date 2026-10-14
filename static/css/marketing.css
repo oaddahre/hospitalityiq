@@ -1904,10 +1904,6 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   color: var(--lp-text);
   letter-spacing: -0.02em;
 }
-.lp-plan-divider {
-  border-top: 1px solid var(--lp-pricing-border);
-  margin-bottom: 20px;
-}
 .lp-plan-features {
   list-style: none;
   flex: 1;
@@ -2784,3 +2780,207 @@ body.lp-light .lp-pill[data-i="3"] { --pill-text: #6553A8; }
   .lp-hero-l1 { white-space: normal; }
   .lp-hero-the { display: block; }
 }
+
+/* ═══════════════════════════════════════
+   LANDING — type scale. One size per role, defined once;
+   clamp() runs from the mobile size (390px) to the desktop size (1440px).
+   Big section titles and the hero headline keep their own sizes.
+═══════════════════════════════════════ */
+.lp-landing {
+  --lp-fs-eyebrow: clamp(14px, 13px + 0.2vw, 16px);
+  --lp-fs-subtitle: clamp(17px, 15.5px + 0.4vw, 21px);
+  --lp-fs-card-title: clamp(22px, 20.5px + 0.4vw, 26px);
+  --lp-fs-body: clamp(16px, 15.25px + 0.2vw, 18px);
+  --lp-fs-list: clamp(15px, 14.25px + 0.2vw, 17px);
+  --lp-fs-price: clamp(48px, 44px + 0.8vw, 56px);
+  --lp-fs-caption: 16px;
+  --lp-fs-button: 16px;
+  --lp-fs-stat: clamp(15px, 14.6px + 0.1vw, 16px);
+  --lp-fs-footer: 15px;
+}
+
+/* Eyebrow / label */
+.lp-landing .lp-section-tag,
+.lp-landing .lp-section-meta,
+.lp-landing .lp-cta-eyebrow,
+.lp-landing .lp-plan-badge,
+.lp-landing .lp-report-city,
+.lp-landing .lp-transcript-role {
+  font-size: var(--lp-fs-eyebrow);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+.lp-landing .lp-plan-badge::after { font-size: inherit; }
+
+/* Section subtitle */
+.lp-landing .lp-hero-sub,
+.lp-landing .lp-section-sub,
+.lp-landing .lp-cta-sub {
+  font-size: var(--lp-fs-subtitle);
+  line-height: 1.5;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.lp-landing .lp-cta-sub {
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--lp-text-muted);
+}
+
+/* Card title */
+.lp-landing .lp-plan-name,
+.lp-landing .lp-report-title,
+.lp-landing .lp-timeline-name {
+  font-size: var(--lp-fs-card-title);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.lp-landing .lp-plan-name {
+  text-transform: none;
+  color: var(--lp-text);
+  margin-bottom: 12px;
+}
+
+/* Card description / body */
+.lp-landing .lp-modules-preview-desc,
+.lp-landing .lp-transcript-body,
+.lp-landing .lp-report-desc,
+.lp-landing .lp-report-subscribe-label,
+.lp-landing .lp-spotlight-desc {
+  font-size: var(--lp-fs-body);
+  line-height: 1.6;
+}
+.lp-landing .lp-spotlight-desc-wrap { max-width: 560px; }
+
+/* List items / feature rows */
+.lp-landing .lp-plan-features li,
+.lp-landing .lp-timeline-list li,
+.lp-landing .lp-modules-list-name {
+  font-size: var(--lp-fs-list);
+  line-height: 1.4;
+}
+.lp-landing .lp-timeline-list li::before { font-size: inherit; }
+
+/* Stat / number labels */
+.lp-landing .lp-spotlight-label,
+.lp-landing .lp-modules-preview-label,
+.lp-landing .lp-modules-preview-stat-lbl,
+.lp-landing .lp-modules-preview-num,
+.lp-landing .lp-modules-list-num,
+.lp-landing .lp-timeline-num,
+.lp-landing .lp-report-stat-k,
+.lp-landing .lp-report-stat-v {
+  font-size: var(--lp-fs-stat);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+.lp-landing .lp-report-stat-v { letter-spacing: normal; }
+.lp-landing .lp-modules-list-num { width: 26px; }
+.lp-landing .lp-modules-preview-stat-lbl {
+  white-space: normal;
+  overflow: visible;
+  max-width: none;
+}
+.lp-landing .lp-modules-preview-label { margin-top: 0; }
+
+/* Captions */
+.lp-landing .lp-plan-currency,
+.lp-landing .lp-report-meta,
+.lp-landing .lp-cta-signin {
+  font-size: var(--lp-fs-caption);
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+/* Buttons (nav CTA is a separate class and is not affected) */
+.lp-landing .btn-fill,
+.lp-landing .btn-outline,
+.lp-landing .btn-accent-outline {
+  font-size: var(--lp-fs-button);
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  padding: 14px 28px;
+  border-radius: 999px;
+}
+
+/* Footer */
+.lp-landing .lp-footer-link,
+.lp-landing .lp-footer-copy {
+  font-size: var(--lp-fs-footer);
+  letter-spacing: 0.06em;
+}
+.lp-landing .lp-footer-links { flex-wrap: wrap; justify-content: center; }
+
+/* Report card header wraps cleanly on narrow cards */
+.lp-landing .lp-report-card-top { flex-wrap: wrap; gap: 8px 16px; }
+
+/* ── Pricing cards: no inner hairlines, spacing instead ── */
+.lp-landing .lp-plan-header { margin-bottom: 24px; }
+.lp-landing .lp-plan-price { line-height: 1.1; }
+.lp-landing .lp-plan-amount,
+.lp-landing .lp-price-custom {
+  font-size: var(--lp-fs-price);
+  line-height: 1.1;
+}
+.lp-landing .lp-plan-features {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  margin-bottom: 28px;
+}
+.lp-landing .lp-plan-features li {
+  padding: 0;
+  border: none;
+  align-items: baseline;
+}
+
+/* Keep grid columns at their existing widths: larger text must not stretch a column */
+.lp-landing .lp-plan-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lp-landing .lp-reports-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lp-landing .lp-plan-price { flex-wrap: wrap; justify-content: center; row-gap: 4px; }
+@media (max-width: 768px) {
+  .lp-landing .lp-plan-grid,
+  .lp-landing .lp-reports-grid { grid-template-columns: minmax(0, 1fr); }
+  /* Report stats: one row per stat on phones */
+  .lp-landing .lp-report-card-stats { flex-direction: column; gap: 10px; }
+  .lp-landing .lp-report-card-stats .lp-report-stat {
+    flex-direction: row;
+    justify-content: space-between;
+    border-right: none;
+    margin-right: 0;
+    padding-right: 0;
+  }
+}
+
+/* Larger list text still fits the 280px module column on one line */
+@media (min-width: 769px) {
+  .lp-landing .lp-modules-list { padding-right: 32px; }
+}
+/* Pricing: badge centered; plan buttons stay on one line inside the existing card width */
+.lp-landing .lp-plan-badge { display: flex; justify-content: center; }
+.lp-landing .lp-plan-cta {
+  padding-left: 16px;
+  padding-right: 16px;
+  white-space: nowrap;
+}
+
+/* Multi-line labels wrap evenly instead of leaving one word alone */
+.lp-landing .lp-cta-signin,
+.lp-landing .lp-footer-copy,
+.lp-landing .lp-section-sub,
+.lp-landing .lp-hero-sub { text-wrap: balance; }
+@media (max-width: 768px) {
+  .lp-landing .lp-report-card-v2 .btn-fill,
+  .lp-landing .lp-report-card-v2 .btn-accent-outline {
+    display: block;
+    text-align: center;
+    padding-left: 16px;
+    padding-right: 16px;
+    text-wrap: balance;
+  }
+}
+.lp-landing .lp-cta-signin { display: block; }
