@@ -16,8 +16,16 @@
   <link rel="preload" href="/static/fonts/SweetSansProExLight.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css?v={{ asset_version('css/marketing.css') }}">
+  <script>
+    // Theme is decided before first paint: light unless the visitor chose dark
+    window.__lpTheme = (function() {
+      try { return localStorage.getItem('kodo-lp-theme') === 'dark' ? 'dark' : 'light'; }
+      catch (e) { return 'light'; }
+    })();
+  </script>
 </head>
-<body class="lp-body lp-landing">
+<body class="lp-body lp-landing lp-light">
+<script>if (window.__lpTheme === 'dark') document.body.classList.remove('lp-light');</script>
 
 <nav class="mk-nav">
   <a href="/" class="mk-nav-logo">
@@ -390,15 +398,15 @@
     <div class="lp-bento" id="lpBento">
 
       <div class="lp-bento-cell lp-bento-a" style="--i:0">
-        <div class="lp-bento-tile" tabindex="0" style="--acc:#4A7FA5;--acc-rgb:74,127,165;--acc-text-light:#3A6A8C">
+        <div class="lp-bento-tile lp-acc-blue" tabindex="0">
           <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Revenue managers</span>
           <p class="lp-bento-promise">Know where you stand against the market before you set today's rates.</p>
           <div class="lp-bento-viz lp-viz-chart" aria-hidden="true">
             <svg viewBox="0 0 400 160" preserveAspectRatio="none" focusable="false">
               <defs>
                 <linearGradient id="lpBentoChartFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#4A7FA5" stop-opacity="0.28"/>
-                  <stop offset="1" stop-color="#4A7FA5" stop-opacity="0"/>
+                  <stop offset="0" stop-opacity="0.28"/>
+                  <stop offset="1" stop-opacity="0"/>
                 </linearGradient>
               </defs>
               <path class="lp-viz-line-muted" d="M0,112 C50,104 90,86 140,92 S230,74 280,80 S360,62 400,66"/>
@@ -412,7 +420,7 @@
       </div>
 
       <div class="lp-bento-cell lp-bento-b" style="--i:1">
-        <div class="lp-bento-tile" tabindex="0" style="--acc:#4A9B6F;--acc-rgb:74,155,111;--acc-text-light:#357A55">
+        <div class="lp-bento-tile lp-acc-green" tabindex="0">
           <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Independent owners</span>
           <p class="lp-bento-promise">Get the benchmarks a chain gives its hotels, without being in a chain.</p>
           <div class="lp-bento-viz lp-viz-bars" aria-hidden="true">
@@ -422,7 +430,7 @@
       </div>
 
       <div class="lp-bento-cell lp-bento-c" style="--i:2">
-        <div class="lp-bento-tile" tabindex="0" style="--acc:#F2A33D;--acc-rgb:242,163,61;--acc-text-light:#A8640E">
+        <div class="lp-bento-tile lp-acc-amber" tabindex="0">
           <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Investors</span>
           <p class="lp-bento-promise">Size a destination before you commit capital.</p>
           <div class="lp-bento-viz lp-viz-rank" aria-hidden="true">
@@ -432,7 +440,7 @@
       </div>
 
       <div class="lp-bento-cell lp-bento-d" style="--i:3">
-        <div class="lp-bento-tile" tabindex="0" style="--acc:#8B7BC8;--acc-rgb:139,123,200;--acc-text-light:#6553A8">
+        <div class="lp-bento-tile lp-acc-violet" tabindex="0">
           <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Lenders and advisors</span>
           <p class="lp-bento-promise">Back your analysis with sourced Moroccan market data.</p>
           <div class="lp-bento-viz lp-viz-ledger" aria-hidden="true">
@@ -444,7 +452,7 @@
       </div>
 
       <div class="lp-bento-cell lp-bento-e" style="--i:4">
-        <div class="lp-bento-tile" tabindex="0" style="--acc:#6B7A8D;--acc-rgb:107,122,141;--acc-text-light:#55626F">
+        <div class="lp-bento-tile lp-acc-grey" tabindex="0">
           <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Management companies</span>
           <p class="lp-bento-promise">Track every property in your portfolio against its market.</p>
           <div class="lp-bento-viz lp-viz-dots" aria-hidden="true">
@@ -673,15 +681,16 @@ function updateToggleState() {
   toggleLight.classList.toggle('mk-toggle-active', isLight);
 }
 
-const savedTheme = localStorage.getItem('kodo-lp-theme');
-if (savedTheme === 'light') document.body.classList.add('lp-light');
+// The theme class is already set at the top of <body> (light by default)
 updateToggleState();
 
 themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('lp-light');
-  localStorage.setItem('kodo-lp-theme',
-    document.body.classList.contains('lp-light') ? 'light' : 'dark'
-  );
+  try {
+    localStorage.setItem('kodo-lp-theme',
+      document.body.classList.contains('lp-light') ? 'light' : 'dark'
+    );
+  } catch (e) {}
   updateToggleState();
 });
 </script>
