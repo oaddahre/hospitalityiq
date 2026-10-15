@@ -117,16 +117,16 @@
         <ul class="sidebar-list" id="segment-sidebar">
           <li class="sidebar-item active" data-seg="all">All Segments</li>
           <li class="sidebar-item" data-seg="Luxury">
-            <span class="seg-pip" style="background:#6B8CAA"></span>Luxury
+            <span class="seg-pip" style="background:var(--cat-1-dot)"></span>Luxury
           </li>
           <li class="sidebar-item" data-seg="Upper Upscale">
-            <span class="seg-pip" style="background:#7A9CB8"></span>Upper Upscale
+            <span class="seg-pip" style="background:var(--cat-5-dot)"></span>Upper Upscale
           </li>
           <li class="sidebar-item" data-seg="Upscale">
-            <span class="seg-pip" style="background:#8CACC5"></span>Upscale
+            <span class="seg-pip" style="background:var(--cat-2-dot)"></span>Upscale
           </li>
           <li class="sidebar-item" data-seg="Midscale">
-            <span class="seg-pip" style="background:#9EBDD0"></span>Midscale
+            <span class="seg-pip" style="background:var(--cat-3-dot)"></span>Midscale
           </li>
         </ul>
       </div>
@@ -236,23 +236,23 @@
           <div id="map-container"></div>
           <div class="map-legend">
             <div class="map-legend-item">
-              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:8px;height:8px;background:#666666;"></span></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:8px;height:8px;background:var(--cat-6-dot);"></span></span>
               <span class="map-legend-label">1–3 Hotels</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:12px;height:12px;background:#666666;"></span></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:12px;height:12px;background:var(--cat-6-dot);"></span></span>
               <span class="map-legend-label">4–8 Hotels</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:16px;height:16px;background:#666666;"></span></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:16px;height:16px;background:var(--cat-6-dot);"></span></span>
               <span class="map-legend-label">9–15 Hotels</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:20px;height:20px;background:#666666;"></span></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:20px;height:20px;background:var(--cat-6-dot);"></span></span>
               <span class="map-legend-label">16+ Hotels</span>
             </div>
             <div class="map-legend-item" style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);">
-              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:10px;height:10px;background:#4A7FA5;"></span></span>
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:10px;height:10px;background:var(--cat-1-dot);"></span></span>
               <span class="map-legend-label">Selected city</span>
             </div>
           </div>
@@ -264,8 +264,8 @@
         <div class="screen-header">
           <h1>Morocco Hotel Pipeline</h1>
           <div class="screen-header-legend">
-            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:#4A7FA5;"></span>Under Construction</span>
-            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:#888888;"></span>Planning</span>
+            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-1-dot);"></span>Under Construction</span>
+            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-6-dot);"></span>Planning</span>
           </div>
         </div>
 
@@ -298,10 +298,10 @@
           <div class="pipe-status-pills" id="pipe-status-pills">
             <button class="seg-btn active" data-pstatus="all">All</button>
             <button class="seg-btn" data-pstatus="Under Construction">
-              <span class="seg-dot" style="background:#4A7FA5"></span>Under Construction
+              <span class="seg-dot" style="background:var(--cat-1-dot)"></span>Under Construction
             </button>
             <button class="seg-btn" data-pstatus="Planning">
-              <span class="seg-dot" style="background:#666666"></span>Planning
+              <span class="seg-dot" style="background:var(--cat-6-dot)"></span>Planning
             </button>
           </div>
           <select id="pipe-city-filter" class="pipe-select">
@@ -364,11 +364,11 @@
             <span class="chart-title">Pipeline Map</span>
             <div class="pipeline-map-legend">
               <span class="pipeline-legend-item">
-                <span class="pipeline-legend-dot" style="background:#4A7FA5;"></span>
+                <span class="pipeline-legend-dot" style="background:var(--cat-1-dot);"></span>
                 <span class="pipeline-legend-label">Under Construction</span>
               </span>
               <span class="pipeline-legend-item">
-                <span class="pipeline-legend-dot" style="background:#888888;"></span>
+                <span class="pipeline-legend-dot" style="background:var(--cat-6-dot);"></span>
                 <span class="pipeline-legend-label">Planning</span>
               </span>
               <span class="pipeline-legend-item">
@@ -593,27 +593,27 @@
           <div class="bench-cal-wrap" id="bench-adr-grid"></div>
           <div class="cal-legend">
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#1A2A3A"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 8%, var(--bg))"></span>
               <span class="cal-legend-label">Low</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#2A5A8A"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 20%, var(--bg))"></span>
               <span class="cal-legend-label">Mid</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#4A7FA5"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 35%, var(--bg))"></span>
               <span class="cal-legend-label">High</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#7AB0D0"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 55%, var(--bg))"></span>
               <span class="cal-legend-label">Peak</span>
             </span>
             <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:#4A7FA5"></span>
+              <span class="cal-legend-dot" style="background:var(--cat-1-dot)"></span>
               <span class="cal-legend-label">My Property</span>
             </span>
             <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:#2A4A6B"></span>
+              <span class="cal-legend-dot" style="background:var(--cat-6-dot)"></span>
               <span class="cal-legend-label">Comp Set</span>
             </span>
           </div>
@@ -638,27 +638,27 @@
           <div class="bench-cal-wrap" id="bench-occ-grid"></div>
           <div class="cal-legend">
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#1A2A1A"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 8%, var(--bg))"></span>
               <span class="cal-legend-label">Low</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#2A5A3A"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 20%, var(--bg))"></span>
               <span class="cal-legend-label">Mid</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#3D7A5C"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 35%, var(--bg))"></span>
               <span class="cal-legend-label">High</span>
             </span>
             <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:#6AAF8A"></span>
+              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 55%, var(--bg))"></span>
               <span class="cal-legend-label">Full</span>
             </span>
             <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:#6AAF8A"></span>
+              <span class="cal-legend-dot" style="background:var(--cat-2-dot)"></span>
               <span class="cal-legend-label">My Property</span>
             </span>
             <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:#1A4A3A"></span>
+              <span class="cal-legend-dot" style="background:var(--cat-6-dot)"></span>
               <span class="cal-legend-label">Comp Set</span>
             </span>
           </div>
@@ -786,8 +786,8 @@
             </div>
             <div class="chart-wrap" id="twrap-arrivals"><canvas id="chart-tour-arrivals"></canvas></div>
             <div class="chart-dot-legend">
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:#4A7FA5;"></span>ONMT Official Data</span>
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:#5B8DB8;"></span>2026E Kodo Forecast</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-1-dot);"></span>ONMT Official Data</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-5-dot);"></span>2026E Kodo Forecast</span>
             </div>
           </div>
         </div>
@@ -838,8 +838,8 @@
             </div>
             <div class="chart-wrap" id="twrap-revenue"><canvas id="chart-tour-revenue"></canvas></div>
             <div class="chart-dot-legend">
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:#4A7FA5;"></span>ONMT Official Data</span>
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:#5B8DB8;"></span>2026E Kodo Forecast</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-1-dot);"></span>ONMT Official Data</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-5-dot);"></span>2026E Kodo Forecast</span>
             </div>
           </div>
           <div class="chart-card">
@@ -1550,10 +1550,10 @@
               <div class="bar-cal-loading">Loading occupancy data…</div>
             </div>
             <div class="bar-cal-legend">
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#6AAF8A"></span>&gt;80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#3D7A5C"></span>60–80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#2A5A3A"></span>40–60%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:#1A2A1A"></span>&lt;40%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 55%, var(--bg))"></span>&gt;80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 35%, var(--bg))"></span>60–80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 20%, var(--bg))"></span>40–60%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 8%, var(--bg))"></span>&lt;40%</span>
             </div>
           </div>
         </div>

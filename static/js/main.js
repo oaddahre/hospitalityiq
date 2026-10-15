@@ -109,6 +109,17 @@ function familyDot(family) {
     .getPropertyValue('--cat-' + (FAMILY_INDEX[family] || 6) + '-dot').trim();
 }
 
+// Heat cells: the family's dot colour mixed into the page colour at four
+// strengths; the text stays --text, which is AA on every level in both modes.
+const HEAT_LEVELS = [8, 20, 35, 55];
+function heatCell(family, level, fw) {
+  return {
+    bg: `color-mix(in srgb, var(--cat-${FAMILY_INDEX[family] || 6}-dot) ${HEAT_LEVELS[level]}%, var(--bg))`,
+    col: 'var(--text)', fw: fw || '', border: '',
+  };
+}
+const HEAT_EMPTY = { bg: 'var(--bg-alt)', col: 'var(--text-2)', fw: '', border: '1px dashed var(--border)' };
+
 function pillHtml(family, text, cls) {
   return `<span class="${cls ? cls + ' ' : ''}pill--${family}">${fmt.esc(text)}</span>`;
 }
@@ -195,14 +206,8 @@ function getBrandLogoImg(brandGroup, size=24) {
   return '<img src="https://cdn.brandfetch.io/domain/' + domain + '?c=1idptYpdMe9b8BdTIPC" alt="' + brandGroup + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:3px;background:white;padding:2px;margin-right:6px;" onerror="this.style.display=\'none\'">';
 }
 
-const SEG_COLORS = {
-  'Ultra Luxury': '#4A7FA5',
-  'Luxury':       '#6B8CAA',
-  'Upper Upscale':'#7A9CB8',
-  'Upscale':      '#8CACC5',
-  'Midscale':     '#9EBDD0',
-  'Economy':      '#B0CDDD',
-};
+// Segment colours for charts/dots follow the segment label families (see SEGMENT_FAMILY)
+const SEG_COLORS = new Proxy({}, { get: (_, seg) => familyDot(SEGMENT_FAMILY[seg] || 'grey') });
 
 // Grayscale tier hierarchy (Notion-style monochrome base) — higher tiers
 // read slightly more prominent, lowest tier most muted. Orange is kept
@@ -228,33 +233,28 @@ const CITY_COORDS = {
 const MOROCCO_CENTER  = [-5.5, 31.5];  // [lng, lat] — Mapbox order
 const MOROCCO_ZOOM    = 5.5;
 const CITY_ZOOM       = 10;
-const GMAP_STYLE_DARK = [
-  {"elementType":"geometry","stylers":[{"color":"#141414"}]},
-  {"elementType":"labels.text.fill","stylers":[{"color":"#888888"}]},
-  {"elementType":"labels.text.stroke","stylers":[{"color":"#0A0A0A"}]},
-  {"featureType":"administrative","elementType":"geometry","stylers":[{"color":"#242424"}]},
-  {"featureType":"administrative.country","elementType":"geometry.stroke","stylers":[{"color":"#444444"}]},
-  {"featureType":"administrative.country","elementType":"labels.text.fill","stylers":[{"color":"#4A7FA5"}]},
-  {"featureType":"administrative.province","elementType":"geometry.stroke","stylers":[{"color":"#242424"}]},
-  {"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#888888"}]},
-  {"featureType":"road","elementType":"geometry","stylers":[{"color":"#242424"}]},
-  {"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#141414"}]},
-  {"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#2E2E2E"}]},
-  {"featureType":"water","elementType":"geometry","stylers":[{"color":"#0A0A0A"}]},
-  {"featureType":"poi","stylers":[{"visibility":"off"}]},
-  {"featureType":"transit","stylers":[{"visibility":"off"}]},
-];
-const GMAP_STYLE_LIGHT = [
-  {"elementType":"geometry","stylers":[{"color":"#F5F5F5"}]},
-  {"elementType":"labels.text.fill","stylers":[{"color":"#616161"}]},
-  {"elementType":"labels.text.stroke","stylers":[{"color":"#F5F5F5"}]},
-  {"featureType":"administrative.country","elementType":"geometry.stroke","stylers":[{"color":"#CCCCCC"}]},
-  {"featureType":"road","elementType":"geometry","stylers":[{"color":"#FFFFFF"}]},
-  {"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#E0E0E0"}]},
-  {"featureType":"water","elementType":"geometry","stylers":[{"color":"#C9D8E8"}]},
-  {"featureType":"poi","stylers":[{"visibility":"off"}]},
-  {"featureType":"transit","stylers":[{"visibility":"off"}]},
-];
+// Google Maps styles from the palette (static/js/palette.js). Neutrals are hex
+// in both modes, which the Maps style API requires.
+function gmapStyles() {
+  const p = KodoPalette.get();
+  const water = p.theme === 'dark' ? p.bg : p.families.blue.tint;
+  return [
+    { elementType: 'geometry', stylers: [{ color: p.bgAlt }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: p.text2 }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: p.bgAlt }] },
+    { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: p.border }] },
+    { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: p.text3 }] },
+    { featureType: 'administrative.country', elementType: 'labels.text.fill', stylers: [{ color: p.text }] },
+    { featureType: 'administrative.province', elementType: 'geometry.stroke', stylers: [{ color: p.border }] },
+    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: p.text2 }] },
+    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: p.bg }] },
+    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: p.border }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: p.border }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: water }] },
+  ];
+}
 
 
 const KPI_DELTAS = {
@@ -270,6 +270,10 @@ Chart.register(ChartDataLabels);
 Chart.defaults.scale.grid.display   = false;
 Chart.defaults.scale.grid.drawTicks = false;
 Chart.defaults.scale.border.display = false;
+// Default text and (if ever shown) grid colours follow the palette and the theme
+Chart.defaults.color = KodoPalette.get().text2;
+Chart.defaults.scale.grid.color = KodoPalette.get().grid;
+KodoPalette.onChange(p => { Chart.defaults.color = p.text2; Chart.defaults.scale.grid.color = p.grid; });
 Chart.defaults.font.family = "'Sweet Sans Pro', sans-serif";
 Chart.defaults.scales.linear.ticks.font = { weight: '400', family: "'Sweet Sans Pro', sans-serif" };
 
@@ -311,10 +315,8 @@ let brandDetailPrevScreen = 'dashboard';
 const brandsFilter   = { sort: 'total_keys', search: '', segment: 'all' };
 const brandsCompSort = { col: 'total_keys', dir: -1 };
 const BRANDS_STR_COLS = new Set(['brand_group']);
-const BRAND_PALETTE   = [
-  '#4A7FA5','#6B8CAA','#5A9AA8','#7A6A8A','#4A6E8A',
-  '#6A7A9A','#6A8A6A','#8A5A7A','#9A8A5A','#3A6A8E',
-];
+// Brand share colours cycle through the chart series (blue, green, orange, violet, sky, grey)
+const BRAND_PALETTE = new Proxy([], { get: (_, i) => (i === 'length' ? 6 : KodoPalette.get().series[Number(i) % 6]) });
 const BRANDS_COMP_STR = new Set(['brand_group']);
 
 // ─── Theme ────────────────────────────────────────────────────────
@@ -475,26 +477,36 @@ function renderKPIs() {
 
 // ─── Charts ───────────────────────────────────────────────────────
 
+// Hex colour + alpha → rgba() (Chart.js draws on canvas, so no CSS variables)
+function withAlpha(hex, a) {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+// Chart colours, read from the palette for the current theme (palette.js).
+// Series order: blue, green, orange, violet, sky, grey (dot colours).
 function getChartColors() {
-  const dark = !document.body.classList.contains('light');
+  const p = KodoPalette.get();
   return {
-    // Grayscale base — orange is reserved for the hover/highlight state
-    // only, so a chart at rest reads as monochrome and a bar "lights up"
-    // in the brand accent purely as an interaction cue.
-    barColor:   dark ? '#555555' : '#AAAAAA',
-    barColor2:  dark ? '#777777' : '#888888',
-    barColor3:  dark ? '#444444' : '#BBBBBB',
-    barColor4:  dark ? '#666666' : '#999999',
-    hoverColor: '#4A7FA5',
-    fillColor:  dark ? 'rgba(85,85,85,0.10)' : 'rgba(170,170,170,0.14)',
-    gridColor:  'transparent',
-    tick:       dark ? '#888888' : '#888888',
-    label:      dark ? '#888888' : '#888888',
-    catLabel:   dark ? '#AAAAAA' : '#555555',
-    tooltipBg:  dark ? '#141414' : '#FFFFFF',
-    tooltipBdr: dark ? '#242424' : '#E4E4E4',
-    tooltipTtl: dark ? '#F0F0EE' : '#1A1A1A',
-    tooltipBdy: dark ? '#888888' : '#888888',
+    barColor:   p.series[0],
+    barColor2:  p.series[1],
+    barColor3:  p.series[2],
+    barColor4:  p.series[3],
+    series:     p.series,
+    compColor:  p.series[5],                 // comp-set / benchmark reference: grey
+    hoverColor: p.families.blue.text,       // highlighted bar: deeper blue (lighter in dark)
+    forecastColor: p.series[4],              // forecast years: sky
+    fillColor:  withAlpha(p.series[0], 0.12),
+    gridColor:  p.grid,
+    tick:       p.text2,                     // axis text (--text-3 is below AA at 11px)
+    label:      p.text2,
+    catLabel:   p.text,
+    tooltipBg:  p.tooltipBg,
+    tooltipBdr: p.tooltipBorder,
+    tooltipTtl: p.text,
+    tooltipBdy: p.text2,
+    pointBorder: p.bg,
   };
 }
 
@@ -566,8 +578,7 @@ function barColors(labels) {
 // their configs rather than changing the shared chartConfig() used by
 // every other bar chart on the platform.
 function lightenCityChartLabels(cfg) {
-  const dark = !document.body.classList.contains('light');
-  const color = dark ? 'rgba(240,240,238,0.5)' : 'rgba(0,0,0,0.45)';
+  const color = KodoPalette.get().text2;
   const font = { family: 'Sweet Sans Pro', size: 11, weight: '200' };
   cfg.options.scales.y.ticks.font = font;
   cfg.options.scales.y.ticks.color = color;
@@ -758,9 +769,9 @@ function renderBrandsMarketShare() {
   const segs = top8.map((b, i) => ({
     name:  b.brand_group,
     pct:   b.total_keys / total * 100,
-    color: BRAND_PALETTE[i] || '#888888',
+    color: BRAND_PALETTE[i],
   }));
-  if (otherKeys > 0) segs.push({ name: 'Other', pct: otherKeys / total * 100, color: '#444444' });
+  if (otherKeys > 0) segs.push({ name: 'Other', pct: otherKeys / total * 100, color: KodoPalette.get().text3 });
 
   const barHtml = segs.map(s =>
     `<div class="brn-mkt-seg" style="width:${s.pct.toFixed(2)}%;background:${s.color}" title="${s.name}: ${s.pct.toFixed(1)}%"></div>`
@@ -1391,8 +1402,7 @@ async function renderOccCalendar(hotelId) {
   const estMap = {};
   for (const e of estimates) estMap[e.date] = e;
 
-  const dark = !document.body.classList.contains('light');
-  const dayNumCol = dark ? '#888888' : '#AAAAAA';
+  const dayNumCol = 'var(--text)';
 
   const today = new Date();
   let html = '';
@@ -1403,24 +1413,12 @@ async function renderOccCalendar(hotelId) {
     const occ = e ? +e.estimated_occupancy : null;
     const conf = e ? e.confidence : 'low';
 
-    let bg, col, fw = '', border = '';
-    if (occ !== null) {
-      if (dark) {
-        if (occ >= 80) { bg = '#6AAF8A'; col = '#0A0A0A'; fw = '600'; }
-        else if (occ >= 60) { bg = '#3D7A5C'; col = '#F0EDE6'; fw = '500'; }
-        else if (occ >= 40) { bg = '#2A5A3A'; col = '#B0D8C0'; fw = ''; }
-        else { bg = '#1A2A1A'; col = '#6A9A7A'; border = '1px solid #2A5A3A'; }
-      } else {
-        if (occ >= 80) { bg = '#B0E0C8'; col = '#0A4A2A'; fw = '600'; border = '1px solid #6AAF8A'; }
-        else if (occ >= 60) { bg = '#D0EDE0'; col = '#1A5A3A'; fw = '500'; border = '1px solid #3D7A5C'; }
-        else if (occ >= 40) { bg = '#E5F5ED'; col = '#2A6A4A'; border = '1px solid #9ED0B8'; }
-        else { bg = '#FFFFFF'; col = '#8A8A8A'; border = '1px solid #ECECEC'; }
-      }
-    } else {
-      bg = dark ? '#181818' : '#F8F8F8';
-      col = dark ? '#444' : '#BBB';
-      border = dark ? '1px dashed #333' : '1px dashed #DDD';
-    }
+    const cell = occ === null ? HEAT_EMPTY
+      : occ >= 80 ? heatCell('green', 3, '600')
+      : occ >= 60 ? heatCell('green', 2, '500')
+      : occ >= 40 ? heatCell('green', 1)
+      : heatCell('green', 0);
+    const { bg, col, fw, border } = cell;
 
     const styAttr = `background:${bg};color:${col};${fw ? `font-weight:${fw};` : ''}${border ? `border:${border};` : ''}`;
     const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : '—';
@@ -1563,8 +1561,8 @@ function initGoogleMaps() {
 window.initGoogleMaps = initGoogleMaps;
 
 function swapMapTheme(mode) {
-  const styles = mode === 'light' ? GMAP_STYLE_LIGHT : GMAP_STYLE_DARK;
-  if (googleMap)         googleMap.setOptions({ styles });
+  const styles = gmapStyles();
+  if (googleMap)         { googleMap.setOptions({ styles }); updateMapMarkers(); }
   if (googlePipelineMap) googlePipelineMap.setOptions({ styles });
 }
 
@@ -1576,7 +1574,7 @@ function initMap() {
       ...GMAP_OPTIONS_BASE,
       center: { lat: 31.5, lng: -5.5 },
       zoom:   6,
-      styles: isDark ? GMAP_STYLE_DARK : GMAP_STYLE_LIGHT,
+      styles: gmapStyles(),
     });
 
     updateMapMarkers();
@@ -1595,9 +1593,9 @@ function cityDotIcon(count, highlighted) {
   return {
     path:        google.maps.SymbolPath.CIRCLE,
     scale:       size / 2,
-    fillColor:   highlighted ? '#4A7FA5' : '#666666',
+    fillColor:   highlighted ? KodoPalette.get().families.blue.dot : KodoPalette.get().families.grey.dot,
     fillOpacity: 1,
-    strokeColor: 'rgba(255,255,255,0.15)',
+    strokeColor: KodoPalette.get().bg,
     strokeWeight: 1.5,
   };
 }
@@ -2232,7 +2230,7 @@ function initTourismCharts() {
   // bar — used by the arrivals and revenue trend charts below so the
   // forecast year reads as visually distinct instead of relying on a
   // text subtitle to say so.
-  const FORECAST_BAR_COLOR = '#5B8DB8';
+  const FORECAST_BAR_COLOR = getChartColors().forecastColor;
   function forecastBarColors(labels) {
     const base = getChartColors().barColor;
     return labels.map(l => /E$/.test(String(l)) ? FORECAST_BAR_COLOR : base);
@@ -2367,7 +2365,7 @@ function initTourismCharts() {
           backgroundColor: getChartColors().fillColor,
           fill: false, tension: 0.4,
           pointRadius: 4, pointBackgroundColor: getChartColors().barColor,
-          pointBorderColor: '#F9F6F0', pointBorderWidth: 2,
+          pointBorderColor: getChartColors().pointBorder, pointBorderWidth: 2,
         }],
       },
       options: {
@@ -2466,11 +2464,11 @@ function initPipelineMap() {
       ...GMAP_OPTIONS_BASE,
       center: { lat: 31.5, lng: -5.5 },
       zoom:   6,
-      styles: isDark ? GMAP_STYLE_DARK : GMAP_STYLE_LIGHT,
+      styles: gmapStyles(),
     });
 
     pipelineMarkers = pipelineData.map(p => {
-      const color  = p.status === 'Under Construction' ? '#4A7FA5' : '#888888';
+      const color  = familyDot(p.status === 'Under Construction' ? 'blue' : 'grey');
       const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
       const marker = new google.maps.Marker({
         position: { lat: p.lat, lng: p.lng },
@@ -3496,7 +3494,7 @@ async function updateBenchFreshness() {
       const lastScrape = scraperRes?.last_run?.slice(0, 10) || '—';
       const modelRun   = occRes?.model_run_date || '—';
       freshnessEl.textContent = `Data as of ${lastScrape} · Occupancy model run ${modelRun}`;
-      if (modeEl) { modeEl.textContent = 'Live data available'; modeEl.style.background = 'rgba(45,107,58,0.15)'; modeEl.style.color = 'var(--green)'; }
+      if (modeEl) { modeEl.textContent = 'Live data available'; modeEl.classList.add('pill--green'); }
     } else {
       freshnessEl.textContent = 'Demo mode — sample Marrakech luxury data';
     }
@@ -3775,57 +3773,30 @@ function buildCalMap(view, prefix, map) {
   }
 }
 
+// ADR heat = blue, occupancy heat = green, comp-set average = grey
 function adrCellStyle(adr, isCompSet = false) {
-  const dark = !document.body.classList.contains('light');
   if (isCompSet) {
-    if (dark) {
-      if (adr >= 6000) return {bg:'#2A4A6B', col:'#FFFFFF',  fw:'600', border:''};
-      if (adr >= 4000) return {bg:'#1A2E42', col:'#8AB0D0',  fw:'500', border:''};
-      return {bg:'#0A1520', col:'#6A8AAA', fw:'', border:'1px solid #2A4A6B'};
-    } else {
-      if (adr >= 6000) return {bg:'#D0E4F5', col:'#1A4A7A', fw:'600', border:'1px solid #5A90C8'};
-      if (adr >= 4000) return {bg:'#E8F2FC', col:'#2A6AAA', fw:'',    border:'1px solid #8AB8E0'};
-      return {bg:'#F5F9FF', col:'#5A8AB0', fw:'', border:'1px solid #C0D8F0'};
-    }
+    if (adr >= 6000) return heatCell('grey', 3, '600');
+    if (adr >= 4000) return heatCell('grey', 2, '500');
+    return heatCell('grey', 1);
   }
-  if (dark) {
-    if (adr >= 6000) return {bg:'#7AB0D0', col:'#0A0A0A', fw:'600', border:''};
-    if (adr >= 4000) return {bg:'#4A7FA5', col:'#0A0A0A', fw:'500', border:''};
-    if (adr >= 2000) return {bg:'#2A5A8A', col:'#F0EDE6', fw:'', border:''};
-    return {bg:'#1A2A3A', col:'#7A9AB5', fw:'', border:'1px solid #2A5A8A'};
-  } else {
-    if (adr >= 6000) return {bg:'#B8D8EC', col:'#0A3050', fw:'600', border:'1px solid #7AB0D0'};
-    if (adr >= 4000) return {bg:'#D8E8F2', col:'#1A4A6B', fw:'500', border:'1px solid #4A7FA5'};
-    if (adr >= 2000) return {bg:'#EAF2F8', col:'#2A5A8A', fw:'',   border:'1px solid #9EC3DC'};
-    return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
-  }
+  if (adr >= 6000) return heatCell('blue', 3, '600');
+  if (adr >= 4000) return heatCell('blue', 2, '500');
+  if (adr >= 2000) return heatCell('blue', 1);
+  return heatCell('blue', 0);
 }
 
 function occCellStyle(occ, isCompSet = false) {
-  const dark = !document.body.classList.contains('light');
   const p = occ * 100;
   if (isCompSet) {
-    if (dark) {
-      if (p >= 80) return {bg:'#1A4A3A', col:'#FFFFFF',  fw:'600', border:''};
-      if (p >= 60) return {bg:'#0F2E24', col:'#5A9A82',  fw:'500', border:''};
-      return {bg:'#051510', col:'#3A7A62', fw:'', border:'1px solid #1A4A3A'};
-    } else {
-      if (p >= 80) return {bg:'#D0EDE5', col:'#0A4A32', fw:'600', border:'1px solid #3A9A7A'};
-      if (p >= 60) return {bg:'#E5F5EF', col:'#1A6A4A', fw:'',    border:'1px solid #7ABDA8'};
-      return {bg:'#F0FAF6', col:'#3A8A68', fw:'', border:'1px solid #B0D8C8'};
-    }
+    if (p >= 80) return heatCell('grey', 3, '600');
+    if (p >= 60) return heatCell('grey', 2, '500');
+    return heatCell('grey', 1);
   }
-  if (dark) {
-    if (p >= 80) return {bg:'#6AAF8A', col:'#0A0A0A', fw:'600', border:''};
-    if (p >= 60) return {bg:'#3D7A5C', col:'#F0EDE6', fw:'500', border:''};
-    if (p >= 40) return {bg:'#2A5A3A', col:'#B0D8C0', fw:'', border:''};
-    return {bg:'#1A2A1A', col:'#6A9A7A', fw:'', border:'1px solid #2A5A3A'};
-  } else {
-    if (p >= 80) return {bg:'#B0E0C8', col:'#0A4A2A', fw:'600', border:'1px solid #6AAF8A'};
-    if (p >= 60) return {bg:'#D0EDE0', col:'#1A5A3A', fw:'500', border:'1px solid #3D7A5C'};
-    if (p >= 40) return {bg:'#E5F5ED', col:'#2A6A4A', fw:'',   border:'1px solid #9ED0B8'};
-    return {bg:'#FFFFFF', col:'#8A8A8A', fw:'', border:'1px solid #ECECEC'};
-  }
+  if (p >= 80) return heatCell('green', 3, '600');
+  if (p >= 60) return heatCell('green', 2, '500');
+  if (p >= 40) return heatCell('green', 1);
+  return heatCell('green', 0);
 }
 
 function renderBenchCalendar(calType) {
@@ -3876,8 +3847,7 @@ function renderBenchCalendar(calType) {
         ? Math.round(d.adr).toLocaleString('en')
         : (d.occupancy * 100).toFixed(0) + '%';
       const tip = `${dateStr}|${Math.round(d.adr)}|${(d.occupancy*100).toFixed(1)}|${Math.round(d.revpar)}`;
-      const dark = !document.body.classList.contains('light');
-      const dayNumCol = dark ? '#888888' : '#AAAAAA';
+      const dayNumCol = 'var(--text)';
       const styAttr = `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}`;
       html += `<div class="bench-cal-day${isWknd ? ' bench-cal-weekend' : ''}"
         style="${styAttr}"
@@ -3981,12 +3951,12 @@ function renderBenchTrends() {
       // "My Property" is the one series this whole screen exists to read, so
       // it keeps the orange highlight permanently rather than only on hover
       // — the comp-set average stays a neutral gray dashed reference line.
-      { label: 'My Property', data: myData, borderColor: cc.hoverColor,
-        backgroundColor: 'rgba(74,127,165,0.08)', borderWidth: 2, fill: false,
-        tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: cc.hoverColor },
+      { label: 'My Property', data: myData, borderColor: cc.barColor,
+        backgroundColor: getChartColors().fillColor, borderWidth: 2, fill: false,
+        tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: cc.barColor },
     ];
     if (isCompSetValid()) {
-      datasets.push({ label: 'Comp Set Avg', data: compData, borderColor: cc.barColor2,
+      datasets.push({ label: 'Comp Set Avg', data: compData, borderColor: cc.compColor,
         borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.3, pointRadius: 0 });
     }
     return {
@@ -4051,10 +4021,10 @@ function renderBenchDOW() {
   {
     const cc = getChartColors();
     const dowDatasets = [
-      { label: 'My Property', data: myDOW.map(avg), backgroundColor: cc.hoverColor, hoverBackgroundColor: cc.hoverColor, borderRadius: 4, borderSkipped: false },
+      { label: 'My Property', data: myDOW.map(avg), backgroundColor: cc.barColor, hoverBackgroundColor: cc.hoverColor, borderRadius: 4, borderSkipped: false },
     ];
     if (isCompSetValid()) {
-      dowDatasets.push({ label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: 'rgba(119,119,119,0.35)', borderRadius: 4, borderSkipped: false });
+      dowDatasets.push({ label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: getChartColors().compColor, borderRadius: 4, borderSkipped: false });
     }
     benchDOWChart = new Chart(document.getElementById('bench-dow-chart'), {
       type: 'bar',

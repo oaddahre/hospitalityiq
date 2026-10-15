@@ -2364,11 +2364,11 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 .bar-cal-day.src-live-google,
 .bar-cal-day.src-live-brand,
-.bar-cal-day.src-manual-override  { background: #4A7FA5; color: #fff; }
-.bar-cal-day.src-live-booking      { background: #5A8CB0; color: #fff; }
-.bar-cal-day.src-recent            { background: #9EC3DC; color: #fff; }
-.bar-cal-day.src-live-expedia      { background: #4A7FA5; color: #fff; }
-.bar-cal-day.src-estimated         { background: rgba(255,255,255,0.04); color: var(--text-muted); border: 1px solid var(--border); }
+.bar-cal-day.src-manual-override  { background: var(--cat-4-tint); color: var(--cat-4-text); }
+.bar-cal-day.src-live-booking      { background: var(--cat-1-tint); color: var(--cat-1-text); }
+.bar-cal-day.src-recent            { background: var(--cat-5-tint); color: var(--cat-5-text); }
+.bar-cal-day.src-live-expedia      { background: var(--cat-1-tint); color: var(--cat-1-text); }
+.bar-cal-day.src-estimated         { background: var(--bg-alt); color: var(--text-2); border: 1px solid var(--border); }
 .bar-cal-day.src-unavailable       { background: transparent; color: var(--text-faint); border: 1px dashed var(--border); }
 
 /* Tooltip */
@@ -2416,9 +2416,9 @@ body.light .nav-logout  { color: var(--text-2); }
   height: 8px;
   border-radius: 50%;
 }
-.dot-live-google, .dot-live-brand { background: #4A7FA5; }
-.dot-live-booking                  { background: #5A8CB0; }
-.dot-estimated                     { background: rgba(255,255,255,0.15); border: 1px solid var(--border); }
+.dot-live-google, .dot-live-brand { background: var(--cat-1-dot); }
+.dot-live-booking                  { background: var(--cat-1-dot); }
+.dot-estimated                     { background: var(--bg-alt); border: 1px solid var(--border); }
 .dot-unavailable                   { background: transparent; border: 1px dashed var(--border); }
 
 /* ── Dual calendar (BAR + Occupancy) layout ── */
@@ -2668,10 +2668,10 @@ body.light .nav-logout  { color: var(--text-2); }
 .hotel-brand-link {
   flex-shrink: 0;
   padding: 6px 14px;
-  background: var(--accent-dim);
-  border: 1px solid var(--accent);
-  border-radius: 0;
-  color: var(--action-text);
+  background: var(--bg);
+  border: 1px solid var(--action);
+  border-radius: 999px;
+  color: var(--text);
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
   font-weight: 500;
@@ -2679,7 +2679,7 @@ body.light .nav-logout  { color: var(--text-2); }
   white-space: nowrap;
   transition: 150ms;
 }
-.hotel-brand-link:hover { background: var(--accent); color: var(--on-action); }
+.hotel-brand-link:hover { background: var(--action-tint); color: var(--text); }
 
 .hpipe-summary {
   font-family: 'Sweet Sans Pro', sans-serif;
@@ -5815,10 +5815,10 @@ body.light .nav-logout  { color: var(--text-2); }
   font-size: 10px;
   font-weight: 400;
 }
-.val-sens-high      { background: rgba(90,138,90,0.20);  color: #5A8A5A; }
-.val-sens-mid-high  { background: rgba(74,127,165,0.15); color: #4A7FA5; }
-.val-sens-mid       { background: rgba(74,127,165,0.15); color: #4A7FA5; }
-.val-sens-low       { background: rgba(200,96,96,0.15);  color: #C86060; }
+.val-sens-high      { background: var(--positive-tint); color: var(--positive); }
+.val-sens-mid-high  { background: var(--cat-1-tint); color: var(--cat-1-text); }
+.val-sens-mid       { background: var(--cat-1-tint); color: var(--cat-1-text); }
+.val-sens-low       { background: var(--negative-tint); color: var(--negative); }
 .val-sens-current   { outline: 2px solid var(--accent); position: relative; z-index: 1; }
 
 /* ── Export button ── */
