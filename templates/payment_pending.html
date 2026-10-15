@@ -25,8 +25,8 @@
     body {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 200;
-      background: #0A0A0A;
-      color: #F0F0EE;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -43,7 +43,7 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      color: #F0F0EE;
+      color: var(--text);
     }
     .top-bar-logo-img {
       height: 32px;
@@ -53,8 +53,8 @@
     .logo-mark {
       width: 30px;
       height: 30px;
-      background: #4A7FA5;
-      color: #FFFFFF;
+      background: var(--action);
+      color: var(--on-action);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 700;
       font-size: 14px;
@@ -78,8 +78,8 @@
       padding: 40px 20px;
     }
     .card {
-      background: #141414;
-      border: 1px solid #242424;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
       width: 100%;
       max-width: 480px;
       padding: 48px 40px;
@@ -91,15 +91,15 @@
     .check-icon {
       width: 52px;
       height: 52px;
-      background: rgba(90,138,90,0.12);
-      border: 1px solid rgba(90,138,90,0.30);
+      background: var(--positive-tint);
+      border: 1px solid transparent;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 24px;
       font-size: 22px;
-      color: #5A8A5A;
+      color: var(--positive);
     }
 
     .eyebrow {
@@ -108,7 +108,7 @@
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #4A7FA5;
+      color: var(--text-2);
       margin-bottom: 10px;
     }
     .heading {
@@ -116,12 +116,12 @@
       font-size: 1.625rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      color: #F0F0EE;
+      color: var(--text);
       margin-bottom: 12px;
     }
     .body-text {
       font-size: 0.9375rem;
-      color: #888888;
+      color: var(--text-2);
       line-height: 1.65;
       margin-bottom: 28px;
     }
@@ -130,15 +130,15 @@
     .features {
       list-style: none;
       text-align: left;
-      background: #1C1C1C;
-      border: 1px solid #242424;
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 6px;
       padding: 20px 24px;
       margin-bottom: 28px;
     }
     .features li {
       font-size: 0.875rem;
-      color: #888888;
+      color: var(--text-2);
       padding: 5px 0;
       display: flex;
       align-items: center;
@@ -146,7 +146,7 @@
     }
     .features li::before {
       content: "✓";
-      color: #5A8A5A;
+      color: var(--positive);
       font-weight: 700;
       font-size: 13px;
       flex-shrink: 0;
@@ -154,8 +154,8 @@
 
     /* ── Coming soon box ── */
     .coming-soon {
-      background: #101820;
-      border: 1px solid rgba(74,127,165,0.25);
+      background: var(--action-tint);
+      border: 1px solid transparent;
       border-radius: 6px;
       padding: 20px 24px;
       margin-bottom: 20px;
@@ -167,27 +167,27 @@
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #4A7FA5;
+      color: var(--cat-1-text);
       margin-bottom: 6px;
     }
     .coming-soon__title {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 1rem;
       font-weight: 600;
-      color: #F0F0EE;
+      color: var(--text);
       margin-bottom: 6px;
     }
     .coming-soon__text {
       font-size: 0.8125rem;
-      color: #888888;
+      color: var(--text-2);
       line-height: 1.5;
     }
 
     .btn-disabled {
       width: 100%;
       padding: 12px;
-      background: #242424;
-      color: #444444;
+      background: var(--border);
+      color: var(--text-2);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.875rem;
       font-weight: 600;
@@ -201,12 +201,12 @@
 
     .help-text {
       font-size: 0.8125rem;
-      color: #888888;
+      color: var(--text-2);
       margin-top: 16px;
       line-height: 1.6;
     }
     .help-text a {
-      color: #4A7FA5;
+      color: var(--action-text);
       text-decoration: none;
       font-weight: 500;
     }
@@ -216,8 +216,12 @@
       text-align: center;
       padding: 20px;
       font-size: 0.75rem;
-      color: #444444;
+      color: var(--text-2);
     }
+      /* Logo follows the theme (tokens.css / theme.js set <html data-theme>) */
+    .top-bar-logo-img.logo-light { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-dark { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-light { display: block; }
   </style>
 </head>
 <body>
@@ -227,7 +231,10 @@
   <a href="/" class="top-bar__logo">
     <img src="/static/images/logo_white.png"
          alt="Kodo Hospitality"
-         class="top-bar-logo-img">
+         class="top-bar-logo-img logo-dark">
+    <img src="/static/images/logo_black.png"
+         alt="Kodo Hospitality"
+         class="top-bar-logo-img logo-light">
   </a>
 </div>
 

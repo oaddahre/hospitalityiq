@@ -29,8 +29,8 @@
     body {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 200;
-      background: #0A0A0A;
-      color: #F0F0EE;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -48,11 +48,11 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      color: #F0F0EE;
+      color: var(--text);
     }
     .top-bar-logo-img { height: 32px; width: auto; display: block; }
-    .top-bar__back { font-size: 13px; color: #888888; text-decoration: none; }
-    .top-bar__back:hover { color: #F0F0EE; }
+    .top-bar__back { font-size: 13px; color: var(--text-2); text-decoration: none; }
+    .top-bar__back:hover { color: var(--text); }
 
     .auth-wrap {
       flex: 1;
@@ -62,8 +62,8 @@
       padding: 40px 20px;
     }
     .auth-card {
-      background: #141414;
-      border: 1px solid #242424;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
       width: 100%;
       max-width: 400px;
       padding: 40px;
@@ -76,7 +76,7 @@
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #4A7FA5;
+      color: var(--text-2);
       margin-bottom: 12px;
     }
     .auth-heading {
@@ -84,12 +84,12 @@
       font-size: 1.75rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      color: #F0F0EE;
+      color: var(--text);
       margin-bottom: 12px;
     }
     .auth-sub {
       font-size: 0.875rem;
-      color: #888888;
+      color: var(--text-2);
       line-height: 1.6;
       margin-bottom: 28px;
     }
@@ -101,7 +101,7 @@
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #888888;
+      color: var(--text-2);
       margin-bottom: 6px;
     }
     .form-input {
@@ -109,16 +109,16 @@
       padding: 10px 12px;
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.9375rem;
-      color: #F0F0EE;
-      background: #1C1C1C;
-      border: 1px solid #242424;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 6px;
       outline: none;
       transition: border-color 0.15s;
       -webkit-appearance: none;
     }
-    .form-input:focus { border-color: #4A7FA5; }
-    .form-input::placeholder { color: #444444; }
+    .form-input:focus { border-color: var(--action); }
+    .form-input::placeholder { color: var(--text-3); }
 
     .auth-error, .auth-success {
       font-size: 0.8125rem;
@@ -129,51 +129,55 @@
       text-align: left;
     }
     .auth-error {
-      background: rgba(200,90,90,0.10);
-      border: 1px solid rgba(200,90,90,0.30);
-      color: #E07070;
+      background: var(--negative-tint);
+      border: 1px solid transparent;
+      color: var(--negative);
     }
     .auth-success {
-      background: rgba(90,138,90,0.10);
-      border: 1px solid rgba(90,138,90,0.30);
-      color: #7AB07A;
+      background: var(--positive-tint);
+      border: 1px solid transparent;
+      color: var(--positive);
     }
 
     .btn-primary {
       width: 100%;
       padding: 12px;
-      background: #4A7FA5;
-      color: #FFFFFF;
+      background: var(--action);
+      color: var(--on-action);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.875rem;
       font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      border: 1px solid #4A7FA5;
+      border: 1px solid var(--action);
       border-radius: 999px;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
       margin-top: 4px;
     }
-    .btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }
+    .btn-primary:hover:not(:disabled) { background: var(--action-hover); border-color: var(--action-hover); }
     .btn-primary:disabled { opacity: 0.6; cursor: default; }
 
     .auth-footer {
       margin-top: 24px;
       padding-top: 20px;
-      border-top: 1px solid #242424;
+      border-top: 1px solid var(--border);
       text-align: center;
     }
-    .auth-footer p { font-size: 0.8125rem; color: #888888; line-height: 1.6; }
-    .auth-footer a { color: #4A7FA5; text-decoration: none; font-weight: 500; }
+    .auth-footer p { font-size: 0.8125rem; color: var(--text-2); line-height: 1.6; }
+    .auth-footer a { color: var(--action-text); text-decoration: none; font-weight: 500; }
     .auth-footer a:hover { text-decoration: underline; }
 
     .auth-note {
       text-align: center;
       padding: 20px;
       font-size: 0.75rem;
-      color: #444444;
+      color: var(--text-2);
     }
+      /* Logo follows the theme (tokens.css / theme.js set <html data-theme>) */
+    .top-bar-logo-img.logo-light { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-dark { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-light { display: block; }
   </style>
 </head>
 <body>
@@ -181,7 +185,8 @@
 
 <div class="top-bar">
   <a href="/" class="top-bar__logo">
-    <img src="/static/images/logo_white.png" alt="Kodo Hospitality" class="top-bar-logo-img">
+    <img src="/static/images/logo_white.png" alt="Kodo Hospitality" class="top-bar-logo-img logo-dark">
+    <img src="/static/images/logo_black.png" alt="Kodo Hospitality" class="top-bar-logo-img logo-light">
   </a>
   <a href="/login" class="top-bar__back">← Back to log in</a>
 </div>

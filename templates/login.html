@@ -29,8 +29,8 @@
     body {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 200;
-      background: #0A0A0A;
-      color: #F0F0EE;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -49,7 +49,7 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      color: #F0F0EE;
+      color: var(--text);
     }
     .top-bar-logo-img {
       height: 32px;
@@ -59,8 +59,8 @@
     .logo-mark {
       width: 30px;
       height: 30px;
-      background: #4A7FA5;
-      color: #FFFFFF;
+      background: var(--action);
+      color: var(--on-action);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 700;
       font-size: 14px;
@@ -77,10 +77,10 @@
     }
     .top-bar__back {
       font-size: 13px;
-      color: #888888;
+      color: var(--text-2);
       text-decoration: none;
     }
-    .top-bar__back:hover { color: #F0F0EE; }
+    .top-bar__back:hover { color: var(--text); }
 
     /* ── Main ── */
     .auth-wrap {
@@ -91,8 +91,8 @@
       padding: 40px 20px;
     }
     .auth-card {
-      background: #141414;
-      border: 1px solid #242424;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
       width: 100%;
       max-width: 400px;
       padding: 40px;
@@ -104,7 +104,7 @@
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #4A7FA5;
+      color: var(--text-2);
       margin-bottom: 12px;
     }
     .auth-heading {
@@ -112,7 +112,7 @@
       font-size: 1.75rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      color: #F0F0EE;
+      color: var(--text);
       margin-bottom: 28px;
     }
 
@@ -126,7 +126,7 @@
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #888888;
+      color: var(--text-2);
       margin-bottom: 6px;
     }
     .form-input {
@@ -134,19 +134,19 @@
       padding: 10px 12px;
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.9375rem;
-      color: #F0F0EE;
-      background: #1C1C1C;
-      border: 1px solid #242424;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 6px;
       outline: none;
       transition: border-color 0.15s;
       -webkit-appearance: none;
     }
     .form-input:focus {
-      border-color: #4A7FA5;
-      background: #1C1C1C;
+      border-color: var(--action);
+      background: var(--bg);
     }
-    .form-input::placeholder { color: #444444; }
+    .form-input::placeholder { color: var(--text-3); }
 
     /* ── Error / success ── */
     .auth-error, .auth-success {
@@ -157,19 +157,19 @@
       line-height: 1.5;
     }
     .auth-error {
-      background: rgba(200,90,90,0.10);
-      border: 1px solid rgba(200,90,90,0.30);
-      color: #E07070;
+      background: var(--negative-tint);
+      border: 1px solid transparent;
+      color: var(--negative);
     }
     .auth-success {
-      background: rgba(90,138,90,0.10);
-      border: 1px solid rgba(90,138,90,0.30);
-      color: #7AB07A;
+      background: var(--positive-tint);
+      border: 1px solid transparent;
+      color: var(--positive);
     }
     .auth-resend-btn {
       background: none;
       border: none;
-      color: #4A7FA5;
+      color: var(--action-text);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.8125rem;
       font-weight: 500;
@@ -181,7 +181,7 @@
     }
     .auth-resend-msg {
       font-size: 0.75rem;
-      color: #888888;
+      color: var(--text-2);
       margin: -10px 0 18px;
     }
 
@@ -189,48 +189,52 @@
     .btn-primary {
       width: 100%;
       padding: 12px;
-      background: #4A7FA5;
-      color: #FFFFFF;
+      background: var(--action);
+      color: var(--on-action);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.875rem;
       font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      border: 1px solid #4A7FA5;
+      border: 1px solid var(--action);
       border-radius: 999px;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
       margin-top: 4px;
     }
-    .btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }
-    .btn-primary:active { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }
+    .btn-primary:hover { background: var(--action-hover); border-color: var(--action-hover); }
+    .btn-primary:active { background: var(--action-press); border-color: var(--action-press); color: var(--on-action); }
 
     /* ── Footer links ── */
     .auth-footer {
       margin-top: 24px;
       padding-top: 20px;
-      border-top: 1px solid #242424;
+      border-top: 1px solid var(--border);
     }
     .auth-footer p {
       font-size: 0.8125rem;
-      color: #888888;
+      color: var(--text-2);
       line-height: 1.6;
     }
     .auth-footer a {
-      color: #4A7FA5;
+      color: var(--action-text);
       text-decoration: none;
       font-weight: 500;
     }
     .auth-footer a:hover { text-decoration: underline; }
-    .auth-footer .divider { margin: 10px 0; border: none; border-top: 1px solid #242424; }
+    .auth-footer .divider { margin: 10px 0; border: none; border-top: 1px solid var(--border); }
 
     /* ── Bottom note ── */
     .auth-note {
       text-align: center;
       padding: 20px;
       font-size: 0.75rem;
-      color: #444444;
+      color: var(--text-2);
     }
+      /* Logo follows the theme (tokens.css / theme.js set <html data-theme>) */
+    .top-bar-logo-img.logo-light { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-dark { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-light { display: block; }
   </style>
 </head>
 <body>
@@ -240,7 +244,10 @@
   <a href="/" class="top-bar__logo">
     <img src="/static/images/logo_white.png"
          alt="Kodo Hospitality"
-         class="top-bar-logo-img">
+         class="top-bar-logo-img logo-dark">
+    <img src="/static/images/logo_black.png"
+         alt="Kodo Hospitality"
+         class="top-bar-logo-img logo-light">
   </a>
   <a href="/" class="top-bar__back">← kodohospitality.com</a>
 </div>

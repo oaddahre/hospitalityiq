@@ -25,8 +25,8 @@
     body {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 200;
-      background: #0A0A0A;
-      color: #F0F0EE;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -41,7 +41,7 @@
     }
     .top-bar__logo {
       display: flex; align-items: center; gap: 8px;
-      text-decoration: none; color: #F0F0EE;
+      text-decoration: none; color: var(--text);
     }
     .top-bar-logo-img {
       height: 32px;
@@ -50,7 +50,7 @@
     }
     .logo-mark {
       width: 30px; height: 30px;
-      background: #4A7FA5; color: #FFFFFF;
+      background: var(--action); color: var(--on-action);
       font-family: 'Sweet Sans Pro', sans-serif; font-weight: 700; font-size: 14px;
       display: flex; align-items: center; justify-content: center;
       border-radius: 3px;
@@ -58,7 +58,7 @@
     .logo-text {
       font-family: 'Sweet Sans Pro', sans-serif; font-weight: 700;
       font-size: 16px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: #F0F0EE;
+      color: var(--text);
     }
 
     .auth-wrap {
@@ -67,8 +67,8 @@
       padding: 32px 20px 80px;
     }
     .auth-card {
-      background: #141414;
-      border: 1px solid #242424;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
       width: 100%; max-width: 460px;
       padding: 40px; border-radius: 6px;
     }
@@ -76,82 +76,84 @@
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.6875rem; font-weight: 600;
       letter-spacing: 0.12em; text-transform: uppercase;
-      color: #4A7FA5; margin-bottom: 10px;
+      color: var(--text-2); margin-bottom: 10px;
     }
     .auth-heading {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 1.4rem; font-weight: 600;
-      letter-spacing: 0.01em; color: #F0F0EE; margin-bottom: 6px;
+      letter-spacing: 0.01em; color: var(--text); margin-bottom: 6px;
     }
     .auth-sub {
-      font-size: 0.875rem; color: #888888;
+      font-size: 0.875rem; color: var(--text-2);
       margin-bottom: 24px; line-height: 1.55;
     }
 
     .plan-box {
-      background: #1C1C1C; border: 1px solid #242424;
+      background: var(--bg); border: 1px solid var(--border);
       padding: 14px 16px; margin-bottom: 22px; border-radius: 4px;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .plan-box__label { font-size: 12px; color: #888888; font-family: 'Sweet Sans Pro', sans-serif; }
+    .plan-box__label { font-size: 12px; color: var(--text-2); font-family: 'Sweet Sans Pro', sans-serif; }
     .plan-badge {
-      display: inline-block; padding: 2px 8px;
-      font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 500;
+      padding: 2px 8px;
+      font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px;
       text-transform: uppercase; letter-spacing: 0.08em;
-      border-radius: 3px;
     }
-    .plan-badge--observer    { background: transparent; color: #888888; border: 1px solid #2E2E2E; }
-    .plan-badge--benchmarker { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }
-    .plan-badge--advisory    { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }
+    /* Tier labels are neutral grey pills (.pill--grey) */
 
     .auth-error {
-      background: transparent; border: 1px solid #C86060;
-      color: #C86060; font-size: 0.8125rem;
+      background: transparent; border: 1px solid var(--negative);
+      color: var(--negative); font-size: 0.8125rem;
       padding: 8px 12px; border-radius: 4px; margin-bottom: 20px; line-height: 1.5;
     }
     .form-group { margin-bottom: 16px; }
     .form-label {
       display: block; font-size: 0.75rem; font-weight: 500;
       letter-spacing: 0.08em; text-transform: uppercase;
-      color: #888888; margin-bottom: 6px;
+      color: var(--text-2); margin-bottom: 6px;
       font-family: 'Sweet Sans Pro', sans-serif;
     }
     .form-input {
       width: 100%; padding: 10px 14px;
       font-family: 'Sweet Sans Pro', sans-serif; font-size: 0.875rem;
-      color: #F0F0EE; background: #1C1C1C; border: 1px solid #242424;
+      color: var(--text); background: var(--bg); border: 1px solid var(--border);
       border-radius: 4px; outline: none; transition: border-color 0.15s; -webkit-appearance: none;
     }
-    .form-input:focus { border-color: #4A7FA5; background: #141414; }
-    .form-input::placeholder { color: #444444; }
+    .form-input:focus { border-color: var(--action); background: var(--bg-alt); }
+    .form-input::placeholder { color: var(--text-3); }
 
     .email-locked {
       width: 100%; padding: 10px 14px;
       font-family: 'Sweet Sans Pro', sans-serif; font-size: 0.875rem;
-      color: #888888; background: #1C1C1C; border: 1px solid #242424; border-radius: 4px;
+      color: var(--text-2); background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
     }
 
     .btn-primary {
       width: 100%; padding: 10px 14px;
-      background: transparent; color: #4A7FA5;
-      font-family: 'Sweet Sans Pro', sans-serif; font-size: 0.8125rem; font-weight: 500;
+      background: var(--action); color: var(--on-action);
+      font-family: 'Sweet Sans Pro', sans-serif; font-size: 0.8125rem; font-weight: 600;
       letter-spacing: 0.04em; text-transform: uppercase;
-      border: 1px solid #4A7FA5; border-radius: 4px; cursor: pointer; transition: 150ms;
+      border: 1px solid var(--action); border-radius: 999px; cursor: pointer; transition: 150ms;
       margin-top: 4px;
     }
-    .btn-primary:hover { background: #4A7FA5; color: #FFFFFF; }
+    .btn-primary:hover { background: var(--action-hover); border-color: var(--action-hover); color: var(--on-action); }
+    .btn-primary:active { background: var(--action-press); border-color: var(--action-press); }
     .btn-primary:disabled { opacity: 0.4; cursor: default; }
 
     .inline-error {
-      font-size: 0.8125rem; color: #C86060;
+      font-size: 0.8125rem; color: var(--negative);
       margin-top: 10px; display: none;
     }
 
-    .auth-note { text-align: center; padding: 20px; font-size: 0.75rem; color: #444444; font-family: 'Sweet Sans Pro', sans-serif; }
+    .auth-note { text-align: center; padding: 20px; font-size: 0.75rem; color: var(--text-2); font-family: 'Sweet Sans Pro', sans-serif; }
 
     @media (max-width: 480px) {
       .auth-card { padding: 28px 24px; }
     }
+      /* Logo follows the theme (tokens.css / theme.js set <html data-theme>) */
+    .top-bar-logo-img.logo-light { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-dark { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-light { display: block; }
   </style>
 </head>
 <body>
@@ -161,7 +163,10 @@
   <a href="/" class="top-bar__logo">
     <img src="/static/images/logo_white.png"
          alt="Kodo Hospitality"
-         class="top-bar-logo-img">
+         class="top-bar-logo-img logo-dark">
+    <img src="/static/images/logo_black.png"
+         alt="Kodo Hospitality"
+         class="top-bar-logo-img logo-light">
   </a>
 </div>
 
@@ -173,8 +178,8 @@
       <p class="auth-eyebrow">Invitation</p>
       <h1 class="auth-heading">This invite isn't valid.</h1>
       <div class="auth-error" style="margin-top:16px">{{ error }}</div>
-      <p style="font-size:13px;color:#888888;margin-top:8px">
-        Need help? Email us at <a href="mailto:hello@kodo.ma" style="color:#4A7FA5">hello@kodo.ma</a>
+      <p style="font-size:13px;color:var(--text-2);margin-top:8px">
+        Need help? Email us at <a href="mailto:hello@kodo.ma" style="color:var(--action-text)">hello@kodo.ma</a>
       </p>
 
     {% else %}
@@ -185,7 +190,7 @@
 
       <div class="plan-box">
         <span class="plan-box__label">Plan access</span>
-        <span class="plan-badge plan-badge--{{ org.plan }}">
+        <span class="plan-badge plan-badge--{{ org.plan }} pill--grey">
           {{ {'observer':'Observer','benchmarker':'Benchmarker','advisory':'Advisory'}.get(org.plan, org.plan) }}
         </span>
       </div>

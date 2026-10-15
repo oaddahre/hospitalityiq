@@ -29,8 +29,8 @@
     body {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 200;
-      background: #0A0A0A;
-      color: #F0F0EE;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -48,7 +48,7 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      color: #F0F0EE;
+      color: var(--text);
     }
     .top-bar-logo-img {
       height: 32px;
@@ -58,8 +58,8 @@
     .logo-mark {
       width: 30px;
       height: 30px;
-      background: #4A7FA5;
-      color: #FFFFFF;
+      background: var(--action);
+      color: var(--on-action);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-weight: 700;
       font-size: 14px;
@@ -76,10 +76,10 @@
     }
     .top-bar__back {
       font-size: 13px;
-      color: #888888;
+      color: var(--text-2);
       text-decoration: none;
     }
-    .top-bar__back:hover { color: #F0F0EE; }
+    .top-bar__back:hover { color: var(--text); }
 
     .auth-wrap {
       flex: 1;
@@ -89,8 +89,8 @@
       padding: 32px 20px 60px;
     }
     .auth-card {
-      background: #141414;
-      border: 1px solid #242424;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
       width: 100%;
       max-width: 460px;
       padding: 40px;
@@ -102,7 +102,7 @@
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #4A7FA5;
+      color: var(--text-2);
       margin-bottom: 10px;
     }
     .auth-heading {
@@ -110,12 +110,12 @@
       font-size: 1.625rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      color: #F0F0EE;
+      color: var(--text);
       margin-bottom: 6px;
     }
     .auth-sub {
       font-size: 0.875rem;
-      color: #888888;
+      color: var(--text-2);
       margin-bottom: 28px;
       line-height: 1.5;
     }
@@ -135,7 +135,7 @@
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #888888;
+      color: var(--text-2);
       margin-bottom: 6px;
     }
     .form-input {
@@ -143,24 +143,24 @@
       padding: 10px 12px;
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.9375rem;
-      color: #F0F0EE;
-      background: #1C1C1C;
-      border: 1px solid #242424;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 6px;
       outline: none;
       transition: border-color 0.15s;
       -webkit-appearance: none;
     }
     .form-input:focus {
-      border-color: #4A7FA5;
-      background: #1C1C1C;
+      border-color: var(--action);
+      background: var(--bg);
     }
-    .form-input::placeholder { color: #444444; }
+    .form-input::placeholder { color: var(--text-3); }
 
     .auth-error {
-      background: rgba(200,90,90,0.10);
-      border: 1px solid rgba(200,90,90,0.30);
-      color: #E07070;
+      background: var(--negative-tint);
+      border: 1px solid transparent;
+      color: var(--negative);
       font-size: 0.8125rem;
       padding: 10px 12px;
       border-radius: 6px;
@@ -179,23 +179,23 @@
       width: 16px;
       height: 16px;
       margin-top: 2px;
-      accent-color: #4A7FA5;
+      accent-color: var(--action);
       flex-shrink: 0;
       cursor: pointer;
     }
     .checkbox-row label {
       font-size: 0.8125rem;
-      color: #888888;
+      color: var(--text-2);
       line-height: 1.5;
       cursor: pointer;
     }
-    .checkbox-row a { color: #4A7FA5; text-decoration: none; }
+    .checkbox-row a { color: var(--action-text); text-decoration: none; }
     .checkbox-row a:hover { text-decoration: underline; }
 
     /* ── Plan info box ── */
     .plan-box {
-      background: #1C1C1C;
-      border: 1px solid #242424;
+      background: var(--bg);
+      border: 1px solid var(--border);
       padding: 16px;
       border-radius: 6px;
       margin-bottom: 20px;
@@ -206,62 +206,62 @@
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #4A7FA5;
+      color: var(--text);
       margin-bottom: 4px;
     }
     .plan-box__price {
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 1.125rem;
       font-weight: 600;
-      color: #F0F0EE;
+      color: var(--text);
       margin-bottom: 8px;
     }
     .plan-box__items {
       list-style: none;
       font-size: 0.8125rem;
-      color: #888888;
+      color: var(--text-2);
       line-height: 1.8;
     }
     .plan-box__items li::before {
       content: "✓ ";
-      color: #5A8A5A;
+      color: var(--positive);
       font-weight: 600;
     }
 
     .btn-primary {
       width: 100%;
       padding: 12px;
-      background: #4A7FA5;
-      color: #FFFFFF;
+      background: var(--action);
+      color: var(--on-action);
       font-family: 'Sweet Sans Pro', sans-serif;
       font-size: 0.875rem;
       font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      border: 1px solid #4A7FA5;
+      border: 1px solid var(--action);
       border-radius: 999px;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
     }
-    .btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }
+    .btn-primary:hover { background: var(--action-hover); border-color: var(--action-hover); }
     .btn-note {
       text-align: center;
       font-size: 0.75rem;
-      color: #444444;
+      color: var(--text-2);
       margin-top: 8px;
     }
 
     .auth-footer {
       margin-top: 20px;
       padding-top: 16px;
-      border-top: 1px solid #242424;
+      border-top: 1px solid var(--border);
     }
     .auth-footer p {
       font-size: 0.8125rem;
-      color: #888888;
+      color: var(--text-2);
     }
     .auth-footer a {
-      color: #4A7FA5;
+      color: var(--action-text);
       text-decoration: none;
       font-weight: 500;
     }
@@ -271,13 +271,17 @@
       text-align: center;
       padding: 20px;
       font-size: 0.75rem;
-      color: #444444;
+      color: var(--text-2);
     }
 
     @media (max-width: 480px) {
       .form-row { grid-template-columns: 1fr; }
       .auth-card { padding: 28px 24px; }
     }
+      /* Logo follows the theme (tokens.css / theme.js set <html data-theme>) */
+    .top-bar-logo-img.logo-light { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-dark { display: none; }
+    :root:not([data-theme="dark"]) .top-bar-logo-img.logo-light { display: block; }
   </style>
 </head>
 <body>
@@ -287,7 +291,10 @@
   <a href="/" class="top-bar__logo">
     <img src="/static/images/logo_white.png"
          alt="Kodo Hospitality"
-         class="top-bar-logo-img">
+         class="top-bar-logo-img logo-dark">
+    <img src="/static/images/logo_black.png"
+         alt="Kodo Hospitality"
+         class="top-bar-logo-img logo-light">
   </a>
   <a href="/login" class="top-bar__back">Already have an account? Sign in →</a>
 </div>
@@ -304,7 +311,7 @@
 
     <div class="plan-box">
       <p class="plan-box__name">Observer</p>
-      <p class="plan-box__price">MAD 990 <span style="font-size:0.875rem;font-weight:400;color:#888888;">/ month</span></p>
+      <p class="plan-box__price">MAD 990 <span style="font-size:0.875rem;font-weight:400;color:var(--text-2);">/ month</span></p>
       <ul class="plan-box__items">
         <li>250+ hotels · 18+ destinations</li>
         <li>National KPIs, city and segment data</li>

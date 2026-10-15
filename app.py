@@ -424,37 +424,63 @@ def _issue_verification_email(email: str, name: str) -> bool:
         return False
 
 
-def _verification_email_html(verify_url: str, name: str) -> str:
+# ─── Email layout ─────────────────────────────────────────────────────────────
+# Emails can't use CSS variables, so the palette (static/css/tokens.css,
+# light mode) is inlined here. No images: the wordmark is text, so the email
+# still reads when images are blocked.
+EMAIL_COLORS = {
+    "page":      "#F7F6F3",   # --bg-alt
+    "card":      "#FFFFFF",   # --bg
+    "border":    "#E7E4DF",   # --border
+    "text":      "#1F1E1C",   # --text
+    "text_2":    "#5F5B55",   # --text-2
+    "action":    "#0075DE",   # --action (button)
+    "link":      "#0070D5",   # --action-text (links, AA on white)
+    "on_action": "#FFFFFF",   # --on-action
+}
+_EMAIL_FONT = "'Sweet Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif"
+
+
+def _email_layout(heading: str, paragraphs: list, button_label: str, button_url: str,
+                  footnote: str, extra: str = "") -> str:
+    """Shared HTML shell for every transactional email."""
+    c = EMAIL_COLORS
+    body = "".join(
+        f'<p style="font-size:14px;font-weight:400;color:{c["text_2"]};line-height:1.7;margin:0 0 12px;">{p}</p>'
+        for p in paragraphs
+    )
     return f"""<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
 </head>
-<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">
+<body style="margin:0;padding:0;background:{c["page"]};font-family:{_EMAIL_FONT};font-style:normal;color:{c["text"]};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{c["page"]};padding:40px 12px;">
     <tr>
       <td align="center">
-        <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
+        <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:{c["card"]};border:1px solid {c["border"]};border-radius:12px;">
           <tr>
-            <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
+            <td style="padding:32px 40px 24px;border-bottom:1px solid {c["border"]};">
+              <p style="font-family:{_EMAIL_FONT};font-size:12px;font-weight:700;letter-spacing:0.2em;color:{c["text"]};margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
             </td>
           </tr>
           <tr>
-            <td style="padding-top:32px;padding-bottom:24px;">
-              <h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Confirm your email, {name}.</h1>
-              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">One more step before you can log in — confirm this is your email address. This link expires in 24 hours and can only be used once.</p>
+            <td style="padding:32px 40px 12px;">
+              <h1 style="font-family:{_EMAIL_FONT};font-size:24px;font-weight:700;font-style:normal;color:{c["text"]};margin:0 0 16px;letter-spacing:-0.01em;">{heading}</h1>
+              {body}
             </td>
           </tr>
           <tr>
-            <td style="padding-bottom:32px;">
-              <a href="{verify_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Confirm My Email →</a>
+            <td style="padding:8px 40px 32px;">
+              <a href="{button_url}" style="display:inline-block;background:{c["action"]};color:{c["on_action"]};font-family:{_EMAIL_FONT};font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;text-decoration:none;padding:14px 28px;border-radius:999px;mso-padding-alt:0;">{button_label}</a>
             </td>
-          </tr>
+          </tr>{extra}
           <tr>
-            <td style="border-top:1px solid #242424;padding-top:24px;">
-              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you didn't create a Kodo account, you can ignore this email.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#4A7FA5;word-break:break-all;">{verify_url}</span></p>
+            <td style="padding:24px 40px 32px;border-top:1px solid {c["border"]};">
+              <p style="font-size:12px;font-weight:400;color:{c["text_2"]};line-height:1.6;margin:0;">{footnote}</p>
             </td>
           </tr>
         </table>
@@ -464,6 +490,23 @@ def _verification_email_html(verify_url: str, name: str) -> str:
 </body>
 </html>
 """
+
+
+def _email_link(url: str, label: str = "") -> str:
+    return f'<a href="{url}" style="color:{EMAIL_COLORS["link"]};text-decoration:underline;word-break:break-all;">{label or url}</a>'
+
+
+def _verification_email_html(verify_url: str, name: str) -> str:
+    return _email_layout(
+        heading=f"Confirm your email, {name}.",
+        paragraphs=["One more step before you can log in — confirm this is your email address. "
+                    "This link expires in 24 hours and can only be used once."],
+        button_label="Confirm My Email →",
+        button_url=verify_url,
+        footnote="If you didn't create a Kodo account, you can ignore this email.<br><br>"
+                 "If the button does not work copy and paste this link into your browser:<br>"
+                 + _email_link(verify_url),
+    )
 
 
 def _issue_password_reset(email: str) -> bool:
@@ -501,45 +544,17 @@ def _issue_password_reset(email: str) -> bool:
 
 
 def _reset_email_html(reset_url: str) -> str:
-    return f"""<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
-          <tr>
-            <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-top:32px;padding-bottom:24px;">
-              <h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Reset your password</h1>
-              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">We received a request to reset the password for your Kodo account. Click the button below to set a new password. This link expires in 1 hour.</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-bottom:32px;">
-              <a href="{reset_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Reset Password →</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="border-top:1px solid #242424;padding-top:24px;">
-              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you did not request a password reset you can safely ignore this email. Your password will not be changed.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#4A7FA5;word-break:break-all;">{reset_url}</span></p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-"""
+    return _email_layout(
+        heading="Reset your password",
+        paragraphs=["We received a request to reset the password for your Kodo account. Click the button "
+                    "below to set a new password. This link expires in 1 hour."],
+        button_label="Reset Password →",
+        button_url=reset_url,
+        footnote="If you did not request a password reset you can safely ignore this email. "
+                 "Your password will not be changed.<br><br>"
+                 "If the button does not work copy and paste this link into your browser:<br>"
+                 + _email_link(reset_url),
+    )
 
 
 def _welcome_email_html(name: str, active: bool) -> str:
@@ -551,66 +566,31 @@ def _welcome_email_html(name: str, active: bool) -> str:
     else:
         status_line = "Your subscription is currently pending activation. We will notify you as soon as your access is confirmed."
 
-    return f"""<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
-          <tr>
-            <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-top:32px;padding-bottom:24px;">
-              <h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Welcome, {name}.</h1>
-              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0 0 12px;">Your account has been created. You now have access to Morocco's most comprehensive hotel market intelligence platform.</p>
-              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">{status_line}</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-bottom:32px;">
-              <a href="https://www.kodohospitality.com/login" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;padding:14px 28px;">Access Platform →</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-bottom:32px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">
-                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">300+</p>
-                    <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Hotels</p>
-                  </td>
-                  <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;border-left:1px solid #141414;border-right:1px solid #141414;">
-                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">23</p>
-                    <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Destinations</p>
-                  </td>
-                  <td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">
-                    <p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">35</p>
-                    <p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;color:#444444;margin:0;">Brand Groups</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td style="border-top:1px solid #242424;padding-top:24px;">
-              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us at <a href="mailto:contact@kodohospitality.com" style="color:#4A7FA5;text-decoration:none;">contact@kodohospitality.com</a><br><br>© 2026 Kodo Hospitality · All Rights Reserved</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-"""
+    c = EMAIL_COLORS
+    stat = lambda value, label, sides="": (
+        f'<td width="33%" style="padding:16px;background:{c["page"]};text-align:center;{sides}">'
+        f'<p style="font-size:18px;font-weight:700;color:{c["text"]};margin:0 0 6px;">{value}</p>'
+        f'<p style="font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.12em;color:{c["text_2"]};margin:0;">{label}</p></td>'
+    )
+    stats = (
+        '\n          <tr>\n            <td style="padding:0 40px 32px;">'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-radius:8px;overflow:hidden;"><tr>'
+        + stat("300+", "Hotels")
+        + stat("23", "Destinations", f'border-left:1px solid {c["card"]};border-right:1px solid {c["card"]};')
+        + stat("35", "Brand Groups")
+        + "</tr></table></td>\n          </tr>"
+    )
+    return _email_layout(
+        heading=f"Welcome, {name}.",
+        paragraphs=["Your account has been created. You now have access to Morocco's most comprehensive "
+                    "hotel market intelligence platform.", status_line],
+        button_label="Access Platform →",
+        button_url="https://www.kodohospitality.com/login",
+        footnote="Questions? Reply to this email or contact us at "
+                 + _email_link("mailto:contact@kodohospitality.com", "contact@kodohospitality.com")
+                 + "<br><br>© 2026 Kodo Hospitality · All Rights Reserved",
+        extra=stats,
+    )
 
 
 # ─── Organisations storage ────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ Every hardcoded colour outside `static/css/tokens.css`, by file and line. Regene
 - **LEGACY**: an old palette value the final sweep must remove.
 - **fallback**: the second argument of `var(--token, …)`; the page uses the token, the literal only applies where the token is undefined.
 
-Total: 767 colour literals in 24 files (287 legacy).
+Total: 455 colour literals in 24 files (103 legacy).
 
 ## Per file
 
@@ -13,39 +13,39 @@ Total: 767 colour literals in 24 files (287 legacy).
 |---|---|
 | `static/js/main.js` | 179 |
 | `static/css/marketing.css` | 149 |
-| `app.py` | 53 |
-| `templates/accept_invite.html` | 43 |
-| `templates/register.html` | 43 |
-| `templates/login.html` | 40 |
-| `templates/reset_password.html` | 37 |
-| `templates/forgot_password.html` | 36 |
 | `templates/index.html` | 36 |
 | `static/css/style.css` | 34 |
-| `templates/verify_email.html` | 32 |
-| `templates/payment_pending.html` | 28 |
-| `templates/verify_email_sent.html` | 21 |
 | `static/css/admin.css` | 15 |
+| `app.py` | 13 |
 | `templates/contact.html` | 5 |
 | `generate_pdfs.py` | 4 |
 | `static/images/news-placeholder.svg` | 3 |
 | `static/js/admin.js` | 2 |
 | `templates/methodology.html` | 2 |
+| `templates/accept_invite.html` | 1 |
 | `templates/account.html` | 1 |
 | `templates/admin.html` | 1 |
+| `templates/forgot_password.html` | 1 |
 | `templates/landing.html` | 1 |
+| `templates/login.html` | 1 |
+| `templates/payment_pending.html` | 1 |
 | `templates/privacy.html` | 1 |
+| `templates/register.html` | 1 |
+| `templates/reset_password.html` | 1 |
 | `templates/terms.html` | 1 |
+| `templates/verify_email.html` | 1 |
+| `templates/verify_email_sent.html` | 1 |
 
 ## Legacy values still present
 
 | Value | Count |
 |---|---|
-| `#4A7FA5` | 138 |
-| `#F0F0EE` | 46 |
-| `#242424` | 39 |
-| `#0A0A0A` | 29 |
-| `#141414` | 19 |
-| `#3A6A8E` | 14 |
+| `#4A7FA5` | 75 |
+| `#0A0A0A` | 9 |
+| `#242424` | 6 |
+| `#141414` | 5 |
+| `#3A6A8E` | 4 |
+| `#F0F0EE` | 2 |
 | `#4A9B6F` | 1 |
 | `#F2A33D` | 1 |
 
@@ -53,59 +53,19 @@ Total: 767 colour literals in 24 files (287 legacy).
 
 | Line | Colour | Note | Context |
 |---|---|---|---|
-| 434 | `#0A0A0A` | LEGACY | `<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">` |
-| 435 | `#0A0A0A` | LEGACY | `<table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">` |
-| 438 | `#141414` | LEGACY | `<table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">` |
-| 440 | `#242424` | LEGACY | `<td style="padding-bottom:32px;border-bottom:1px solid #242424;">` |
-| 441 | `#4A7FA5` | LEGACY | `<p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-t` |
-| 446 | `#F0F0EE` | LEGACY | `<h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Confirm your ` |
-| 447 | `#888888` |  | `<p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">One more step before you can log in — confir` |
-| 452 | `#4A7FA5` | LEGACY | `<a href="{verify_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',m` |
-| 452 | `#0A0A0A` | LEGACY | `<a href="{verify_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',m` |
-| 456 | `#242424` | LEGACY | `<td style="border-top:1px solid #242424;padding-top:24px;">` |
-| 457 | `#444444` |  | `<p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you didn't create a Kodo account, you can` |
-| 457 | `#4A7FA5` | LEGACY | `<p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you didn't create a Kodo account, you can` |
-| 510 | `#0A0A0A` | LEGACY | `<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">` |
-| 511 | `#0A0A0A` | LEGACY | `<table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">` |
-| 514 | `#141414` | LEGACY | `<table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">` |
-| 516 | `#242424` | LEGACY | `<td style="padding-bottom:32px;border-bottom:1px solid #242424;">` |
-| 517 | `#4A7FA5` | LEGACY | `<p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-t` |
-| 522 | `#F0F0EE` | LEGACY | `<h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Reset your pa` |
-| 523 | `#888888` |  | `<p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">We received a request to reset the password ` |
-| 528 | `#4A7FA5` | LEGACY | `<a href="{reset_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',mo` |
-| 528 | `#0A0A0A` | LEGACY | `<a href="{reset_url}" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;font-family:'Space Mono',mo` |
-| 532 | `#242424` | LEGACY | `<td style="border-top:1px solid #242424;padding-top:24px;">` |
-| 533 | `#444444` |  | `<p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you did not request a password reset you ` |
-| 533 | `#4A7FA5` | LEGACY | `<p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you did not request a password reset you ` |
-| 560 | `#0A0A0A` | LEGACY | `<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Manrope',sans-serif;">` |
-| 561 | `#0A0A0A` | LEGACY | `<table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 0;">` |
-| 564 | `#141414` | LEGACY | `<table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">` |
-| 566 | `#242424` | LEGACY | `<td style="padding-bottom:32px;border-bottom:1px solid #242424;">` |
-| 567 | `#4A7FA5` | LEGACY | `<p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-t` |
-| 572 | `#F0F0EE` | LEGACY | `<h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Welcome, {nam` |
-| 573 | `#888888` |  | `<p style="font-size:14px;color:#888888;line-height:1.7;margin:0 0 12px;">Your account has been created. You no` |
-| 574 | `#888888` |  | `<p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">{status_line}</p>` |
-| 579 | `#4A7FA5` | LEGACY | `<a href="https://www.kodohospitality.com/login" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;f` |
-| 579 | `#0A0A0A` | LEGACY | `<a href="https://www.kodohospitality.com/login" style="display:inline-block;background:#4A7FA5;color:#0A0A0A;f` |
-| 586 | `#0A0A0A` | LEGACY | `<td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">` |
-| 587 | `#4A7FA5` | LEGACY | `<p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">300` |
-| 588 | `#444444` |  | `<p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;colo` |
-| 590 | `#0A0A0A` | LEGACY | `<td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;border-left:1px solid #141414;border-` |
-| 590 | `#141414` | LEGACY | `<td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;border-left:1px solid #141414;border-` |
-| 590 | `#141414` | LEGACY | `<td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;border-left:1px solid #141414;border-` |
-| 591 | `#4A7FA5` | LEGACY | `<p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">23<` |
-| 592 | `#444444` |  | `<p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;colo` |
-| 594 | `#0A0A0A` | LEGACY | `<td width="33%" style="padding:16px;background:#0A0A0A;text-align:center;">` |
-| 595 | `#4A7FA5` | LEGACY | `<p style="font-family:'Space Mono',monospace;font-size:18px;font-weight:400;color:#4A7FA5;margin:0 0 6px;">35<` |
-| 596 | `#444444` |  | `<p style="font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:0.12em;colo` |
-| 603 | `#242424` | LEGACY | `<td style="border-top:1px solid #242424;padding-top:24px;">` |
-| 604 | `#444444` |  | `<p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us` |
-| 604 | `#4A7FA5` | LEGACY | `<p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us` |
-| 3377 | `set_text_color(255, 255, 255)` |  | `pdf.set_text_color(255, 255, 255)` |
-| 3696 | `set_fill_color(10, 10, 10)` |  | `pdf.set_fill_color(10, 10, 10)` |
-| 3700 | `set_text_color(255, 255, 255)` |  | `pdf.set_text_color(255, 255, 255)` |
-| 3707 | `set_text_color(136, 136, 136)` |  | `pdf.set_text_color(136, 136, 136)` |
-| 3710 | `set_text_color(68, 68, 68)` |  | `pdf.set_text_color(68, 68, 68)` |
+| 432 | `#F7F6F3` |  | `"page":      "#F7F6F3",   # --bg-alt` |
+| 433 | `#FFFFFF` |  | `"card":      "#FFFFFF",   # --bg` |
+| 434 | `#E7E4DF` |  | `"border":    "#E7E4DF",   # --border` |
+| 435 | `#1F1E1C` |  | `"text":      "#1F1E1C",   # --text` |
+| 436 | `#5F5B55` |  | `"text_2":    "#5F5B55",   # --text-2` |
+| 437 | `#0075DE` |  | `"action":    "#0075DE",   # --action (button)` |
+| 438 | `#0070D5` |  | `"link":      "#0070D5",   # --action-text (links, AA on white)` |
+| 439 | `#FFFFFF` |  | `"on_action": "#FFFFFF",   # --on-action` |
+| 3357 | `set_text_color(255, 255, 255)` |  | `pdf.set_text_color(255, 255, 255)` |
+| 3676 | `set_fill_color(10, 10, 10)` |  | `pdf.set_fill_color(10, 10, 10)` |
+| 3680 | `set_text_color(255, 255, 255)` |  | `pdf.set_text_color(255, 255, 255)` |
+| 3687 | `set_text_color(136, 136, 136)` |  | `pdf.set_text_color(136, 136, 136)` |
+| 3690 | `set_text_color(68, 68, 68)` |  | `pdf.set_text_color(68, 68, 68)` |
 
 ## `generate_pdfs.py`
 
@@ -533,48 +493,6 @@ Total: 767 colour literals in 24 files (287 legacy).
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 28 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 29 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 44 | `#F0F0EE` | LEGACY | `text-decoration: none; color: #F0F0EE;` |
-| 53 | `#4A7FA5` | LEGACY | `background: #4A7FA5; color: #FFFFFF;` |
-| 53 | `#FFFFFF` |  | `background: #4A7FA5; color: #FFFFFF;` |
-| 61 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 70 | `#141414` | LEGACY | `background: #141414;` |
-| 71 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 79 | `#4A7FA5` | LEGACY | `color: #4A7FA5; margin-bottom: 10px;` |
-| 84 | `#F0F0EE` | LEGACY | `letter-spacing: 0.01em; color: #F0F0EE; margin-bottom: 6px;` |
-| 87 | `#888888` |  | `font-size: 0.875rem; color: #888888;` |
-| 92 | `#1C1C1C` |  | `background: #1C1C1C; border: 1px solid #242424;` |
-| 92 | `#242424` | LEGACY | `background: #1C1C1C; border: 1px solid #242424;` |
-| 96 | `#888888` |  | `.plan-box__label { font-size: 12px; color: #888888; font-family: 'Sweet Sans Pro', sans-serif; }` |
-| 103 | `#888888` |  | `.plan-badge--observer    { background: transparent; color: #888888; border: 1px solid #2E2E2E; }` |
-| 103 | `#2E2E2E` |  | `.plan-badge--observer    { background: transparent; color: #888888; border: 1px solid #2E2E2E; }` |
-| 104 | `#101820` |  | `.plan-badge--benchmarker { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }` |
-| 104 | `#4A7FA5` | LEGACY | `.plan-badge--benchmarker { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }` |
-| 104 | `#4A7FA5` | LEGACY | `.plan-badge--benchmarker { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }` |
-| 105 | `#101820` |  | `.plan-badge--advisory    { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }` |
-| 105 | `#4A7FA5` | LEGACY | `.plan-badge--advisory    { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }` |
-| 105 | `#4A7FA5` | LEGACY | `.plan-badge--advisory    { background: #101820; color: #4A7FA5; border: 1px solid #4A7FA5; }` |
-| 108 | `#C86060` |  | `background: transparent; border: 1px solid #C86060;` |
-| 109 | `#C86060` |  | `color: #C86060; font-size: 0.8125rem;` |
-| 116 | `#888888` |  | `color: #888888; margin-bottom: 6px;` |
-| 122 | `#F0F0EE` | LEGACY | `color: #F0F0EE; background: #1C1C1C; border: 1px solid #242424;` |
-| 122 | `#1C1C1C` |  | `color: #F0F0EE; background: #1C1C1C; border: 1px solid #242424;` |
-| 122 | `#242424` | LEGACY | `color: #F0F0EE; background: #1C1C1C; border: 1px solid #242424;` |
-| 125 | `#4A7FA5` | LEGACY | `.form-input:focus { border-color: #4A7FA5; background: #141414; }` |
-| 125 | `#141414` | LEGACY | `.form-input:focus { border-color: #4A7FA5; background: #141414; }` |
-| 126 | `#444444` |  | `.form-input::placeholder { color: #444444; }` |
-| 131 | `#888888` |  | `color: #888888; background: #1C1C1C; border: 1px solid #242424; border-radius: 4px;` |
-| 131 | `#1C1C1C` |  | `color: #888888; background: #1C1C1C; border: 1px solid #242424; border-radius: 4px;` |
-| 131 | `#242424` | LEGACY | `color: #888888; background: #1C1C1C; border: 1px solid #242424; border-radius: 4px;` |
-| 136 | `#4A7FA5` | LEGACY | `background: transparent; color: #4A7FA5;` |
-| 139 | `#4A7FA5` | LEGACY | `border: 1px solid #4A7FA5; border-radius: 4px; cursor: pointer; transition: 150ms;` |
-| 142 | `#4A7FA5` | LEGACY | `.btn-primary:hover { background: #4A7FA5; color: #FFFFFF; }` |
-| 142 | `#FFFFFF` |  | `.btn-primary:hover { background: #4A7FA5; color: #FFFFFF; }` |
-| 146 | `#C86060` |  | `font-size: 0.8125rem; color: #C86060;` |
-| 150 | `#444444` |  | `.auth-note { text-align: center; padding: 20px; font-size: 0.75rem; color: #444444; font-family: 'Sweet Sans P` |
-| 176 | `#888888` |  | `<p style="font-size:13px;color:#888888;margin-top:8px">` |
-| 177 | `#4A7FA5` | LEGACY | `Need help? Email us at <a href="mailto:hello@kodo.ma" style="color:#4A7FA5">hello@kodo.ma</a>` |
 
 ## `templates/account.html`
 
@@ -603,41 +521,6 @@ Total: 767 colour literals in 24 files (287 legacy).
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 32 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 33 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 52 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 61 | `#888888` |  | `color: #888888;` |
-| 64 | `#F0F0EE` | LEGACY | `.top-bar__back:hover { color: #F0F0EE; }` |
-| 75 | `#141414` | LEGACY | `background: #141414;` |
-| 76 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 88 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 96 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 101 | `#888888` |  | `color: #888888;` |
-| 114 | `#888888` |  | `color: #888888;` |
-| 122 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 123 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 124 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 130 | `#4A7FA5` | LEGACY | `.form-input:focus { border-color: #4A7FA5; background: #1C1C1C; }` |
-| 130 | `#1C1C1C` |  | `.form-input:focus { border-color: #4A7FA5; background: #1C1C1C; }` |
-| 131 | `#444444` |  | `.form-input::placeholder { color: #444444; }` |
-| 142 | `rgba(200,90,90,0.10)` |  | `background: rgba(200,90,90,0.10);` |
-| 143 | `rgba(200,90,90,0.30)` |  | `border: 1px solid rgba(200,90,90,0.30);` |
-| 144 | `#E07070` |  | `color: #E07070;` |
-| 147 | `rgba(90,138,90,0.10)` |  | `background: rgba(90,138,90,0.10);` |
-| 148 | `rgba(90,138,90,0.30)` |  | `border: 1px solid rgba(90,138,90,0.30);` |
-| 149 | `#7AB07A` |  | `color: #7AB07A;` |
-| 156 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 157 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 163 | `#4A7FA5` | LEGACY | `border: 1px solid #4A7FA5;` |
-| 169 | `#3A6A8E` | LEGACY | `.btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 169 | `#3A6A8E` | LEGACY | `.btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 170 | `#2F5670` |  | `.btn-primary:active:not(:disabled) { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 170 | `#2F5670` |  | `.btn-primary:active:not(:disabled) { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 170 | `#FFFFFF` |  | `.btn-primary:active:not(:disabled) { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 177 | `#242424` | LEGACY | `border-top: 1px solid #242424;` |
-| 180 | `#888888` |  | `.auth-footer p { font-size: 0.8125rem; color: #888888; line-height: 1.6; }` |
-| 181 | `#4A7FA5` | LEGACY | `.auth-footer a { color: #4A7FA5; text-decoration: none; font-weight: 500; }` |
-| 188 | `#444444` |  | `color: #444444;` |
 
 ## `templates/index.html`
 
@@ -691,45 +574,6 @@ Total: 767 colour literals in 24 files (287 legacy).
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 32 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 33 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 52 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 62 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 63 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 80 | `#888888` |  | `color: #888888;` |
-| 83 | `#F0F0EE` | LEGACY | `.top-bar__back:hover { color: #F0F0EE; }` |
-| 94 | `#141414` | LEGACY | `background: #141414;` |
-| 95 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 107 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 115 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 129 | `#888888` |  | `color: #888888;` |
-| 137 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 138 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 139 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 146 | `#4A7FA5` | LEGACY | `border-color: #4A7FA5;` |
-| 147 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 149 | `#444444` |  | `.form-input::placeholder { color: #444444; }` |
-| 160 | `rgba(200,90,90,0.10)` |  | `background: rgba(200,90,90,0.10);` |
-| 161 | `rgba(200,90,90,0.30)` |  | `border: 1px solid rgba(200,90,90,0.30);` |
-| 162 | `#E07070` |  | `color: #E07070;` |
-| 165 | `rgba(90,138,90,0.10)` |  | `background: rgba(90,138,90,0.10);` |
-| 166 | `rgba(90,138,90,0.30)` |  | `border: 1px solid rgba(90,138,90,0.30);` |
-| 167 | `#7AB07A` |  | `color: #7AB07A;` |
-| 172 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 184 | `#888888` |  | `color: #888888;` |
-| 192 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 193 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 199 | `#4A7FA5` | LEGACY | `border: 1px solid #4A7FA5;` |
-| 205 | `#3A6A8E` | LEGACY | `.btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 205 | `#3A6A8E` | LEGACY | `.btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 206 | `#2F5670` |  | `.btn-primary:active { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 206 | `#2F5670` |  | `.btn-primary:active { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 206 | `#FFFFFF` |  | `.btn-primary:active { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 212 | `#242424` | LEGACY | `border-top: 1px solid #242424;` |
-| 216 | `#888888` |  | `color: #888888;` |
-| 220 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 225 | `#242424` | LEGACY | `.auth-footer .divider { margin: 10px 0; border: none; border-top: 1px solid #242424; }` |
-| 232 | `#444444` |  | `color: #444444;` |
 
 ## `templates/methodology.html`
 
@@ -743,33 +587,6 @@ Total: 767 colour literals in 24 files (287 legacy).
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 28 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 29 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 46 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 56 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 57 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 81 | `#141414` | LEGACY | `background: #141414;` |
-| 82 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 94 | `rgba(90,138,90,0.12)` |  | `background: rgba(90,138,90,0.12);` |
-| 95 | `rgba(90,138,90,0.30)` |  | `border: 1px solid rgba(90,138,90,0.30);` |
-| 102 | `#5A8A5A` |  | `color: #5A8A5A;` |
-| 111 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 119 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 124 | `#888888` |  | `color: #888888;` |
-| 133 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 134 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 141 | `#888888` |  | `color: #888888;` |
-| 149 | `#5A8A5A` |  | `color: #5A8A5A;` |
-| 157 | `#101820` |  | `background: #101820;` |
-| 158 | `rgba(74,127,165,0.25)` |  | `border: 1px solid rgba(74,127,165,0.25);` |
-| 170 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 177 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 182 | `#888888` |  | `color: #888888;` |
-| 189 | `#242424` | LEGACY | `background: #242424;` |
-| 190 | `#444444` |  | `color: #444444;` |
-| 204 | `#888888` |  | `color: #888888;` |
-| 209 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 219 | `#444444` |  | `color: #444444;` |
 
 ## `templates/privacy.html`
 
@@ -782,90 +599,12 @@ Total: 767 colour literals in 24 files (287 legacy).
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 32 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 33 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 51 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 61 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 62 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 79 | `#888888` |  | `color: #888888;` |
-| 82 | `#F0F0EE` | LEGACY | `.top-bar__back:hover { color: #F0F0EE; }` |
-| 92 | `#141414` | LEGACY | `background: #141414;` |
-| 93 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 105 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 113 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 118 | `#888888` |  | `color: #888888;` |
-| 138 | `#888888` |  | `color: #888888;` |
-| 146 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 147 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 148 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 155 | `#4A7FA5` | LEGACY | `border-color: #4A7FA5;` |
-| 156 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 158 | `#444444` |  | `.form-input::placeholder { color: #444444; }` |
-| 161 | `rgba(200,90,90,0.10)` |  | `background: rgba(200,90,90,0.10);` |
-| 162 | `rgba(200,90,90,0.30)` |  | `border: 1px solid rgba(200,90,90,0.30);` |
-| 163 | `#E07070` |  | `color: #E07070;` |
-| 182 | `#4A7FA5` | LEGACY | `accent-color: #4A7FA5;` |
-| 188 | `#888888` |  | `color: #888888;` |
-| 192 | `#4A7FA5` | LEGACY | `.checkbox-row a { color: #4A7FA5; text-decoration: none; }` |
-| 197 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 198 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 209 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 216 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 222 | `#888888` |  | `color: #888888;` |
-| 227 | `#5A8A5A` |  | `color: #5A8A5A;` |
-| 234 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 235 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 241 | `#4A7FA5` | LEGACY | `border: 1px solid #4A7FA5;` |
-| 246 | `#3A6A8E` | LEGACY | `.btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 246 | `#3A6A8E` | LEGACY | `.btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 250 | `#444444` |  | `color: #444444;` |
-| 257 | `#242424` | LEGACY | `border-top: 1px solid #242424;` |
-| 261 | `#888888` |  | `color: #888888;` |
-| 264 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 274 | `#444444` |  | `color: #444444;` |
-| 307 | `#888888` |  | `<p class="plan-box__price">MAD 990 <span style="font-size:0.875rem;font-weight:400;color:#888888;">/ month</sp` |
 
 ## `templates/reset_password.html`
 
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 32 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 33 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 46 | `#F0F0EE` | LEGACY | `.top-bar__logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #F0F0EE; }` |
-| 48 | `#888888` |  | `.top-bar__back { font-size: 13px; color: #888888; text-decoration: none; }` |
-| 49 | `#F0F0EE` | LEGACY | `.top-bar__back:hover { color: #F0F0EE; }` |
-| 59 | `#141414` | LEGACY | `background: #141414;` |
-| 60 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 72 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 80 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 83 | `#888888` |  | `.auth-sub { font-size: 0.875rem; color: #888888; line-height: 1.6; margin-bottom: 28px; }` |
-| 92 | `#888888` |  | `color: #888888;` |
-| 100 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 101 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 102 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 108 | `#4A7FA5` | LEGACY | `.form-input:focus { border-color: #4A7FA5; background: #1C1C1C; }` |
-| 108 | `#1C1C1C` |  | `.form-input:focus { border-color: #4A7FA5; background: #1C1C1C; }` |
-| 109 | `#444444` |  | `.form-input::placeholder { color: #444444; }` |
-| 119 | `rgba(200,90,90,0.10)` |  | `background: rgba(200,90,90,0.10);` |
-| 120 | `rgba(200,90,90,0.30)` |  | `border: 1px solid rgba(200,90,90,0.30);` |
-| 121 | `#E07070` |  | `color: #E07070;` |
-| 124 | `rgba(90,138,90,0.10)` |  | `background: rgba(90,138,90,0.10);` |
-| 125 | `rgba(90,138,90,0.30)` |  | `border: 1px solid rgba(90,138,90,0.30);` |
-| 126 | `#7AB07A` |  | `color: #7AB07A;` |
-| 128 | `#4A7FA5` | LEGACY | `.auth-success a { color: #4A7FA5; font-weight: 600; }` |
-| 134 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 135 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 143 | `#4A7FA5` | LEGACY | `border: 1px solid #4A7FA5;` |
-| 149 | `#3A6A8E` | LEGACY | `.btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 149 | `#3A6A8E` | LEGACY | `.btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 150 | `#2F5670` |  | `.btn-primary:active:not(:disabled) { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 150 | `#2F5670` |  | `.btn-primary:active:not(:disabled) { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 150 | `#FFFFFF` |  | `.btn-primary:active:not(:disabled) { background: #2F5670; border-color: #2F5670; color: #FFFFFF; }` |
-| 156 | `#242424` | LEGACY | `border-top: 1px solid #242424;` |
-| 159 | `#888888` |  | `.auth-footer p { font-size: 0.8125rem; color: #888888; line-height: 1.6; }` |
-| 160 | `#4A7FA5` | LEGACY | `.auth-footer a { color: #4A7FA5; text-decoration: none; font-weight: 500; }` |
-| 163 | `#444444` |  | `.auth-note { text-align: center; padding: 20px; font-size: 0.75rem; color: #444444; }` |
 
 ## `templates/terms.html`
 
@@ -878,60 +617,9 @@ Total: 767 colour literals in 24 files (287 legacy).
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 32 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 33 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 51 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 54 | `#888888` |  | `.top-bar__back { font-size: 13px; color: #888888; text-decoration: none; }` |
-| 55 | `#F0F0EE` | LEGACY | `.top-bar__back:hover { color: #F0F0EE; }` |
-| 65 | `#141414` | LEGACY | `background: #141414;` |
-| 66 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 79 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 87 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 92 | `#888888` |  | `color: #888888;` |
-| 104 | `#888888` |  | `color: #888888;` |
-| 112 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 113 | `#1C1C1C` |  | `background: #1C1C1C;` |
-| 114 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 120 | `#4A7FA5` | LEGACY | `.form-input:focus { border-color: #4A7FA5; }` |
-| 121 | `#444444` |  | `.form-input::placeholder { color: #444444; }` |
-| 132 | `rgba(200,90,90,0.10)` |  | `background: rgba(200,90,90,0.10);` |
-| 133 | `rgba(200,90,90,0.30)` |  | `border: 1px solid rgba(200,90,90,0.30);` |
-| 134 | `#E07070` |  | `color: #E07070;` |
-| 137 | `rgba(90,138,90,0.10)` |  | `background: rgba(90,138,90,0.10);` |
-| 138 | `rgba(90,138,90,0.30)` |  | `border: 1px solid rgba(90,138,90,0.30);` |
-| 139 | `#7AB07A` |  | `color: #7AB07A;` |
-| 145 | `#4A7FA5` | LEGACY | `background: #4A7FA5;` |
-| 146 | `#FFFFFF` |  | `color: #FFFFFF;` |
-| 152 | `#4A7FA5` | LEGACY | `border: 1px solid #4A7FA5;` |
-| 158 | `#3A6A8E` | LEGACY | `.btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 158 | `#3A6A8E` | LEGACY | `.btn-primary:hover:not(:disabled) { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 164 | `#242424` | LEGACY | `border-top: 1px solid #242424;` |
-| 167 | `#888888` |  | `.auth-footer p { font-size: 0.8125rem; color: #888888; line-height: 1.6; }` |
-| 168 | `#4A7FA5` | LEGACY | `.auth-footer a { color: #4A7FA5; text-decoration: none; font-weight: 500; }` |
-| 175 | `#444444` |  | `color: #444444;` |
 
 ## `templates/verify_email_sent.html`
 
 | Line | Colour | Note | Context |
 |---|---|---|---|
 | 11 | `#4A7FA5` | LEGACY | `<meta name="theme-color" content="#4A7FA5">` |
-| 32 | `#0A0A0A` | LEGACY | `background: #0A0A0A;` |
-| 33 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 51 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 54 | `#888888` |  | `.top-bar__back { font-size: 13px; color: #888888; text-decoration: none; }` |
-| 55 | `#F0F0EE` | LEGACY | `.top-bar__back:hover { color: #F0F0EE; }` |
-| 65 | `#141414` | LEGACY | `background: #141414;` |
-| 66 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 79 | `#4A7FA5` | LEGACY | `color: #4A7FA5;` |
-| 87 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 92 | `#888888` |  | `color: #888888;` |
-| 98 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 109 | `#F0F0EE` | LEGACY | `color: #F0F0EE;` |
-| 115 | `#242424` | LEGACY | `border: 1px solid #242424;` |
-| 122 | `#4A7FA5` | LEGACY | `.btn-secondary:hover { border-color: #4A7FA5; color: #4A7FA5; }` |
-| 122 | `#4A7FA5` | LEGACY | `.btn-secondary:hover { border-color: #4A7FA5; color: #4A7FA5; }` |
-| 126 | `#444444` |  | `color: #444444;` |
-| 134 | `#242424` | LEGACY | `border-top: 1px solid #242424;` |
-| 137 | `#888888` |  | `.auth-footer p { font-size: 0.8125rem; color: #888888; line-height: 1.6; }` |
-| 138 | `#4A7FA5` | LEGACY | `.auth-footer a { color: #4A7FA5; text-decoration: none; font-weight: 500; }` |
-| 145 | `#444444` |  | `color: #444444;` |
