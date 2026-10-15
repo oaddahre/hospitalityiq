@@ -27,6 +27,7 @@
   --text-2:  #5F5B55;
   --text-3:  #948D85;
   --bg-hover: color-mix(in srgb, var(--text) 4%, var(--bg-alt));
+  --overlay:  rgba(31,30,28,0.35);   /* behind modals, drawers, search */
 
   /* Action blue */
   --action:        #0075DE;
@@ -78,6 +79,7 @@
   --text:    #F2F1EE;
   --text-2:  #A8A39C;
   --text-3:  #6F6B66;
+  --overlay:  rgba(15,15,14,0.6);
 
   --action:        #0075DE;
   --action-hover:  #0E78D5;   /* AA: brief #1A8CF0 gives 3.5:1 with a white label */

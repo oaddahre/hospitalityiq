@@ -58,16 +58,16 @@ const LOCAL_BRAND_LOGOS = {
 };
 
 const BRAND_CUSTOM_LOGOS = {
-  'Zalagh Hotels Group':         { letter: 'Z',  bg: '#1A1A1A', color: '#4A7FA5' },
-  'Farah Hotels':                { letter: 'F',  bg: '#1A1A1A', color: '#4A7FA5' },
-  'Independent Ultra Luxury':    { letter: 'UL', bg: '#1A1A1A', color: '#4A7FA5' },
-  'Independent Luxury':          { letter: 'IL', bg: '#1A1A1A', color: '#4A7FA5' },
-  'Independent Upper Upscale':   { letter: 'UU', bg: '#1A1A1A', color: '#888888' },
-  'Independent Upscale':         { letter: 'IU', bg: '#1A1A1A', color: '#666666' },
-  'Independent Midscale':        { letter: 'IM', bg: '#1A1A1A', color: '#555555' },
-  'Independent Economy':         { letter: 'IE', bg: '#1A1A1A', color: '#444444' },
+  'Zalagh Hotels Group':         { letter: 'Z',  bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
+  'Farah Hotels':                { letter: 'F',  bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
+  'Independent Ultra Luxury':    { letter: 'UL', bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
+  'Independent Luxury':          { letter: 'IL', bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
+  'Independent Upper Upscale':   { letter: 'UU', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
+  'Independent Upscale':         { letter: 'IU', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
+  'Independent Midscale':        { letter: 'IM', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
+  'Independent Economy':         { letter: 'IE', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
 
-  'Zephyr':                      { letter: 'Z',  bg: '#1A1A1A', color: '#4A7FA5' },
+  'Zephyr':                      { letter: 'Z',  bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
 };
 
 const OWNER_LOGOS = {
@@ -95,32 +95,45 @@ function getOwnerLogoImg(ownerName, size) {
     return '<img src="https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
   }
   var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:#1A1A1A;color:#4A7FA5;border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:var(--bg-alt);color:var(--cat-1-text);border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
 }
 
-// Shared category-color palette — the single source of truth for
-// "type" indicators platform-wide (Owners' portfolio types, Tourism's
-// event categories). Keep in sync with the literal hex values inlined
-// in the Portfolio Types KPI card (templates/index.html).
-const CATEGORY_COLORS = {
-  slate:  '#6B7A8D',
-  blue:   '#4A7FA5',
-  green:  '#4A9B6F',
-  orange: '#F2A33D',
-  violet: '#8A6FB0',
-};
+// Colour families from static/css/tokens.css — the single source of truth
+// for every coloured label platform-wide. A label is a span with a
+// .pill--<family> class (tint, text colour, dot); dots and chart marks read
+// the family's bright dot colour through familyDot().
+const FAMILY_INDEX = { blue: 1, green: 2, orange: 3, violet: 4, sky: 5, grey: 6, red: 7 };
 
-const OWNER_TYPE_COLOR = {
-  'State-Owned':  CATEGORY_COLORS.slate,
-  'Listed':       CATEGORY_COLORS.blue,
-  'Private':      CATEGORY_COLORS.green,
-  'Family-Owned': CATEGORY_COLORS.orange,
+function familyDot(family) {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue('--cat-' + (FAMILY_INDEX[family] || 6) + '-dot').trim();
+}
+
+function pillHtml(family, text, cls) {
+  return `<span class="${cls ? cls + ' ' : ''}pill--${family}">${fmt.esc(text)}</span>`;
+}
+
+// Owners: State = grey, Listed = blue, Private = green, Family = orange
+const OWNER_TYPE_FAMILY = {
+  'State-Owned':  'grey',
+  'Listed':       'blue',
+  'Private':      'green',
+  'Family-Owned': 'orange',
 };
 
 function ownerTypeBadge(type) {
-  var c = OWNER_TYPE_COLOR[type] || OWNER_TYPE_COLOR['Private'];
-  return '<span class="owner-type-badge" style="color:' + c + '">' + fmt.esc(type) + '</span>';
+  return pillHtml(OWNER_TYPE_FAMILY[type] || 'green', type, 'owner-type-badge');
 }
+
+// Hotel segments
+const SEGMENT_FAMILY = {
+  'Ultra Luxury':  'violet',
+  'Luxury':        'blue',
+  'Upper Upscale': 'sky',
+  'Upscale':       'green',
+  'Midscale':      'orange',
+  'Economy':       'grey',
+};
 
 const BRAND_DESCRIPTIONS = {
   'Marriott International': "Marriott International is the world's largest hotel company with over 30 brands and 9,000 properties across 140 countries. In Morocco, Marriott operates through flagship brands including Marriott Hotels, Sheraton, Courtyard, Four Points, and the ultra-luxury St. Regis and Ritz-Carlton. The group has been present in Morocco since 1989 and continues to expand with confirmed pipeline projects in Marrakech and Tamuda Bay. Marriott's Morocco portfolio spans all segments from upper upscale business hotels in Casablanca and Rabat to luxury resort developments on the Atlantic and Mediterranean coasts.",
@@ -199,44 +212,7 @@ const SEG_COLORS = {
 // invisible against a light-mode white surface.
 function getSegmentBadgeHtml(segment) {
   if (!segment) return '—';
-  const dark = !document.body.classList.contains('light');
-  const segmentColorsDark = {
-    'Ultra Luxury': '#AAAAAA',
-    'Luxury': '#999999',
-    'Upper Upscale': '#888888',
-    'Upscale': '#777777',
-    'Midscale': '#666666',
-    'Economy': '#555555',
-  };
-  const segmentColorsLight = {
-    'Ultra Luxury': '#555555',
-    'Luxury': '#666666',
-    'Upper Upscale': '#777777',
-    'Upscale': '#888888',
-    'Midscale': '#999999',
-    'Economy': '#AAAAAA',
-  };
-  const segmentBgDark = {
-    'Ultra Luxury': 'rgba(240,240,238,0.08)',
-    'Luxury': 'rgba(240,240,238,0.07)',
-    'Upper Upscale': 'rgba(240,240,238,0.06)',
-    'Upscale': 'rgba(240,240,238,0.05)',
-    'Midscale': 'rgba(240,240,238,0.04)',
-    'Economy': 'rgba(240,240,238,0.03)',
-  };
-  const segmentBgLight = {
-    'Ultra Luxury': 'rgba(10,10,10,0.06)',
-    'Luxury': 'rgba(10,10,10,0.05)',
-    'Upper Upscale': 'rgba(10,10,10,0.045)',
-    'Upscale': 'rgba(10,10,10,0.04)',
-    'Midscale': 'rgba(10,10,10,0.035)',
-    'Economy': 'rgba(10,10,10,0.03)',
-  };
-  const segmentColors = dark ? segmentColorsDark : segmentColorsLight;
-  const segmentBg = dark ? segmentBgDark : segmentBgLight;
-  const color = segmentColors[segment] || (dark ? '#777777' : '#888888');
-  const bg = segmentBg[segment] || (dark ? 'rgba(240,240,238,0.05)' : 'rgba(10,10,10,0.04)');
-  return `<span style="color:${color};background:${bg};font-family:'Sweet Sans Pro',sans-serif;font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;border-radius:999px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;">${fmt.esc(segment).toUpperCase()}</span>`;
+  return `<span class="segment-badge pill--${SEGMENT_FAMILY[segment] || 'grey'}">${fmt.esc(segment).toUpperCase()}</span>`;
 }
 
 const CITY_COORDS = {
@@ -479,7 +455,7 @@ function renderKPIs() {
       const deltaEl = document.getElementById(id + '-delta');
       if (deltaEl) {
         deltaEl.textContent = d.text;
-        deltaEl.className = 'kpi-delta ' + (d.up ? 'up' : 'down');
+        deltaEl.className = 'kpi-delta ' + (d.up ? 'up pill--green' : 'down pill--red');
       }
     }
     el.classList.remove('loading');
@@ -718,8 +694,9 @@ function brandLogoOrInitials(bg, size) {
   }
   const initials = bg.replace('Hotels', '').replace('Hotel', '').replace('Resorts', '').replace('International', '')
     .trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  const bg2 = BRAND_PALETTE[Math.abs(bg.split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % BRAND_PALETTE.length];
-  return `<div class="brn-initials" style="width:${size}px;height:${size}px;background:${bg2}">${initials}</div>`;
+  // Tinted tile in one of the six chart families (tokens.css), picked by name
+  const fam = (Math.abs(bg.split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % 6) + 1;
+  return `<div class="brn-initials" style="width:${size}px;height:${size}px;background:var(--cat-${fam}-tint);color:var(--cat-${fam}-text)">${initials}</div>`;
 }
 
 function renderBrandsCards() {
@@ -731,8 +708,8 @@ function renderBrandsCards() {
   }
   grid.innerHTML = data.map(b => {
     const cityList  = b.cities.slice(0, 3).map(fmt.esc).join(' · ');
-    const cityMore  = b.cities.length > 3 ? ` <span class="brn-more">+${b.cities.length - 3}</span>` : '';
-    const segPills  = b.segments.map(s => `<span class="brn-seg-pill">${fmt.esc(s)}</span>`).join('');
+    const cityMore  = b.cities.length > 3 ? ` <span class="brn-more pill--grey">+${b.cities.length - 3}</span>` : '';
+    const segPills  = b.segments.map(s => pillHtml(SEGMENT_FAMILY[s] || 'grey', s, 'brn-seg-pill')).join('');
     const mktBar    = Math.min(b.market_share_keys_pct * 4, 100);
     const pipeRow   = b.pipeline_projects > 0
       ? `<div class="brn-card-pipeline">Pipeline: ${b.pipeline_projects} project${b.pipeline_projects !== 1 ? 's' : ''} · ${b.pipeline_keys.toLocaleString('en')} keys →</div>`
@@ -823,7 +800,7 @@ function renderBrandsCompTable() {
   document.getElementById('brands-comp-tbody').innerHTML = sorted.map((b, i) => {
     const rank      = i + 1;
     const topClass  = rank <= 3 ? ' brn-top3' : '';
-    const rankStyle = rank <= 3 ? `style="color:var(--accent);font-weight:700"` : '';
+    const rankStyle = rank <= 3 ? `style="font-weight:700"` : '';  // top 3 stand out by weight
     return `<tr class="brand-hotel-row${topClass}" data-brand-group="${fmt.esc(b.brand_group).replace(/'/g,'&#39;')}">
       <td class="rank-cell" ${rankStyle}>${rank}</td>
       <td>
@@ -1247,7 +1224,7 @@ async function renderHotelPipeline(h) {
     <div class="hpipe-item">
       <div class="hpipe-item-name">${fmt.esc(p.name)}</div>
       <span class="hpipe-item-meta">${fmt.esc(p.brand)} · ${p.keys || 'TBC'} keys · ${p.expected_opening}</span>
-      <span class="${p.status === 'Under Construction' ? 'pipe-status-uc' : 'pipe-status-pl'}">${fmt.esc(p.status)}</span>
+      <span class="${p.status === 'Under Construction' ? 'pipe-status-uc pill--blue' : 'pipe-status-pl pill--grey'}">${fmt.esc(p.status)}</span>
     </div>`).join('');
 
   content.innerHTML = `
@@ -1966,20 +1943,20 @@ const EVENT_TYPE_CLASS = {
   Business: 'etype-business', Religious: 'etype-religious', Mega: 'etype-mega',
 };
 
-// Event category colors — drawn from the same CATEGORY_COLORS palette
-// as Owners' portfolio types (see ownerTypeBadge above), so "type"
-// colors mean the same thing everywhere on the platform. Mega reuses
+// Event category families — the same colour families as Owners'
+// portfolio types (see FAMILY_INDEX / ownerTypeBadge above), so "type"
+// colours mean the same thing everywhere on the platform. Mega reuses
 // Music's violet since Mawazine (the only Mega event) is itself a
 // music festival; its bold weight/larger dot keep it visually set apart.
-const EVENT_TYPE_COLOR = {
-  Business:  CATEGORY_COLORS.blue,
-  Religious: CATEGORY_COLORS.slate,
-  Sport:     CATEGORY_COLORS.green,
-  Culture:   CATEGORY_COLORS.orange,
-  Music:     CATEGORY_COLORS.violet,
-  Mega:      CATEGORY_COLORS.violet,
+const EVENT_TYPE_FAMILY = {
+  Business:  'blue',
+  Religious: 'grey',
+  Sport:     'green',
+  Culture:   'orange',
+  Music:     'violet',
+  Mega:      'violet',
 };
-const EVENT_TYPE_COLOR_FALLBACK = CATEGORY_COLORS.slate;
+const eventTypeFamily = t => EVENT_TYPE_FAMILY[t] || 'grey';
 
 // Display order for the events legend — only categories actually
 // present in the current (filtered) event list are shown.
@@ -1992,7 +1969,7 @@ function renderEventsLegend(events) {
   const types = EVENT_TYPE_ORDER.filter(t => present.has(t));
   el.innerHTML = types.map(t => `
     <span class="events-legend-item">
-      <span class="events-legend-dot-slot"><span class="events-legend-dot" style="background:${EVENT_TYPE_COLOR[t] || EVENT_TYPE_COLOR_FALLBACK};"></span></span>
+      <span class="events-legend-dot-slot"><span class="events-legend-dot" style="background:${familyDot(eventTypeFamily(t))};"></span></span>
       <span class="events-legend-label">${fmt.esc(t)}</span>
     </span>`).join('');
 }
@@ -2039,7 +2016,7 @@ function renderTourismEvents() {
   document.getElementById('events-container').innerHTML = `<div class="timeline-container">${
     sorted.map((ev, i) => {
       const pd = parseEventDate(ev.date);
-      const dotColor = EVENT_TYPE_COLOR[ev.type] || EVENT_TYPE_COLOR_FALLBACK;
+      const dotColor = familyDot(eventTypeFamily(ev.type));
       const isMega = ev.type === 'Mega';
 
       const dateColHtml = pd.range
@@ -2057,7 +2034,7 @@ function renderTourismEvents() {
         ? `<span class="timeline-attendance">↗ <span class="timeline-attendance__num">${fmt.esc(ev.attendance)}</span></span>`
         : '';
       const cityTagHtml = eventsFilter === 'all'
-        ? `<span class="timeline-city-tag">${fmt.esc(ev.city === 'National' ? 'Nationwide' : ev.city)}</span>`
+        ? `<span class="timeline-city-tag pill--grey">${fmt.esc(ev.city === 'National' ? 'Nationwide' : ev.city)}</span>`
         : '';
       const hasMeta = showAttendance || eventsFilter === 'all';
 
@@ -2069,7 +2046,7 @@ function renderTourismEvents() {
         </div>
         <div class="timeline-content">
           <div class="timeline-event-title">${fmt.esc(ev.name)}</div>
-          <span class="event-type-pill ${EVENT_TYPE_CLASS[ev.type] || ''}" style="margin-bottom:8px;display:inline-block;">${fmt.esc(ev.type)}</span>
+          <span class="event-type-pill ${EVENT_TYPE_CLASS[ev.type] || ''} pill--${eventTypeFamily(ev.type)}" style="margin-bottom:8px;">${fmt.esc(ev.type)}</span>
           ${ev.desc ? `<div class="timeline-detail">${fmt.esc(ev.desc)}</div>` : ''}
           ${hasMeta ? `<div class="timeline-meta">${attendanceHtml}${cityTagHtml}</div>` : ''}
         </div>
@@ -2209,7 +2186,7 @@ function initTourismCharts() {
       if (!deltaEl) return;
       if (delta) {
         deltaEl.textContent = `${delta} vs ${yr - 1}`;
-        deltaEl.className = 'kpi-delta ' + (delta.startsWith('-') ? 'down' : 'up');
+        deltaEl.className = 'kpi-delta ' + (delta.startsWith('-') ? 'down pill--red' : 'up pill--green');
         deltaEl.style.display = '';
       } else {
         deltaEl.style.display = 'none';
@@ -2522,8 +2499,8 @@ function initPipelineMap() {
 function pipelinePopupHTML(p) {
   const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
   const statusPill = p.status === 'Under Construction'
-    ? `<span style="color:#4A7FA5;font-family:'Sweet Sans Pro',sans-serif;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)}</span>`
-    : `<span style="color:#888888;font-family:'Sweet Sans Pro',sans-serif;font-size:10px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;">${fmt.esc(p.status)}</span>`;
+    ? `<span class="pill--blue" style="font-family:'Sweet Sans Pro',sans-serif;font-size:10px;">${fmt.esc(p.status)}</span>`
+    : `<span class="pill--grey" style="font-family:'Sweet Sans Pro',sans-serif;font-size:10px;">${fmt.esc(p.status)}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${getSegmentBadgeHtml(p.category)}</div>
@@ -2551,7 +2528,7 @@ function renderPipelineCards() {
   }
   grid.innerHTML = data.map(p => {
     const isUC = p.status === 'Under Construction';
-    const pill  = isUC ? `<span class="pipe-status-uc">${p.status}</span>` : `<span class="pipe-status-pl">${p.status}</span>`;
+    const pill  = isUC ? `<span class="pipe-status-uc pill--blue">${p.status}</span>` : `<span class="pipe-status-pl pill--grey">${p.status}</span>`;
     const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
     return `<div class="pipe-card ${isUC ? 'pipe-card-uc' : 'pipe-card-pl'}">
       <div>
@@ -2590,7 +2567,7 @@ function renderPipelineTableView() {
     return;
   }
   tbody.innerHTML = data.map(p => {
-    const pill  = p.status === 'Under Construction' ? `<span class="pipe-status-uc">${p.status}</span>` : `<span class="pipe-status-pl">${p.status}</span>`;
+    const pill  = p.status === 'Under Construction' ? `<span class="pipe-status-uc pill--blue">${p.status}</span>` : `<span class="pipe-status-pl pill--grey">${p.status}</span>`;
     const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
     return `<tr>
       <td style="font-weight:600">${fmt.esc(p.name)}</td>
@@ -2705,26 +2682,21 @@ function newsCoverUrl(slug, query) {
   return `https://picsum.photos/seed/${encodeURIComponent(slug || query || 'hotel')}/800/450`;
 }
 
-// Category colors — same shared CATEGORY_COLORS palette as Owners'
-// portfolio types and Events' categories (see ownerTypeBadge/
-// EVENT_TYPE_COLOR above). Keys are the real `category` values seen
-// in news.json; anything else falls back to slate. Sponsored articles
-// keep their own distinct accent-colored "Partner" treatment.
-const NEWS_CATEGORY_COLOR = {
-  'Market Intelligence': CATEGORY_COLORS.blue,
-  'Pipeline':            CATEGORY_COLORS.green,
-  'Openings':            CATEGORY_COLORS.orange,
-  'Interviews':          CATEGORY_COLORS.violet,
+// News category families — same colour families as Owners' portfolio
+// types and Events' categories (see FAMILY_INDEX / EVENT_TYPE_FAMILY
+// above). Keys are the real `category` values seen in news.json; anything
+// else falls back to grey. Sponsored articles use sky for "Partner".
+const NEWS_CATEGORY_FAMILY = {
+  'Market Intelligence': 'blue',
+  'Pipeline':            'green',
+  'Openings':            'orange',
+  'Interviews':          'violet',
 };
-const NEWS_CATEGORY_COLOR_FALLBACK = CATEGORY_COLORS.slate;
 
 function edCatPill(cat, type) {
   const isSponsored = type === 'sponsored' || type === 'partner';
-  if (isSponsored) {
-    return `<span class="ed-cat-badge ed-cat-partner">Partner</span>`;
-  }
-  const color = NEWS_CATEGORY_COLOR[cat] || NEWS_CATEGORY_COLOR_FALLBACK;
-  return `<span class="ed-cat-badge" style="border-color:${color};color:${color};">${fmt.esc(cat || '')}</span>`;
+  if (isSponsored) return pillHtml('sky', 'Partner', 'ed-cat-badge ed-cat-partner');
+  return pillHtml(NEWS_CATEGORY_FAMILY[cat] || 'grey', cat || '', 'ed-cat-badge');
 }
 
 async function initNews() {
@@ -2762,7 +2734,7 @@ function renderEditorialMain() {
       <div class="ed-hero-card" data-art-id="${f.id}">
         <div class="ed-hero-body">
           <div class="ed-hero-top">
-            <span class="ed-featured-badge">FEATURED</span>
+            <span class="ed-featured-badge pill--solid">FEATURED</span>
             ${edCatPill(f.category, f.type)}
           </div>
           <h2 class="ed-hero-title">${fmt.esc(f.title || f.headline || '')}</h2>
@@ -2793,7 +2765,7 @@ function renderEditorialMain() {
   if (newsCatFilter === 'all' && newsData.sponsored && newsData.sponsored.length) {
     sponsStrip.innerHTML = newsData.sponsored.map(s => `
       <div class="ed-spons-card" data-art-id="${s.id}">
-        <div class="ed-spons-badge">Partner</div>
+        <div class="ed-spons-badge pill--sky">Partner</div>
         ${s.sponsor_logo_domain
           ? `<img src="https://cdn.brandfetch.io/domain/${s.sponsor_logo_domain}?c=1idptYpdMe9b8BdTIPC"
                   alt="${fmt.esc(s.sponsor_name || '')}" class="ed-spons-logo"
@@ -4137,7 +4109,7 @@ function renderBenchMonthlyTable() {
     const revIdx = (!noComp && compAgg.revpar > 0) ? Math.round(myAgg.revpar / compAgg.revpar * 100) : null;
     const [yr, mo] = mk.split('-');
     const label = `${MON_NAMES[Number(mo)-1]} ${yr}`;
-    const idxCls = revIdx === null ? 'bench-idx-neutral' : revIdx >= 100 ? 'bench-idx-green' : 'bench-idx-red';
+    const idxCls = revIdx === null ? 'bench-idx-neutral pill--grey' : revIdx >= 100 ? 'bench-idx-green pill--green' : 'bench-idx-red pill--red';
     return `<tr>
       <td><strong>${label}</strong></td>
       <td>${(myAgg.occupancy*100).toFixed(1)}%</td>
@@ -4292,7 +4264,7 @@ RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixe
         <div class="insight-row">
           <span class="insight-label">${fmt.esc(r.label)}</span>
           <span class="insight-text">${fmt.esc(r.text)}</span>
-          <span class="insight-value${r.sign ? ' is-' + r.sign : ''}">${fmt.esc(r.value)}</span>
+          <span class="insight-value${r.sign ? ' is-' + r.sign + (r.sign === 'pos' ? ' pill--green' : r.sign === 'neg' ? ' pill--red' : '') : ''}">${fmt.esc(r.value)}</span>
         </div>`).join('')}
     </div>
     <div class="ai-followup-wrap" id="benchFollowupWrap">
@@ -4744,7 +4716,7 @@ fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
   if (!badge) return;
   const label = { observer: 'Observer', benchmarker: 'Benchmarker', advisory: 'Advisory' }[me.tier] || me.tier;
   badge.textContent = label;
-  badge.className = `tier-badge tier-badge--${me.tier}`;
+  badge.className = `tier-badge tier-badge--${me.tier} pill--grey`;
   badge.style.display = '';
   window._kodoUser = me;
   // Hide export buttons and dropdowns for Observer tier
@@ -5752,8 +5724,8 @@ function valUpdateLiveMetrics() {
   const noiEl = valEl('val-q-noi-margin');
   gopEl.textContent = fmtPct(gopMargin * 100);
   noiEl.textContent = fmtPct(noiMargin * 100);
-  gopEl.className = 'val-metric-value ' + (gopMargin >= 0.30 ? 'val-metric-good' : gopMargin >= 0.20 ? 'val-metric-mid' : 'val-metric-poor');
-  noiEl.className = 'val-metric-value ' + (noiMargin >= 0.26 ? 'val-metric-good' : noiMargin >= 0.16 ? 'val-metric-mid' : 'val-metric-poor');
+  gopEl.className = 'val-metric-value ' + (gopMargin >= 0.30 ? 'val-metric-good pill--green' : gopMargin >= 0.20 ? 'val-metric-mid' : 'val-metric-poor pill--red');
+  noiEl.className = 'val-metric-value ' + (noiMargin >= 0.26 ? 'val-metric-good pill--green' : noiMargin >= 0.16 ? 'val-metric-mid' : 'val-metric-poor pill--red');
 }
 
 // ─── Mode switching ───────────────────────────────────────────────────

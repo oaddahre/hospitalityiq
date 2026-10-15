@@ -52,19 +52,14 @@
 
     /* ── Welcome banner ── */
     .acc-welcome {
-      background: rgba(74,127,165,0.1);
-      border: 1px solid rgba(74,127,165,0.28);
+      background: var(--action-tint);
+      border: 1px solid transparent;
       border-radius: var(--radius);
       padding: 14px 18px;
       margin-bottom: 24px;
       font-size: 13px;
-      color: var(--accent);
+      color: var(--cat-1-text);
       line-height: 1.55;
-    }
-    body.light .acc-welcome {
-      background: rgba(74,127,165,0.06);
-      border-color: rgba(74,127,165,0.2);
-      color: #4A7FA5;
     }
     .acc-welcome strong { font-weight: 600; display: block; margin-bottom: 2px; }
 
@@ -124,21 +119,21 @@
       transition: border-color 0.15s;
     }
     .acc-input:focus { border-color: var(--accent); }
-    .acc-input::placeholder { color: var(--text-dim); }
+    .acc-input::placeholder { color: var(--text-3); }
 
     .acc-footer-row { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
     .acc-btn {
       padding: 9px 22px;
-      background: var(--accent); color: #fff; border: none;
-      border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+      background: var(--action); color: var(--on-action); border: none;
+      border-radius: 999px; font-size: 13px; font-weight: 600;
       cursor: pointer; font-family: var(--font);
       transition: opacity 0.15s;
     }
-    .acc-btn:hover { opacity: 0.88; }
+    .acc-btn:hover { background: var(--action-hover); }
     .acc-btn:disabled { opacity: 0.45; cursor: default; }
     .acc-msg { font-size: 12px; }
-    .acc-msg--ok  { color: var(--green); }
-    .acc-msg--err { color: #ef4444; }
+    .acc-msg--ok  { color: var(--positive); }
+    .acc-msg--err { color: var(--negative); }
 
     @media (max-width: 500px) {
       .acc-fields { grid-template-columns: 1fr; }
@@ -197,7 +192,7 @@
       <div class="acc-field">
         <div class="acc-field__label">Plan</div>
         <div class="acc-field__value">
-          <span class="tier-badge tier-badge--{{ user.tier }}" style="display:inline-block">
+          <span class="tier-badge tier-badge--{{ user.tier }} pill--grey">
             {{ {'observer': 'Observer', 'benchmarker': 'Benchmarker', 'advisory': 'Advisory'}.get(user.tier, user.tier) }}
           </span>
         </div>
@@ -245,7 +240,7 @@
 
 <!-- Invite modal -->
 {% if user.role == 'owner' and user.organisation_id %}
-<div id="invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
+<div id="invite-modal" style="display:none;position:fixed;inset:0;background:var(--overlay);
      align-items:center;justify-content:center;z-index:500">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
               padding:28px 28px;width:400px;max-width:92vw">
@@ -353,7 +348,7 @@
       active.forEach(m  => { html += memberRow(m,  false); });
       if (invited.length) {
         html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
-                              color:var(--text-dim);margin:12px 0 6px">Pending invites</div>`;
+                              color:var(--text-2);margin:12px 0 6px">Pending invites</div>`;
         invited.forEach(m => { html += inviteRow(m); });
       }
       if (!html) html = `<p style="font-size:13px;color:var(--text-muted)">No members yet.</p>`;
@@ -366,18 +361,19 @@
   }
 
   function memberRow(m, isOwner) {
+    // Status dot: Active green, Pending (invited) orange, Disabled grey
     const statusDot = {
-      active:   '#5A8A5A',
-      invited:  '#4A7FA5',
-      suspended:'#C86060',
-    }[m.status] || '#888888';
+      active:   'var(--cat-2-dot)',
+      invited:  'var(--cat-3-dot)',
+      suspended:'var(--cat-6-dot)',
+    }[m.status] || 'var(--cat-6-dot)';
     const joined = m.approved_at || m.created_at || '—';
     const removeBtn = (!isOwner && m.status !== 'removed')
       ? `<button onclick="removeMember('${escJ(m.id)}', '${escJ(m.name || m.email)}')"
-           style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;
+           style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:13px;
                   padding:2px 6px;border-radius:4px;transition:color 0.15s"
            title="Remove member"
-           onmouseenter="this.style.color='#ef4444'" onmouseleave="this.style.color='var(--text-dim)'">✕</button>`
+           onmouseenter="this.style.color='var(--negative)'" onmouseleave="this.style.color='var(--text-3)'">✕</button>`
       : '';
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:9px 0;
@@ -390,7 +386,7 @@
           </div>
           <div style="font-size:11px;color:var(--text-muted)">${esc(m.email)}</div>
         </div>
-        <div style="font-size:11px;color:var(--text-dim);flex-shrink:0">${joined}</div>
+        <div style="font-size:11px;color:var(--text-2);flex-shrink:0">${joined}</div>
         ${removeBtn}
       </div>`;
   }
@@ -399,7 +395,7 @@
     return `
       <div style="display:flex;align-items:center;gap:10px;padding:8px 0;
                   border-bottom:1px solid var(--border)">
-        <span style="width:7px;height:7px;border-radius:50%;background:#4A7FA5;flex-shrink:0"></span>
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--cat-3-dot);flex-shrink:0"></span>
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;color:var(--text-muted);
                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.email)}</div>
@@ -460,7 +456,7 @@
   function showInvMsg(text, ok) {
     const el = document.getElementById('invite-msg');
     el.textContent = text;
-    el.style.color  = ok ? 'var(--green)' : '#ef4444';
+    el.style.color  = ok ? 'var(--positive)' : 'var(--negative)';
     el.style.display = 'block';
   }
 
