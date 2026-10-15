@@ -1,0 +1,2 @@
+# Files or file:line entries allowed to keep a macron spelling of the brand.
+# One per line, e.g.  docs/history.md   or   docs/history.md:12

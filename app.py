@@ -413,9 +413,9 @@ def _issue_verification_email(email: str, name: str) -> bool:
         return False
     try:
         resend.Emails.send({
-            "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+            "from":    "Kodo Hospitality <contact@kodohospitality.com>",
             "to":      email,
-            "subject": "Confirm your Kōdō Hospitality account",
+            "subject": "Confirm your Kodo Hospitality account",
             "html":    _verification_email_html(verify_url, html.escape(name)),
         })
         return True
@@ -438,7 +438,7 @@ def _verification_email_html(verify_url: str, name: str) -> str:
         <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
           <tr>
             <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
             </td>
           </tr>
           <tr>
@@ -454,7 +454,7 @@ def _verification_email_html(verify_url: str, name: str) -> str:
           </tr>
           <tr>
             <td style="border-top:1px solid #242424;padding-top:24px;">
-              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you didn't create a Kōdō account, you can ignore this email.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#4A7FA5;word-break:break-all;">{verify_url}</span></p>
+              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">If you didn't create a Kodo account, you can ignore this email.<br><br>If the button does not work copy and paste this link into your browser:<br><span style="color:#4A7FA5;word-break:break-all;">{verify_url}</span></p>
             </td>
           </tr>
         </table>
@@ -489,9 +489,9 @@ def _issue_password_reset(email: str) -> bool:
         return False
     try:
         resend.Emails.send({
-            "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+            "from":    "Kodo Hospitality <contact@kodohospitality.com>",
             "to":      email,
-            "subject": "Reset your Kōdō password",
+            "subject": "Reset your Kodo password",
             "html":    _reset_email_html(reset_url),
         })
         return True
@@ -514,13 +514,13 @@ def _reset_email_html(reset_url: str) -> str:
         <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
           <tr>
             <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
             </td>
           </tr>
           <tr>
             <td style="padding-top:32px;padding-bottom:24px;">
               <h1 style="font-size:24px;font-weight:800;color:#F0F0EE;margin:0 0 16px;letter-spacing:-0.02em;">Reset your password</h1>
-              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">We received a request to reset the password for your Kōdō account. Click the button below to set a new password. This link expires in 1 hour.</p>
+              <p style="font-size:14px;color:#888888;line-height:1.7;margin:0;">We received a request to reset the password for your Kodo account. Click the button below to set a new password. This link expires in 1 hour.</p>
             </td>
           </tr>
           <tr>
@@ -564,7 +564,7 @@ def _welcome_email_html(name: str, active: bool) -> str:
         <table width="520" cellpadding="0" cellspacing="0" style="background:#141414;padding:48px;">
           <tr>
             <td style="padding-bottom:32px;border-bottom:1px solid #242424;">
-              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KŌDŌ HOSPITALITY</p>
+              <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.2em;color:#4A7FA5;margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
             </td>
           </tr>
           <tr>
@@ -601,7 +601,7 @@ def _welcome_email_html(name: str, active: bool) -> str:
           </tr>
           <tr>
             <td style="border-top:1px solid #242424;padding-top:24px;">
-              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us at <a href="mailto:contact@kodohospitality.com" style="color:#4A7FA5;text-decoration:none;">contact@kodohospitality.com</a><br><br>© 2026 Kōdō Hospitality · All Rights Reserved</p>
+              <p style="font-size:12px;color:#444444;line-height:1.6;margin:0;">Questions? Reply to this email or contact us at <a href="mailto:contact@kodohospitality.com" style="color:#4A7FA5;text-decoration:none;">contact@kodohospitality.com</a><br><br>© 2026 Kodo Hospitality · All Rights Reserved</p>
             </td>
           </tr>
         </table>
@@ -687,7 +687,7 @@ def ensure_seed_user():
         "email":            email,
         "password_hash":    generate_password_hash(password),
         "name":             name,
-        "organisation":     "Kōdō Hospitality",
+        "organisation":     "Kodo Hospitality",
         "tier":             "advisory",
         "status":           "active",
         "created_at":       datetime.utcnow().strftime("%Y-%m-%d"),
@@ -700,15 +700,71 @@ def ensure_seed_user():
     print(f"[SEED] Created admin user: {email}")
 
 
+# ─── Brand migration: "Kodo" without macrons ─────────────────────────────────
+# Matches the brand word in any macron form (precomposed or o + U+0304).
+# Written with escapes so this file never contains the old spelling itself.
+_BRAND_MACRON_RE = re.compile("[Kk](?:\u014d|\u014c|[oO]\u0304)[Dd](?:\u014d|\u014c|[oO]\u0304)")
+_BRAND_MACRON_MAP = {0x14D: "o", 0x14C: "O", 0x304: None}
+
+
+def _strip_brand_macron(value):
+    """Return value with the brand name's macrons removed (strings only)."""
+    if not isinstance(value, str):
+        return value
+    return _BRAND_MACRON_RE.sub(lambda m: m.group(0).translate(_BRAND_MACRON_MAP), value)
+
+
+def migrate_brand_macron():
+    """Idempotent startup migration: spell the brand "Kodo" in runtime JSON.
+
+    Touches only brand-bearing fields: organisation names (organisations.json),
+    the "organisation" field on user records (never names or emails), and the
+    text fields of news articles. Writes a file only if something changed, and
+    never adds or removes records.
+    """
+    counts = {}
+
+    def _fix_fields(record, fields):
+        n = 0
+        for key in fields:
+            new = _strip_brand_macron(record.get(key))
+            if new != record.get(key):
+                record[key] = new
+                n += 1
+        return n
+
+    def _migrate(path, fix):
+        if not os.path.exists(path):
+            return
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        n = fix(data)
+        if n:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            counts[os.path.basename(path)] = n
+
+    _migrate(ORGS_FILE, lambda db: sum(_fix_fields(o, ("name",)) for o in db.get("organisations", [])))
+    _migrate(USERS_FILE, lambda db: sum(_fix_fields(u, ("organisation",)) for u in db.get("users", [])))
+    _migrate(NEWS_FILE, lambda arts: sum(
+        _fix_fields(a, [k for k, v in a.items() if isinstance(v, str)]) for a in arts
+    ) if isinstance(arts, list) else 0)
+
+    if counts:
+        print("[MIGRATE] Brand spelled 'Kodo' in " + ", ".join(f"{k} ({v} field(s))" for k, v in counts.items()))
+
+
+migrate_brand_macron()
+
 ensure_seed_user()
 
 
 def ensure_seed_org():
-    """Create the default Kōdō org for the seed admin if not already present.
+    """Create the default Kodo org for the seed admin if not already present.
 
     Idempotent across restarts: previously, if the admin user's
     organisation_id was ever empty (e.g. it was never set, or the field
-    was lost), this unconditionally created a brand-new "Kōdō Hospitality"
+    was lost), this unconditionally created a brand-new "Kodo Hospitality"
     org on every single boot — one per restart — leaving the user linked
     to whichever one happened to be created last and all the earlier ones
     orphaned. It now looks up an existing org by owner_id or billing_email
@@ -744,7 +800,7 @@ def ensure_seed_org():
     org_id = str(uuid.uuid4())
     org_db["organisations"].append({
         "id":            org_id,
-        "name":          "Kōdō Hospitality",
+        "name":          "Kodo Hospitality",
         "plan":          "advisory",
         "seats_total":   5,
         "seats_used":    1,
@@ -755,7 +811,7 @@ def ensure_seed_org():
     })
     save_orgs_db(org_db)
     update_user_field(admin_user.id, {"organisation_id": org_id, "role": "owner"})
-    print(f"[SEED] Created org 'Kōdō Hospitality' for {email}")
+    print(f"[SEED] Created org 'Kodo Hospitality' for {email}")
 
 
 ensure_seed_org()
@@ -1370,9 +1426,9 @@ def api_verify_email():
     if resend.api_key:
         try:
             resend.Emails.send({
-                "from":    "Kōdō Hospitality <contact@kodohospitality.com>",
+                "from":    "Kodo Hospitality <contact@kodohospitality.com>",
                 "to":      email,
-                "subject": "Welcome to Kōdō Hospitality",
+                "subject": "Welcome to Kodo Hospitality",
                 "html":    _welcome_email_html(html.escape(user.name), is_observer),
             })
         except Exception as e:
@@ -2129,12 +2185,12 @@ def build_system_prompt():
         for _, row in merged.iterrows()
     )
 
-    return f"""You are Kōdō Analyst, a Morocco hospitality market intelligence assistant built by Kōdō. You have exclusive access to Kōdō's proprietary database of {len(hotels_df)} branded hotels across {hotels_df['city'].nunique()} Moroccan cities.
+    return f"""You are Kodo Analyst, a Morocco hospitality market intelligence assistant built by Kodo. You have exclusive access to Kodo's proprietary database of {len(hotels_df)} branded hotels across {hotels_df['city'].nunique()} Moroccan cities.
 
 You serve hospitality investors, operators, developers, and consultants. Provide precise, data-driven answers. Always cite specific metrics. Use MAD (Moroccan Dirhams) for all monetary values unless asked otherwise. Approximate USD/EUR conversions: 1 USD ≈ 10 MAD, 1 EUR ≈ 11 MAD. Be analytical, concise, and professional — not conversational.
 
 ══════════════════════════════════════════════════
-KŌDŌ PROPRIETARY DATA — MOROCCO BRANDED HOTELS — KŌDŌ ESTIMATES
+KODO PROPRIETARY DATA — MOROCCO BRANDED HOTELS — KODO ESTIMATES
 ══════════════════════════════════════════════════
 
 NATIONAL MARKET SNAPSHOT
@@ -2159,7 +2215,7 @@ INDIVIDUAL HOTEL DETAIL
 {hotel_lines}
 ══════════════════════════════════════════════════
 
-Answer only from the data above. If asked about hotels, cities, or markets not in the Kōdō database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers."""
+Answer only from the data above. If asked about hotels, cities, or markets not in the Kodo database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers."""
 
 
 @app.route("/api/chat", methods=["POST"])
@@ -2265,7 +2321,7 @@ def _article_fields(data, base=None):
         "type":                data.get("type",                 b.get("type", "editorial")),
         "status":              status,
         "featured":            featured,
-        "author":              data.get("author",               b.get("author", "Kōdō Editorial")),
+        "author":              data.get("author",               b.get("author", "Kodo Editorial")),
         "author_title":        data.get("author_title",         b.get("author_title", "Morocco Hospitality Intelligence")),
         "date":                data.get("date",                 b.get("date", "")),
         "read_time":           data.get("read_time",            b.get("read_time", "5 min read")),
@@ -3227,7 +3283,7 @@ def generate_ai_narrative(report_data: dict) -> dict:
         mo      = report_data["market_overview"]
         pip     = report_data["pipeline"]
 
-        prompt = f"""You are a senior hotel market analyst at Kōdō, Morocco's leading hospitality intelligence firm. Write institutional-grade market analysis in the style of JLL Hotels & Hospitality or Deloitte Real Estate. Be precise, data-driven, and professional. Use MAD for currency.
+        prompt = f"""You are a senior hotel market analyst at Kodo, Morocco's leading hospitality intelligence firm. Write institutional-grade market analysis in the style of JLL Hotels & Hospitality or Deloitte Real Estate. Be precise, data-driven, and professional. Use MAD for currency.
 
 Market: {city} Hotel Market | Period: {period}
 Total Hotels: {mo['total_hotels']} | Total Keys: {mo['total_keys']:,}
@@ -3590,8 +3646,8 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
         pdf.set_font("Helvetica", "", 7)
         pdf.set_text_color(*c['muted'])
         pdf.multi_cell(_PW, 4,
-            "Revenue multiples based on Kōdō market analysis. "
-            "Contact Kōdō Advisory for asset-specific valuation: advisory@kodohospitality.com. "
+            "Revenue multiples based on Kodo market analysis. "
+            "Contact Kodo Advisory for asset-specific valuation: advisory@kodohospitality.com. "
             "Full methodology: kodohospitality.com/methodology",
             ln=1)
         pdf.ln(2)

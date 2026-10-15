@@ -1521,7 +1521,7 @@ function renderHotelFinancials(h) {
     `EUR at MAD/EUR 10.8 conversion`;
 
   document.getElementById('hfin-confidence-badge').textContent =
-    "Medium · Based on Kōdō's statistical model";
+    "Medium · Based on Kodo's statistical model";
 }
 
 
@@ -2768,7 +2768,7 @@ function renderEditorialMain() {
           <h2 class="ed-hero-title">${fmt.esc(f.title || f.headline || '')}</h2>
           <p class="ed-hero-excerpt">${fmt.esc(f.excerpt || f.summary || '')}</p>
           <div class="ed-hero-meta">
-            <span>${fmt.esc(f.author || 'Kōdō Editorial')}</span>
+            <span>${fmt.esc(f.author || 'Kodo Editorial')}</span>
             <span class="ed-dot">·</span>
             <span>${newsDateFmt(f.date)}</span>
             <span class="ed-dot">·</span>
@@ -2837,7 +2837,7 @@ function renderArticleGrid() {
         <div class="ed-card-title">${fmt.esc(a.title || a.headline || '')}</div>
         <div class="ed-card-excerpt">${fmt.esc(a.excerpt || a.summary || '')}</div>
         <div class="ed-card-footer">
-          <span>${fmt.esc(a.author || 'Kōdō Editorial')}</span>
+          <span>${fmt.esc(a.author || 'Kodo Editorial')}</span>
           <span class="ed-dot">·</span>
           <span>${newsDateFmt(a.date)}</span>
           <span class="ed-dot">·</span>
@@ -2874,7 +2874,7 @@ async function showArticleDetail(id) {
   document.getElementById('art-title').textContent = art.title || art.headline || '';
 
   document.getElementById('art-byline').innerHTML =
-    `<span class="art-author">${fmt.esc(art.author || 'Kōdō Editorial')}</span>
+    `<span class="art-author">${fmt.esc(art.author || 'Kodo Editorial')}</span>
      <span class="ed-dot">·</span>
      <span>${newsDateFmt(art.date)}</span>
      <span class="ed-dot">·</span>
@@ -3295,7 +3295,7 @@ function appendMessage(role, content) {
   if (role === 'assistant' || role === 'error') {
     const label = document.createElement('div');
     label.className = 'msg-label';
-    label.textContent = 'Kōdō Analyst';
+    label.textContent = 'Kodo Analyst';
     wrap.appendChild(label);
   }
 
@@ -4976,10 +4976,10 @@ function exportToExcel(sheets, filename) {
     XLSX.utils.book_append_sheet(wb, ws, name);
   });
   const about = [{
-    'Source':    'Kōdō Hospitality — Morocco Hotel Market Intelligence',
+    'Source':    'Kodo Hospitality — Morocco Hotel Market Intelligence',
     'Website':   'kodohospitality.com',
     'Generated': new Date().toLocaleDateString('en-GB'),
-    'Note':      'Kōdō proprietary estimates unless marked Verified',
+    'Note':      'Kodo proprietary estimates unless marked Verified',
     'Contact':   'advisory@kodohospitality.com',
   }];
   const wsAbout = XLSX.utils.json_to_sheet(about);

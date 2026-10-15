@@ -1,4 +1,4 @@
-// ─── Kōdō Admin ──────────────────────────────────────────────────────────
+// ─── Kodo Admin ──────────────────────────────────────────────────────────
 // Reaching this page at all already required a logged-in Advisory-tier
 // session (admin_page() in app.py). window.__ADMIN_CSRF__ is a per-session
 // CSRF token, not a secret — meaningless without the session cookie it's
@@ -873,7 +873,7 @@ function openArticlePanel(id) {
         <option value="partner"${a && a.type === 'partner' ? ' selected' : ''}>Partner Feature</option>
       </select>
     </div>
-    <div class="adm-field-group"><label class="adm-label">Author</label><input class="adm-input" id="f-author" value="${escHtml(a ? a.author : 'Kōdō Editorial') || 'Kōdō Editorial'}" /></div>
+    <div class="adm-field-group"><label class="adm-label">Author</label><input class="adm-input" id="f-author" value="${escHtml(a ? a.author : 'Kodo Editorial') || 'Kodo Editorial'}" /></div>
     <div class="adm-field-group"><label class="adm-label">Read time</label><input class="adm-input" id="f-read-time" value="${escHtml(a ? a.read_time : '5 min read') || '5 min read'}" /></div>
     <div class="adm-field-group"><label class="adm-label">Date</label><input class="adm-input" type="date" id="f-date" value="${escHtml(a ? (a.date || '') : todayStr())}" /></div>
     <div class="adm-field-group"><label class="adm-label">Cover image query</label><input class="adm-input" id="f-cover-query" value="${escHtml(a ? a.cover_image_query : '')}" /></div>
@@ -913,7 +913,7 @@ async function saveArticle() {
     title: document.getElementById('f-title').value.trim(),
     category: document.getElementById('f-category').value,
     type: document.getElementById('f-type').value,
-    author: document.getElementById('f-author').value.trim() || 'Kōdō Editorial',
+    author: document.getElementById('f-author').value.trim() || 'Kodo Editorial',
     read_time: document.getElementById('f-read-time').value.trim(),
     date: document.getElementById('f-date').value,
     cover_image_query: document.getElementById('f-cover-query').value.trim(),

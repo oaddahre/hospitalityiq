@@ -443,7 +443,7 @@ class KodoScraper:
         logger.info(f'Cleanup done — kept {len(rows)} rate records')
 
     def run(self):
-        logger.info(f'Kōdō Rate Scraper starting — {len(self.hotels)} hotels')
+        logger.info(f'Kodo Rate Scraper starting — {len(self.hotels)} hotels')
         today = datetime.now(MOROCCO_TZ).strftime('%Y-%m-%d')
 
         for i, hotel in enumerate(self.hotels):

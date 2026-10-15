@@ -1700,7 +1700,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   margin-bottom: 16px;
 }
 
-/* ─── Kōdō empty state: terminal text, no icons ─── */
+/* ─── Kodo empty state: terminal text, no icons ─── */
 .kodo-empty {
   padding: 48px 0;
   display: flex;
@@ -2341,7 +2341,7 @@ body.light .nav-logout  { color: #8A8A8A; }
   text-align: center;
 }
 
-/* ─── Kōdō loading indicator: scanning line, not a spinner ─── */
+/* ─── Kodo loading indicator: scanning line, not a spinner ─── */
 .kodo-loader {
   width: 100%;
   height: 1px;

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Methodology — Kōdō Hospitality</title>
-  <meta name="description" content="How Kōdō produces Morocco hotel market intelligence — data sources, estimation models, and data quality standards.">
+  <title>Methodology — Kodo Hospitality</title>
+  <meta name="description" content="How Kodo produces Morocco hotel market intelligence — data sources, estimation models, and data quality standards.">
   <link rel="icon" href="/static/favicon.ico?v={{ asset_version('favicon.ico') }}" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png?v={{ asset_version('favicon-32.png') }}">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png?v={{ asset_version('favicon-16.png') }}">
@@ -25,10 +25,10 @@
 <nav class="mk-nav">
   <a href="/" class="mk-nav-logo">
     <img src="/static/images/logo_white.png"
-         alt="Kōdō Hospitality"
+         alt="Kodo Hospitality"
          class="mk-nav-logo-img logo-dark">
     <img src="/static/images/logo_black.png"
-         alt="Kōdō Hospitality"
+         alt="Kodo Hospitality"
          class="mk-nav-logo-img logo-light">
   </a>
   <div class="mk-nav-links">
@@ -62,10 +62,10 @@
     <div class="lp-mobile-panel-header">
       <div class="lp-mobile-panel-logo-wrap">
         <img src="/static/images/logo_white.png"
-             alt="Kōdō Hospitality"
+             alt="Kodo Hospitality"
              class="lp-mobile-panel-logo-img logo-dark">
         <img src="/static/images/logo_black.png"
-             alt="Kōdō Hospitality"
+             alt="Kodo Hospitality"
              class="lp-mobile-panel-logo-img logo-light">
       </div>
       <button class="lp-mobile-panel-close" id="lpMobilePanelClose"
@@ -87,7 +87,7 @@
     </div>
 
     <div class="lp-mobile-panel-footer">
-      <span class="lp-mobile-panel-copy">© 2026 Kōdō Hospitality</span>
+      <span class="lp-mobile-panel-copy">© 2026 Kodo Hospitality</span>
     </div>
 
   </div>
@@ -96,7 +96,7 @@
 <!-- Page Header -->
 <div class="page-header">
   <div class="legal-page" style="padding-bottom:0;">
-    <span class="page-header-label">Kōdō · Platform</span>
+    <span class="page-header-label">Kodo · Platform</span>
     <h1 class="page-header-title">Methodology</h1>
     <p class="page-header-sub">Last updated July 2026</p>
   </div>
@@ -109,28 +109,28 @@
     <span class="method-section-label">01</span>
     <h2 class="method-section-title">Data Sources</h2>
     <div class="method-section-body">
-      <p>What we measure and where it comes from — Kōdō combines a curated hotel directory, daily rate scraping, a statistical occupancy model, and direct operator data partnerships.</p>
+      <p>What we measure and where it comes from — Kodo combines a curated hotel directory, daily rate scraping, a statistical occupancy model, and direct operator data partnerships.</p>
     </div>
     <div class="method-source-list">
       <div class="method-source-item">
         <span class="method-source-name">Hotel Directory</span>
         <span class="method-source-confidence">High Confidence</span>
-        <p class="method-source-desc">Kōdō maintains a manually curated database of 300+ branded and independent hotels across 20+ Moroccan destinations. Each property is verified for existence, key count, segment classification, brand affiliation, and ownership. Data quality is flagged at the property level — verified entries have been confirmed against official hotel websites, brand press kits, and industry sources. Unverified entries are clearly marked.</p>
+        <p class="method-source-desc">Kodo maintains a manually curated database of 300+ branded and independent hotels across 20+ Moroccan destinations. Each property is verified for existence, key count, segment classification, brand affiliation, and ownership. Data quality is flagged at the property level — verified entries have been confirmed against official hotel websites, brand press kits, and industry sources. Unverified entries are clearly marked.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Rate Intelligence</span>
         <span class="method-source-confidence">High Confidence</span>
-        <p class="method-source-desc">Starting July 2026 Kōdō scrapes Best Available Rates (BAR) daily for all properties in our database using a multi-source approach: Google Hotels API (primary), brand direct websites (secondary), and OTA platforms (fallback). BAR represents the lowest publicly available rate for a standard room, 2 adults, 1 night. BAR is not equivalent to a hotel's actual Average Daily Rate (ADR) — it excludes negotiated corporate rates, wholesale contracts, and package inclusions — but provides a consistent, comparable daily rate signal across all properties.</p>
+        <p class="method-source-desc">Starting July 2026 Kodo scrapes Best Available Rates (BAR) daily for all properties in our database using a multi-source approach: Google Hotels API (primary), brand direct websites (secondary), and OTA platforms (fallback). BAR represents the lowest publicly available rate for a standard room, 2 adults, 1 night. BAR is not equivalent to a hotel's actual Average Daily Rate (ADR) — it excludes negotiated corporate rates, wholesale contracts, and package inclusions — but provides a consistent, comparable daily rate signal across all properties.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Occupancy Model</span>
         <span class="method-source-confidence">Medium Confidence</span>
-        <p class="method-source-desc">Kōdō does not have access to real occupancy data from hotel PMS systems except for properties participating in our Data Sharing Program. For all other properties we estimate occupancy using a statistical model with the following inputs: base occupancy by market segment and hotel type; rate index adjustment; day-of-week patterns; monthly seasonality index derived from ONMT national tourism data; OTA availability signals where captured; and a major events calendar. The model produces a point estimate with a confidence interval.</p>
+        <p class="method-source-desc">Kodo does not have access to real occupancy data from hotel PMS systems except for properties participating in our Data Sharing Program. For all other properties we estimate occupancy using a statistical model with the following inputs: base occupancy by market segment and hotel type; rate index adjustment; day-of-week patterns; monthly seasonality index derived from ONMT national tourism data; OTA availability signals where captured; and a major events calendar. The model produces a point estimate with a confidence interval.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Verified Operator Data</span>
         <span class="method-source-confidence">Highest Confidence</span>
-        <p class="method-source-desc">Hotels participating in the Kōdō Data Sharing Program share daily operational data (occupancy, ADR, RevPAR) directly from their Property Management System. This data is anonymised before inclusion in any benchmarking output and is never disclosed at the individual property level. Verified data is displayed with a "Verified" badge and is used to calibrate our statistical model, improving estimates for all properties over time.</p>
+        <p class="method-source-desc">Hotels participating in the Kodo Data Sharing Program share daily operational data (occupancy, ADR, RevPAR) directly from their Property Management System. This data is anonymised before inclusion in any benchmarking output and is never disclosed at the individual property level. Verified data is displayed with a "Verified" badge and is used to calibrate our statistical model, improving estimates for all properties over time.</p>
       </div>
     </div>
   </div>
@@ -197,7 +197,7 @@
     <span class="method-section-label">03</span>
     <h2 class="method-section-title">Asset Value Estimation</h2>
     <div class="method-section-body">
-      <p>Kōdō estimates indicative asset values using revenue multiples by segment — a standard methodology in hotel real estate. These multiples represent the relationship between annual rooms revenue and total asset value, calibrated against available Morocco transaction data and regional benchmarks.</p>
+      <p>Kodo estimates indicative asset values using revenue multiples by segment — a standard methodology in hotel real estate. These multiples represent the relationship between annual rooms revenue and total asset value, calibrated against available Morocco transaction data and regional benchmarks.</p>
     </div>
     <table class="method-table" style="margin-bottom:20px;">
       <thead>
@@ -241,7 +241,7 @@
       </tbody>
     </table>
     <div class="method-section-body">
-      <p><strong style="color:var(--text);">Disclaimer:</strong> These multiples are indicative only and should not be used as the sole basis for investment decisions. Hotel asset values are highly sensitive to operator quality, lease structure, capex requirements, and market conditions. Contact <a href="/contact" style="color:var(--accent);text-decoration:none;">Kōdō Advisory</a> for asset-specific valuation.</p>
+      <p><strong style="color:var(--text);">Disclaimer:</strong> These multiples are indicative only and should not be used as the sole basis for investment decisions. Hotel asset values are highly sensitive to operator quality, lease structure, capex requirements, and market conditions. Contact <a href="/contact" style="color:var(--accent);text-decoration:none;">Kodo Advisory</a> for asset-specific valuation.</p>
     </div>
   </div>
 
@@ -250,7 +250,7 @@
     <span class="method-section-label">04</span>
     <h2 class="method-section-title">Understanding Our Data Quality Labels</h2>
     <div class="method-section-body">
-      <p>Every property and metric on the Kōdō platform carries a data quality label. These are not cosmetic — they indicate the source and reliability of the underlying data.</p>
+      <p>Every property and metric on the Kodo platform carries a data quality label. These are not cosmetic — they indicate the source and reliability of the underlying data.</p>
     </div>
     <div class="method-quality-item">
       <span class="method-source-confidence">Verified</span>
@@ -271,14 +271,14 @@
     <span class="method-section-label">05</span>
     <h2 class="method-section-title">What We Don't Claim</h2>
     <div class="method-section-body">
-      <p>Transparency about limitations is a core part of our methodology. The following points should be understood by all users of Kōdō data.</p>
+      <p>Transparency about limitations is a core part of our methodology. The following points should be understood by all users of Kodo data.</p>
       <ul>
-        <li>Kōdō estimates are not a substitute for operator-verified PMS data. For investment underwriting, always seek actual operator performance data.</li>
+        <li>Kodo estimates are not a substitute for operator-verified PMS data. For investment underwriting, always seek actual operator performance data.</li>
         <li>BAR (Best Available Rate) is not equivalent to ADR (Average Daily Rate). BAR excludes negotiated corporate rates, loyalty redemptions, wholesale contracts, and package inclusions, which can represent 30–60% of a hotel's actual revenue mix.</li>
         <li>Occupancy estimates carry a margin of error of approximately ±8–12 percentage points for properties without verified real data. Estimates are more accurate for markets with higher data density and longer observation periods.</li>
         <li>Financial estimates — asset values, revenue ranges, and RevPAR figures — are indicative only. They reflect current market conditions and available data, and may differ materially from actual performance or appraised values.</li>
-        <li>All data on the Kōdō platform should be independently verified before forming the basis of investment decisions, operator negotiations, or financial reporting.</li>
-        <li>Kōdō Hospitality is a market intelligence provider, not a licensed financial advisor. Nothing on this platform constitutes investment advice.</li>
+        <li>All data on the Kodo platform should be independently verified before forming the basis of investment decisions, operator negotiations, or financial reporting.</li>
+        <li>Kodo Hospitality is a market intelligence provider, not a licensed financial advisor. Nothing on this platform constitutes investment advice.</li>
       </ul>
     </div>
   </div>
@@ -288,7 +288,7 @@
     <span class="method-section-label">06</span>
     <h2 class="method-section-title">Improving Accuracy Through Partnership</h2>
     <div class="method-section-body">
-      <p>The accuracy of Kōdō's market intelligence improves with every hotel that contributes real operational data. Properties in our Data Sharing Program share daily occupancy, ADR, and RevPAR from their PMS. This data is anonymised and aggregated — individual hotel figures are never disclosed to other subscribers.</p>
+      <p>The accuracy of Kodo's market intelligence improves with every hotel that contributes real operational data. Properties in our Data Sharing Program share daily occupancy, ADR, and RevPAR from their PMS. This data is anonymised and aggregated — individual hotel figures are never disclosed to other subscribers.</p>
       <p>In return, participating hotels receive free Benchmarker access — our full competitive intelligence suite including anonymous comp set benchmarking, trend charts, and monthly summaries — at no cost, for as long as the data sharing agreement is active. Data contributors also benefit from improved model accuracy for their own market, better seasonal calibration, and early access to new platform features.</p>
       <p style="font-weight:600;color:var(--text);">What participants receive:</p>
       <ul>
@@ -305,7 +305,7 @@
   <!-- Closing CTA -->
   <div style="text-align:center;padding-top:20px;">
     <span class="method-section-label" style="text-align:center;">Get Involved</span>
-    <h2 class="method-section-title">Interested in partnering with Kōdō?</h2>
+    <h2 class="method-section-title">Interested in partnering with Kodo?</h2>
     <p class="method-section-body" style="max-width:520px;margin:0 auto 28px;">
       Contact us to learn about our Data Sharing Program and how your property can contribute to Morocco's most comprehensive hotel intelligence database.
     </p>
@@ -318,10 +318,10 @@
 <footer class="lp-footer">
   <div class="lp-footer-logo-wrap">
     <img src="/static/images/logo_white.png"
-         alt="Kōdō Hospitality"
+         alt="Kodo Hospitality"
          class="lp-footer-logo-img logo-dark">
     <img src="/static/images/logo_black.png"
-         alt="Kōdō Hospitality"
+         alt="Kodo Hospitality"
          class="lp-footer-logo-img logo-light">
   </div>
   <div class="lp-footer-links">
@@ -329,7 +329,7 @@
     <a href="/privacy" class="lp-footer-link">Privacy</a>
     <a href="/methodology" class="lp-footer-link">Methodology</a>
   </div>
-  <span class="lp-footer-copy">© 2026 Kōdō Hospitality · All Rights Reserved</span>
+  <span class="lp-footer-copy">© 2026 Kodo Hospitality · All Rights Reserved</span>
 </footer>
 
 <script>
