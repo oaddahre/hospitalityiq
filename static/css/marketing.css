@@ -3336,3 +3336,71 @@ body.lp-landing .lp-cta { background: var(--lp-bg); }
 .lp-landing .btn-accent-outline:hover,
 .lp-landing .mk-nav-cta:hover,
 .lp-landing .lp-mobile-panel-register:hover { border-color: var(--lp-action); }
+
+/* ═══════════════════════════════════════
+   LANDING — pricing cards: six shared rows
+   (badge, name, price, caption, features, button). Each card spans six
+   rows of the plan grid and adopts them with subgrid, so every row lines
+   up across the three cards. Phones stack the cards as plain columns.
+═══════════════════════════════════════ */
+.lp-landing .lp-plan-card {
+  display: grid;
+  grid-row: span 6;
+  grid-template-rows: subgrid;
+  row-gap: 0;
+}
+.lp-landing .lp-plan-badge-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 12px;
+}
+.lp-landing .lp-plan-badge { margin: 0; }
+.lp-landing .lp-plan-name { display: block; text-align: center; margin-bottom: 12px; }
+
+/* Price row: a zero-width strut at the full price size sets the row's height
+   and baseline, so "Custom" sits on the same baseline as the numbers */
+.lp-landing .lp-plan-price {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0;
+  line-height: 1.1;
+}
+.lp-landing .lp-plan-price::before {
+  content: "\200B";
+  font-size: var(--lp-fs-price);
+  font-weight: 800;
+  line-height: 1.1;
+}
+.lp-landing .lp-price-custom {
+  font-size: calc(var(--lp-fs-price) * 0.7);
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1.1;
+}
+.lp-landing .lp-plan-currency {
+  display: block;
+  text-align: center;
+  margin: 4px 0 24px;
+}
+.lp-landing .lp-plan-features { align-self: start; }
+.lp-landing .lp-plan-cta { align-self: end; }
+
+/* No subgrid: equal fixed rows instead */
+@supports not (grid-template-rows: subgrid) {
+  .lp-landing .lp-plan-card { display: flex; flex-direction: column; }
+  .lp-landing .lp-plan-badge-row { min-height: calc(var(--lp-fs-eyebrow) * 1.4 + 12px); }
+  .lp-landing .lp-plan-features { flex: 1; }
+}
+
+/* Phones: one column, no empty badge gap */
+@media (max-width: 768px) {
+  .lp-landing .lp-plan-card {
+    display: flex;
+    flex-direction: column;
+    grid-row: auto;
+  }
+  .lp-landing .lp-plan-badge-row:empty { display: none; }
+}
