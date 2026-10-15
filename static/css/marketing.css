@@ -83,8 +83,8 @@ p, li, span, a { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 200; }
   --lp-report-stats-bg: #0A0A0A;
   --lp-pricing-border: #1A1A1A;
   --lp-pricing-row-border: #111111;
-  --lp-pricing-ft: rgba(74,127,165,0.04);
-  --lp-pricing-ft-hover: rgba(74,127,165,0.07);
+  --lp-pricing-ft: var(--action-tint-2);
+  --lp-pricing-ft-hover: var(--action-tint);
   --lp-audience-border: #1A1A1A;
   --lp-cta-bg: #080808;
   --lp-footer-bg: #060808;
@@ -140,8 +140,8 @@ body.lp-light {
   --lp-report-stats-bg: #FFFFFF;
   --lp-pricing-border: #E0E0DC;
   --lp-pricing-row-border: #EEEEEA;
-  --lp-pricing-ft: rgba(74,127,165,0.06);
-  --lp-pricing-ft-hover: rgba(74,127,165,0.10);
+  --lp-pricing-ft: var(--action-tint-2);
+  --lp-pricing-ft-hover: var(--action-tint);
   --lp-audience-border: #E0E0DC;
   --lp-cta-bg: #FFFFFF;
   --lp-footer-bg: #FAFAFA;
@@ -168,21 +168,6 @@ body.lp-light {
   --lp-data-row-border: #EEEEEA;
   --lp-price-row-border: #E0E0DC;
 
-  /* Legacy (non "lp-") tokens — used by the old mk-nav__*/legal-*/
-     method-*/page-header* system on team.html (pre-rebuild),
-     contact.html (pre-rebuild), methodology.html, terms.html,
-     privacy.html. Mirrors the --lp-* light values above so pages
-     still on this system respond to the same toggle. */
-  --bg: #FFFFFF;
-  --card: #F5F5F5;
-  --surface: #FFFFFF;
-  --surface-hover: #F5F5F5;
-  --border: #E0E0DC;
-  --border-light: #E8E8E4;
-  --text: #1A1A1A;
-  --muted: #666666;
-  --text-faint: #888888;
-  --deep: #FAFAFA;
 }
 
 /* Light mode — pure white overrides for elements with hardcoded
@@ -206,17 +191,15 @@ body.lp-light .lp-cta { background: var(--lp-cta-bg); }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:            #0A0A0A;
-  --card:          #141414;
-  --surface:       #1C1C1C;
-  --surface-hover: #1C1C1C;
-  --border:        #242424;
-  --border-light:  #2E2E2E;
-  --text:          #F0F0EE;
-  --muted:         #888888;
-  --text-faint:    #444444;
-  --accent:        #4A7FA5;
-  --deep:          #050505;
+  /* --bg, --border and --text come from tokens.css; the rest alias it by role */
+  --card:          var(--bg-alt);
+  --surface:       var(--bg-alt);
+  --surface-hover: var(--bg-hover);
+  --border-light:  var(--border);
+  --muted:         var(--text-2);
+  --text-faint:    var(--text-3);
+  --accent:        var(--action);
+  --deep:          var(--bg-alt);
   --font:          'Sweet Sans Pro', sans-serif;
   --mono:          'Sweet Sans Pro', sans-serif;
 }
@@ -3146,47 +3129,44 @@ a.lp-contact-info-val:hover { color: var(--lp-action, #4A7FA5); }
    picks it. Legacy --lp-* tokens are remapped onto the palette below.
 ═══════════════════════════════════════ */
 body.lp-landing {
-  /* Palette: dark */
-  --lp-bg: #191918;
-  --lp-bg-alt: #222220;
-  --lp-border: #2E2D2B;
-  --lp-text: #F2F1EE;
-  --lp-text-2: #A8A39C;
-  --lp-text-3: #6F6B66;
-  --lp-action: #0075DE;          /* button backgrounds (white label) */
-  --lp-action-hover: #0E78D5;    /* spec #1A8CF0, darkened so white labels reach 4.5:1 */
-  --lp-action-press: #005BAB;
-  --lp-action-text: #4DA3F0;     /* blue text and links on dark backgrounds */
-  --lp-action-tint: rgba(0,117,222,0.18);
-  --lp-action-tint-2: rgba(0,117,222,0.10);
-  --lp-on-action: #FFFFFF;
-  --lp-nav-glass: rgba(25,25,24,0.85);
+  /* Palette: aliases of static/css/tokens.css (light/dark follow <html data-theme>) */
+  --lp-bg: var(--bg);
+  --lp-bg-alt: var(--bg-alt);
+  --lp-border: var(--border);
+  --lp-text: var(--text);
+  --lp-text-2: var(--text-2);
+  --lp-text-3: var(--text-3);
+  --lp-action: var(--action);
+  --lp-action-hover: var(--action-hover);
+  --lp-action-press: var(--action-press);
+  --lp-action-text: var(--action-text);
+  --lp-action-tint: var(--action-tint);
+  --lp-action-tint-2: var(--action-tint-2);
+  --lp-on-action: var(--on-action);
+  --lp-nav-glass: color-mix(in srgb, var(--bg) 85%, transparent);
   --lp-overlay: rgba(15,15,14,0.6);
 
-  /* Accents: bright base colours for dots, strokes and visuals */
-  --lp-acc-blue: #0075DE;
-  --lp-acc-green: #24CB71;
-  --lp-acc-orange: #FF7237;
-  --lp-acc-violet: #7B5CE0;
-  --lp-acc-sky: #00B6FF;
-  /* Pill backgrounds: accent at 18% in dark mode */
-  --lp-acc-blue-tint: rgba(0,117,222,0.18);
-  --lp-acc-green-tint: rgba(36,203,113,0.18);
-  --lp-acc-orange-tint: rgba(255,114,55,0.18);
-  --lp-acc-violet-tint: rgba(123,92,224,0.18);
-  --lp-acc-sky-tint: rgba(0,182,255,0.18);
-  /* Pill text. Large text (hero pill): */
-  --lp-acc-blue-text: #4DA3F0;
-  --lp-acc-green-text: #3DDC87;
-  --lp-acc-orange-text: #FF8A57;
-  --lp-acc-violet-text: #A58BF5;
-  --lp-acc-sky-text: #3CC6FF;
-  /* Small text (role pills); dark-mode values already pass 4.5:1: */
-  --lp-acc-blue-text-sm: #4DA3F0;
-  --lp-acc-green-text-sm: #3DDC87;
-  --lp-acc-orange-text-sm: #FF8A57;
-  --lp-acc-violet-text-sm: #A58BF5;
-  --lp-acc-sky-text-sm: #3CC6FF;
+  /* Accents: dot, tint, large text (hero pill), small text (role pills) */
+  --lp-acc-blue: var(--cat-1-dot);
+  --lp-acc-green: var(--cat-2-dot);
+  --lp-acc-orange: var(--cat-3-dot);
+  --lp-acc-violet: var(--cat-4-dot);
+  --lp-acc-sky: var(--cat-5-dot);
+  --lp-acc-blue-tint: var(--cat-1-tint);
+  --lp-acc-green-tint: var(--cat-2-tint);
+  --lp-acc-orange-tint: var(--cat-3-tint);
+  --lp-acc-violet-tint: var(--cat-4-tint);
+  --lp-acc-sky-tint: var(--cat-5-tint);
+  --lp-acc-blue-text: var(--cat-1-text-lg);
+  --lp-acc-green-text: var(--cat-2-text-lg);
+  --lp-acc-orange-text: var(--cat-3-text-lg);
+  --lp-acc-violet-text: var(--cat-4-text-lg);
+  --lp-acc-sky-text: var(--cat-5-text-lg);
+  --lp-acc-blue-text-sm: var(--cat-1-text);
+  --lp-acc-green-text-sm: var(--cat-2-text);
+  --lp-acc-orange-text-sm: var(--cat-3-text);
+  --lp-acc-violet-text-sm: var(--cat-4-text);
+  --lp-acc-sky-text-sm: var(--cat-5-text);
   --lp-ck: #4A9B6F;
 
   /* Derived neutrals for illustrations */
@@ -3194,7 +3174,7 @@ body.lp-landing {
   --lp-viz-track: color-mix(in srgb, var(--lp-text-3) 30%, transparent);
   --lp-viz-line: color-mix(in srgb, var(--lp-text-3) 75%, transparent);
 
-  /* Legacy tokens → palette */
+  /* Legacy --lp-* tokens → palette */
   --lp-nav-bg: var(--lp-nav-glass);
   --lp-module-bg: var(--lp-bg);
   --lp-report-stats-bg: var(--lp-bg);
@@ -3245,52 +3225,9 @@ body.lp-landing {
   --lp-report-meta: var(--lp-text-3);
   --lp-report-stat-k: var(--lp-text-3);
   --lp-ds: var(--lp-text-3);
-  --bg: var(--lp-bg);
-  --card: var(--lp-bg-alt);
-  --surface: var(--lp-bg-alt);
-  --surface-hover: var(--lp-bg-alt);
-  --deep: var(--lp-bg-alt);
-  --border: var(--lp-border);
-  --border-light: var(--lp-border);
-  --text: var(--lp-text);
-  --muted: var(--lp-text-2);
-  --text-faint: var(--lp-text-3);
-  --accent: var(--lp-action);
 }
 body.lp-landing.lp-light {
-  /* Palette: light (default) */
-  --lp-bg: #FFFFFF;
-  --lp-bg-alt: #F7F6F3;
-  --lp-border: #E7E4DF;
-  --lp-text: #1F1E1C;
-  --lp-text-2: #5F5B55;
-  --lp-text-3: #948D85; /* spec #A09A93, darkened to reach 3:1 on --lp-bg-alt */
-  --lp-action: #0075DE;
-  --lp-action-hover: #0877DA;    /* spec #097FE8, darkened so white labels reach 4.5:1 */
-  --lp-action-press: #005BAB;
-  --lp-action-text: #0070D5;     /* spec #0075DE, darkened to reach 4.5:1 on --lp-bg-alt */
-  --lp-action-tint: #E6F3FE;
-  --lp-action-tint-2: #F2F9FF;
-  --lp-on-action: #FFFFFF;
-  --lp-nav-glass: rgba(255,255,255,0.85);
   --lp-overlay: rgba(31,30,28,0.35);
-
-  --lp-acc-blue-tint: #E6F3FE;
-  --lp-acc-green-tint: #E4F8EC;
-  --lp-acc-orange-tint: #FFEEE6;
-  --lp-acc-violet-tint: #EEE9FD;
-  --lp-acc-sky-tint: #E3F6FF;
-  --lp-acc-blue-text: #0075DE;
-  --lp-acc-green-text: #148A4E;
-  --lp-acc-orange-text: #C9500F;
-  --lp-acc-violet-text: #5B3FC4;
-  --lp-acc-sky-text: #0A7FB3;
-  /* Small text (role pills), darkened minimally to reach 4.5:1 on the tint */
-  --lp-acc-blue-text-sm: #006DD0;
-  --lp-acc-green-text-sm: #127F48;
-  --lp-acc-orange-text-sm: #BB4A0E;
-  --lp-acc-violet-text-sm: #5B3FC4;
-  --lp-acc-sky-text-sm: #0976A6;
   --lp-ck: #2F7D55;
 }
 

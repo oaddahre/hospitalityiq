@@ -9,6 +9,8 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png?v={{ asset_version('favicon-16.png') }}">
   <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version('apple-touch-icon.png') }}">
   <meta name="theme-color" content="#4A7FA5">
+  <script src="/static/js/theme.js?v={{ asset_version('js/theme.js') }}"></script>
+  <link rel="stylesheet" href="/static/css/tokens.css?v={{ asset_version('css/tokens.css') }}">
   <link rel="stylesheet" href="/static/css/style.css?v={{ asset_version('css/style.css') }}">
   <style>
     body { display: flex; flex-direction: column; min-height: 100vh; }
@@ -147,14 +149,8 @@
   </style>
 </head>
 <body>
+<script>KodoTheme.applyBody('light');</script>
 
-<!-- Apply theme before first paint -->
-<script>
-  (function() {
-    if ((localStorage.getItem('kodo-theme') || 'light') === 'light')
-      document.body.classList.add('light');
-  })();
-</script>
 
 <!-- Nav -->
 <nav class="acc-nav">

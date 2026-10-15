@@ -36,38 +36,37 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sweet Sans Pro', sans-serif; }
 
-/* ─── Dark mode base (:root) ────────────────────── */
+/* ─── Colours: platform variables mapped onto static/css/tokens.css ────
+   tokens.css (loaded first) defines the palette and switches it with
+   <html data-theme>. The platform's own variable names are kept and point at
+   the tokens by role, so screens inherit the palette without edits.
+   --bg, --border, --text, --positive and --negative come straight from it. */
 :root {
-  --bg:            #0A0A0A;
-  --surface:       #141414;
-  --surface-hover: #1E1E1E;
-  --border:        #2A2A2A;
-  --border-light:  #2E2E2E;
-  --text:          #F0F0EE;
-  --text-muted:    #888888;
-  --text-secondary: #ABABAB;
-  --text-faint:    #555555;
-  --accent:        #4A7FA5;
-  --accent-dim:    #101820;
-  --accent-hover:  #3A6A8E;
-  --accent-muted:  rgba(74,127,165,0.12);
-  --accent-border: rgba(74,127,165,0.25);
-  --positive:      #4A9B6F;
-  --positive-muted: rgba(74,155,111,0.12);
-  --negative:      #C05252;
-  --negative-muted: rgba(192,82,82,0.12);
-  --chart-1:       #555555;
-  --chart-2:       #777777;
-  --chart-3:       #444444;
-  --chart-4:       #666666;
-  --chart-highlight: #4A7FA5;
-  --cat-slate:     #6B7A8D;
-  --cat-blue:      #4A7FA5;
-  --cat-green:     #4A9B6F;
-  --cat-orange:    #F2A33D;
-  --cat-violet:    #8A6FB0;
-  --nav-bg:        #050505;
-  --sidebar-bg:    #0A0A0A;
+  --surface:        var(--bg-alt);
+  --surface-hover:  var(--bg-hover);
+  --border-light:   var(--border);
+  --text-muted:     var(--text-2);
+  --text-secondary: var(--text-2);
+  --text-faint:     var(--text-3);
+  --accent:         var(--action);
+  --accent-dim:     var(--action-tint);
+  --accent-hover:   var(--action-hover);
+  --accent-muted:   var(--action-tint);
+  --accent-border:  color-mix(in srgb, var(--action) 35%, transparent);
+  --positive-muted: var(--positive-tint);
+  --negative-muted: var(--negative-tint);
+  --chart-1:        var(--cat-6-dot);
+  --chart-2:        var(--text-3);
+  --chart-3:        var(--text-2);
+  --chart-4:        var(--cat-6-dot);
+  --chart-highlight: var(--cat-1-dot);
+  --cat-slate:      var(--cat-6-dot);
+  --cat-blue:       var(--cat-1-dot);
+  --cat-green:      var(--cat-2-dot);
+  --cat-orange:     var(--cat-3-dot);
+  --cat-violet:     var(--cat-4-dot);
+  --nav-bg:         var(--bg);
+  --sidebar-bg:     var(--bg);
   --nav-h:         48px;
   --sidebar-w:     192px;
   --radius:        6px;
@@ -80,39 +79,6 @@
   --font-numeric:  'Sweet Sans Pro', sans-serif;
 }
 
-/* ─── Light mode overrides ───────────────────────── */
-body.light {
-  --bg:            #FFFFFF;
-  --surface:       #FFFFFF;
-  --surface-hover: #F5F5F5;
-  --border:        #ECECEC;
-  --border-light:  #E0E0E0;
-  --text:          #0A0A0A;
-  --text-muted:    #8A8A8A;
-  --text-secondary: #5C5C5C;
-  --text-faint:    #CCCCCC;
-  --accent:        #4A7FA5;
-  --accent-dim:    #EAF2F8;
-  --accent-hover:  #3A6A8E;
-  --accent-muted:  rgba(74,127,165,0.12);
-  --accent-border: rgba(74,127,165,0.25);
-  --positive:      #3D6B3D;
-  --positive-muted: rgba(61,107,61,0.10);
-  --negative:      #8B3A3A;
-  --negative-muted: rgba(139,58,58,0.10);
-  --chart-1:       #AAAAAA;
-  --chart-2:       #888888;
-  --chart-3:       #BBBBBB;
-  --chart-4:       #999999;
-  --chart-highlight: #4A7FA5;
-  --cat-slate:     #6B7A8D;
-  --cat-blue:      #4A7FA5;
-  --cat-green:     #4A9B6F;
-  --cat-orange:    #F2A33D;
-  --cat-violet:    #8A6FB0;
-  --nav-bg:        #FFFFFF;
-  --sidebar-bg:    #FFFFFF;
-}
 
 body {
   background: var(--bg);

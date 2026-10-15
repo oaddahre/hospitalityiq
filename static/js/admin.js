@@ -33,7 +33,7 @@ function toast(text, type) {
   setTimeout(() => el.remove(), 4000);
 }
 
-// ─── Theme toggle (shared 'kodo-lp-theme' key with the rest of the site) ──
+// ─── Theme toggle (shared site-wide theme, see static/js/theme.js) ──
 function applyAdminTheme(mode) {
   document.body.classList.toggle('light', mode === 'light');
   document.querySelectorAll('.adm-toggle-opt').forEach(opt => {
@@ -48,7 +48,7 @@ function wireThemeToggle(darkId, lightId) {
   [darkOpt, lightOpt].forEach(opt => {
     opt.addEventListener('click', () => {
       const next = opt.dataset.val;
-      try { localStorage.setItem('kodo-lp-theme', next); } catch {}
+      KodoTheme.set(next);
       applyAdminTheme(next);
     });
   });
@@ -56,9 +56,7 @@ function wireThemeToggle(darkId, lightId) {
 wireThemeToggle('admToggleDark', 'admToggleLight');
 wireThemeToggle('admToggleDarkMobile', 'admToggleLightMobile');
 (function initTheme() {
-  let saved = 'dark';
-  try { saved = localStorage.getItem('kodo-lp-theme') || 'dark'; } catch {}
-  applyAdminTheme(saved);
+  applyAdminTheme(KodoTheme.get());
 })();
 
 // ─── Mobile nav ──────────────────────────────────────────────────────────

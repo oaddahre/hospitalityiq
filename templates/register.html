@@ -13,6 +13,8 @@
   <link rel="preload" href="/static/fonts/SweetSansProMedium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProBold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProExLight.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/static/js/theme.js?v={{ asset_version('js/theme.js') }}"></script>
+  <link rel="stylesheet" href="/static/css/tokens.css?v={{ asset_version('css/tokens.css') }}">
   <style>
     @font-face {
       font-family: 'Sweet Sans Pro';
@@ -279,6 +281,7 @@
   </style>
 </head>
 <body>
+<script>KodoTheme.applyBody('light');</script>
 
 <div class="top-bar">
   <a href="/" class="top-bar__logo">

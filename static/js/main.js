@@ -358,14 +358,14 @@ function applyTheme(mode) {
 document.querySelectorAll('#theme-toggle .mk-toggle-opt').forEach(opt => {
   opt.addEventListener('click', () => {
     const next = opt.dataset.val;
-    if (document.body.classList.contains('light') === (next === 'light')) return;
-    localStorage.setItem('kodo-lp-theme', next);
+    if (KodoTheme.get() === next) return;
+    KodoTheme.set(next);
     applyTheme(next);
     redrawChartsForTheme();
   });
 });
 
-applyTheme(localStorage.getItem('kodo-lp-theme') || 'light');
+applyTheme(KodoTheme.get());
 
 // ─── Loading state ──────────────────────────────────────────────────
 

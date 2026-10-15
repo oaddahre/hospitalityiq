@@ -1,0 +1,166 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Kodo design tokens: the single source of truth for every colour.
+   Loaded first on every page (landing, marketing, platform, auth, admin).
+
+   Light is the base. Dark applies when <html data-theme="dark">, which
+   static/js/theme.js sets in <head> before first paint.
+
+   Families (1 blue, 2 green, 3 orange, 4 violet, 5 sky, 6 grey, 7 red)
+   each have three parts:
+     --cat-N-tint     pale fill behind a label
+     --cat-N-text     readable text on that tint (AA 4.5:1 at small sizes)
+     --cat-N-text-lg  text for large labels (24px+, AA 3:1), e.g. hero pill
+     --cat-N-dot      bright base colour: dots, chart marks, lines, markers.
+                      Never used as a text colour or as a large fill.
+   Red (7) is semantic only (loss / error), never a chart series.
+
+   Values marked "AA" were nudged from the brief's palette by the smallest
+   amount that reaches WCAG AA; they match what the landing page already uses.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Neutrals */
+  --bg:      #FFFFFF;
+  --bg-alt:  #F7F6F3;
+  --border:  #E7E4DF;
+  --text:    #1F1E1C;
+  --text-2:  #5F5B55;
+  --text-3:  #948D85;
+  --bg-hover: color-mix(in srgb, var(--text) 4%, var(--bg-alt));
+
+  /* Action blue */
+  --action:        #0075DE;
+  --action-hover:  #0877DA;   /* AA: brief #097FE8 gives 4.0:1 with a white label */
+  --action-press:  #005BAB;
+  --action-text:   #0070D5;   /* AA: brief #0075DE gives 4.2:1 on --bg-alt */
+  --action-tint:   #E6F3FE;
+  --action-tint-2: #F2F9FF;
+  --on-action:     #FFFFFF;
+
+  /* 1 blue */
+  --cat-1-dot: #0075DE;  --cat-1-text: #006DD0;  --cat-1-text-lg: #0075DE;  --cat-1-tint: #E6F3FE;
+  /* 2 green */
+  --cat-2-dot: #24CB71;  --cat-2-text: #127F48;  --cat-2-text-lg: #148A4E;  --cat-2-tint: #E4F8EC;
+  /* 3 orange */
+  --cat-3-dot: #FF7237;  --cat-3-text: #BB4A0E;  --cat-3-text-lg: #C9500F;  --cat-3-tint: #FFEEE6;
+  /* 4 violet */
+  --cat-4-dot: #7B5CE0;  --cat-4-text: #5B3FC4;  --cat-4-text-lg: #5B3FC4;  --cat-4-tint: #EEE9FD;
+  /* 5 sky */
+  --cat-5-dot: #00B6FF;  --cat-5-text: #0976A6;  --cat-5-text-lg: #0A7FB3;  --cat-5-tint: #E3F6FF;
+  /* 6 grey */
+  --cat-6-dot: #8A857E;  --cat-6-text: #5F5B55;  --cat-6-text-lg: #5F5B55;  --cat-6-tint: #F1F0EE;
+  /* 7 red (semantic only) */
+  --cat-7-dot: #E03E3E;  --cat-7-text: #C4332F;  --cat-7-text-lg: #C4332F;  --cat-7-tint: #FDECEC;
+  /* (light-mode -text values for 1, 2, 3 and 5 are AA-nudged from the brief) */
+
+  /* Semantic */
+  --positive:      var(--cat-2-text);
+  --positive-tint: var(--cat-2-tint);
+  --positive-dot:  var(--cat-2-dot);
+  --negative:      var(--cat-7-text);
+  --negative-tint: var(--cat-7-tint);
+  --negative-dot:  var(--cat-7-dot);
+  --warning:       var(--cat-3-text);
+  --warning-tint:  var(--cat-3-tint);
+  --warning-dot:   var(--cat-3-dot);
+
+  /* Owners */
+  --owner-state:   6;  /* grey   */
+  --owner-listed:  1;  /* blue   */
+  --owner-private: 2;  /* green  */
+  --owner-family:  3;  /* orange */
+}
+
+:root[data-theme="dark"] {
+  --bg:      #191918;
+  --bg-alt:  #222220;
+  --border:  #2E2D2B;
+  --text:    #F2F1EE;
+  --text-2:  #A8A39C;
+  --text-3:  #6F6B66;
+
+  --action:        #0075DE;
+  --action-hover:  #0E78D5;   /* AA: brief #1A8CF0 gives 3.5:1 with a white label */
+  --action-press:  #005BAB;
+  --action-text:   #4DA3F0;
+  --action-tint:   rgba(0,117,222,0.18);
+  --action-tint-2: rgba(0,117,222,0.10);
+  --on-action:     #FFFFFF;
+
+  --cat-1-text: #4DA3F0;  --cat-1-text-lg: #4DA3F0;  --cat-1-tint: rgba(0,117,222,0.18);
+  --cat-2-text: #3DDC87;  --cat-2-text-lg: #3DDC87;  --cat-2-tint: rgba(36,203,113,0.18);
+  --cat-3-text: #FF8A57;  --cat-3-text-lg: #FF8A57;  --cat-3-tint: rgba(255,114,55,0.18);
+  --cat-4-text: #A58BF5;  --cat-4-text-lg: #A58BF5;  --cat-4-tint: rgba(123,92,224,0.18);
+  --cat-5-text: #3CC6FF;  --cat-5-text-lg: #3CC6FF;  --cat-5-tint: rgba(0,182,255,0.18);
+  --cat-6-text: #A8A39C;  --cat-6-text-lg: #A8A39C;  --cat-6-tint: rgba(138,133,126,0.18);
+  --cat-7-text: #FF7B72;  --cat-7-text-lg: #FF7B72;  --cat-7-tint: rgba(224,62,62,0.16);
+  /* (green, orange and sky tints are 18%, as on the landing page; the brief lists 16%) */
+}
+
+/* ═══ Pills ═════════════════════════════════════════════════════════
+   Coloured label: tint fill, text colour, bright dot before the text.
+   Geometry follows the platform's Reports .list-pill.
+   ═══════════════════════════════════════════════════════════════════ */
+.pill--blue, .pill--green, .pill--orange, .pill--violet,
+.pill--sky, .pill--grey, .pill--red {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  outline: none;
+  box-shadow: none;
+  background: var(--pill-tint);
+  color: var(--pill-text);
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.pill--blue::before, .pill--green::before, .pill--orange::before, .pill--violet::before,
+.pill--sky::before, .pill--grey::before, .pill--red::before {
+  content: "";
+  flex: none;
+  width: 0.3em;
+  height: 0.3em;
+  min-width: 5px;
+  min-height: 5px;
+  border-radius: 50%;
+  background: var(--pill-dot);
+}
+.pill--blue   { --pill-tint: var(--cat-1-tint); --pill-text: var(--cat-1-text); --pill-dot: var(--cat-1-dot); }
+.pill--green  { --pill-tint: var(--cat-2-tint); --pill-text: var(--cat-2-text); --pill-dot: var(--cat-2-dot); }
+.pill--orange { --pill-tint: var(--cat-3-tint); --pill-text: var(--cat-3-text); --pill-dot: var(--cat-3-dot); }
+.pill--violet { --pill-tint: var(--cat-4-tint); --pill-text: var(--cat-4-text); --pill-dot: var(--cat-4-dot); }
+.pill--sky    { --pill-tint: var(--cat-5-tint); --pill-text: var(--cat-5-text); --pill-dot: var(--cat-5-dot); }
+.pill--grey   { --pill-tint: var(--cat-6-tint); --pill-text: var(--cat-6-text); --pill-dot: var(--cat-6-dot); }
+.pill--red    { --pill-tint: var(--cat-7-tint); --pill-text: var(--cat-7-text); --pill-dot: var(--cat-7-dot); }
+
+/* Solid blue pill (selected filter, "Featured"): always a white label */
+.pill--solid {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  border: 1px solid var(--action);
+  border-radius: 999px;
+  background: var(--action);
+  color: var(--on-action);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pill--solid::before { content: none; }
+
+/* Outlined blue pill (default / inactive filter) */
+.pill--outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  border: 1px solid var(--action);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  white-space: nowrap;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.pill--outline::before { content: none; }
+.pill--outline:hover { background: var(--action-tint); }

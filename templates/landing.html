@@ -14,18 +14,13 @@
   <link rel="preload" href="/static/fonts/SweetSansProMedium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProBold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProExLight.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/static/js/theme.js?v={{ asset_version('js/theme.js') }}"></script>
+  <link rel="stylesheet" href="/static/css/tokens.css?v={{ asset_version('css/tokens.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css?v={{ asset_version('css/marketing.css') }}">
-  <script>
-    // Theme is decided before first paint: light unless the visitor chose dark
-    window.__lpTheme = (function() {
-      try { return localStorage.getItem('kodo-lp-theme') === 'dark' ? 'dark' : 'light'; }
-      catch (e) { return 'light'; }
-    })();
-  </script>
 </head>
 <body class="lp-body lp-landing lp-light">
-<script>if (window.__lpTheme === 'dark') document.body.classList.remove('lp-light');</script>
+<script>KodoTheme.applyBody('lp-light');</script>
 
 <nav class="mk-nav">
   <a href="/" class="mk-nav-logo">
@@ -672,16 +667,11 @@ function updateToggleState() {
   toggleLight.classList.toggle('mk-toggle-active', isLight);
 }
 
-// The theme class is already set at the top of <body> (light by default)
+// The theme class is already set at the top of <body> by theme.js (light by default)
 updateToggleState();
 
 themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('lp-light');
-  try {
-    localStorage.setItem('kodo-lp-theme',
-      document.body.classList.contains('lp-light') ? 'light' : 'dark'
-    );
-  } catch (e) {}
+  KodoTheme.toggle();
   updateToggleState();
 });
 </script>

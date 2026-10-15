@@ -14,12 +14,15 @@
   <link rel="preload" href="/static/fonts/SweetSansProMedium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProBold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProExLight.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/static/js/theme.js?v={{ asset_version('js/theme.js') }}"></script>
+  <link rel="stylesheet" href="/static/css/tokens.css?v={{ asset_version('css/tokens.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/marketing.css?v={{ asset_version('css/marketing.css') }}">
 </head>
 <body class="lp-body">
+<script>KodoTheme.applyBody('lp-light');</script>
 
 <nav class="mk-nav">
   <a href="/" class="mk-nav-logo">
@@ -275,14 +278,10 @@ window.addEventListener('scroll', () => {
       if (toggleDark)  toggleDark.classList.toggle('mk-toggle-active', !isLight);
       if (toggleLight) toggleLight.classList.toggle('mk-toggle-active', isLight);
     };
-    const saved = localStorage.getItem('kodo-lp-theme');
-    if (saved === 'light') document.body.classList.add('lp-light');
+    // Theme is already applied in <head> / at the top of <body> (theme.js)
     updateToggleState();
     themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('lp-light');
-      localStorage.setItem('kodo-lp-theme',
-        document.body.classList.contains('lp-light') ? 'light' : 'dark'
-      );
+      KodoTheme.toggle();
       updateToggleState();
     });
   }
