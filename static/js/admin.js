@@ -347,17 +347,17 @@ function statusBucket(u) {
   return 'pending';
 }
 const STATUS_META = {
-  active:   { label: 'Active',   color: 'var(--positive)' },
-  pending:  { label: 'Pending',  color: 'var(--cat-orange)' },
-  disabled: { label: 'Disabled', color: 'var(--text-muted)' },
+  active:   { label: 'Active',   family: 'green'  },
+  pending:  { label: 'Pending',  family: 'orange' },
+  disabled: { label: 'Disabled', family: 'grey'   },
 };
-// Tier badges are neutral outlines, never orange (orange is reserved for
-// the Pending status above) — Advisory reads as an ink/white outline, not
-// a color, since being an admin is called out separately by .adm-admin-tag.
+// Status pills use the colour families (tokens.css): Active green, Pending
+// orange, Disabled grey. Tier labels are neutral outlines (.adm-pill--tier),
+// since being an admin is called out separately by .adm-admin-tag.
 const TIER_META = {
-  observer:    { label: 'Observer',    color: 'var(--text-muted)' },
-  benchmarker: { label: 'Benchmarker', color: 'var(--accent)' },
-  advisory:    { label: 'Advisory',    color: 'var(--text)' },
+  observer:    { label: 'Observer' },
+  benchmarker: { label: 'Benchmarker' },
+  advisory:    { label: 'Advisory' },
 };
 
 function shortDate(dateStr) {
@@ -476,8 +476,8 @@ function renderUsers() {
           ${u.is_admin ? '<span class="adm-admin-tag">Admin</span>' : ''}
         </div>
         <span class="adm-row-email" data-label="Email" title="${escHtml(u.email)}">${escHtml(u.email)}</span>
-        <span data-label="Tier"><span class="adm-pill" style="color:${tierMeta.color}">${tierMeta.label}</span></span>
-        <span data-label="Status"><span class="adm-pill" style="color:${statusMeta.color}">${statusMeta.label}</span></span>
+        <span data-label="Tier"><span class="adm-pill adm-pill--tier">${tierMeta.label}</span></span>
+        <span data-label="Status"><span class="adm-pill pill--${statusMeta.family}">${statusMeta.label}</span></span>
         <span class="adm-row-meta" data-label="Joined">${shortDate(u.created_at)}</span>
         <span class="adm-row-meta" data-label="Last login">${u.last_login ? shortDate(u.last_login) : 'Never'}</span>
         <div class="adm-row-actions" data-label="Actions">
@@ -699,7 +699,7 @@ function renderOrgs() {
     const memberCount = o.seats_used || 0;
     return `<div class="adm-row adm-row-orgs">
       <div class="adm-row-main" data-label="Name">
-        <span class="adm-row-name" title="${escHtml(o.name)}">${escHtml(o.name)}${isDup ? ' <span style="color:var(--negative)">(duplicate)</span>' : ''}</span>
+        <span class="adm-row-name" title="${escHtml(o.name)}">${escHtml(o.name)}${isDup ? ' <span class="adm-pill pill--red">duplicate</span>' : ''}</span>
         <span class="adm-row-sub">${escHtml(o.plan || '')}</span>
       </div>
       <div class="adm-row-main" data-label="Owner">
@@ -775,7 +775,7 @@ function openOrgMembersPanel(orgId, orgName) {
             <span class="adm-row-name">${escHtml(m.name || '—')}</span>
             <span class="adm-row-sub">${escHtml(m.email)} · ${escHtml(m.role || 'member')}</span>
           </div>
-          <span class="adm-pill" style="color:${STATUS_META[statusBucket(m)].color}">${escHtml((m.status || '').replace(/_/g, ' '))}</span>
+          <span class="adm-pill pill--${STATUS_META[statusBucket(m)].family}">${escHtml((m.status || '').replace(/_/g, ' '))}</span>
         </div>
       `).join('');
     })
@@ -821,7 +821,7 @@ function renderArticles() {
     return `<div class="adm-row adm-row-news">
       <div class="adm-row-main" data-label="Title">
         <span class="adm-row-name" title="${escHtml(artTitle(a))}">${escHtml(artTitle(a))}</span>
-        ${a.featured ? '<span class="adm-row-sub" style="color:#4A7FA5">Featured</span>' : ''}
+        ${a.featured ? '<span class="adm-pill pill--solid">Featured</span>' : ''}
       </div>
       <span class="adm-row-meta" data-label="Category">${escHtml(a.category || '—')}</span>
       <span class="adm-row-meta" data-label="Type">${escHtml(a.type || '—')}</span>
@@ -1073,7 +1073,8 @@ async function loadScraperStatus() {
     const data = await res.json();
     const statusEl = document.getElementById('ri-status');
     statusEl.textContent = data.scheduler_running ? 'Scheduler Active' : 'Scheduler Off';
-    statusEl.style.color = data.scheduler_running ? 'var(--positive)' : '#F2A33D';
+    statusEl.classList.remove('pill--green', 'pill--orange');
+    statusEl.classList.add(data.scheduler_running ? 'pill--green' : 'pill--orange');
     document.getElementById('ri-last-run').textContent = data.last_run
       ? `Last run: ${data.last_run.replace('T', ' ').slice(0, 19)}` : 'Never run';
     document.getElementById('ri-live-count').textContent = data.hotels_with_live ?? '—';
@@ -1176,7 +1177,7 @@ async function loadSystemInfo() {
     const rows = Object.entries(data.files).map(([name, info]) => `
       <div class="adm-row adm-row-system">
         <span class="adm-row-meta" data-label="File">${escHtml(name)}</span>
-        <span class="adm-row-meta" data-label="Exists" style="color:${info.exists ? 'var(--positive)' : 'var(--negative)'}">${info.exists ? 'Yes' : 'No'}</span>
+        <span class="adm-row-meta" data-label="Exists"><span class="adm-pill pill--${info.exists ? 'green' : 'red'}">${info.exists ? 'Yes' : 'No'}</span></span>
         <span class="adm-row-meta" data-label="Size">${info.size_bytes != null ? info.size_bytes + ' B' : '—'}</span>
         <span class="adm-row-meta" data-label="Modified" title="${escHtml(info.modified_at || '')}">${escHtml(info.modified_at || '—')}</span>
       </div>

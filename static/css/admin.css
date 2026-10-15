@@ -45,7 +45,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 }
 .adm-toggle-sep { color: var(--text-faint); }
 .adm-toggle-opt { color: var(--text-faint); transition: color 0.15s; }
-.adm-toggle-opt.adm-toggle-active { color: var(--accent); font-weight: 500; }
+.adm-toggle-opt.adm-toggle-active { color: var(--text); font-weight: 600; }
 
 /* ── Nav user menu (top right) ── */
 .adm-user-menu { position: relative; }
@@ -75,7 +75,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   border-radius: 8px;
   padding: 6px;
   flex-direction: column;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 24px rgba(15,15,14,0.12);
   z-index: 150;
 }
 .adm-user-menu-dropdown.open { display: flex; }
@@ -140,7 +140,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 6px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 24px rgba(15,15,14,0.12);
   z-index: 350;
 }
 .adm-row-menu.open { display: flex; }
@@ -174,7 +174,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-mobile-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.5);
+  background: var(--overlay);
 }
 .adm-mobile-overlay.open { display: block; }
 .adm-mobile-panel {
@@ -328,11 +328,13 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
   min-height: 36px;
 }
-.adm-btn-primary { background: #4A7FA5; color: #fff; border-color: #4A7FA5; }
-.adm-btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }
-.adm-btn-secondary { background: transparent; color: #4A7FA5; border-color: #4A7FA5; }
-.adm-btn-secondary:hover { background: rgba(74,127,165,0.08); }
-.adm-btn-destructive { background: transparent; color: var(--negative); border-color: var(--negative); }
+.adm-btn-primary { background: var(--action); color: var(--on-action); border-color: var(--action); font-weight: 600; }
+.adm-btn-primary:hover { background: var(--action-hover); border-color: var(--action-hover); color: var(--on-action); }
+.adm-btn-primary:active { background: var(--action-press); border-color: var(--action-press); }
+.adm-btn-secondary { background: var(--bg); color: var(--text); border-color: var(--action); }
+.adm-btn-secondary:hover { background: var(--action-tint); }
+.adm-btn-destructive { background: var(--bg); color: var(--negative); border-color: var(--negative); }
+.adm-btn-destructive:hover { background: var(--negative-tint); }
 .adm-btn-destructive:hover { background: var(--negative-muted); }
 .adm-btn:disabled { opacity: 0.5; cursor: default; }
 
@@ -358,7 +360,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   height: 22px;
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--action-text);
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   font-weight: 400;
@@ -423,9 +425,9 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   align-items: center;
   padding: 1px 7px;
   border-radius: 999px;
-  border: 1px solid var(--accent-border);
-  background: var(--accent-muted);
-  color: var(--accent);
+  border: none;
+  background: var(--cat-1-tint);
+  color: var(--cat-1-text);
   font-size: 9px;
   font-weight: 500;
   text-transform: uppercase;
@@ -511,7 +513,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   box-sizing: border-box;
   transition: border-color 0.15s;
 }
-.adm-input:focus, .adm-select:focus, .adm-textarea:focus { border-color: #4A7FA5; }
+.adm-input:focus, .adm-select:focus, .adm-textarea:focus { border-color: var(--action); }
 .adm-input:disabled { opacity: 0.6; cursor: not-allowed; }
 .adm-textarea { resize: vertical; line-height: 1.6; }
 .adm-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -544,7 +546,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   margin-top: 16px;
   transition: border-color 0.15s, background 0.15s;
 }
-.adm-dropzone.drag-over { border-color: #4A7FA5; background: var(--accent-dim); }
+.adm-dropzone.drag-over { border-color: var(--action); background: var(--action-tint); }
 .adm-dropzone-main { font-family: 'Sweet Sans Pro', sans-serif; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
 .adm-dropzone-sub  { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; color: var(--text-faint); }
 
@@ -571,7 +573,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-panel-overlay {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: var(--overlay);
   z-index: 300;
 }
 .adm-panel-overlay.open { display: block; }
@@ -632,14 +634,14 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   max-width: 320px;
   animation: adm-toast-in 150ms ease;
 }
-.adm-toast.error { border-color: var(--negative); color: var(--negative); }
-.adm-toast.success { border-color: var(--positive); }
+.adm-toast.error { background: var(--negative-tint); border-color: transparent; color: var(--negative); }
+.adm-toast.success { background: var(--positive-tint); border-color: transparent; color: var(--positive); }
 @keyframes adm-toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ── Temp password modal ── */
 .adm-modal-overlay {
   position: fixed; inset: 0; z-index: 400;
-  background: rgba(0,0,0,0.5);
+  background: var(--overlay);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
@@ -659,7 +661,7 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   padding: 12px 16px;
   font-family: ui-monospace, monospace;
   font-size: 14px;
-  color: var(--positive);
+  color: var(--text);
   word-break: break-all;
   user-select: all;
 }
@@ -704,3 +706,8 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   .adm-btn { min-height: 40px; }
   .adm-btn-text { min-height: 40px; padding: 9px 0; height: auto; }
 }
+
+/* Tier labels: neutral outline, no colour (status colours are .pill--*) */
+.adm-pill--tier { color: var(--text-2); border-color: var(--border); }
+/* Pills hug their text inside column layouts (e.g. Featured under a news title) */
+.adm-pill { align-self: flex-start; width: max-content; max-width: 100%; }

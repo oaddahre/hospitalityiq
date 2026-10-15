@@ -5,20 +5,19 @@ Every hardcoded colour outside `static/css/tokens.css`, by file and line. Regene
 - **LEGACY**: an old palette value the final sweep must remove.
 - **fallback**: the second argument of `var(--token, …)`; the page uses the token, the literal only applies where the token is undefined.
 
-Total: 223 colour literals in 24 files (67 legacy).
+Total: 208 colour literals in 23 files (57 legacy).
 
 ## Per file
 
 | File | Literals |
 |---|---|
 | `static/css/marketing.css` | 149 |
-| `static/css/admin.css` | 15 |
 | `static/css/style.css` | 14 |
 | `app.py` | 13 |
 | `templates/contact.html` | 5 |
 | `generate_pdfs.py` | 4 |
 | `static/images/news-placeholder.svg` | 3 |
-| `static/js/admin.js` | 2 |
+| `static/css/admin.css` | 2 |
 | `static/js/main.js` | 2 |
 | `templates/methodology.html` | 2 |
 | `templates/accept_invite.html` | 1 |
@@ -40,14 +39,13 @@ Total: 223 colour literals in 24 files (67 legacy).
 
 | Value | Count |
 |---|---|
-| `#4A7FA5` | 54 |
-| `#3A6A8E` | 3 |
+| `#4A7FA5` | 47 |
 | `#0A0A0A` | 3 |
 | `#141414` | 2 |
 | `#242424` | 2 |
 | `#F0F0EE` | 1 |
+| `#3A6A8E` | 1 |
 | `#4A9B6F` | 1 |
-| `#F2A33D` | 1 |
 
 ## `app.py`
 
@@ -80,21 +78,8 @@ Total: 223 colour literals in 24 files (67 legacy).
 
 | Line | Colour | Note | Context |
 |---|---|---|---|
-| 78 | `rgba(0,0,0,0.25)` |  | `box-shadow: 0 8px 24px rgba(0,0,0,0.25);` |
-| 143 | `rgba(0,0,0,0.25)` |  | `box-shadow: 0 8px 24px rgba(0,0,0,0.25);` |
-| 177 | `rgba(0,0,0,0.5)` |  | `background: rgba(0,0,0,0.5);` |
-| 331 | `#4A7FA5` | LEGACY | `.adm-btn-primary { background: #4A7FA5; color: #fff; border-color: #4A7FA5; }` |
-| 331 | `#fff` |  | `.adm-btn-primary { background: #4A7FA5; color: #fff; border-color: #4A7FA5; }` |
-| 331 | `#4A7FA5` | LEGACY | `.adm-btn-primary { background: #4A7FA5; color: #fff; border-color: #4A7FA5; }` |
-| 332 | `#3A6A8E` | LEGACY | `.adm-btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 332 | `#3A6A8E` | LEGACY | `.adm-btn-primary:hover { background: #3A6A8E; border-color: #3A6A8E; }` |
-| 333 | `#4A7FA5` | LEGACY | `.adm-btn-secondary { background: transparent; color: #4A7FA5; border-color: #4A7FA5; }` |
-| 333 | `#4A7FA5` | LEGACY | `.adm-btn-secondary { background: transparent; color: #4A7FA5; border-color: #4A7FA5; }` |
-| 334 | `rgba(74,127,165,0.08)` |  | `.adm-btn-secondary:hover { background: rgba(74,127,165,0.08); }` |
-| 514 | `#4A7FA5` | LEGACY | `.adm-input:focus, .adm-select:focus, .adm-textarea:focus { border-color: #4A7FA5; }` |
-| 547 | `#4A7FA5` | LEGACY | `.adm-dropzone.drag-over { border-color: #4A7FA5; background: var(--accent-dim); }` |
-| 574 | `rgba(0,0,0,0.45)` |  | `background: rgba(0,0,0,0.45);` |
-| 642 | `rgba(0,0,0,0.5)` |  | `background: rgba(0,0,0,0.5);` |
+| 78 | `rgba(15,15,14,0.12)` |  | `box-shadow: 0 8px 24px rgba(15,15,14,0.12);` |
+| 143 | `rgba(15,15,14,0.12)` |  | `box-shadow: 0 8px 24px rgba(15,15,14,0.12);` |
 
 ## `static/css/marketing.css`
 
@@ -276,13 +261,6 @@ Total: 223 colour literals in 24 files (67 legacy).
 | 2 | `#141414` | LEGACY | `<rect width="800" height="450" fill="#141414"/>` |
 | 3 | `#242424` | LEGACY | `<rect x="0.5" y="0.5" width="799" height="449" fill="none" stroke="#242424"/>` |
 | 4 | `#B87860` |  | `<text x="400" y="235" font-family="'Space Mono', monospace" font-size="14" letter-spacing="6" fill="#B87860" t` |
-
-## `static/js/admin.js`
-
-| Line | Colour | Note | Context |
-|---|---|---|---|
-| 824 | `#4A7FA5` | LEGACY | `${a.featured ? '<span class="adm-row-sub" style="color:#4A7FA5">Featured</span>' : ''}` |
-| 1076 | `#F2A33D` | LEGACY | `statusEl.style.color = data.scheduler_running ? 'var(--positive)' : '#F2A33D';` |
 
 ## `static/js/main.js`
 
