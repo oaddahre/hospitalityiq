@@ -2545,22 +2545,24 @@ a.lp-contact-info-val:hover { color: #4A7FA5; }
 
 /* ── Hero ── */
 .lp-landing .lp-hero {
+  max-width: 1340px;
   padding: 120px 48px 88px;
   text-align: center;
 }
 .lp-landing .lp-hero-headline {
-  font-size: clamp(44px, 7vw, 88px);
+  font-size: clamp(44px, 6.5vw, 88px);
   font-style: normal;
   line-height: 1.05;
   letter-spacing: -0.03em;
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto 28px;
 }
-/* Fixed line structure: "The [pill]" / "for Moroccan hospitality." —
-   the pill changing width never re-wraps the headline */
+/* Line structure: "The [pill]" / "for Moroccan hospitality." —
+   the pill itself never breaks; if a long word doesn't fit beside "The",
+   the whole pill drops to its own line (height is reserved in JS) */
 .lp-hero-l1,
 .lp-hero-l2 { display: block; }
-.lp-hero-l1 { white-space: nowrap; margin-bottom: 0.08em; }
+.lp-hero-l1 { margin-bottom: 0.08em; }
 .lp-landing .lp-hero-headline span { font-family: inherit; font-weight: inherit; }
 .lp-landing .lp-hero-sub {
   max-width: 620px;
@@ -2680,13 +2682,12 @@ body.lp-light .lp-pill[data-i="3"] { --pill-text: #6553A8; }
 
 @media (max-width: 768px) {
   .lp-landing .lp-hero { padding: 96px 20px 60px; }
-  .lp-landing .lp-hero-headline { font-size: clamp(44px, 7vw, 88px); }
+  .lp-landing .lp-hero-headline { font-size: clamp(44px, 6.5vw, 88px); }
 }
 /* Phones: "The" on its own line, and the type scales down just enough
    that the widest pill fits the screen */
 @media (max-width: 640px) {
-  .lp-landing .lp-hero-headline { font-size: min(44px, calc(9.3vw - 4px)); }
-  .lp-hero-l1 { white-space: normal; }
+  .lp-landing .lp-hero-headline { font-size: min(44px, calc(9vw - 4px)); }
   .lp-hero-the { display: block; }
 }
 
