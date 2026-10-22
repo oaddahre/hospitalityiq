@@ -95,7 +95,7 @@ function getOwnerLogoImg(ownerName, size) {
     return '<img src="https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
   }
   var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:var(--bg-alt);color:var(--cat-1-text);border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:var(--cat-1-tint);color:var(--cat-1-text);border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
 }
 
 // Colour families from static/css/tokens.css — the single source of truth
@@ -1206,7 +1206,7 @@ function renderHotelSegBench(h) {
           <span class="hbench-val">${m.fmtVal(m.avg)}</span>
         </div>
       </div>
-      <span class="hbench-diff ${m.isPos ? 'up' : 'down'}">${m.fmtDiff(diff)}</span>
+      <span class="hbench-diff ${m.isPos ? 'up' : 'down'}"><span class="pill--${m.isPos ? 'green' : 'red'}">${m.fmtDiff(diff)}</span></span>
     </div>`;
   }).join('');
 }
