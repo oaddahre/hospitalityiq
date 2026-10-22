@@ -9,7 +9,8 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png?v={{ asset_version('favicon-32.png') }}">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png?v={{ asset_version('favicon-16.png') }}">
   <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version('apple-touch-icon.png') }}">
-  <meta name="theme-color" content="#4A7FA5">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
   <link rel="preload" href="/static/fonts/SweetSansProRegular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProMedium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProBold.woff2" as="font" type="font/woff2" crossorigin>
@@ -117,22 +118,22 @@
     <div class="method-source-list">
       <div class="method-source-item">
         <span class="method-source-name">Hotel Directory</span>
-        <span class="method-source-confidence">High Confidence</span>
+        <span class="method-source-confidence pill--blue">High Confidence</span>
         <p class="method-source-desc">Kodo maintains a manually curated database of 300+ branded and independent hotels across 20+ Moroccan destinations. Each property is verified for existence, key count, segment classification, brand affiliation, and ownership. Data quality is flagged at the property level — verified entries have been confirmed against official hotel websites, brand press kits, and industry sources. Unverified entries are clearly marked.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Rate Intelligence</span>
-        <span class="method-source-confidence">High Confidence</span>
+        <span class="method-source-confidence pill--blue">High Confidence</span>
         <p class="method-source-desc">Starting July 2026 Kodo scrapes Best Available Rates (BAR) daily for all properties in our database using a multi-source approach: Google Hotels API (primary), brand direct websites (secondary), and OTA platforms (fallback). BAR represents the lowest publicly available rate for a standard room, 2 adults, 1 night. BAR is not equivalent to a hotel's actual Average Daily Rate (ADR) — it excludes negotiated corporate rates, wholesale contracts, and package inclusions — but provides a consistent, comparable daily rate signal across all properties.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Occupancy Model</span>
-        <span class="method-source-confidence">Medium Confidence</span>
+        <span class="method-source-confidence pill--orange">Medium Confidence</span>
         <p class="method-source-desc">Kodo does not have access to real occupancy data from hotel PMS systems except for properties participating in our Data Sharing Program. For all other properties we estimate occupancy using a statistical model with the following inputs: base occupancy by market segment and hotel type; rate index adjustment; day-of-week patterns; monthly seasonality index derived from ONMT national tourism data; OTA availability signals where captured; and a major events calendar. The model produces a point estimate with a confidence interval.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Verified Operator Data</span>
-        <span class="method-source-confidence">Highest Confidence</span>
+        <span class="method-source-confidence pill--green">Highest Confidence</span>
         <p class="method-source-desc">Hotels participating in the Kodo Data Sharing Program share daily operational data (occupancy, ADR, RevPAR) directly from their Property Management System. This data is anonymised before inclusion in any benchmarking output and is never disclosed at the individual property level. Verified data is displayed with a "Verified" badge and is used to calibrate our statistical model, improving estimates for all properties over time.</p>
       </div>
     </div>
@@ -244,7 +245,7 @@
       </tbody>
     </table>
     <div class="method-section-body">
-      <p><strong style="color:var(--text);">Disclaimer:</strong> These multiples are indicative only and should not be used as the sole basis for investment decisions. Hotel asset values are highly sensitive to operator quality, lease structure, capex requirements, and market conditions. Contact <a href="/contact" style="color:var(--accent);text-decoration:none;">Kodo Advisory</a> for asset-specific valuation.</p>
+      <p><strong style="color:var(--text);">Disclaimer:</strong> These multiples are indicative only and should not be used as the sole basis for investment decisions. Hotel asset values are highly sensitive to operator quality, lease structure, capex requirements, and market conditions. Contact <a href="/contact" style="color:var(--action-text);text-decoration:none;">Kodo Advisory</a> for asset-specific valuation.</p>
     </div>
   </div>
 
@@ -256,15 +257,15 @@
       <p>Every property and metric on the Kodo platform carries a data quality label. These are not cosmetic — they indicate the source and reliability of the underlying data.</p>
     </div>
     <div class="method-quality-item">
-      <span class="method-source-confidence">Verified</span>
+      <span class="method-source-confidence pill--green">Verified</span>
       <p>Data confirmed against official sources — brand press kits, official hotel websites, government tourism records, or direct operator communication. Key count, opening year, brand affiliation, and ownership have been individually verified.</p>
     </div>
     <div class="method-quality-item">
-      <span class="method-source-confidence">Estimated</span>
+      <span class="method-source-confidence pill--grey">Estimated</span>
       <p>Performance metrics (occupancy, ADR, RevPAR) estimated using our statistical model. Suitable for market-level analysis and relative benchmarking. Not verified against operator PMS data. Always labelled clearly in platform displays and reports.</p>
     </div>
     <div class="method-quality-item">
-      <span class="method-source-confidence">Key Count Uncertain</span>
+      <span class="method-source-confidence pill--orange">Key Count Uncertain</span>
       <p>Hotel existence is confirmed but the precise room count has not been independently verified. Key count shown is our best estimate based on available sources including brand materials, planning records, and press coverage.</p>
     </div>
   </div>
@@ -301,7 +302,7 @@
         <li>Priority support and direct access to our research team</li>
         <li>Influence over coverage expansion and new features</li>
       </ul>
-      <p style="font-size:12px;color:#555555;">Data is processed under a strict confidentiality agreement. Individual property data is never disclosed in any form. Aggregated benchmarking output always includes a minimum of 3 properties per disclosure, per STR confidentiality standards.</p>
+      <p style="font-size:12px;color:var(--text-2);">Data is processed under a strict confidentiality agreement. Individual property data is never disclosed in any form. Aggregated benchmarking output always includes a minimum of 3 properties per disclosure, per STR confidentiality standards.</p>
     </div>
   </div>
 

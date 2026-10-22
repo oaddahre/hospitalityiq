@@ -13,35 +13,36 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 OUTPUT_DIR = os.path.expanduser("~/Desktop/HIQ_PDFs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-HIQ_BLUE  = colors.HexColor("#1a3a5c")
-HIQ_GOLD  = colors.HexColor("#c9a84c")
-HIQ_LIGHT = colors.HexColor("#f4f6f9")
-GREY_TEXT = colors.HexColor("#555555")
+# Kodo palette (light-mode values of static/css/tokens.css)
+ACCENT    = colors.HexColor("#0075DE")   # headings, rules
+TEXT      = colors.HexColor("#1F1E1C")   # body text
+GREY_TEXT = colors.HexColor("#5F5B55")   # secondary text
+HAIRLINE  = colors.HexColor("#E7E4DF")   # thin dividers
 
 
 def base_styles():
     s = getSampleStyleSheet()
     s.add(ParagraphStyle("HIQTitle",
-        fontName="Helvetica-Bold", fontSize=22, textColor=HIQ_BLUE,
+        fontName="Helvetica-Bold", fontSize=22, textColor=ACCENT,
         spaceAfter=4, alignment=TA_CENTER, leading=28))
     s.add(ParagraphStyle("HIQSubtitle",
-        fontName="Helvetica", fontSize=11, textColor=HIQ_GOLD,
+        fontName="Helvetica", fontSize=11, textColor=ACCENT,
         spaceAfter=2, alignment=TA_CENTER))
     s.add(ParagraphStyle("HIQDate",
         fontName="Helvetica", fontSize=9, textColor=GREY_TEXT,
         spaceAfter=14, alignment=TA_CENTER))
     s.add(ParagraphStyle("SectionHead",
-        fontName="Helvetica-Bold", fontSize=12, textColor=HIQ_BLUE,
+        fontName="Helvetica-Bold", fontSize=12, textColor=ACCENT,
         spaceBefore=14, spaceAfter=4, leading=16))
     s.add(ParagraphStyle("Body",
-        fontName="Helvetica", fontSize=9.5, textColor=colors.black,
+        fontName="Helvetica", fontSize=9.5, textColor=TEXT,
         spaceBefore=2, spaceAfter=4, leading=14, alignment=TA_JUSTIFY))
     s.add(ParagraphStyle("BulletBody",
-        fontName="Helvetica", fontSize=9.5, textColor=colors.black,
+        fontName="Helvetica", fontSize=9.5, textColor=TEXT,
         spaceBefore=1, spaceAfter=2, leading=14,
         leftIndent=14, firstLineIndent=-14, alignment=TA_JUSTIFY))
     s.add(ParagraphStyle("SigLabel",
-        fontName="Helvetica-Bold", fontSize=9, textColor=HIQ_BLUE,
+        fontName="Helvetica-Bold", fontSize=9, textColor=ACCENT,
         spaceBefore=2, spaceAfter=1))
     s.add(ParagraphStyle("SigLine",
         fontName="Helvetica", fontSize=9, textColor=GREY_TEXT,
@@ -52,11 +53,11 @@ def base_styles():
 def header_block(s, title, subtitle, ref, date_str):
     items = []
     items.append(Spacer(1, 6*mm))
-    # Gold rule top
-    items.append(HRFlowable(width="100%", thickness=3, color=HIQ_GOLD, spaceAfter=6))
+    # Accent rule top
+    items.append(HRFlowable(width="100%", thickness=3, color=ACCENT, spaceAfter=6))
     items.append(Paragraph("HospitalityIQ", s["HIQTitle"]))
     items.append(Paragraph(subtitle, s["HIQSubtitle"]))
-    items.append(HRFlowable(width="100%", thickness=1, color=HIQ_GOLD, spaceBefore=6, spaceAfter=6))
+    items.append(HRFlowable(width="100%", thickness=1, color=ACCENT, spaceBefore=6, spaceAfter=6))
     items.append(Paragraph(f"Ref: {ref} &nbsp;&nbsp;|&nbsp;&nbsp; {date_str}", s["HIQDate"]))
     return items
 
@@ -95,7 +96,7 @@ def page_footer(canvas, doc):
     canvas.setFillColor(GREY_TEXT)
     canvas.drawString(20*mm, 12*mm, "HospitalityIQ — Confidential & Proprietary")
     canvas.drawRightString(A4[0] - 20*mm, 12*mm, f"Page {doc.page}")
-    canvas.setStrokeColor(HIQ_GOLD)
+    canvas.setStrokeColor(ACCENT)
     canvas.setLineWidth(0.5)
     canvas.line(20*mm, 16*mm, A4[0] - 20*mm, 16*mm)
     canvas.restoreState()
@@ -133,7 +134,7 @@ def build_english():
     body("and")
     body("<b>[Recipient Organisation Name]</b>, a company/institution duly incorporated and operating under the laws of <b>[Jurisdiction]</b>, with registered address at <b>[Address]</b>, hereinafter referred to as the <b>\"Data Recipient\"</b>.")
 
-    story.append(HRFlowable(width="100%", thickness=0.5, color=HIQ_LIGHT, spaceBefore=8, spaceAfter=4))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=HAIRLINE, spaceBefore=8, spaceAfter=4))
 
     sec(1, "PURPOSE")
     body("The purpose of this Agreement is to establish the terms and conditions under which HIQ will share hotel market intelligence data, analytics, benchmarks, and related insights (collectively, the <b>\"Data\"</b>) with the Data Recipient for the specific use case(s) described herein.")
@@ -187,7 +188,7 @@ def build_english():
     body("This Agreement constitutes the entire agreement between the parties with respect to the subject matter herein and supersedes all prior discussions, representations, or agreements. Amendments must be in writing and signed by authorised representatives of both parties.")
 
     story.append(Spacer(1, 8*mm))
-    story.append(HRFlowable(width="100%", thickness=1, color=HIQ_GOLD, spaceAfter=8))
+    story.append(HRFlowable(width="100%", thickness=1, color=ACCENT, spaceAfter=8))
     story.append(Paragraph("SIGNATURES", s["SectionHead"]))
     body("By signing below, the parties agree to be bound by the terms of this Data Sharing Agreement.")
     story.append(Spacer(1, 4*mm))
@@ -231,7 +232,7 @@ def build_french():
     body("et")
     body("<b>[Nom de l'organisation destinataire]</b>, société/institution dûment constituée et opérant sous les lois de <b>[Juridiction]</b>, dont le siège social est situé à <b>[Adresse]</b>, ci-après désignée le <b>« Destinataire des données »</b>.")
 
-    story.append(HRFlowable(width="100%", thickness=0.5, color=HIQ_LIGHT, spaceBefore=8, spaceAfter=4))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=HAIRLINE, spaceBefore=8, spaceAfter=4))
 
     sec(1, "OBJET")
     body("La présente Convention a pour objet de définir les termes et conditions dans lesquels HIQ communiquera au Destinataire des données des informations d'intelligence de marché hôtelier, des analyses, des benchmarks et des indicateurs connexes (collectivement, les <b>« Données »</b>) aux fins d'utilisation décrites aux présentes.")
@@ -285,7 +286,7 @@ def build_french():
     body("La présente Convention constitue l'accord intégral entre les parties concernant son objet et remplace toutes discussions, représentations ou accords antérieurs. Toute modification doit être établie par écrit et signée par les représentants habilités des deux parties.")
 
     story.append(Spacer(1, 8*mm))
-    story.append(HRFlowable(width="100%", thickness=1, color=HIQ_GOLD, spaceAfter=8))
+    story.append(HRFlowable(width="100%", thickness=1, color=ACCENT, spaceAfter=8))
     story.append(Paragraph("SIGNATURES", s["SectionHead"]))
     body("En signant ci-dessous, les parties s'engagent à respecter les termes de la présente Convention de Partage de Données.")
     story.append(Spacer(1, 4*mm))

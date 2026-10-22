@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
   <title>Contact — Kodo Hospitality</title>
   <link rel="icon" href="/static/favicon.ico?v={{ asset_version('favicon.ico') }}" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png?v={{ asset_version('favicon-32.png') }}">
@@ -152,13 +154,13 @@
           </button>
 
           <div id="lpContactSuccess" style="display:none;margin-top:16px;">
-            <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:#5A8A5A;">
+            <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:var(--positive);">
               ✓ Message sent. We will respond within 24 hours.
             </span>
           </div>
 
           <div id="lpContactError" style="display:none;margin-top:16px;">
-            <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:#C86060;">
+            <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:var(--negative);">
               Something went wrong. Please email us directly.
             </span>
           </div>
@@ -189,15 +191,15 @@
           <span class="lp-contact-info-label">What to expect</span>
           <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
             <div style="display:flex;gap:12px;align-items:flex-start;">
-              <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:8px;color:#4A7FA5;flex-shrink:0;padding-top:2px;">01</span>
+              <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:8px;color:var(--lp-text-2);flex-shrink:0;padding-top:2px;">01</span>
               <p style="font-family:'Sweet Sans Pro',sans-serif;font-size:13px;color:var(--lp-text-muted);line-height:1.6;font-weight:400;margin:0;">We respond to every inquiry personally within 24 hours.</p>
             </div>
             <div style="display:flex;gap:12px;align-items:flex-start;">
-              <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:8px;color:#4A7FA5;flex-shrink:0;padding-top:2px;">02</span>
+              <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:8px;color:var(--lp-text-2);flex-shrink:0;padding-top:2px;">02</span>
               <p style="font-family:'Sweet Sans Pro',sans-serif;font-size:13px;color:var(--lp-text-muted);line-height:1.6;font-weight:400;margin:0;">For platform inquiries we offer a 30-minute walkthrough of the modules most relevant to your use case.</p>
             </div>
             <div style="display:flex;gap:12px;align-items:flex-start;">
-              <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:8px;color:#4A7FA5;flex-shrink:0;padding-top:2px;">03</span>
+              <span style="font-family:'Sweet Sans Pro',sans-serif;font-size:8px;color:var(--lp-text-2);flex-shrink:0;padding-top:2px;">03</span>
               <p style="font-family:'Sweet Sans Pro',sans-serif;font-size:13px;color:var(--lp-text-muted);line-height:1.6;font-weight:400;margin:0;">Serious inquiries can access the platform before committing to a subscription.</p>
             </div>
           </div>

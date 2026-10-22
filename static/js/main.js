@@ -4906,6 +4906,59 @@ function canExport() {
   return tier === 'benchmarker' || tier === 'advisory';
 }
 
+// Spreadsheet colours: light-mode values of static/css/tokens.css (Excel has
+// no dark mode). Category cells get the family tint with its text colour.
+const XLSX_COLORS = {
+  headerFill: 'F7F6F3', headerText: '1F1E1C', headerRule: '0075DE', text: '1F1E1C',
+  families: {
+    blue:   { text: '006DD0', tint: 'E6F3FE' },
+    green:  { text: '127F48', tint: 'E4F8EC' },
+    orange: { text: 'BB4A0E', tint: 'FFEEE6' },
+    violet: { text: '5B3FC4', tint: 'EEE9FD' },
+    sky:    { text: '0976A6', tint: 'E3F6FF' },
+    grey:   { text: '5F5B55', tint: 'F1F0EE' },
+    red:    { text: 'C4332F', tint: 'FDECEC' },
+  },
+};
+
+// Column name -> function(value) returning a colour family, or null
+const XLSX_CATEGORY_COLUMNS = {
+  'Segment':      v => SEGMENT_FAMILY[v] || null,
+  'Category':     v => SEGMENT_FAMILY[v] || null,
+  'Status':       v => v === 'Under Construction' ? 'blue' : (v ? 'grey' : null),
+  'Data Quality': v => {
+    const q = String(v || '').toLowerCase();
+    if (!q) return null;
+    if (q.startsWith('verified')) return 'green';
+    return q.includes('uncertain') ? 'orange' : 'grey';
+  },
+};
+
+function styleSheet(ws, data) {
+  if (!ws['!ref']) return;
+  const keys  = Object.keys(data[0] || {});
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    const head = ws[XLSX.utils.encode_cell({ r: 0, c })];
+    if (head) head.s = {
+      font:   { bold: true, color: { rgb: XLSX_COLORS.headerText } },
+      fill:   { patternType: 'solid', fgColor: { rgb: XLSX_COLORS.headerFill } },
+      border: { bottom: { style: 'thin', color: { rgb: XLSX_COLORS.headerRule } } },
+    };
+    const familyOf = XLSX_CATEGORY_COLUMNS[keys[c]];
+    if (!familyOf) continue;
+    for (let r = 1; r <= range.e.r; r++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })];
+      const fam  = cell && XLSX_COLORS.families[familyOf(cell.v)];
+      if (!fam) continue;
+      cell.s = {
+        font: { bold: true, color: { rgb: fam.text } },
+        fill: { patternType: 'solid', fgColor: { rgb: fam.tint } },
+      };
+    }
+  }
+}
+
 function exportToExcel(sheets, filename) {
   const wb = XLSX.utils.book_new();
   const autoW = data => Object.keys(data[0] || {}).map(k => ({
@@ -4915,6 +4968,7 @@ function exportToExcel(sheets, filename) {
     if (!data || !data.length) return;
     const ws = XLSX.utils.json_to_sheet(data);
     ws['!cols'] = autoW(data);
+    styleSheet(ws, data);
     XLSX.utils.book_append_sheet(wb, ws, name);
   });
   const about = [{
@@ -4928,6 +4982,7 @@ function exportToExcel(sheets, filename) {
   wsAbout['!cols'] = Object.keys(about[0]).map(k => ({
     wch: Math.max(k.length, ...about.map(r => String(r[k] ?? '').length))
   }));
+  styleSheet(wsAbout, about);
   XLSX.utils.book_append_sheet(wb, wsAbout, 'About');
   XLSX.writeFile(wb, filename + '.xlsx');
 }

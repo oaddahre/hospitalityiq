@@ -197,7 +197,7 @@ body.lp-light .lp-cta { background: var(--lp-cta-bg); }
   --surface-hover: var(--bg-hover);
   --border-light:  var(--border);
   --muted:         var(--text-2);
-  --text-faint:    var(--text-3);
+  --text-faint:    var(--text-2);   /* --text-3 is below AA for small labels */
   --accent:        var(--action);
   --deep:          var(--bg-alt);
   --font:          'Sweet Sans Pro', sans-serif;
@@ -263,7 +263,7 @@ body {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent);
+  color: var(--text);
   text-decoration: none;
   border: 1px solid var(--accent);
   border-radius: 999px;
@@ -273,8 +273,7 @@ body {
 }
 
 .mk-nav__cta:hover {
-  background: var(--accent);
-  color: var(--on-action, #FFFFFF);
+  background: var(--action-tint);
 }
 
 .lp-container {
@@ -295,13 +294,19 @@ body {
 }
 
 .btn-pill--filled-lg {
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid var(--accent);
+  background: var(--action);
+  color: var(--on-action);
+  border: 1px solid var(--action);
 }
 
 .btn-pill--filled-lg:hover {
-  background: #3A6A8E;
+  background: var(--action-hover);
+  border-color: var(--action-hover);
+}
+
+.btn-pill--filled-lg:active {
+  background: var(--action-press);
+  border-color: var(--action-press);
 }
 
 .mk-footer {
@@ -383,7 +388,7 @@ body {
   transition: color 0.2s;
 }
 
-.footer-contact a:hover { color: var(--accent); }
+.footer-contact a:hover { color: var(--action-text); }
 
 .footer-bottom {
   display: flex;
@@ -395,7 +400,7 @@ body {
   font-family: var(--mono);
   font-size: 8px;
   font-weight: 400;
-  color: #333333;
+  color: var(--text-2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -424,7 +429,7 @@ body {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--accent);
+  color: var(--text-2);
   display: block;
   margin-bottom: 12px;
 }
@@ -485,7 +490,7 @@ body {
 
 .legal-body li { margin-bottom: 6px; }
 
-.legal-body a { color: var(--accent); text-decoration: none; }
+.legal-body a { color: var(--action-text); text-decoration: none; }
 
 .legal-body a:hover { text-decoration: underline; }
 
@@ -505,7 +510,7 @@ body {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--accent);
+  color: var(--text-2);
   display: block;
   margin-bottom: 8px;
 }
@@ -546,7 +551,7 @@ body {
   content: '—';
   position: absolute;
   left: 0;
-  color: var(--accent);
+  color: var(--text-3);
   font-family: var(--mono);
 }
 
@@ -577,13 +582,26 @@ body {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--accent);
+  color: var(--text-2);
   background: transparent;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--border);
   border-radius: 0;
   padding: 1px 8px;
   display: inline-block;
   width: fit-content;
+}
+
+/* Confidence / data-quality labels are coloured pills (tint, text, dot);
+   2px 9px keeps the box the size of the old 1px-bordered tag */
+.method-source-confidence[class*="pill--"] {
+  display: inline-flex;
+  border: none;
+  border-radius: 999px;
+  padding: 2px 9px;
+  line-height: inherit;
+  background: var(--pill-tint);
+  color: var(--pill-text);
+  font-weight: 600;
 }
 
 .method-source-desc {
@@ -3124,11 +3142,12 @@ a.lp-contact-info-val:hover { color: var(--lp-action, #4A7FA5); }
 /* ═══════════════════════════════════════
    LANDING — "Warm Paper" colour system.
    The single source of truth for every landing colour. Scoped to
-   body.lp-landing so the shared marketing pages keep their own tokens.
+   body.lp-body, so the landing and the shared marketing pages (team,
+   contact, methodology, terms, privacy) read the same tokens.
    Light is the default (body.lp-light); dark applies when the visitor
    picks it. Legacy --lp-* tokens are remapped onto the palette below.
 ═══════════════════════════════════════ */
-body.lp-landing {
+body.lp-body {
   /* Palette: aliases of static/css/tokens.css (light/dark follow <html data-theme>) */
   --lp-bg: var(--bg);
   --lp-bg-alt: var(--bg-alt);
@@ -3226,7 +3245,11 @@ body.lp-landing {
   --lp-report-stat-k: var(--lp-text-3);
   --lp-ds: var(--lp-text-3);
 }
-body.lp-landing.lp-light {
+/* Shared marketing pages: small labels that read --text-3 use --text-2,
+   since --text-3 is below AA at their 8-11px sizes */
+body.lp-body:not(.lp-landing) { --lp-text-3: var(--text-2); }
+
+body.lp-body.lp-light {
   --lp-overlay: rgba(31,30,28,0.35);
   --lp-ck: #2F7D55;
 }
