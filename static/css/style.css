@@ -1829,7 +1829,6 @@ body.light .nav-logout  { color: var(--text-2); }
 .etype-music     { color: var(--cat-violet); }
 .etype-business  { color: var(--cat-blue); }
 .etype-religious { color: var(--cat-slate); }
-.etype-mega      { color: var(--cat-violet); font-weight: 600; }
 
 .event-name {
   font-family: 'Sweet Sans Pro', sans-serif;

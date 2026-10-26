@@ -1920,7 +1920,7 @@ const TOUR_EVENTS = [
   { city:'Agadir',     name:'International Agadir Fishing Festival', date:'April 2026',        attendance:'',                     type:'Culture',   desc:'Annual festival celebrating the city\'s coastal fishing heritage.' },
   { city:'Fes',        name:'SIAM International Agriculture Fair',   date:'April 2026',        attendance:'1M+ visitors',         type:'Business',  desc:'Africa\'s leading agricultural exhibition, held at Meknès–Fes.' },
   { city:'Agadir',     name:'Agadir Beach Soccer World Cup',         date:'May 2026',          attendance:'',                     type:'Sport',     desc:'FIFA-recognised beach soccer tournament on the Agadir seafront.' },
-  { city:'Rabat',      name:'Mawazine Festival',                     date:'May–June 2026',     attendance:'2M+ total',            type:'Mega',      desc:'One of the world\'s largest music festivals by total attendance.' },
+  { city:'Rabat',      name:'Mawazine Festival',                     date:'May–June 2026',     attendance:'2M+ total',            type:'Music', mega:true, desc:'One of the world\'s largest music festivals by total attendance.' },
   { city:'Fes',        name:'Fes Festival of World Sacred Music',    date:'June 2026',         attendance:'80,000',               type:'Music',     desc:'Internationally acclaimed spiritual music festival in the ancient medina.' },
   { city:'Essaouira',  name:'Gnaoua World Music Festival',           date:'June 2026',         attendance:'450,000+ over 4 days', type:'Music',     desc:'UNESCO-endorsed Gnaoua and world music festival on the Atlantic coast.' },
   { city:'National',   name:'Eid Al Adha 2026',                      date:'c. 6–7 June 2026',  attendance:'National',             type:'Religious', desc:'Feast of Sacrifice — major national holiday with high domestic movement.' },
@@ -1938,27 +1938,28 @@ const TOUR_EVENTS = [
 
 const EVENT_TYPE_CLASS = {
   Sport: 'etype-sport', Culture: 'etype-culture', Music: 'etype-music',
-  Business: 'etype-business', Religious: 'etype-religious', Mega: 'etype-mega',
+  Business: 'etype-business', Religious: 'etype-religious',
 };
 
 // Event category families — the same colour families as Owners'
 // portfolio types (see FAMILY_INDEX / ownerTypeBadge above), so "type"
-// colours mean the same thing everywhere on the platform. Mega reuses
-// Music's violet since Mawazine (the only Mega event) is itself a
-// music festival; its bold weight/larger dot keep it visually set apart.
+// colours mean the same thing everywhere on the platform. This is the one
+// place event colours are set (pills, timeline dots, legend). Every
+// category has its own hue; grey is reserved for the location pills
+// (Nationwide, city names) and red for losses/errors. Mawazine is a Music
+// event flagged `mega`, which only enlarges its timeline dot.
 const EVENT_TYPE_FAMILY = {
+  Religious: 'violet',
   Business:  'blue',
-  Religious: 'grey',
   Sport:     'green',
   Culture:   'orange',
-  Music:     'violet',
-  Mega:      'violet',
+  Music:     'sky',
 };
 const eventTypeFamily = t => EVENT_TYPE_FAMILY[t] || 'grey';
 
 // Display order for the events legend — only categories actually
 // present in the current (filtered) event list are shown.
-const EVENT_TYPE_ORDER = ['Sport', 'Culture', 'Business', 'Religious', 'Music', 'Mega'];
+const EVENT_TYPE_ORDER = ['Sport', 'Culture', 'Business', 'Religious', 'Music'];
 
 function renderEventsLegend(events) {
   const el = document.getElementById('events-legend');
@@ -2015,7 +2016,7 @@ function renderTourismEvents() {
     sorted.map((ev, i) => {
       const pd = parseEventDate(ev.date);
       const dotColor = familyDot(eventTypeFamily(ev.type));
-      const isMega = ev.type === 'Mega';
+      const isMega = !!ev.mega;
 
       const dateColHtml = pd.range
         ? `<span class="timeline-date__month">${pd.month}</span><span class="timeline-date__range">${pd.range}</span>`
