@@ -84,10 +84,15 @@ body.lp-light .lp-cta { background: var(--lp-cta-bg); }
   --deep:          var(--bg-alt);
   --font:          'Sweet Sans Pro', sans-serif;
   --mono:          'Sweet Sans Pro', sans-serif;
-  /* Top-nav text size, shared with the landing footer so they cannot drift.
-     The nav inherits the body's 1.6 line-height; the footer sets the same value. */
-  --lp-text-nav:    10px;
-  --lp-text-nav-lh: calc(var(--lp-text-nav) * 1.6);
+  /* Top-nav link typography, shared with the landing footer so they cannot
+     drift. The nav inherits the body's 1.6 line-height; the footer sets the
+     same value. */
+  --lp-text-nav:           10px;
+  --lp-text-nav-lh:        calc(var(--lp-text-nav) * 1.6);
+  --lp-text-nav-family:    'Sweet Sans Pro', sans-serif;
+  --lp-text-nav-weight:    400;
+  --lp-text-nav-ls:        0.12em;
+  --lp-text-nav-transform: uppercase;
 }
 
 html { scroll-behavior: smooth; }
@@ -624,14 +629,14 @@ body.lp-light .mk-nav-logo-img.logo-light {
   gap: 32px;
 }
 .mk-nav-link {
-  font-family: 'Sweet Sans Pro', sans-serif;
+  font-family: var(--lp-text-nav-family);
   font-size: var(--lp-text-nav);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: var(--lp-text-nav-ls);
+  text-transform: var(--lp-text-nav-transform);
   color: var(--lp-nav-link);
   text-decoration: none;
   transition: color 200ms;
-  font-weight: 400;
+  font-weight: var(--lp-text-nav-weight);
 }
 .mk-nav-link:hover { color: var(--lp-text); }
 .mk-nav-cta {
@@ -2695,12 +2700,15 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   border-radius: 999px;
 }
 
-/* Footer: all footer text is the top-nav size (--lp-text-nav) */
+/* Footer: all footer text uses the top-nav link typography (--lp-text-nav-*) */
 .lp-landing .lp-footer-link,
 .lp-landing .lp-footer-copy {
+  font-family: var(--lp-text-nav-family);
   font-size: var(--lp-text-nav);
   line-height: var(--lp-text-nav-lh);
-  letter-spacing: 0.06em;
+  font-weight: var(--lp-text-nav-weight);
+  letter-spacing: var(--lp-text-nav-ls);
+  text-transform: var(--lp-text-nav-transform);
 }
 .lp-landing .lp-footer-links { flex-wrap: wrap; justify-content: center; }
 
