@@ -84,6 +84,10 @@ body.lp-light .lp-cta { background: var(--lp-cta-bg); }
   --deep:          var(--bg-alt);
   --font:          'Sweet Sans Pro', sans-serif;
   --mono:          'Sweet Sans Pro', sans-serif;
+  /* Top-nav text size, shared with the landing footer so they cannot drift.
+     The nav inherits the body's 1.6 line-height; the footer sets the same value. */
+  --lp-text-nav:    10px;
+  --lp-text-nav-lh: calc(var(--lp-text-nav) * 1.6);
 }
 
 html { scroll-behavior: smooth; }
@@ -621,7 +625,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
 }
 .mk-nav-link {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 10px;
+  font-size: var(--lp-text-nav);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--lp-nav-link);
@@ -632,7 +636,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
 .mk-nav-link:hover { color: var(--lp-text); }
 .mk-nav-cta {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 10px;
+  font-size: var(--lp-text-nav);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--lp-action-text);
@@ -653,7 +657,7 @@ body.lp-light .mk-nav-logo-img.logo-light {
 
 .mk-nav-login {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 10px;
+  font-size: var(--lp-text-nav);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -874,7 +878,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 .mk-toggle-opt {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 10px;
+  font-size: var(--lp-text-nav);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -889,7 +893,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 
 .mk-toggle-sep {
   font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 10px;
+  font-size: var(--lp-text-nav);
   color: var(--lp-text-faint);
   opacity: 0.4;
 }
@@ -2583,7 +2587,6 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   --lp-fs-caption: 16px;
   --lp-fs-button: 16px;
   --lp-fs-stat: clamp(15px, 14.6px + 0.1vw, 16px);
-  --lp-fs-footer: 15px;
 }
 
 /* Eyebrow / label */
@@ -2692,10 +2695,11 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   border-radius: 999px;
 }
 
-/* Footer */
+/* Footer: all footer text is the top-nav size (--lp-text-nav) */
 .lp-landing .lp-footer-link,
 .lp-landing .lp-footer-copy {
-  font-size: var(--lp-fs-footer);
+  font-size: var(--lp-text-nav);
+  line-height: var(--lp-text-nav-lh);
   letter-spacing: 0.06em;
 }
 .lp-landing .lp-footer-links { flex-wrap: wrap; justify-content: center; }
