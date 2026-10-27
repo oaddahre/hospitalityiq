@@ -104,6 +104,59 @@
   <p class="lp-hero-sub">Kodo tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:0;display:inline-block;">Get started today →</a>
 
+  <div class="lp-media" id="lpMedia">
+    <div class="lp-frame lp-frame-video" id="lpVideoFrame">
+      <video class="lp-video lp-theme-light" data-theme-for="light" muted loop playsinline preload="none"
+             width="1280" height="800" aria-label="Kodo Benchmarking: a Marrakech riad compared with three luxury hotels (sample data)"
+             data-poster="/static/img/product/video/benchmarking-light-poster.webp?v={{ asset_version('img/product/video/benchmarking-light-poster.webp') }}">
+        <source data-src="/static/img/product/video/benchmarking-light.webm?v={{ asset_version('img/product/video/benchmarking-light.webm') }}" type="video/webm">
+        <source data-src="/static/img/product/video/benchmarking-light.mp4?v={{ asset_version('img/product/video/benchmarking-light.mp4') }}" type="video/mp4">
+      </video>
+      <video class="lp-video lp-theme-dark" data-theme-for="dark" muted loop playsinline preload="none"
+             width="1280" height="800" aria-label="Kodo Benchmarking: a Marrakech riad compared with three luxury hotels (sample data)"
+             data-poster="/static/img/product/video/benchmarking-dark-poster.webp?v={{ asset_version('img/product/video/benchmarking-dark-poster.webp') }}">
+        <source data-src="/static/img/product/video/benchmarking-dark.webm?v={{ asset_version('img/product/video/benchmarking-dark.webm') }}" type="video/webm">
+        <source data-src="/static/img/product/video/benchmarking-dark.mp4?v={{ asset_version('img/product/video/benchmarking-dark.mp4') }}" type="video/mp4">
+      </video>
+    </div>
+    <script>
+    // Poster for the current theme only, set before first paint (the other theme's is never fetched)
+    (function() {
+      var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      var v = document.querySelector('#lpVideoFrame .lp-video[data-theme-for="' + t + '"]');
+      if (v) v.setAttribute('poster', v.getAttribute('data-poster'));
+    })();
+    </script>
+    <div class="lp-shots">
+    <figure class="lp-shot lp-fade">
+      <div class="lp-frame lp-frame-sm">
+        <picture class="lp-theme-light">
+          <source type="image/webp" srcset="/static/img/product/directory-light.webp?v={{ asset_version('img/product/directory-light.webp') }}">
+          <img src="/static/img/product/directory-light.png?v={{ asset_version('img/product/directory-light.png') }}" width="2880" height="1800" alt="Kodo hotel directory with the map open on Marrakech (sample data)" loading="lazy" decoding="async">
+        </picture>
+        <picture class="lp-theme-dark">
+          <source type="image/webp" srcset="/static/img/product/directory-dark.webp?v={{ asset_version('img/product/directory-dark.webp') }}">
+          <img src="/static/img/product/directory-dark.png?v={{ asset_version('img/product/directory-dark.png') }}" width="2880" height="1800" alt="Kodo hotel directory with the map open on Marrakech (sample data)" loading="lazy" decoding="async">
+        </picture>
+      </div>
+      <figcaption><span class="lp-shot-cap pill--blue">Hotel directory and map</span></figcaption>
+    </figure>
+    <figure class="lp-shot lp-fade">
+      <div class="lp-frame lp-frame-sm">
+        <picture class="lp-theme-light">
+          <source type="image/webp" srcset="/static/img/product/analyst-light.webp?v={{ asset_version('img/product/analyst-light.webp') }}">
+          <img src="/static/img/product/analyst-light.png?v={{ asset_version('img/product/analyst-light.png') }}" width="2880" height="1800" alt="Kodo AI Analyst answering a question about ADR in Marrakech (sample data)" loading="lazy" decoding="async">
+        </picture>
+        <picture class="lp-theme-dark">
+          <source type="image/webp" srcset="/static/img/product/analyst-dark.webp?v={{ asset_version('img/product/analyst-dark.webp') }}">
+          <img src="/static/img/product/analyst-dark.png?v={{ asset_version('img/product/analyst-dark.png') }}" width="2880" height="1800" alt="Kodo AI Analyst answering a question about ADR in Marrakech (sample data)" loading="lazy" decoding="async">
+        </picture>
+      </div>
+      <figcaption><span class="lp-shot-cap pill--violet">AI Analyst</span></figcaption>
+    </figure>
+    </div>
+  </div>
+
   <div class="lp-spotlight-wrap" id="lpSpotlightWrap">
 
     <div class="lp-spotlight-stage">
@@ -675,6 +728,82 @@ themeToggle.addEventListener('click', () => {
   KodoTheme.toggle();
   updateToggleState();
 });
+</script>
+
+<script>
+// HERO MEDIA — Benchmarking video and two screenshots
+(function() {
+  const frame = document.getElementById('lpVideoFrame');
+  if (!frame) return;
+  const videos = [...frame.querySelectorAll('.lp-video')];
+  const root = document.documentElement;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = !!(navigator.connection && navigator.connection.saveData);
+  const posterOnly = reduce || saveData;          // never fetch the video, poster only
+  let near = false, visible = false, failed = false;
+
+  const theme = () => root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const current = () => videos.find(v => v.dataset.themeFor === theme());
+
+  function unload(v) {
+    v.pause();
+    if (!v.dataset.loaded) return;
+    v.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
+    v.removeAttribute('src');
+    v.load();                                      // drops the buffered media
+    delete v.dataset.loaded;
+  }
+  function load(v) {
+    if (v.dataset.loaded || posterOnly || failed) return;
+    v.querySelectorAll('source').forEach(s => { s.src = s.dataset.src; });
+    v.dataset.loaded = '1';
+    v.load();
+  }
+  function update() {
+    videos.forEach(v => {
+      if (v === current()) {
+        if (!v.getAttribute('poster')) v.setAttribute('poster', v.dataset.poster);
+        if (near) load(v);
+        if (visible && !document.hidden && v.dataset.loaded && !failed) {
+          const p = v.play(); if (p && p.catch) p.catch(() => {});
+        } else v.pause();
+      } else unload(v);
+    });
+  }
+  // Load failed (both sources or the element): keep the poster, stop trying
+  videos.forEach(v => {
+    const last = v.querySelector('source:last-of-type');
+    const fail = () => { if (!v.dataset.loaded) return; failed = true; frame.classList.add('lp-video-failed'); unload(v); v.setAttribute('poster', v.dataset.poster); };
+    if (last) last.addEventListener('error', fail);
+    v.addEventListener('error', fail);
+  });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => { near = es.some(e => e.isIntersecting); if (near) update(); },
+                             { rootMargin: '400px 0px' }).observe(frame);
+    new IntersectionObserver(es => { visible = es.some(e => e.intersectionRatio >= 0.4); update(); },
+                             { threshold: [0, 0.4, 1] }).observe(frame);
+  } else { near = visible = true; update(); }
+  document.addEventListener('visibilitychange', update);
+  window.addEventListener('kodo:themechange', update);
+})();
+
+// Screenshots: fade up on first scroll into view (static under reduced motion);
+// a failed image leaves the frame's --bg-alt background, no broken-image icon
+(function() {
+  document.querySelectorAll('.lp-frame img').forEach(img => {
+    const fail = () => img.classList.add('lp-img-failed');
+    if (img.complete && img.currentSrc && img.naturalWidth === 0) fail();
+    img.addEventListener('error', fail);
+  });
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const items = document.querySelectorAll('.lp-fade');
+  items.forEach(el => el.classList.add('lp-fade-js'));
+  const obs = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('lp-fade-in'); obs.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  items.forEach(el => obs.observe(el));
+})();
 </script>
 
 <script>
