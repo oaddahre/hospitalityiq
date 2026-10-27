@@ -11,6 +11,7 @@ import pandas as pd
 import anthropic
 import resend
 import json
+import math
 import csv
 import io
 import os
@@ -27,6 +28,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
+from utils import NA, safe_float, safe_int, safe_text, fmt_num
 
 load_dotenv()
 
@@ -959,9 +961,19 @@ def _log_admin_action(action: str, target_email: str = "", detail: str = ""):
     print(f"[ADMIN-ACTION] {datetime.utcnow().isoformat()}Z actor={actor} action={action} target={target_email}{extra}", flush=True)
 
 
+_HOTEL_NUM_COLS = ("keys", "year_opened", "lat", "lng")
+_PERF_NUM_COLS  = ("occupancy", "adr_mad", "revpar_mad", "trevpar_mad", "gop_margin")
+
+
 def load_data():
     hotels = pd.read_csv(os.path.join(DATA_DIR, "hotels.csv"))
     perf   = pd.read_csv(os.path.join(DATA_DIR, "performance.csv"))
+    # Blank or non-numeric cells (e.g. "TBC") become NaN instead of turning
+    # the whole column into text; each calculation then skips what it lacks.
+    for df, cols in ((hotels, _HOTEL_NUM_COLS), (perf, _PERF_NUM_COLS)):
+        for col in cols:
+            if col in df:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
     merged = hotels.merge(perf, left_on="id", right_on="hotel_id", how="left")
     return hotels, perf, merged
 
@@ -1758,7 +1770,7 @@ def api_hotels():
     _, _, merged = load_data()
     cols = [
         "id", "name", "city", "region", "category", "brand", "brand_group",
-        "keys", "year_opened", "status", "lat", "lng", "owner", "data_quality",
+        "keys", "year_opened", "year_opened_verified", "status", "lat", "lng", "owner", "data_quality",
         "period", "occupancy", "adr_mad", "revpar_mad", "trevpar_mad", "gop_margin", "source",
     ]
     # For observer tier, hide financial detail columns (still return them but frontend handles display)
@@ -1834,22 +1846,28 @@ def api_brands():
     merged['_bg'] = merged['brand_group'].apply(_norm_bg)
     merged = merged[merged['_bg'].notna()]
 
-    total_keys = int(merged['keys'].sum())
+    total_keys = safe_int(merged['keys'].sum(), 0)
 
     try:
         pipe_df = pd.read_csv(os.path.join(DATA_DIR, 'pipeline.csv'))
         pipe_df['_bg'] = pipe_df['brand_group'].apply(_norm_bg)
+        pipe_df['keys'] = pd.to_numeric(pipe_df['keys'], errors='coerce')
     except Exception:
         pipe_df = pd.DataFrame(columns=['_bg', 'keys'])
 
     results = []
+    def _wavg(grp, col, weight):
+        """Weighted mean over rows that have both values; 0.0 when none do (shown as N/A)."""
+        v = pd.DataFrame({'x': grp[col], 'w': weight}).dropna()
+        v = v[v['w'] > 0]
+        return float((v['x'] * v['w']).sum() / v['w'].sum()) if len(v) else 0.0
+
     for bg, grp in merged.groupby('_bg'):
-        tk = int(grp['keys'].sum())
-        ok = float((grp['keys'] * grp['occupancy']).sum())
-        avg_occ      = ok / tk if tk else 0.0
-        avg_adr      = float((grp['adr_mad'] * grp['keys'] * grp['occupancy']).sum()) / ok if ok else 0.0
-        w_revpar     = float((grp['revpar_mad'] * grp['keys']).sum()) / tk if tk else 0.0
-        avg_gop      = float((grp['gop_margin'] * grp['keys']).sum()) / tk if tk else 0.0
+        tk = safe_int(grp['keys'].sum(), 0)
+        avg_occ      = _wavg(grp, 'occupancy', grp['keys'])
+        avg_adr      = _wavg(grp, 'adr_mad', grp['keys'] * grp['occupancy'])
+        w_revpar     = _wavg(grp, 'revpar_mad', grp['keys'])
+        avg_gop      = _wavg(grp, 'gop_margin', grp['keys'])
         total_rev_m  = round(float((grp['revpar_mad'] * grp['keys']).sum()) * 365 / 1_000_000, 1)
 
         cities   = sorted(grp['city'].unique().tolist())
@@ -1878,7 +1896,7 @@ def api_brands():
 
         pg = pipe_df[pipe_df['_bg'] == bg]
         pipeline_projects = int(len(pg))
-        pipeline_keys     = int(pg['keys'].sum()) if len(pg) else 0
+        pipeline_keys     = safe_int(pg['keys'].sum(), 0) if len(pg) else 0
 
         results.append({
             'brand_group':               bg,
@@ -1899,7 +1917,7 @@ def api_brands():
             'newest_hotel':              newest,
             'oldest_hotel':              oldest,
             'ownership':                 ownership,
-            'market_share_keys_pct':     round(tk / total_keys * 100, 1),
+            'market_share_keys_pct':     round(tk / total_keys * 100, 1) if total_keys else 0.0,
         })
 
     results.sort(key=lambda x: x['total_keys'], reverse=True)
@@ -1912,12 +1930,18 @@ def api_brands():
 def api_pipeline():
     pipeline_file = os.path.join(DATA_DIR, "pipeline.csv")
     df = pd.read_csv(pipeline_file)
-    df["keys"]              = df["keys"].astype(int)
-    df["expected_opening"]  = df["expected_opening"].astype(int)
-    df["investment_mad"]    = df["investment_mad"].astype(int)
-    df["lat"]               = df["lat"].astype(float)
-    df["lng"]               = df["lng"].astype(float)
-    return jsonify(df.to_dict(orient="records"))
+    # Missing / non-numeric values go out as null (never NaN, which is invalid JSON)
+    int_cols, float_cols = ("keys", "expected_opening", "investment_mad"), ("lat", "lng")
+    records = df.to_dict(orient="records")
+    for r in records:
+        for k, v in r.items():
+            if k in int_cols:
+                r[k] = safe_int(v)
+            elif k in float_cols:
+                r[k] = safe_float(v)
+            elif isinstance(v, float) and not math.isfinite(v):
+                r[k] = None
+    return jsonify(records)
 
 
 OWNERS_FILE = os.path.join(DATA_DIR, "owners.json")
@@ -3064,44 +3088,60 @@ def compute_city_report_data(city: str, period: str) -> dict:
         ch = merged[merged["city"] == city].copy()
         cp = pipeline_df[pipeline_df["city"] == city].copy()
 
+    # Numeric columns hold NaN for blanks / text (load_data does the same for
+    # hotels), so each calculation below uses only the rows that have its value.
+    for col in ("keys", "expected_opening", "investment_mad"):
+        if col in cp:
+            cp[col] = pd.to_numeric(cp[col], errors="coerce")
+
+    hotels_in_city = len(ch)
     ch = ch.dropna(subset=["occupancy", "adr_mad", "revpar_mad"])
 
     # ── market overview ──
     total_hotels = len(ch)
-    total_keys   = int(ch["keys"].sum())
+    total_keys   = safe_int(ch["keys"].sum(), 0)
 
     keys_by_seg = {}
     for seg in SEGMENT_ORDER:
-        k = int(ch[ch["category"] == seg]["keys"].sum())
+        k = safe_int(ch[ch["category"] == seg]["keys"].sum(), 0)
         if k > 0:
             keys_by_seg[seg] = k
 
     brand_stats = []
     for bg, g in ch.groupby("brand_group"):
+        g_keys = safe_int(g["keys"].sum(), 0)
         brand_stats.append({
-            "name": bg, "hotels": len(g), "keys": int(g["keys"].sum()),
-            "market_share": round(int(g["keys"].sum()) / total_keys * 100, 1) if total_keys else 0,
+            "name": bg, "hotels": len(g), "keys": g_keys,
+            "market_share": round(g_keys / total_keys * 100, 1) if total_keys else 0,
         })
     brand_stats.sort(key=lambda x: -x["keys"])
 
     owner_stats = []
     for ow, g in ch.groupby("owner"):
+        g_keys = safe_int(g["keys"].sum(), 0)
         owner_stats.append({
-            "owner": ow, "hotels": len(g), "keys": int(g["keys"].sum()),
-            "market_share": round(int(g["keys"].sum()) / total_keys * 100, 1) if total_keys else 0,
+            "owner": ow, "hotels": len(g), "keys": g_keys,
+            "market_share": round(g_keys / total_keys * 100, 1) if total_keys else 0,
         })
     owner_stats.sort(key=lambda x: -x["keys"])
 
-    avg_yr = round(ch["year_opened"].mean(), 0) if not ch.empty else 0
-    newest = ch.loc[ch["year_opened"].idxmax(), "name"] if not ch.empty else "—"
-    oldest = ch.loc[ch["year_opened"].idxmin(), "name"] if not ch.empty else "—"
+    # Hotels without an opening year are left out of the age figures.
+    dated  = ch.dropna(subset=["year_opened"])
+    avg_yr = safe_int(round(dated["year_opened"].mean())) if not dated.empty else None
+    newest = dated.loc[dated["year_opened"].idxmax(), "name"] if not dated.empty else NA
+    oldest = dated.loc[dated["year_opened"].idxmin(), "name"] if not dated.empty else NA
 
     # ── performance ──
+    def wavg_of(df, col, weight_col="keys"):
+        """Keys-weighted mean over the hotels that have both the value and keys; None if none do."""
+        v = df[[col, weight_col]].dropna()
+        v = v[v[weight_col] > 0]
+        if v.empty:
+            return None
+        return float((v[col] * v[weight_col]).sum() / v[weight_col].sum())
+
     def wavg(col, weight_col="keys"):
-        w = ch[weight_col].fillna(0)
-        if w.sum() == 0:
-            return 0.0
-        return float((ch[col] * w).sum() / w.sum())
+        return wavg_of(ch, col, weight_col)
 
     overall_occ  = wavg("occupancy")
     overall_adr  = wavg("adr_mad")
@@ -3114,42 +3154,46 @@ def compute_city_report_data(city: str, period: str) -> dict:
         sg = ch[ch["category"] == seg]
         if sg.empty:
             continue
-        w = sg["keys"].fillna(0)
-        ws = w.sum()
         def swavg(col):
-            return float((sg[col] * w).sum() / ws) if ws > 0 else 0.0
+            return wavg_of(sg, col)
         s_rev = swavg("revpar_mad")
+        sg_dated = sg["year_opened"].dropna()
         seg_perf.append({
-            "segment": seg, "hotels": len(sg), "keys": int(sg["keys"].sum()),
+            "segment": seg, "hotels": len(sg), "keys": safe_int(sg["keys"].sum(), 0),
             "occupancy": swavg("occupancy"), "adr": swavg("adr_mad"),
             "revpar": s_rev, "gop_margin": swavg("gop_margin"),
             "trevpar": swavg("trevpar_mad"),
-            "revpar_index": round(s_rev / overall_rev * 100, 1) if overall_rev else 100,
+            "revpar_index": round(s_rev / overall_rev * 100, 1) if (s_rev is not None and overall_rev) else None,
+            "avg_year": safe_int(sg_dated.mean()) if not sg_dated.empty else None,
         })
 
     top10 = ch.nlargest(min(10, len(ch)), "revpar_mad")[
         ["name", "category", "keys", "occupancy", "adr_mad", "revpar_mad"]
     ].to_dict(orient="records")
 
-    est_rooms_rev = total_keys * 365 * overall_rev / 1_000_000
-    est_total_rev = total_keys * 365 * overall_trev / 1_000_000
-    est_gop       = est_total_rev * overall_gop
+    est_rooms_rev = total_keys * 365 * overall_rev / 1_000_000 if overall_rev is not None else None
+    est_total_rev = total_keys * 365 * overall_trev / 1_000_000 if overall_trev is not None else None
+    est_gop       = est_total_rev * overall_gop if (est_total_rev is not None and overall_gop is not None) else None
 
     # ── pipeline ──
+    # Missing keys / opening year / investment stay None (shown as n/a) and
+    # are left out of the totals; projects with no opening year sort last.
     pip_projects = []
     for _, r in cp.iterrows():
         pip_projects.append({
-            "name": r.get("name",""), "brand": r.get("brand",""),
-            "category": r.get("category",""), "keys": int(r.get("keys",0)),
-            "opening": int(r.get("expected_opening",0)),
-            "status": r.get("status",""), "investment_mad": int(r.get("investment_mad",0)),
+            "name": safe_text(r.get("name"), ""), "brand": safe_text(r.get("brand"), ""),
+            "category": safe_text(r.get("category"), ""), "keys": safe_int(r.get("keys")),
+            "opening": safe_int(r.get("expected_opening")),
+            "status": safe_text(r.get("status"), ""), "investment_mad": safe_int(r.get("investment_mad")),
         })
-    pip_projects.sort(key=lambda x: x["opening"])
+    pip_projects.sort(key=lambda x: (x["opening"] is None, x["opening"] or 0))
 
-    pip_total_keys = sum(p["keys"] for p in pip_projects)
-    pip_total_inv  = sum(p["investment_mad"] for p in pip_projects) / 1_000_000_000
+    pip_total_keys = sum(p["keys"] for p in pip_projects if p["keys"] is not None)
+    pip_total_inv  = sum(p["investment_mad"] for p in pip_projects if p["investment_mad"] is not None) / 1_000_000_000
     pip_by_year: dict = {}
     for p in pip_projects:
+        if p["opening"] is None or p["keys"] is None:
+            continue
         yr = str(p["opening"])
         pip_by_year[yr] = pip_by_year.get(yr, 0) + p["keys"]
 
@@ -3159,6 +3203,8 @@ def compute_city_report_data(city: str, period: str) -> dict:
     # ── asset value ranges (revenue-multiple model) ──
     asset_rows = []
     for sp in seg_perf:
+        if sp["adr"] is None or sp["occupancy"] is None:
+            continue  # no keys-weighted rate/occupancy for this segment
         keys_seg = sp["keys"]
         adr_seg  = sp["adr"]
         occ_seg  = sp["occupancy"]
@@ -3206,8 +3252,14 @@ def compute_city_report_data(city: str, period: str) -> dict:
         "market_overview": {
             "total_hotels": total_hotels, "total_keys": total_keys,
             "keys_by_segment": keys_by_seg, "brand_groups": brand_stats[:8],
-            "ownership": owner_stats[:6], "avg_year_opened": int(avg_yr),
+            "ownership": owner_stats[:6], "avg_year_opened": avg_yr,
             "newest_hotel": newest, "oldest_hotel": oldest,
+        },
+        "excluded": {
+            # Hotels left out of a calculation because the value it needs is missing
+            "no_performance": hotels_in_city - total_hotels,
+            "no_opening_year": int(ch["year_opened"].isna().sum()),
+            "no_keys": int(ch["keys"].isna().sum()),
         },
         "performance": {
             "overall": {
@@ -3216,9 +3268,9 @@ def compute_city_report_data(city: str, period: str) -> dict:
             },
             "by_segment": seg_perf,
             "top_10_revpar": top10,
-            "est_rooms_revenue_mad_m": round(est_rooms_rev, 1),
-            "est_total_revenue_mad_m": round(est_total_rev, 1),
-            "est_gop_mad_m": round(est_gop, 1),
+            "est_rooms_revenue_mad_m": round(est_rooms_rev, 1) if est_rooms_rev is not None else None,
+            "est_total_revenue_mad_m": round(est_total_rev, 1) if est_total_rev is not None else None,
+            "est_gop_mad_m": round(est_gop, 1) if est_gop is not None else None,
         },
         "pipeline": {
             "projects": pip_projects, "total_projects": len(pip_projects),
@@ -3268,9 +3320,9 @@ def generate_ai_narrative(report_data: dict) -> dict:
 
 Market: {city} Hotel Market | Period: {period}
 Total Hotels: {mo['total_hotels']} | Total Keys: {mo['total_keys']:,}
-Avg Occupancy: {perf['occupancy']*100:.1f}% | Avg ADR: MAD {perf['adr']:,.0f} | Avg RevPAR: MAD {perf['revpar']:,.0f}
+Avg Occupancy: {fmt_num(perf['occupancy'], '.1f', 100, suffix='%')} | Avg ADR: {fmt_num(perf['adr'], prefix='MAD ')} | Avg RevPAR: {fmt_num(perf['revpar'], prefix='MAD ')}
 Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} keys, Supply Risk: {pip['supply_risk']}
-Est. Total Revenue: MAD {report_data['performance']['est_total_revenue_mad_m']:.0f}M
+Est. Total Revenue: {fmt_num(report_data['performance']['est_total_revenue_mad_m'], '.0f', prefix='MAD ', suffix='M')}
 
 Generate a JSON response with exactly these keys:
 - "executive_summary": 140-160 word paragraph, overall market health and key trends
@@ -3336,8 +3388,8 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.kpi_boxes([
         ("Total Hotels",  str(mo["total_hotels"])),
         ("Total Keys",    f"{mo['total_keys']:,}"),
-        ("Avg Occupancy", f"{o['occupancy']*100:.0f}%"),
-        ("Avg RevPAR",    f"MAD {o['revpar']:,.0f}"),
+        ("Avg Occupancy", fmt_num(o['occupancy'], '.0f', 100, suffix='%')),
+        ("Avg RevPAR",    fmt_num(o['revpar'], prefix='MAD ')),
     ])
     pdf.set_xy(_LM, 272)
     pdf.set_font("Helvetica", "", 7)
@@ -3355,9 +3407,9 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.ln(1)
     pdf.kpi_row("Total Hotels", str(mo["total_hotels"]))
     pdf.kpi_row("Total Keys", f"{mo['total_keys']:,}")
-    pdf.kpi_row("Weighted Avg Occupancy", f"{o['occupancy']*100:.1f}%")
-    pdf.kpi_row("Weighted Avg ADR", f"MAD {o['adr']:,.0f}")
-    pdf.kpi_row("Weighted Avg RevPAR", f"MAD {o['revpar']:,.0f}")
+    pdf.kpi_row("Weighted Avg Occupancy", fmt_num(o['occupancy'], '.1f', 100, suffix='%'))
+    pdf.kpi_row("Weighted Avg ADR", fmt_num(o['adr'], prefix='MAD '))
+    pdf.kpi_row("Weighted Avg RevPAR", fmt_num(o['revpar'], prefix='MAD '))
     pdf.ln(4)
     pdf.rating_box(rating)
 
@@ -3374,11 +3426,8 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     total_keys_mo = mo["total_keys"] or 1
     for i, sp in enumerate(perf["by_segment"]):
         seg_keys = sp["keys"]
-        seg_yr   = ""
-        ch_seg = [h for h in data["directory"] if h.get("category") == sp["segment"]]
-        if ch_seg:
-            yrs = [h.get("year_opened", 0) for h in ch_seg if h.get("year_opened")]
-            seg_yr = str(int(sum(yrs) / len(yrs))) if yrs else ""
+        # Average over the segment's hotels that have an opening year
+        seg_yr   = str(sp["avg_year"]) if sp.get("avg_year") is not None else NA
         pdf.table_row([
             sp["segment"], sp["hotels"], f"{seg_keys:,}",
             f"{seg_keys/total_keys_mo*100:.1f}%", seg_yr,
@@ -3415,10 +3464,10 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     for i, sp in enumerate(perf["by_segment"]):
         pdf.table_row([
             sp["segment"], sp["hotels"],
-            f"{sp['occupancy']*100:.1f}%",
-            f"{sp['adr']:,.0f}",
-            f"{sp['revpar']:,.0f}",
-            f"{sp['revpar_index']:.0f}",
+            fmt_num(sp['occupancy'], '.1f', 100, suffix='%'),
+            fmt_num(sp['adr']),
+            fmt_num(sp['revpar']),
+            fmt_num(sp['revpar_index'], '.0f'),
         ], cw, fill=(i % 2 == 1))
     pdf.ln(3)
 
@@ -3431,19 +3480,19 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.table_header(cols, cw)
     for i, h in enumerate(perf["top_10_revpar"]):
         pdf.table_row([
-            str(h.get("name", ""))[:38],
-            h.get("category", ""),
-            f"{int(h.get('keys', 0)):,}",
-            f"{h.get('occupancy', 0)*100:.1f}%",
-            f"{h.get('adr_mad', 0):,.0f}",
-            f"{h.get('revpar_mad', 0):,.0f}",
+            safe_text(h.get("name"))[:38],
+            safe_text(h.get("category")),
+            fmt_num(h.get('keys')),
+            fmt_num(h.get('occupancy'), '.1f', 100, suffix='%'),
+            fmt_num(h.get('adr_mad')),
+            fmt_num(h.get('revpar_mad')),
         ], cw, fill=(i % 2 == 1))
     pdf.ln(3)
 
     pdf.kpi_boxes([
-        ("Estimated RevPAR", f"MAD {o['revpar']:,.0f}"),
-        ("Market Avg Occ",   f"{o['occupancy']*100:.1f}%"),
-        ("Market Avg ADR",   f"MAD {o['adr']:,.0f}"),
+        ("Estimated RevPAR", fmt_num(o['revpar'], prefix='MAD ')),
+        ("Market Avg Occ",   fmt_num(o['occupancy'], '.1f', 100, suffix='%')),
+        ("Market Avg ADR",   fmt_num(o['adr'], prefix='MAD ')),
     ])
 
     # ─── S4: DEMAND DRIVERS ──────────────────────────────────────────────────
@@ -3485,14 +3534,14 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
         cw   = [51, 30, 30, 15, 17, 23, 14]
         pdf.table_header(cols, cw)
         for i, p in enumerate(pip["projects"]):
-            inv_m = f"{p['investment_mad']//1_000_000:,}" if p.get("investment_mad") else "-"
+            inv_m = f"{p['investment_mad']//1_000_000:,}" if p.get("investment_mad") else NA
             pdf.table_row([
-                str(p.get("name", ""))[:30],
-                str(p.get("brand", ""))[:18],
-                p.get("category", ""),
-                f"{p['keys']:,}",
-                str(p.get("opening", "")),
-                p.get("status", ""),
+                safe_text(p.get("name"))[:30],
+                safe_text(p.get("brand"))[:18],
+                safe_text(p.get("category")),
+                fmt_num(p.get("keys")),
+                str(p["opening"]) if p.get("opening") is not None else NA,
+                safe_text(p.get("status")),
                 inv_m,
             ], cw, fill=(i % 2 == 1))
         pdf.ln(3)
@@ -3611,16 +3660,16 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.set_auto_page_break(auto=True, margin=_BM + 8)
     pdf.table_header(cols, cw)
     for i, h in enumerate(data["directory"]):
-        occ = h.get("occupancy") or 0
+        yr = safe_int(h.get("year_opened"))
         pdf.table_row([
-            str(h.get("name", ""))[:33],
-            str(h.get("brand_group", ""))[:20],
-            h.get("category", ""),
-            f"{int(h.get('keys', 0)):,}",
-            str(int(h.get("year_opened", 0))) if h.get("year_opened") else "-",
-            f"{occ*100:.0f}%",
-            f"{h.get('adr_mad', 0):,.0f}",
-            f"{h.get('revpar_mad', 0):,.0f}",
+            safe_text(h.get("name"))[:33],
+            safe_text(h.get("brand_group"))[:20],
+            safe_text(h.get("category")),
+            fmt_num(h.get('keys')),
+            str(yr) if yr else NA,
+            fmt_num(h.get("occupancy"), '.0f', 100, suffix='%'),
+            fmt_num(h.get('adr_mad')),
+            fmt_num(h.get('revpar_mad')),
         ], cw, fill=(i % 2 == 1))
 
     # ─── BACK PAGE ───────────────────────────────────────────────────────────
@@ -3695,9 +3744,11 @@ def api_reports_generate():
         narrative   = generate_ai_narrative(report_data)
 
         _, _, merged = load_data()
-        national_revpar = float(merged["revpar_mad"].mean()) if not merged.empty else 1
+        national_revpar = safe_float(merged["revpar_mad"].mean())
         city_revpar     = report_data["performance"]["overall"]["revpar"]
-        if city_revpar >= national_revpar * 1.10:
+        if city_revpar is None or not national_revpar:
+            report_data["market_rating"] = "NEUTRAL"
+        elif city_revpar >= national_revpar * 1.10:
             report_data["market_rating"] = "OUTPERFORM"
         elif city_revpar <= national_revpar * 0.90:
             report_data["market_rating"] = "UNDERPERFORM"
@@ -3719,7 +3770,8 @@ def api_reports_generate():
 # ─── Valuation PDF export ─────────────────────────────────────────────────────
 
 def _fmt_mad(val: float) -> str:
-    val = float(val)
+    val = safe_float(val)
+    if val is None: return NA
     if abs(val) >= 1e9: return f"MAD {val/1e9:.1f}B"
     if abs(val) >= 1e6: return f"MAD {val/1e6:.1f}M"
     if abs(val) >= 1e3: return f"MAD {val/1e3:.0f}K"
@@ -3727,7 +3779,7 @@ def _fmt_mad(val: float) -> str:
 
 
 def _fmt_pct(val: float) -> str:
-    return f"{float(val):.1f}%"
+    return fmt_num(val, ".1f", suffix="%")
 
 
 def _valuation_market_rating(city: str) -> str:
@@ -3751,17 +3803,19 @@ def _valuation_market_rating(city: str) -> str:
 def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
                             sensitivity: dict, mode: str) -> bytes:
     """Build the 6-page Hotel Valuation Report PDF using fpdf2 (white pages)."""
-    name    = property_.get("name") or "Unnamed Property"
-    city    = property_.get("city") or "—"
-    segment = property_.get("segment") or "—"
-    keys    = int(property_.get("keys") or inputs.get("keys") or 0)
+    # Every figure arrives as browser JSON, where a JS NaN/Infinity becomes
+    # null: missing numbers print as n/a and are left out of the chart.
+    name    = safe_text(property_.get("name"), "Unnamed Property")
+    city    = safe_text(property_.get("city"), "—")
+    segment = safe_text(property_.get("segment"), "—")
+    keys    = safe_int(property_.get("keys")) or safe_int(inputs.get("keys")) or 0
 
     pdf = KodoPDF(city, "Valuation Report")
     c   = pdf.c
     generated_date = datetime.utcnow().strftime("%d %B %Y")
 
-    cash_flows   = results.get("cashFlows", [])
-    hold_period  = int(inputs.get("hold_period") or len(cash_flows) or 10)
+    cash_flows   = [cf for cf in (results.get("cashFlows") or []) if isinstance(cf, dict)]
+    hold_period  = safe_int(inputs.get("hold_period")) or len(cash_flows) or 10
 
     # ─── PAGE 1 — COVER ─────────────────────────────────────────────────
     pdf.add_page()
@@ -3813,7 +3867,7 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
         ("Indicated Value", _fmt_mad(results.get("reconciled", 0))),
         ("Value / Key",     _fmt_mad(results.get("value_per_key", 0))),
         ("Project IRR",     _fmt_pct(results.get("irr", 0))),
-        ("Equity Multiple", f"{results.get('equity_multiple', 0):.2f}x"),
+        ("Equity Multiple", fmt_num(results.get("equity_multiple"), ".2f", suffix="x")),
     ], large=True)
     pdf.ln(4)
 
@@ -3835,7 +3889,7 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
         ("Revenue Growth",          _fmt_pct(inputs.get("growth_rate", 0)) + "/yr"),
         ("Discount Rate (WACC)",    _fmt_pct(inputs.get("discount_rate", 0))),
         ("Terminal Cap Rate",       _fmt_pct(inputs.get("terminal_cap_rate", 0))),
-        ("Purchase Price",          _fmt_mad((inputs.get("purchase_price") or 0) * 1e6) if inputs.get("purchase_price") else "Derived from DCF"),
+        ("Purchase Price",          _fmt_mad(safe_float(inputs.get("purchase_price")) * 1e6) if safe_float(inputs.get("purchase_price")) else "Derived from DCF"),
     ]
     for label, val in assumptions:
         pdf.kpi_row(label, str(val))
@@ -3850,42 +3904,41 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.table_header(cf_cols, cf_widths)
     for i, cf in enumerate(cash_flows):
         row = [
-            f"Yr {cf.get('yr', i+1)}",
-            f"{cf.get('occ', 0):.1f}",
-            f"{cf.get('adr', 0):,.0f}",
-            f"{cf.get('revpar', 0):,.0f}",
-            f"{cf.get('total_rev', 0):,.0f}",
-            f"{cf.get('rooms_rev', 0):,.0f}",
-            f"{cf.get('fb_rev', 0):,.0f}",
-            f"{cf.get('gop', 0):,.0f}",
-            f"{cf.get('gop_margin', 0):.1f}",
-            f"{cf.get('noi', 0):,.0f}",
-            f"{cf.get('fcf', 0):,.0f}",
-            f"{cf.get('pv_fcf', 0):,.0f}",
+            f"Yr {safe_int(cf.get('yr'), i + 1)}",
+            fmt_num(cf.get('occ'), ".1f"),
+            fmt_num(cf.get('adr')),
+            fmt_num(cf.get('revpar')),
+            fmt_num(cf.get('total_rev')),
+            fmt_num(cf.get('rooms_rev')),
+            fmt_num(cf.get('fb_rev')),
+            fmt_num(cf.get('gop')),
+            fmt_num(cf.get('gop_margin'), ".1f"),
+            fmt_num(cf.get('noi')),
+            fmt_num(cf.get('fcf')),
+            fmt_num(cf.get('pv_fcf')),
         ]
         pdf.table_row(row, cf_widths, fill=(i % 2 == 1))
 
     terminal_row = ["Terminal Value", "", "", "", "", "", "", "", "", "",
-                     f"{results.get('terminal_value', 0):,.0f}",
-                     f"{results.get('pv_terminal', 0):,.0f}"]
+                     fmt_num(results.get('terminal_value')),
+                     fmt_num(results.get('pv_terminal'))]
     pdf.table_row(terminal_row, cf_widths, fill=False, bold=True)
 
-    npv_total = results.get("total_pv_fcf", 0) + results.get("pv_terminal", 0)
-    total_row = ["NPV Total"] + [""] * 10 + [f"{npv_total:,.0f}"]
+    pv_fcf, pv_term = safe_float(results.get("total_pv_fcf")), safe_float(results.get("pv_terminal"))
+    npv_total = pv_fcf + pv_term if (pv_fcf is not None and pv_term is not None) else None
+    total_row = ["NPV Total"] + [""] * 10 + [fmt_num(npv_total)]
     pdf.table_row(total_row, cf_widths, fill=True, bold=True)
 
     pdf.ln(6)
-    if cash_flows:
-        max_fcf = max(cf.get("fcf", 0) for cf in cash_flows) or 1
+    fcf_bars = [{"yr": f"Year {safe_int(cf.get('yr'), i + 1)}", "fcf": round(safe_float(cf.get("fcf")))}
+                for i, cf in enumerate(cash_flows) if safe_float(cf.get("fcf")) is not None]
+    if fcf_bars:
+        max_fcf = max(b["fcf"] for b in fcf_bars) or 1
         pdf.set_font("Helvetica", "B", 8)
         pdf.set_text_color(*c['muted'])
         pdf.cell(0, 5, "FREE CASH FLOW TREND", ln=1)
         pdf.ln(1)
-        pdf.bar_chart(
-            [{"yr": f"Year {cf.get('yr', i+1)}", "fcf": round(cf.get("fcf", 0))}
-             for i, cf in enumerate(cash_flows)],
-            "yr", "fcf", max_fcf, bar_h=4.5, bar_max_w=100,
-        )
+        pdf.bar_chart(fcf_bars, "yr", "fcf", max_fcf, bar_h=4.5, bar_max_w=100)
 
     # ─── PAGE 4 — VALUATION SUMMARY ──────────────────────────────────────
     pdf.add_page()
@@ -3895,11 +3948,12 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.set_text_color(*c['accent'])
     pdf.cell(0, 6, "INCOME CAPITALIZATION", ln=1)
     stab_idx = min(2, len(cash_flows) - 1) if cash_flows else 0
-    stab_noi = cash_flows[stab_idx]["noi"] if cash_flows else 0
+    stab_noi = cash_flows[stab_idx].get("noi") if cash_flows else None
     pdf.kpi_row("Stabilized NOI", _fmt_mad(stab_noi))
     pdf.kpi_row("Cap Rate", _fmt_pct(inputs.get("terminal_cap_rate", 0)))
     pdf.kpi_row("Indicated Value", _fmt_mad(results.get("income_cap_value", 0)))
-    pdf.kpi_row("Value per Key", _fmt_mad(results.get("income_cap_value", 0) / keys) if keys else "—")
+    income_cap = safe_float(results.get("income_cap_value"))
+    pdf.kpi_row("Value per Key", _fmt_mad(income_cap / keys) if (keys and income_cap is not None) else NA)
     pdf.ln(4)
 
     pdf.set_font("Helvetica", "B", 9)
@@ -3909,8 +3963,8 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.kpi_row("PV Terminal Value", _fmt_mad(results.get("pv_terminal", 0)))
     pdf.kpi_row("Total DCF Value", _fmt_mad(results.get("dcf_value", 0)))
     pdf.kpi_row("IRR", _fmt_pct(results.get("irr", 0)))
-    pdf.kpi_row("Equity Multiple", f"{results.get('equity_multiple', 0):.2f}x")
-    pdf.kpi_row("Payback Period", f"{results.get('payback', 0):.1f} years")
+    pdf.kpi_row("Equity Multiple", fmt_num(results.get("equity_multiple"), ".2f", suffix="x"))
+    pdf.kpi_row("Payback Period", fmt_num(results.get("payback"), ".1f", suffix=" years"))
     pdf.ln(4)
 
     pdf.set_font("Helvetica", "B", 11)
@@ -3921,8 +3975,8 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.cell(0, 9, f"{_fmt_mad(results.get('range_low', 0))} \x97 {_fmt_mad(results.get('range_high', 0))}", ln=1)
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(*c['muted'])
-    eur_k = (results.get("value_per_key", 0) / 10.8 / 1000)
-    pdf.cell(0, 6, f"{_fmt_mad(results.get('value_per_key', 0))} / key  \xb7  EUR {eur_k:.0f}K equivalent", ln=1)
+    eur_k = fmt_num(results.get("value_per_key"), ".0f", 1 / 10.8 / 1000, prefix="EUR ", suffix="K")
+    pdf.cell(0, 6, f"{_fmt_mad(results.get('value_per_key'))} / key  \xb7  {eur_k} equivalent", ln=1)
     pdf.set_font("Helvetica", "", 8)
     pdf.cell(0, 5, "Weighting: Income Capitalization 40%  \xb7  DCF 60%", ln=1)
 
@@ -3930,13 +3984,16 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.add_page()
     pdf.section_title("04", "Sensitivity Analysis")
 
-    occs = sensitivity.get("occs", [])
-    caps = sensitivity.get("caps", [])
-    irr_table = sensitivity.get("irrTable", [])
-    val_table = sensitivity.get("valTable", [])
+    occs = sensitivity.get("occs") or []
+    caps = sensitivity.get("caps") or []
+    irr_table = sensitivity.get("irrTable") or []
+    val_table = sensitivity.get("valTable") or []
 
-    # Same bands as the platform (valSensClass): green > 18%, blue 10-18%, red < 10%
+    # Same bands as the platform (valSensClass): green > 18%, blue 10-18%, red < 10%;
+    # a cell with no value is grey.
     def sens_color(irr_val):
+        irr_val = safe_float(irr_val)
+        if irr_val is None: return c['fam']['grey']
         if irr_val > 18: return c['fam']['green']
         if irr_val >= 10: return c['fam']['blue']
         return c['fam']['red']
@@ -3954,17 +4011,18 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
         pdf.set_text_color(*c['hdr_text'])
         pdf.cell(16, row_h, "Occ\\Cap", border=0, fill=True, align="C")
         for cap in caps:
-            pdf.cell(col_w, row_h, f"{cap:.1f}%", border=0, fill=True, align="C")
+            pdf.cell(col_w, row_h, fmt_num(cap, ".1f", suffix="%"), border=0, fill=True, align="C")
         pdf.ln()
         for i, occ in enumerate(occs):
             pdf.set_x(x0)
             pdf.set_font("Helvetica", "B", 6)
             pdf.set_fill_color(*c['hdr_bg'])
             pdf.set_text_color(*c['hdr_text'])
-            pdf.cell(16, row_h, f"{occ}%", border=0, fill=True, align="C")
+            pdf.cell(16, row_h, fmt_num(occ, "g", suffix="%"), border=0, fill=True, align="C")
             for j, cap in enumerate(caps):
-                val = matrix[i][j] if i < len(matrix) and j < len(matrix[i]) else 0
-                _, fam_text, fam_tint = color_matrix[i][j]
+                val = matrix[i][j] if i < len(matrix) and j < len(matrix[i]) else None
+                _, fam_text, fam_tint = (color_matrix[i][j] if i < len(color_matrix) and j < len(color_matrix[i])
+                                         else c['fam']['grey'])
                 pdf.set_fill_color(*fam_tint)
                 pdf.set_text_color(*fam_text)
                 pdf.set_font("Helvetica", "", 6)
@@ -3974,9 +4032,9 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
 
     color_grid = [[sens_color(v) for v in row] for row in irr_table]
     draw_sensitivity_grid("IRR SENSITIVITY \xb7 OCC VS CAP RATE", irr_table,
-                           lambda v: f"{v:.1f}%", color_grid)
+                           lambda v: fmt_num(v, ".1f", suffix="%"), color_grid)
     draw_sensitivity_grid("VALUE SENSITIVITY \xb7 MAD M", val_table,
-                           lambda v: f"{v:.1f}M", color_grid)
+                           lambda v: fmt_num(v, ".1f", suffix="M"), color_grid)
 
     # ─── PAGE 6 — BACK PAGE ───────────────────────────────────────────────
     pdf._back_page = True
@@ -4041,12 +4099,12 @@ def api_valuation_export():
     sensitivity = body.get("sensitivity") or {}
     mode        = body.get("mode") or "quick"
 
-    if not results.get("cashFlows"):
+    if not isinstance(results, dict) or not results.get("cashFlows"):
         return jsonify({"error": "Missing valuation results — run a valuation before exporting"}), 400
 
     try:
         pdf_bytes = generate_valuation_pdf(property_, inputs, results, sensitivity, mode)
-        safe_name = re.sub(r'[^a-zA-Z0-9]+', '_', property_.get("name") or "Valuation")
+        safe_name = re.sub(r'[^a-zA-Z0-9]+', '_', safe_text(property_.get("name"), "Valuation"))
         filename  = f"Kodo_Valuation_{safe_name}.pdf"
         buf = io.BytesIO(pdf_bytes)
         buf.seek(0)

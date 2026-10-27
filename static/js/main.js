@@ -3684,14 +3684,18 @@ function getCompDaily() {
   })).sort((a, b) => a.date.localeCompare(b.date));
 }
 
+// Each metric averages only the records that have it (missing values are
+// skipped, not counted as zero); a metric with no values at all gives 0.
 function aggDaily(records) {
-  if (!records.length) return { occupancy: 0, adr: 0, revpar: 0, rooms_revenue: 0 };
-  const n = records.length;
+  const avg = key => {
+    const vals = records.map(r => r[key]).filter(v => typeof v === 'number' && Number.isFinite(v));
+    return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
+  };
   return {
-    occupancy:     records.reduce((s, r) => s + r.occupancy, 0) / n,
-    adr:           records.reduce((s, r) => s + r.adr, 0) / n,
-    revpar:        records.reduce((s, r) => s + r.revpar, 0) / n,
-    rooms_revenue: records.reduce((s, r) => s + r.rooms_revenue, 0) / n,
+    occupancy:     avg('occupancy'),
+    adr:           avg('adr'),
+    revpar:        avg('revpar'),
+    rooms_revenue: avg('rooms_revenue'),
   };
 }
 
@@ -4998,15 +5002,15 @@ function exportHotels() {
   const date = new Date().toISOString().split('T')[0];
   const cityLabel = hotelsState.city !== 'all' ? hotelsState.city.replace(/[^a-zA-Z0-9]/g, '_') : 'All';
   const data = filtered.map(h => ({
-    'Hotel Name':       h.name,
-    'City':             h.city,
-    'Segment':          h.category,
-    'Brand Group':      h.brand_group,
-    'Keys':             h.keys,
+    'Hotel Name':       h.name || 'N/A',
+    'City':             h.city || 'N/A',
+    'Segment':          h.category || 'N/A',
+    'Brand Group':      h.brand_group || 'N/A',
+    'Keys':             h.keys ?? 'N/A',
     'Occupancy %':      h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
     'ADR (MAD)':        h.adr_mad || 'N/A',
     'RevPAR (MAD)':     h.revpar_mad || 'N/A',
-    'Year Established': h.year_opened_verified === 'verified' ? h.year_opened : 'N/A',
+    'Year Established': h.year_opened_verified === 'verified' && h.year_opened != null ? h.year_opened : 'N/A',
     'Owner':            h.owner || 'Undisclosed',
     'Data Quality':     h.data_quality || 'Estimated',
   }));
@@ -5027,7 +5031,7 @@ function exportPipeline() {
     'Brand':              p.brand,
     'Brand Group':        p.brand_group,
     'Keys':               p.keys || 'TBC',
-    'Expected Opening':   p.expected_opening,
+    'Expected Opening':   p.expected_opening ?? 'TBC',
     'Status':             p.status,
     'Investment (MAD M)': p.investment_mad ? Math.round(p.investment_mad / 1e6) : 'N/A',
   }));
