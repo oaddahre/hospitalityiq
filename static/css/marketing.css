@@ -2783,53 +2783,80 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 .lp-landing .lp-cta-signin { display: block; }
 
 /* ═══════════════════════════════════════
-   LANDING — Clients bento grid
+   LANDING — Product screenshots (hero showcase, role switcher)
+   Each frame holds a light and a dark <picture>; only the one matching
+   <html data-theme> (set before first paint) is displayed, so the other
+   is never fetched and the theme toggle swaps them instantly.
 ═══════════════════════════════════════ */
-.lp-bento {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 56px;
-  text-align: left; /* tile copy is intentionally left-aligned */
+.lp-shot {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  border: 1px solid var(--lp-border);
+  overflow: hidden;
+  background: var(--lp-bg-alt);
+  box-shadow: 0 1px 2px rgba(31,30,28,.06), 0 12px 40px rgba(31,30,28,.08);
 }
-.lp-bento-a { grid-column: span 7; grid-row: span 2; }
-.lp-bento-b,
-.lp-bento-c { grid-column: span 5; }
-.lp-bento-d,
-.lp-bento-e,
-.lp-bento-f { grid-column: span 4; }
+:root[data-theme="dark"] .lp-shot { box-shadow: none; }
+.lp-shot-pic,
+.lp-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.lp-shot img { object-fit: cover; }
+:root[data-theme="dark"] .lp-shot .lp-shot-light,
+:root:not([data-theme="dark"]) .lp-shot .lp-shot-dark { display: none; }
+/* A role with a light-only image (the report) shows it in both themes */
+:root[data-theme="dark"] .lp-shot .lp-shot-light:only-child { display: block; }
+/* Failed load: keep the --bg-alt frame, hide the broken-image icon and alt text */
+.lp-shot img.lp-shot-failed { visibility: hidden; }
 
-.lp-bento-cell { display: flex; min-width: 0; }
-.lp-bento-tile {
+/* Hero showcase */
+.lp-landing .lp-shot-hero {
+  max-width: 1100px;
+  margin: 56px auto 0;
+}
+.lp-shot-js { opacity: 0; transform: translateY(16px); }
+.lp-shot-js.lp-shot-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 500ms ease, transform 500ms cubic-bezier(0.22,1,0.36,1);
+}
+/* Phones: the hero's 20px padding less 4px gives the 16px page gutter */
+@media (max-width: 768px) {
+  .lp-landing .lp-shot-hero { margin-left: -4px; margin-right: -4px; }
+}
+
+/* ═══════════════════════════════════════
+   LANDING — Clients role switcher
+═══════════════════════════════════════ */
+.lp-roles { margin-top: 56px; }
+.lp-roles-tab,
+.lp-roles-copy {
   --acc: var(--lp-text-3);
   --acc-text: var(--lp-text-2);
   --acc-tint: var(--lp-neutral-tint);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
-  padding: 32px;
-  border-radius: 24px;
-  border: 1px solid var(--lp-border-mid);
-  background: var(--lp-surface);
-  transition: border-color 200ms ease, transform 200ms ease;
 }
-/* Role pills are small text, so they use the -sm text variants (4.5:1) */
-.lp-bento-tile.lp-acc-blue   { --acc: var(--lp-acc-blue);   --acc-text: var(--lp-acc-blue-text-sm);   --acc-tint: var(--lp-acc-blue-tint); }
-.lp-bento-tile.lp-acc-green  { --acc: var(--lp-acc-green);  --acc-text: var(--lp-acc-green-text-sm);  --acc-tint: var(--lp-acc-green-tint); }
-.lp-bento-tile.lp-acc-orange { --acc: var(--lp-acc-orange); --acc-text: var(--lp-acc-orange-text-sm); --acc-tint: var(--lp-acc-orange-tint); }
-.lp-bento-tile.lp-acc-violet { --acc: var(--lp-acc-violet); --acc-text: var(--lp-acc-violet-text-sm); --acc-tint: var(--lp-acc-violet-tint); }
-.lp-bento-tile.lp-acc-sky    { --acc: var(--lp-acc-sky);    --acc-text: var(--lp-acc-sky-text-sm);    --acc-tint: var(--lp-acc-sky-tint); }
-.lp-bento-tile:hover,
-.lp-bento-tile:focus-visible {
-  border-color: color-mix(in srgb, var(--acc) 50%, transparent);
-  transform: translateY(-2px);
-}
-.lp-bento-tile:focus { outline: none; }
+/* Accent pairs are small text, so they use the -sm text variants (4.5:1) */
+.lp-roles .lp-acc-blue   { --acc: var(--lp-acc-blue);   --acc-text: var(--lp-acc-blue-text-sm);   --acc-tint: var(--lp-acc-blue-tint); }
+.lp-roles .lp-acc-green  { --acc: var(--lp-acc-green);  --acc-text: var(--lp-acc-green-text-sm);  --acc-tint: var(--lp-acc-green-tint); }
+.lp-roles .lp-acc-orange { --acc: var(--lp-acc-orange); --acc-text: var(--lp-acc-orange-text-sm); --acc-tint: var(--lp-acc-orange-tint); }
+.lp-roles .lp-acc-violet { --acc: var(--lp-acc-violet); --acc-text: var(--lp-acc-violet-text-sm); --acc-tint: var(--lp-acc-violet-tint); }
+.lp-roles .lp-acc-sky    { --acc: var(--lp-acc-sky);    --acc-text: var(--lp-acc-sky-text-sm);    --acc-tint: var(--lp-acc-sky-tint); }
 
-/* Role pill */
-.lp-landing .lp-bento-role {
+/* Role tabs: pills; the selected one takes its role colour */
+/* The five pills don't fit one row, so they're capped to break 3 + 2 */
+.lp-roles-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.lp-landing .lp-roles-tab {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
@@ -2838,141 +2865,121 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   border: none;
   outline: none;
   box-shadow: none;
-  background: var(--acc-tint);
-  color: var(--acc-text);
+  background: var(--lp-neutral-tint);
+  color: var(--lp-text-2);
+  font-family: 'Sweet Sans Pro', sans-serif;
   font-size: var(--lp-fs-eyebrow);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   line-height: 1.4;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 250ms ease, color 250ms ease;
 }
-.lp-landing .lp-bento-role-dot {
+.lp-roles-tab-dot,
+.lp-roles-name-dot {
   flex: none;
   width: 0.35em;
   height: 0.35em;
   border-radius: 50%;
-  background: var(--acc);
+  background: var(--lp-text-3);
+  transition: background-color 250ms ease;
 }
+.lp-landing .lp-roles-tab:hover { color: var(--lp-text); }
+.lp-landing .lp-roles-tab[aria-selected="true"] { background: var(--acc-tint); color: var(--acc-text); }
+.lp-roles-tab[aria-selected="true"] .lp-roles-tab-dot { background: var(--acc); }
 
-/* Promise */
-.lp-landing .lp-bento-promise {
+/* Panel: copy on the left (40%), screenshot on the right (60%) */
+.lp-roles-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 48px;
+  align-items: center;
+  margin-top: 40px;
+  text-align: left;
+}
+/* Every role's copy shares one grid cell, so the column is as tall as the
+   longest one and switching roles never shifts the page */
+.lp-roles-copies {
+  display: grid;
+  grid-template-rows: auto auto;
+  row-gap: 32px;
+}
+.lp-roles-copy { grid-area: 1 / 1; }
+.lp-roles-copy {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 250ms ease, visibility 0s linear 250ms;
+}
+.lp-roles-copy.is-on {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 250ms ease, visibility 0s;
+}
+.lp-roles-copy.is-in { transition: none; }
+.lp-landing .lp-roles-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: var(--lp-fs-eyebrow);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  color: var(--acc-text);
+  margin: 0;
+}
+.lp-roles-name .lp-roles-name-dot { background: var(--acc); }
+.lp-landing .lp-roles-promise {
   font-size: var(--lp-fs-card-title);
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: -0.01em;
   color: var(--lp-text);
-  margin: 20px 0 28px;
+  margin: 16px 0 0;
   max-width: 30ch;
 }
-
-/* Visuals: anchored to the bottom of the tile */
-.lp-bento-viz {
-  margin-top: auto;
-  width: 100%;
-  height: 84px;
-}
-.lp-viz-chart { flex: 1; min-height: 180px; height: auto; }
-.lp-viz-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.lp-viz-line-muted,
-.lp-viz-line-acc {
-  fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-.lp-viz-line-muted { stroke: var(--lp-viz-line); }
-.lp-viz-line-acc { stroke: var(--acc); }
-.lp-viz-area { fill: url(#lpBentoChartFill); }
-.lp-viz-chart stop { stop-color: var(--acc); }
-
-.lp-viz-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  max-width: 220px;
-}
-.lp-viz-bars span {
-  flex: 1;
-  height: var(--h);
-  border-radius: 6px;
-  background: var(--lp-viz-track);
-  transform-origin: bottom;
-}
-.lp-viz-rank {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 12px;
-}
-.lp-viz-rank span {
-  display: block;
-  width: var(--w);
-  height: 12px;
-  border-radius: 999px;
-  background: var(--lp-viz-track);
-  transform-origin: left;
-}
-.lp-viz-ledger {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 18px;
-}
-.lp-viz-row { display: flex; align-items: center; gap: 12px; }
-.lp-viz-row i {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--acc);
-}
-.lp-viz-row b {
-  display: block;
-  width: var(--w);
+/* Auto-advance progress, under the copy */
+.lp-roles-progress {
+  grid-area: 2 / 1;
   height: 2px;
+  max-width: 30ch;
+  background: var(--lp-border);
   border-radius: 2px;
-  background: var(--lp-viz-track);
-  transform-origin: left;
+  overflow: hidden;
 }
-.lp-viz-dots {
-  display: grid;
-  grid-template-columns: repeat(3, 14px);
-  grid-auto-rows: 14px;
-  gap: 14px;
-  align-content: end;
+.lp-roles-progress-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--lp-action);
 }
-.lp-viz-dots span {
-  border-radius: 50%;
-  background: var(--lp-viz-track);
-}
-.lp-viz-bars .lp-viz-on,
-.lp-viz-rank .lp-viz-on,
-.lp-viz-dots .lp-viz-on { background: var(--acc); }
 
-/* Accent visual replays once on hover / keyboard focus */
-@keyframes lpVizDraw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-@keyframes lpVizGrowY { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-@keyframes lpVizGrowX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes lpVizPop { from { transform: scale(0); } to { transform: scale(1); } }
-.lp-bento-tile:hover .lp-viz-draw,
-.lp-bento-tile:focus-visible .lp-viz-draw { animation: lpVizDraw 600ms cubic-bezier(0.22,1,0.36,1); }
-.lp-bento-tile:hover .lp-viz-bars .lp-viz-on,
-.lp-bento-tile:focus-visible .lp-viz-bars .lp-viz-on { animation: lpVizGrowY 600ms cubic-bezier(0.22,1,0.36,1); }
-.lp-bento-tile:hover .lp-viz-rank .lp-viz-on,
-.lp-bento-tile:focus-visible .lp-viz-rank .lp-viz-on,
-.lp-bento-tile:hover .lp-viz-row b,
-.lp-bento-tile:focus-visible .lp-viz-row b { animation: lpVizGrowX 600ms cubic-bezier(0.22,1,0.36,1); }
-.lp-bento-tile:hover .lp-viz-dots .lp-viz-on,
-.lp-bento-tile:focus-visible .lp-viz-dots .lp-viz-on { animation: lpVizPop 600ms cubic-bezier(0.34,1.4,0.64,1); }
+/* Screenshot frame: every role's image is stacked; only the current one
+   (plus the outgoing one during the 250ms cross-fade) is displayed, so
+   undisplayed images are never fetched until preloaded */
+.lp-landing .lp-shot-role { border-radius: 12px; }
+.lp-roles-shot {
+  position: absolute;
+  inset: 0;
+  display: none;
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+.lp-roles-shot.is-on,
+.lp-roles-shot.is-out,
+.lp-roles-shot.is-in { display: block; }
+.lp-roles-shot.is-on { opacity: 1; }
+.lp-roles-shot.is-in { transition: none; }
 
-/* "Also used by" tile */
-.lp-bento-tile-also {
-  align-items: center;
-  justify-content: center;
+/* "Also used by" */
+.lp-roles-also {
+  margin-top: 64px;
   text-align: center;
 }
-.lp-landing .lp-bento-also-title {
+.lp-landing .lp-roles-also-title {
   font-size: var(--lp-fs-card-title);
   font-weight: 500;
   line-height: 1.3;
@@ -2980,14 +2987,14 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   color: var(--lp-text);
   margin-bottom: 20px;
 }
-.lp-bento-cloud {
+.lp-roles-cloud {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
 }
-.lp-landing .lp-bento-cloud li {
+.lp-landing .lp-roles-cloud li {
   font-size: var(--lp-fs-body);
   line-height: 1.3;
   color: var(--lp-text-muted);
@@ -2997,48 +3004,24 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   font-weight: 400;
 }
 
-/* First scroll into view: staggered fade-up (JS adds the classes) */
-.lp-bento-js .lp-bento-cell {
-  opacity: 0;
-  transform: translateY(16px);
-}
-.lp-bento-js.lp-bento-in .lp-bento-cell {
-  opacity: 1;
-  transform: none;
-  transition: opacity 500ms ease, transform 500ms cubic-bezier(0.22,1,0.36,1);
-  transition-delay: calc(var(--i) * 60ms);
-}
-
-@media (max-width: 1024px) {
-  .lp-bento { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .lp-bento-a { grid-column: span 6; grid-row: auto; }
-  .lp-bento-b,
-  .lp-bento-c,
-  .lp-bento-d,
-  .lp-bento-e { grid-column: span 3; }
-  .lp-bento-f { grid-column: span 6; }
-  .lp-viz-chart { min-height: 160px; }
+/* Phones and small tablets: the screenshot sits below the copy, full width */
+@media (max-width: 900px) {
+  .lp-roles-panel { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .lp-roles-copies { row-gap: 24px; }
 }
 @media (max-width: 700px) {
-  .lp-bento { grid-template-columns: minmax(0, 1fr); margin-top: 40px; }
-  .lp-bento-a,
-  .lp-bento-b,
-  .lp-bento-c,
-  .lp-bento-d,
-  .lp-bento-e,
-  .lp-bento-f { grid-column: 1 / -1; }
-  .lp-bento-tile { padding: 24px; }
-  .lp-bento-viz,
-  .lp-viz-chart { height: 90px; min-height: 0; flex: none; }
+  .lp-roles { margin-top: 40px; }
+  .lp-roles-tabs { gap: 8px; }
+  .lp-landing .lp-roles-tab { padding: 6px 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lp-bento-tile,
-  .lp-bento-js.lp-bento-in .lp-bento-cell { transition: none; }
-  .lp-bento-tile:hover,
-  .lp-bento-tile:focus-visible { transform: none; }
-  .lp-bento-tile .lp-bento-viz *,
-  .lp-bento-tile:hover .lp-bento-viz *,
-  .lp-bento-tile:focus-visible .lp-bento-viz * { animation: none !important; }
+  .lp-shot-js { opacity: 1; transform: none; }
+  .lp-landing .lp-roles-tab,
+  .lp-roles-tab-dot,
+  .lp-roles-name-dot,
+  .lp-roles-copy,
+  .lp-roles-copy.is-on,
+  .lp-roles-shot { transition: none; }
 }
 
 /* ═══════════════════════════════════════
@@ -3090,10 +3073,8 @@ body.lp-body {
   --lp-acc-sky-text-sm: var(--cat-5-text);
   --lp-ck: var(--positive);   /* pricing check marks */
 
-  /* Derived neutrals for illustrations */
+  /* Derived neutral for pills */
   --lp-neutral-tint: color-mix(in srgb, var(--lp-text-3) 14%, transparent);
-  --lp-viz-track: color-mix(in srgb, var(--lp-text-3) 30%, transparent);
-  --lp-viz-line: color-mix(in srgb, var(--lp-text-3) 75%, transparent);
 
   /* Legacy --lp-* tokens → palette */
   --lp-nav-bg: var(--lp-nav-glass);

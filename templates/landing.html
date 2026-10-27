@@ -1,3 +1,18 @@
+{#- Product screenshot: one <picture> per theme (webp + png fallback); CSS shows
+    only the one matching <html data-theme>, so the hidden one is never fetched. -#}
+{%- macro shot_pic(name, theme, alt, priority=None) -%}
+<picture class="lp-shot-pic lp-shot-{{ theme }}">
+  <source type="image/webp" srcset="/static/img/product/{{ name }}-{{ theme }}.webp?v={{ asset_version('img/product/' ~ name ~ '-' ~ theme ~ '.webp') }}">
+  <img src="/static/img/product/{{ name }}-{{ theme }}.png?v={{ asset_version('img/product/' ~ name ~ '-' ~ theme ~ '.png') }}"
+       width="2880" height="1800" alt="{{ alt }}" loading="lazy" decoding="async"{% if priority %} fetchpriority="{{ priority }}"{% endif %}>
+</picture>
+{%- endmacro -%}
+{%- macro shot(name, alt, priority=None, light_only=False) -%}
+{{ shot_pic(name, 'light', alt, priority) }}
+{%- if not light_only %}
+{{ shot_pic(name, 'dark', alt, priority) }}
+{%- endif %}
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,6 +118,10 @@
   </h1>
   <p class="lp-hero-sub">Kodo tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:0;display:inline-block;">Get started today →</a>
+
+  <figure class="lp-shot lp-shot-hero" id="lpHeroShot">
+    {{ shot('benchmarking', 'Kodo Benchmarking: a Marrakech riad compared with three luxury hotels (sample data)', 'low') }}
+  </figure>
 
   <div class="lp-spotlight-wrap" id="lpSpotlightWrap">
 
@@ -391,87 +410,68 @@
     <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Who uses Kodo?</h2>
     <p class="lp-section-sub lp-reveal lp-reveal-d2">From the revenue desk to the boardroom, Kodo gives every decision the same market view.</p>
 
-    <div class="lp-bento" id="lpBento">
-
-      <div class="lp-bento-cell lp-bento-a" style="--i:0">
-        <div class="lp-bento-tile lp-acc-blue" tabindex="0">
-          <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Revenue managers</span>
-          <p class="lp-bento-promise">Know where you stand against the market before you set today's rates.</p>
-          <div class="lp-bento-viz lp-viz-chart" aria-hidden="true">
-            <svg viewBox="0 0 400 160" preserveAspectRatio="none" focusable="false">
-              <defs>
-                <linearGradient id="lpBentoChartFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-opacity="0.28"/>
-                  <stop offset="1" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              <path class="lp-viz-line-muted" d="M0,112 C50,104 90,86 140,92 S230,74 280,80 S360,62 400,66"/>
-              <g class="lp-viz-draw">
-                <path class="lp-viz-area" d="M0,132 C50,122 100,100 150,96 S240,56 290,52 S370,32 400,28 L400,160 L0,160 Z"/>
-                <path class="lp-viz-line-acc" d="M0,132 C50,122 100,100 150,96 S240,56 290,52 S370,32 400,28"/>
-              </g>
-            </svg>
+    <div class="lp-roles" id="lpRoles">
+      <div class="lp-roles-tabs" role="tablist" aria-label="Who uses Kodo">
+        <button type="button" class="lp-roles-tab lp-acc-blue" role="tab" id="lpRoleTab0" aria-controls="lpRolePanel" aria-selected="true" tabindex="0" data-role="0"><span class="lp-roles-tab-dot"></span>Revenue managers</button>
+        <button type="button" class="lp-roles-tab lp-acc-green" role="tab" id="lpRoleTab1" aria-controls="lpRolePanel" aria-selected="false" tabindex="-1" data-role="1"><span class="lp-roles-tab-dot"></span>Independent owners</button>
+        <button type="button" class="lp-roles-tab lp-acc-orange" role="tab" id="lpRoleTab2" aria-controls="lpRolePanel" aria-selected="false" tabindex="-1" data-role="2"><span class="lp-roles-tab-dot"></span>Investors</button>
+        <button type="button" class="lp-roles-tab lp-acc-violet" role="tab" id="lpRoleTab3" aria-controls="lpRolePanel" aria-selected="false" tabindex="-1" data-role="3"><span class="lp-roles-tab-dot"></span>Lenders and advisors</button>
+        <button type="button" class="lp-roles-tab lp-acc-sky" role="tab" id="lpRoleTab4" aria-controls="lpRolePanel" aria-selected="false" tabindex="-1" data-role="4"><span class="lp-roles-tab-dot"></span>Management companies</button>
+      </div>
+      <div class="lp-roles-panel" id="lpRolePanel" role="tabpanel" aria-labelledby="lpRoleTab0">
+        <div class="lp-roles-copies">
+          <div class="lp-roles-copy lp-acc-blue is-on" data-role="0">
+            <h3 class="lp-roles-name"><span class="lp-roles-name-dot"></span>Revenue managers</h3>
+            <p class="lp-roles-promise">Know where you stand against the market before you set today's rates.</p>
+          </div>
+          <div class="lp-roles-copy lp-acc-green" data-role="1" aria-hidden="true">
+            <h3 class="lp-roles-name"><span class="lp-roles-name-dot"></span>Independent owners</h3>
+            <p class="lp-roles-promise">Get the benchmarks a chain gives its hotels, without being in a chain.</p>
+          </div>
+          <div class="lp-roles-copy lp-acc-orange" data-role="2" aria-hidden="true">
+            <h3 class="lp-roles-name"><span class="lp-roles-name-dot"></span>Investors</h3>
+            <p class="lp-roles-promise">Size a destination before you commit capital.</p>
+          </div>
+          <div class="lp-roles-copy lp-acc-violet" data-role="3" aria-hidden="true">
+            <h3 class="lp-roles-name"><span class="lp-roles-name-dot"></span>Lenders and advisors</h3>
+            <p class="lp-roles-promise">Back your analysis with sourced Moroccan market data.</p>
+          </div>
+          <div class="lp-roles-copy lp-acc-sky" data-role="4" aria-hidden="true">
+            <h3 class="lp-roles-name"><span class="lp-roles-name-dot"></span>Management companies</h3>
+            <p class="lp-roles-promise">Track every property in your portfolio against its market.</p>
+          </div>
+          <div class="lp-roles-progress" aria-hidden="true"><span class="lp-roles-progress-bar"></span></div>
+        </div>
+        <div class="lp-roles-media">
+          <div class="lp-shot lp-shot-role">
+            <div class="lp-roles-shot is-on" data-role="0">
+              {{ shot('benchmarking', 'Kodo Benchmarking: a Marrakech riad compared with three luxury hotels (sample data)', light_only=False) }}
+            </div>
+            <div class="lp-roles-shot" data-role="1">
+              {{ shot('analyst', 'Kodo AI Analyst explaining why luxury ADR in Marrakech fell 9.9% in May (sample data)', light_only=False) }}
+            </div>
+            <div class="lp-roles-shot" data-role="2">
+              {{ shot('directory', 'Kodo hotel map of Morocco with the list of 57 Marrakech hotels open', light_only=False) }}
+            </div>
+            <div class="lp-roles-shot" data-role="3">
+              {{ shot('report', 'First page of a Kodo market report for Marrakech, Q3 2026', light_only=True) }}
+            </div>
+            <div class="lp-roles-shot" data-role="4">
+              {{ shot('benchmarking', 'Kodo Benchmarking: a Marrakech riad compared with three luxury hotels (sample data)', light_only=False) }}
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="lp-bento-cell lp-bento-b" style="--i:1">
-        <div class="lp-bento-tile lp-acc-green" tabindex="0">
-          <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Independent owners</span>
-          <p class="lp-bento-promise">Get the benchmarks a chain gives its hotels, without being in a chain.</p>
-          <div class="lp-bento-viz lp-viz-bars" aria-hidden="true">
-            <span style="--h:46%"></span><span style="--h:72%"></span><span class="lp-viz-on" style="--h:100%"></span><span style="--h:58%"></span>
-          </div>
-        </div>
+      <div class="lp-roles-also">
+        <h3 class="lp-roles-also-title">Also used by</h3>
+        <ul class="lp-roles-cloud">
+          <li>Asset managers</li>
+          <li>Consultants and valuers</li>
+          <li>Tourism boards</li>
+          <li>Developers</li>
+          <li>Researchers and students</li>
+        </ul>
       </div>
-
-      <div class="lp-bento-cell lp-bento-c" style="--i:2">
-        <div class="lp-bento-tile lp-acc-orange" tabindex="0">
-          <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Investors</span>
-          <p class="lp-bento-promise">Size a destination before you commit capital.</p>
-          <div class="lp-bento-viz lp-viz-rank" aria-hidden="true">
-            <span class="lp-viz-on" style="--w:92%"></span><span style="--w:66%"></span><span style="--w:42%"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="lp-bento-cell lp-bento-d" style="--i:3">
-        <div class="lp-bento-tile lp-acc-violet" tabindex="0">
-          <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Lenders and advisors</span>
-          <p class="lp-bento-promise">Back your analysis with sourced Moroccan market data.</p>
-          <div class="lp-bento-viz lp-viz-ledger" aria-hidden="true">
-            <span class="lp-viz-row"><i></i><b style="--w:100%"></b></span>
-            <span class="lp-viz-row"><i></i><b style="--w:78%"></b></span>
-            <span class="lp-viz-row"><i></i><b style="--w:88%"></b></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="lp-bento-cell lp-bento-e" style="--i:4">
-        <div class="lp-bento-tile lp-acc-sky" tabindex="0">
-          <span class="lp-bento-role"><span class="lp-bento-role-dot"></span>Management companies</span>
-          <p class="lp-bento-promise">Track every property in your portfolio against its market.</p>
-          <div class="lp-bento-viz lp-viz-dots" aria-hidden="true">
-            <span class="lp-viz-on"></span><span></span><span></span>
-            <span></span><span class="lp-viz-on"></span><span class="lp-viz-on"></span>
-            <span></span><span></span><span class="lp-viz-on"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="lp-bento-cell lp-bento-f" style="--i:5">
-        <div class="lp-bento-tile lp-bento-tile-also" tabindex="0">
-          <h3 class="lp-bento-also-title">Also used by</h3>
-          <ul class="lp-bento-cloud">
-            <li>Asset managers</li>
-            <li>Consultants and valuers</li>
-            <li>Tourism boards</li>
-            <li>Developers</li>
-            <li>Researchers and students</li>
-          </ul>
-        </div>
-      </div>
-
     </div>
 
   </div>
@@ -678,18 +678,127 @@ themeToggle.addEventListener('click', () => {
 </script>
 
 <script>
-// CLIENTS BENTO — staggered fade-up on first scroll into view
+// PRODUCT SCREENSHOTS — a failed image leaves the frame's --bg-alt background, no broken-image icon
 (function() {
-  const grid = document.getElementById('lpBento');
-  if (!grid || !('IntersectionObserver' in window)) return;
+  const fail = img => img.classList.add('lp-shot-failed');
+  document.querySelectorAll('.lp-shot img').forEach(img => {
+    if (img.complete && img.naturalWidth === 0 && img.currentSrc) fail(img);
+    img.addEventListener('error', () => fail(img));
+  });
+})();
+
+// HERO SHOWCASE — fade up on first scroll into view (static under reduced motion)
+(function() {
+  const fig = document.getElementById('lpHeroShot');
+  if (!fig || !('IntersectionObserver' in window)) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  grid.classList.add('lp-bento-js');
+  fig.classList.add('lp-shot-js');
   const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { grid.classList.add('lp-bento-in'); obs.disconnect(); }
-    });
+    entries.forEach(e => { if (e.isIntersecting) { fig.classList.add('lp-shot-in'); obs.disconnect(); } });
   }, { threshold: 0.15 });
-  obs.observe(grid);
+  obs.observe(fig);
+})();
+</script>
+
+<script>
+// ROLE SWITCHER — tabs with auto-advance; copy and screenshot cross-fade (250ms)
+(function() {
+  const root = document.getElementById('lpRoles');
+  if (!root) return;
+  const tabs   = [...root.querySelectorAll('.lp-roles-tab')];
+  const copies = [...root.querySelectorAll('.lp-roles-copy')];
+  const shots  = [...root.querySelectorAll('.lp-roles-shot')];
+  const panel  = document.getElementById('lpRolePanel');
+  const bar    = root.querySelector('.lp-roles-progress-bar');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FADE = 250, DWELL = 6000;
+  let cur = 0, timer = null, stopped = reduce, inView = false, hover = false;
+
+  // Load a role's screenshot for the current theme (the other theme stays unfetched)
+  function preload(i) {
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const img = shots[i].querySelector('.lp-shot-' + theme + ' img') || shots[i].querySelector('img');
+    if (img && img.loading !== 'eager') img.loading = 'eager';
+  }
+
+  function swap(list, i) {
+    list.forEach((el, j) => {
+      if (j === i) {
+        el.classList.remove('is-out');
+        el.classList.add('is-in');
+        void el.offsetWidth;            // start the fade from opacity 0
+        el.classList.add('is-on');
+        el.classList.remove('is-in');
+      } else if (el.classList.contains('is-on')) {
+        el.classList.remove('is-on');
+        el.classList.add('is-out');
+        setTimeout(() => el.classList.remove('is-out'), reduce ? 0 : FADE);
+      }
+    });
+  }
+
+  function show(i, focus) {
+    if (i === cur) return;
+    tabs.forEach((t, j) => {
+      t.setAttribute('aria-selected', j === i ? 'true' : 'false');
+      t.tabIndex = j === i ? 0 : -1;
+    });
+    copies.forEach((c, j) => { if (j === i) c.removeAttribute('aria-hidden'); else c.setAttribute('aria-hidden', 'true'); });
+    panel.setAttribute('aria-labelledby', tabs[i].id);
+    preload(i);
+    swap(copies, i);
+    swap(shots, i);
+    cur = i;
+    preload((i + 1) % shots.length);
+    if (focus) tabs[i].focus();
+  }
+
+  function restartBar() {
+    if (!bar) return;
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    if (stopped) return;
+    void bar.offsetWidth;
+    bar.style.transition = `width ${DWELL}ms linear`;
+    bar.style.width = '100%';
+  }
+  function schedule() {
+    clearTimeout(timer);
+    if (stopped || !inView || hover) { if (bar) { bar.style.transition = 'none'; bar.style.width = '0%'; } return; }
+    restartBar();
+    timer = setTimeout(() => { show((cur + 1) % tabs.length); schedule(); }, DWELL);
+  }
+  function stop() { stopped = true; clearTimeout(timer); restartBar(); }
+
+  tabs.forEach((t, i) => t.addEventListener('click', () => { stop(); show(i); }));
+  root.querySelector('.lp-roles-tabs').addEventListener('keydown', e => {
+    const k = e.key;
+    let n = null;
+    if (k === 'ArrowRight' || k === 'ArrowDown') n = (cur + 1) % tabs.length;
+    else if (k === 'ArrowLeft' || k === 'ArrowUp') n = (cur - 1 + tabs.length) % tabs.length;
+    else if (k === 'Home') n = 0;
+    else if (k === 'End') n = tabs.length - 1;
+    if (n === null) return;
+    e.preventDefault(); stop(); show(n, true);
+  });
+  // Pause while the visitor is reading or using the switcher
+  root.addEventListener('mouseenter', () => { hover = true; schedule(); });
+  root.addEventListener('mouseleave', () => { hover = false; schedule(); });
+  root.addEventListener('focusin', () => stop());
+
+  if (!('IntersectionObserver' in window)) return;
+  // Approaching the viewport: fetch the current and next role's screenshots
+  const near = new IntersectionObserver(entries => {
+    if (entries.some(e => e.isIntersecting)) { preload(cur); preload((cur + 1) % shots.length); near.disconnect(); }
+  }, { rootMargin: '600px 0px' });
+  near.observe(root);
+  // Auto-advance only while the switcher is on screen
+  const vis = new IntersectionObserver(entries => {
+    entries.forEach(e => { inView = e.isIntersecting; schedule(); });
+  }, { threshold: 0.35 });
+  vis.observe(root);
+  // A theme change keeps the next screenshot ready in the new theme too
+  window.addEventListener('kodo:themechange', () => { preload(cur); preload((cur + 1) % shots.length); });
 })();
 </script>
 
