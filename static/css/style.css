@@ -464,6 +464,34 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 .nav-logout:hover { color: var(--text); background: var(--surface-hover); }
 
+/* ─── Nav fit below 1560px ───────────────────────────
+   At its full spacing the nav needs ~1553px. Narrower windows first get
+   tighter spacing, then the least-used links move into the hamburger
+   menu (whose slide-in panel lists every screen), so the bar always stays
+   on one line with nothing clipped. Wider windows are unchanged. */
+@media (min-width: 768px) and (max-width: 1559px) {
+  .navbar { padding: 0 16px; gap: 16px; }
+  .navbar-links .nav-link { padding: 6px 8px; white-space: nowrap; }
+  .navbar-meta { gap: 8px; }
+}
+@media (min-width: 768px) and (max-width: 1439px) {
+  .navbar-meta .mobile-menu-btn { display: flex; }
+  .navbar-links .nav-link[data-screen="news"],
+  .navbar-links .nav-link[data-screen="tourism"] { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1339px) {
+  .navbar-links .nav-link[data-screen="owners"],
+  .navbar-links .nav-link[data-screen="brands"] { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1179px) {
+  .navbar-links .nav-link[data-screen="pipeline"],
+  .navbar-links .nav-link[data-screen="reports"],
+  .navbar .tier-badge { display: none !important; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .navbar-links { display: none; }
+}
+
 /* ─── Layout ─────────────────────────────────────── */
 .app-body {
   display: flex;
