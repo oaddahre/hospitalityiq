@@ -169,9 +169,9 @@
 
 /* ═══ Brand logo ════════════════════════════════════════════════════
    --nav-logo-h: wordmark height in every top nav (landing and marketing
-   pages, platform, admin) and in the mobile menu panels. Width follows
-   from the image's aspect ratio. Footer and auth-page logos keep their
-   own sizes.
+   pages, platform, admin), the mobile menu panels and the marketing
+   footer (.lp-footer-logo-img). Width follows from the image's aspect
+   ratio. Auth-page logos keep their own sizes.
 
    Every page renders both wordmarks (.logo-light: blue + black, for light
    backgrounds; .logo-dark: blue + white). Only the one for the current

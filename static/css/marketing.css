@@ -1899,10 +1899,15 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 .lp-footer-logo-wrap {
   display: flex;
   align-items: center;
+  min-height: 24px;   /* footer keeps its height with the smaller logo */
+}
+/* Row layout: keep the old logo box width so the centred links don't move */
+@media (min-width: 769px) {
+  .lp-footer-logo-wrap { min-width: calc(24px * 600 / 131); }
 }
 
 .lp-footer-logo-img {
-  height: 24px;
+  height: var(--nav-logo-h);   /* same as the top-bar logo */
   width: auto;
   display: block;
 }
