@@ -4175,6 +4175,9 @@ def api_rates():
     filtered.sort(key=lambda r: r.get('stay_date', ''))
 
     # If no scraped data, fall back to estimated rates from performance.csv
+    # (the hotel's annual ADR estimate) for every day the calendar shows.
+    # Offsets 0-31 cover the browser's 30-day window from any timezone.
+    estimated_only = not filtered and bool(hotel_id)
     if not filtered and hotel_id:
         try:
             hotels_df, perf_df, merged = load_data()
@@ -4182,7 +4185,7 @@ def api_rates():
             if not h_row.empty:
                 h = h_row.iloc[0]
                 adr = float(h.get('adr_mad', 0) or 0)
-                for offset in [1, 7, 14, 21, 30]:
+                for offset in range(0, 32):
                     stay = (today + timedelta(days=offset)).strftime('%Y-%m-%d')
                     filtered.append({
                         'hotel_id': hotel_id,
@@ -4207,7 +4210,8 @@ def api_rates():
         src = r.get('source', 'unknown')
         source_counts[src] = source_counts.get(src, 0) + 1
 
-    last_scraped = max((r.get('scrape_date', '') for r in filtered), default=None)
+    # Estimates are not a scrape: don't report a "last updated" date for them
+    last_scraped = None if estimated_only else max((r.get('scrape_date', '') for r in filtered), default=None)
 
     return jsonify({
         'rates': filtered,
@@ -4381,48 +4385,17 @@ def api_occupancy_hotel(hotel_id):
         rows = _read_occupancy_csv()
         hotel_rows = [r for r in rows if r.get('hotel_id') == str(hotel_id)]
 
-        if not hotel_rows:
-            # Fall back to live estimation if no pre-computed data
-            if not SCRAPER_MODULE_OK or OccupancyModel is None:
-                return jsonify({'error': 'Occupancy model not available'}), 503
-            hotels_df, perf_df, merged = load_data()
-            h_row = merged[merged['id'].astype(str) == str(hotel_id)]
-            if h_row.empty:
-                return jsonify({'error': 'Hotel not found'}), 404
-            h          = h_row.iloc[0].to_dict()
-            model      = OccupancyModel()
-            today      = datetime.utcnow()
-            estimates  = []
-            for offset in range(1, 31):
-                stay_dt  = today + timedelta(days=offset)
-                stay_str = stay_dt.strftime('%Y-%m-%d')
-                scraped_bar, rooms_left = model.get_scraped_data_for_date(str(hotel_id), stay_str)
-                baseline_adr = float(h.get('adr_mad', 0) or 0)
-                occ, breakdown = estimate_occupancy(
-                    h, stay_dt,
-                    scraped_bar=scraped_bar,
-                    rooms_left=rooms_left,
-                    baseline_adr=baseline_adr,
-                )
-                adr_used     = scraped_bar or baseline_adr
-                est_revpar   = round(adr_used * occ, 0) if adr_used else None
-                estimates.append({
-                    'date':                stay_str,
-                    'estimated_occupancy': round(occ * 100, 1),
-                    'scraped_bar':         round(scraped_bar, 0) if scraped_bar else None,
-                    'estimated_revpar':    est_revpar,
-                    'confidence':          breakdown['confidence'],
-                    'breakdown':           breakdown,
-                })
-            hotel_name  = h.get('name', '')
-            model_run   = today.strftime('%Y-%m-%d')
-        else:
-            hotel_rows.sort(key=lambda r: r.get('date', ''))
-            hotel_name = hotel_rows[0].get('hotel_name', '') if hotel_rows else ''
-            model_run  = hotel_rows[0].get('model_run_date', '') if hotel_rows else ''
-            estimates  = []
-            for r in hotel_rows:
-                estimates.append({
+        # The calendar shows the next 30 days. Offsets 0-31 cover that
+        # window from any browser timezone; days already in the past are
+        # dropped so they don't skew the 30-day averages.
+        today  = datetime.utcnow()
+        window = [(today + timedelta(days=o)).strftime('%Y-%m-%d') for o in range(0, 32)]
+        avg_window = set(window[1:31])
+
+        stored = {}
+        for r in hotel_rows:
+            if r.get('date') in window:
+                stored[r['date']] = {
                     'date':                r.get('date'),
                     'estimated_occupancy': float(r.get('estimated_occupancy', 0)),
                     'scraped_bar':         float(r['scraped_bar']) if r.get('scraped_bar') else None,
@@ -4436,14 +4409,58 @@ def api_occupancy_hotel(hotel_id):
                         'availability_adjustment': float(r.get('avail_adj', 0)),
                         'event_adjustment':        float(r.get('event_adj', 0)),
                     },
-                })
+                }
+        hotel_name = hotel_rows[0].get('hotel_name', '') if hotel_rows else ''
+        model_run  = max((r.get('model_run_date', '') for r in hotel_rows), default='')
 
-        occs   = [e['estimated_occupancy'] for e in estimates]
-        revs   = [e['estimated_revpar'] for e in estimates if e.get('estimated_revpar')]
+        # Days the stored model run doesn't cover (no run yet for this
+        # hotel, or the last run is older than 30 days ahead) are estimated
+        # live with the same model.
+        missing = [d for d in window if d not in stored]
+        if missing:
+            if not SCRAPER_MODULE_OK or OccupancyModel is None:
+                if not stored:
+                    return jsonify({'error': 'Occupancy model not available'}), 503
+            else:
+                hotels_df, perf_df, merged = load_data()
+                h_row = merged[merged['id'].astype(str) == str(hotel_id)]
+                if h_row.empty:
+                    if not stored:
+                        return jsonify({'error': 'Hotel not found'}), 404
+                else:
+                    h            = h_row.iloc[0].to_dict()
+                    model        = OccupancyModel()
+                    baseline_adr = float(h.get('adr_mad', 0) or 0)
+                    for stay_str in missing:
+                        stay_dt = datetime.strptime(stay_str, '%Y-%m-%d')
+                        scraped_bar, rooms_left = model.get_scraped_data_for_date(str(hotel_id), stay_str)
+                        occ, breakdown = estimate_occupancy(
+                            h, stay_dt,
+                            scraped_bar=scraped_bar,
+                            rooms_left=rooms_left,
+                            baseline_adr=baseline_adr,
+                        )
+                        adr_used = scraped_bar or baseline_adr
+                        stored[stay_str] = {
+                            'date':                stay_str,
+                            'estimated_occupancy': round(occ * 100, 1),
+                            'scraped_bar':         round(scraped_bar, 0) if scraped_bar else None,
+                            'estimated_revpar':    round(adr_used * occ, 0) if adr_used else None,
+                            'confidence':          breakdown['confidence'],
+                            'breakdown':           breakdown,
+                        }
+                    hotel_name = hotel_name or h.get('name', '')
+                    model_run  = today.strftime('%Y-%m-%d')
+
+        estimates = [stored[d] for d in window if d in stored]
+        averaged  = [e for e in estimates if e['date'] in avg_window]
+
+        occs   = [e['estimated_occupancy'] for e in averaged]
+        revs   = [e['estimated_revpar'] for e in averaged if e.get('estimated_revpar')]
         avg_occ   = round(sum(occs) / len(occs), 1) if occs else None
         avg_revpar = round(sum(revs) / len(revs), 0) if revs else None
         conf_counts = {'high': 0, 'medium': 0, 'low': 0}
-        for e in estimates:
+        for e in averaged:
             conf_counts[e.get('confidence', 'low')] = conf_counts.get(e.get('confidence', 'low'), 0) + 1
 
         return jsonify({

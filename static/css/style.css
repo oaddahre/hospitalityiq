@@ -2308,6 +2308,12 @@ body.light .nav-logout  { color: var(--text-2); }
 .fin-range-sub { font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; color: var(--text-muted); line-height: 1.4; }
 .fin-range-value { font-family: 'Sweet Sans Pro', sans-serif; font-size: 13px; font-weight: 400; color: var(--text); text-align: right; white-space: nowrap; flex-shrink: 0; }
 .fin-disclaimer { background: var(--surface); border-left: 2px solid var(--accent); padding: 8px 12px; margin: 0 20px 16px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+@media (max-width: 767px) {
+  /* Phones: badge wraps under the title, value goes under its label */
+  #screen-hotel .table-card-header { flex-wrap: wrap; gap: 8px; }
+  .fin-range-row { flex-direction: column; gap: 6px; }
+  .fin-range-value { text-align: left; white-space: normal; }
+}
 
 /* ── Rate source badge ── */
 .rate-source-badge {

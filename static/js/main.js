@@ -1037,7 +1037,7 @@ function expandBrandCities(el) {
 const OWNER_CONTEXT = {
   'Risma':        'Accor Morocco listed subsidiary (Bourse de Casablanca)',
   'Madaëf':       'CDG Group hospitality arm',
-  'Royal':        'Royal Mansour Collection — Royal hospitality group',
+  'Royal Mansour': 'Royal Mansour Collection — Royal hospitality group',
   'Marchica Med': 'State-owned development agency',
   'Club Med':     'Club Med — owned by Fosun International',
 };
@@ -1058,8 +1058,10 @@ async function showHotelDetail(id) {
 
   // ── 1. Header ──
   document.getElementById('hotel-hd-name').textContent = h.name;
+  // Independents often have brand === name; don't repeat the name
+  const subBrand = h.brand && h.brand !== h.name ? `${fmt.esc(h.brand)} · ` : '';
   document.getElementById('hotel-hd-sub').innerHTML =
-    `${fmt.esc(h.brand)} · ${fmt.esc(h.city)} · ${getSegmentBadgeHtml(h.category)}`;
+    `${subBrand}${fmt.esc(h.city)} · ${getSegmentBadgeHtml(h.category)}`;
 
   const ownerLine = document.getElementById('hotel-hd-owner');
   if (h.owner && h.owner !== 'Undisclosed') {
@@ -1069,8 +1071,9 @@ async function showHotelDetail(id) {
     ownerLine.style.display = 'none';
   }
 
-  document.getElementById('hotel-hd-year').textContent =
-    h.year_opened ? `Opened ${h.year_opened}` : '';
+  const yearEl = document.getElementById('hotel-hd-year');
+  yearEl.textContent   = h.year_opened ? `Opened ${h.year_opened}` : '';
+  yearEl.style.display = h.year_opened ? '' : 'none';
 
   const dqEl = document.getElementById('hotel-hd-dq');
   if ((h.data_quality || '').toLowerCase().startsWith('verified')) {
@@ -1138,10 +1141,13 @@ function renderHotelCityChart(h) {
     hotelCityChart.data.datasets[0].backgroundColor  = colors;
     hotelCityChart.update();
   } else {
-    hotelCityChart = new Chart(
-      document.getElementById('chart-hotel-city'),
-      chartConfig(labels, values, ' MAD', colors, v => Math.round(v).toLocaleString('en'))
-    );
+    const cfg = chartConfig(labels, values, ' MAD', colors, v => Math.round(v).toLocaleString('en'));
+    cfg.options.scales.y.ticks.callback = function(value) {
+      const label = this.getLabelForValue(value);
+      const max = this.chart.width < 520 ? 14 : 48;
+      return label.length > max ? label.slice(0, max - 1).trimEnd() + '…' : label;
+    };
+    hotelCityChart = new Chart(document.getElementById('chart-hotel-city'), cfg);
   }
 }
 
@@ -1287,6 +1293,12 @@ const SOURCE_LABEL = {
   unavailable:     'Unavailable',
 };
 
+// YYYY-MM-DD in the visitor's own timezone (toISOString() is UTC, which
+// shifts every calendar cell by a day for part of the day east/west of UTC)
+function localIsoDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function fmtMadShort(v) {
   if (!v) return '—';
   const n = +v;
@@ -1335,7 +1347,7 @@ async function renderRateCalendar(hotelId) {
   const cells  = [];
   for (let i = 1; i <= 30; i++) {
     const d   = new Date(today); d.setDate(today.getDate() + i);
-    const iso = d.toISOString().split('T')[0];
+    const iso = localIsoDate(d);
     const r   = rateMap[iso] || null;
     cells.push({ iso, d, r });
   }
@@ -1348,9 +1360,8 @@ async function renderRateCalendar(hotelId) {
   }
   badgeEl.textContent = `Source: ${SOURCE_LABEL[dominantSrc] || dominantSrc}`;
 
-  if (data.last_scraped) {
-    updEl.textContent = `Last updated: ${data.last_scraped} · Updates daily at 3:00 AM`;
-  }
+  updEl.textContent = data.last_scraped
+    ? `Last updated: ${data.last_scraped} · Updates daily at 3:00 AM` : '';
 
   // Build grid
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -1408,7 +1419,7 @@ async function renderOccCalendar(hotelId) {
   let html = '';
   for (let i = 1; i <= 30; i++) {
     const d   = new Date(today); d.setDate(today.getDate() + i);
-    const iso = d.toISOString().split('T')[0];
+    const iso = localIsoDate(d);
     const e   = estMap[iso];
     const occ = e ? +e.estimated_occupancy : null;
     const conf = e ? e.confidence : 'low';
@@ -1478,7 +1489,7 @@ function renderHotelFinancials(h) {
   const fmM  = v => `MAD ${v.toFixed(1)}M`;
   const fmLg = v => v >= 1000 ? `MAD ${(v / 1000).toFixed(1)}B` : `MAD ${v.toFixed(0)}M`;
   const fmK  = v => v >= 1e6  ? `MAD ${(v / 1e6).toFixed(1)}M`  : `MAD ${(v / 1000).toFixed(0)}k`;
-  const fmEur = v => `EUR ${Math.round(v / 10.8 / 1000)}k`;
+  const fmEur = v => { const e = v / 10.8; return e >= 1e6 ? `EUR ${(e / 1e6).toFixed(1)}M` : `EUR ${Math.round(e / 1000)}k`; };
 
   document.getElementById('hfin-rev-range').textContent =
     `${fmM(revLoM)} — ${fmM(revHiM)}`;
@@ -1510,7 +1521,7 @@ function popupHTML(h) {
   return `
     <div class="hiq-popup">
       <button class="hiq-popup-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button>
-      <div class="hiq-popup-meta">${fmt.esc(h.brand)} · ${getSegmentBadgeHtml(h.category)} · ${h.year_opened}</div>
+      <div class="hiq-popup-meta">${fmt.esc(h.brand)} · ${getSegmentBadgeHtml(h.category)}${h.year_opened ? ` · ${h.year_opened}` : ''}</div>
       <div class="hiq-popup-grid">
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.num(h.keys)}</div>
