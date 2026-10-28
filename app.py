@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
-from utils import NA, safe_float, safe_int, safe_text, fmt_num
+from utils import NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes
 
 load_dotenv()
 
@@ -2889,7 +2889,7 @@ _PDF_SERIES = ['blue', 'green', 'orange', 'violet', 'sky', 'grey']
 def _s(text: str) -> str:
     """Transliterate to latin-1 safe string for fpdf2 core fonts."""
     import unicodedata
-    nfkd = unicodedata.normalize("NFKD", str(text))
+    nfkd = unicodedata.normalize("NFKD", str(text).replace("\u2013", "-"))
     return "".join(c for c in nfkd if ord(c) < 256)
 
 
@@ -2961,9 +2961,20 @@ if FPDF is not None:
             self.multi_cell(w or _PW, 4.5, _s(txt), ln=1)
             self.ln(2)
 
-        def kpi_row(self, label: str, value: str):
+        def kpi_row(self, label: str, value: str, period: str = ""):
             self.set_font("Helvetica", "", 7)
             self.set_text_color(*self.c['muted'])
+            if period:
+                self.cell(_PW * 0.40, 5, label, ln=0)
+                self.set_font("Helvetica", "", 6)
+                self.cell(_PW * 0.30, 5, _s(period), ln=0)
+                self.set_font("Helvetica", "B", 7)
+                self.set_text_color(*self.c['text'])
+                self.cell(_PW * 0.30, 5, value, align="R", ln=1)
+                self.set_draw_color(*self.c['border'])
+                self.set_line_width(0.2)
+                self.line(_LM, self.get_y(), _LM + _PW, self.get_y())
+                return
             self.cell(_PW * 0.55, 5, label, ln=0)
             self.set_font("Helvetica", "B", 7)
             self.set_text_color(*self.c['text'])
@@ -3059,13 +3070,18 @@ if FPDF is not None:
             self.ln(1)
 
         def kpi_boxes(self, items: list, large: bool = False):
+            """items: (label, value) or (label, value, period); the period
+            prints as a small muted line under the label."""
             n      = len(items)
             bw     = _PW / n
-            bh     = 16 if large else 14
+            has_p  = any(len(it) > 2 and it[2] for it in items)
+            bh     = (16 if large else 14) + (3.5 if has_p else 0)
             val_fs = 14 if large else 12
             val_h  = 6 if large else 5
             by     = self.get_y()
-            for i, (label, value) in enumerate(items):
+            for i, item in enumerate(items):
+                label, value = item[0], item[1]
+                period = item[2] if len(item) > 2 else ""
                 bx = _LM + i * bw
                 self.set_fill_color(*self.c['surface'])
                 self.set_draw_color(*self.c['border'])
@@ -3078,6 +3094,10 @@ if FPDF is not None:
                 self.set_font("Helvetica", "", 6)
                 self.set_text_color(*self.c['muted'])
                 self.cell(bw - 4, 3.5, label, align="C", ln=1)
+                if period:
+                    self.set_x(bx + 2)
+                    self.set_font("Helvetica", "", 5.5)
+                    self.cell(bw - 4, 3, _s(period), align="C", ln=1)
             self.set_y(by + bh + 2)
 
 else:
@@ -3252,9 +3272,16 @@ def compute_city_report_data(city: str, period: str) -> dict:
                 "owner", "occupancy", "adr_mad", "revpar_mad"]
     directory = ch[dir_cols].sort_values("revpar_mad", ascending=False).to_dict(orient="records")
 
+    generated_at = datetime.utcnow()
     return {
         "city": city, "period": period,
-        "generated_at": datetime.utcnow(),
+        # What the figures actually cover (the report period above is the
+        # edition label; the performance data has its own period)
+        "periods": {
+            "performance": period_label(period_of_codes(ch["period"])) or NA,
+            "as_of": period_label({"kind": "asof", "date": generated_at}),
+        },
+        "generated_at": generated_at,
         "generated_date": datetime.utcnow().strftime("%d %B %Y"),
         "market_overview": {
             "total_hotels": total_hotels, "total_keys": total_keys,
@@ -3326,6 +3353,7 @@ def generate_ai_narrative(report_data: dict) -> dict:
         prompt = f"""You are a senior hotel market analyst at Kodo, Morocco's leading hospitality intelligence firm. Write institutional-grade market analysis in the style of JLL Hotels & Hospitality or Deloitte Real Estate. Be precise, data-driven, and professional. Use MAD for currency.
 
 Market: {city} Hotel Market | Period: {period}
+Data period: occupancy, ADR and RevPAR are Kodo estimates for {report_data['periods']['performance']}; hotel, key and pipeline counts are {report_data['periods']['as_of'][:1].lower() + report_data['periods']['as_of'][1:]}
 Total Hotels: {mo['total_hotels']} | Total Keys: {mo['total_keys']:,}
 Avg Occupancy: {fmt_num(perf['occupancy'], '.1f', 100, suffix='%')} | Avg ADR: {fmt_num(perf['adr'], prefix='MAD ')} | Avg RevPAR: {fmt_num(perf['revpar'], prefix='MAD ')}
 Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} keys, Supply Risk: {pip['supply_risk']}
@@ -3365,6 +3393,8 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     period = data["period"]
     rating = data.get("market_rating", "NEUTRAL")
     o      = perf["overall"]
+    per_perf = data["periods"]["performance"]
+    per_asof = data["periods"]["as_of"]
 
     pdf = KodoPDF(city, period, theme=theme)
     c   = pdf.c
@@ -3390,12 +3420,15 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.set_font("Helvetica", "", 14)
     pdf.set_text_color(*c['muted'])
     pdf.cell(0, 7, "Hotel Market Report  |  " + _s(period), ln=1)
-    pdf.ln(6)
+    pdf.set_x(_LM)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.cell(0, 5, _s(f"Performance figures: {per_perf} (Kodo estimates)  |  Hotel and pipeline counts: {per_asof}"), ln=1)
+    pdf.ln(4)
     pdf.kpi_boxes([
-        ("Total Hotels",  str(mo["total_hotels"])),
-        ("Total Keys",    f"{mo['total_keys']:,}"),
-        ("Avg Occupancy", fmt_num(o['occupancy'], '.0f', 100, suffix='%')),
-        ("Avg RevPAR",    fmt_num(o['revpar'], prefix='MAD ')),
+        ("Total Hotels",  str(mo["total_hotels"]), per_asof),
+        ("Total Keys",    f"{mo['total_keys']:,}", per_asof),
+        ("Avg Occupancy", fmt_num(o['occupancy'], '.0f', 100, suffix='%'), per_perf),
+        ("Avg RevPAR",    fmt_num(o['revpar'], prefix='MAD '), per_perf),
     ])
     pdf.set_xy(_LM, 272)
     pdf.set_font("Helvetica", "", 7)
@@ -3411,11 +3444,11 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.set_text_color(*c['text'])
     pdf.cell(_PW, 4, "Market at a Glance", ln=1)
     pdf.ln(1)
-    pdf.kpi_row("Total Hotels", str(mo["total_hotels"]))
-    pdf.kpi_row("Total Keys", f"{mo['total_keys']:,}")
-    pdf.kpi_row("Weighted Avg Occupancy", fmt_num(o['occupancy'], '.1f', 100, suffix='%'))
-    pdf.kpi_row("Weighted Avg ADR", fmt_num(o['adr'], prefix='MAD '))
-    pdf.kpi_row("Weighted Avg RevPAR", fmt_num(o['revpar'], prefix='MAD '))
+    pdf.kpi_row("Total Hotels", str(mo["total_hotels"]), per_asof)
+    pdf.kpi_row("Total Keys", f"{mo['total_keys']:,}", per_asof)
+    pdf.kpi_row("Weighted Avg Occupancy", fmt_num(o['occupancy'], '.1f', 100, suffix='%'), per_perf)
+    pdf.kpi_row("Weighted Avg ADR", fmt_num(o['adr'], prefix='MAD '), per_perf)
+    pdf.kpi_row("Weighted Avg RevPAR", fmt_num(o['revpar'], prefix='MAD '), per_perf)
     pdf.ln(4)
     pdf.rating_box(rating)
 
@@ -3424,7 +3457,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.section_title("02", "MARKET OVERVIEW")
     pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, "Supply Breakdown by Segment", ln=1)
+    pdf.cell(_PW, 4, _s(f"Supply Breakdown by Segment  |  {per_asof}"), ln=1)
     pdf.ln(1)
     cols = ["Segment", "Hotels", "Keys", "Mkt Share %", "Avg Year"]
     cw   = [65, 27, 32, 36, 20]
@@ -3444,7 +3477,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     if brands:
         pdf.set_font("Helvetica", "B", 8)
         pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Brand Group Distribution (by Keys)", ln=1)
+        pdf.cell(_PW, 4, _s(f"Brand Group Distribution (by Keys)  |  {per_asof}"), ln=1)
         pdf.ln(1)
         pdf.bar_chart(brands, "name", "keys", brands[0]["keys"] or 1)
         pdf.ln(3)
@@ -3453,7 +3486,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     if owners:
         pdf.set_font("Helvetica", "B", 8)
         pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Ownership Structure (by Keys)", ln=1)
+        pdf.cell(_PW, 4, _s(f"Ownership Structure (by Keys)  |  {per_asof}"), ln=1)
         pdf.ln(1)
         pdf.bar_chart(owners, "owner", "keys", owners[0]["keys"] or 1)
 
@@ -3462,7 +3495,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.section_title("03", "PERFORMANCE ANALYSIS")
     pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, "Performance by Segment", ln=1)
+    pdf.cell(_PW, 4, _s(f"Performance by Segment  |  {per_perf}"), ln=1)
     pdf.ln(1)
     cols = ["Segment", "Hotels", "Occ %", "ADR (MAD)", "RevPAR", "Index"]
     cw   = [60, 19, 19, 30, 30, 22]
@@ -3479,7 +3512,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
 
     pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, "Top Hotels by RevPAR", ln=1)
+    pdf.cell(_PW, 4, _s(f"Top Hotels by RevPAR  |  {per_perf}"), ln=1)
     pdf.ln(1)
     cols = ["Name", "Category", "Keys", "Occ %", "ADR", "RevPAR"]
     cw   = [63, 35, 17, 17, 24, 24]
@@ -3496,9 +3529,9 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.ln(3)
 
     pdf.kpi_boxes([
-        ("Estimated RevPAR", fmt_num(o['revpar'], prefix='MAD ')),
-        ("Market Avg Occ",   fmt_num(o['occupancy'], '.1f', 100, suffix='%')),
-        ("Market Avg ADR",   fmt_num(o['adr'], prefix='MAD ')),
+        ("Estimated RevPAR", fmt_num(o['revpar'], prefix='MAD '), per_perf),
+        ("Market Avg Occ",   fmt_num(o['occupancy'], '.1f', 100, suffix='%'), per_perf),
+        ("Market Avg ADR",   fmt_num(o['adr'], prefix='MAD '), per_perf),
     ])
 
     # ─── S4: DEMAND DRIVERS ──────────────────────────────────────────────────
@@ -3565,7 +3598,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     ratio_pct = (pip["total_keys"] / mo["total_keys"] * 100) if mo["total_keys"] else 0
     pdf.cell(_PW, 4,
         f"{pip['total_projects']} projects  |  {pip['total_keys']:,} keys in pipeline  "
-        f"|  {ratio_pct:.1f}% of existing supply",
+        f"|  {ratio_pct:.1f}% of existing supply  |  {per_asof}",
         align="C", ln=1)
 
     # ─── S6: INVESTMENT PERSPECTIVE ──────────────────────────────────────────
@@ -3661,6 +3694,10 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     # ─── S7: HOTEL DIRECTORY ────────────────────────────────────────────────
     pdf.add_content_page()
     pdf.section_title("07", "HOTEL DIRECTORY")
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(*c['muted'])
+    pdf.cell(_PW, 4, _s(f"Keys {per_asof[:1].lower() + per_asof[1:]}  |  Occupancy, ADR and RevPAR: {per_perf} (Kodo estimates)"), ln=1)
+    pdf.ln(1)
     cols = ["Name", "Brand Group", "Category", "Keys", "Yr", "Occ %", "ADR", "RevPAR"]
     cw   = [52, 32, 28, 14, 12, 14, 14, 14]
     pdf.set_auto_page_break(auto=True, margin=_BM + 8)

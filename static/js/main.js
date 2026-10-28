@@ -378,6 +378,100 @@ const fmt = {
   esc: s  => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),
 };
 
+// ─── Period labels ────────────────────────────────────────────────
+// One wording for "which period does this figure cover", used by every
+// KPI card and Excel export. period_label() in app.py writes the same
+// strings into the PDF report; keep the two in step.
+//   {kind:'fy', year:2025}                      → FY 2025
+//   {kind:'year', year:2025}                    → 2025          (calendar year)
+//   {kind:'month', year:2026, month:9}          → Sep 2026
+//   {kind:'ltm', year:2026, month:9}            → Last 12 months to Sep 2026
+//   {kind:'season', season:'Summer', year:2026} → Summer 2026
+//   {kind:'days', days:30, end:'2026-06-01'}    → Last 30 days to 1 Jun 2026
+//   {kind:'range', start:'2026-03-04', end:'2026-06-01'} → 4 Mar – 1 Jun 2026
+//   {kind:'asof', date:Date|'YYYY-MM-DD'}       → As of 28 Oct 2026
+//   {kind:'forecast', year:2026}                → 2026 forecast
+const KodoPeriod = (() => {
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const toDate = d => d instanceof Date ? d : new Date(String(d).slice(0, 10) + 'T00:00:00');
+  const day = (d, withYear = true) => {
+    d = toDate(d);
+    return `${d.getDate()} ${MON[d.getMonth()]}` + (withYear ? ` ${d.getFullYear()}` : '');
+  };
+  function label(p) {
+    if (!p) return '';
+    switch (p.kind) {
+      case 'fy':       return `FY ${p.year}`;
+      case 'year':     return String(p.year);
+      case 'month':    return `${MON[p.month - 1]} ${p.year}`;
+      case 'ltm':      return `Last 12 months to ${MON[p.month - 1]} ${p.year}`;
+      case 'season':   return `${p.season} ${p.year}`;
+      case 'days':     return `Last ${p.days} days to ${day(p.end)}`;
+      case 'range': {
+        const sameYear = toDate(p.start).getFullYear() === toDate(p.end).getFullYear();
+        return `${day(p.start, !sameYear)} – ${day(p.end)}`;
+      }
+      case 'asof':     return `As of ${day(p.date)}`;
+      case 'forecast': return `${p.year} forecast`;
+      case 'multi':    return p.parts.map(label).join(' / ');
+    }
+    return '';
+  }
+  // Period codes as stored in the data files: '2025FY', '2025', '2026-09'
+  function fromData(code) {
+    const s = String(code || '').trim();
+    let m;
+    if ((m = s.match(/^(\d{4})\s*FY$/i)) || (m = s.match(/^FY\s*(\d{4})$/i))) return { kind: 'fy', year: +m[1] };
+    if ((m = s.match(/^(\d{4})E$/i))) return { kind: 'forecast', year: +m[1] };
+    if ((m = s.match(/^(\d{4})$/))) return { kind: 'year', year: +m[1] };
+    if ((m = s.match(/^(\d{4})-(\d{2})$/))) return { kind: 'month', year: +m[1], month: +m[2] };
+    return null;
+  }
+  // Tooltip: data source, plus the last update date when the data has one
+  function tip({ source, updated, note } = {}) {
+    return [source && `Source: ${source}`, updated && `Last updated ${day(updated)}`, note]
+      .filter(Boolean).join(' · ');
+  }
+  // Write the period line into a KPI card, directly under its label, with
+  // what the figure is compared against (e.g. 'vs FY 2024') when it is. With
+  // no period (not determinable from the data) the line stays blank so the
+  // values in a row still line up.
+  function set(card, p, tipText, compare) {
+    if (typeof card === 'string') card = document.getElementById(card);
+    if (!card) return;
+    let el = card.querySelector('.kpi-period');
+    if (!el) {
+      el = document.createElement('span');
+      el.className = 'kpi-period';
+      const anchor = card.querySelector('.kpi-label, .bench-kpi-title');
+      if (anchor) anchor.after(el); else card.prepend(el);
+    }
+    const text = label(p) && compare ? `${label(p)} · ${compare}` : label(p);
+    el.textContent = text || ' ';
+    el.classList.toggle('kpi-period--none', !text);
+    if (text && tipText) el.title = tipText; else el.removeAttribute('title');
+    if (text) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true');
+  }
+  return { label, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set, date: day,
+           today: () => ({ kind: 'asof', date: new Date() }) };
+})();
+
+// Performance figures (occupancy, ADR, RevPAR) come from performance.csv,
+// one period per row. The period and source of a set of hotels:
+function perfPeriodOf(list) {
+  const codes = [...new Set((list || []).map(h => h.period).filter(Boolean))].sort();
+  const parts = codes.map(KodoPeriod.fromData).filter(Boolean);
+  if (!parts.length) return null;
+  return parts.length === 1 ? parts[0] : { kind: 'multi', parts };
+}
+function perfTipOf(list) {
+  const src = [...new Set((list || []).map(h => h.source).filter(Boolean).map(s => s.trim()))];
+  const source = src.length && src.every(s => s.toLowerCase() === 'hiq estimate')
+    ? 'Kodo estimates (HIQ Estimate)' : src.join(', ');
+  return KodoPeriod.tip({ source });
+}
+const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
+
 // ─── Aggregation ──────────────────────────────────────────────────
 
 function cityAggs(hotelList) {
@@ -468,6 +562,11 @@ function renderKPIs() {
   set('kpi-occ',    fmt.pct(kpis.occupancy),  '');
   set('kpi-adr',    fmt.mad(kpis.adr_mad));
   set('kpi-revpar', fmt.mad(kpis.revpar_mad));
+
+  const list = filteredByCity();
+  const perfP = perfPeriodOf(list), perfTip = perfTipOf(list);
+  KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
+  ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => KodoPeriod.set(id, perfP, perfTip));
 
   const sub = document.getElementById('dashboard-sub');
   sub.innerHTML = state.city === 'all'
@@ -697,6 +796,9 @@ function renderBrandsKPIs() {
   document.querySelector('#brnkpi-keys .kpi-value').textContent    = allKeys.toLocaleString('en');
   document.querySelector('#brnkpi-champion .kpi-value').textContent = champion ? champion.brand_group : '—';
   document.querySelector('#brnkpi-largest .kpi-value').textContent  = largest  ? largest.brand_group  : '—';
+
+  ['brnkpi-groups', 'brnkpi-keys', 'brnkpi-largest'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), COUNT_TIP));
+  KodoPeriod.set('brnkpi-champion', perfPeriodOf(hotels), perfTipOf(hotels));
 }
 
 function brandLogoOrInitials(bg, size) {
@@ -915,6 +1017,8 @@ function showBrandDetail(brandGroup, prevScreen) {
   setKpi('brand-bkpi-occ',    fmt.pct(occ));
   setKpi('brand-bkpi-adr',    fmt.mad(adr));
   setKpi('brand-bkpi-revpar', fmt.mad(revpar));
+  KodoPeriod.set('brand-bkpi-keys', KodoPeriod.today(), COUNT_TIP);
+  ['brand-bkpi-occ', 'brand-bkpi-adr', 'brand-bkpi-revpar'].forEach(id => KodoPeriod.set(id, perfPeriodOf(brandHotelsData), perfTipOf(brandHotelsData)));
 
   // Switch to brand screen FIRST so the canvas has visible dimensions for Chart.js
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -1090,6 +1194,8 @@ async function showHotelDetail(id) {
   setKv('hkpi-occ',    fmt.pct(h.occupancy));
   setKv('hkpi-adr',    fmt.mad(h.adr_mad));
   setKv('hkpi-revpar', fmt.mad(h.revpar_mad));
+  KodoPeriod.set('hkpi-detail-keys', KodoPeriod.today(), COUNT_TIP);
+  ['hkpi-occ', 'hkpi-adr', 'hkpi-revpar'].forEach(id => KodoPeriod.set(id, perfPeriodOf([h]), perfTipOf([h])));
 
   // ── 3. Estimated financials (range model) ──
   renderHotelFinancials(h);
@@ -1820,6 +1926,8 @@ function renderHotelsTable() {
   if (hkpiTotal)  hkpiTotal.textContent  = totalHotels.toLocaleString('en');
   if (hkpiCities) hkpiCities.textContent = totalCities;
   if (hkpiKeys)   hkpiKeys.textContent   = totalKeys.toLocaleString('en');
+  [hkpiTotal, hkpiCities, hkpiKeys].forEach(el => el && KodoPeriod.set(el.closest('.kpi-card'), KodoPeriod.today(), COUNT_TIP));
+  KodoPeriod.set('hkpi-perf-card', perfPeriodOf(hotels), perfTipOf(hotels));
 
   const countEl = document.getElementById('hotels-results-count');
   if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
@@ -2147,6 +2255,16 @@ const TOUR_KPI_BY_YEAR = {};
   });
 })();
 
+// Period lines on the tourism KPI cards: calendar-year ONMT figures for the
+// selected year. Average length of stay is a single figure with no year in
+// the data, so its period line stays blank.
+function tourismKpiPeriods(yr) {
+  const tip = KodoPeriod.tip({ source: 'ONMT official publications' });
+  ['tour-kpi-arrivals-value', 'tour-kpi-nights-value', 'tour-kpi-revenue-value', 'tour-kpi-origin-value'].forEach(id =>
+    KodoPeriod.set(document.getElementById(id)?.closest('.kpi-card'), { kind: 'year', year: yr }, tip));
+  KodoPeriod.set('tour-kpi-alos', null);
+}
+
 function initTourismCharts() {
   if (tourismInited) return;
 
@@ -2187,15 +2305,16 @@ function initTourismCharts() {
 
     const setCard = (labelId, valueId, labelPrefix, value) => {
       const labelEl = document.getElementById(labelId);
-      if (labelEl) labelEl.textContent = `${labelPrefix} ${yr}`;
+      if (labelEl) labelEl.textContent = labelPrefix;
       const valueEl = document.getElementById(valueId);
       if (valueEl && value != null) valueEl.textContent = value;
     };
+    tourismKpiPeriods(yr);
     const setDelta = (deltaId, delta) => {
       const deltaEl = document.getElementById(deltaId);
       if (!deltaEl) return;
       if (delta) {
-        deltaEl.textContent = `${delta} vs ${yr - 1}`;
+        deltaEl.textContent = `${delta} ${KodoPeriod.vs({ kind: 'year', year: yr - 1 })}`;
         deltaEl.className = 'kpi-delta ' + (delta.startsWith('-') ? 'down pill--red' : 'up pill--green');
         deltaEl.style.display = '';
       } else {
@@ -2354,6 +2473,7 @@ function initTourismCharts() {
   document.getElementById('tourism-export-year')?.addEventListener('change', e => {
     setTourismYear(parseInt(e.target.value, 10));
   });
+  tourismKpiPeriods(parseInt(document.getElementById('tourism-export-year')?.value, 10) || 2025);
 
   // 6. Tourism Revenue Trend
   setH('twrap-revenue', 290);
@@ -2465,6 +2585,8 @@ function renderPipelineKPIs() {
   setKpi('pkpi-keys',  totalKeys.toLocaleString('en'));
   setKpi('pkpi-inv',   (totalInv / 1e9).toFixed(1) + 'B');
   setKpi('pkpi-2027',  by2027);
+  const pipeTip = KodoPeriod.tip({ source: 'Kodo pipeline tracker', note: 'count when this page loaded' });
+  ['pkpi-total', 'pkpi-keys', 'pkpi-inv', 'pkpi-2027'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), pipeTip));
 }
 
 function initPipelineMap() {
@@ -3642,14 +3764,39 @@ function renderCompPills() {
 
 // ── Date range ───────────────────────────────────────────────────
 
-function getBenchDateRange() {
-  const end = new Date('2026-06-01');
+// Local midnight, like dateInRange(): new Date('2026-06-01') is UTC midnight,
+// which west of UTC falls on 31 May and dropped the last day of data.
+function getBenchDateRange(range = benchState.dateRange) {
+  const end = new Date('2026-06-01T00:00:00');
   const start = new Date(end);
-  if (benchState.dateRange === 7)        start.setDate(end.getDate() - 6);
-  else if (benchState.dateRange === 30)  start.setDate(end.getDate() - 29);
-  else if (benchState.dateRange === 90)  start.setDate(end.getDate() - 89);
-  else if (benchState.dateRange === 'ytd') { start.setFullYear(end.getFullYear()); start.setMonth(0); start.setDate(1); }
+  if (range === 7)        start.setDate(end.getDate() - 6);
+  else if (range === 30)  start.setDate(end.getDate() - 29);
+  else if (range === 90)  start.setDate(end.getDate() - 89);
+  else if (range === 'ytd') { start.setFullYear(end.getFullYear()); start.setMonth(0); start.setDate(1); }
   return [start, end];
+}
+
+// The period a benchmarking figure really covers: the dates of the selected
+// property's daily records inside the window. A window the data fills
+// completely reads "Last 30 days to 1 Jun 2026"; anything else (YTD, which
+// starts before the first record) is labelled by the dates it covers.
+function benchPeriod(range = benchState.dateRange) {
+  if (!benchmarkData) return null;
+  const [s, e] = getBenchDateRange(range);
+  const dates = [...new Set(benchmarkData.daily
+    .filter(d => d.hotel_id === benchState.myHotelId && dateInRange(d.date, s, e))
+    .map(d => d.date))].sort();
+  if (!dates.length) return null;
+  const last = dates[dates.length - 1];
+  if (typeof range === 'number' && dates.length === range && last === localIsoDate(e)) {
+    return { kind: 'days', days: range, end: last };
+  }
+  return { kind: 'range', start: dates[0], end: last };
+}
+function benchPeriodTip() {
+  const all = benchmarkData ? benchmarkData.daily.map(d => d.date).sort() : [];
+  return KodoPeriod.tip({ source: 'demo comp set (sample data)',
+    note: all.length ? `daily records ${KodoPeriod.label({ kind: 'range', start: all[0], end: all[all.length - 1] })}` : '' });
 }
 
 function dateInRange(dateStr, start, end) {
@@ -3659,8 +3806,8 @@ function dateInRange(dateStr, start, end) {
 
 // ── Data helpers ─────────────────────────────────────────────────
 
-function getMyDaily() {
-  const [s, e] = getBenchDateRange();
+function getMyDaily(range = benchState.dateRange) {
+  const [s, e] = getBenchDateRange(range);
   return benchmarkData.daily.filter(d =>
     d.hotel_id === benchState.myHotelId && dateInRange(d.date, s, e)
   ).sort((a, b) => a.date.localeCompare(b.date));
@@ -3676,9 +3823,9 @@ function benchCompPlaceholder() {
   </div>`;
 }
 
-function getCompDaily() {
+function getCompDaily(range = benchState.dateRange) {
   if (!isCompSetValid()) return [];  // privacy: minimum 3 required
-  const [s, e] = getBenchDateRange();
+  const [s, e] = getBenchDateRange(range);
   const byDate = {};
   benchmarkData.daily.forEach(d => {
     if (!benchState.compSet.has(d.hotel_id)) return;
@@ -3744,6 +3891,11 @@ function renderBenchKPIs() {
   setCard('bkpi-adr',    my.adr,           comp.adr,           v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
   setCard('bkpi-revpar', my.revpar,        comp.revpar,        v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
   setCard('bkpi-rev',    my.rooms_revenue, comp.rooms_revenue, v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
+
+  // Period line: the property's dates, compared with the comp set over the same dates
+  const per = benchPeriod(), tip = benchPeriodTip();
+  ['bkpi-occ', 'bkpi-adr', 'bkpi-revpar', 'bkpi-rev'].forEach(id =>
+    KodoPeriod.set(id, per, tip, noComp ? '' : 'vs comp set, same dates'));
 }
 
 // ── Calendar ──────────────────────────────────────────────────────
@@ -5012,6 +5164,7 @@ function exportHotels() {
   if (!filtered.length) return;
   const date = new Date().toISOString().split('T')[0];
   const cityLabel = hotelsState.city !== 'all' ? hotelsState.city.replace(/[^a-zA-Z0-9]/g, '_') : 'All';
+  const asOf = KodoPeriod.label(KodoPeriod.today());
   const data = filtered.map(h => ({
     'Hotel Name':       h.name || 'N/A',
     'City':             h.city || 'N/A',
@@ -5021,6 +5174,8 @@ function exportHotels() {
     'Occupancy %':      h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
     'ADR (MAD)':        h.adr_mad || 'N/A',
     'RevPAR (MAD)':     h.revpar_mad || 'N/A',
+    'Performance Period': KodoPeriod.label(KodoPeriod.fromData(h.period)) || 'N/A',
+    'Keys As Of':       asOf,
     'Year Established': h.year_opened_verified === 'verified' && h.year_opened != null ? h.year_opened : 'N/A',
     'Owner':            h.owner || 'Undisclosed',
     'Data Quality':     h.data_quality || 'Estimated',
@@ -5035,6 +5190,7 @@ function exportPipeline() {
   }
   if (!pipelineData) return;
   const date = new Date().toISOString().split('T')[0];
+  const asOf = KodoPeriod.label(KodoPeriod.today());
   const data = filteredPipeline().map(p => ({
     'Project Name':       p.name,
     'City':               p.city,
@@ -5045,6 +5201,7 @@ function exportPipeline() {
     'Expected Opening':   p.expected_opening ?? 'TBC',
     'Status':             p.status,
     'Investment (MAD M)': p.investment_mad ? Math.round(p.investment_mad / 1e6) : 'N/A',
+    'Data As Of':         asOf,
   }));
   exportToExcel([{ data, name: 'Pipeline' }], `Kodo_Pipeline_${date}`);
 }
@@ -5056,6 +5213,8 @@ function exportBrands() {
   }
   if (!brandsData) return;
   const date = new Date().toISOString().split('T')[0];
+  const asOf = KodoPeriod.label(KodoPeriod.today());
+  const perfLabel = bg => KodoPeriod.label(perfPeriodOf((hotels || []).filter(h => h.brand_group === bg))) || 'N/A';
   const data = filteredBrands().map((b, i) => ({
     'Rank':              i + 1,
     'Brand Group':       b.brand_group,
@@ -5065,6 +5224,8 @@ function exportBrands() {
     'Avg Occupancy %':   b.avg_occupancy ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',
     'Avg ADR (MAD)':     b.avg_adr ? Math.round(b.avg_adr) : 'N/A',
     'Avg RevPAR (MAD)':  b.weighted_revpar ? Math.round(b.weighted_revpar) : 'N/A',
+    'Performance Period': perfLabel(b.brand_group),
+    'Keys As Of':        asOf,
     'Cities Present':    Array.isArray(b.cities) ? b.cities.join(', ') : 'N/A',
     'Pipeline Projects': b.pipeline_projects || 0,
     'Pipeline Keys':     b.pipeline_keys || 0,
@@ -5088,22 +5249,25 @@ function exportBenchmarking() {
   const periodVal = periodEl ? periodEl.value : String(benchState.dateRange);
   const periodMap = { '7': 'Last_7_Days', '30': 'Last_30_Days', '90': 'Last_90_Days', 'ytd': 'YTD' };
   const periodLabel = periodMap[periodVal] || 'Period';
-  const periodDisp  = periodEl ? periodEl.options[periodEl.selectedIndex]?.text : String(benchState.dateRange);
+  // The export's own period (it used to label the figures with this but
+  // compute them over the on-screen period)
+  const range = periodVal === 'ytd' ? 'ytd' : Number(periodVal);
+  const periodDisp = KodoPeriod.label(benchPeriod(range)) || 'N/A';
 
   // Sheet 1 — KPI Summary
-  const my   = aggDaily(getMyDaily());
-  const comp = aggDaily(getCompDaily());
+  const my   = aggDaily(getMyDaily(range));
+  const comp = aggDaily(getCompDaily(range));
   const mkIdx = (myV, compV) => (valid && compV > 0) ? Math.round(myV / compV * 100) : 'N/A';
   const kpiData = [
     { 'Metric': 'Occupancy %',  'My Property': (my.occupancy * 100).toFixed(1) + '%',
       'Comp Set Average': valid ? (comp.occupancy * 100).toFixed(1) + '%' : 'N/A',
-      'Index': mkIdx(my.occupancy, comp.occupancy), 'Period': periodDisp },
+      'Index': mkIdx(my.occupancy, comp.occupancy), 'Period': periodDisp, 'Comparison': valid ? 'Comp set, same dates' : 'N/A' },
     { 'Metric': 'ADR (MAD)',    'My Property': Math.round(my.adr),
       'Comp Set Average': valid ? Math.round(comp.adr) : 'N/A',
-      'Index': mkIdx(my.adr, comp.adr), 'Period': periodDisp },
+      'Index': mkIdx(my.adr, comp.adr), 'Period': periodDisp, 'Comparison': valid ? 'Comp set, same dates' : 'N/A' },
     { 'Metric': 'RevPAR (MAD)', 'My Property': Math.round(my.revpar),
       'Comp Set Average': valid ? Math.round(comp.revpar) : 'N/A',
-      'Index': mkIdx(my.revpar, comp.revpar), 'Period': periodDisp },
+      'Index': mkIdx(my.revpar, comp.revpar), 'Period': periodDisp, 'Comparison': valid ? 'Comp set, same dates' : 'N/A' },
   ];
 
   // Sheet 2 — Monthly Detail (mirrors renderBenchMonthlyTable)
@@ -5136,6 +5300,7 @@ function exportBenchmarking() {
       'My RevPAR (MAD)':      Math.round(myAgg.revpar),
       'Comp Set RevPAR (MAD)':noComp ? 'N/A' : Math.round(compAgg.revpar),
       'RevPAR Index':         revIdx,
+      'Days of Data':         myRecs.length,
     };
   });
 
@@ -5231,6 +5396,8 @@ function renderOwnerCards() {
   var totalKeys = owners.reduce(function(s, o) { return s + (o.total_keys || 0); }, 0);
   document.getElementById('okpi-count').textContent = owners.length;
   document.getElementById('okpi-keys').textContent = totalKeys.toLocaleString();
+  const ownerTip = KodoPeriod.tip({ source: 'Kodo owner profiles, keys from the Kodo hotel database', note: 'count when this page loaded' });
+  ['okpi-count', 'okpi-keys'].forEach(id => KodoPeriod.set(document.getElementById(id).closest('.kpi-card'), KodoPeriod.today(), ownerTip));
 
   // Hide detail, show grid
   document.getElementById('screen-owner-detail').style.display = 'none';
@@ -5313,6 +5480,9 @@ function renderOwnerDetail(o) {
   document.getElementById('odkpi-keys').textContent = (o.total_keys || 0).toLocaleString();
   document.getElementById('odkpi-cities').textContent = (o.cities || []).length;
   document.getElementById('odkpi-brands').textContent = (o.brands_operated || []).length;
+  const ownerTip = KodoPeriod.tip({ source: 'Kodo owner profile, keys from the Kodo hotel database', note: 'count when this page loaded' });
+  ['odkpi-hotels', 'odkpi-keys', 'odkpi-cities', 'odkpi-brands'].forEach(id =>
+    KodoPeriod.set(document.getElementById(id).closest('.kpi-card'), KodoPeriod.today(), ownerTip));
 
   // Destination pills
   document.getElementById('owner-destinations-row').innerHTML =

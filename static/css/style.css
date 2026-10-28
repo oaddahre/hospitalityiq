@@ -824,6 +824,22 @@ body.light .nav-logout  { color: var(--text-2); }
   margin-top: 4px;
 }
 .kpi-meta { color: var(--text-muted); width: 100%; }
+
+/* Period line: which period / date a KPI covers (KodoPeriod in main.js).
+   Same caption scale as .kpi-sub; sits directly under the card's label. */
+.kpi-period {
+  display: block;
+  width: 100%;
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--text-3);
+  text-align: center;
+  margin: -2px 0 6px;
+}
+.kpi-period[title] { cursor: help; }
+.bench-kpi-card .kpi-period { text-align: left; margin: -8px 0 10px; }
 .kpi-delta { font-weight: 500; width: 100%; }
 .kpi-delta.up   { color: var(--positive); }
 .kpi-delta.dn, .kpi-delta.down { color: var(--negative); }
@@ -6010,3 +6026,10 @@ body .kpi-delta[class*="pill--"] {
 .segment-badge.segment-badge { font-size: 9px !important; letter-spacing: 0.06em !important; }
 /* The navbar tier pill uses the label weight, not the nav-link weight */
 .navbar-meta .tier-badge[class*="pill--"] { font-weight: 600; }
+
+/* Benchmarking KPI cards: two columns need ~560px (each card's value row is
+   ~270px wide), so on phones the right-hand cards ran off the screen. One
+   column below 600px. */
+@media (max-width: 599px) {
+  .bench-kpi-grid { grid-template-columns: 1fr !important; }
+}
