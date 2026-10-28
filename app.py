@@ -428,8 +428,12 @@ def _issue_verification_email(email: str, name: str) -> bool:
 
 # ─── Email layout ─────────────────────────────────────────────────────────────
 # Emails can't use CSS variables, so the palette (static/css/tokens.css,
-# light mode) is inlined here. No images: the wordmark is text, so the email
-# still reads when images are blocked.
+# light mode) is inlined here. The only image is the light wordmark; its
+# alt text ("Kodo") stands in when images are blocked.
+# 600px copy of static/img/brand/kodo-logo-light.png: the full-size original
+# (22186x4862) is too large for mail clients to download and decode.
+EMAIL_LOGO_URL = "https://www.kodohospitality.com/static/img/brand/kodo-logo-light-600.png"
+
 EMAIL_COLORS = {
     "page":      "#F7F6F3",   # --bg-alt
     "card":      "#FFFFFF",   # --bg
@@ -466,7 +470,7 @@ def _email_layout(heading: str, paragraphs: list, button_label: str, button_url:
         <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:{c["card"]};border:1px solid {c["border"]};border-radius:12px;">
           <tr>
             <td style="padding:32px 40px 24px;border-bottom:1px solid {c["border"]};">
-              <p style="font-family:{_EMAIL_FONT};font-size:12px;font-weight:700;letter-spacing:0.2em;color:{c["text"]};margin:0;text-transform:uppercase;">KODO HOSPITALITY</p>
+              <img src="{EMAIL_LOGO_URL}" width="101" height="22" alt="Kodo" style="display:block;width:101px;height:22px;border:0;outline:none;text-decoration:none;font-family:{_EMAIL_FONT};font-size:14px;font-weight:700;color:{c["text"]};">
             </td>
           </tr>
           <tr>
@@ -1436,8 +1440,8 @@ def api_verify_email():
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(
-        os.path.join(app.root_path, 'static'),
-        'favicon.ico',
+        os.path.join(app.root_path, 'static', 'img', 'brand'),
+        'favicon-light.ico',
         mimetype='image/x-icon'
     )
 
@@ -2889,6 +2893,9 @@ def _s(text: str) -> str:
     return "".join(c for c in nfkd if ord(c) < 256)
 
 
+# Light wordmark for report headers (white pages)
+_PDF_LOGO = os.path.join(app.static_folder, "img", "brand", "kodo-logo-light-1200.png")
+
 if FPDF is not None:
     class KodoPDF(FPDF):
         def __init__(self, city: str, period: str, theme: str = 'light'):
@@ -2908,9 +2915,9 @@ if FPDF is not None:
             if self.page_no() <= 1 or self._back_page:
                 return
             self.set_y(3)
-            self.set_font("Helvetica", "B", 8)
-            self.set_text_color(*self.c['accent'])
-            self.cell(25, 5, "Kodo", ln=0)
+            # Wordmark in place of the old 8pt "Kodo" text (same 25 x 5 mm cell)
+            self.image(_PDF_LOGO, x=_LM, y=4.2, h=2.6)
+            self.cell(25, 5, "", ln=0)
             self.set_font("Helvetica", "", 6)
             self.set_text_color(*self.c['muted'])
             title = f"{self._city} Hotel Market  |  {self._period}"
@@ -3365,10 +3372,9 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     # ─── COVER PAGE ───────────────────────────────────────────────────────────
     pdf.add_page()
 
-    pdf.set_xy(_LM, 22)
-    pdf.set_font("Helvetica", "B", 28)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(0, 10, "Kodo", ln=1)
+    # Wordmark in place of the old 28pt "Kodo" text (same 10 mm line)
+    pdf.image(_PDF_LOGO, x=_LM, y=23.3, h=7.4)
+    pdf.set_xy(_LM, 32)
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*c['accent'])
@@ -3675,10 +3681,11 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     # ─── BACK PAGE ───────────────────────────────────────────────────────────
     pdf._back_page = True
     pdf.add_page()
-    pdf.set_xy(0, 110)
-    pdf.set_font("Helvetica", "B", 48)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(210, 20, "Kodo", align="C", ln=1)
+    # Wordmark in place of the old 48pt "Kodo" text (same 20 mm line, centred)
+    _h = 12.6
+    _w = _h * 600 / 131
+    pdf.image(_PDF_LOGO, x=(210 - _w) / 2, y=110 + (20 - _h) / 2, h=_h)
+    pdf.set_xy(_LM, 130)   # where the old cell(ln=1) left the cursor
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(*c['accent'])
     pdf.cell(210, 8, "HOSPITALITY INTELLIGENCE", align="C", ln=1)
@@ -3819,10 +3826,9 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
 
     # ─── PAGE 1 — COVER ─────────────────────────────────────────────────
     pdf.add_page()
-    pdf.set_xy(_LM, 20)
-    pdf.set_font("Helvetica", "B", 28)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(0, 10, "Kodo", ln=1)
+    # Wordmark in place of the old 28pt "Kodo" text (same 10 mm line)
+    pdf.image(_PDF_LOGO, x=_LM, y=21.3, h=7.4)
+    pdf.set_xy(_LM, 30)
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*c['accent'])
@@ -4039,10 +4045,9 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     # ─── PAGE 6 — BACK PAGE ───────────────────────────────────────────────
     pdf._back_page = True
     pdf.add_page()
-    pdf.set_xy(_LM, 30)
-    pdf.set_font("Helvetica", "B", 20)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(0, 10, "Kodo", ln=1)
+    # Wordmark in place of the old 20pt "Kodo" text (same 10 mm line)
+    pdf.image(_PDF_LOGO, x=_LM, y=32.3, h=5.3)
+    pdf.set_xy(_LM, 40)
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*c['accent'])

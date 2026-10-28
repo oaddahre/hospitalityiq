@@ -166,3 +166,11 @@
 }
 .pill--outline::before { content: none; }
 .pill--outline:hover { background: var(--action-tint); }
+
+/* ═══ Brand logo ════════════════════════════════════════════════════
+   Every page renders both wordmarks (.logo-light: blue + black, for light
+   backgrounds; .logo-dark: blue + white). Only the one for the current
+   <html data-theme> shows, so the swap is instant and never flashes.
+   ═══════════════════════════════════════════════════════════════════ */
+:root[data-theme="dark"] .logo-light,
+:root:not([data-theme="dark"]) .logo-dark { display: none !important; }

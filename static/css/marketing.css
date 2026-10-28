@@ -597,8 +597,8 @@ html { scroll-behavior: smooth; }
   display: block;
 }
 
-/* No CSS invert/brightness hacks needed — logo_white.png / logo_black.png
-   are dedicated dark/light assets, swapped via .logo-dark/.logo-light
+/* No CSS invert/brightness hacks needed — kodo-logo-dark / kodo-logo-light
+   (static/img/brand) are dedicated dark/light assets, swapped via .logo-dark/.logo-light
    below, not a single file tinted with a filter. */
 .mk-nav-logo-img,
 .lp-footer-logo-img,

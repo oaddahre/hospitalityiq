@@ -6,10 +6,15 @@
   <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
   <title>Team — Kodo Hospitality</title>
-  <link rel="icon" href="/static/favicon.ico?v={{ asset_version('favicon.ico') }}" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png?v={{ asset_version('favicon-32.png') }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png?v={{ asset_version('favicon-16.png') }}">
-  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version('apple-touch-icon.png') }}">
+  <link rel="icon" href="/static/img/brand/favicon-light.ico?v={{ asset_version('img/brand/favicon-light.ico') }}" sizes="any" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/brand/favicon-light-16.png?v={{ asset_version('img/brand/favicon-light-16.png') }}" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/brand/favicon-light-32.png?v={{ asset_version('img/brand/favicon-light-32.png') }}" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/png" sizes="48x48" href="/static/img/brand/favicon-light-48.png?v={{ asset_version('img/brand/favicon-light-48.png') }}" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="/static/img/brand/favicon-dark.ico?v={{ asset_version('img/brand/favicon-dark.ico') }}" sizes="any" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/brand/favicon-dark-16.png?v={{ asset_version('img/brand/favicon-dark-16.png') }}" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/brand/favicon-dark-32.png?v={{ asset_version('img/brand/favicon-dark-32.png') }}" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="48x48" href="/static/img/brand/favicon-dark-48.png?v={{ asset_version('img/brand/favicon-dark-48.png') }}" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/brand/apple-touch-icon.png?v={{ asset_version('img/brand/apple-touch-icon.png') }}">
   <link rel="preload" href="/static/fonts/SweetSansProRegular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProMedium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/SweetSansProBold.woff2" as="font" type="font/woff2" crossorigin>
@@ -24,11 +29,13 @@
 
 <nav class="mk-nav">
   <a href="/" class="mk-nav-logo">
-    <img src="/static/images/logo_white.png"
-         alt="Kodo Hospitality"
+    <img src="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }}"
+         srcset="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }} 600w, /static/img/brand/kodo-logo-dark-1200.png?v={{ asset_version('img/brand/kodo-logo-dark-1200.png') }} 1200w" sizes="146px"
+         width="600" height="131" alt="Kodo"
          class="mk-nav-logo-img logo-dark">
-    <img src="/static/images/logo_black.png"
-         alt="Kodo Hospitality"
+    <img src="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }}"
+         srcset="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }} 600w, /static/img/brand/kodo-logo-light-1200.png?v={{ asset_version('img/brand/kodo-logo-light-1200.png') }} 1200w" sizes="146px"
+         width="600" height="131" alt="Kodo"
          class="mk-nav-logo-img logo-light">
   </a>
   <div class="mk-nav-links">
@@ -61,11 +68,13 @@
 
     <div class="lp-mobile-panel-header">
       <div class="lp-mobile-panel-logo-wrap">
-        <img src="/static/images/logo_white.png"
-             alt="Kodo Hospitality"
+        <img src="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }}"
+             srcset="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }} 600w, /static/img/brand/kodo-logo-dark-1200.png?v={{ asset_version('img/brand/kodo-logo-dark-1200.png') }} 1200w" sizes="146px"
+             width="600" height="131" alt="Kodo"
              class="lp-mobile-panel-logo-img logo-dark">
-        <img src="/static/images/logo_black.png"
-             alt="Kodo Hospitality"
+        <img src="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }}"
+             srcset="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }} 600w, /static/img/brand/kodo-logo-light-1200.png?v={{ asset_version('img/brand/kodo-logo-light-1200.png') }} 1200w" sizes="146px"
+             width="600" height="131" alt="Kodo"
              class="lp-mobile-panel-logo-img logo-light">
       </div>
       <button class="lp-mobile-panel-close" id="lpMobilePanelClose"
@@ -172,11 +181,13 @@
 
 <footer class="lp-footer">
   <div class="lp-footer-logo-wrap">
-    <img src="/static/images/logo_white.png"
-         alt="Kodo Hospitality"
+    <img src="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }}"
+         srcset="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }} 600w, /static/img/brand/kodo-logo-dark-1200.png?v={{ asset_version('img/brand/kodo-logo-dark-1200.png') }} 1200w" sizes="146px"
+         width="600" height="131" alt="Kodo"
          class="lp-footer-logo-img logo-dark">
-    <img src="/static/images/logo_black.png"
-         alt="Kodo Hospitality"
+    <img src="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }}"
+         srcset="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }} 600w, /static/img/brand/kodo-logo-light-1200.png?v={{ asset_version('img/brand/kodo-logo-light-1200.png') }} 1200w" sizes="146px"
+         width="600" height="131" alt="Kodo"
          class="lp-footer-logo-img logo-light">
   </div>
   <div class="lp-footer-links">

@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Account — Kodo</title>
-  <link rel="icon" href="/static/favicon.ico?v={{ asset_version('favicon.ico') }}" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png?v={{ asset_version('favicon-32.png') }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png?v={{ asset_version('favicon-16.png') }}">
-  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version('apple-touch-icon.png') }}">
+  <link rel="icon" href="/static/img/brand/favicon-light.ico?v={{ asset_version('img/brand/favicon-light.ico') }}" sizes="any" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/brand/favicon-light-16.png?v={{ asset_version('img/brand/favicon-light-16.png') }}" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/brand/favicon-light-32.png?v={{ asset_version('img/brand/favicon-light-32.png') }}" media="(prefers-color-scheme: light)">
+  <link rel="icon" type="image/png" sizes="48x48" href="/static/img/brand/favicon-light-48.png?v={{ asset_version('img/brand/favicon-light-48.png') }}" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="/static/img/brand/favicon-dark.ico?v={{ asset_version('img/brand/favicon-dark.ico') }}" sizes="any" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/brand/favicon-dark-16.png?v={{ asset_version('img/brand/favicon-dark-16.png') }}" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/brand/favicon-dark-32.png?v={{ asset_version('img/brand/favicon-dark-32.png') }}" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="48x48" href="/static/img/brand/favicon-dark-48.png?v={{ asset_version('img/brand/favicon-dark-48.png') }}" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/brand/apple-touch-icon.png?v={{ asset_version('img/brand/apple-touch-icon.png') }}">
   <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
   <script src="/static/js/theme.js?v={{ asset_version('js/theme.js') }}"></script>
@@ -151,11 +156,13 @@
 <!-- Nav -->
 <nav class="acc-nav">
   <a href="/dashboard" class="acc-nav__logo">
-    <img src="/static/images/logo_white.png"
-         alt="Kodo Hospitality"
+    <img src="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }}"
+         srcset="/static/img/brand/kodo-logo-dark-600.png?v={{ asset_version('img/brand/kodo-logo-dark-600.png') }} 600w, /static/img/brand/kodo-logo-dark-1200.png?v={{ asset_version('img/brand/kodo-logo-dark-1200.png') }} 1200w" sizes="146px"
+         width="600" height="131" alt="Kodo"
          class="navbar-logo-img logo-dark">
-    <img src="/static/images/logo_black.png"
-         alt="Kodo Hospitality"
+    <img src="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }}"
+         srcset="/static/img/brand/kodo-logo-light-600.png?v={{ asset_version('img/brand/kodo-logo-light-600.png') }} 600w, /static/img/brand/kodo-logo-light-1200.png?v={{ asset_version('img/brand/kodo-logo-light-1200.png') }} 1200w" sizes="146px"
+         width="600" height="131" alt="Kodo"
          class="navbar-logo-img logo-light">
   </a>
   <div class="acc-nav__right">
