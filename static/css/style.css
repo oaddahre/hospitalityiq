@@ -289,7 +289,7 @@ textarea::placeholder,
 }
 
 .navbar-logo-img {
-  height: 28px;
+  height: var(--nav-logo-h);
   width: auto;
   display: block;
 }
@@ -4403,7 +4403,7 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 
 .mobile-menu-logo-img {
-  height: 28px;
+  height: var(--nav-logo-h);
   width: auto;
   display: block;
 }

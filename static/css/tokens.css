@@ -168,9 +168,16 @@
 .pill--outline:hover { background: var(--action-tint); }
 
 /* ═══ Brand logo ════════════════════════════════════════════════════
+   --nav-logo-h: wordmark height in every top nav (landing and marketing
+   pages, platform, admin) and in the mobile menu panels. Width follows
+   from the image's aspect ratio. Footer and auth-page logos keep their
+   own sizes.
+
    Every page renders both wordmarks (.logo-light: blue + black, for light
    backgrounds; .logo-dark: blue + white). Only the one for the current
    <html data-theme> shows, so the swap is instant and never flashes.
    ═══════════════════════════════════════════════════════════════════ */
 :root[data-theme="dark"] .logo-light,
 :root:not([data-theme="dark"]) .logo-dark { display: none !important; }
+:root { --nav-logo-h: 20px; }
+@media (max-width: 767px) { :root { --nav-logo-h: 18px; } }
