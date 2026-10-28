@@ -14,6 +14,24 @@ Screenshots and videos used on the landing page live in `static/img/product/`.
 They are made from the local app with sample data only (the demo benchmarking
 comp set and a local-only demo account), never real users or organisations.
 
+### Hotel and owner profile screenshots
+
+```
+python3 scripts/capture_profile_screenshots.py
+```
+
+Writes `static/img/product/hotel-profile-{light,dark}` (La Mamounia) and
+`owner-profile-{light,dark}` (Madaëf), each as `.webp` (quality 90) and `.png`,
+2880x1800 (1440x900 at deviceScaleFactor 2). Like the video script it starts
+its own copy of the app with a temporary data folder and a local-only demo
+account, so no real user appears. Unlike the video these show the platform's
+own hotel and owner data, so they carry no "Sample data" tag. The script waits
+for fonts, data and charts, scrolls as little as possible so the bottom edge
+falls between blocks, and stops on any console error, spinner, toast, bad value
+(NaN, undefined, null, None) or clipped theme toggle. Operator logos from the
+third-party logo CDN don't load from localhost, so the shots show those
+operators as text.
+
 ### Benchmarking video
 
 ```

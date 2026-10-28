@@ -3073,6 +3073,8 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 :root:not([data-theme="dark"]) .lp-frame .lp-theme-dark { display: none; }
 /* Failed image: keep the --bg-alt frame, hide the broken-image icon and alt text */
 .lp-frame img.lp-img-failed { visibility: hidden; }
+/* Screenshot not fetched yet (src set near the viewport): no alt text or icon */
+.lp-frame img:not([src]) { visibility: hidden; }
 
 .lp-shots {
   display: grid;

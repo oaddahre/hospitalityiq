@@ -140,28 +140,28 @@
     <figure class="lp-shot lp-fade">
       <div class="lp-frame lp-frame-sm">
         <picture class="lp-theme-light">
-          <source type="image/webp" srcset="/static/img/product/directory-light.webp?v={{ asset_version('img/product/directory-light.webp') }}">
-          <img src="/static/img/product/directory-light.png?v={{ asset_version('img/product/directory-light.png') }}" width="2880" height="1800" alt="Kodo hotel directory with the map open on Marrakech (sample data)" loading="lazy" decoding="async">
+          <source type="image/webp" data-srcset="/static/img/product/hotel-profile-light.webp?v={{ asset_version('img/product/hotel-profile-light.webp') }}">
+          <img data-src="/static/img/product/hotel-profile-light.png?v={{ asset_version('img/product/hotel-profile-light.png') }}" width="2880" height="1800" alt="Kodo hotel profile for La Mamounia: KPIs, owner, and rate and occupancy calendars" loading="lazy" decoding="async">
         </picture>
         <picture class="lp-theme-dark">
-          <source type="image/webp" srcset="/static/img/product/directory-dark.webp?v={{ asset_version('img/product/directory-dark.webp') }}">
-          <img src="/static/img/product/directory-dark.png?v={{ asset_version('img/product/directory-dark.png') }}" width="2880" height="1800" alt="Kodo hotel directory with the map open on Marrakech (sample data)" loading="lazy" decoding="async">
+          <source type="image/webp" data-srcset="/static/img/product/hotel-profile-dark.webp?v={{ asset_version('img/product/hotel-profile-dark.webp') }}">
+          <img data-src="/static/img/product/hotel-profile-dark.png?v={{ asset_version('img/product/hotel-profile-dark.png') }}" width="2880" height="1800" alt="Kodo hotel profile for La Mamounia: KPIs, owner, and rate and occupancy calendars" loading="lazy" decoding="async">
         </picture>
       </div>
-      <figcaption><span class="lp-shot-cap pill--blue">Hotel directory and map</span></figcaption>
+      <figcaption><span class="lp-shot-cap pill--blue">Hotel profiles</span></figcaption>
     </figure>
     <figure class="lp-shot lp-fade">
       <div class="lp-frame lp-frame-sm">
         <picture class="lp-theme-light">
-          <source type="image/webp" srcset="/static/img/product/analyst-light.webp?v={{ asset_version('img/product/analyst-light.webp') }}">
-          <img src="/static/img/product/analyst-light.png?v={{ asset_version('img/product/analyst-light.png') }}" width="2880" height="1800" alt="Kodo AI Analyst answering a question about ADR in Marrakech (sample data)" loading="lazy" decoding="async">
+          <source type="image/webp" data-srcset="/static/img/product/owner-profile-light.webp?v={{ asset_version('img/product/owner-profile-light.webp') }}">
+          <img data-src="/static/img/product/owner-profile-light.png?v={{ asset_version('img/product/owner-profile-light.png') }}" width="2880" height="1800" alt="Kodo owner profile for Madaëf: portfolio, cities and operators" loading="lazy" decoding="async">
         </picture>
         <picture class="lp-theme-dark">
-          <source type="image/webp" srcset="/static/img/product/analyst-dark.webp?v={{ asset_version('img/product/analyst-dark.webp') }}">
-          <img src="/static/img/product/analyst-dark.png?v={{ asset_version('img/product/analyst-dark.png') }}" width="2880" height="1800" alt="Kodo AI Analyst answering a question about ADR in Marrakech (sample data)" loading="lazy" decoding="async">
+          <source type="image/webp" data-srcset="/static/img/product/owner-profile-dark.webp?v={{ asset_version('img/product/owner-profile-dark.webp') }}">
+          <img data-src="/static/img/product/owner-profile-dark.png?v={{ asset_version('img/product/owner-profile-dark.png') }}" width="2880" height="1800" alt="Kodo owner profile for Madaëf: portfolio, cities and operators" loading="lazy" decoding="async">
         </picture>
       </div>
-      <figcaption><span class="lp-shot-cap pill--violet">AI Analyst</span></figcaption>
+      <figcaption><span class="lp-shot-cap pill--violet">Owner profiles</span></figcaption>
     </figure>
     </div>
   </div>
@@ -799,7 +799,9 @@ themeToggle.addEventListener('click', () => {
   window.addEventListener('kodo:themechange', update);
 })();
 
-// Screenshots: fade up on first scroll into view (static under reduced motion);
+// Screenshots: fetched only when within 200px of the viewport (native
+// loading="lazy" starts ~1250px early, i.e. on first load right under the
+// video); fade up on first scroll into view (static under reduced motion);
 // a failed image leaves the frame's --bg-alt background, no broken-image icon
 (function() {
   document.querySelectorAll('.lp-frame img').forEach(img => {
@@ -807,6 +809,19 @@ themeToggle.addEventListener('click', () => {
     if (img.complete && img.currentSrc && img.naturalWidth === 0) fail();
     img.addEventListener('error', fail);
   });
+  const shots = document.querySelectorAll('.lp-shot');
+  const load = fig => fig.querySelectorAll('[data-srcset], [data-src]').forEach(el => {
+    if (el.dataset.srcset) el.srcset = el.dataset.srcset;
+    if (el.dataset.src) el.src = el.dataset.src;
+  });
+  if ('IntersectionObserver' in window) {
+    const near = new IntersectionObserver(es => {
+      es.forEach(e => { if (e.isIntersecting) { load(e.target); near.unobserve(e.target); } });
+    }, { rootMargin: '200px 0px' });
+    shots.forEach(fig => near.observe(fig));
+  } else {
+    shots.forEach(load);
+  }
   if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const items = document.querySelectorAll('.lp-fade');
   items.forEach(el => el.classList.add('lp-fade-js'));
