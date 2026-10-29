@@ -257,12 +257,10 @@ function gmapStyles() {
 }
 
 
-const KPI_DELTAS = {
-  'kpi-keys':   { text: '+6.2% YoY',    up: true },
-  'kpi-occ':    { text: '+3.1 pts YoY', up: true },
-  'kpi-adr':    { text: '+8.4% YoY',    up: true },
-  'kpi-revpar': { text: '+10.8% YoY',   up: true },
-};
+// Year-on-year change pills for the dashboard KPI cards. Empty: the old
+// values (+6.2% YoY and so on) were fixed numbers with no prior-year data
+// behind them. Fill in from real data when a comparison period exists.
+const KPI_DELTAS = {};
 
 Chart.register(ChartDataLabels);
 
@@ -379,15 +377,23 @@ const fmt = {
 };
 
 // ─── Period labels ────────────────────────────────────────────────
-// One wording for "which period does this figure cover", used by every
-// KPI card and Excel export. period_label() in app.py writes the same
-// strings into the PDF report; keep the two in step.
+// One wording for "which period does this figure cover, and when was it
+// last updated", used by every KPI card and Excel export. period_label() /
+// period_caption() in utils.py write the same strings into the PDF report;
+// keep the two in step.
+//
+// Headline cards show the most recent period the data supports (last 30
+// days, latest month, last 12 months, or a snapshot as of today). A past
+// full year (FY 2025, 2024) is never a headline: such a card shows "Not
+// available yet" with the period of the last known figure (unavailable()),
+// and the old figures appear only as history (history()).
 //   {kind:'fy', year:2025}                      → FY 2025
 //   {kind:'year', year:2025}                    → 2025          (calendar year)
 //   {kind:'month', year:2026, month:9}          → Sep 2026
 //   {kind:'ltm', year:2026, month:9}            → Last 12 months to Sep 2026
 //   {kind:'season', season:'Summer', year:2026} → Summer 2026
-//   {kind:'days', days:30, end:'2026-06-01'}    → Last 30 days to 1 Jun 2026
+//   {kind:'days', days:30}                      → Last 30 days   (ending today or yesterday)
+//   {kind:'window', days:30, end:'2026-06-01'}  → 30 days to 1 Jun 2026   (an older window)
 //   {kind:'range', start:'2026-03-04', end:'2026-06-01'} → 4 Mar – 1 Jun 2026
 //   {kind:'asof', date:Date|'YYYY-MM-DD'}       → As of 28 Oct 2026
 //   {kind:'forecast', year:2026}                → 2026 forecast
@@ -406,7 +412,8 @@ const KodoPeriod = (() => {
       case 'month':    return `${MON[p.month - 1]} ${p.year}`;
       case 'ltm':      return `Last 12 months to ${MON[p.month - 1]} ${p.year}`;
       case 'season':   return `${p.season} ${p.year}`;
-      case 'days':     return `Last ${p.days} days to ${day(p.end)}`;
+      case 'days':     return `Last ${p.days} days`;
+      case 'window':   return `${p.days} days to ${day(p.end)}`;
       case 'range': {
         const sameYear = toDate(p.start).getFullYear() === toDate(p.end).getFullYear();
         return `${day(p.start, !sameYear)} – ${day(p.end)}`;
@@ -432,13 +439,15 @@ const KodoPeriod = (() => {
     return [source && `Source: ${source}`, updated && `Last updated ${day(updated)}`, note]
       .filter(Boolean).join(' · ');
   }
-  // Write the period line into a KPI card, directly under its label, with
-  // what the figure is compared against (e.g. 'vs FY 2024') when it is. With
-  // no period (not determinable from the data) the line stays blank so the
-  // values in a row still line up.
-  function set(card, p, tipText, compare) {
-    if (typeof card === 'string') card = document.getElementById(card);
-    if (!card) return;
+  // "Last 30 days · vs comp set, same dates · updated 29 Oct 2026"
+  function caption(p, { compare, updated } = {}) {
+    const l = label(p);
+    return l ? [l, compare, updated && `updated ${day(updated)}`].filter(Boolean).join(' · ') : '';
+  }
+  const history   = p => p ? `History · ${label(p)}` : '';
+  const lastKnown = p => p ? `Last known figure: ${label(p)}` : '';
+
+  function periodEl(card) {
     let el = card.querySelector('.kpi-period');
     if (!el) {
       el = document.createElement('span');
@@ -446,14 +455,40 @@ const KodoPeriod = (() => {
       const anchor = card.querySelector('.kpi-label, .bench-kpi-title');
       if (anchor) anchor.after(el); else card.prepend(el);
     }
-    const text = label(p) && compare ? `${label(p)} · ${compare}` : label(p);
+    return el;
+  }
+  // Write the period line into a KPI card, directly under its label: the
+  // period, what the figure is compared against, and the update date (opts
+  // {compare, updated}; a string is taken as compare). With no period (not
+  // determinable from the data) the line stays blank so the values in a
+  // row still line up.
+  function set(card, p, tipText, opts) {
+    if (typeof card === 'string') card = document.getElementById(card);
+    if (!card) return;
+    const el = periodEl(card);
+    const text = caption(p, typeof opts === 'string' ? { compare: opts } : (opts || {}));
     el.textContent = text || ' ';
     el.classList.toggle('kpi-period--none', !text);
     if (text && tipText) el.title = tipText; else el.removeAttribute('title');
     if (text) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true');
   }
-  return { label, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set, date: day,
-           today: () => ({ kind: 'asof', date: new Date() }) };
+  // No current figure for this card: "Not available yet" in the muted style,
+  // its unit and change pill hidden, and the period the last known figure
+  // covers (shown elsewhere only as history). Never the old value itself.
+  function unavailable(card, lastP, tipText) {
+    if (typeof card === 'string') card = document.getElementById(card);
+    if (!card) return;
+    const v = card.querySelector('.kpi-value');
+    if (v) { v.textContent = 'Not available yet'; v.classList.add('kpi-value--na'); }
+    card.querySelectorAll('.kpi-meta, .kpi-delta, .kpi-sub').forEach(e => { e.style.display = 'none'; });
+    const el = periodEl(card);
+    el.textContent = lastKnown(lastP) || '\u00a0';
+    el.classList.toggle('kpi-period--none', !lastP);
+    if (lastP && tipText) el.title = tipText; else el.removeAttribute('title');
+    el.removeAttribute('aria-hidden');
+  }
+  return { label, caption, history, lastKnown, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set,
+           unavailable, date: day, today: () => ({ kind: 'asof', date: new Date() }) };
 })();
 
 // Performance figures (occupancy, ADR, RevPAR) come from performance.csv,
@@ -471,6 +506,13 @@ function perfTipOf(list) {
   return KodoPeriod.tip({ source });
 }
 const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
+
+// Charts and tables still built on the past full-year performance figures
+// say so: " · History · FY 2025" after their unit line.
+function labelPerfHistory() {
+  const h = KodoPeriod.history(perfPeriodOf(hotels));
+  document.querySelectorAll('.perf-history').forEach(el => { el.textContent = h ? ' · ' + h : ''; });
+}
 
 // ─── Aggregation ──────────────────────────────────────────────────
 
@@ -563,10 +605,13 @@ function renderKPIs() {
   set('kpi-adr',    fmt.mad(kpis.adr_mad));
   set('kpi-revpar', fmt.mad(kpis.revpar_mad));
 
+  // Keys: a live count. Occupancy, ADR, RevPAR: only a past full year
+  // exists (performance.csv), so there is no current headline figure.
   const list = filteredByCity();
   const perfP = perfPeriodOf(list), perfTip = perfTipOf(list);
   KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
-  ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => KodoPeriod.set(id, perfP, perfTip));
+  ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => KodoPeriod.unavailable(id, perfP, perfTip));
+  labelPerfHistory();
 
   const sub = document.getElementById('dashboard-sub');
   sub.innerHTML = state.city === 'all'
@@ -750,7 +795,8 @@ function renderBrandTable() {
 
   const sub = document.getElementById('brand-table-sub');
   const dest = state.city === 'all' ? 'All destinations' : state.city;
-  sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''}`;
+  const hist = KodoPeriod.history(perfPeriodOf(hotels));
+  sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''}` + (hist ? ` · ${hist}` : '');
 }
 
 // ─── Brands screen ────────────────────────────────────────────────
@@ -798,7 +844,8 @@ function renderBrandsKPIs() {
   document.querySelector('#brnkpi-largest .kpi-value').textContent  = largest  ? largest.brand_group  : '—';
 
   ['brnkpi-groups', 'brnkpi-keys', 'brnkpi-largest'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), COUNT_TIP));
-  KodoPeriod.set('brnkpi-champion', perfPeriodOf(hotels), perfTipOf(hotels));
+  // The RevPAR champion is ranked on past full-year RevPAR: not a current headline
+  KodoPeriod.unavailable('brnkpi-champion', perfPeriodOf(hotels), perfTipOf(hotels));
 }
 
 function brandLogoOrInitials(bg, size) {
@@ -1018,7 +1065,7 @@ function showBrandDetail(brandGroup, prevScreen) {
   setKpi('brand-bkpi-adr',    fmt.mad(adr));
   setKpi('brand-bkpi-revpar', fmt.mad(revpar));
   KodoPeriod.set('brand-bkpi-keys', KodoPeriod.today(), COUNT_TIP);
-  ['brand-bkpi-occ', 'brand-bkpi-adr', 'brand-bkpi-revpar'].forEach(id => KodoPeriod.set(id, perfPeriodOf(brandHotelsData), perfTipOf(brandHotelsData)));
+  ['brand-bkpi-occ', 'brand-bkpi-adr', 'brand-bkpi-revpar'].forEach(id => KodoPeriod.unavailable(id, perfPeriodOf(brandHotelsData), perfTipOf(brandHotelsData)));
 
   // Switch to brand screen FIRST so the canvas has visible dimensions for Chart.js
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -1195,7 +1242,7 @@ async function showHotelDetail(id) {
   setKv('hkpi-adr',    fmt.mad(h.adr_mad));
   setKv('hkpi-revpar', fmt.mad(h.revpar_mad));
   KodoPeriod.set('hkpi-detail-keys', KodoPeriod.today(), COUNT_TIP);
-  ['hkpi-occ', 'hkpi-adr', 'hkpi-revpar'].forEach(id => KodoPeriod.set(id, perfPeriodOf([h]), perfTipOf([h])));
+  ['hkpi-occ', 'hkpi-adr', 'hkpi-revpar'].forEach(id => KodoPeriod.unavailable(id, perfPeriodOf([h]), perfTipOf([h])));
 
   // ── 3. Estimated financials (range model) ──
   renderHotelFinancials(h);
@@ -1927,7 +1974,11 @@ function renderHotelsTable() {
   if (hkpiCities) hkpiCities.textContent = totalCities;
   if (hkpiKeys)   hkpiKeys.textContent   = totalKeys.toLocaleString('en');
   [hkpiTotal, hkpiCities, hkpiKeys].forEach(el => el && KodoPeriod.set(el.closest('.kpi-card'), KodoPeriod.today(), COUNT_TIP));
-  KodoPeriod.set('hkpi-perf-card', perfPeriodOf(hotels), perfTipOf(hotels));
+  // Describes the estimates behind the history figures, so its line says history
+  const perfCard = document.getElementById('hkpi-perf-card');
+  if (perfCard) KodoPeriod.set(perfCard, perfPeriodOf(hotels), perfTipOf(hotels));
+  const perfLine = perfCard && perfCard.querySelector('.kpi-period');
+  if (perfLine && perfPeriodOf(hotels)) perfLine.textContent = KodoPeriod.history(perfPeriodOf(hotels));
 
   const countEl = document.getElementById('hotels-results-count');
   if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
@@ -3777,9 +3828,11 @@ function getBenchDateRange(range = benchState.dateRange) {
 }
 
 // The period a benchmarking figure really covers: the dates of the selected
-// property's daily records inside the window. A window the data fills
-// completely reads "Last 30 days to 1 Jun 2026"; anything else (YTD, which
-// starts before the first record) is labelled by the dates it covers.
+// property's daily records inside the window. A full window reads "Last 30
+// days" only when the data runs up to today or yesterday; an older one
+// reads "30 days to 1 Jun 2026" (the demo comp set ends on 1 Jun 2026).
+// Anything else (YTD, which starts before the first record) is labelled by
+// the dates it covers.
 function benchPeriod(range = benchState.dateRange) {
   if (!benchmarkData) return null;
   const [s, e] = getBenchDateRange(range);
@@ -3789,7 +3842,8 @@ function benchPeriod(range = benchState.dateRange) {
   if (!dates.length) return null;
   const last = dates[dates.length - 1];
   if (typeof range === 'number' && dates.length === range && last === localIsoDate(e)) {
-    return { kind: 'days', days: range, end: last };
+    const ageDays = Math.round((new Date(localIsoDate(new Date()) + 'T00:00:00') - new Date(last + 'T00:00:00')) / 864e5);
+    return ageDays <= 1 ? { kind: 'days', days: range } : { kind: 'window', days: range, end: last };
   }
   return { kind: 'range', start: dates[0], end: last };
 }
@@ -5187,7 +5241,7 @@ function exportHotels() {
     'Occupancy %':      h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
     'ADR (MAD)':        h.adr_mad || 'N/A',
     'RevPAR (MAD)':     h.revpar_mad || 'N/A',
-    'Performance Period': KodoPeriod.label(KodoPeriod.fromData(h.period)) || 'N/A',
+    'Performance Period': KodoPeriod.history(KodoPeriod.fromData(h.period)) || 'N/A',
     'Keys As Of':       asOf,
     'Year Established': h.year_opened_verified === 'verified' && h.year_opened != null ? h.year_opened : 'N/A',
     'Owner':            h.owner || 'Undisclosed',
@@ -5227,7 +5281,7 @@ function exportBrands() {
   if (!brandsData) return;
   const date = new Date().toISOString().split('T')[0];
   const asOf = KodoPeriod.label(KodoPeriod.today());
-  const perfLabel = bg => KodoPeriod.label(perfPeriodOf((hotels || []).filter(h => h.brand_group === bg))) || 'N/A';
+  const perfLabel = bg => KodoPeriod.history(perfPeriodOf((hotels || []).filter(h => h.brand_group === bg))) || 'N/A';
   const data = filteredBrands().map((b, i) => ({
     'Rank':              i + 1,
     'Brand Group':       b.brand_group,

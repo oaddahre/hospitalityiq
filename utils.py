@@ -49,9 +49,11 @@ def fmt_num(value, spec=",.0f", scale=1, prefix="", suffix="", na=NA):
 
 
 # ─── Period labels ──────────────────────────────────────────────────────────
-# Same wording as KodoPeriod.label() in static/js/main.js (KPI cards and Excel
+# Same wording as KodoPeriod in static/js/main.js (KPI cards and Excel
 # exports), so a figure carries the same period caption on screen and in the
-# PDF report. Keep the two in step.
+# PDF report. Keep the two in step. A past full year is never a headline
+# figure: headlines with only such data show NOT_AVAILABLE and
+# period_last_known(); the old figures appear as period_history().
 _MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
@@ -66,7 +68,7 @@ def _day(d, with_year=True):
 
 def period_label(p):
     """'FY 2025', '2025', 'Sep 2026', 'Last 12 months to Sep 2026', 'Summer 2026',
-    'Last 30 days to 1 Jun 2026', '4 Mar – 1 Jun 2026', 'As of 28 Oct 2026',
+    'Last 30 days', '30 days to 1 Jun 2026', '4 Mar – 1 Jun 2026', 'As of 28 Oct 2026',
     '2026 forecast'; '' for None or an unknown kind."""
     if not p:
         return ""
@@ -82,7 +84,9 @@ def period_label(p):
     if k == "season":
         return f"{p['season']} {p['year']}"
     if k == "days":
-        return f"Last {p['days']} days to {_day(p['end'])}"
+        return f"Last {p['days']} days"
+    if k == "window":
+        return f"{p['days']} days to {_day(p['end'])}"
     if k == "range":
         same_year = str(p["start"])[:4] == str(p["end"])[:4]
         return f"{_day(p['start'], not same_year)} – {_day(p['end'])}"
@@ -93,6 +97,27 @@ def period_label(p):
     if k == "multi":
         return " / ".join(period_label(x) for x in p["parts"])
     return ""
+
+
+NOT_AVAILABLE = "Not available yet"
+
+
+def period_caption(p, compare=None, updated=None):
+    """'Last 30 days · vs comp set, same dates · updated 29 Oct 2026'."""
+    label = period_label(p)
+    if not label:
+        return ""
+    return " · ".join(x for x in (label, compare, updated and f"updated {_day(updated)}") if x)
+
+
+def period_history(p):
+    """'History · FY 2025'."""
+    return f"History · {period_label(p)}" if p else ""
+
+
+def period_last_known(p):
+    """'Last known figure: FY 2025'."""
+    return f"Last known figure: {period_label(p)}" if p else ""
 
 
 def period_from_data(code):

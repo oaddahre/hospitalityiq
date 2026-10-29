@@ -836,6 +836,16 @@ body.light .nav-logout  { color: var(--text-2); }
   margin: -2px 0 6px;
 }
 .kpi-period[title] { cursor: help; }
+/* A KPI with no current figure (KodoPeriod.unavailable): muted, smaller,
+   so "Not available yet" fits the card without changing its height */
+.kpi-card .kpi-value.kpi-value--na {
+  color: var(--text-3);
+  font-size: 12px !important;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+}
 .bench-kpi-card .kpi-period { text-align: left; margin: -8px 0 10px; }
 .kpi-delta { font-weight: 500; width: 100%; }
 .kpi-delta.up   { color: var(--positive); }
