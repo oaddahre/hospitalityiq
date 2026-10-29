@@ -200,8 +200,8 @@
       <div class="acc-field">
         <div class="acc-field__label">Plan</div>
         <div class="acc-field__value">
-          <span class="tier-badge tier-badge--{{ user.tier }} pill--grey">
-            {{ {'observer': 'Observer', 'benchmarker': 'Benchmarker', 'advisory': 'Advisory'}.get(user.tier, user.tier) }}
+          <span class="tier-badge tier-badge--{{ plan }} pill--plan" data-plan="{{ plan }}">
+            {{ {'observer': 'Observer', 'benchmarker': 'Benchmarker', 'advisory': 'Advisory'}[plan] }}
           </span>
         </div>
       </div>

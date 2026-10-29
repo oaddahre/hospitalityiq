@@ -426,8 +426,8 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   padding: 1px 7px;
   border-radius: 999px;
   border: none;
-  background: var(--cat-1-tint);
-  color: var(--cat-1-text);
+  background: var(--pill-tint);   /* data-plan="admin": the ink pill (tokens.css) */
+  color: var(--pill-text);
   font-size: 9px;
   font-weight: 500;
   text-transform: uppercase;
@@ -707,7 +707,5 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   .adm-btn-text { min-height: 40px; padding: 9px 0; height: auto; }
 }
 
-/* Tier labels: neutral outline, no colour (status colours are .pill--*) */
-.adm-pill--tier { color: var(--text-2); border-color: var(--border); }
 /* Pills hug their text inside column layouts (e.g. Featured under a news title) */
 .adm-pill { align-self: flex-start; width: max-content; max-width: 100%; }

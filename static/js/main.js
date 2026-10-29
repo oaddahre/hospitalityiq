@@ -4862,9 +4862,12 @@ fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
   if (!me) return;
   const badge = document.getElementById('tier-badge');
   if (!badge) return;
-  const label = { observer: 'Observer', benchmarker: 'Benchmarker', advisory: 'Advisory' }[me.tier] || me.tier;
-  badge.textContent = label;
-  badge.className = `tier-badge tier-badge--${me.tier} pill--grey`;
+  // Colour comes from data-plan (tokens.css); an unknown or missing plan shows as Observer
+  const PLAN_LABELS = { observer: 'Observer', benchmarker: 'Benchmarker', advisory: 'Advisory' };
+  const plan = PLAN_LABELS[me.tier] ? me.tier : 'observer';
+  badge.textContent = PLAN_LABELS[plan];
+  badge.className = `tier-badge tier-badge--${plan} pill--plan`;
+  badge.dataset.plan = plan;
   badge.style.display = '';
   window._kodoUser = me;
   // Hide export buttons and dropdowns for Observer tier

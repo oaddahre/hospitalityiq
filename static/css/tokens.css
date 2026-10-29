@@ -104,7 +104,7 @@
    Geometry follows the platform's Reports .list-pill.
    ═══════════════════════════════════════════════════════════════════ */
 .pill--blue, .pill--green, .pill--orange, .pill--violet,
-.pill--sky, .pill--grey, .pill--red {
+.pill--sky, .pill--grey, .pill--red, .pill--plan {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
@@ -120,7 +120,7 @@
   white-space: nowrap;
 }
 .pill--blue::before, .pill--green::before, .pill--orange::before, .pill--violet::before,
-.pill--sky::before, .pill--grey::before, .pill--red::before {
+.pill--sky::before, .pill--grey::before, .pill--red::before, .pill--plan::before {
   content: "";
   flex: none;
   width: 0.3em;
@@ -137,6 +137,21 @@
 .pill--sky    { --pill-tint: var(--cat-5-tint); --pill-text: var(--cat-5-text); --pill-dot: var(--cat-5-dot); }
 .pill--grey   { --pill-tint: var(--cat-6-tint); --pill-text: var(--cat-6-text); --pill-dot: var(--cat-6-dot); }
 .pill--red    { --pill-tint: var(--cat-7-tint); --pill-text: var(--cat-7-text); --pill-dot: var(--cat-7-dot); }
+
+/* ═══ Plans ═════════════════════════════════════════════════════════
+   The one mapping from plan key to colour. Plan keys are the "tier" on a
+   user (users.json) and the "plan" on an organisation (organisations.json):
+   observer | benchmarker | advisory. Any element with data-plan="<key>"
+   gets the family's --pill-* values; .pill--plan gives it the pill shape.
+   A missing or unknown key falls back to Observer. "admin" is the internal
+   account tag: an ink pill (--text fill, --bg label; white on near-black
+   in light mode, inverted in dark). Green and red stay semantic, never
+   plans.
+   ═══════════════════════════════════════════════════════════════════ */
+[data-plan]                 { --pill-tint: var(--cat-6-tint); --pill-text: var(--cat-6-text); --pill-dot: var(--cat-6-dot); }  /* observer, unknown */
+[data-plan="benchmarker"]   { --pill-tint: var(--cat-1-tint); --pill-text: var(--cat-1-text); --pill-dot: var(--cat-1-dot); }  /* blue */
+[data-plan="advisory"]      { --pill-tint: var(--cat-4-tint); --pill-text: var(--cat-4-text); --pill-dot: var(--cat-4-dot); }  /* violet */
+[data-plan="admin"]         { --pill-tint: var(--text);       --pill-text: var(--bg);         --pill-dot: var(--bg); }          /* ink */
 
 /* Solid blue pill (selected filter, "Featured"): always a white label */
 .pill--solid {

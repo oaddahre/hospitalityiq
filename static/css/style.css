@@ -429,9 +429,6 @@ body.light .nav-logout  { color: var(--text-2); }
   color: var(--text-muted);
   flex-shrink: 0;
 }
-.tier-badge--observer    { color: var(--text-2); }
-.tier-badge--benchmarker { color: var(--text-2); }
-.tier-badge--advisory    { color: var(--text-2); }
 
 /* Badges rendered inside the top nav must match .nav-link's 11px */
 .navbar .tier-badge {
@@ -5990,7 +5987,7 @@ body.light .nav-logout  { color: var(--text-2); }
    those classes win over the older per-label rules above; each label keeps
    its own font size and letter case. */
 body .pill--blue, body .pill--green, body .pill--orange, body .pill--violet,
-body .pill--sky, body .pill--grey, body .pill--red {
+body .pill--sky, body .pill--grey, body .pill--red, body .pill--plan {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
@@ -6026,6 +6023,11 @@ body .kpi-delta[class*="pill--"] {
 .segment-badge.segment-badge { font-size: 9px !important; letter-spacing: 0.06em !important; }
 /* The navbar tier pill uses the label weight, not the nav-link weight */
 .navbar-meta .tier-badge[class*="pill--"] { font-weight: 600; }
+/* Top-bar plan pill only: no dot (every other pill keeps its dot). The
+   0.12em tracking leaves space after the last letter, so the right
+   padding gives that back and the label sits centred. */
+.navbar-meta .tier-badge.pill--plan::before { content: none; }
+body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
 
 /* Benchmarking KPI cards: two columns need ~560px (each card's value row is
    ~270px wide), so on phones the right-hand cards ran off the screen. One

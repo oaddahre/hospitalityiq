@@ -1496,7 +1496,11 @@ def index():
 @app.route("/account")
 @login_required
 def account_page():
-    return render_template("account.html", user=current_user)
+    # The plan the account actually has (an active organisation's plan
+    # wins), as the top bar shows it; an unknown key shows as Observer
+    plan = effective_tier(current_user)
+    return render_template("account.html", user=current_user,
+                           plan=plan if plan in TIER_ORDER else "observer")
 
 
 @app.route("/account/change-password", methods=["POST"])

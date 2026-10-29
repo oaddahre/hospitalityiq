@@ -352,8 +352,9 @@ const STATUS_META = {
   disabled: { label: 'Disabled', family: 'grey'   },
 };
 // Status pills use the colour families (tokens.css): Active green, Pending
-// orange, Disabled grey. Tier labels are neutral outlines (.adm-pill--tier),
-// since being an admin is called out separately by .adm-admin-tag.
+// orange, Disabled grey. Tier pills take their colour from data-plan (the
+// plan mapping in tokens.css); being an admin is called out separately by
+// .adm-admin-tag (data-plan="admin", the ink pill).
 const TIER_META = {
   observer:    { label: 'Observer' },
   benchmarker: { label: 'Benchmarker' },
@@ -468,15 +469,16 @@ function renderUsers() {
     ledger.innerHTML = '<p class="adm-empty">No users match your filters.</p>';
   } else {
     ledger.innerHTML = pageItems.map(u => {
-      const tierMeta = TIER_META[u.tier] || TIER_META.observer;
+      const planKey = TIER_META[u.tier] ? u.tier : 'observer';
+      const tierMeta = TIER_META[planKey];
       const statusMeta = STATUS_META[statusBucket(u)];
       return `<div class="adm-row adm-row-users">
         <div class="adm-row-main" data-label="Name" style="flex-direction:row;align-items:center;gap:6px">
           <span class="adm-row-name" title="${escHtml(u.name || u.email)}">${escHtml(u.name || '—')}</span>
-          ${u.is_admin ? '<span class="adm-admin-tag">Admin</span>' : ''}
+          ${u.is_admin ? '<span class="adm-admin-tag" data-plan="admin">Admin</span>' : ''}
         </div>
         <span class="adm-row-email" data-label="Email" title="${escHtml(u.email)}">${escHtml(u.email)}</span>
-        <span data-label="Tier"><span class="adm-pill adm-pill--tier">${tierMeta.label}</span></span>
+        <span data-label="Tier"><span class="adm-pill pill--plan" data-plan="${planKey}">${tierMeta.label}</span></span>
         <span data-label="Status"><span class="adm-pill pill--${statusMeta.family}">${statusMeta.label}</span></span>
         <span class="adm-row-meta" data-label="Joined">${shortDate(u.created_at)}</span>
         <span class="adm-row-meta" data-label="Last login">${u.last_login ? shortDate(u.last_login) : 'Never'}</span>
