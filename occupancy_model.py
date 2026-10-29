@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import pytz
 
+from run_lock import acquire_lock
+
 MOROCCO_TZ      = pytz.timezone('Africa/Casablanca')
 BASE_DIR        = Path(__file__).parent.resolve()
 # Runtime state and seed CSVs follow the DATA_DIR env var (inherited from
@@ -411,9 +413,22 @@ class OccupancyModel:
         return None
 
 
+OCCUPANCY_LOCK = str(DATA_DIR / 'occupancy.lock')
+
+
 def run_occupancy_model():
-    model = OccupancyModel()
-    return model.run()
+    # One run at a time: the scheduler (04:00), the end of a scraper run and
+    # the admin button can all start it, and two runs would write
+    # estimated_occupancy.csv at once.
+    lock = acquire_lock(OCCUPANCY_LOCK)
+    if lock is None:
+        print('Occupancy model already running in another process: this run exits')
+        return None
+    try:
+        model = OccupancyModel()
+        return model.run()
+    finally:
+        lock.close()
 
 
 # ─── CALIBRATION ─────────────────────────────────────────────────────────────

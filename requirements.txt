@@ -7,7 +7,7 @@ python-dotenv
 fpdf2
 playwright
 serpapi
-apscheduler
+apscheduler>=3.10,<4
 pytz
 requests
 beautifulsoup4

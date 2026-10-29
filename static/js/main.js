@@ -487,7 +487,7 @@ const KodoPeriod = (() => {
     if (lastP && tipText) el.title = tipText; else el.removeAttribute('title');
     el.removeAttribute('aria-hidden');
   }
-  return { label, caption, history, lastKnown, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set,
+  return { label, caption, history, lastKnown, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set, day,
            unavailable, date: day, today: () => ({ kind: 'asof', date: new Date() }) };
 })();
 
@@ -1483,6 +1483,21 @@ async function renderRateCalendar(hotelId) {
   const rates   = data.rates || [];
   const sources = data.source_breakdown || {};
 
+  // Only collected prices are shown: with none, the card says so rather
+  // than filling the month with an estimate.
+  const lastLive = data.last_live
+    ? (data.live_stale
+        ? `Last live rates: ${KodoPeriod.day(data.last_live)} · not updated since`
+        : `Last updated: ${KodoPeriod.day(data.last_live)} · Updates daily at 3:00 AM`)
+    : '';
+  if (!rates.length) {
+    calEl.innerHTML = '<div class="bar-cal-loading">Not available yet</div>';
+    badgeEl.style.display = 'none';
+    updEl.textContent = lastLive;
+    return;
+  }
+  badgeEl.style.display = '';
+
   // Build a map stay_date → rate row (prefer live over estimated)
   const rateMap = {};
   for (const r of rates) {
@@ -1506,15 +1521,14 @@ async function renderRateCalendar(hotelId) {
   }
 
   // Dominant source for badge
-  let dominantSrc = 'estimated';
+  let dominantSrc = 'unavailable';
   let maxCount = 0;
   for (const [src, cnt] of Object.entries(sources)) {
     if (cnt > maxCount && src !== 'unavailable') { maxCount = cnt; dominantSrc = src; }
   }
   badgeEl.textContent = `Source: ${SOURCE_LABEL[dominantSrc] || dominantSrc}`;
 
-  updEl.textContent = data.last_scraped
-    ? `Last updated: ${data.last_scraped} · Updates daily at 3:00 AM` : '';
+  updEl.textContent = lastLive || 'Manual prices only · no live rates collected yet';
 
   // Build grid
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -1549,6 +1563,7 @@ async function renderOccCalendar(hotelId) {
   const avgBar  = document.getElementById('hotel-cal-averages');
   const avgText = document.getElementById('hcal-avg-bar-text');
   const confEl  = document.getElementById('hcal-conf-note');
+  const noteEl  = document.getElementById('hocc-note');
 
   calEl.innerHTML = '<div class="bar-cal-loading">Loading occupancy data…</div>';
 
@@ -1597,12 +1612,20 @@ async function renderOccCalendar(hotelId) {
   }
   calEl.innerHTML = html;
 
-  if (data.model_run_date) {
-    badgeEl.textContent = `Model: ${data.model_run_date}`;
+  // Modelled, not measured: say so, with the run date and how confident
+  // the model is (most days' level; "mixed" when no level has a majority).
+  const cc = data.confidence_counts || {};
+  const nDays = (cc.high || 0) + (cc.medium || 0) + (cc.low || 0);
+  const top = ['high', 'medium', 'low'].find(k => nDays && (cc[k] || 0) > nDays / 2);
+  const confLabel = top ? top[0].toUpperCase() + top.slice(1) : (nDays ? 'Mixed' : '');
+  badgeEl.textContent = 'Kodo Estimates';
+  if (noteEl) {
+    noteEl.textContent = ['Kodo Estimates · modelled, not measured',
+      data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
+      confLabel && `Confidence: ${confLabel}`].filter(Boolean).join(' · ');
   }
 
   // Averages bar
-  const cc = data.confidence_counts || {};
   if (data.avg_occupancy_30d != null) {
     const revStr = data.avg_revpar_30d ? ` · Est. RevPAR MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '';
     avgText.textContent = `30-day averages: Est. Occupancy ${data.avg_occupancy_30d}%${revStr}`;
@@ -3664,27 +3687,25 @@ async function initBenchmarking() {
   updateBenchFreshness();
 }
 
-async function updateBenchFreshness() {
+// What the Benchmarking page's figures are. demo_benchmarking.json is
+// sample data (the API marks it "sample"): the page says so with its dates
+// and never shows "Live data available". That pill is only for a real data
+// feed whose last day is today or yesterday.
+function updateBenchFreshness() {
   const freshnessEl = document.getElementById('bench-freshness-text');
   const modeEl      = document.getElementById('bench-mode-badge');
-  if (!freshnessEl) return;
-  try {
-    const [scraperRes, occRes] = await Promise.all([
-      fetch('/api/scraper/status').then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('/api/occupancy/status').then(r => r.ok ? r.json() : null).catch(() => null),
-    ]);
-    const hasLive = scraperRes && (scraperRes.hotels_with_live > 0 || scraperRes.done_today > 0);
-    const hasOcc  = occRes && occRes.has_data;
-    if (hasLive || hasOcc) {
-      const lastScrape = scraperRes?.last_run?.slice(0, 10) || '—';
-      const modelRun   = occRes?.model_run_date || '—';
-      freshnessEl.textContent = `Data as of ${lastScrape} · Occupancy model run ${modelRun}`;
-      if (modeEl) { modeEl.textContent = 'Live data available'; modeEl.classList.add('pill--green'); }
-    } else {
-      freshnessEl.textContent = 'Demo mode — sample Marrakech luxury data';
-    }
-  } catch (e) {
-    freshnessEl.textContent = 'Demo mode — sample Marrakech luxury data';
+  if (!freshnessEl || !benchmarkData) return;
+  const dates = (benchmarkData.daily || []).map(d => d.date).sort();
+  const span  = dates.length ? KodoPeriod.label({ kind: 'range', start: dates[0], end: dates[dates.length - 1] }) : '';
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const live = benchmarkData.sample === false && dates.length
+    && dates[dates.length - 1] >= localIsoDate(yesterday);
+  if (live) {
+    freshnessEl.textContent = `Data as of ${KodoPeriod.day(dates[dates.length - 1])}`;
+    if (modeEl) { modeEl.textContent = 'Live data available'; modeEl.classList.add('pill--green'); }
+  } else {
+    freshnessEl.textContent = `Sample data · ${span || 'no dates'} · Marrakech luxury demo hotels, not real performance`;
+    if (modeEl) { modeEl.textContent = 'Demo mode — sample Marrakech luxury comp set'; modeEl.classList.remove('pill--green'); }
   }
 }
 

@@ -28,6 +28,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
+from run_lock import acquire_lock, lock_is_held
 from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
                    period_history, period_last_known, NOT_AVAILABLE)
 
@@ -35,12 +36,13 @@ load_dotenv()
 
 # ─── Scraper / occupancy model helpers (graceful import) ─────────────────────
 try:
-    from scraper import compute_hotel_financials
+    from scraper import compute_hotel_financials, serpapi_account
     from occupancy_model import OccupancyModel, estimate_occupancy, classify_hotel_type
     SCRAPER_MODULE_OK = True
 except Exception:
     SCRAPER_MODULE_OK = False
     def compute_hotel_financials(*a, **kw): return {}
+    def serpapi_account(*a, **kw): return {'status': 'error', 'message': 'scraper module not available'}
     def classify_hotel_type(*a, **kw): return 'city_business'
     OccupancyModel = None
     def estimate_occupancy(*a, **kw): return 0.60, {}
@@ -179,7 +181,18 @@ _login_failures: dict = {}   # {email: {"count": int, "since": datetime}}
 _reset_requests: dict = {}   # {email: datetime of last forgot-password request} — spam cooldown
 _verification_resend_attempts: dict = {}  # {email: [datetime, ...]} — sliding 1h window, 3/hour/email
 
-# ─── APScheduler — daily rate scraper at 03:00 Casablanca time ───────────────
+# ─── APScheduler — daily jobs, Casablanca time ──────────────────────────────
+# 03:00 rate scraper · 04:00 occupancy model · 09:00 data health check.
+# Only one process runs the scheduler: with several workers, each imports
+# this file, and the first to take scheduler.lock in DATA_DIR keeps it for
+# as long as it lives (the OS frees it when the process ends, and the
+# worker that replaces it takes it over). The scraper and the occupancy
+# model also lock their own runs, so a button press during a scheduled
+# run can't start a second one either.
+SCHEDULER_LOCK = os.path.join(DATA_DIR, 'scheduler.lock')
+SCRAPER_LOCK   = os.path.join(DATA_DIR, 'scraper.lock')
+_scheduler = None
+_scheduler_lock = None
 try:
     import pytz as _tz
     from apscheduler.schedulers.background import BackgroundScheduler
@@ -194,36 +207,63 @@ try:
         subprocess.Popen([sys.executable, occ_path])
         app.logger.info('Occupancy model triggered by scheduler')
 
-    _scheduler = BackgroundScheduler(timezone=_tz.timezone('Africa/Casablanca'))
-    _scheduler.add_job(
-        func=_scheduled_scraper,
-        trigger='cron',
-        hour=3, minute=0,
-        id='daily_rate_scraper',
-        replace_existing=True,
-    )
-    _scheduler.add_job(
-        func=_scheduled_occ_model,
-        trigger='cron',
-        hour=4, minute=0,
-        id='daily_occ_model',
-        replace_existing=True,
-    )
-    _scheduler.add_job(
-        func=lambda: app.logger.info('Keep-alive ping'),
-        trigger='interval',
-        minutes=10,
-        id='keep_alive',
-        replace_existing=True,
-    )
-    _scheduler.start()
+    def _scheduled_health_check():
+        try:
+            _run_health_check()
+        except Exception as e:
+            app.logger.error(f'Data health check failed: {e}', exc_info=True)
 
-    import atexit
-    atexit.register(lambda: _scheduler.shutdown(wait=False))
+    _scheduler_lock = acquire_lock(SCHEDULER_LOCK)
+    if _scheduler_lock is None:
+        app.logger.info(f'Scheduler already running in another process: not started in pid {os.getpid()}')
+    else:
+        _scheduler = BackgroundScheduler(timezone=_tz.timezone('Africa/Casablanca'))
+        _scheduler.add_job(
+            func=_scheduled_scraper,
+            trigger='cron',
+            hour=3, minute=0,
+            id='daily_rate_scraper',
+            replace_existing=True,
+        )
+        _scheduler.add_job(
+            func=_scheduled_occ_model,
+            trigger='cron',
+            hour=4, minute=0,
+            id='daily_occ_model',
+            replace_existing=True,
+        )
+        _scheduler.add_job(
+            func=_scheduled_health_check,
+            trigger='cron',
+            hour=9, minute=0,
+            id='daily_health_check',
+            replace_existing=True,
+        )
+        _scheduler.add_job(
+            func=lambda: app.logger.info('Keep-alive ping'),
+            trigger='interval',
+            minutes=10,
+            id='keep_alive',
+            replace_existing=True,
+        )
+        _scheduler.start()
+        app.logger.info(f'Scheduler started in pid {os.getpid()}: scraper 03:00, occupancy model 04:00, '
+                        'health check 09:00 (Africa/Casablanca)')
+
+        import atexit
+        atexit.register(lambda: _scheduler.shutdown(wait=False))
 except Exception as _e:
     _scheduler = None
     import logging as _logging
-    _logging.getLogger(__name__).warning(f'APScheduler not started: {_e}')
+    _logging.getLogger(__name__).error(
+        f'APScheduler not started: {_e}. The daily scraper, occupancy model and health check will not run.')
+
+
+def scheduler_running() -> bool:
+    """Whether any process runs the scheduler (this one or another worker)."""
+    if _scheduler is not None:
+        return bool(_scheduler.running)
+    return lock_is_held(SCHEDULER_LOCK)
 
 
 # ─── User model ───────────────────────────────────────────────────────────────
@@ -2114,6 +2154,9 @@ def api_benchmarking():
         return jsonify({"error": "Benchmark data not found"}), 404
     with open(BENCH_FILE, encoding="utf-8") as f:
         data = json.load(f)
+    # demo_benchmarking.json is sample data (generate_bench_data.py), never
+    # live: the page says so and never shows "Live data available" for it.
+    data.setdefault("sample", True)
     return jsonify(data)
 
 
@@ -4178,6 +4221,245 @@ SCRAPER_LOG_PATH  = os.path.join(DATA_DIR, 'scraper_log.json')
 PROGRESS_PATH     = os.path.join(DATA_DIR, 'scraper_progress.json')
 SCRAPER_LOG_TXT   = os.path.join(DATA_DIR, 'scraper_log.txt')
 OCCUPANCY_CSV_PATH = os.path.join(DATA_DIR, 'estimated_occupancy.csv')
+HEALTH_STATE_PATH = os.path.join(DATA_DIR, 'health_alert_state.json')
+
+# Sources that count as a live price (manual overrides are entered by hand)
+LIVE_SOURCES = {'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+
+# Data health thresholds: stale when no live price was collected today or
+# on either of the two days before, when the last completed scraper run
+# finished more than 36 hours ago, or when it found a price for fewer
+# than 30% of the nights it checked.
+STALE_PRICE_DAYS  = 3
+STALE_RUN_HOURS   = 36
+MIN_NIGHTS_FOUND  = 0.30
+
+
+def _casablanca_today():
+    try:
+        import pytz
+        return datetime.now(pytz.timezone('Africa/Casablanca')).date()
+    except Exception:
+        return datetime.utcnow().date()
+
+
+def _fmt_day(iso):
+    """'2026-10-07' or an ISO timestamp -> '7 Oct 2026' (with the time for a timestamp)."""
+    if not iso:
+        return 'never'
+    try:
+        d = datetime.fromisoformat(str(iso))
+    except ValueError:
+        return str(iso)
+    out = f"{d.day} {d.strftime('%b %Y')}"
+    return out + (d.strftime(' %H:%M') if len(str(iso)) > 10 else '')
+
+
+def _load_scraper_stats():
+    try:
+        with open(SCRAPER_LOG_PATH, encoding='utf-8') as f:
+            stats = json.load(f)
+        return stats if isinstance(stats, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _data_health():
+    """Is the rate data current? Used by the 09:00 health check, the admin
+    Rate Intelligence panel and /status."""
+    today = _casablanca_today()
+    rows  = _read_rates_csv()
+    last_live = max((r.get('scrape_date', '') for r in rows
+                     if r.get('source') in LIVE_SOURCES and r.get('scrape_status') == 'success'
+                     and r.get('rate_mad')), default='') or None
+    days_since = None
+    if last_live:
+        try:
+            days_since = (today - datetime.strptime(last_live, '%Y-%m-%d').date()).days
+        except ValueError:
+            pass
+
+    stats    = _load_scraper_stats()
+    last_end = stats.get('end_time')
+    hours_since = None
+    if last_end:
+        try:
+            end_dt = datetime.fromisoformat(last_end)
+            now = datetime.now(end_dt.tzinfo) if end_dt.tzinfo else datetime.now()
+            hours_since = round((now - end_dt).total_seconds() / 3600, 1)
+        except ValueError:
+            pass
+
+    # Nights checked and found in the last run (from runs before these
+    # counts were recorded: that run's rows in scraped_rates.csv)
+    total, found = stats.get('nights_total'), stats.get('nights_found')
+    if last_end and total is None:
+        run_date = str(stats.get('start_time') or last_end)[:10]
+        run_rows = [r for r in rows if r.get('scrape_date') == run_date and r.get('source') != 'manual_override']
+        total = len(run_rows)
+        found = sum(1 for r in run_rows if r.get('scrape_status') == 'success')
+    pct = round(100 * found / total) if total else None
+
+    problems = []
+    if last_live is None:
+        problems.append('No live price has been collected yet.')
+    elif days_since is None or days_since >= STALE_PRICE_DAYS:
+        problems.append(f'No live price for {days_since} days: the last one was collected on {_fmt_day(last_live)}.')
+    if hours_since is None:
+        problems.append('No completed scraper run on record.')
+    elif hours_since > STALE_RUN_HOURS:
+        problems.append(f'The last completed scraper run finished {hours_since:.0f} hours ago ({_fmt_day(last_end)}).')
+    if hours_since is not None:
+        if not total:
+            problems.append('The last scraper run checked no nights (check SCRAPER_CITIES).')
+        elif found / total < MIN_NIGHTS_FOUND:
+            problems.append(f'The last scraper run found a price for {found} of {total} nights ({pct}%), under 30%.')
+
+    serp = stats.get('serpapi') or {}
+    return {
+        'status':                'stale' if problems else 'ok',
+        'problems':              problems,
+        'last_live_price':       last_live,
+        'days_since_live_price': days_since,
+        'last_run_finished':     last_end,
+        'hours_since_last_run':  hours_since,
+        'nights_checked':        total,
+        'nights_found':          found,
+        'nights_found_pct':      pct,
+        'serpapi_status':        serp.get('status'),
+        'serpapi_message':       serp.get('message'),
+        'checked_at':            datetime.now().isoformat(timespec='seconds'),
+    }
+
+
+_serpapi_cache = {'at': None, 'data': None}
+
+
+def _serpapi_panel(last_run: dict) -> dict:
+    """SerpApi key status and credits for the admin panel: a live account
+    check (free, cached 10 minutes) plus what the last run ran into."""
+    now = datetime.utcnow()
+    if not _serpapi_cache['at'] or (now - _serpapi_cache['at']).total_seconds() > 600:
+        _serpapi_cache['data'] = serpapi_account(os.environ.get('SERPAPI_KEY', '').strip(), timeout=5)
+        _serpapi_cache['at'] = now
+    live = dict(_serpapi_cache['data'] or {})
+    live['last_run'] = {k: last_run.get(k) for k in ('status', 'message', 'calls', 'errors', 'last_error')}
+    return live
+
+
+def _load_health_state():
+    try:
+        with open(HEALTH_STATE_PATH, encoding='utf-8') as f:
+            st = json.load(f)
+        return st if isinstance(st, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _alert_recipient():
+    """ALERT_EMAIL, else SEED_ADMIN_EMAIL; ALERT_EMAIL=off stops the emails."""
+    to = os.environ.get('ALERT_EMAIL', '').strip() or os.environ.get('SEED_ADMIN_EMAIL', '').strip()
+    return None if to.lower() in ('', 'off', 'none') else to
+
+
+def _health_email_html(h: dict, recovered: bool, since: str | None) -> str:
+    esc = html.escape
+    pct = f" ({h['nights_found_pct']}%)" if h.get('nights_found_pct') is not None else ''
+    facts = [
+        f"Last live price: {esc(_fmt_day(h.get('last_live_price')))}",
+        f"Last completed scraper run: {esc(_fmt_day(h.get('last_run_finished')))}",
+        f"Nights with a price in that run: {h.get('nights_found') or 0} of {h.get('nights_checked') or 0}{pct}",
+    ]
+    if h.get('serpapi_message'):
+        facts.append(f"SerpApi: {esc(h['serpapi_message'])}")
+    if recovered:
+        heading = 'Rate data is back to normal.'
+        paragraphs = ['Live prices are coming in again' + (f' (stale since {esc(_fmt_day(since))})' if since else '') + '.'] + facts
+    else:
+        heading = 'Rate data is stale.'
+        paragraphs = [esc(p) for p in h['problems']] + ['<br>' + '<br>'.join(facts)]
+    return _email_layout(
+        heading=heading,
+        paragraphs=paragraphs,
+        button_label='Open Rate Intelligence →',
+        button_url='https://www.kodohospitality.com/admin',
+        footnote='Kodo checks the rate data every day at 09:00 Casablanca time. While it stays stale you get '
+                 'at most one of these emails a day, and one more when it is back to normal. '
+                 'To stop them, set ALERT_EMAIL to off in Railway.',
+    )
+
+
+def _send_health_email(h: dict, recovered: bool, since: str | None) -> bool:
+    to = _alert_recipient()
+    if not to:
+        app.logger.error('Data health email not sent: set ALERT_EMAIL (or SEED_ADMIN_EMAIL) in Railway.')
+        return False
+    resend.api_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if not resend.api_key:
+        app.logger.error('Data health email not sent: RESEND_API_KEY is not set.')
+        return False
+    try:
+        resend.Emails.send({
+            'from':    'Kodo Hospitality <contact@kodohospitality.com>',
+            'to':      to,
+            'subject': 'Kodo: rate data back to normal' if recovered else 'Kodo alert: rate data is stale',
+            'html':    _health_email_html(h, recovered, since),
+        })
+        return True
+    except Exception as e:
+        app.logger.error(f'Data health email error: {e}')
+        return False
+
+
+def _run_health_check():
+    """The 09:00 check: one email a day at most while the data is stale,
+    and one when it is back to normal. State in health_alert_state.json."""
+    h     = _data_health()
+    today = _casablanca_today().isoformat()
+    st    = _load_health_state()
+    sent  = None
+    if h['problems']:
+        if st.get('state') != 'stale':
+            st['since'] = today
+        st['state'] = 'stale'
+        if st.get('last_alert_date') != today and _send_health_email(h, False, st.get('since')):
+            st['last_alert_date'] = today
+            sent = 'stale'
+    elif st.get('state') == 'stale':
+        if _send_health_email(h, True, st.get('since')):
+            st = {'state': 'ok', 'recovered_on': today}
+            sent = 'back to normal'
+    else:
+        st['state'] = 'ok'
+    st['last_check'] = datetime.now().isoformat(timespec='seconds')
+    try:
+        with open(HEALTH_STATE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(st, f, indent=2)
+    except OSError as e:
+        app.logger.error(f'Could not save {HEALTH_STATE_PATH}: {e}')
+    app.logger.info(f"Data health check: {h['status']}" + (f'; email sent ({sent})' if sent else '')
+                    + (f" — {' '.join(h['problems'])}" if h['problems'] else ''))
+    return h, sent
+
+
+@app.route('/status')
+def data_status():
+    """For an uptime monitor: HTTP 503 when the newest live price is 3 or
+    more days old (or there is none), else 200. Public, no personal data."""
+    h = _data_health()
+    days = h['days_since_live_price']
+    fresh = days is not None and days < STALE_PRICE_DAYS
+    resp = jsonify({
+        'status':                'ok' if fresh else 'stale',
+        'last_live_price':       h['last_live_price'],
+        'days_since_live_price': days,
+        'last_run_finished':     h['last_run_finished'],
+        'nights_found_pct':      h['nights_found_pct'],
+        'problems':              h['problems'],
+        'checked_at':            h['checked_at'],
+    })
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp, (200 if fresh else 503)
 
 
 def _read_rates_csv():
@@ -4225,35 +4507,8 @@ def api_rates():
 
     filtered.sort(key=lambda r: r.get('stay_date', ''))
 
-    # If no scraped data, fall back to estimated rates from performance.csv
-    # (the hotel's annual ADR estimate) for every day the calendar shows.
-    # Offsets 0-31 cover the browser's 30-day window from any timezone.
-    estimated_only = not filtered and bool(hotel_id)
-    if not filtered and hotel_id:
-        try:
-            hotels_df, perf_df, merged = load_data()
-            h_row = merged[merged['id'].astype(str) == str(hotel_id)]
-            if not h_row.empty:
-                h = h_row.iloc[0]
-                adr = float(h.get('adr_mad', 0) or 0)
-                for offset in range(0, 32):
-                    stay = (today + timedelta(days=offset)).strftime('%Y-%m-%d')
-                    filtered.append({
-                        'hotel_id': hotel_id,
-                        'hotel_name': h.get('name', ''),
-                        'city': h.get('city', ''),
-                        'scrape_date': today.strftime('%Y-%m-%d'),
-                        'stay_date': stay,
-                        'rate_mad': str(round(adr)),
-                        'rate_eur': str(round(adr / 10.8)),
-                        'source': 'estimated',
-                        'data_quality': 'estimated',
-                        'rooms_left': '',
-                        'availability_signal': 'estimated',
-                        'scrape_status': 'estimated',
-                    })
-        except Exception as e:
-            app.logger.warning(f'Rate fallback failed: {e}')
+    # Only real prices go to the calendar: no stand-in from the FY ADR.
+    filtered = [r for r in filtered if r.get('scrape_status') == 'success' and r.get('rate_mad')]
 
     # Source breakdown
     source_counts = {}
@@ -4261,13 +4516,30 @@ def api_rates():
         src = r.get('source', 'unknown')
         source_counts[src] = source_counts.get(src, 0) + 1
 
-    # Estimates are not a scrape: don't report a "last updated" date for them
-    last_scraped = None if estimated_only else max((r.get('scrape_date', '') for r in filtered), default=None)
+    # The last day a live price was collected for this hotel (or city), at
+    # any time; stale when it is older than yesterday (the scraper runs
+    # every night at 03:00 Casablanca time).
+    scope = rows
+    if hotel_id:
+        scope = [r for r in rows if str(r.get('hotel_id', '')) == str(hotel_id)]
+    elif city:
+        scope = [r for r in rows if r.get('city', '').lower() == city.lower()]
+    last_live = max((r.get('scrape_date', '') for r in scope
+                     if r.get('source') in LIVE_SOURCES and r.get('scrape_status') == 'success'), default=None) or None
+    live_stale = True
+    if last_live:
+        try:
+            live_stale = (_casablanca_today() - datetime.strptime(last_live, '%Y-%m-%d').date()).days > 1
+        except ValueError:
+            pass
+    last_scraped = last_live
 
     return jsonify({
         'rates': filtered,
         'count': len(filtered),
         'last_scraped': last_scraped,
+        'last_live': last_live,
+        'live_stale': live_stale,
         'source_breakdown': source_counts,
     })
 
@@ -4275,6 +4547,8 @@ def api_rates():
 @app.route('/api/scraper/run', methods=['POST'])
 @admin_required
 def api_scraper_run():
+    if lock_is_held(SCRAPER_LOCK):
+        return jsonify({'error': 'A scraper run is already in progress.'}), 409
     try:
         scraper_path = os.path.join(APP_DIR, 'scraper.py')
         subprocess.Popen([sys.executable, scraper_path])
@@ -4340,7 +4614,11 @@ def api_scraper_status():
         'hotels_estimated':  hotels_estimated,
         'source_breakdown':  src_counts,
         'log_tail':          ''.join(log_tail),
-        'scheduler_running': _scheduler is not None and _scheduler.running if _scheduler else False,
+        'scheduler_running': scheduler_running(),
+        'running':           lock_is_held(SCRAPER_LOCK),
+        'cities':            os.environ.get('SCRAPER_CITIES', '').strip() or 'all',
+        'serpapi':           _serpapi_panel(stats.get('serpapi') or {}),
+        'health':            _data_health(),
     })
 
 
@@ -4467,6 +4745,7 @@ def api_occupancy_hotel(hotel_id):
         # Days the stored model run doesn't cover (no run yet for this
         # hotel, or the last run is older than 30 days ahead) are estimated
         # live with the same model.
+        from_file = len(stored)   # days the last stored run covers
         missing = [d for d in window if d not in stored]
         if missing:
             if not SCRAPER_MODULE_OK or OccupancyModel is None:
@@ -4501,7 +4780,10 @@ def api_occupancy_hotel(hotel_id):
                             'breakdown':           breakdown,
                         }
                     hotel_name = hotel_name or h.get('name', '')
-                    model_run  = today.strftime('%Y-%m-%d')
+                    # The run date shown is the oldest one behind the
+                    # figures: the stored run's when it covers some days.
+                    if not from_file:
+                        model_run = today.strftime('%Y-%m-%d')
 
         estimates = [stored[d] for d in window if d in stored]
         averaged  = [e for e in estimates if e['date'] in avg_window]

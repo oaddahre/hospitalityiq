@@ -1074,7 +1074,7 @@ async function loadScraperStatus() {
     const res = await fetch('/api/scraper/status', { headers: authHeaders() });
     const data = await res.json();
     const statusEl = document.getElementById('ri-status');
-    statusEl.textContent = data.scheduler_running ? 'Scheduler Active' : 'Scheduler Off';
+    statusEl.textContent = data.running ? 'Running Now' : (data.scheduler_running ? 'Scheduler Active' : 'Scheduler Off');
     statusEl.classList.remove('pill--green', 'pill--orange');
     statusEl.classList.add(data.scheduler_running ? 'pill--green' : 'pill--orange');
     document.getElementById('ri-last-run').textContent = data.last_run
@@ -1084,6 +1084,23 @@ async function loadScraperStatus() {
     const src = data.source_breakdown || {};
     document.getElementById('ri-sources').textContent = Object.entries(src).map(([k, v]) => `${k}: ${v}`).join('  ·  ') || '—';
     document.getElementById('ri-log').textContent = data.log_tail || '(no log yet)';
+
+    // SerpApi: key status and credits now, and what the last run ran into
+    const sp = data.serpapi || {};
+    const lr = sp.last_run || {};
+    const credits = sp.searches_left != null ? `${Number(sp.searches_left).toLocaleString()} searches left` : '';
+    const runNote = lr.calls != null
+      ? `last run: ${lr.calls} calls, ${lr.errors || 0} errors${lr.last_error ? ` (last error: ${lr.last_error})` : ''}` : '';
+    document.getElementById('ri-serpapi').textContent = 'SerpApi: ' + ([
+      { ok: 'OK', missing_key: 'Key missing', rejected: 'Key rejected', no_credits: 'No credits left', error: 'Error' }[sp.status] || '—',
+      sp.message && sp.status !== 'ok' ? sp.message : '', sp.plan || '', credits, runNote,
+    ].filter(Boolean).join(' · '));
+
+    const h = data.health || {};
+    document.getElementById('ri-health').textContent = 'Data health: ' + (h.status === 'ok'
+      ? `OK · last live price ${h.last_live_price} · ${h.nights_found} of ${h.nights_checked} nights found in the last run (${h.nights_found_pct}%)`
+      : `Stale · ${(h.problems || []).join(' ')}`);
+    document.getElementById('ri-cities').textContent = `Cities scraped: ${data.cities === 'all' ? 'all (SCRAPER_CITIES not set)' : data.cities}`;
   } catch {
     document.getElementById('ri-log').textContent = 'Error loading status';
   }
@@ -1114,7 +1131,7 @@ document.getElementById('run-scraper-btn').addEventListener('click', async () =>
     const data = await res.json();
     toast(data.status === 'started' ? 'Scraper started.' : (data.error || 'Error'), data.status === 'started' ? 'success' : 'error');
   } catch { toast('Network error.', 'error'); }
-  setTimeout(() => { btn.disabled = false; btn.textContent = 'Run Scraper Now'; }, 2500);
+  setTimeout(() => { btn.disabled = false; btn.textContent = 'Run Scraper Now'; loadScraperStatus(); }, 2500);
 });
 
 document.getElementById('ri-save-btn').addEventListener('click', async () => {

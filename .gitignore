@@ -18,3 +18,7 @@ hotel_photos.json
 upload_log.json
 reset_tokens.json
 verification_tokens.json
+scraper.lock
+occupancy.lock
+scheduler.lock
+health_alert_state.json
