@@ -217,21 +217,26 @@ def get_seasonality_adjustment(city, month):
     return (index - 100) / 100 * 0.15
 
 
-def get_availability_adjustment(rooms_left):
-    if rooms_left is None:
-        return 0.0
-    try:
-        r = int(rooms_left)
-        if r <= 1: return 0.15
-        if r <= 2: return 0.12
-        if r <= 3: return 0.08
-        if r <= 5: return 0.04
-        return 0.0
-    except Exception:
-        return 0.0
+# Prices the model reads: live sources only, and only rows that passed the
+# scraper's hotel name and city check (data_quality "name_matched").
+# Manual overrides and rows from before the check are not used.
+PRICE_SOURCES = {'live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+
+# Confidence comes from price coverage (the "rooms left" signal is no
+# longer used): no price for the night -> low; a price for the night ->
+# medium; a price for the night and prices collected for the hotel on at
+# least 4 of the last 7 days -> high.
+HIGH_CONFIDENCE_DAYS = 4
+RECENT_DAYS = 7
 
 
-def estimate_occupancy(hotel, date, scraped_bar=None, rooms_left=None, baseline_adr=None):
+def confidence_for(scraped_bar, recent_price_days):
+    if not scraped_bar:
+        return 'low'
+    return 'high' if recent_price_days >= HIGH_CONFIDENCE_DAYS else 'medium'
+
+
+def estimate_occupancy(hotel, date, scraped_bar=None, baseline_adr=None, recent_price_days=0):
     segment    = hotel.get('category', 'Upscale')
     hotel_type = classify_hotel_type(hotel)
 
@@ -239,25 +244,18 @@ def estimate_occupancy(hotel, date, scraped_bar=None, rooms_left=None, baseline_
     rate_adj = get_rate_adjustment(scraped_bar, baseline_adr)
     dow_adj  = DOW_ADJUSTMENTS.get(hotel_type, DOW_ADJUSTMENTS['city_business']).get(date.weekday(), 0)
     season_adj = get_seasonality_adjustment(hotel.get('city', ''), date.month)
-    avail_adj  = get_availability_adjustment(rooms_left)
     event_adj  = get_event_adjustment(hotel.get('city', ''), date)
 
-    raw       = base + rate_adj + dow_adj + season_adj + avail_adj + event_adj
+    raw       = base + rate_adj + dow_adj + season_adj + event_adj
     estimated = max(0.05, min(0.98, raw))
-
-    if scraped_bar and rooms_left is not None:
-        confidence = 'high'
-    elif scraped_bar:
-        confidence = 'medium'
-    else:
-        confidence = 'low'
+    confidence = confidence_for(scraped_bar, recent_price_days)
 
     breakdown = {
         'base':                    round(base * 100, 1),
         'rate_adjustment':         round(rate_adj * 100, 1),
         'dow_adjustment':          round(dow_adj * 100, 1),
         'seasonality_adjustment':  round(season_adj * 100, 1),
-        'availability_adjustment': round(avail_adj * 100, 1),
+        'price_days_7d':           recent_price_days,
         'event_adjustment':        round(event_adj * 100, 1),
         'final':                   round(estimated * 100, 1),
         'confidence':              confidence,
@@ -295,13 +293,20 @@ class OccupancyModel:
         return perf
 
     def _load_scraped_rates(self):
-        rates = {}
+        """Latest name-checked live price per hotel and night, and the days
+        on which each hotel got any such price (for the confidence level)."""
+        rates, self.price_days = {}, {}
         if not Path(RATES_CSV).exists():
             return rates
         try:
             with open(RATES_CSV, 'r', encoding='utf-8') as f:
                 for row in csv.DictReader(f):
-                    key = f"{row['hotel_id']}_{row['stay_date']}"
+                    if (row.get('scrape_status') != 'success' or row.get('data_quality') != 'name_matched'
+                            or row.get('source') not in PRICE_SOURCES or not row.get('rate_mad')):
+                        continue
+                    hid = str(row['hotel_id'])
+                    self.price_days.setdefault(hid, set()).add(row.get('scrape_date', ''))
+                    key = f"{hid}_{row['stay_date']}"
                     existing = rates.get(key)
                     if not existing or row.get('scrape_date', '') >= existing.get('scrape_date', ''):
                         rates[key] = row
@@ -310,17 +315,20 @@ class OccupancyModel:
         return rates
 
     def get_scraped_data_for_date(self, hotel_id, stay_date):
-        key = f'{hotel_id}_{stay_date}'
-        rate_data = self.scraped_rates.get(key)
-        if rate_data and rate_data.get('scrape_status') == 'success':
+        """The hotel's latest checked live price for that night (MAD), or None."""
+        rate_data = self.scraped_rates.get(f'{hotel_id}_{stay_date}')
+        if rate_data:
             try:
-                bar       = float(rate_data['rate_mad'])
-                rooms_raw = rate_data.get('rooms_left', None)
-                rooms_left = int(rooms_raw) if rooms_raw else None
-                return bar, rooms_left
-            except Exception:
+                return float(rate_data['rate_mad'])
+            except (TypeError, ValueError):
                 pass
-        return None, None
+        return None
+
+    def recent_price_days(self, hotel_id, today=None):
+        """On how many of the last 7 days (today included) prices were collected for the hotel."""
+        today = today or datetime.now(MOROCCO_TZ).date()
+        days = {(today - timedelta(days=i)).isoformat() for i in range(RECENT_DAYS)}
+        return len(days & getattr(self, 'price_days', {}).get(str(hotel_id), set()))
 
     def run(self, days_forward=30):
         print(f'Running occupancy model for {len(self.hotels)} hotels, {days_forward} days forward')
@@ -338,16 +346,17 @@ class OccupancyModel:
             except Exception:
                 pass
 
+            price_days = self.recent_price_days(hotel_id, today.date())
             for day_offset in range(1, days_forward + 1):
                 stay_dt  = today + timedelta(days=day_offset)
                 stay_str = stay_dt.strftime('%Y-%m-%d')
 
-                scraped_bar, rooms_left = self.get_scraped_data_for_date(hotel_id, stay_str)
+                scraped_bar = self.get_scraped_data_for_date(hotel_id, stay_str)
                 occupancy, breakdown = estimate_occupancy(
                     hotel, stay_dt,
                     scraped_bar=scraped_bar,
-                    rooms_left=rooms_left,
                     baseline_adr=baseline_adr,
+                    recent_price_days=price_days,
                 )
 
                 adr_to_use      = scraped_bar if scraped_bar else baseline_adr
@@ -370,7 +379,7 @@ class OccupancyModel:
                     'rate_adj':            breakdown['rate_adjustment'],
                     'dow_adj':             breakdown['dow_adjustment'],
                     'season_adj':          breakdown['seasonality_adjustment'],
-                    'avail_adj':           breakdown['availability_adjustment'],
+                    'price_days_7d':       breakdown['price_days_7d'],
                     'event_adj':           breakdown['event_adjustment'],
                     'model_run_date':      today.strftime('%Y-%m-%d'),
                 })
@@ -453,15 +462,15 @@ def calibrate_model(calibration_csv_path):
                 continue
 
             date        = datetime.strptime(date_str, '%Y-%m-%d')
-            scraped_bar, rooms_left = model.get_scraped_data_for_date(hotel_id, date_str)
+            scraped_bar = model.get_scraped_data_for_date(hotel_id, date_str)
             perf        = model.performance.get(hotel_id, {})
             baseline_adr = float(perf.get('adr_mad', 0)) or None
 
             predicted, _ = estimate_occupancy(
                 hotel, date,
                 scraped_bar=scraped_bar,
-                rooms_left=rooms_left,
                 baseline_adr=baseline_adr,
+                recent_price_days=model.recent_price_days(hotel_id),
             )
 
             error = predicted - (actual / 100)

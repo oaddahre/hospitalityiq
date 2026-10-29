@@ -1431,6 +1431,7 @@ function renderOwnerSection(h) {
 // ─── Rate Intelligence ─────────────────────────────────────────────────────────
 
 const SOURCE_CLASS = {
+  live_dataforseo: 'src-live-google',
   live_google:     'src-live-google',
   live_brand:      'src-live-brand',
   live_booking:    'src-live-booking',
@@ -1441,6 +1442,7 @@ const SOURCE_CLASS = {
 };
 
 const SOURCE_LABEL = {
+  live_dataforseo: 'Google Hotels',
   live_google:     'Google Hotels',
   live_brand:      'Brand Direct',
   live_booking:    'Booking.com',
@@ -1509,7 +1511,7 @@ async function renderRateCalendar(hotelId) {
     if (!rateMap[sd]) {
       rateMap[sd] = r;
     } else {
-      const priority = {'live_google':5,'live_brand':5,'live_expedia':5,'manual_override':4,'live_booking':3,'estimated':1,'unavailable':0};
+      const priority = {'live_dataforseo':5,'live_google':5,'live_brand':5,'live_expedia':5,'manual_override':4,'live_booking':3,'estimated':1,'unavailable':0};
       if ((priority[r.source]||0) > (priority[rateMap[sd].source]||0)) rateMap[sd] = r;
     }
   }
@@ -1542,8 +1544,7 @@ async function renderRateCalendar(hotelId) {
     const cls      = SOURCE_CLASS[src] || 'src-estimated';
     const rateMAD  = r && r.rate_mad ? +r.rate_mad : null;
     const rateDisp = rateMAD ? fmtMadShort(rateMAD) : '—';
-    const roomsLeft = r && r.rooms_left ? `<br>Rooms left: ${r.rooms_left}` : '';
-    const tip = `${iso}<br>Rate: ${rateMAD ? fmtMadLong(rateMAD) : 'Unavailable'}<br>Source: ${SOURCE_LABEL[src]||src}${roomsLeft}`;
+    const tip = `${iso}<br>Rate: ${rateMAD ? fmtMadLong(rateMAD) : 'Unavailable'}<br>Source: ${SOURCE_LABEL[src]||src}`;
     html += `<div class="bar-cal-day ${cls}" title="">
       <div class="bar-cal-dn">${DAYS[d.getDay()]} ${d.getDate()}</div>
       <div class="bar-cal-rate">${rateDisp}</div>

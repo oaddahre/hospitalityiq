@@ -1085,6 +1085,19 @@ async function loadScraperStatus() {
     document.getElementById('ri-sources').textContent = Object.entries(src).map(([k, v]) => `${k}: ${v}`).join('  ·  ') || '—';
     document.getElementById('ri-log').textContent = data.log_tail || '(no log yet)';
 
+    // DataForSEO (main price source): login and balance now, last run's cost
+    const df = data.dataforseo || {};
+    const dr = df.last_run || {};
+    const money = v => v == null ? '' : `$${Number(v).toFixed(2)}`;
+    document.getElementById('ri-dataforseo').textContent = 'DataForSEO: ' + ([
+      { ok: 'OK', missing_credentials: 'Login not set', bad_login: 'Login rejected', no_balance: 'No balance', paused: 'Account paused', no_access: 'No access', error: 'Error' }[df.status] || '—',
+      df.status !== 'ok' && df.message ? df.message : '',
+      df.balance != null ? `balance ${money(df.balance)}${df.balance < df.min_balance ? ` (under ${money(df.min_balance)})` : ''}` : '',
+      dr.cost != null ? `last run cost ${money(dr.cost)} · ${dr.price_calls || 0} price calls, ${dr.id_lookups || 0} ID lookups, ${dr.matched || 0} hotels matched` : '',
+      dr.status && dr.status !== 'ok' && dr.message ? `last run: ${dr.message}` : '',
+      (dr.errors || []).length ? `last error: ${dr.errors[dr.errors.length - 1]}` : '',
+    ].filter(Boolean).join(' · '));
+
     // SerpApi: key status and credits now, and what the last run ran into
     const sp = data.serpapi || {};
     const lr = sp.last_run || {};
@@ -1100,7 +1113,10 @@ async function loadScraperStatus() {
     document.getElementById('ri-health').textContent = 'Data health: ' + (h.status === 'ok'
       ? `OK · last live price ${h.last_live_price} · ${h.nights_found} of ${h.nights_checked} nights found in the last run (${h.nights_found_pct}%)`
       : `Stale · ${(h.problems || []).join(' ')}`);
-    document.getElementById('ri-cities').textContent = `Cities scraped: ${data.cities === 'all' ? 'all (SCRAPER_CITIES not set)' : data.cities}`;
+    document.getElementById('ri-cities').textContent = `Cities scraped: ${data.cities === 'all' ? 'all (SCRAPER_CITIES not set)' : data.cities}`
+      + (data.limit ? ` · first ${data.limit} hotels (SCRAPER_LIMIT)` : '')
+      + ` · browser steps (brand sites, Booking.com) ${data.browser_steps ? 'on' : 'off'}`;
+    if ((h.account_problems || []).length) document.getElementById('ri-health').textContent += ' · ' + h.account_problems.join(' ');
   } catch {
     document.getElementById('ri-log').textContent = 'Error loading status';
   }

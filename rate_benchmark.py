@@ -24,10 +24,11 @@ MAX_PRICE_AGE   = 7    # a price collected more than 7 days ago is not used
 STALE_AFTER     = 2    # latest price older than this many days: "not updated since"
 MIN_COMP, MAX_COMP = 1, 10
 
-# Live sources in scraper.py's order (Google Hotels first; "live_expedia" is
-# the Expedia price in the Google Hotels result, its last step)
-SOURCE_ORDER = ['live_google', 'live_brand', 'live_booking', 'live_expedia']
-SOURCE_LABEL = {'live_google': 'Google Hotels', 'live_brand': 'Brand website',
+# Live sources in scraper.py's order (Google Hotels through DataForSEO
+# first, then the SerpApi fallback; "live_expedia" is the Expedia price in
+# the SerpApi Google Hotels result, its last step)
+SOURCE_ORDER = ['live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia']
+SOURCE_LABEL = {'live_dataforseo': 'Google Hotels (DataForSEO)', 'live_google': 'Google Hotels (SerpApi)', 'live_brand': 'Brand website',
                 'live_booking': 'Booking.com', 'live_expedia': 'Expedia (via Google Hotels)'}
 # scraper.py marks rows whose result passed its hotel name and city check
 MATCHED = 'name_matched'
@@ -196,9 +197,10 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
                     baseline = float(perf.get('adr_mad', 0)) or None
                 except (TypeError, ValueError):
                     baseline = None
-                bar, rooms_left = model.get_scraped_data_for_date(hid, night)
+                bar = model.get_scraped_data_for_date(hid, night)
                 occ, bd = estimate_occupancy(hotel, datetime.strptime(night, '%Y-%m-%d'),
-                                             scraped_bar=bar, rooms_left=rooms_left, baseline_adr=baseline)
+                                             scraped_bar=bar, baseline_adr=baseline,
+                                             recent_price_days=model.recent_price_days(hid, today))
                 out[hid][night] = {'occ': round(occ * 100, 1), 'confidence': bd['confidence']}
                 runs.add(today.isoformat())
         except Exception:

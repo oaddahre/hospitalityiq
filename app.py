@@ -4272,7 +4272,7 @@ OCCUPANCY_CSV_PATH = os.path.join(DATA_DIR, 'estimated_occupancy.csv')
 HEALTH_STATE_PATH = os.path.join(DATA_DIR, 'health_alert_state.json')
 
 # Sources that count as a live price (manual overrides are entered by hand)
-LIVE_SOURCES = {'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+LIVE_SOURCES = {'live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia'}
 
 # Data health thresholds: stale when no live price was collected today or
 # on either of the two days before, when the last completed scraper run
@@ -4312,7 +4312,7 @@ def _load_scraper_stats():
         return {}
 
 
-def _data_health():
+def _data_health(live_account: bool = True):
     """Is the rate data current? Used by the 09:00 health check, the admin
     Rate Intelligence panel and /status."""
     today = _casablanca_today()
@@ -4363,10 +4363,29 @@ def _data_health():
         elif found / total < MIN_NIGHTS_FOUND:
             problems.append(f'The last scraper run found a price for {found} of {total} nights ({pct}%), under 30%.')
 
+    # Account problems (not stale data, so not in /status): DataForSEO
+    # login or balance trouble in the last run, or a low balance now
+    account_problems = []
+    dfs = stats.get('dataforseo') or {}
+    if dfs.get('status') in ('bad_login', 'no_balance', 'paused', 'no_access'):
+        account_problems.append(f"DataForSEO, last run: {dfs.get('message')}.")
+    balance = dfs.get('balance')
+    if live_account and _dfs_configured():
+        acct = _dataforseo_account()
+        if acct.get('balance') is not None:
+            balance = acct['balance']
+        elif acct.get('status') not in (None, 'ok'):
+            account_problems.append(f"DataForSEO now: {acct.get('message')}.")
+    if balance is not None and balance < DFS_MIN_BALANCE:
+        account_problems.append(f'DataForSEO balance is ${balance:.2f}, under ${DFS_MIN_BALANCE:.2f}: top it up before the next runs.')
+
     serp = stats.get('serpapi') or {}
     return {
         'status':                'stale' if problems else 'ok',
         'problems':              problems,
+        'account_problems':      account_problems,
+        'dataforseo_balance':    balance,
+        'dataforseo_last_cost':  dfs.get('cost'),
         'last_live_price':       last_live,
         'days_since_live_price': days_since,
         'last_run_finished':     last_end,
@@ -4381,6 +4400,38 @@ def _data_health():
 
 
 _serpapi_cache = {'at': None, 'data': None}
+_dfs_cache     = {'at': None, 'data': None}
+try:
+    DFS_MIN_BALANCE = float(os.environ.get('DATAFORSEO_MIN_BALANCE', '') or 10)
+except ValueError:
+    DFS_MIN_BALANCE = 10.0
+
+
+def _dfs_configured() -> bool:
+    return bool(os.environ.get('DATAFORSEO_LOGIN', '').strip() and os.environ.get('DATAFORSEO_PASSWORD', '').strip())
+
+
+def _dataforseo_account() -> dict:
+    """DataForSEO login and balance check (free; cached 10 minutes)."""
+    now = datetime.utcnow()
+    if not _dfs_cache['at'] or (now - _dfs_cache['at']).total_seconds() > 600:
+        if not _dfs_configured():
+            _dfs_cache['data'] = {'status': 'missing_credentials', 'message': 'DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD are not set', 'balance': None}
+        else:
+            from dataforseo import DataForSEO
+            _dfs_cache['data'] = DataForSEO(os.environ['DATAFORSEO_LOGIN'].strip(), os.environ['DATAFORSEO_PASSWORD'].strip(), timeout=8).account()
+        _dfs_cache['at'] = now
+    return dict(_dfs_cache['data'] or {})
+
+
+def _dataforseo_panel(last_run: dict) -> dict:
+    live = _dataforseo_account()
+    live['last_run'] = {k: last_run.get(k) for k in ('status', 'message', 'cost', 'balance_before', 'balance',
+                                                    'id_lookups', 'price_calls', 'matched', 'no_match',
+                                                    'failed_tasks')}
+    live['last_run']['errors'] = (last_run.get('errors') or [])[-3:]
+    live['min_balance'] = DFS_MIN_BALANCE
+    return live
 
 
 def _serpapi_panel(last_run: dict) -> dict:
@@ -4418,14 +4469,18 @@ def _health_email_html(h: dict, recovered: bool, since: str | None) -> str:
         f"Last completed scraper run: {esc(_fmt_day(h.get('last_run_finished')))}",
         f"Nights with a price in that run: {h.get('nights_found') or 0} of {h.get('nights_checked') or 0}{pct}",
     ]
+    if h.get('dataforseo_balance') is not None:
+        cost = h.get('dataforseo_last_cost')
+        facts.append(f"DataForSEO balance: ${h['dataforseo_balance']:.2f}"
+                     + (f" · last run cost ${cost:.2f}" if cost is not None else ''))
     if h.get('serpapi_message'):
         facts.append(f"SerpApi: {esc(h['serpapi_message'])}")
     if recovered:
         heading = 'Rate data is back to normal.'
         paragraphs = ['Live prices are coming in again' + (f' (stale since {esc(_fmt_day(since))})' if since else '') + '.'] + facts
     else:
-        heading = 'Rate data is stale.'
-        paragraphs = [esc(p) for p in h['problems']] + ['<br>' + '<br>'.join(facts)]
+        heading = 'Rate data is stale.' if h['problems'] else 'The rate data provider needs attention.'
+        paragraphs = [esc(p) for p in h['problems'] + h.get('account_problems', [])] + ['<br>' + '<br>'.join(facts)]
     return _email_layout(
         heading=heading,
         paragraphs=paragraphs,
@@ -4450,7 +4505,7 @@ def _send_health_email(h: dict, recovered: bool, since: str | None) -> bool:
         resend.Emails.send({
             'from':    'Kodo Hospitality <contact@kodohospitality.com>',
             'to':      to,
-            'subject': 'Kodo: rate data back to normal' if recovered else 'Kodo alert: rate data is stale',
+            'subject': 'Kodo: rate data back to normal' if recovered else ('Kodo alert: rate data is stale' if h['problems'] else 'Kodo alert: DataForSEO needs attention'),
             'html':    _health_email_html(h, recovered, since),
         })
         return True
@@ -4466,7 +4521,7 @@ def _run_health_check():
     today = _casablanca_today().isoformat()
     st    = _load_health_state()
     sent  = None
-    if h['problems']:
+    if h['problems'] or h['account_problems']:
         if st.get('state') != 'stale':
             st['since'] = today
         st['state'] = 'stale'
@@ -4486,7 +4541,7 @@ def _run_health_check():
     except OSError as e:
         app.logger.error(f'Could not save {HEALTH_STATE_PATH}: {e}')
     app.logger.info(f"Data health check: {h['status']}" + (f'; email sent ({sent})' if sent else '')
-                    + (f" — {' '.join(h['problems'])}" if h['problems'] else ''))
+                    + (f" — {' '.join(h['problems'] + h['account_problems'])}" if h['problems'] or h['account_problems'] else ''))
     return h, sent
 
 
@@ -4494,7 +4549,7 @@ def _run_health_check():
 def data_status():
     """For an uptime monitor: HTTP 503 when the newest live price is 3 or
     more days old (or there is none), else 200. Public, no personal data."""
-    h = _data_health()
+    h = _data_health(live_account=False)   # data freshness only, no account details
     days = h['days_since_live_price']
     fresh = days is not None and days < STALE_PRICE_DAYS
     resp = jsonify({
@@ -4629,7 +4684,7 @@ def api_scraper_status():
     error_count = sum(1 for v in progress.values() if v.get('status') == 'error')
 
     rows = _read_rates_csv()
-    live_sources = {'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+    live_sources = LIVE_SOURCES
     hotels_with_live = len({r['hotel_id'] for r in rows
                             if r.get('source') in live_sources and r.get('scrape_date') >= today})
     hotels_estimated = len({r['hotel_id'] for r in rows
@@ -4666,6 +4721,9 @@ def api_scraper_status():
         'running':           lock_is_held(SCRAPER_LOCK),
         'cities':            os.environ.get('SCRAPER_CITIES', '').strip() or 'all',
         'serpapi':           _serpapi_panel(stats.get('serpapi') or {}),
+        'dataforseo':        _dataforseo_panel(stats.get('dataforseo') or {}),
+        'browser_steps':     os.environ.get('SCRAPER_BROWSER_STEPS', '').strip().lower() in ('1', 'on', 'true', 'yes'),
+        'limit':             os.environ.get('SCRAPER_LIMIT', '').strip() or None,
         'health':            _data_health(),
     })
 
@@ -4783,7 +4841,6 @@ def api_occupancy_hotel(hotel_id):
                         'rate_adjustment':         float(r.get('rate_adj', 0)),
                         'dow_adjustment':          float(r.get('dow_adj', 0)),
                         'seasonality_adjustment':  float(r.get('season_adj', 0)),
-                        'availability_adjustment': float(r.get('avail_adj', 0)),
                         'event_adjustment':        float(r.get('event_adj', 0)),
                     },
                 }
@@ -4811,12 +4868,12 @@ def api_occupancy_hotel(hotel_id):
                     baseline_adr = float(h.get('adr_mad', 0) or 0)
                     for stay_str in missing:
                         stay_dt = datetime.strptime(stay_str, '%Y-%m-%d')
-                        scraped_bar, rooms_left = model.get_scraped_data_for_date(str(hotel_id), stay_str)
+                        scraped_bar = model.get_scraped_data_for_date(str(hotel_id), stay_str)
                         occ, breakdown = estimate_occupancy(
                             h, stay_dt,
                             scraped_bar=scraped_bar,
-                            rooms_left=rooms_left,
                             baseline_adr=baseline_adr,
+                            recent_price_days=model.recent_price_days(str(hotel_id)),
                         )
                         adr_used = scraped_bar or baseline_adr
                         stored[stay_str] = {

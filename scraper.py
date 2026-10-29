@@ -1,5 +1,5 @@
 import os, csv, json, time, random, logging, re, subprocess, sys, math, unicodedata
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from difflib import SequenceMatcher
 from pathlib import Path
 from urllib.parse import quote as url_quote
@@ -11,6 +11,7 @@ from occupancy_model import (
     EUR_TO_MAD, REVENUE_MIX, EBITDA_MARGINS, CAP_RATES, classify_hotel_type,
 )
 from run_lock import acquire_lock
+from dataforseo import DataForSEO, DataForSEOError, SEARCHES as DFS_SEARCHES, INFO as DFS_INFO, NO_RESULT as DFS_NO_RESULT
 
 # APP_DIR is where this script (and occupancy_model.py, which it launches
 # as a subprocess below) actually live — always fixed, never configurable.
@@ -48,8 +49,30 @@ SCRAPER_LOCK = os.path.join(DATA_DIR, 'scraper.lock')
 # "Agadir / Taghazout"), ignoring case and accents.
 SCRAPER_CITIES = os.environ.get('SCRAPER_CITIES', '').strip()
 
+# Pilot size: SCRAPER_LIMIT=10 scrapes only the first 10 hotels (after
+# SCRAPER_CITIES). Empty: no limit.
+try:
+    SCRAPER_LIMIT = max(0, int(os.environ.get('SCRAPER_LIMIT', '') or 0))
+except ValueError:
+    SCRAPER_LIMIT = 0
+
+# Main price source: Google Hotels through DataForSEO (standard queue,
+# collected the same night). Credentials never leave the auth header.
+DFS_IDS_JSON = os.path.join(DATA_DIR, 'dataforseo_hotel_ids.json')
+try:
+    DFS_MAX_WAIT_MIN = float(os.environ.get('DATAFORSEO_MAX_WAIT_MIN', '') or 50)
+except ValueError:
+    DFS_MAX_WAIT_MIN = 50
+DFS_RETRY_NO_MATCH_DAYS = 30   # a hotel Google didn't find is looked up again after this many days
+MOROCCO_LOCATION_CODE = 2504   # DataForSEO location code for Morocco (hotels without map coordinates)
+WINDOW_NIGHTS = 30             # prices for the next 30 nights, from tomorrow
+
+# The headless-browser steps (brand websites, Booking.com) are off unless
+# SCRAPER_BROWSER_STEPS=on: they are slow, easily blocked and fragile.
+BROWSER_STEPS = os.environ.get('SCRAPER_BROWSER_STEPS', '').strip().lower() in ('1', 'on', 'true', 'yes')
+
 # Sources that count as a live price (manual overrides are entered by hand)
-LIVE_SOURCES = {'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+LIVE_SOURCES = {'live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia'}
 
 try:
     from playwright.sync_api import sync_playwright
@@ -336,6 +359,12 @@ class KodoScraper:
         open_hotels   = self.load_hotels()
         self.known_cities = self.load_known_cities()
         self.hotels   = self.pilot_filter(open_hotels)
+        if SCRAPER_LIMIT and len(self.hotels) > SCRAPER_LIMIT:
+            logger.info(f'Pilot: SCRAPER_LIMIT={SCRAPER_LIMIT} — first {SCRAPER_LIMIT} of {len(self.hotels)} hotels')
+            self.hotels = self.hotels[:SCRAPER_LIMIT]
+        self.dfs = DataForSEO(os.environ.get('DATAFORSEO_LOGIN', '').strip(),
+                              os.environ.get('DATAFORSEO_PASSWORD', '').strip())
+        self.dfs_prices = {}    # hotel id -> {night: rate in MAD}, from this run
         self.progress = self.load_progress()
         self._serp_cache = {}
         self._serp_matched = {}
@@ -354,6 +383,11 @@ class KodoScraper:
             'nights_total': 0,
             'nights_found': 0,
             'serpapi': {'calls': 0, 'errors': 0, 'last_error': None},
+            'dataforseo': {'status': None, 'message': '', 'balance_before': None, 'balance': None,
+                           'cost': 0.0, 'id_lookups': 0, 'price_calls': 0, 'matched': 0,
+                           'no_match': 0, 'failed_tasks': 0, 'errors': [], 'per_hotel': {}},
+            'browser_steps': BROWSER_STEPS,
+            'limit': SCRAPER_LIMIT or None,
             'start_time': datetime.now().isoformat(),
         }
 
@@ -529,7 +563,193 @@ class KodoScraper:
             self.no_match(source, hotel, best)
         return None
 
-    # ─── SOURCE 1: SERPAPI GOOGLE HOTELS ─────────────────────────────────────
+    # ─── SOURCE 1: GOOGLE HOTELS THROUGH DATAFORSEO ──────────────────────────
+    # One overnight batch for all hotels: (1) find each hotel's Google
+    # hotel ID once (hotel_searches; cached in dataforseo_hotel_ids.json,
+    # so that lookup is paid once per hotel), then (2) one hotel_info call
+    # per hotel with prices_by_dates for the next 30 nights. Every result
+    # is name- and city-checked before a price is kept.
+
+    def _dfs_error(self, message):
+        s = self.stats['dataforseo']
+        s['errors'] = (s['errors'] + [message])[-20:]
+        logger.warning(f'DataForSEO: {message}')
+
+    def _dfs_stop(self, err):
+        s = self.stats['dataforseo']
+        s.update(status=err.status, message=err.message)
+        logger.error(f'DataForSEO: {err.message} — DataForSEO not used for the rest of this run')
+
+    def load_dfs_ids(self):
+        try:
+            with open(DFS_IDS_JSON, encoding='utf-8') as f:
+                data = json.load(f)
+            return data if isinstance(data, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+    def save_dfs_ids(self, ids):
+        tmp = DFS_IDS_JSON + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(ids, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, DFS_IDS_JSON)
+
+    def _dfs_where(self, hotel):
+        try:
+            return {'location_coordinate': f"{float(hotel['lat']):.7f},{float(hotel['lng']):.7f}"}
+        except (KeyError, TypeError, ValueError):
+            return {'location_code': MOROCCO_LOCATION_CODE}
+
+    def _dfs_gps(self, loc):
+        if isinstance(loc, dict) and loc.get('latitude') is not None and loc.get('longitude') is not None:
+            return {'latitude': loc['latitude'], 'longitude': loc['longitude']}
+        return None
+
+    def dataforseo_phase(self, hotels):
+        s = self.stats['dataforseo']
+        if not self.dfs.configured:
+            s.update(status='missing_credentials', message='DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD are not set: DataForSEO skipped')
+            logger.warning(f'DataForSEO: {s["message"]}')
+            return
+        acct = self.dfs.account()
+        s.update(status=acct['status'], message=acct['message'], balance_before=acct['balance'], balance=acct['balance'])
+        if acct['status'] != 'ok':
+            logger.error(f'DataForSEO: {acct["message"]} — DataForSEO not used for this run')
+            return
+        logger.info(f'DataForSEO: {acct["message"]}')
+
+        today = datetime.now(MOROCCO_TZ).date()
+        first, last = today + timedelta(days=1), today + timedelta(days=WINDOW_NIGHTS)
+        common = {'language_code': 'en', 'currency': 'MAD', 'adults': 2,
+                  'check_in': first.isoformat(), 'check_out': (first + timedelta(days=1)).isoformat()}
+        by_id = {str(h['id']): h for h in hotels}
+        wait = dict(max_wait_s=DFS_MAX_WAIT_MIN * 60, poll_s=60, log=logger.info)
+
+        try:
+            # (1) Google hotel IDs for hotels not looked up yet (or not found
+            # more than DFS_RETRY_NO_MATCH_DAYS ago)
+            ids = self.load_dfs_ids()
+            def needs_lookup(hid):
+                e = ids.get(hid)
+                if not e:
+                    return True
+                if e.get('identifier'):
+                    return False
+                try:
+                    return (today - date.fromisoformat(e.get('checked', '2000-01-01'))).days >= DFS_RETRY_NO_MATCH_DAYS
+                except ValueError:
+                    return True
+            lookup = [hid for hid in by_id if needs_lookup(hid)]
+            if lookup:
+                tasks = [{**common, **self._dfs_where(by_id[h]), 'keyword': by_id[h]['name'], 'tag': h} for h in lookup]
+                created = self.dfs.post(DFS_SEARCHES, tasks)
+                s['id_lookups'] += sum(1 for t in created if t['id'])
+                for t in created:
+                    if not t['id']:
+                        self._dfs_error(f'hotel search not created for hotel {t["tag"]}: {t["status_code"]} {t["status_message"]}')
+                logger.info(f'DataForSEO: looking up the Google ID of {len(lookup)} hotels')
+                done = self.dfs.wait(DFS_SEARCHES, [t['id'] for t in created], **wait)
+                for t in created:
+                    hid = t['tag']
+                    task = done.get(t['id'])
+                    if not t['id'] or task is None:
+                        if t['id']:
+                            self._dfs_error(f'hotel search for "{by_id[hid]["name"]}" not ready in time')
+                        continue
+                    if task.get('status_code') not in (20000, DFS_NO_RESULT):
+                        s['failed_tasks'] += 1
+                        self._dfs_error(f'hotel search failed for "{by_id[hid]["name"]}": {task.get("status_code")} {task.get("status_message", "")}')
+                        continue
+                    items = ((task.get('result') or [{}])[0] or {}).get('items') or []
+                    match, best = None, None
+                    for it in items[:20]:
+                        ok, why = match_hotel(by_id[hid], it.get('title', ''), '', self._dfs_gps(it.get('location')), self.known_cities)
+                        if ok and it.get('hotel_identifier'):
+                            match = it
+                            break
+                        best = best or (it.get('title', ''), why)
+                    if match:
+                        ids[hid] = {'identifier': match['hotel_identifier'], 'google_title': match.get('title', ''),
+                                    'checked': today.isoformat()}
+                    else:
+                        ids[hid] = {'identifier': None, 'checked': today.isoformat(),
+                                    'best_result': best[0] if best else None}
+                        self.no_match('DataForSEO hotel search', by_id[hid], best)
+                self.save_dfs_ids(ids)
+
+            # (2) Prices for the next 30 nights, one call per hotel
+            priced = [h for h in by_id if (ids.get(h) or {}).get('identifier')]
+            if not priced:
+                return
+            tasks = [{**common, **self._dfs_where(by_id[h]), 'hotel_identifier': ids[h]['identifier'],
+                      'load_prices_by_dates': True, 'prices_start_date': first.isoformat(),
+                      'prices_end_date': last.isoformat(), 'tag': h} for h in priced]
+            created = self.dfs.post(DFS_INFO, tasks)
+            s['price_calls'] += sum(1 for t in created if t['id'])
+            for t in created:
+                if not t['id']:
+                    self._dfs_error(f'price task not created for hotel {t["tag"]}: {t["status_code"]} {t["status_message"]}')
+            logger.info(f'DataForSEO: price tasks posted for {len(priced)} hotels (standard queue, up to {DFS_MAX_WAIT_MIN:.0f} min)')
+            done = self.dfs.wait(DFS_INFO, [t['id'] for t in created], **wait)
+            for t in created:
+                hid = t['tag']
+                hotel = by_id[hid]
+                task = done.get(t['id']) if t['id'] else None
+                if task is None:
+                    if t['id']:
+                        self._dfs_error(f'price task for "{hotel["name"]}" not ready in time')
+                    continue
+                if task.get('status_code') == DFS_NO_RESULT:
+                    s['per_hotel'][hid] = {'name': hotel['name'], 'nights': 0, 'note': 'no prices from Google'}
+                    continue
+                if task.get('status_code') != 20000:
+                    s['failed_tasks'] += 1
+                    self._dfs_error(f'price task failed for "{hotel["name"]}": {task.get("status_code")} {task.get("status_message", "")}')
+                    continue
+                res = (task.get('result') or [{}])[0] or {}
+                ok, why = match_hotel(hotel, res.get('title', ''), res.get('address', '') or '',
+                                      self._dfs_gps(res.get('location')), self.known_cities)
+                if not ok:
+                    s['no_match'] += 1
+                    self.no_match('DataForSEO hotel info', hotel, (res.get('title', ''), why))
+                    ids[hid] = {'identifier': None, 'checked': today.isoformat(), 'best_result': res.get('title')}
+                    continue
+                s['matched'] += 1
+                prices = res.get('prices') or {}
+                entries = prices.get('prices_by_dates') or res.get('prices_by_dates') or []
+                nights, other_currency = {}, set()
+                for e in entries:
+                    try:
+                        ci = date.fromisoformat(str(e.get('check_in_date'))[:10])
+                    except ValueError:
+                        continue
+                    cur = (e.get('currency') or prices.get('currency') or 'MAD').upper()
+                    if cur != 'MAD':
+                        other_currency.add(cur)
+                        continue
+                    rate = _parse_rate(e.get('price'))
+                    if rate and first <= ci <= last:
+                        nights[ci.isoformat()] = rate
+                # The headline price is the first night's (check_in .. check_out)
+                if first.isoformat() not in nights and (prices.get('currency') or 'MAD').upper() == 'MAD':
+                    rate = _parse_rate(prices.get('price'))
+                    if rate:
+                        nights[first.isoformat()] = rate
+                if other_currency:
+                    self._dfs_error(f'"{hotel["name"]}": prices in {", ".join(sorted(other_currency))}, not MAD: not used')
+                self.dfs_prices[hid] = nights
+                s['per_hotel'][hid] = {'name': hotel['name'], 'nights': len(nights),
+                                       'google_title': res.get('title', '')}
+            self.save_dfs_ids(ids)
+        except DataForSEOError as e:
+            self._dfs_stop(e)
+        finally:
+            s['cost'] = round(self.dfs.cost, 4)
+            after = self.dfs.account() if self.dfs.configured else None
+            if after and after['balance'] is not None:
+                s['balance'] = after['balance']
+
+    # ─── FALLBACK: SERPAPI GOOGLE HOTELS ─────────────────────────────────────
 
     def scrape_google_hotels(self, hotel, checkin, checkout):
         body = self.serpapi_search(hotel, checkin, checkout)
@@ -645,11 +865,9 @@ class KodoScraper:
                         break
                 if not rate_mad:
                     return None
-                rooms_left = next((n for n in (1, 2, 3) if f'only {n} room' in c['text']), None)
-                return {
-                    'rate_mad': rate_mad, 'source': 'live_booking',
-                    'availability': 'available', 'rooms_left': rooms_left,
-                }
+                # The "only N rooms left" text is no longer read (see
+                # occupancy_model.py); the rooms_left column stays empty.
+                return {'rate_mad': rate_mad, 'source': 'live_booking', 'availability': 'available'}
             self.no_match('Booking.com', hotel, best)
         except Exception as e:
             logger.warning(f'Booking.com failed for {hotel_name}: {e.__class__.__name__}')
@@ -680,13 +898,44 @@ class KodoScraper:
 
     # ─── FALLBACK CHAIN ───────────────────────────────────────────────────────
 
-    def scrape_hotel_rates(self, hotel):
-        hotel_id   = str(hotel.get('id', hotel.get('name', '')))
-        hotel_name = hotel.get('name', '')
-        city       = hotel.get('city', '')
-        today      = datetime.now(MOROCCO_TZ).strftime('%Y-%m-%d')
-        rates_found = []
+    def _row(self, hotel, scrape_date, stay_date, result):
+        return {
+            'hotel_id':           str(hotel.get('id', hotel.get('name', ''))),
+            'hotel_name':         hotel.get('name', ''),
+            'city':               hotel.get('city', ''),
+            'scrape_date':        scrape_date,
+            'stay_date':          stay_date,
+            'rate_mad':           round(result['rate_mad'], 0) if result else '',
+            'rate_eur':           round(result['rate_mad'] / EUR_TO_MAD, 0) if result else '',
+            'source':             result['source'] if result else 'unavailable',
+            # Every stored price passed the hotel name and city check
+            # (match_hotel); the rate benchmark and the occupancy model only
+            # use rows marked so, not rows written before the check existed.
+            'data_quality':       'name_matched' if result else 'unavailable',
+            'rooms_left':         '',   # kept for later; no longer collected
+            'availability_signal': 'available' if result else 'unknown',
+            'scrape_status':      'success' if result else 'failed',
+        }
 
+    def scrape_hotel_rates(self, hotel):
+        """This hotel's rows: its DataForSEO prices for the next 30 nights
+        when the batch returned any; otherwise the fallback chain for the
+        5 key nights: SerpApi (only with SERPAPI_KEY), then the browser
+        steps (only with SCRAPER_BROWSER_STEPS=on)."""
+        hotel_id = str(hotel.get('id', hotel.get('name', '')))
+        today    = datetime.now(MOROCCO_TZ).strftime('%Y-%m-%d')
+        nights   = self.dfs_prices.get(hotel_id)
+        if nights:
+            self.stats['nights_total'] += WINDOW_NIGHTS
+            self.stats['nights_found'] += len(nights)
+            self.stats['dataforseo_hits'] = self.stats.get('dataforseo_hits', 0) + len(nights)
+            return [self._row(hotel, today, n, {'rate_mad': r, 'source': 'live_dataforseo'})
+                    for n, r in sorted(nights.items())]
+
+        if not SERPAPI_KEY and not BROWSER_STEPS:
+            self.stats['nights_total'] += WINDOW_NIGHTS
+            return []
+        rates_found = []
         for stay_date in self.get_key_dates():
             checkin  = stay_date
             checkout = (datetime.strptime(stay_date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
@@ -697,12 +946,12 @@ class KodoScraper:
                 if result:
                     self.stats['google_hits'] += 1
 
-            if not result:
+            if not result and BROWSER_STEPS:
                 result = self.scrape_brand_direct(hotel, checkin, checkout)
                 if result:
                     self.stats['brand_hits'] += 1
 
-            if not result:
+            if not result and BROWSER_STEPS:
                 result = self.scrape_booking(hotel, checkin, checkout)
                 if result:
                     self.stats['booking_hits'] += 1
@@ -715,24 +964,7 @@ class KodoScraper:
             self.stats['nights_total'] += 1
             if result:
                 self.stats['nights_found'] += 1
-
-            rates_found.append({
-                'hotel_id':           hotel_id,
-                'hotel_name':         hotel_name,
-                'city':               city,
-                'scrape_date':        today,
-                'stay_date':          stay_date,
-                'rate_mad':           round(result['rate_mad'], 0) if result else '',
-                'rate_eur':           round(result['rate_mad'] / EUR_TO_MAD, 0) if result else '',
-                'source':             result['source'] if result else 'unavailable',
-                # Every stored price passed the hotel name and city check
-                # (match_hotel); the rate benchmark only uses rows marked so,
-                # not rows written before the check existed.
-                'data_quality':       'name_matched' if result else 'unavailable',
-                'rooms_left':         (result.get('rooms_left') or '') if result else '',
-                'availability_signal': result.get('availability', 'unknown') if result else 'unknown',
-                'scrape_status':      'success' if result else 'failed',
-            })
+            rates_found.append(self._row(hotel, today, stay_date, result))
             time.sleep(random.uniform(2, 4))
 
         return rates_found
@@ -783,7 +1015,13 @@ class KodoScraper:
     def _run(self):
         logger.info(f'Kodo Rate Scraper starting — {len(self.hotels)} hotels')
         today = datetime.now(MOROCCO_TZ).strftime('%Y-%m-%d')
-        self.check_serpapi()
+        todo = [h for h in self.hotels
+                if self.progress.get(str(h.get('id', h.get('name', ''))), {}).get('status') != f'done_{today}']
+        self.dataforseo_phase(todo)
+        if SERPAPI_KEY:
+            self.check_serpapi()
+        else:
+            self.stats['serpapi'].update(status='missing_key', message='SERPAPI_KEY is not set: no SerpApi fallback')
 
         for i, hotel in enumerate(self.hotels):
             hotel_id = str(hotel.get('id', hotel.get('name', '')))
@@ -804,7 +1042,8 @@ class KodoScraper:
                 logger.error(f'Error on {hotel.get("name")}: {e}')
                 self.save_progress(hotel_id, 'error')
 
-            self.random_delay(8, 14)
+            if hotel_id not in self.dfs_prices:   # pause between live page lookups only
+                self.random_delay(8, 14)
 
         if datetime.now().weekday() == 6:
             self.cleanup_old_rates()
@@ -821,8 +1060,10 @@ class KodoScraper:
             json.dump(self.stats, f, indent=2)
 
         n, found = self.stats['nights_total'], self.stats['nights_found']
+        d = self.stats['dataforseo']
         logger.info(f'Done — {self.stats["scraped"]} scraped, {self.stats["failed"]} failed, '
-                    f'prices for {found} of {n} nights, {self.stats["no_match"]} results discarded as no match')
+                    f'prices for {found} of {n} nights, {self.stats["no_match"]} results discarded as no match'
+                    + (f' · DataForSEO cost ${d["cost"]:.4f}, balance ${d["balance"]:.2f}' if d.get('balance') is not None else ''))
 
         # Trigger occupancy model after scraping completes — a code file,
         # so this always resolves from APP_DIR, not DATA_DIR.

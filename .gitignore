@@ -24,3 +24,5 @@ scheduler.lock
 health_alert_state.json
 comp_sets.json
 comp_sets.json.tmp
+dataforseo_hotel_ids.json
+dataforseo_hotel_ids.json.tmp
