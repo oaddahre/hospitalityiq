@@ -6045,3 +6045,52 @@ body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
 @media (max-width: 599px) {
   .bench-kpi-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ─── Benchmarking: mode bar and rate benchmark (real mode) ─── */
+.bench-mode-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
+  margin: 0 0 16px; font-size: 12px; color: var(--text-muted);
+}
+/* hidden wins over the pill and card display rules on this screen */
+#screen-benchmarking [hidden] { display: none !important; }
+.bench-mode-link { color: var(--action-text); font-weight: 600; text-decoration: underline; }
+.bench-mode-toggle, .rb-edit-btn, .rb-editor-actions .pill--outline, .rb-editor-actions .pill--solid {
+  padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Sweet Sans Pro', sans-serif;
+}
+.rb-edit-btn { margin-top: 10px; align-self: flex-start; }
+.bench-method {
+  background: var(--surface); border: 1px solid var(--border); margin-bottom: 12px;
+  font-size: 12px; color: var(--text-muted); line-height: 1.6;
+}
+.bench-method summary { cursor: pointer; padding: 10px 16px; font-weight: 600; color: var(--text); }
+.bench-method-body { padding: 0 16px 12px; }
+.bench-method-body p { margin: 0 0 8px; }
+.bench-method-body strong { color: var(--text); }
+.rb-editor { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+.rb-search {
+  width: 100%; max-width: 520px; padding: 8px 10px; font: inherit; font-size: 13px;
+  color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 0;
+}
+.rb-results { display: flex; flex-direction: column; max-width: 520px; }
+.rb-results:empty { display: none; }
+.rb-result {
+  display: flex; justify-content: space-between; gap: 8px; text-align: left;
+  padding: 6px 10px; font: inherit; font-size: 12px; color: var(--text);
+  background: var(--bg); border: 1px solid var(--border); border-top: none; cursor: pointer;
+}
+.rb-result:first-child { border-top: 1px solid var(--border); }
+.rb-result:hover, .rb-result:focus-visible { background: var(--bg-hover); }
+.rb-result span { color: var(--text-muted); white-space: nowrap; }
+.rb-picked-subject { font-size: 13px; color: var(--text); }
+.rb-editor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.rb-msg { font-size: 12px; color: var(--text-muted); }
+.rb-kpi-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.rb-kpi-val { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.2; margin: 4px 0 6px; }
+.rb-kpi-val.kpi-value--na { font-size: 12px; font-weight: 400; color: var(--text-3); }
+.rb-kpi-sub { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.rb-cal-note { padding: 4px 20px 14px; }
+.bench-cal-day .rb-cal-sub { display: block; font-size: 9px; font-weight: 400; color: var(--text-muted); }
+.bench-cal-day.rb-cal-out { opacity: 0.45; }
+@media (max-width: 1259px) { .rb-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+@media (max-width: 768px)  { .rb-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+@media (max-width: 600px)  { .rb-kpi-grid { grid-template-columns: 1fr !important; } }

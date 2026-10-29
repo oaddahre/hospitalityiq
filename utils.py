@@ -101,6 +101,8 @@ def period_label(p):
         return " / ".join(period_label(x) for x in p["parts"])
     if k == "sample":
         return SAMPLE_PERIOD
+    if k == "next":
+        return f"Next {p['days']} days"
     return ""
 
 

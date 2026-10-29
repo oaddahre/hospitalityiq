@@ -22,3 +22,5 @@ scraper.lock
 occupancy.lock
 scheduler.lock
 health_alert_state.json
+comp_sets.json
+comp_sets.json.tmp

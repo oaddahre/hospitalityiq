@@ -501,9 +501,120 @@
       <section class="screen" id="screen-benchmarking">
         <div class="screen-header">
           <h1>Benchmarking</h1>
-          <p class="screen-sub-tags accent">ADR · Occupancy · RevPAR</p>
+          <p class="screen-sub-tags accent" id="bench-sub-tags">ADR · Occupancy · RevPAR</p>
           <span class="pill--sample bench-sample-pill bench-title-pill" id="bench-mode-badge">Sample data</span>
         </div>
+
+        <!-- Which mode is showing, and how to reach the other one -->
+        <div class="bench-mode-bar" id="bench-mode-bar" hidden>
+          <span class="bench-mode-hint" id="bench-mode-hint"></span>
+          <a class="bench-mode-link" id="bench-mode-plans" href="/pricing" hidden>See plans</a>
+          <button type="button" class="pill--outline bench-mode-toggle" id="bench-mode-toggle" hidden></button>
+        </div>
+
+        <!-- ── Real mode: rate benchmark (published rates + modelled occupancy) ── -->
+        <div id="bench-real" hidden>
+          <details class="bench-method" id="bench-method">
+            <summary>Methodology · published rates and modelled estimates, not achieved performance</summary>
+            <div class="bench-method-body">
+              <p><strong>What this is.</strong> Published rates (the prices hotels show for sale) and Kodo's modelled occupancy. These are not achieved ADR, occupancy or RevPAR: Kodo has no hotel's actual sales data here, so none is shown.</p>
+              <p><strong>Published rates.</strong> Every night at 03:00 Casablanca time Kodo looks up each hotel's price for a one-night stay, 2 adults in 1 room, priced in MAD, for the nights 1, 7, 14, 21 and 30 days ahead. Sources, in order: Google Hotels (through SerpApi), the brand's own website, Booking.com, then the other booking sites Google Hotels lists (Expedia first). The price kept is the lowest nightly price the source shows for that stay. Room type, board basis and cancellation terms are not controlled, and whether taxes and fees are included depends on the source.</p>
+              <p><strong>How a night's price is chosen.</strong> The most recently collected price for that night, at most 7 days old; on the same day, the source tried first. A price is used only if the result passed Kodo's name and city check for that hotel.</p>
+              <p><strong>What is excluded.</strong> Results for a different hotel or city, prices older than 7 days, prices entered by hand, prices outside 200 to 60,000 MAD, and nights with no price. A night without a live price shows "–" and is left out of every average.</p>
+              <p><strong>Rate index and rank.</strong> Rate index = your published rate ÷ the comp set's median published rate × 100, over the nights where both exist (100 = priced like the median). Rank orders your hotel among the comp set by average published rate over the next 30 nights (1 = highest).</p>
+              <p><strong>Modelled occupancy (Kodo Estimates).</strong> Modelled, not measured: a base occupancy for the hotel's type and segment, adjusted for day of week, month, local events and, when a price was collected, that price against the hotel's baseline rate and any "rooms left" signal. Confidence is high with a price and an availability signal, medium with a price only, and low with neither.</p>
+            </div>
+          </details>
+          <div class="bench-freshness-bar"><span id="rb-status">Loading…</span></div>
+
+          <div class="bench-controls-row">
+            <div class="bench-card bench-property-card">
+              <div class="bench-card-label">MY HOTEL</div>
+              <div class="bench-prop-info" id="rb-subject"></div>
+            </div>
+            <div class="bench-card bench-comp-card">
+              <div class="bench-card-label">COMP SET</div>
+              <div class="bench-comp-pills" id="rb-comps"></div>
+              <button type="button" class="pill--outline rb-edit-btn" id="rb-edit">Edit comp set</button>
+            </div>
+          </div>
+
+          <div class="bench-card rb-editor" id="rb-editor" hidden>
+            <div class="bench-card-label">MY HOTEL</div>
+            <input type="search" class="rb-search" id="rb-subject-q" placeholder="Search your hotel by name or city" autocomplete="off">
+            <div class="rb-results" id="rb-subject-results"></div>
+            <div class="rb-picked-subject" id="rb-subject-picked"></div>
+            <div class="bench-card-label" style="margin-top:16px">COMP SET · 1 TO 10 HOTELS</div>
+            <input type="search" class="rb-search" id="rb-comp-q" placeholder="Add a hotel by name or city" autocomplete="off">
+            <div class="rb-results" id="rb-comp-results"></div>
+            <div class="bench-comp-pills" id="rb-picked"></div>
+            <div class="rb-editor-actions">
+              <button type="button" class="pill--outline" id="rb-suggest">Suggest a comp set</button>
+              <button type="button" class="pill--solid rb-save" id="rb-save">Save comp set</button>
+              <button type="button" class="pill--outline" id="rb-cancel">Cancel</button>
+              <span class="rb-msg" id="rb-msg"></span>
+            </div>
+            <p class="bench-privacy-disclaimer">Suggestions: same city, same or neighbouring segment, nearest first. The comp set is shared by everyone in your organisation.</p>
+          </div>
+
+          <div class="bench-date-bar">
+            <span class="bench-date-label">Period</span>
+            <span class="bench-date-pill active" aria-current="true">Next 30 days</span>
+            <button class="export-btn" id="btn-export-rb" style="margin-left:auto">↓ Export</button>
+          </div>
+
+          <div class="bench-kpi-grid rb-kpi-grid">
+            <div class="bench-kpi-card" id="rbk-index"><div class="bench-kpi-title">Rate index</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
+            <div class="bench-kpi-card" id="rbk-rate"><div class="bench-kpi-title">Average published rate (next 30 days)</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
+            <div class="bench-kpi-card" id="rbk-rank"><div class="bench-kpi-title">Rate rank in comp set</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
+            <div class="bench-kpi-card" id="rbk-occ"><div class="bench-kpi-title">Modelled occupancy (next 30 days)</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
+            <div class="bench-kpi-card" id="rbk-cover"><div class="bench-kpi-title">Rate coverage</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
+          </div>
+
+          <div class="chart-card" style="margin-bottom:20px">
+            <div class="chart-card-header">
+              <span class="chart-title">Published Rate Calendar</span>
+              <span class="chart-unit">MAD per night · your rate vs comp set median</span>
+            </div>
+            <div class="bench-cal-topbar">
+              <div class="bench-cal-nav-row">
+                <button class="bench-cal-nav-btn" id="rb-rate-prev">&#8592;</button>
+                <span class="bench-cal-month-label" id="rb-rate-month"></span>
+                <button class="bench-cal-nav-btn" id="rb-rate-next">&#8594;</button>
+              </div>
+            </div>
+            <div class="bench-cal-wrap" id="rb-rate-grid"></div>
+            <p class="rate-updated-note rb-cal-note">Each night: your published rate, and below it the comp set median. "–": no live price. Only the next 30 nights are tracked.</p>
+          </div>
+
+          <div class="chart-card" style="margin-bottom:20px">
+            <div class="chart-card-header">
+              <span class="chart-title">Modelled Occupancy Calendar</span>
+              <span class="pill--grey rb-est-pill">Kodo Estimates</span>
+            </div>
+            <div class="bench-cal-topbar">
+              <div class="bench-cal-nav-row">
+                <button class="bench-cal-nav-btn" id="rb-occ-prev">&#8592;</button>
+                <span class="bench-cal-month-label" id="rb-occ-month"></span>
+                <button class="bench-cal-nav-btn" id="rb-occ-next">&#8594;</button>
+              </div>
+            </div>
+            <div class="bench-cal-wrap" id="rb-occ-grid"></div>
+            <p class="rate-updated-note rb-cal-note" id="rb-occ-note">Kodo Estimates · modelled, not measured</p>
+          </div>
+
+          <div class="chart-card" style="margin-bottom:20px">
+            <div class="chart-card-header">
+              <span class="chart-title insight-header-title">INSIGHTS</span>
+              <span class="chart-unit insight-header-meta">Published rates and modelled occupancy</span>
+              <button class="bench-refresh-btn" id="rb-ai-refresh">Refresh</button>
+            </div>
+            <div class="bench-ai-box" id="rb-ai"><p class="bench-loading">Insights will appear here after data loads…</p></div>
+          </div>
+        </div>
+
+        <!-- ── Sample mode ── -->
+        <div id="bench-sample-view">
         <div class="bench-freshness-bar" id="bench-freshness-bar">
           <span id="bench-freshness-text">Sample data · fictional Marrakech luxury hotels · illustrative figures, not real performance</span>
         </div>
@@ -744,6 +855,7 @@
             <p class="bench-loading">Insights will appear here after data loads…</p>
           </div>
         </div>
+      </div>
       </section>
 
       <!-- ── Tourism ── -->

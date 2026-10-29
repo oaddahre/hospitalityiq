@@ -725,7 +725,10 @@ class KodoScraper:
                 'rate_mad':           round(result['rate_mad'], 0) if result else '',
                 'rate_eur':           round(result['rate_mad'] / EUR_TO_MAD, 0) if result else '',
                 'source':             result['source'] if result else 'unavailable',
-                'data_quality':       result['source'] if result else 'unavailable',
+                # Every stored price passed the hotel name and city check
+                # (match_hotel); the rate benchmark only uses rows marked so,
+                # not rows written before the check existed.
+                'data_quality':       'name_matched' if result else 'unavailable',
                 'rooms_left':         (result.get('rooms_left') or '') if result else '',
                 'availability_signal': result.get('availability', 'unknown') if result else 'unknown',
                 'scrape_status':      'success' if result else 'failed',

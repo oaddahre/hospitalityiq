@@ -29,7 +29,8 @@ from functools import wraps
 from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
-from bench_sample import sample_benchmarking
+from bench_sample import sample_benchmarking, casablanca_today
+import rate_benchmark as RB
 from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
                    period_history, period_last_known, NOT_AVAILABLE)
 
@@ -2154,6 +2155,55 @@ def api_benchmarking():
     return jsonify(sample_benchmarking())
 
 
+# ─── Rate benchmark (the real mode) ───────────────────────────────────────────
+# Benchmarker and Advisory plans, like the rest of Benchmarking's data
+# features. The comp set belongs to the user's organisation (or the user,
+# without one): every member sees and can edit the same one.
+
+@app.route("/api/benchmarking/compset", methods=["GET"])
+@login_required
+@tier_required("benchmarker")
+def api_bench_compset_get():
+    return jsonify({"comp_set": RB.get_comp_set(DATA_DIR, RB.owner_key(current_user)),
+                    "min": RB.MIN_COMP, "max": RB.MAX_COMP})
+
+
+@app.route("/api/benchmarking/compset", methods=["POST"])
+@login_required
+@tier_required("benchmarker")
+def api_bench_compset_save():
+    # JSON only: a cross-site form can't send it (with the Lax session cookie)
+    if not request.is_json:
+        return jsonify({"error": "Expected JSON"}), 400
+    body = request.get_json(silent=True) or {}
+    entry, err = RB.save_comp_set(DATA_DIR, RB.owner_key(current_user),
+                                  body.get("subject_id"), body.get("comp_ids"), current_user.id)
+    if err:
+        return jsonify({"error": err}), 400
+    return jsonify({"comp_set": entry})
+
+
+@app.route("/api/benchmarking/compset/suggest")
+@login_required
+@tier_required("benchmarker")
+def api_bench_compset_suggest():
+    return jsonify({"suggested": RB.suggest_comp_set(DATA_DIR, request.args.get("subject_id", ""))})
+
+
+@app.route("/api/benchmarking/rates")
+@login_required
+@tier_required("benchmarker")
+def api_bench_rates():
+    cs = RB.get_comp_set(DATA_DIR, RB.owner_key(current_user))
+    if not cs:
+        return jsonify({"mode": "rate_benchmark", "state": "no_comp_set"})
+    try:
+        return jsonify(RB.rate_benchmark(DATA_DIR, cs, casablanca_today()))
+    except Exception as e:
+        app.logger.error(f"Rate benchmark error: {e}", exc_info=True)
+        return jsonify({"error": "Rate benchmark could not be computed"}), 500
+
+
 @app.route("/api/test-key")
 @login_required
 def api_test_key():
@@ -2265,7 +2315,11 @@ INDIVIDUAL HOTEL DETAIL
 {hotel_lines}
 ══════════════════════════════════════════════════
 
-Answer only from the data above. If asked about hotels, cities, or markets not in the Kodo database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers."""
+Answer only from the data above. If asked about hotels, cities, or markets not in the Kodo database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers.
+
+BENCHMARKING PAGE DATA: a question from the Benchmarking page carries its own figures and says which mode is showing.
+  - "SAMPLE MODE": fictional hotels and illustrative figures, not real hotels or real performance. Say it is sample data; never present it as real results.
+  - "RATE BENCHMARK MODE": published rates collected from booking sites and Kodo's modelled occupancy (Kodo Estimates, modelled, not measured). These are not achieved ADR, occupancy or RevPAR: call them published rates and modelled occupancy, never actuals, ADR or achieved occupancy."""
 
 
 @app.route("/api/chat", methods=["POST"])

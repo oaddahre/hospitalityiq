@@ -398,6 +398,7 @@ const fmt = {
 //   {kind:'asof', date:Date|'YYYY-MM-DD'}       → As of 28 Oct 2026
 //   {kind:'forecast', year:2026}                → 2026 forecast
 //   {kind:'sample'}                             → Sample data · illustrative figures (never a date)
+//   {kind:'next', days:30}                      → Next 30 days   (forward-looking: published rates)
 const KodoPeriod = (() => {
   const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const toDate = d => d instanceof Date ? d : new Date(String(d).slice(0, 10) + 'T00:00:00');
@@ -423,6 +424,7 @@ const KodoPeriod = (() => {
       case 'forecast': return `${p.year} forecast`;
       case 'multi':    return p.parts.map(label).join(' / ');
       case 'sample':   return 'Sample data · illustrative figures';
+      case 'next':     return `Next ${p.days} days`;
     }
     return '';
   }
@@ -3196,7 +3198,8 @@ document.querySelectorAll('.nav-link').forEach(link => {
     if (screen === 'news')         initNews();
     if (screen === 'benchmarking') {
       initBenchmarking().then(() => {
-        if (benchmarkInited && benchmarkData) renderBenchAIInsights();
+        // The sample's Insights call the AI only when the sample is showing
+        if (benchmarkInited && benchmarkData && document.getElementById('bench-real').hidden) renderBenchAIInsights();
       });
     }
     if (screen === 'reports') initReports();
@@ -3680,21 +3683,17 @@ function benchCalendarsToThisMonth() {
 async function initBenchmarking() {
   if (benchmarkInited) return;
   benchmarkInited = true;
+  // Sample mode is open to every plan; the rate benchmark (real mode)
+  // needs Benchmarker or Advisory and a comp set (initRateBenchmark)
   const res = await fetch('/api/benchmarking');
-  if (res.status === 403) {
-    const err = await res.json().catch(() => ({}));
-    if (err.error === 'upgrade_required') {
-      benchmarkInited = false;
-      if (typeof showUpgradeModal === 'function') showUpgradeModal('Benchmarking requires Benchmarker', err.message);
-      return;
-    }
-  }
+  if (!res.ok) { benchmarkInited = false; return; }
   benchmarkData = await res.json();
   benchCalendarsToThisMonth();
   renderBenchPropertySelector();
   renderBenchCompSetBuilder();
   renderBenchAll();
   updateBenchFreshness();
+  await initRateBenchmark();
 }
 
 // What the Benchmarking page's figures are. Sample mode (the API marks
@@ -4628,6 +4627,358 @@ document.getElementById('bench-date-bar').addEventListener('click', e => {
 
 // AI refresh button
 document.getElementById('bench-ai-refresh').addEventListener('click', () => renderBenchAIInsights(true));
+
+// ─── Benchmarking: rate benchmark (real mode) ─────────────────────
+// Benchmarker and Advisory plans with a comp set see the rate benchmark:
+// published rates (scraped_rates.csv) and modelled occupancy
+// (estimated_occupancy.csv) for the next 30 nights. No achieved ADR,
+// occupancy or RevPAR exists for these hotels, so none is shown. Everyone
+// else sees the sample mode, with a hint; signed-in users with a comp set
+// can switch to the sample ("View sample data") and back.
+
+const rbState = {
+  canReal: false,        // plan allows the rate benchmark
+  compSet: null,         // { subject_id, comp_ids } of the organisation
+  data: null,            // /api/benchmarking/rates
+  showSample: false,     // "View sample data" chosen
+  editing: false,
+  draftSubject: null, draftComps: [],
+  rateCal: null, occCal: null,   // { y, m } shown by each calendar
+};
+
+const rbHotel = id => (hotels || []).find(h => String(h.id) === String(id));
+const rbMad   = v => v == null ? '–' : 'MAD ' + Math.round(v).toLocaleString('en');
+const rbShort = v => v == null ? '–' : Math.round(v).toLocaleString('en');
+const rbConf  = c => c ? c[0].toUpperCase() + c.slice(1) : '';
+
+async function initRateBenchmark() {
+  const me = window._kodoUser || await fetch('/api/me').then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  rbState.canReal = me.tier === 'benchmarker' || me.tier === 'advisory';
+  if (rbState.canReal) {
+    const cs = await fetch('/api/benchmarking/compset').then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    rbState.compSet = cs.comp_set || null;
+    if (rbState.compSet) await loadRateBenchmark();
+  }
+  applyBenchMode();
+}
+
+async function loadRateBenchmark() {
+  const res = await fetch('/api/benchmarking/rates').catch(() => null);
+  rbState.data = res && res.ok ? await res.json() : { state: 'error' };
+}
+
+// Which view shows, the title pill, the subtitle and the mode bar
+function applyBenchMode() {
+  const real = rbState.canReal && !rbState.showSample && (rbState.compSet || rbState.editing);
+  document.getElementById('bench-real').hidden = !real;
+  document.getElementById('bench-sample-view').hidden = real;
+  document.getElementById('bench-sub-tags').textContent = real ? 'Published rates · Modelled occupancy' : 'ADR · Occupancy · RevPAR';
+
+  const pill = document.getElementById('bench-mode-badge');
+  const live = real && rbState.data && rbState.data.state === 'live';
+  pill.hidden = real && !live;
+  if (live) { pill.textContent = 'Live data available'; pill.className = 'pill--green bench-title-pill'; }
+  else { pill.textContent = 'Sample data'; pill.className = 'pill--sample bench-sample-pill bench-title-pill'; }
+
+  const bar = document.getElementById('bench-mode-bar');
+  const hint = document.getElementById('bench-mode-hint');
+  const plans = document.getElementById('bench-mode-plans');
+  const toggle = document.getElementById('bench-mode-toggle');
+  bar.hidden = false; plans.hidden = true; toggle.hidden = false;
+  if (!rbState.canReal) {
+    hint.textContent = 'You are viewing sample data. Benchmarking your own hotel’s published rates against a comp set is part of the Benchmarker and Advisory plans.';
+    plans.hidden = false; toggle.hidden = true;
+  } else if (!rbState.compSet && !rbState.editing) {
+    hint.textContent = 'You are viewing sample data. Set up your comp set to benchmark your hotel’s published rates.';
+    toggle.textContent = 'Set up comp set';
+  } else if (real) {
+    hint.textContent = 'Your rate benchmark: published rates and modelled occupancy, not achieved performance.';
+    toggle.textContent = 'View sample data';
+    toggle.hidden = !rbState.compSet;
+  } else {
+    hint.textContent = 'You are viewing sample data: fictional hotels, illustrative figures.';
+    toggle.textContent = 'Back to my rate benchmark';
+  }
+  if (real) renderRateBenchmark();
+}
+
+document.getElementById('bench-mode-toggle').addEventListener('click', () => {
+  if (!rbState.compSet) { rbState.showSample = false; rbOpenEditor(); return; }
+  rbState.showSample = !rbState.showSample;
+  applyBenchMode();
+  if (rbState.showSample && benchmarkData) renderBenchSelection();
+});
+
+// ── Render ──
+function renderRateBenchmark() {
+  const d = rbState.data;
+  const cs = rbState.compSet;
+  document.getElementById('rb-editor').hidden = !rbState.editing;
+
+  const sub = cs && rbHotel(cs.subject_id);
+  document.getElementById('rb-subject').innerHTML = sub
+    ? `<div class="bench-prop-name">${fmt.esc(sub.name)}</div><div class="bench-prop-meta">${fmt.esc(sub.city)} · ${fmt.esc(sub.category)} · ${sub.keys} keys</div>`
+    : '<div class="bench-prop-meta">No hotel chosen yet</div>';
+  document.getElementById('rb-comps').innerHTML = cs
+    ? cs.comp_ids.map(id => rbHotel(id)).filter(Boolean).map(h => `<span class="bench-comp-pill">${fmt.esc(h.name)}</span>`).join('')
+    : '';
+
+  const statusEl = document.getElementById('rb-status');
+  const k = d && d.kpis;
+  const updated = d && d.rates_updated ? KodoPeriod.day(d.rates_updated) : null;
+  if (!d || !cs) statusEl.textContent = 'Choose your hotel and comp set to start.';
+  else if (d.state === 'error') statusEl.textContent = 'The rate benchmark could not be loaded. Try again later.';
+  else if (d.state === 'empty') statusEl.textContent = 'Not available yet. Rate tracking starts after the first full scrape.';
+  else if (d.state === 'stale') statusEl.textContent = `Last live rates: ${updated} · not updated since · ${k.nights_with_rate} of ${d.window.nights} nights have live rates (prices up to 7 days old)`;
+  else statusEl.textContent = `${k.nights_with_rate} of ${d.window.nights} nights have live rates · rates updated ${updated} · comp set of ${d.comps.length} hotel${d.comps.length === 1 ? '' : 's'}`;
+
+  rbRenderKPIs();
+  if (!rbState.rateCal) { const n = new Date(); rbState.rateCal = { y: n.getFullYear(), m: n.getMonth() + 1 }; }
+  if (!rbState.occCal)  { const n = new Date(); rbState.occCal  = { y: n.getFullYear(), m: n.getMonth() + 1 }; }
+  rbRenderCalendar('rate'); rbRenderCalendar('occ');
+  rbRenderInsights();
+}
+
+function rbCard(id, value, sub) {
+  const card = document.getElementById(id);
+  const v = card.querySelector('.rb-kpi-val');
+  const na = value == null;
+  v.textContent = na ? 'Not available yet' : value;
+  v.classList.toggle('kpi-value--na', na);
+  card.querySelector('.rb-kpi-sub').textContent = sub || '';
+  const d = rbState.data;
+  const tip = KodoPeriod.tip({ source: 'published rates (scraped_rates.csv) and Kodo modelled occupancy' });
+  KodoPeriod.set(card, { kind: 'next', days: 30 }, tip,
+    { compare: d && d.rates_updated ? `rates updated ${KodoPeriod.day(d.rates_updated)}` : 'no rates collected yet' });
+}
+
+function rbRenderKPIs() {
+  const d = rbState.data, k = d && d.kpis;
+  const ok = k && d.state !== 'empty' && d.state !== 'error';
+  rbCard('rbk-index', ok && k.rate_index != null ? String(Math.round(k.rate_index)) : null,
+    ok && k.rate_index != null ? `Your published rate ÷ comp set median × 100 · ${k.nights_compared} nights compared` : '');
+  rbCard('rbk-rate', ok && k.avg_rate != null ? rbMad(k.avg_rate) : null,
+    ok && k.avg_rate != null ? `Comp set median ${rbMad(k.avg_comp_median)} · nights with your live rate` : '');
+  rbCard('rbk-rank', ok && k.rank != null ? `${k.rank} of ${k.ranked_of}` : null,
+    ok && k.rank != null ? 'By average published rate · 1 = highest' : '');
+  rbCard('rbk-occ', ok && k.occ_subject != null ? `${k.occ_subject.toFixed(1)}%` : null,
+    ok && k.occ_subject != null
+      ? `Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo Estimates · modelled, not measured · Confidence: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
+      : '');
+  rbCard('rbk-cover', ok ? `${k.nights_with_rate} of ${d.window.nights}` : null,
+    ok ? 'Nights with a live published rate for your hotel' : '');
+  const note = document.getElementById('rb-occ-note');
+  note.textContent = ok
+    ? `Kodo Estimates · modelled, not measured · your hotel, with the comp set average below · Confidence: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
+    : 'Kodo Estimates · modelled, not measured';
+}
+
+function rbRenderCalendar(type) {
+  const cal = type === 'rate' ? rbState.rateCal : rbState.occCal;
+  const { y, m } = cal;
+  const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById(`rb-${type}-month`).textContent = `${MON[m - 1]} ${y}`;
+  const d = rbState.data;
+  const byNight = {};
+  (d && d.nights || []).forEach(n => { byNight[n.night] = n; });
+  const first = (new Date(y, m - 1, 1).getDay() + 6) % 7, total = new Date(y, m, 0).getDate();
+  let html = '<div class="bench-cal-dow-row">' + ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x => `<div class="bench-cal-dow">${x}</div>`).join('')
+    + '</div><div class="bench-cal-days">' + '<div class="bench-cal-day bench-cal-empty"></div>'.repeat(first);
+  for (let day = 1; day <= total; day++) {
+    const iso = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const n = byNight[iso];
+    const wk = [0, 6].includes(new Date(y, m - 1, day).getDay()) ? ' bench-cal-weekend' : '';
+    if (!n) { html += `<div class="bench-cal-day bench-cal-nodata rb-cal-out${wk}" title="${iso}: outside the next 30 nights"><span class="bench-cal-daynum">${day}</span></div>`; continue; }
+    let val, subTxt, sty, tip;
+    if (type === 'rate') {
+      val = rbShort(n.subject_rate); subTxt = n.comp_median != null ? `med ${rbShort(n.comp_median)}` : 'med –';
+      sty = n.subject_rate != null ? adrCellStyle(n.subject_rate) : null;
+      tip = `${iso}\nYour published rate: ${rbMad(n.subject_rate)}${n.subject_source ? ` (${n.subject_source}, collected ${KodoPeriod.day(n.collected_on)})` : ''}\nComp set median: ${rbMad(n.comp_median)} (${n.comp_priced} hotel${n.comp_priced === 1 ? '' : 's'} with a rate)${n.rate_index != null ? `\nRate index: ${Math.round(n.rate_index)} · rank ${n.rank} of ${n.ranked_of}` : ''}`;
+    } else {
+      val = n.subject_occ != null ? `${Math.round(n.subject_occ)}%` : '–';
+      subTxt = n.comp_occ != null ? `avg ${Math.round(n.comp_occ)}%` : 'avg –';
+      sty = n.subject_occ != null ? occCellStyle(n.subject_occ / 100) : null;
+      tip = `${iso}\nModelled occupancy (Kodo Estimates): ${n.subject_occ != null ? n.subject_occ.toFixed(1) + '%' : '–'}${n.subject_conf ? `, confidence ${n.subject_conf}` : ''}\nComp set average: ${n.comp_occ != null ? n.comp_occ.toFixed(1) + '%' : '–'}`;
+    }
+    const styAttr = sty ? `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}` : '';
+    html += `<div class="bench-cal-day${sty ? '' : ' bench-cal-nodata'}${wk}" style="${styAttr}" title="${fmt.esc(tip)}">
+      <span class="bench-cal-daynum" style="color:var(--text);opacity:1">${day}</span>
+      <span class="bench-cal-dayval">${val}<span class="rb-cal-sub">${subTxt}</span></span></div>`;
+  }
+  document.getElementById(`rb-${type}-grid`).innerHTML = html + '</div>';
+}
+
+// Calendar months: from the current month to the one holding the 30th night
+function rbStepMonth(type, step) {
+  const cal = type === 'rate' ? rbState.rateCal : rbState.occCal;
+  const now = new Date(), last = new Date(); last.setDate(last.getDate() + 30);
+  let { y, m } = cal; m += step;
+  if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
+  const key = y * 12 + m, lo = now.getFullYear() * 12 + now.getMonth() + 1, hi = last.getFullYear() * 12 + last.getMonth() + 1;
+  if (key < lo || key > hi) return;
+  cal.y = y; cal.m = m; rbRenderCalendar(type);
+}
+['rate', 'occ'].forEach(t => {
+  document.getElementById(`rb-${t}-prev`).addEventListener('click', () => rbStepMonth(t, -1));
+  document.getElementById(`rb-${t}-next`).addEventListener('click', () => rbStepMonth(t, 1));
+});
+
+// ── Insights (AI) ──
+// The analyst is told this is the rate benchmark: published rates and
+// modelled occupancy, never achieved ADR or occupancy.
+function rbDataContext() {
+  const d = rbState.data, k = d && d.kpis;
+  if (!d || !k || d.state === 'empty' || d.state === 'error') return '';
+  const pct = v => v != null ? v.toFixed(1) + '%' : 'n/a';
+  return `RATE BENCHMARK MODE. These figures are PUBLISHED RATES collected from booking sites (lowest nightly price shown for 2 adults, 1 room, 1 night, in MAD) and MODELLED occupancy (Kodo Estimates, modelled, not measured). They are NOT achieved ADR, occupancy or RevPAR: never call them actuals, ADR or achieved occupancy.
+Hotel: ${d.subject.name} (${d.subject.city}, ${d.subject.category}). Comp set: ${d.comps.map(c => c.name).join(', ')}.
+Next 30 nights (${d.window.start} to ${d.window.end}); rates last collected ${d.rates_updated}${d.state === 'stale' ? ' (not updated since)' : ''}.
+Live published rate on ${k.nights_with_rate} of 30 nights for the hotel; ${k.nights_compared} nights also have a comp set median.
+Average published rate MAD ${k.avg_rate ?? 'n/a'} vs comp set median MAD ${k.avg_comp_median ?? 'n/a'}; rate index ${k.rate_index ?? 'n/a'}; rank ${k.rank ?? 'n/a'} of ${k.ranked_of ?? 'n/a'} by average published rate.
+Modelled occupancy ${pct(k.occ_subject)} vs comp set average ${pct(k.occ_comp)} (confidence ${k.occ_confidence || 'n/a'}, model run ${k.model_run_date || 'n/a'}).`;
+}
+
+const rbAiCache = new Map();
+function rbRenderInsights(force = false) {
+  const box = document.getElementById('rb-ai');
+  const ctx = rbDataContext();
+  if (!ctx) { box.innerHTML = '<p class="bench-loading">Not available yet. Insights need live published rates.</p>'; return; }
+  const key = ctx;
+  box.innerHTML = `<div class="bench-ai-summary${rbAiCache.has(key) && !force ? '' : ' bench-loading'}" id="rb-ai-summary">${rbAiCache.has(key) && !force ? rbAiCache.get(key) : 'Generating…'}</div>`;
+  if (rbAiCache.has(key) && !force) return;
+  fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: [{ role: 'user', content: `Brief pricing commentary on this rate benchmark.\n${ctx}\n2-3 sentences. Cite specific numbers. Call them published rates and modelled occupancy.` }] }) })
+    .then(r => r.json()).then(data => {
+      if (rbDataContext() !== key) return;
+      const el = document.getElementById('rb-ai-summary'); if (!el) return;
+      el.className = 'bench-ai-summary';
+      if (data.response) { const h = mdRender(data.response); rbAiCache.set(key, h); el.innerHTML = h; }
+      else el.textContent = data.message || '';
+    }).catch(() => { const el = document.getElementById('rb-ai-summary'); if (el) { el.className = 'bench-ai-summary'; el.textContent = ''; } });
+}
+document.getElementById('rb-ai-refresh').addEventListener('click', () => rbRenderInsights(true));
+
+// ── Comp set editor ──
+const rbNorm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+function rbOpenHotels() {
+  return (hotels || []).filter(h => !h.status || /^(open|operating)$/i.test(h.status));
+}
+function rbSearch(q, exclude) {
+  const n = rbNorm(q).trim();
+  if (n.length < 2) return [];
+  return rbOpenHotels().filter(h => !exclude.has(String(h.id)) && (rbNorm(h.name).includes(n) || rbNorm(h.city).includes(n))).slice(0, 8);
+}
+function rbResultHtml(h) {
+  return `<button type="button" class="rb-result" data-id="${h.id}">${fmt.esc(h.name)}<span>${fmt.esc(h.city)} · ${fmt.esc(h.category)}</span></button>`;
+}
+function rbOpenEditor() {
+  rbState.editing = true;
+  rbState.draftSubject = rbState.compSet ? String(rbState.compSet.subject_id) : null;
+  rbState.draftComps = rbState.compSet ? rbState.compSet.comp_ids.map(String) : [];
+  document.getElementById('rb-msg').textContent = '';
+  applyBenchMode();
+  rbRenderEditor();
+  document.getElementById('rb-editor').scrollIntoView({ block: 'nearest' });
+}
+function rbRenderEditor() {
+  const s = rbState.draftSubject && rbHotel(rbState.draftSubject);
+  document.getElementById('rb-subject-picked').textContent = s ? `${s.name} · ${s.city} · ${s.category}` : 'No hotel chosen yet';
+  document.getElementById('rb-picked').innerHTML = rbState.draftComps.map(id => rbHotel(id)).filter(Boolean).map(h =>
+    `<span class="bench-comp-pill">${fmt.esc(h.name)}<button type="button" class="bench-comp-pill-rm" data-rm="${h.id}" aria-label="Remove ${fmt.esc(h.name)}">×</button></span>`).join('')
+    || '<span class="rb-msg">No comp set hotels yet</span>';
+  document.getElementById('rb-save').disabled = !s || !rbState.draftComps.length;
+}
+async function rbSuggest() {
+  if (!rbState.draftSubject) { document.getElementById('rb-msg').textContent = 'Choose your hotel first.'; return; }
+  const r = await fetch(`/api/benchmarking/compset/suggest?subject_id=${encodeURIComponent(rbState.draftSubject)}`).then(x => x.json()).catch(() => ({}));
+  const ids = (r.suggested || []).slice(0, 6);
+  rbState.draftComps = ids;
+  document.getElementById('rb-msg').textContent = ids.length ? `Suggested ${ids.length} hotels: same city, similar segment, nearest first.` : 'No similar hotels found in this city: add some by name.';
+  rbRenderEditor();
+}
+document.getElementById('rb-edit').addEventListener('click', rbOpenEditor);
+document.getElementById('rb-subject-q').addEventListener('input', e => {
+  document.getElementById('rb-subject-results').innerHTML = rbSearch(e.target.value, new Set()).map(rbResultHtml).join('');
+});
+document.getElementById('rb-subject-results').addEventListener('click', e => {
+  const b = e.target.closest('.rb-result'); if (!b) return;
+  const changed = rbState.draftSubject !== b.dataset.id;
+  rbState.draftSubject = b.dataset.id;
+  rbState.draftComps = rbState.draftComps.filter(id => id !== b.dataset.id);
+  document.getElementById('rb-subject-results').innerHTML = '';
+  document.getElementById('rb-subject-q').value = '';
+  rbRenderEditor();
+  if (changed && !rbState.draftComps.length) rbSuggest();
+});
+document.getElementById('rb-comp-q').addEventListener('input', e => {
+  const ex = new Set([...rbState.draftComps, rbState.draftSubject].filter(Boolean));
+  document.getElementById('rb-comp-results').innerHTML = rbSearch(e.target.value, ex).map(rbResultHtml).join('');
+});
+document.getElementById('rb-comp-results').addEventListener('click', e => {
+  const b = e.target.closest('.rb-result'); if (!b) return;
+  if (rbState.draftComps.length >= 10) { document.getElementById('rb-msg').textContent = 'A comp set has at most 10 hotels.'; return; }
+  rbState.draftComps.push(b.dataset.id);
+  document.getElementById('rb-comp-results').innerHTML = '';
+  document.getElementById('rb-comp-q').value = '';
+  rbRenderEditor();
+});
+document.getElementById('rb-picked').addEventListener('click', e => {
+  const b = e.target.closest('[data-rm]'); if (!b) return;
+  rbState.draftComps = rbState.draftComps.filter(id => id !== b.dataset.rm);
+  rbRenderEditor();
+});
+document.getElementById('rb-suggest').addEventListener('click', rbSuggest);
+document.getElementById('rb-cancel').addEventListener('click', () => { rbState.editing = false; applyBenchMode(); });
+document.getElementById('rb-save').addEventListener('click', async () => {
+  const msg = document.getElementById('rb-msg');
+  msg.textContent = 'Saving…';
+  const r = await fetch('/api/benchmarking/compset', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject_id: rbState.draftSubject, comp_ids: rbState.draftComps }) }).catch(() => null);
+  const data = r ? await r.json().catch(() => ({})) : {};
+  if (!r || !r.ok) { msg.textContent = data.error || 'Could not save the comp set.'; return; }
+  rbState.compSet = data.comp_set; rbState.editing = false; rbState.showSample = false;
+  await loadRateBenchmark();
+  applyBenchMode();
+});
+
+// ── Excel export (same labels and the methodology note) ──
+function exportRateBenchmark() {
+  if (!canExport()) { showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans.'); return; }
+  const d = rbState.data;
+  if (!d || !d.kpis) return;
+  const k = d.kpis;
+  const period = `Next 30 days · ${d.rates_updated ? 'rates updated ' + KodoPeriod.day(d.rates_updated) : 'no rates collected yet'}`;
+  const na = v => v == null ? 'Not available yet' : v;
+  const method = [...document.querySelectorAll('#bench-method .bench-method-body p')].map(p => ({ 'Methodology': p.textContent.trim() }));
+  const kpis = [
+    { 'Metric': 'Rate index', 'Your hotel': na(k.rate_index), 'Comp set': 100, 'Period': period, 'Note': 'Your published rate ÷ comp set median × 100' },
+    { 'Metric': 'Average published rate (MAD)', 'Your hotel': na(k.avg_rate), 'Comp set': na(k.avg_comp_median), 'Period': period, 'Note': 'Comp set: median published rate. Published rates, not achieved ADR' },
+    { 'Metric': 'Rate rank in comp set', 'Your hotel': k.rank != null ? `${k.rank} of ${k.ranked_of}` : 'Not available yet', 'Comp set': '', 'Period': period, 'Note': 'By average published rate, 1 = highest' },
+    { 'Metric': 'Modelled occupancy % (Kodo Estimates)', 'Your hotel': na(k.occ_subject), 'Comp set': na(k.occ_comp), 'Period': period, 'Note': `Modelled, not measured · confidence ${k.occ_confidence || 'n/a'} · model run ${k.model_run_date || 'n/a'}` },
+    { 'Metric': 'Rate coverage', 'Your hotel': `${k.nights_with_rate} of ${d.window.nights} nights`, 'Comp set': '', 'Period': period, 'Note': 'Nights with a live published rate for your hotel' },
+  ];
+  const nights = d.nights.map(n => ({
+    'Night': n.night,
+    'Your published rate (MAD)': n.subject_rate ?? '–',
+    'Source': n.subject_source || '–',
+    'Collected on': n.collected_on || '–',
+    'Comp set median published rate (MAD)': n.comp_median ?? '–',
+    'Comp set hotels with a rate': n.comp_priced,
+    'Rate index': n.rate_index ?? '–',
+    'Rank': n.rank != null ? `${n.rank} of ${n.ranked_of}` : '–',
+    'Modelled occupancy % (Kodo Estimates)': n.subject_occ ?? '–',
+    'Comp set modelled occupancy %': n.comp_occ ?? '–',
+    'Confidence': n.subject_conf || '–',
+  }));
+  const comp = [d.subject, ...d.comps].map((h, i) => ({ 'Role': i ? 'Comp set' : 'Your hotel', 'Hotel': h.name, 'City': h.city, 'Segment': h.category, 'Keys': h.keys }));
+  exportToExcel([
+    { data: method, name: 'Methodology' },
+    { data: kpis, name: 'KPI Summary' },
+    { data: nights, name: 'Nightly Rates' },
+    { data: comp, name: 'Comp Set' },
+  ], `Kodo_Rate_Benchmark_${(d.subject.name || 'Hotel').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0, 10)}`);
+}
+document.getElementById('btn-export-rb')?.addEventListener('click', exportRateBenchmark);
 
 // ─── Global Search ────────────────────────────────────────────────
 
