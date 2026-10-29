@@ -3649,7 +3649,7 @@ function renderBenchPropertySelector() {
     benchState.myHotelId = sel.value;
     updateBenchPropInfo();
     renderBenchCompSetBuilder();
-    renderBenchAll();
+    renderBenchSelection();
   });
 }
 
@@ -3711,7 +3711,7 @@ function renderBenchCompSetBuilder() {
         });
         updateBenchCompCounter();
         renderCompPills();
-        renderBenchAll();
+        renderBenchSelection();
       });
     });
   }
@@ -3757,7 +3757,7 @@ function renderCompPills() {
       if (cb) { cb.checked = false; cb.closest('.bench-comp-check-label').classList.remove('active'); }
       updateBenchCompCounter();
       renderCompPills();
-      renderBenchAll();
+      renderBenchSelection();
     });
   });
 }
@@ -3858,6 +3858,15 @@ function aggDaily(records) {
 }
 
 // ── Master render ─────────────────────────────────────────────────
+
+// After the user changes the property, comp set or period: the charts and
+// cards, and the Insights box too (it said "Current selection" but kept the
+// previous selection's text). Its summary is cached per selection, so going
+// back to an earlier one doesn't call the API again.
+function renderBenchSelection() {
+  renderBenchAll();
+  renderBenchAIInsights();
+}
 
 function renderBenchAll() {
   renderBenchKPIs();
@@ -4272,9 +4281,10 @@ const DOW_NAMES_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 // Cache for the AI summary paragraph, keyed to the hotel/comp-set/date-
 // range combination it was generated for — so navigating away from and
 // back to this screen (which re-runs this whole function) reuses the
-// existing text instead of firing a new /api/chat call, and only an
-// actual selection change or an explicit Refresh click regenerates it.
-let benchCommentaryCache = { key: null, html: null };
+// existing text instead of firing a new /api/chat call, and only a
+// selection not seen yet or an explicit Refresh click generates one. One
+// entry per selection, so switching back to an earlier one reuses its text.
+let benchCommentaryCache = new Map();   // selection key → summary html
 function benchSelectionKey() {
   return `${benchState.myHotelId}|${[...benchState.compSet].sort().join(',')}|${benchState.dateRange}`;
 }
@@ -4391,8 +4401,8 @@ RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixe
   // isn't an explicit Refresh, render it immediately with no network
   // call; otherwise show a loading placeholder and fetch fresh below.
   const summaryKey  = benchSelectionKey();
-  const cacheHit    = !forceRefresh && benchCommentaryCache.key === summaryKey && benchCommentaryCache.html;
-  const summaryHtml = cacheHit ? benchCommentaryCache.html : 'Generating…';
+  const cacheHit    = !forceRefresh && benchCommentaryCache.has(summaryKey);
+  const summaryHtml = cacheHit ? benchCommentaryCache.get(summaryKey) : 'Generating…';
   const summaryCls  = cacheHit ? 'bench-ai-summary' : 'bench-ai-summary bench-loading';
 
   box.innerHTML = `
@@ -4443,7 +4453,7 @@ async function fetchBenchAISummary(key, dataContext) {
     if (benchSelectionKey() !== key) return;
     if (data.response) {
       const html = mdRender(data.response);
-      benchCommentaryCache = { key, html };
+      benchCommentaryCache.set(key, html);
       el.className = 'bench-ai-summary';
       el.innerHTML = html;
     } else {
@@ -4531,7 +4541,7 @@ document.getElementById('bench-date-bar').addEventListener('click', e => {
   // Sync export period dropdown to match active date pill
   const periodEl = document.getElementById('bench-export-period');
   if (periodEl) periodEl.value = v;
-  renderBenchAll();
+  renderBenchSelection();
 });
 
 // AI refresh button

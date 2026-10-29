@@ -1,33 +1,50 @@
 #!/usr/bin/env python3
-"""Record the landing page's Benchmarking product video (light and dark).
+"""Record the landing page's product tour video (light and dark).
 
     python3 scripts/record_product_videos.py
 
-Starts its own copy of the app on a free local port with sample data only:
-a temporary DATA_DIR holding the repo's reference CSVs and the demo
-benchmarking comp set, a local-only demo account, and no API keys (the
-Benchmarking AI commentary is answered by a stored sample). Nothing is
-written to the real data files or users.
+Starts its own copy of the app on a free local port: a temporary DATA_DIR
+holding the repo's reference data (hotels, performance, pipeline, owners)
+and the demo benchmarking comp set, a local-only demo account, and no API
+keys (the Benchmarking AI commentary is answered by a stored sample).
+Nothing is written to the real data files or users, and no real user,
+admin page or notification appears on screen.
 
-For each theme it opens the Benchmarking screen (Riad Atlas in Marrakech vs
-three luxury hotels) at 1440x900 with deviceScaleFactor 2 and captures the
-clip frame by frame: 30 fps on a fixed timeline, one lossless 2880x1800 PNG
+For each theme it records a guided tour at 1440x900 with deviceScaleFactor
+2, frame by frame: 30 fps on a fixed timeline, one lossless 2880x1800 PNG
 per frame. Time inside the page is virtual (Playwright's fake clock drives
 timers, requestAnimationFrame and Date; CSS transitions are paused and
 seeked to the same time), so every frame is exact: nothing dropped, nothing
-duplicated, no dependence on machine speed. An eased cursor switches the
-period to "Last 90 days" so the KPI cards update, then back to "Last 30
-days" and its start position, so the last frame leads straight back into
-the first. ffmpeg adds the grey "Sample data" tag, downscales with lanczos
-to 2208x1380 and writes:
+duplicated, no dependence on machine speed, and every page is fully
+rendered before its frame is taken (pending requests are awaited each
+frame; a spinner, empty placeholder or error on screen stops the script).
+
+The tour (about 34 s), with an eased cursor and eased scrolling:
+
+    0 s   Benchmarking, comp set loaded: the KPI cards with their period lines
+    3 s   period to "Last 90 days": the KPIs and charts update
+    7 s   scroll through the calendars to the RevPAR trend, then the monthly
+          summary table, and back to the top
+    15 s  Owners in the top nav; the owners list loads
+    17 s  hover and open the Madaef owner profile
+    20 s  header and KPI cards, then down through the hotel portfolio
+    27 s  back up, Benchmarking in the top nav, period back to "Last 30
+          days", cursor home; the last 0.5 s crossfades into the first frame,
+          so the loop is seamless (the last frame is frame 0)
+
+The Benchmarking figures are the platform's demo comp set (sample hotels and
+numbers, labelled "Demo mode" on the page itself); the owner profile is real
+platform data. No "Sample data" tag is added to the video.
+
+ffmpeg downscales with lanczos to 2208x1380 and writes:
 
     static/img/product/video/benchmarking-{light,dark}.mp4          H.264 High, crf 17, yuv420p, faststart
     static/img/product/video/benchmarking-{light,dark}.webm         VP9, crf 24, two-pass
     static/img/product/video/benchmarking-{light,dark}-poster.webp  first frame, WebP q90
     static/img/product/video/benchmarking-{light,dark}-poster.png   first frame, PNG
 
-Quality comes first: a file over 8 MB is re-encoded at 1792x1120 rather
-than at a lower quality.
+Quality comes first: a file over 12 MB is re-encoded at 1792x1120 (the
+exact-16:10 even size nearest 1800 wide) rather than at a lower quality.
 
 Requires: playwright (with Chromium), Pillow, and ffmpeg with libx264 and
 libvpx-vp9: the one on PATH, or else the static build from the
@@ -36,6 +53,7 @@ imageio-ffmpeg package (pip install imageio-ffmpeg).
 import argparse
 import datetime
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -44,33 +62,49 @@ import tempfile
 import time
 import urllib.request
 
-from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageStat
+from PIL import Image, ImageChops, ImageStat
 from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "static", "img", "product", "video")
-FONT = os.path.join(ROOT, "static", "fonts", "SweetSansProMedium.otf")
 W, H, DSF, FPS = 1440, 900, 2, 30          # viewport (CSS px), scale, frame rate
 OUT_W, OUT_H = 2208, 1380                  # encoded size: exact 16:10 with even sides (yuv420p),
                                            # just over a 1100px frame at 2x
-FALLBACK_W, FALLBACK_H = 1792, 1120        # used if a file comes out over MAX_BYTES
-MAX_BYTES = 8_000_000
-MP4_CRF, WEBM_CRF, POSTER_Q = 17, 24, 90     # best end of crf 17-19 / 24-28: the clip is mostly static UI, so files stay small
+FALLBACK_W, FALLBACK_H = 1792, 1120        # used if a file comes out over MAX_BYTES (exact 16:10, even sides)
+MAX_BYTES = 12_000_000
+MP4_CRF, WEBM_CRF, POSTER_Q = 17, 24, 90     # best end of crf 17-19 / 24-28
 
 DEMO_EMAIL, DEMO_PASS, DEMO_NAME = "demo@example.test", "Demo-Local-2026", "Demo Analyst"
 SEED_FILES = ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json",
               "demo_benchmarking.json", "news.json", "daily_performance.csv")
-# Stored answer for the Benchmarking AI commentary (no live API call)
-BENCH_COMMENTARY = ("Riad Atlas is priced 10% below the comp set (MAD 5,519 vs MAD 6,138) while running "
-                    "almost the same occupancy (84.8% vs 85.2%), so the RevPAR gap is almost entirely rate.")
+# Stand-in for the Benchmarking AI commentary (no live API call): one
+# sentence built from the figures the page itself sends with the request,
+# so it always matches the KPI cards on screen.
+def bench_commentary(route):
+    try:
+        prompt = route.request.post_data_json["messages"][-1]["content"]
+        num = r"([\d.,]+)"
+        my = re.search(rf"MY: Occ {num}% \| ADR MAD {num}", prompt)
+        comp = re.search(rf"COMP AVG: Occ {num}% \| ADR MAD {num}", prompt)
+        name = prompt.split("Brief strategic commentary on ", 1)[1].split(" vs comp set", 1)[0]
+        m_occ, m_adr = float(my[1]), float(my[2].replace(",", ""))
+        c_occ, c_adr = float(comp[1]), float(comp[2].replace(",", ""))
+        gap = (m_adr - c_adr) / c_adr * 100
+        text = (f"{name} is priced {abs(gap):.0f}% {'below' if gap < 0 else 'above'} the comp set "
+                f"(MAD {m_adr:,.0f} vs MAD {c_adr:,.0f}) while running "
+                f"{'almost the same' if abs(m_occ - c_occ) < 1.5 else 'a different'} occupancy "
+                f"({m_occ:.1f}% vs {c_occ:.1f}%), so the RevPAR gap is "
+                f"{'almost entirely rate' if abs(m_occ - c_occ) < 1.5 else 'rate and occupancy'}.")
+    except Exception:
+        text = "Rate, not occupancy, drives the RevPAR gap to the comp set over this period."
+    route.fulfill(json={"response": text})
 
-# Timeline (seconds): hold, glide to "Last 90 days" + click, hold, glide to
-# "Last 30 days" + click, hold, glide back to the rest point, hold
-HOLD_START, MOVE_1, HOLD_MID, MOVE_2, HOLD_BACK, MOVE_3, HOLD_END = 1.0, 1.4, 2.2, 1.2, 0.6, 1.2, 1.0
-DURATION = HOLD_START + MOVE_1 + HOLD_MID + MOVE_2 + HOLD_BACK + MOVE_3 + HOLD_END
-FRAMES = round(DURATION * FPS)
 PRESS_S, PRESS_SCALE = 0.14, 0.82
-REST = (470, 395)                          # cursor rest point: empty space in the My Property card
+XFADE_S = 0.5                              # last-frame-to-first crossfade
+REST = (470, 395)                          # cursor home: empty space in the My Property card
+SCROLL_REST = (1352, 610)                  # where the cursor waits while Benchmarking scrolls
+OWNER_REST = (1180, 185)                   # empty space right of the owner's name
+OWNER_ID = "madaef"                        # Madaef: 23 hotels, the most complete owner profile
 
 CURSOR_JS = """
 (() => {
@@ -129,59 +163,179 @@ def start_server(data_dir, port, log_path):
     raise SystemExit(f"app did not start, see {log_path}")
 
 
-def timeline(p90, p30):
-    """Cursor position and scale at time t, plus the timed events."""
-    t1 = HOLD_START
-    t2 = t1 + MOVE_1                       # arrive on "Last 90 days", click
-    t3 = t2 + HOLD_MID
-    t4 = t3 + MOVE_2                       # arrive on "Last 30 days", click
-    t5 = t4 + HOLD_BACK
-    t6 = t5 + MOVE_3                       # back at rest
-    legs = [(t1, t2, REST, p90), (t3, t4, p90, p30), (t5, t6, p30, REST)]
+class Tour:
+    """Frame-by-frame recorder for one theme: every step below advances page
+    time by whole frames (1/30 s) and captures each one."""
 
-    def cursor(t):
-        pos = REST
-        for a, b, src, dst in legs:
-            if t >= b:
-                pos = dst
-            elif t >= a:
-                e = ease((t - a) / (b - a))
-                pos = (src[0] + (dst[0] - src[0]) * e, src[1] + (dst[1] - src[1]) * e)
-                break
-            else:
-                break
-        pressed = any(c <= t < c + PRESS_S for c in (t2, t4))
-        return pos, PRESS_SCALE if pressed else 1.0
+    def __init__(self, page, frames_dir, problems):
+        self.page, self.dir, self.problems = page, frames_dir, problems
+        self.i = 0                         # next frame index
+        self.clock_ms = 0
+        self.pos = REST                    # drawn cursor (and real mouse) position
+        self.press_until = -1
+        self.pending = set()
+        page.on("request", lambda r: self.pending.add(r))
+        page.on("requestfinished", lambda r: self.pending.discard(r))
+        page.on("requestfailed", lambda r: self.pending.discard(r))
 
-    events = [(t2, "click", p90), (t4, "click", p30), (t6, "rest", REST)]
-    return cursor, events
+    # ── one frame ──
+    def settle(self):
+        for _ in range(1000):
+            if not self.pending:
+                return
+            self.page.wait_for_timeout(10)
+        self.problems.append(f"requests still pending: {[r.url for r in self.pending]}")
+
+    def frame(self):
+        target = round(self.i / FPS * 1000)
+        if target > self.clock_ms:
+            self.page.clock.run_for(target - self.clock_ms)
+            self.clock_ms = target
+        self.settle()
+        self.page.evaluate(SYNC_ANIMATIONS_JS, target)
+        busy = self.page.evaluate(BUSY_JS)
+        if busy:
+            self.problems.append(f"frame {self.i}: loading/error on screen {busy}")
+        x, y = self.pos
+        s = PRESS_SCALE if self.i < self.press_until else 1.0
+        self.page.evaluate(f"window.__recSet({x:.2f}, {y:.2f}, {s})")
+        self.page.screenshot(path=os.path.join(self.dir, f"{self.i:04d}.png"))
+        self.i += 1
+
+    # ── steps ──
+    def hold(self, sec):
+        for _ in range(round(sec * FPS)):
+            self.frame()
+
+    def move(self, target, sec):
+        """Eased glide to target (x, y) or a CSS selector's centre. The real
+        mouse follows, so hover states match the drawn cursor."""
+        if isinstance(target, str):
+            target = self.centre(target)
+        src, n = self.pos, round(sec * FPS)
+        for k in range(1, n + 1):
+            e = ease(k / n)
+            self.pos = (src[0] + (target[0] - src[0]) * e, src[1] + (target[1] - src[1]) * e)
+            self.page.mouse.move(*self.pos)
+            self.frame()
+
+    def click(self):
+        self.page.mouse.click(*self.pos)
+        self.press_until = self.i + round(PRESS_S * FPS)
+
+    def scroll(self, target, sec):
+        """Eased scroll of the platform's scroller (.main-content) to target px
+        (clamped to the page). The pointer stays still, as with a trackpad."""
+        top, maxs = self.page.evaluate("(() => { const m = document.querySelector('.main-content'); return [m.scrollTop, m.scrollHeight - m.clientHeight]; })()")
+        target = max(0, min(target, maxs))
+        n = round(sec * FPS)
+        for k in range(1, n + 1):
+            self.page.evaluate(f"document.querySelector('.main-content').scrollTop = {top + (target - top) * ease(k / n):.2f}")
+            self.frame()
+
+    # ── helpers ──
+    def centre(self, sel):
+        r = self.page.locator(sel).first.bounding_box()
+        return r["x"] + r["width"] / 2, r["y"] + r["height"] / 2
+
+    def top_of(self, sel, offset=0):
+        """Scroll position that puts the element `offset` px below the top of the scroller."""
+        return self.page.evaluate("""([sel, off]) => { const m = document.querySelector('.main-content'), e = document.querySelector(sel);
+            return e.getBoundingClientRect().top - m.getBoundingClientRect().top + m.scrollTop - off; }""", [sel, offset])
+
+    def expect(self, js, what):
+        if not self.page.evaluate(js):
+            self.problems.append(f"frame {self.i}: {what} not rendered")
+
+
+# Loading spinners, empty "will appear" placeholders and error states that
+# are inside the visible part of the page
+BUSY_JS = """
+() => [...document.querySelectorAll('.kodo-loader, .bench-loading, .spinner, .chat-msg-error, .toast, .error-banner')]
+  .filter(e => { if (!e.offsetParent) return false; const r = e.getBoundingClientRect();
+                 return r.bottom > 48 && r.top < innerHeight && r.width > 0; })
+  .map(e => e.className)
+"""
+
+BENCH_TAB = '.nav-link[data-screen="benchmarking"]:not(.mobile-menu-link)'
+OWNERS_TAB = '.nav-link[data-screen="owners"]:not(.mobile-menu-link)'
+OWNER_CARD = f"#owners-grid .owner-card[onclick*=\"'{OWNER_ID}'\"]"
+
+
+def tour(t):
+    """The scripted product tour (times are approximate starts)."""
+    p = t.page
+    # 0 s: Benchmarking with the comp set loaded; read the KPI cards
+    t.hold(3.4)
+    # 3.4 s: period to "Last 90 days": the KPI cards and charts update
+    t.move('[data-brange="90"]', 1.2); t.click()
+    t.hold(1.6)
+    t.move(SCROLL_REST, 0.8)
+    # 7 s: down through the calendars to the RevPAR trend, then the
+    # monthly summary table beside the day-of-week chart, and back up
+    t.scroll(t.top_of("#bench-trend-revpar-wrap", 150), 2.6)
+    t.hold(1.2)
+    t.scroll(t.top_of("#bench-monthly-table", 120), 1.1)
+    t.hold(1.3)
+    t.scroll(0, 1.8)
+    # 15 s: Owners in the top nav; the owners list loads
+    t.move(OWNERS_TAB, 1.1); t.click()
+    t.hold(0.3)
+    t.expect("document.querySelectorAll('#owners-grid .owner-card').length > 0", "owners list")
+    t.hold(1.0)
+    # 17.5 s: hover the owner's card, open its profile
+    t.move(OWNER_CARD, 1.1)
+    t.hold(0.7); t.click()
+    t.hold(0.3)
+    t.expect("getComputedStyle(document.getElementById('screen-owner-detail')).display !== 'none'"
+             " && document.querySelectorAll('#owner-portfolio-tbody tr').length > 0", "owner profile")
+    # 20 s: header and KPI cards, then down through the hotel portfolio
+    t.move(OWNER_REST, 0.8)
+    t.hold(1.6)
+    t.scroll(10_000, 3.2)
+    t.hold(1.6)
+    # 27.5 s: back to the top, Benchmarking in the top nav, period back to
+    # "Last 30 days", cursor to its starting point: the opening frame again
+    t.scroll(0, 1.2)
+    t.move(BENCH_TAB, 1.1); t.click()
+    t.hold(0.6)
+    t.move('[data-brange="30"]', 1.1); t.click()
+    t.hold(0.5)
+    t.move(REST, 1.0)
+    t.hold(XFADE_S + 0.2)
 
 
 def record(base, mode, frames_dir):
-    """Capture FRAMES + 1 PNG frames (the extra one is the loop point, used only for checking)."""
+    """Capture the tour; returns the number of frames."""
     problems = []
     with sync_playwright() as p:
         browser = p.chromium.launch()
         ctx = browser.new_context(viewport={"width": W, "height": H}, device_scale_factor=DSF)
         ctx.add_init_script(f"try{{localStorage.setItem('kodo-theme','{mode}')}}catch(e){{}}")
+        # Operator logos come from a third-party CDN that refuses localhost:
+        # fail them at once so the owner profile shows the text names
+        ctx.route("**/cdn.brandfetch.io/**", lambda r: r.abort())
         page = ctx.new_page()
         page.clock.install()               # fake timers; time still flows until paused below
-        page.on("console", lambda m: problems.append(m.text) if m.type == "error" else None)
+        page.on("console", lambda m: problems.append(m.text)
+                if m.type == "error" and "ERR_FAILED" not in m.text and "brandfetch" not in (m.location or {}).get("url", "") else None)
         page.on("pageerror", lambda e: problems.append(str(e)))
-        pending = set()
-        page.on("request", lambda r: pending.add(r))
-        page.on("requestfinished", lambda r: pending.discard(r))
-        page.on("requestfailed", lambda r: pending.discard(r))
-        page.route("**/api/chat", lambda r: r.fulfill(json={"response": BENCH_COMMENTARY}))
+        page.route("**/api/chat", bench_commentary)
+        t = Tour(page, frames_dir, problems)
 
         page.goto(base + "/login")
         page.fill("input[type=email]", DEMO_EMAIL)
         page.fill("input[type=password]", DEMO_PASS)
         page.click("button[type=submit]")
-        page.wait_for_selector('.nav-link[data-screen="benchmarking"]')
+        page.wait_for_selector(BENCH_TAB)
         page.wait_for_timeout(2500)
-        page.evaluate("document.querySelector('.nav-link[data-screen=\"benchmarking\"]').click()")
-        page.wait_for_selector(".bench-kpi-grid .kpi-card, .bench-kpi-grid > *")
+        # Visit Owners once first so its data and logos are cached: the list
+        # then appears in the frame after the click, with no spinner
+        page.evaluate(f"document.querySelector('{OWNERS_TAB}').click()")
+        page.wait_for_selector(OWNER_CARD)
+        page.wait_for_load_state("networkidle")
+        page.evaluate(f"document.querySelector('{BENCH_TAB}').click()")
+        page.wait_for_selector("#bench-kpi-grid .kpi-period")
         page.wait_for_load_state("networkidle")
         page.wait_for_timeout(3000)        # charts and their entry animations finish
         page.evaluate("document.fonts.ready")
@@ -189,99 +343,45 @@ def record(base, mode, frames_dir):
         page.evaluate(CURSOR_JS)
         page.evaluate("document.activeElement && document.activeElement.blur()")
 
-        def settle():
-            for _ in range(500):
-                if not pending:
-                    return
-                page.wait_for_timeout(10)
-            problems.append(f"requests still pending: {[r.url for r in pending]}")
-
         # Freeze page time; from here it only moves 1/30 s per frame
         now = page.evaluate("Date.now()")
         page.clock.pause_at(datetime.datetime.fromtimestamp((now + 500) / 1000))
         page.clock.run_for(1000)
-        settle()
+        t.settle()
         page.evaluate(SYNC_ANIMATIONS_JS, 0)
-
-        visible = page.evaluate("""() => [...document.querySelectorAll('.bench-loading, .spinner, .loading, .chat-msg-error')]
-                                    .filter(e => e.offsetParent).map(e => e.className)""")
-        if visible:
-            problems.append(f"loading/error visible: {visible}")
         toggle = page.evaluate("(() => { const r = document.getElementById('theme-toggle').getBoundingClientRect(); return [r.left, r.right, r.width]; })()")
         if toggle[0] < 0 or toggle[1] > W or toggle[2] <= 0:
             problems.append(f"theme toggle clipped: {toggle}")
 
-        def centre(sel):
-            r = page.locator(sel).bounding_box()
-            return r["x"] + r["width"] / 2, r["y"] + r["height"] / 2
-
-        cursor, events = timeline(centre('[data-brange="90"]'), centre('[data-brange="30"]'))
-        clock_ms = 0
-        for i in range(FRAMES + 1):
-            t = i / FPS
-            target = round(t * 1000)
-            if target > clock_ms:
-                page.clock.run_for(target - clock_ms)
-                clock_ms = target
-            while events and events[0][0] <= t + 1e-9:
-                _, kind, xy = events.pop(0)
-                page.mouse.move(*xy)
-                if kind == "click":
-                    page.mouse.click(*xy)
-                else:
-                    page.evaluate("document.activeElement && document.activeElement.blur()")
-            settle()
-            page.evaluate(SYNC_ANIMATIONS_JS, target)
-            (x, y), s = cursor(t)
-            page.evaluate(f"window.__recSet({x:.2f}, {y:.2f}, {s})")
-            page.screenshot(path=os.path.join(frames_dir, f"{i:04d}.png"))
+        tour(t)
         ctx.close()
         browser.close()
     if problems:
-        raise SystemExit(f"{mode}: " + "; ".join(problems))
-    return check_frames(frames_dir)
+        raise SystemExit(f"{mode}: " + "; ".join(problems[:12]))
+    return crossfade(frames_dir, t.i)
 
 
-def check_frames(frames_dir):
-    """Every frame present at full size; the loop point matches frame 0."""
+def crossfade(frames_dir, n):
+    """Blend the last XFADE_S seconds into frame 0, so the loop is seamless:
+    the last frame is frame 0 itself. Returns the frame count."""
     names = sorted(os.listdir(frames_dir))
-    if len(names) != FRAMES + 1:
-        raise SystemExit(f"expected {FRAMES + 1} frames, found {len(names)}")
-    for n in (names[0], names[len(names) // 2], names[-1]):
-        if Image.open(os.path.join(frames_dir, n)).size != (W * DSF, H * DSF):
-            raise SystemExit(f"{n} is not {W * DSF}x{H * DSF}")
+    if len(names) != n:
+        raise SystemExit(f"expected {n} frames, found {len(names)}")
+    for nm in (names[0], names[n // 2], names[-1]):
+        if Image.open(os.path.join(frames_dir, nm)).size != (W * DSF, H * DSF):
+            raise SystemExit(f"{nm} is not {W * DSF}x{H * DSF}")
     first = Image.open(os.path.join(frames_dir, names[0])).convert("RGB")
-    loop = Image.open(os.path.join(frames_dir, names[-1])).convert("RGB")
-    diff = ImageChops.difference(first, loop)
-    if diff.getbbox():
-        raise SystemExit(f"loop point differs from frame 0 in {diff.getbbox()} "
-                         f"(mean {sum(ImageStat.Stat(diff).mean) / 3:.3f})")
-    os.remove(os.path.join(frames_dir, names[-1]))   # the loop point is frame 0 again
-    return FRAMES
-
-
-def tag_png(mode, path):
-    """Grey "Sample data" pill (tokens.css grey family), top-right beside the page title, drawn at DSF."""
-    tint, text, dot, line = {"light": ((241, 240, 238), (95, 91, 85), (138, 133, 126), (231, 228, 223)),
-                             "dark": ((53, 52, 49), (168, 163, 156), (138, 133, 126), (46, 45, 43))}[mode]
-    k = DSF
-    img = Image.new("RGBA", (W * k, H * k), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    f = ImageFont.truetype(FONT, 12 * k)
-    label, track = "SAMPLE DATA", 1.2 * k
-    tw = sum(d.textlength(ch, font=f) + track for ch in label)
-    pad, h, dd, gap = 11 * k, 26 * k, 5 * k, 6 * k
-    w = int(pad * 2 + dd + gap + tw)
-    x1, y0 = (W - 30) * k, 76 * k
-    x0, y1 = x1 - w, y0 + h
-    d.rounded_rectangle((x0, y0, x1, y1), radius=h // 2, fill=tint, outline=line, width=k)
-    cy = (y0 + y1) / 2
-    d.ellipse((x0 + pad, cy - dd / 2, x0 + pad + dd, cy + dd / 2), fill=dot)
-    x = x0 + pad + dd + gap
-    for ch in label:
-        d.text((x, cy), ch, font=f, fill=text, anchor="lm")
-        x += d.textlength(ch, font=f) + track
-    img.save(path)
+    end = Image.open(os.path.join(frames_dir, names[-1])).convert("RGB")
+    diff = ImageChops.difference(first, end)
+    print(f"  end state vs frame 0 before the crossfade: mean difference "
+          f"{sum(ImageStat.Stat(diff).mean) / 3:.3f}/255, box {diff.getbbox()}")
+    k = round(XFADE_S * FPS)
+    for j in range(1, k + 1):
+        path = os.path.join(frames_dir, names[n - k - 1 + j])
+        Image.blend(Image.open(path).convert("RGB"), first, j / k).save(path, compress_level=1)
+    if ImageChops.difference(first, Image.open(os.path.join(frames_dir, names[-1])).convert("RGB")).getbbox():
+        raise SystemExit("last frame does not match frame 0 after the crossfade")
+    return n
 
 
 def find_ffmpeg():
@@ -303,14 +403,12 @@ def ffmpeg(*args, cwd=None):
 
 
 def encode(frames_dir, mode, work):
-    tag = os.path.join(work, f"tag-{mode}.png")
-    tag_png(mode, tag)
-    src = ["-framerate", str(FPS), "-i", os.path.join(frames_dir, "%04d.png"), "-i", tag]
+    src = ["-framerate", str(FPS), "-i", os.path.join(frames_dir, "%04d.png")]
     base = os.path.join(OUT_DIR, f"benchmarking-{mode}")
 
     def chain(w, h, yuv=True):
-        # tag on the 2880x1800 frames, then lanczos down; BT.709 for the video files
-        f = f"[0:v][1:v]overlay=0:0,scale={w}:{h}:flags=lanczos+accurate_rnd+full_chroma_int"
+        # lanczos down from the 2880x1800 frames; BT.709 for the video files
+        f = f"[0:v]scale={w}:{h}:flags=lanczos+accurate_rnd+full_chroma_int"
         return f + (":out_color_matrix=bt709:out_range=tv,format=yuv420p" if yuv else ",format=rgb24")
 
     color = ["-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv"]
