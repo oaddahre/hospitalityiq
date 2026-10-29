@@ -397,6 +397,7 @@ const fmt = {
 //   {kind:'range', start:'2026-03-04', end:'2026-06-01'} → 4 Mar – 1 Jun 2026
 //   {kind:'asof', date:Date|'YYYY-MM-DD'}       → As of 28 Oct 2026
 //   {kind:'forecast', year:2026}                → 2026 forecast
+//   {kind:'sample'}                             → Sample data · illustrative figures (never a date)
 const KodoPeriod = (() => {
   const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const toDate = d => d instanceof Date ? d : new Date(String(d).slice(0, 10) + 'T00:00:00');
@@ -421,6 +422,7 @@ const KodoPeriod = (() => {
       case 'asof':     return `As of ${day(p.date)}`;
       case 'forecast': return `${p.year} forecast`;
       case 'multi':    return p.parts.map(label).join(' / ');
+      case 'sample':   return 'Sample data · illustrative figures';
     }
     return '';
   }
@@ -3660,13 +3662,20 @@ let benchTrendRevpar = null;
 let benchTrendOcc    = null;
 let benchDOWChart    = null;
 
+// The calendars open on the current month (set again when the data loads)
 const benchState = {
-  myHotelId:  'demo_1',
-  compSet:    new Set(['demo_2', 'demo_3', 'demo_4']),
+  myHotelId:  'sample_1',
+  compSet:    new Set(['sample_2', 'sample_3', 'sample_4']),
   dateRange:  30,
-  adrCalYear: 2026, adrCalMonth: 5, adrCalView: 'mine',
-  occCalYear: 2026, occCalMonth: 5, occCalView: 'mine',
+  adrCalYear: new Date().getFullYear(), adrCalMonth: new Date().getMonth() + 1, adrCalView: 'mine',
+  occCalYear: new Date().getFullYear(), occCalMonth: new Date().getMonth() + 1, occCalView: 'mine',
 };
+
+function benchCalendarsToThisMonth() {
+  const now = new Date();
+  benchState.adrCalYear = benchState.occCalYear = now.getFullYear();
+  benchState.adrCalMonth = benchState.occCalMonth = now.getMonth() + 1;
+}
 
 async function initBenchmarking() {
   if (benchmarkInited) return;
@@ -3681,31 +3690,24 @@ async function initBenchmarking() {
     }
   }
   benchmarkData = await res.json();
+  benchCalendarsToThisMonth();
   renderBenchPropertySelector();
   renderBenchCompSetBuilder();
   renderBenchAll();
   updateBenchFreshness();
 }
 
-// What the Benchmarking page's figures are. demo_benchmarking.json is
-// sample data (the API marks it "sample"): the page says so with its dates
-// and never shows "Live data available". That pill is only for a real data
-// feed whose last day is today or yesterday.
+// What the Benchmarking page's figures are. Sample mode (the API marks
+// it "sample") says so and never shows "Live data available": that pill
+// is only for real data (the rate benchmark mode).
 function updateBenchFreshness() {
   const freshnessEl = document.getElementById('bench-freshness-text');
   const modeEl      = document.getElementById('bench-mode-badge');
   if (!freshnessEl || !benchmarkData) return;
-  const dates = (benchmarkData.daily || []).map(d => d.date).sort();
-  const span  = dates.length ? KodoPeriod.label({ kind: 'range', start: dates[0], end: dates[dates.length - 1] }) : '';
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-  const live = benchmarkData.sample === false && dates.length
-    && dates[dates.length - 1] >= localIsoDate(yesterday);
-  if (live) {
-    freshnessEl.textContent = `Data as of ${KodoPeriod.day(dates[dates.length - 1])}`;
-    if (modeEl) { modeEl.textContent = 'Live data available'; modeEl.classList.add('pill--green'); }
-  } else {
-    freshnessEl.textContent = `Sample data · ${span || 'no dates'} · Marrakech luxury demo hotels, not real performance`;
-    if (modeEl) { modeEl.textContent = 'Demo mode — sample Marrakech luxury comp set'; modeEl.classList.remove('pill--green'); }
+  freshnessEl.textContent = 'Sample data · fictional Marrakech luxury hotels · illustrative figures, not real performance';
+  if (modeEl) {
+    modeEl.textContent = 'Sample data';
+    modeEl.className = 'pill--sample bench-sample-pill bench-title-pill';
   }
 }
 
@@ -3836,10 +3838,13 @@ function renderCompPills() {
 
 // ── Date range ───────────────────────────────────────────────────
 
-// Local midnight, like dateInRange(): new Date('2026-06-01') is UTC midnight,
-// which west of UTC falls on 31 May and dropped the last day of data.
+// The window ends on the data's last day (the sample's is yesterday).
+// Local midnight, like dateInRange(): new Date('YYYY-MM-DD') is UTC
+// midnight, which west of UTC falls on the day before.
 function getBenchDateRange(range = benchState.dateRange) {
-  const end = new Date('2026-06-01T00:00:00');
+  const dates = benchmarkData ? benchmarkData.daily.map(d => d.date) : [];
+  const last = benchmarkData?.end || (dates.length ? dates.reduce((a, b) => (b > a ? b : a)) : localIsoDate(new Date()));
+  const end = new Date(last + 'T00:00:00');
   const start = new Date(end);
   if (range === 7)        start.setDate(end.getDate() - 6);
   else if (range === 30)  start.setDate(end.getDate() - 29);
@@ -3849,13 +3854,15 @@ function getBenchDateRange(range = benchState.dateRange) {
 }
 
 // The period a benchmarking figure really covers: the dates of the selected
-// property's daily records inside the window. A full window reads "Last 30
-// days" only when the data runs up to today or yesterday; an older one
-// reads "30 days to 1 Jun 2026" (the demo comp set ends on 1 Jun 2026).
-// Anything else (YTD, which starts before the first record) is labelled by
+// property's daily records inside the window. Sample data has no real
+// period: "Sample data · illustrative figures", never a date or "updated".
+// Otherwise a full window reads "Last 30 days" only when the data runs up
+// to today or yesterday, an older one "30 days to 1 Jun 2026", and
+// anything else (YTD, which starts before the first record) is labelled by
 // the dates it covers.
 function benchPeriod(range = benchState.dateRange) {
   if (!benchmarkData) return null;
+  if (benchmarkData.sample !== false) return { kind: 'sample' };
   const [s, e] = getBenchDateRange(range);
   const dates = [...new Set(benchmarkData.daily
     .filter(d => d.hotel_id === benchState.myHotelId && dateInRange(d.date, s, e))
@@ -3869,9 +3876,7 @@ function benchPeriod(range = benchState.dateRange) {
   return { kind: 'range', start: dates[0], end: last };
 }
 function benchPeriodTip() {
-  const all = benchmarkData ? benchmarkData.daily.map(d => d.date).sort() : [];
-  return KodoPeriod.tip({ source: 'demo comp set (sample data)',
-    note: all.length ? `daily records ${KodoPeriod.label({ kind: 'range', start: all[0], end: all[all.length - 1] })}` : '' });
+  return KodoPeriod.tip({ source: 'sample data: fictional hotels, illustrative figures, not real performance' });
 }
 
 function dateInRange(dateStr, start, end) {
@@ -3978,8 +3983,9 @@ function renderBenchKPIs() {
 
   // Period line: the property's dates, compared with the comp set over the same dates
   const per = benchPeriod(), tip = benchPeriodTip();
+  const sample = benchmarkData.sample !== false;
   ['bkpi-occ', 'bkpi-adr', 'bkpi-revpar', 'bkpi-rev'].forEach(id =>
-    KodoPeriod.set(id, per, tip, noComp ? '' : 'vs comp set, same dates'));
+    KodoPeriod.set(id, per, tip, (noComp || sample) ? '' : 'vs comp set, same dates'));
 }
 
 // ── Calendar ──────────────────────────────────────────────────────
@@ -4466,7 +4472,8 @@ function renderBenchInsightCards(forceRefresh = false) {
 
   // Full data context grounding each chip's /api/chat call — hotel,
   // comp set, period, ADR/occupancy/RevPAR, and day-of-week spread.
-  const dataContext = `${hotelName} vs comp set (${compLabel}) — last ${benchState.dateRange} days.
+  const dataContext = `SAMPLE MODE: illustrative figures for fictional hotels (not real hotels, not real performance). Say so if asked; never present them as real results.
+${hotelName} vs comp set (${compLabel}) — sample period of ${benchState.dateRange} days.
 MY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
 COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}
 Best day: ${DOW_NAMES_FULL[bestDow.i]} (${bestDow.v.toFixed(1)}% occupancy), weakest day: ${DOW_NAMES_FULL[worstDow.i]} (${worstDow.v.toFixed(1)}% occupancy)
@@ -5341,6 +5348,7 @@ function exportBenchmarking() {
   // compute them over the on-screen period)
   const range = periodVal === 'ytd' ? 'ytd' : Number(periodVal);
   const periodDisp = KodoPeriod.label(benchPeriod(range)) || 'N/A';
+  const sampleNote = 'Sample data: fictional hotels and illustrative figures, not real performance.';
 
   // Sheet 1 — KPI Summary
   const my   = aggDaily(getMyDaily(range));
@@ -5394,10 +5402,11 @@ function exportBenchmarking() {
 
   exportToExcel(
     [
+      { data: [{ 'Data': 'Sample data', 'Note': sampleNote }], name: 'Sample Data' },
       { data: kpiData, name: 'KPI Summary' },
       { data: monthlyData.length ? monthlyData : [{ 'Note': 'No monthly data available' }], name: 'Monthly Detail' },
     ],
-    `Kodo_Benchmarking_${propName}_${periodLabel}_${date}`
+    `Kodo_Benchmarking_SAMPLE_${propName}_${periodLabel}_${date}`
   );
 }
 

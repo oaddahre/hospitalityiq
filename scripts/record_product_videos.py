@@ -4,9 +4,9 @@
     python3 scripts/record_product_videos.py
 
 Starts its own copy of the app on a free local port: a temporary DATA_DIR
-holding the repo's reference data (hotels, performance, pipeline, owners)
-and the demo benchmarking comp set, a local-only demo account, and no API
-keys (the Benchmarking AI commentary is answered by a stored sample).
+holding the repo's reference data (hotels, performance, pipeline, owners),
+a local-only demo account, and no API keys (the Benchmarking AI commentary
+is answered by a stored sample).
 Nothing is written to the real data files or users, and no real user,
 admin page or notification appears on screen.
 
@@ -32,9 +32,10 @@ The tour (about 34 s), with an eased cursor and eased scrolling:
           days", cursor home; the last 0.5 s crossfades into the first frame,
           so the loop is seamless (the last frame is frame 0)
 
-The Benchmarking figures are the platform's demo comp set (sample hotels and
-numbers, labelled "Demo mode" on the page itself); the owner profile is real
-platform data. No "Sample data" tag is added to the video.
+The Benchmarking figures are the page's sample mode (bench_sample.py:
+fictional hotels, illustrative figures, dates relative to the recording
+day), shown with the page's own "Sample data" pills on the title, every KPI
+card and every chart; the owner profile is real platform data.
 
 ffmpeg downscales with lanczos to 2208x1380 and writes:
 
@@ -76,7 +77,7 @@ MP4_CRF, WEBM_CRF, POSTER_Q = 17, 24, 90     # best end of crf 17-19 / 24-28
 
 DEMO_EMAIL, DEMO_PASS, DEMO_NAME = "demo@example.test", "Demo-Local-2026", "Demo Analyst"
 SEED_FILES = ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json",
-              "demo_benchmarking.json", "news.json", "daily_performance.csv")
+              "news.json", "daily_performance.csv")
 # Stand-in for the Benchmarking AI commentary (no live API call): one
 # sentence built from the figures the page itself sends with the request,
 # so it always matches the KPI cards on screen.
@@ -86,11 +87,11 @@ def bench_commentary(route):
         num = r"([\d.,]+)"
         my = re.search(rf"MY: Occ {num}% \| ADR MAD {num}", prompt)
         comp = re.search(rf"COMP AVG: Occ {num}% \| ADR MAD {num}", prompt)
-        name = prompt.split("Brief strategic commentary on ", 1)[1].split(" vs comp set", 1)[0]
+        name = re.search(r"^(.+?) vs comp set", prompt, re.M)[1].replace("Brief strategic commentary on ", "")
         m_occ, m_adr = float(my[1]), float(my[2].replace(",", ""))
         c_occ, c_adr = float(comp[1]), float(comp[2].replace(",", ""))
         gap = (m_adr - c_adr) / c_adr * 100
-        text = (f"{name} is priced {abs(gap):.0f}% {'below' if gap < 0 else 'above'} the comp set "
+        text = (f"In this sample, {name} is priced {abs(gap):.0f}% {'below' if gap < 0 else 'above'} the comp set "
                 f"(MAD {m_adr:,.0f} vs MAD {c_adr:,.0f}) while running "
                 f"{'almost the same' if abs(m_occ - c_occ) < 1.5 else 'a different'} occupancy "
                 f"({m_occ:.1f}% vs {c_occ:.1f}%), so the RevPAR gap is "

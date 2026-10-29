@@ -29,6 +29,7 @@ from functools import wraps
 from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
+from bench_sample import sample_benchmarking
 from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
                    period_history, period_last_known, NOT_AVAILABLE)
 
@@ -132,12 +133,10 @@ DATA_DIR = os.environ.get("DATA_DIR", "").strip() or APP_DIR
 #
 # These four are pure read-only reference data (nothing in this file
 # ever writes to them), so "copy only if missing" is the whole rule.
-# demo_benchmarking.json was the same kind of tracked-but-missing gap
-# that caused the empty News page below — it's never written either,
-# just never had this same copy-in applied to it.
+# (The Benchmarking sample is generated in code: bench_sample.py.)
 if os.path.abspath(DATA_DIR) != os.path.abspath(APP_DIR):
     os.makedirs(DATA_DIR, exist_ok=True)
-    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json", "demo_benchmarking.json"):
+    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json"):
         _src, _dst = os.path.join(APP_DIR, _seed_name), os.path.join(DATA_DIR, _seed_name)
         if os.path.exists(_src) and not os.path.exists(_dst):
             shutil.copy2(_src, _dst)
@@ -165,7 +164,6 @@ if os.path.abspath(DATA_DIR) != os.path.abspath(APP_DIR):
             print(f"[DATA_DIR] Seeded news.json into {DATA_DIR}")
 
 NEWS_FILE            = os.path.join(DATA_DIR, "news.json")
-BENCH_FILE           = os.path.join(DATA_DIR, "demo_benchmarking.json")
 DAILY_PERF_FILE      = os.path.join(DATA_DIR, "daily_performance.csv")
 UPLOAD_LOG_FILE      = os.path.join(DATA_DIR, "upload_log.json")
 CONTACT_FILE         = os.path.join(DATA_DIR, "contact_submissions.json")
@@ -2148,16 +2146,12 @@ def api_news_view(article_id):
 
 @app.route("/api/benchmarking")
 @login_required
-@tier_required("benchmarker")
 def api_benchmarking():
-    if not os.path.exists(BENCH_FILE):
-        return jsonify({"error": "Benchmark data not found"}), 404
-    with open(BENCH_FILE, encoding="utf-8") as f:
-        data = json.load(f)
-    # demo_benchmarking.json is sample data (generate_bench_data.py), never
-    # live: the page says so and never shows "Live data available" for it.
-    data.setdefault("sample", True)
-    return jsonify(data)
+    """The Benchmarking page's sample mode: fictional hotels, illustrative
+    figures for the 90 days to yesterday (bench_sample.py). Open to every
+    plan, since it is a demonstration, not data; the page labels it
+    "Sample data" and never treats it as live."""
+    return jsonify(sample_benchmarking())
 
 
 @app.route("/api/test-key")

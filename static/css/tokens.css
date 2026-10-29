@@ -153,6 +153,28 @@
 [data-plan="advisory"]      { --pill-tint: var(--cat-4-tint); --pill-text: var(--cat-4-text); --pill-dot: var(--cat-4-dot); }  /* violet */
 [data-plan="admin"]         { --pill-tint: var(--text);       --pill-text: var(--bg);         --pill-dot: var(--bg); }          /* ink */
 
+/* Sample data pill: marks anything showing sample (illustrative) figures,
+   never live data. Grey family tint, no dot, no border. */
+.pill--sample {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 999px;
+  outline: none;
+  box-shadow: none;
+  background: var(--cat-6-tint);
+  color: var(--cat-6-text);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.pill--sample::before { content: none; }
+
 /* Solid blue pill (selected filter, "Featured"): always a white label */
 .pill--solid {
   display: inline-flex;

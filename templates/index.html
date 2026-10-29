@@ -502,10 +502,10 @@
         <div class="screen-header">
           <h1>Benchmarking</h1>
           <p class="screen-sub-tags accent">ADR · Occupancy · RevPAR</p>
-          <span class="bench-demo-badge" id="bench-mode-badge">Demo mode — sample Marrakech luxury comp set</span>
+          <span class="pill--sample bench-sample-pill bench-title-pill" id="bench-mode-badge">Sample data</span>
         </div>
         <div class="bench-freshness-bar" id="bench-freshness-bar">
-          <span id="bench-freshness-text">Demo mode — sample Marrakech luxury data</span>
+          <span id="bench-freshness-text">Sample data · fictional Marrakech luxury hotels · illustrative figures, not real performance</span>
         </div>
 
         <!-- Controls row: property selector + comp set builder -->
@@ -546,7 +546,7 @@
         <!-- KPI comparison cards -->
         <div class="bench-kpi-grid" id="bench-kpi-grid">
           <div class="bench-kpi-card" id="bkpi-occ">
-            <div class="bench-kpi-title">Occupancy</div>
+            <div class="bench-kpi-title">Occupancy <span class="pill--sample bench-sample-pill">Sample data</span></div>
             <div class="bench-kpi-body">
               <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
               <div class="bench-kpi-sep">vs</div>
@@ -555,7 +555,7 @@
             </div>
           </div>
           <div class="bench-kpi-card" id="bkpi-adr">
-            <div class="bench-kpi-title">ADR</div>
+            <div class="bench-kpi-title">ADR <span class="pill--sample bench-sample-pill">Sample data</span></div>
             <div class="bench-kpi-body">
               <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
               <div class="bench-kpi-sep">vs</div>
@@ -564,7 +564,7 @@
             </div>
           </div>
           <div class="bench-kpi-card" id="bkpi-revpar">
-            <div class="bench-kpi-title">RevPAR</div>
+            <div class="bench-kpi-title">RevPAR <span class="pill--sample bench-sample-pill">Sample data</span></div>
             <div class="bench-kpi-body">
               <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
               <div class="bench-kpi-sep">vs</div>
@@ -573,7 +573,7 @@
             </div>
           </div>
           <div class="bench-kpi-card" id="bkpi-rev">
-            <div class="bench-kpi-title">Rooms Revenue / Night</div>
+            <div class="bench-kpi-title">Rooms Revenue / Night <span class="pill--sample bench-sample-pill">Sample data</span></div>
             <div class="bench-kpi-body">
               <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
               <div class="bench-kpi-sep">vs</div>
@@ -587,12 +587,13 @@
         <div class="chart-card" style="margin-bottom:20px">
           <div class="chart-card-header">
             <span class="chart-title">ADR Calendar</span>
+            <span class="pill--sample bench-sample-pill">Sample data</span>
             <span class="chart-unit">MAD per night · warm = higher rate</span>
           </div>
           <div class="bench-cal-topbar">
             <div class="bench-cal-nav-row">
               <button class="bench-cal-nav-btn" id="bench-adr-prev">&#8592;</button>
-              <span class="bench-cal-month-label" id="bench-adr-month-label">May 2026</span>
+              <span class="bench-cal-month-label" id="bench-adr-month-label"></span>
               <button class="bench-cal-nav-btn" id="bench-adr-next">&#8594;</button>
             </div>
             <div class="bench-cal-view-toggle">
@@ -633,11 +634,12 @@
         <div class="chart-card" style="margin-bottom:20px">
           <div class="chart-card-header">
             <span class="chart-title">Occupancy Calendar</span>
+            <span class="pill--sample bench-sample-pill">Sample data</span>
           </div>
           <div class="bench-cal-topbar">
             <div class="bench-cal-nav-row">
               <button class="bench-cal-nav-btn" id="bench-occ-prev">&#8592;</button>
-              <span class="bench-cal-month-label" id="bench-occ-month-label">May 2026</span>
+              <span class="bench-cal-month-label" id="bench-occ-month-label"></span>
               <button class="bench-cal-nav-btn" id="bench-occ-next">&#8594;</button>
             </div>
             <div class="bench-cal-view-toggle">
@@ -682,6 +684,7 @@
           <div class="chart-card">
             <div class="chart-card-header">
               <span class="chart-title">RevPAR Trend</span>
+            <span class="pill--sample bench-sample-pill">Sample data</span>
               <span class="chart-unit">daily · My Property vs Comp Set Avg</span>
             </div>
             <div class="chart-wrap" id="bench-trend-revpar-wrap"><canvas id="bench-trend-revpar"></canvas></div>
@@ -689,6 +692,7 @@
           <div class="chart-card">
             <div class="chart-card-header">
               <span class="chart-title">Occupancy Trend</span>
+            <span class="pill--sample bench-sample-pill">Sample data</span>
               <span class="chart-unit">daily % · My Property vs Comp Set Avg</span>
             </div>
             <div class="chart-wrap" id="bench-trend-occ-wrap"><canvas id="bench-trend-occ"></canvas></div>
@@ -700,6 +704,7 @@
           <div class="chart-card">
             <div class="chart-card-header">
               <span class="chart-title">Day of Week Analysis</span>
+            <span class="pill--sample bench-sample-pill">Sample data</span>
               <span class="chart-unit">avg occupancy % · My Property vs Comp</span>
             </div>
             <div class="chart-wrap" id="bench-dow-wrap"><canvas id="bench-dow-chart"></canvas></div>
@@ -707,6 +712,7 @@
           <div class="chart-card">
             <div class="chart-card-header">
               <span class="chart-title">Monthly Summary</span>
+            <span class="pill--sample bench-sample-pill">Sample data</span>
               <span class="chart-unit">RevPAR Index = My RevPAR ÷ Comp RevPAR × 100</span>
             </div>
             <div class="bench-monthly-table-wrap">
@@ -730,6 +736,7 @@
         <div class="chart-card" style="margin-bottom:20px">
           <div class="chart-card-header">
             <span class="chart-title insight-header-title">INSIGHTS</span>
+            <span class="pill--sample bench-sample-pill">Sample data</span>
             <span class="chart-unit insight-header-meta">Current selection</span>
             <button class="bench-refresh-btn" id="bench-ai-refresh">Refresh</button>
           </div>

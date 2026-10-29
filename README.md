@@ -57,9 +57,10 @@ scrolling):
 7. Back to Benchmarking via the top nav, period back to "Last 30 days"; the
    last 0.5 s crossfades into the first frame, so the loop is seamless.
 
-The Benchmarking figures are the platform's demo comp set (sample hotels,
-shown as "Demo mode" on the page); the owner profile is real platform data.
-No "Sample data" tag is added.
+The Benchmarking figures are the page's sample mode (bench_sample.py:
+fictional hotels, illustrative figures, dates relative to the recording
+day), with the page's own "Sample data" pills on the title, every KPI card
+and every chart; the owner profile is real platform data.
 
 - Capture: 1440x900 viewport at deviceScaleFactor 2, one lossless 2880x1800
   PNG per frame, 30 fps on a fixed timeline. Page time is virtual

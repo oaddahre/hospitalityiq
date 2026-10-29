@@ -9,6 +9,9 @@ import math
 
 NA = "n/a"
 
+# Period line of a figure from sample (illustrative) data: never a date, never "updated"
+SAMPLE_PERIOD = "Sample data · illustrative figures"
+
 
 def safe_float(value, default=None):
     """float(value), or `default` when value is missing or not a finite number."""
@@ -96,6 +99,8 @@ def period_label(p):
         return f"{p['year']} forecast"
     if k == "multi":
         return " / ".join(period_label(x) for x in p["parts"])
+    if k == "sample":
+        return SAMPLE_PERIOD
     return ""
 
 
