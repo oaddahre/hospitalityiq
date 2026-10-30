@@ -31,3 +31,7 @@ hotel_id_overrides.json.tmp
 loose_matches.json
 loose_matches.json.tmp
 dataforseo_locations.json
+coordinate_audit.csv
+coordinate_audit_unmatched.csv
+hotels.coordinates_proposed.csv
+coordinate_changes.csv

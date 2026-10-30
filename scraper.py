@@ -69,6 +69,11 @@ DFS_RETRY_NO_MATCH_DAYS = 30   # a hotel Google didn't find is looked up again a
 MOROCCO_LOCATION_CODE = 2504   # DataForSEO location code for Morocco (hotels without map coordinates)
 WINDOW_NIGHTS = 30             # prices for the next 30 nights, from tomorrow
 
+# SCRAPER_LOOKUP_ONLY=on: find each hotel's Google ID and Google's map
+# position (for coordinate_audit.py), without collecting prices. About
+# $0.0008 per hotel not looked up yet; nothing is written to the rate data.
+LOOKUP_ONLY = os.environ.get('SCRAPER_LOOKUP_ONLY', '').strip().lower() in ('1', 'on', 'true', 'yes')
+
 # The headless-browser steps (brand websites, Booking.com) are off unless
 # SCRAPER_BROWSER_STEPS=on: they are slow, easily blocked and fragile.
 BROWSER_STEPS = os.environ.get('SCRAPER_BROWSER_STEPS', '').strip().lower() in ('1', 'on', 'true', 'yes')
@@ -542,6 +547,35 @@ class KodoScraper:
             json.dump(data, f, indent=2, ensure_ascii=False)
         os.replace(tmp, LOOSE_MATCHES_JSON)
 
+    @staticmethod
+    def _gps_fields(gps):
+        if not gps:
+            return {}
+        return {'google_lat': gps['latitude'], 'google_lng': gps['longitude'],
+                'position_checked': datetime.now().isoformat(timespec='seconds')}
+
+    def _positions_only(self, ids, by_id, common, wait):
+        """Lookup-only mode: Google's position for matched hotels that have
+        none yet (hand-set IDs, older cache entries): one hotel_info call
+        each, without prices."""
+        need = [h for h in by_id if (ids.get(h) or {}).get('identifier') and 'google_lat' not in ids[h]]
+        if need:
+            tasks = [{**common, **self._dfs_where(by_id[h]), 'hotel_identifier': ids[h]['identifier'], 'tag': h} for h in need]
+            created = self.dfs.post(DFS_INFO, tasks)
+            self.stats['dataforseo']['id_lookups'] += sum(1 for t in created if t['id'])
+            done = self.dfs.wait(DFS_INFO, [t['id'] for t in created], **wait)
+            for t in created:
+                task = done.get(t['id']) if t['id'] else None
+                res = (((task or {}).get('result') or [{}])[0] or {})
+                gps = self._dfs_gps(res.get('location'))
+                if gps:
+                    ids[t['tag']].update(google_title=res.get('title', '') or ids[t['tag']].get('google_title', ''), **self._gps_fields(gps))
+                else:
+                    self._dfs_error(f'no Google position for "{by_id[t["tag"]]["name"]}"')
+        self.save_dfs_ids(ids)
+        found = sum(1 for h in by_id if (ids.get(h) or {}).get('identifier'))
+        logger.info(f'DataForSEO lookup only: {found} of {len(by_id)} hotels have a Google ID; no prices collected')
+
     def _judge(self, hotel, title, gps):
         """('strict' | ('loose', metres) | None, reason) for one result."""
         ok, why = match_hotel(hotel, title, '', gps, self.known_cities)
@@ -692,7 +726,7 @@ class KodoScraper:
             lookup = [hid for hid in by_id if needs_lookup(hid)]
             if lookup:
                 logger.info(f'DataForSEO: looking up the Google ID of {len(lookup)} hotels')
-                pending, best = list(lookup), {}
+                pending, best, found_gps = list(lookup), {}, {}
                 for step, label in enumerate(self.LOOKUP_STEPS):
                     if not pending:
                         break
@@ -706,6 +740,7 @@ class KodoScraper:
                             verdict, why = self._judge(hotel, title, gps)
                             if verdict:
                                 found = (title, ident, verdict)
+                                found_gps[hid] = gps
                                 break
                             best.setdefault(hid, (title, why))
                         if not found:
@@ -713,7 +748,7 @@ class KodoScraper:
                             continue
                         title, ident, verdict = found
                         ids[hid] = {'identifier': ident, 'google_title': title, 'checked': today.isoformat(),
-                                    'found_by': label}
+                                    'found_by': label, **self._gps_fields(found_gps.get(hid))}
                         if verdict != 'strict':
                             ids[hid]['loose_match_m'] = verdict[1]
                             self.record_loose_match(hotel, title, verdict[1], ident, label)
@@ -725,6 +760,10 @@ class KodoScraper:
                                 'best_result': (best.get(hid) or (None,))[0]}
                     self.no_match('DataForSEO lookup', by_id[hid], best.get(hid))
                 self.save_dfs_ids(ids)
+
+            if LOOKUP_ONLY:
+                self._positions_only(ids, by_id, common, wait)
+                return
 
             # (2) Prices for the next 30 nights, one call per hotel
             priced = [h for h in by_id if (ids.get(h) or {}).get('identifier')]
@@ -784,6 +823,7 @@ class KodoScraper:
                     ids[hid] = {'identifier': None, 'checked': today.isoformat(), 'best_result': res.get('title')}
                     continue
                 s['matched'] += 1
+                ids[hid].update(google_title=res.get('title', '') or ids[hid].get('google_title', ''), **self._gps_fields(gps))
                 prices = res.get('prices') or {}
                 entries = prices.get('prices_by_dates') or res.get('prices_by_dates') or []
                 nights, other_currency = {}, set()
@@ -1030,6 +1070,14 @@ class KodoScraper:
         today = datetime.now(MOROCCO_TZ).strftime('%Y-%m-%d')
         todo = [h for h in self.hotels
                 if self.progress.get(str(h.get('id', h.get('name', ''))), {}).get('status') != f'done_{today}']
+        if LOOKUP_ONLY:
+            # IDs and positions only: no rates, no progress, no run summary
+            # (the health check reads that), no occupancy model run
+            self.dataforseo_phase(self.hotels)
+            d = self.stats['dataforseo']
+            logger.info(f'Lookup only done · DataForSEO cost ${d["cost"]:.4f}'
+                        + (f', balance ${d["balance"]:.2f}' if d.get('balance') is not None else ''))
+            return self.stats
         self.dataforseo_phase(todo)
 
         for i, hotel in enumerate(self.hotels):

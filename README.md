@@ -21,6 +21,14 @@ ADR. Settings (see `.env.example`): `DATAFORSEO_LOGIN`,
 `SCRAPER_CITIES`, `SCRAPER_LIMIT`, `SCRAPER_BROWSER_STEPS`, `ALERT_EMAIL`,
 `DATA_DIR`.
 
+Coordinate audit (report only, never edits `hotels.csv`):
+`SCRAPER_LOOKUP_ONLY=on python3 scraper.py` records each hotel's Google ID
+and Google's map position without collecting prices (about $0.0008 per
+hotel not looked up yet). Then `python3 scripts/coordinate_audit.py
+--propose` writes `coordinate_audit.csv`, `coordinate_audit_unmatched.csv`,
+and a reviewable `hotels.coordinates_proposed.csv` with
+`coordinate_changes.csv`, all in `DATA_DIR`.
+
 ## Product media
 
 Screenshots and videos used on the landing page live in `static/img/product/`.
