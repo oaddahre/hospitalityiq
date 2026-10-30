@@ -12,8 +12,9 @@ from datetime import datetime
 import requests
 
 API = 'https://api.dataforseo.com/v3'
-SEARCHES = 'business_data/google/hotel_searches'
-INFO     = 'business_data/google/hotel_info'
+SEARCHES = 'business_data/google/hotel_searches'   # results: task_get/{id} (no "advanced" form)
+INFO     = 'business_data/google/hotel_info'       # results: task_get/advanced/{id}
+ADVANCED = {SEARCHES: False, INFO: True}
 
 # Account-level problems: the rest of the run can't use DataForSEO
 FATAL = {
@@ -97,15 +98,20 @@ class DataForSEO:
                                 'status_message': t.get('status_message', '')})
         return created
 
-    def get(self, api, task_id, advanced=True):
+    def get(self, api, task_id, advanced=None):
+        if advanced is None:
+            advanced = ADVANCED.get(api, True)
         data = self._call('GET', f'{api}/task_get/{"advanced/" if advanced else ""}{task_id}')
         return (data.get('tasks') or [{}])[0]
 
-    def wait(self, api, ids, max_wait_s=50 * 60, poll_s=60, advanced=True, sleep=time.sleep, log=None):
-        """Collect finished tasks until all are done or max_wait_s passes.
-        Returns {id: task}; a task still queued at the end is missing."""
-        done, waiting = {}, [i for i in ids if i]
-        started = time.monotonic()
+    def wait(self, api, ids, max_wait_s=50 * 60, poll_s=60, advanced=None, sleep=time.sleep, log=None):
+        """Collect finished tasks until all are done or max_wait_s passes
+        (wall-clock time, so a machine asleep in between counts). Returns
+        {id: task}; a task still queued at the end is missing. A task whose
+        result can't be fetched 3 times in a row is returned as failed with
+        that error, instead of being waited for."""
+        done, waiting, errors = {}, [i for i in ids if i], {}
+        started = time.time()
         while waiting:
             still = []
             for tid in waiting:
@@ -114,14 +120,19 @@ class DataForSEO:
                 except DataForSEOError as e:
                     if e.status in ('bad_login', 'no_balance', 'paused', 'no_access', 'missing_credentials'):
                         raise
-                    still.append(tid)
+                    errors[tid] = errors.get(tid, 0) + 1
+                    if errors[tid] >= 3:
+                        done[tid] = {'id': tid, 'status_code': 50000, 'status_message': f'result not fetched: {e.message}'}
+                    else:
+                        still.append(tid)
                     continue
+                errors.pop(tid, None)
                 if task.get('status_code') in PENDING:
                     still.append(tid)
                 else:
                     done[tid] = task
             waiting = still
-            if not waiting or time.monotonic() - started >= max_wait_s:
+            if not waiting or time.time() - started >= max_wait_s:
                 break
             if log:
                 log(f'DataForSEO: {len(done)} of {len(done) + len(waiting)} tasks ready, waiting {poll_s} s')
