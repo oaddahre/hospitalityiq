@@ -4711,6 +4711,59 @@ def api_scraper_status():
     })
 
 
+# ─── Google hotel ID overrides (admin) ─────────────────────────────────────────
+# For hotels the DataForSEO search can't find: a Google hotel ID set by
+# hand, in DATA_DIR/hotel_id_overrides.json. The scraper uses it instead of
+# the automatic lookup (and still name-checks what it returns).
+ID_OVERRIDES_PATH  = os.path.join(DATA_DIR, 'hotel_id_overrides.json')
+LOOSE_MATCHES_PATH = os.path.join(DATA_DIR, 'loose_matches.json')
+_GOOGLE_ID_RE = re.compile(r'^[A-Za-z0-9_=-]{8,200}$')
+
+
+def _read_json_dict(path):
+    try:
+        with open(path, encoding='utf-8') as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+@app.route('/api/scraper/id-overrides')
+@admin_required
+def api_id_overrides():
+    return jsonify({'overrides': _read_json_dict(ID_OVERRIDES_PATH),
+                    'loose_matches': _read_json_dict(LOOSE_MATCHES_PATH)})
+
+
+@app.route('/api/scraper/id-overrides', methods=['POST'])
+@admin_required
+def api_id_overrides_save():
+    body = request.get_json(silent=True) or {}
+    hotel_id   = str(body.get('hotel_id', '')).strip()
+    identifier = str(body.get('identifier', '')).strip()
+    hotels_df  = pd.read_csv(os.path.join(DATA_DIR, 'hotels.csv'))
+    row = hotels_df[hotels_df['id'].astype(str) == hotel_id]
+    if row.empty:
+        return jsonify({'error': 'Unknown hotel.'}), 400
+    if identifier and not _GOOGLE_ID_RE.match(identifier):
+        return jsonify({'error': 'That does not look like a Google hotel ID (letters, digits, "-", "_" and "=" only).'}), 400
+    data = _read_json_dict(ID_OVERRIDES_PATH)
+    name = str(row.iloc[0]['name'])
+    if identifier:
+        data[hotel_id] = {'identifier': identifier, 'hotel_name': name,
+                          'set_by': current_user.id, 'set_at': datetime.now().isoformat(timespec='seconds')}
+    else:
+        data.pop(hotel_id, None)          # empty ID: remove the override
+    tmp = ID_OVERRIDES_PATH + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, ID_OVERRIDES_PATH)
+    _log_admin_action('google_id_override_set' if identifier else 'google_id_override_removed', '',
+                      f'hotel={hotel_id} ({name})' + (f' id={identifier}' if identifier else ''))
+    return jsonify({'status': 'saved', 'overrides': data})
+
+
 @app.route('/api/scraper/override', methods=['POST'])
 @admin_required
 def api_scraper_override():

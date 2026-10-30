@@ -26,3 +26,8 @@ comp_sets.json
 comp_sets.json.tmp
 dataforseo_hotel_ids.json
 dataforseo_hotel_ids.json.tmp
+hotel_id_overrides.json
+hotel_id_overrides.json.tmp
+loose_matches.json
+loose_matches.json.tmp
+dataforseo_locations.json

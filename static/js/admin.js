@@ -73,7 +73,7 @@ const SECTION_LOADERS = {
   orgs: loadOrgs,
   news: loadArticles,
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
-  rates: () => { loadScraperStatus(); populateHotelSelect(); },
+  rates: () => { loadScraperStatus(); populateHotelSelect(); loadIdOverrides(); },
   occupancy: loadOccupancyStatus,
   system: loadSystemInfo,
 };
@@ -1115,15 +1115,17 @@ async function populateHotelSelect() {
   try {
     const res = await fetch('/api/hotels', { headers: authHeaders() });
     const hotels = await res.json();
-    const sel = document.getElementById('ri-hotel-sel');
-    if (sel.dataset.populated) return;
-    (hotels.hotels || hotels).forEach(h => {
-      const opt = document.createElement('option');
-      opt.value = h.id;
-      opt.textContent = `${h.name} (${h.city})`;
-      sel.appendChild(opt);
+    ['ri-hotel-sel', 'ri-gid-hotel'].forEach(selId => {
+      const sel = document.getElementById(selId);
+      if (!sel || sel.dataset.populated) return;
+      (hotels.hotels || hotels).forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        opt.textContent = `${h.name} (${h.city})`;
+        sel.appendChild(opt);
+      });
+      sel.dataset.populated = '1';
     });
-    sel.dataset.populated = '1';
   } catch {}
 }
 
@@ -1137,6 +1139,59 @@ document.getElementById('run-scraper-btn').addEventListener('click', async () =>
     toast(data.status === 'started' ? 'Scraper started.' : (data.error || 'Error'), data.status === 'started' ? 'success' : 'error');
   } catch { toast('Network error.', 'error'); }
   setTimeout(() => { btn.disabled = false; btn.textContent = 'Run Scraper Now'; loadScraperStatus(); }, 2500);
+});
+
+// Google hotel ID overrides, and the loose matches to review
+function renderIdOverrides(data) {
+  const ov = data.overrides || {};
+  const list = document.getElementById('ri-gid-list');
+  list.replaceChildren();
+  const ids = Object.keys(ov);
+  if (!ids.length) { list.textContent = 'No overrides.'; }
+  ids.forEach(hid => {
+    const row = document.createElement('div');
+    row.textContent = `${ov[hid].hotel_name || hid}: ${ov[hid].identifier} (set ${String(ov[hid].set_at || '').slice(0, 10)}) `;
+    const rm = document.createElement('button');
+    rm.className = 'adm-btn adm-btn-secondary'; rm.textContent = 'Remove'; rm.style.marginLeft = '6px';
+    rm.addEventListener('click', () => saveIdOverride(hid, ''));
+    row.appendChild(rm); list.appendChild(row);
+  });
+  const lm = data.loose_matches || {};
+  const ll = document.getElementById('ri-loose-list');
+  ll.replaceChildren();
+  const lk = Object.keys(lm);
+  if (!lk.length) { ll.textContent = 'None so far.'; return; }
+  lk.forEach(hid => {
+    const m = lm[hid], row = document.createElement('div');
+    row.textContent = `Our "${m.our_name}" ↔ Google "${m.google_name}" · ${m.distance_m} m apart · ${m.stage} · last seen ${String(m.last_seen || '').slice(0, 10)}`;
+    ll.appendChild(row);
+  });
+}
+async function loadIdOverrides() {
+  try {
+    const res = await fetch('/api/scraper/id-overrides', { headers: authHeaders() });
+    if (res.ok) renderIdOverrides(await res.json());
+  } catch {}
+}
+async function saveIdOverride(hotelId, identifier) {
+  const msgEl = document.getElementById('ri-gid-msg');
+  try {
+    const res = await fetch('/api/scraper/id-overrides', { method: 'POST', headers: authHeaders(true),
+      body: JSON.stringify({ hotel_id: hotelId, identifier }) });
+    const data = await res.json();
+    if (res.ok) {
+      msgEl.textContent = identifier ? 'Saved: used from the next scraper run.' : 'Override removed.';
+      msgEl.style.color = 'var(--positive)';
+      document.getElementById('ri-gid-value').value = '';
+      loadIdOverrides();
+    } else { msgEl.textContent = data.error || 'Error saving'; msgEl.style.color = 'var(--negative)'; }
+  } catch { msgEl.textContent = 'Network error'; msgEl.style.color = 'var(--negative)'; }
+}
+document.getElementById('ri-gid-save').addEventListener('click', () => {
+  const hotelId = document.getElementById('ri-gid-hotel').value;
+  const msgEl = document.getElementById('ri-gid-msg');
+  if (!hotelId) { msgEl.textContent = 'Choose a hotel.'; msgEl.style.color = 'var(--negative)'; return; }
+  saveIdOverride(hotelId, document.getElementById('ri-gid-value').value.trim());
 });
 
 document.getElementById('ri-save-btn').addEventListener('click', async () => {

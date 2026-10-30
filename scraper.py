@@ -57,6 +57,10 @@ except ValueError:
 # Price source: Google Hotels through DataForSEO (standard queue,
 # collected the same night). Credentials never leave the auth header.
 DFS_IDS_JSON = os.path.join(DATA_DIR, 'dataforseo_hotel_ids.json')
+# Google hotel IDs set by hand (admin Rates panel): they win over the lookup
+ID_OVERRIDES_JSON = os.path.join(DATA_DIR, 'hotel_id_overrides.json')
+DFS_LOCATIONS_JSON = os.path.join(DATA_DIR, 'dataforseo_locations.json')
+LOOSE_MATCHES_JSON = os.path.join(DATA_DIR, 'loose_matches.json')
 try:
     DFS_MAX_WAIT_MIN = float(os.environ.get('DATAFORSEO_MAX_WAIT_MIN', '') or 50)
 except ValueError:
@@ -227,6 +231,86 @@ def match_hotel(hotel, cand_name, cand_text='', cand_gps=None, known_cities=()):
     if mentioned and not (mentioned & own_cities):
         return False, 'in ' + ', '.join(sorted(mentioned))
     return True, ''
+
+
+# A "loose match" is for names Google writes differently (an added
+# district, a dropped word): it needs the result within 300 m of our
+# hotel's coordinates in hotels.csv AND names that share the hotel's brand
+# and at least one more distinctive word (or our name is only the brand),
+# with at most one extra distinctive word on Google's side. Generic words
+# (hotel, resort, spa, palace, ...), city names, accents, case and
+# "&"/"and" are ignored. Without coordinates on both sides there is no
+# loose match: the strict name check (match_hotel) applies. Every loose
+# match is logged and saved to DATA_DIR/loose_matches.json for review.
+LOOSE_MATCH_MAX_M = 300
+LOOSE_GENERIC = GENERIC_WORDS | {'palace', 'palais', 'hotels', 'and', 'riad', 'boutique', 'collection'}
+
+
+def _loose_tokens(name, cities):
+    t = ' ' + norm_text(name) + ' '
+    for p in sorted(cities, key=len, reverse=True):
+        t = t.replace(f' {p} ', ' ')
+    return [w for w in t.split() if w not in LOOSE_GENERIC]
+
+
+def _has_word(word, words):
+    return any(_same_word(word, w) for w in words)
+
+
+def loose_match(hotel, cand_name, cand_gps, known_cities=()):
+    """Distance in metres when the result is a loose match, else None."""
+    try:
+        lat, lng = float(hotel['lat']), float(hotel['lng'])
+        clat, clng = float(cand_gps['latitude']), float(cand_gps['longitude'])
+    except (TypeError, ValueError, KeyError):
+        return None
+    metres = km_between(lat, lng, clat, clng) * 1000
+    if metres > LOOSE_MATCH_MAX_M:
+        return None
+    cities = set(known_cities) | city_names(hotel.get('city', '')) | {'marrakech', 'marrakesh'}
+    ours, google = _loose_tokens(hotel.get('name', ''), cities), _loose_tokens(cand_name, cities)
+    brand = _loose_tokens(hotel.get('brand', ''), cities) or ours[:1]
+    if not ours or not google or brand == ['independent']:
+        brand = ours[:1]
+    if not brand or not all(_has_word(b, google) and _has_word(b, ours) for b in brand):
+        return None                                   # the brand must be in both names
+    ours_other = [w for w in ours if not _has_word(w, brand)]
+    shared_other = [w for w in ours_other if _has_word(w, google)]
+    if ours_other and not shared_other:
+        return None                                   # one more distinctive word in common
+    extra = [w for w in google if not _has_word(w, ours)]
+    if len(extra) > 1:
+        return None                                   # at most one extra word on Google's side
+    return round(metres)
+
+
+def override_match(hotel, cand_name, cand_gps, known_cities=()):
+    """A hand-set Google ID is used when its result carries our brand and is
+    in our city (within MAX_KM_FROM_HOTEL, or no other city named)."""
+    cities = set(known_cities) | city_names(hotel.get('city', ''))
+    ours, google = _loose_tokens(hotel.get('name', ''), cities), _loose_tokens(cand_name, cities)
+    brand = _loose_tokens(hotel.get('brand', ''), cities) or ours[:1]
+    if not brand or brand == ['independent']:
+        brand = ours[:1]
+    if not brand or not all(_has_word(b, google) for b in brand):
+        return False, 'brand not in the name'
+    try:
+        km = km_between(float(hotel['lat']), float(hotel['lng']), float(cand_gps['latitude']), float(cand_gps['longitude']))
+        return (km <= MAX_KM_FROM_HOTEL, f'{km:.1f} km away')
+    except (TypeError, ValueError, KeyError):
+        mentioned = mentioned_cities(cand_name, known_cities)
+        own = city_names(hotel.get('city', ''))
+        return (not mentioned or bool(mentioned & own)), 'city'
+
+
+def _strip_city_words(name, cities):
+    words = [w for w in str(name).split() if norm_text(w) not in cities]
+    return ' '.join(words).strip()
+
+
+def search_keyword(name):
+    """Hotel name as search text: "&" written as "and"."""
+    return re.sub(r'\s*&\s*', ' and ', str(name or '')).strip()
 
 
 def _parse_rate(value, low=200, high=60000):
@@ -435,6 +519,121 @@ class KodoScraper:
             json.dump(ids, f, indent=2, ensure_ascii=False)
         os.replace(tmp, DFS_IDS_JSON)
 
+    def load_json(self, path):
+        try:
+            with open(path, encoding='utf-8') as f:
+                data = json.load(f)
+            return data if isinstance(data, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+    def record_loose_match(self, hotel, google_name, metres, identifier, stage):
+        logger.info(f'loose match ({stage}): our "{hotel.get("name", "")}" — Google "{google_name}" — {metres} m apart')
+        self.stats['dataforseo']['loose_matches'] = self.stats['dataforseo'].get('loose_matches', 0) + 1
+        data = self.load_json(LOOSE_MATCHES_JSON)
+        hid = str(hotel.get('id'))
+        prev = data.get(hid) or {}
+        data[hid] = {'our_name': hotel.get('name', ''), 'google_name': google_name, 'distance_m': metres,
+                     'identifier': identifier, 'stage': stage,
+                     'first_seen': prev.get('first_seen') or datetime.now().isoformat(timespec='seconds'),
+                     'last_seen': datetime.now().isoformat(timespec='seconds')}
+        tmp = LOOSE_MATCHES_JSON + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, LOOSE_MATCHES_JSON)
+
+    def _judge(self, hotel, title, gps):
+        """('strict' | ('loose', metres) | None, reason) for one result."""
+        ok, why = match_hotel(hotel, title, '', gps, self.known_cities)
+        if ok:
+            return 'strict', ''
+        m = loose_match(hotel, title, gps, self.known_cities)
+        if m is not None:
+            return ('loose', m), ''
+        return None, why
+
+    # The lookup chain, from the 10-hotel pilot's diagnosis: Google's own
+    # name lookup (hotel_info with a keyword, in the hotel's city) found
+    # every hotel; the hotel search was erratic (it depends on the location
+    # setting, and our coordinates can be kilometres off). Each hotel stops
+    # at the first step that finds it, so the later steps are paid only
+    # for hotels the earlier ones missed.
+    LOOKUP_STEPS = ('name lookup in the city', 'search without the city word near our coordinates',
+                    'search across Morocco')
+
+    def _lookup_tasks(self, step, hids, common):
+        tasks = []
+        for h in hids:
+            hotel = self._by_id[h]
+            name = search_keyword(hotel['name'])
+            if step == 0:
+                where = self._dfs_city(hotel)
+                tasks.append({**common, **where, 'keyword': name, 'tag': h})
+            elif step == 1:
+                no_city = _strip_city_words(name, city_names(hotel.get('city', '')))
+                tasks.append({**common, **self._dfs_where(hotel), 'keyword': no_city or name, 'tag': h})
+            else:
+                tasks.append({**common, 'location_code': MOROCCO_LOCATION_CODE, 'keyword': name, 'tag': h})
+        return tasks
+
+    def _lookup_round(self, step, hids, common, wait):
+        """{hotel id: (title, identifier, gps) candidates} for one step."""
+        s = self.stats['dataforseo']
+        api = DFS_INFO if step == 0 else DFS_SEARCHES
+        created = self.dfs.post(api, self._lookup_tasks(step, hids, common))
+        s['id_lookups'] += sum(1 for t in created if t['id'])
+        for t in created:
+            if not t['id']:
+                self._dfs_error(f'lookup not created for hotel {t["tag"]}: {t["status_code"]} {t["status_message"]}')
+        done = self.dfs.wait(api, [t['id'] for t in created], **wait)
+        out = {}
+        for t in created:
+            task = done.get(t['id']) if t['id'] else None
+            hotel = self._by_id[t['tag']]
+            if t['id'] and task is None:
+                self._dfs_error(f'lookup for "{hotel["name"]}" not ready in time')
+                continue
+            if not task or task.get('status_code') not in (20000, DFS_NO_RESULT):
+                if task:
+                    s['failed_tasks'] += 1
+                    self._dfs_error(f'lookup failed for "{hotel["name"]}": {task.get("status_code")} {task.get("status_message", "")}')
+                continue
+            res = ((task.get('result') or [{}])[0] or {})
+            if step == 0:
+                cands = [(res.get('title', ''), res.get('hotel_identifier'), self._dfs_gps(res.get('location')))] if res.get('hotel_identifier') else []
+            else:
+                cands = [(it.get('title', ''), it.get('hotel_identifier'), self._dfs_gps(it.get('location')))
+                         for it in (res.get('items') or [])[:20] if it.get('hotel_identifier')]
+            out[t['tag']] = cands
+        return out
+
+    def _dfs_city(self, hotel):
+        """DataForSEO location of the hotel's city (from its free location
+        list, cached in dataforseo_locations.json); our coordinates when the
+        city isn't in the list."""
+        codes = getattr(self, '_city_codes', None)
+        if codes is None:
+            codes = self._city_codes = self._load_city_codes()
+        for n in city_names(hotel.get('city', '')):
+            if n in codes:
+                return {'location_code': codes[n]}
+        return self._dfs_where(hotel)
+
+    def _load_city_codes(self):
+        cached = self.load_json(DFS_LOCATIONS_JSON)
+        if cached.get('codes'):
+            return cached['codes']
+        codes = {}
+        try:
+            for loc in self.dfs.locations('ma'):
+                if loc.get('location_type') == 'City':
+                    codes.setdefault(norm_text(str(loc.get('location_name', '')).split(',')[0]), loc.get('location_code'))
+            with open(DFS_LOCATIONS_JSON, 'w', encoding='utf-8') as f:
+                json.dump({'codes': codes, 'fetched': datetime.now().isoformat(timespec='seconds')}, f, indent=1)
+        except DataForSEOError as e:
+            self._dfs_error(f'location list not loaded ({e.message}): searching by coordinates')
+        return codes
+
     def _dfs_where(self, hotel):
         try:
             return {'location_coordinate': f"{float(hotel['lat']):.7f},{float(hotel['lng']):.7f}"}
@@ -467,9 +666,19 @@ class KodoScraper:
         wait = dict(max_wait_s=DFS_MAX_WAIT_MIN * 60, poll_s=60, log=logger.info)
 
         try:
-            # (1) Google hotel IDs for hotels not looked up yet (or not found
-            # more than DFS_RETRY_NO_MATCH_DAYS ago)
+            # (1) Google hotel IDs. Manual overrides (hotel_id_overrides.json)
+            # win; the others are looked up once (hotel_searches) and cached,
+            # except a hotel not found, which is tried again after
+            # DFS_RETRY_NO_MATCH_DAYS days.
+            self._by_id = by_id
             ids = self.load_dfs_ids()
+            overrides = self.load_json(ID_OVERRIDES_JSON)
+            for hid in by_id:
+                ov = (overrides.get(hid) or {}).get('identifier')
+                if ov:
+                    ids[hid] = {'identifier': ov, 'source': 'override', 'checked': today.isoformat()}
+                elif (ids.get(hid) or {}).get('source') == 'override':
+                    ids.pop(hid)          # override removed: look the hotel up again
             def needs_lookup(hid):
                 e = ids.get(hid)
                 if not e:
@@ -482,40 +691,39 @@ class KodoScraper:
                     return True
             lookup = [hid for hid in by_id if needs_lookup(hid)]
             if lookup:
-                tasks = [{**common, **self._dfs_where(by_id[h]), 'keyword': by_id[h]['name'], 'tag': h} for h in lookup]
-                created = self.dfs.post(DFS_SEARCHES, tasks)
-                s['id_lookups'] += sum(1 for t in created if t['id'])
-                for t in created:
-                    if not t['id']:
-                        self._dfs_error(f'hotel search not created for hotel {t["tag"]}: {t["status_code"]} {t["status_message"]}')
                 logger.info(f'DataForSEO: looking up the Google ID of {len(lookup)} hotels')
-                done = self.dfs.wait(DFS_SEARCHES, [t['id'] for t in created], **wait)
-                for t in created:
-                    hid = t['tag']
-                    task = done.get(t['id'])
-                    if not t['id'] or task is None:
-                        if t['id']:
-                            self._dfs_error(f'hotel search for "{by_id[hid]["name"]}" not ready in time')
-                        continue
-                    if task.get('status_code') not in (20000, DFS_NO_RESULT):
-                        s['failed_tasks'] += 1
-                        self._dfs_error(f'hotel search failed for "{by_id[hid]["name"]}": {task.get("status_code")} {task.get("status_message", "")}')
-                        continue
-                    items = ((task.get('result') or [{}])[0] or {}).get('items') or []
-                    match, best = None, None
-                    for it in items[:20]:
-                        ok, why = match_hotel(by_id[hid], it.get('title', ''), '', self._dfs_gps(it.get('location')), self.known_cities)
-                        if ok and it.get('hotel_identifier'):
-                            match = it
-                            break
-                        best = best or (it.get('title', ''), why)
-                    if match:
-                        ids[hid] = {'identifier': match['hotel_identifier'], 'google_title': match.get('title', ''),
-                                    'checked': today.isoformat()}
-                    else:
-                        ids[hid] = {'identifier': None, 'checked': today.isoformat(),
-                                    'best_result': best[0] if best else None}
-                        self.no_match('DataForSEO hotel search', by_id[hid], best)
+                pending, best = list(lookup), {}
+                for step, label in enumerate(self.LOOKUP_STEPS):
+                    if not pending:
+                        break
+                    if step:
+                        logger.info(f'DataForSEO: {len(pending)} not found yet, next: {label}')
+                    answers = self._lookup_round(step, pending, common, wait)
+                    still = []
+                    for hid in pending:
+                        hotel, found = by_id[hid], None
+                        for title, ident, gps in answers.get(hid, []):
+                            verdict, why = self._judge(hotel, title, gps)
+                            if verdict:
+                                found = (title, ident, verdict)
+                                break
+                            best.setdefault(hid, (title, why))
+                        if not found:
+                            still.append(hid)
+                            continue
+                        title, ident, verdict = found
+                        ids[hid] = {'identifier': ident, 'google_title': title, 'checked': today.isoformat(),
+                                    'found_by': label}
+                        if verdict != 'strict':
+                            ids[hid]['loose_match_m'] = verdict[1]
+                            self.record_loose_match(hotel, title, verdict[1], ident, label)
+                        logger.info(f'DataForSEO: "{hotel["name"]}" found by {label} as "{title}"'
+                                    + (f' (loose match, {verdict[1]} m)' if verdict != 'strict' else ''))
+                    pending = still
+                for hid in pending:
+                    ids[hid] = {'identifier': None, 'checked': today.isoformat(),
+                                'best_result': (best.get(hid) or (None,))[0]}
+                    self.no_match('DataForSEO lookup', by_id[hid], best.get(hid))
                 self.save_dfs_ids(ids)
 
             # (2) Prices for the next 30 nights, one call per hotel
@@ -548,8 +756,28 @@ class KodoScraper:
                     self._dfs_error(f'price task failed for "{hotel["name"]}": {task.get("status_code")} {task.get("status_message", "")}')
                     continue
                 res = (task.get('result') or [{}])[0] or {}
-                ok, why = match_hotel(hotel, res.get('title', ''), res.get('address', '') or '',
-                                      self._dfs_gps(res.get('location')), self.known_cities)
+                gps = self._dfs_gps(res.get('location'))
+                ok, why = match_hotel(hotel, res.get('title', ''), res.get('address', '') or '', gps, self.known_cities)
+                if not ok:
+                    metres = loose_match(hotel, res.get('title', ''), gps, self.known_cities)
+                    is_override = (ids.get(hid) or {}).get('source') == 'override'
+                    if metres is not None:
+                        ok = True
+                        if not ids[hid].get('loose_match_m'):
+                            self.record_loose_match(hotel, res.get('title', ''), metres, ids[hid]['identifier'], 'hotel info')
+                    elif is_override:
+                        # A hand-set ID: used when its result carries our
+                        # brand and is in our city; otherwise its prices are
+                        # not used and the override is kept for the admin to check
+                        ok, ov_why = override_match(hotel, res.get('title', ''), gps, self.known_cities)
+                        if ok:
+                            logger.info(f'DataForSEO: manual Google ID for "{hotel["name"]}" used: Google calls it '
+                                        f'"{res.get("title", "")}" ({ov_why})')
+                        else:
+                            s['no_match'] += 1
+                            logger.warning(f'DataForSEO: the manual Google ID for "{hotel["name"]}" returns "{res.get("title", "")}" '
+                                           f'({ov_why}): prices not used, check hotel_id_overrides.json')
+                            continue
                 if not ok:
                     s['no_match'] += 1
                     self.no_match('DataForSEO hotel info', hotel, (res.get('title', ''), why))

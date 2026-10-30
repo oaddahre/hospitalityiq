@@ -82,6 +82,11 @@ class DataForSEO:
             out.update(status=e.status, message=e.message)
         return out
 
+    def locations(self, country='ma'):
+        """DataForSEO's Google locations for a country (free)."""
+        data = self._call('GET', f'business_data/google/locations/{country}')
+        return (data.get('tasks') or [{}])[0].get('result') or []
+
     def post(self, api, tasks):
         """Post tasks (standard queue) in batches of 100. Returns the
         created tasks ({'id', 'tag', 'status_code', 'status_message'}).
