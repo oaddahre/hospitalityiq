@@ -5,7 +5,6 @@ from pathlib import Path
 from urllib.parse import quote as url_quote
 
 import pytz
-import requests
 
 from occupancy_model import (
     EUR_TO_MAD, REVENUE_MIX, EBITDA_MARGINS, CAP_RATES, classify_hotel_type,
@@ -36,7 +35,6 @@ logging.basicConfig(
 logger = logging.getLogger('kodo_scraper')
 
 MOROCCO_TZ  = pytz.timezone('Africa/Casablanca')
-SERPAPI_KEY = os.environ.get('SERPAPI_KEY', '').strip()
 HOTELS_CSV  = os.path.join(DATA_DIR, 'hotels.csv')
 RATES_CSV   = os.path.join(DATA_DIR, 'scraped_rates.csv')
 PROGRESS_JSON = os.path.join(DATA_DIR, 'scraper_progress.json')
@@ -56,7 +54,7 @@ try:
 except ValueError:
     SCRAPER_LIMIT = 0
 
-# Main price source: Google Hotels through DataForSEO (standard queue,
+# Price source: Google Hotels through DataForSEO (standard queue,
 # collected the same night). Credentials never leave the auth header.
 DFS_IDS_JSON = os.path.join(DATA_DIR, 'dataforseo_hotel_ids.json')
 try:
@@ -72,7 +70,7 @@ WINDOW_NIGHTS = 30             # prices for the next 30 nights, from tomorrow
 BROWSER_STEPS = os.environ.get('SCRAPER_BROWSER_STEPS', '').strip().lower() in ('1', 'on', 'true', 'yes')
 
 # Sources that count as a live price (manual overrides are entered by hand)
-LIVE_SOURCES = {'live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+LIVE_SOURCES = {'live_dataforseo', 'live_brand', 'live_booking'}
 
 try:
     from playwright.sync_api import sync_playwright
@@ -231,52 +229,6 @@ def match_hotel(hotel, cand_name, cand_text='', cand_gps=None, known_cities=()):
     return True, ''
 
 
-# ─── SERPAPI ACCOUNT ─────────────────────────────────────────────────────────
-
-def _json_or_empty(resp):
-    try:
-        body = resp.json()
-        return body if isinstance(body, dict) else {}
-    except Exception:
-        return {}
-
-
-def serpapi_account(key=None, timeout=10):
-    """SerpApi key and credit check, from the free account endpoint (it
-    does not use a search). Returns {'status': ok | missing_key | rejected
-    | no_credits | error, 'message', 'searches_left', 'plan',
-    'checked_at'}. Never includes the key: request errors are reported by
-    type only, since their text can contain the request URL."""
-    key = SERPAPI_KEY if key is None else key
-    out = {'status': 'ok', 'message': '', 'searches_left': None, 'plan': None,
-           'checked_at': datetime.now().isoformat(timespec='seconds')}
-    if not key:
-        out.update(status='missing_key', message='SERPAPI_KEY is not set: the Google Hotels step is skipped')
-        return out
-    try:
-        resp = requests.get('https://serpapi.com/account.json', params={'api_key': key}, timeout=timeout)
-    except Exception as e:
-        out.update(status='error', message=f'account check failed ({e.__class__.__name__})')
-        return out
-    body = _json_or_empty(resp)
-    err = str(body.get('error', '')).strip()
-    if resp.status_code in (401, 403):
-        out.update(status='rejected', message=f'key rejected (HTTP {resp.status_code}){": " + err if err else ""}')
-        return out
-    if resp.status_code != 200 or err:
-        out.update(status='error', message=f'account check failed (HTTP {resp.status_code}){": " + err if err else ""}')
-        return out
-    left = body.get('total_searches_left', body.get('plan_searches_left'))
-    out['searches_left'] = left
-    out['plan'] = body.get('plan_name')
-    out['this_month_usage'] = body.get('this_month_usage')
-    if left is not None and left <= 0:
-        out.update(status='no_credits', message=f'no searches left on the {out["plan"] or "SerpApi"} plan')
-    else:
-        out['message'] = f'key accepted · {out["plan"] or "plan unknown"} · {left if left is not None else "?"} searches left'
-    return out
-
-
 def _parse_rate(value, low=200, high=60000):
     if value is None:
         return None
@@ -350,9 +302,6 @@ def compute_hotel_financials(hotel, occupancy, adr_mad):
 
 # ─── SCRAPER CLASS ────────────────────────────────────────────────────────────
 
-SERPAPI_MAX_ERRORS = 10   # HTTP errors in one run before SerpApi calls stop for that run
-
-
 class KodoScraper:
 
     def __init__(self):
@@ -366,23 +315,17 @@ class KodoScraper:
                               os.environ.get('DATAFORSEO_PASSWORD', '').strip())
         self.dfs_prices = {}    # hotel id -> {night: rate in MAD}, from this run
         self.progress = self.load_progress()
-        self._serp_cache = {}
-        self._serp_matched = {}
-        self.serp_off = None   # why SerpApi calls stopped for this run, if they did
         self.stats = {
             'total': len(self.hotels),
             'total_open': len(open_hotels),
             'cities': SCRAPER_CITIES or 'all',
             'scraped': 0,
-            'google_hits': 0,
             'booking_hits': 0,
             'brand_hits': 0,
-            'expedia_hits': 0,
             'no_match': 0,
             'failed': 0,
             'nights_total': 0,
             'nights_found': 0,
-            'serpapi': {'calls': 0, 'errors': 0, 'last_error': None},
             'dataforseo': {'status': None, 'message': '', 'balance_before': None, 'balance': None,
                            'cost': 0.0, 'id_lookups': 0, 'price_calls': 0, 'matched': 0,
                            'no_match': 0, 'failed_tasks': 0, 'errors': [], 'per_hotel': {}},
@@ -461,109 +404,7 @@ class KodoScraper:
         found = f' — best result "{best[0]}" ({best[1]})' if best else ' — no result named like it'
         logger.info(f'no match: {source} for "{hotel.get("name", "")}" ({hotel.get("city", "")}){found}')
 
-    # ─── SERPAPI ──────────────────────────────────────────────────────────────
-
-    def check_serpapi(self):
-        acct = serpapi_account()
-        self.stats['serpapi'].update(acct)
-        if acct['status'] == 'ok':
-            logger.info(f'SerpApi: {acct["message"]}')
-        elif acct['status'] == 'error':
-            # Could be a passing network problem: still try the searches
-            logger.warning(f'SerpApi: {acct["message"]}')
-        else:
-            self.serp_off = acct['message']
-            log = logger.warning if acct['status'] == 'missing_key' else logger.error
-            log(f'SerpApi: {acct["message"]}')
-
-    def _serp_stop(self, status, message):
-        self.serp_off = message
-        self.stats['serpapi'].update(status=status, message=message, last_error=message)
-        if status == 'no_credits':
-            self.stats['serpapi']['searches_left'] = 0
-        logger.error(f'SerpApi: {message} — SerpApi calls stopped for this run')
-
-    def _serp_error(self, message):
-        s = self.stats['serpapi']
-        s['errors'] += 1
-        s['last_error'] = message
-        logger.warning(f'SerpApi: {message}')
-        if s['errors'] >= SERPAPI_MAX_ERRORS:
-            self._serp_stop('error', f'{s["errors"]} errors this run (last: {message})')
-
-    def serpapi_search(self, hotel, checkin, checkout):
-        """Google Hotels results for one hotel and night, or None. One call
-        per hotel and night: the Google and Expedia steps share it."""
-        cache_key = (str(hotel.get('id', '')), checkin)
-        if cache_key in self._serp_cache:
-            return self._serp_cache[cache_key]
-        if self.serp_off:
-            return None
-        name, city = hotel.get('name', ''), hotel.get('city', '')
-        params = {
-            'engine': 'google_hotels',
-            'q': f'{name} {city} Morocco',
-            'check_in_date': checkin,
-            'check_out_date': checkout,
-            'adults': 2,
-            'currency': 'MAD',
-            'hl': 'en',
-            'gl': 'ma',
-            'api_key': SERPAPI_KEY,
-        }
-        self.stats['serpapi']['calls'] += 1
-        body = None
-        try:
-            resp = requests.get('https://serpapi.com/search', params=params, timeout=20)
-        except Exception as e:
-            self._serp_error(f'request failed for "{name}" ({e.__class__.__name__})')
-            self._serp_cache[cache_key] = None
-            return None
-        data = _json_or_empty(resp)
-        err  = str(data.get('error', '')).strip()
-        low  = err.lower()
-        if resp.status_code == 200 and not err:
-            body = data
-        elif resp.status_code == 200 and ('no results' in low or "hasn't returned any results" in low):
-            body = {}
-        elif resp.status_code in (401, 403):
-            self._serp_stop('rejected', f'key rejected (HTTP {resp.status_code}){": " + err if err else ""}')
-        elif 'run out of searches' in low or 'no searches left' in low or 'plan limit' in low:
-            self._serp_stop('no_credits', f'no searches left (HTTP {resp.status_code}): {err}')
-        elif resp.status_code == 429:
-            self._serp_error(f'rate limited (HTTP 429) on "{name}"{": " + err if err else ""}')
-        else:
-            self._serp_error(f'HTTP {resp.status_code} on "{name}"{": " + err if err else ""}')
-        self._serp_cache[cache_key] = body
-        return body
-
-    def _serp_candidates(self, body):
-        if not body:
-            return []
-        if body.get('properties'):
-            return body['properties'][:8]
-        return [body] if body.get('name') else []   # a single-property answer
-
-    def matched_serp_property(self, hotel, checkin, body, source):
-        """The result that is this hotel, or None (logged once as no match:
-        the Expedia step reuses the Google step's answer)."""
-        cache_key = (str(hotel.get('id', '')), checkin)
-        if cache_key in self._serp_matched:
-            return self._serp_matched[cache_key]
-        self._serp_matched[cache_key] = None
-        best = None
-        for prop in self._serp_candidates(body):
-            ok, why = match_hotel(hotel, prop.get('name', ''), prop.get('description', ''),
-                                  prop.get('gps_coordinates'), self.known_cities)
-            if ok:
-                self._serp_matched[cache_key] = prop
-                return prop
-            best = best or (prop.get('name', ''), why)
-        if body is not None:
-            self.no_match(source, hotel, best)
-        return None
-
-    # ─── SOURCE 1: GOOGLE HOTELS THROUGH DATAFORSEO ──────────────────────────
+    # ─── PRICES: GOOGLE HOTELS THROUGH DATAFORSEO ────────────────────────────
     # One overnight batch for all hotels: (1) find each hotel's Google
     # hotel ID once (hotel_searches; cached in dataforseo_hotel_ids.json,
     # so that lookup is paid once per hotel), then (2) one hotel_info call
@@ -749,23 +590,7 @@ class KodoScraper:
             if after and after['balance'] is not None:
                 s['balance'] = after['balance']
 
-    # ─── FALLBACK: SERPAPI GOOGLE HOTELS ─────────────────────────────────────
-
-    def scrape_google_hotels(self, hotel, checkin, checkout):
-        body = self.serpapi_search(hotel, checkin, checkout)
-        if body is None:
-            return None
-        prop = self.matched_serp_property(hotel, checkin, body, 'Google Hotels')
-        if not prop:
-            return None
-        rate_info = prop.get('rate_per_night') or {}
-        rate = _parse_rate(rate_info.get('extracted_lowest')) or _parse_rate(rate_info.get('lowest')) \
-            or _parse_rate(rate_info.get('before_taxes_fees'))
-        if rate:
-            return {'rate_mad': rate, 'source': 'live_google', 'availability': 'available'}
-        return None
-
-    # ─── SOURCE 2: BRAND DIRECT SITES ────────────────────────────────────────
+    # ─── OPTIONAL (SCRAPER_BROWSER_STEPS=on): BRAND WEBSITES ─────────────────
 
     def scrape_brand_direct(self, hotel, checkin, checkout):
         if not PLAYWRIGHT_AVAILABLE:
@@ -816,7 +641,7 @@ class KodoScraper:
             logger.warning(f'Brand direct failed for {hotel_name}: {e.__class__.__name__}')
         return None
 
-    # ─── SOURCE 3: BOOKING.COM VIA PLAYWRIGHT ────────────────────────────────
+    # ─── OPTIONAL (SCRAPER_BROWSER_STEPS=on): BOOKING.COM ────────────────────
 
     def scrape_booking(self, hotel, checkin, checkout):
         if not PLAYWRIGHT_AVAILABLE:
@@ -873,31 +698,6 @@ class KodoScraper:
             logger.warning(f'Booking.com failed for {hotel_name}: {e.__class__.__name__}')
         return None
 
-    # ─── SOURCE 4: EXPEDIA'S PRICE IN THE GOOGLE HOTELS RESULT ───────────────
-
-    def scrape_expedia(self, hotel, checkin, checkout):
-        """The Google Hotels result for this hotel (the same search as step
-        1, no extra call) can list each booking site's price: use the
-        Expedia one, else any listed site's, when step 1 found no lowest
-        rate."""
-        body = self.serpapi_search(hotel, checkin, checkout)
-        if body is None:
-            return None
-        prop = self.matched_serp_property(hotel, checkin, body, 'Expedia (Google Hotels)')
-        if not prop:
-            return None
-        offers = prop.get('prices') or []
-        offers = sorted(offers, key=lambda o: str(o.get('source', '')).lower() != 'expedia')
-        for offer in offers:
-            info = offer.get('rate_per_night') or {}
-            rate = _parse_rate(info.get('extracted_lowest')) or _parse_rate(info.get('lowest'))
-            if rate:
-                src = 'live_expedia' if str(offer.get('source', '')).lower() == 'expedia' else 'live_google'
-                return {'rate_mad': rate, 'source': src, 'availability': 'available'}
-        return None
-
-    # ─── FALLBACK CHAIN ───────────────────────────────────────────────────────
-
     def _row(self, hotel, scrape_date, stay_date, result):
         return {
             'hotel_id':           str(hotel.get('id', hotel.get('name', ''))),
@@ -918,10 +718,10 @@ class KodoScraper:
         }
 
     def scrape_hotel_rates(self, hotel):
-        """This hotel's rows: its DataForSEO prices for the next 30 nights
-        when the batch returned any; otherwise the fallback chain for the
-        5 key nights: SerpApi (only with SERPAPI_KEY), then the browser
-        steps (only with SCRAPER_BROWSER_STEPS=on)."""
+        """This hotel's rows: its DataForSEO prices for the next 30 nights.
+        Only with SCRAPER_BROWSER_STEPS=on, a hotel DataForSEO returned
+        nothing for is tried on its brand website, then Booking.com, for
+        the 5 key nights."""
         hotel_id = str(hotel.get('id', hotel.get('name', '')))
         today    = datetime.now(MOROCCO_TZ).strftime('%Y-%m-%d')
         nights   = self.dfs_prices.get(hotel_id)
@@ -932,35 +732,20 @@ class KodoScraper:
             return [self._row(hotel, today, n, {'rate_mad': r, 'source': 'live_dataforseo'})
                     for n, r in sorted(nights.items())]
 
-        if not SERPAPI_KEY and not BROWSER_STEPS:
+        if not BROWSER_STEPS:
             self.stats['nights_total'] += WINDOW_NIGHTS
             return []
         rates_found = []
         for stay_date in self.get_key_dates():
             checkin  = stay_date
             checkout = (datetime.strptime(stay_date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
-            result   = None
-
-            if SERPAPI_KEY:
-                result = self.scrape_google_hotels(hotel, checkin, checkout)
-                if result:
-                    self.stats['google_hits'] += 1
-
-            if not result and BROWSER_STEPS:
-                result = self.scrape_brand_direct(hotel, checkin, checkout)
-                if result:
-                    self.stats['brand_hits'] += 1
-
-            if not result and BROWSER_STEPS:
+            result = self.scrape_brand_direct(hotel, checkin, checkout)
+            if result:
+                self.stats['brand_hits'] += 1
+            else:
                 result = self.scrape_booking(hotel, checkin, checkout)
                 if result:
                     self.stats['booking_hits'] += 1
-
-            if not result and SERPAPI_KEY:
-                result = self.scrape_expedia(hotel, checkin, checkout)
-                if result:
-                    self.stats['expedia_hits'] += 1
-
             self.stats['nights_total'] += 1
             if result:
                 self.stats['nights_found'] += 1
@@ -1018,10 +803,6 @@ class KodoScraper:
         todo = [h for h in self.hotels
                 if self.progress.get(str(h.get('id', h.get('name', ''))), {}).get('status') != f'done_{today}']
         self.dataforseo_phase(todo)
-        if SERPAPI_KEY:
-            self.check_serpapi()
-        else:
-            self.stats['serpapi'].update(status='missing_key', message='SERPAPI_KEY is not set: no SerpApi fallback')
 
         for i, hotel in enumerate(self.hotels):
             hotel_id = str(hotel.get('id', hotel.get('name', '')))
@@ -1047,13 +828,6 @@ class KodoScraper:
 
         if datetime.now().weekday() == 6:
             self.cleanup_old_rates()
-
-        # Credits left after the run (the account check is free)
-        if SERPAPI_KEY and not self.serp_off:
-            after = serpapi_account()
-            if after.get('searches_left') is not None:
-                self.stats['serpapi']['searches_left'] = after['searches_left']
-                self.stats['serpapi']['checked_at'] = after['checked_at']
 
         self.stats['end_time'] = datetime.now().isoformat()
         with open(STATS_JSON, 'w') as f:

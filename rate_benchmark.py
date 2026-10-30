@@ -24,12 +24,12 @@ MAX_PRICE_AGE   = 7    # a price collected more than 7 days ago is not used
 STALE_AFTER     = 2    # latest price older than this many days: "not updated since"
 MIN_COMP, MAX_COMP = 1, 10
 
-# Live sources in scraper.py's order (Google Hotels through DataForSEO
-# first, then the SerpApi fallback; "live_expedia" is the Expedia price in
-# the SerpApi Google Hotels result, its last step)
-SOURCE_ORDER = ['live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia']
-SOURCE_LABEL = {'live_dataforseo': 'Google Hotels (DataForSEO)', 'live_google': 'Google Hotels (SerpApi)', 'live_brand': 'Brand website',
-                'live_booking': 'Booking.com', 'live_expedia': 'Expedia (via Google Hotels)'}
+# Current live sources, in scraper.py's order: Google Hotels through
+# DataForSEO, then (only with SCRAPER_BROWSER_STEPS=on) brand websites and
+# Booking.com. Rows from earlier sources stay in the file but are not used.
+SOURCE_ORDER = ['live_dataforseo', 'live_brand', 'live_booking']
+SOURCE_LABEL = {'live_dataforseo': 'Google Hotels (DataForSEO)', 'live_brand': 'Brand website',
+                'live_booking': 'Booking.com'}
 # scraper.py marks rows whose result passed its hotel name and city check
 MATCHED = 'name_matched'
 

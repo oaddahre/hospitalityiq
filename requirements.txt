@@ -6,7 +6,6 @@ pandas
 python-dotenv
 fpdf2
 playwright
-serpapi
 apscheduler>=3.10,<4
 pytz
 requests

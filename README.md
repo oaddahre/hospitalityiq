@@ -8,6 +8,19 @@ Run locally:
 PORT=5077 python3 app.py
 ```
 
+## Rate data
+
+`scraper.py` runs every night at 03:00 Casablanca time (one scheduler per
+deployment) and collects published rates from Google Hotels through
+DataForSEO, the only price source: one standard-queue call per hotel for
+the next 30 nights, after a one-time lookup of each hotel's Google ID
+(cached in `DATA_DIR/dataforseo_hotel_ids.json`). Every result is checked
+against the hotel's name and city. These are published rates, not achieved
+ADR. Settings (see `.env.example`): `DATAFORSEO_LOGIN`,
+`DATAFORSEO_PASSWORD`, `DATAFORSEO_MIN_BALANCE`, `DATAFORSEO_MAX_WAIT_MIN`,
+`SCRAPER_CITIES`, `SCRAPER_LIMIT`, `SCRAPER_BROWSER_STEPS`, `ALERT_EMAIL`,
+`DATA_DIR`.
+
 ## Product media
 
 Screenshots and videos used on the landing page live in `static/img/product/`.

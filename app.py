@@ -38,13 +38,12 @@ load_dotenv()
 
 # ─── Scraper / occupancy model helpers (graceful import) ─────────────────────
 try:
-    from scraper import compute_hotel_financials, serpapi_account
+    from scraper import compute_hotel_financials
     from occupancy_model import OccupancyModel, estimate_occupancy, classify_hotel_type
     SCRAPER_MODULE_OK = True
 except Exception:
     SCRAPER_MODULE_OK = False
     def compute_hotel_financials(*a, **kw): return {}
-    def serpapi_account(*a, **kw): return {'status': 'error', 'message': 'scraper module not available'}
     def classify_hotel_type(*a, **kw): return 'city_business'
     OccupancyModel = None
     def estimate_occupancy(*a, **kw): return 0.60, {}
@@ -4272,7 +4271,8 @@ OCCUPANCY_CSV_PATH = os.path.join(DATA_DIR, 'estimated_occupancy.csv')
 HEALTH_STATE_PATH = os.path.join(DATA_DIR, 'health_alert_state.json')
 
 # Sources that count as a live price (manual overrides are entered by hand)
-LIVE_SOURCES = {'live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+# (older rows from earlier sources are kept in the file but not counted)
+LIVE_SOURCES = {'live_dataforseo', 'live_brand', 'live_booking'}
 
 # Data health thresholds: stale when no live price was collected today or
 # on either of the two days before, when the last completed scraper run
@@ -4379,7 +4379,6 @@ def _data_health(live_account: bool = True):
     if balance is not None and balance < DFS_MIN_BALANCE:
         account_problems.append(f'DataForSEO balance is ${balance:.2f}, under ${DFS_MIN_BALANCE:.2f}: top it up before the next runs.')
 
-    serp = stats.get('serpapi') or {}
     return {
         'status':                'stale' if problems else 'ok',
         'problems':              problems,
@@ -4393,13 +4392,10 @@ def _data_health(live_account: bool = True):
         'nights_checked':        total,
         'nights_found':          found,
         'nights_found_pct':      pct,
-        'serpapi_status':        serp.get('status'),
-        'serpapi_message':       serp.get('message'),
         'checked_at':            datetime.now().isoformat(timespec='seconds'),
     }
 
 
-_serpapi_cache = {'at': None, 'data': None}
 _dfs_cache     = {'at': None, 'data': None}
 try:
     DFS_MIN_BALANCE = float(os.environ.get('DATAFORSEO_MIN_BALANCE', '') or 10)
@@ -4434,18 +4430,6 @@ def _dataforseo_panel(last_run: dict) -> dict:
     return live
 
 
-def _serpapi_panel(last_run: dict) -> dict:
-    """SerpApi key status and credits for the admin panel: a live account
-    check (free, cached 10 minutes) plus what the last run ran into."""
-    now = datetime.utcnow()
-    if not _serpapi_cache['at'] or (now - _serpapi_cache['at']).total_seconds() > 600:
-        _serpapi_cache['data'] = serpapi_account(os.environ.get('SERPAPI_KEY', '').strip(), timeout=5)
-        _serpapi_cache['at'] = now
-    live = dict(_serpapi_cache['data'] or {})
-    live['last_run'] = {k: last_run.get(k) for k in ('status', 'message', 'calls', 'errors', 'last_error')}
-    return live
-
-
 def _load_health_state():
     try:
         with open(HEALTH_STATE_PATH, encoding='utf-8') as f:
@@ -4473,8 +4457,6 @@ def _health_email_html(h: dict, recovered: bool, since: str | None) -> str:
         cost = h.get('dataforseo_last_cost')
         facts.append(f"DataForSEO balance: ${h['dataforseo_balance']:.2f}"
                      + (f" · last run cost ${cost:.2f}" if cost is not None else ''))
-    if h.get('serpapi_message'):
-        facts.append(f"SerpApi: {esc(h['serpapi_message'])}")
     if recovered:
         heading = 'Rate data is back to normal.'
         paragraphs = ['Live prices are coming in again' + (f' (stale since {esc(_fmt_day(since))})' if since else '') + '.'] + facts
@@ -4610,8 +4592,10 @@ def api_rates():
 
     filtered.sort(key=lambda r: r.get('stay_date', ''))
 
-    # Only real prices go to the calendar: no stand-in from the FY ADR.
-    filtered = [r for r in filtered if r.get('scrape_status') == 'success' and r.get('rate_mad')]
+    # Only real prices go to the calendar: no stand-in from the FY ADR, and
+    # only current sources (older rows from earlier sources stay in the file)
+    filtered = [r for r in filtered if r.get('scrape_status') == 'success' and r.get('rate_mad')
+                and r.get('source') in LIVE_SOURCES | {'manual_override'}]
 
     # Source breakdown
     source_counts = {}
@@ -4720,7 +4704,6 @@ def api_scraper_status():
         'scheduler_running': scheduler_running(),
         'running':           lock_is_held(SCRAPER_LOCK),
         'cities':            os.environ.get('SCRAPER_CITIES', '').strip() or 'all',
-        'serpapi':           _serpapi_panel(stats.get('serpapi') or {}),
         'dataforseo':        _dataforseo_panel(stats.get('dataforseo') or {}),
         'browser_steps':     os.environ.get('SCRAPER_BROWSER_STEPS', '').strip().lower() in ('1', 'on', 'true', 'yes'),
         'limit':             os.environ.get('SCRAPER_LIMIT', '').strip() or None,

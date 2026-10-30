@@ -217,10 +217,12 @@ def get_seasonality_adjustment(city, month):
     return (index - 100) / 100 * 0.15
 
 
-# Prices the model reads: live sources only, and only rows that passed the
-# scraper's hotel name and city check (data_quality "name_matched").
-# Manual overrides and rows from before the check are not used.
-PRICE_SOURCES = {'live_dataforseo', 'live_google', 'live_brand', 'live_booking', 'live_expedia'}
+# Prices the model reads: current live sources only (Google Hotels through
+# DataForSEO; brand sites and Booking.com only with SCRAPER_BROWSER_STEPS),
+# and only rows that passed the scraper's hotel name and city check
+# (data_quality "name_matched"). Manual overrides, rows from before the
+# check and rows from earlier sources are not used.
+PRICE_SOURCES = {'live_dataforseo', 'live_brand', 'live_booking'}
 
 # Confidence comes from price coverage (the "rooms left" signal is no
 # longer used): no price for the night -> low; a price for the night ->

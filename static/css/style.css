@@ -2430,7 +2430,6 @@ body.light .nav-logout  { color: var(--text-2); }
 .bar-cal-day.src-manual-override  { background: var(--cat-4-tint); color: var(--cat-4-text); }
 .bar-cal-day.src-live-booking      { background: var(--cat-1-tint); color: var(--cat-1-text); }
 .bar-cal-day.src-recent            { background: var(--cat-5-tint); color: var(--cat-5-text); }
-.bar-cal-day.src-live-expedia      { background: var(--cat-1-tint); color: var(--cat-1-text); }
 .bar-cal-day.src-estimated         { background: var(--bg-alt); color: var(--text-2); border: 1px solid var(--border); }
 .bar-cal-day.src-unavailable       { background: transparent; color: var(--text-faint); border: 1px dashed var(--border); }
 

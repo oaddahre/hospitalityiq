@@ -1098,17 +1098,6 @@ async function loadScraperStatus() {
       (dr.errors || []).length ? `last error: ${dr.errors[dr.errors.length - 1]}` : '',
     ].filter(Boolean).join(' · '));
 
-    // SerpApi: key status and credits now, and what the last run ran into
-    const sp = data.serpapi || {};
-    const lr = sp.last_run || {};
-    const credits = sp.searches_left != null ? `${Number(sp.searches_left).toLocaleString()} searches left` : '';
-    const runNote = lr.calls != null
-      ? `last run: ${lr.calls} calls, ${lr.errors || 0} errors${lr.last_error ? ` (last error: ${lr.last_error})` : ''}` : '';
-    document.getElementById('ri-serpapi').textContent = 'SerpApi: ' + ([
-      { ok: 'OK', missing_key: 'Key missing', rejected: 'Key rejected', no_credits: 'No credits left', error: 'Error' }[sp.status] || '—',
-      sp.message && sp.status !== 'ok' ? sp.message : '', sp.plan || '', credits, runNote,
-    ].filter(Boolean).join(' · '));
-
     const h = data.health || {};
     document.getElementById('ri-health').textContent = 'Data health: ' + (h.status === 'ok'
       ? `OK · last live price ${h.last_live_price} · ${h.nights_found} of ${h.nights_checked} nights found in the last run (${h.nights_found_pct}%)`
