@@ -262,6 +262,14 @@ def _has_word(word, words):
     return any(_same_word(word, w) for w in words)
 
 
+def _brand_in_name(hotel, ours, cities):
+    """The brand words that are part of our hotel's name (the brand column
+    often holds an operator that isn't, e.g. "Atlas Hospitality Group" for
+    "Kaan Casablanca"); else the name's first distinctive word."""
+    brand = [b for b in _loose_tokens(hotel.get('brand', ''), cities) if b != 'independent' and _has_word(b, ours)]
+    return brand or ours[:1]
+
+
 def loose_match(hotel, cand_name, cand_gps, known_cities=()):
     """Distance in metres when the result is a loose match, else None."""
     try:
@@ -274,10 +282,10 @@ def loose_match(hotel, cand_name, cand_gps, known_cities=()):
         return None
     cities = set(known_cities) | city_names(hotel.get('city', '')) | {'marrakech', 'marrakesh'}
     ours, google = _loose_tokens(hotel.get('name', ''), cities), _loose_tokens(cand_name, cities)
-    brand = _loose_tokens(hotel.get('brand', ''), cities) or ours[:1]
-    if not ours or not google or brand == ['independent']:
-        brand = ours[:1]
-    if not brand or not all(_has_word(b, google) and _has_word(b, ours) for b in brand):
+    if not ours or not google:
+        return None
+    brand = _brand_in_name(hotel, ours, cities)
+    if not brand or not all(_has_word(b, google) for b in brand):
         return None                                   # the brand must be in both names
     ours_other = [w for w in ours if not _has_word(w, brand)]
     shared_other = [w for w in ours_other if _has_word(w, google)]
@@ -300,10 +308,9 @@ def same_name(hotel, cand_name, known_cities=()):
     T, C = _name_tokens(hotel.get('name', ''), strip), _name_tokens(cand_name, strip)
     if not T or not C:
         return bool(norm_text(hotel.get('name', ''))) and norm_text(hotel.get('name', '')) == norm_text(cand_name)
-    if not all(_has_word(t, C) for t in T) or not all(_has_word(c, T) for c in C):
-        return False
-    brand = [w for w in _name_tokens(hotel.get('brand', ''), strip) if w != 'independent']
-    return all(_has_word(b, C) for b in brand)
+    # The same distinctive words both ways: this includes every brand word
+    # that is part of our name (the brand column itself can be an operator)
+    return all(_has_word(t, C) for t in T) and all(_has_word(c, T) for c in C)
 
 
 def override_match(hotel, cand_name, cand_gps, known_cities=()):
@@ -311,9 +318,7 @@ def override_match(hotel, cand_name, cand_gps, known_cities=()):
     in our city (within MAX_KM_FROM_HOTEL, or no other city named)."""
     cities = set(known_cities) | city_names(hotel.get('city', ''))
     ours, google = _loose_tokens(hotel.get('name', ''), cities), _loose_tokens(cand_name, cities)
-    brand = _loose_tokens(hotel.get('brand', ''), cities) or ours[:1]
-    if not brand or brand == ['independent']:
-        brand = ours[:1]
+    brand = _brand_in_name(hotel, ours, cities)
     if not brand or not all(_has_word(b, google) for b in brand):
         return False, 'brand not in the name'
     try:
