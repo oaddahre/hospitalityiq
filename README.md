@@ -36,7 +36,13 @@ lat/lng values, verifies the rest is byte-identical and logs every change
 the admin Rates panel (Preview, Apply, Restore). The same step imports a
 `google_ids_upload.json` (format `kodo-google-ids-1`: Google IDs and manual
 IDs from a lookup run), so IDs already paid for are not looked up again; IDs
-the server already has are kept, and both ID files are backed up first.
+the server already has are kept, and both ID files are backed up first. Its
+`rejected` section lists Google IDs found to be the wrong hotel: they are
+removed and never accepted again (`rejected_identifiers` in
+`dataforseo_hotel_ids.json`). `scripts/retry_unmatched.py --cap 0.30` looks
+the unmatched hotels up again with name variants (strict name match, within
+3 km) and writes `unmatched_hotels.csv` with a Google Travel link per hotel;
+a hotel's Google ID is the part after `/entity/` on its Google Travel page.
 
 ## Product media
 

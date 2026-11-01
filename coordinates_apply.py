@@ -246,7 +246,9 @@ def write_proposed(hotels_path, changes, out_path):
 # ─── Google ID import (production volume) ─────────────────────────────────────
 # A google_ids_upload.json made from a lookup run:
 #   {"format": "kodo-google-ids-1", "google_ids": {hotel id: entry},
-#    "overrides": {hotel id: entry}}
+#    "overrides": {hotel id: entry}, "rejected": {hotel id: [Google IDs]}}
+# "rejected" IDs were found to be the wrong hotel: the server drops them if
+# it has them and never accepts them again (rejected_identifiers).
 # merged into DATA_DIR/dataforseo_hotel_ids.json and hotel_id_overrides.json,
 # so the lookups already paid for are not paid again. Idempotent: an ID the
 # server already has is skipped; a different ID on the server is kept and
@@ -260,10 +262,10 @@ def read_ids_bundle(text):
     data = json.loads(text)
     if not isinstance(data, dict) or data.get('format') != IDS_FORMAT:
         raise ValueError(f'not a {IDS_FORMAT} file')
-    ids, ovs = data.get('google_ids') or {}, data.get('overrides') or {}
-    if not isinstance(ids, dict) or not isinstance(ovs, dict):
-        raise ValueError('google_ids and overrides must be objects')
-    return ids, ovs
+    ids, ovs, rej = data.get('google_ids') or {}, data.get('overrides') or {}, data.get('rejected') or {}
+    if not isinstance(ids, dict) or not isinstance(ovs, dict) or not isinstance(rej, dict):
+        raise ValueError('google_ids, overrides and rejected must be objects')
+    return ids, ovs, rej
 
 
 def _read_json(path):
@@ -287,10 +289,23 @@ def _hotel_ids(hotels_path):
     return out
 
 
-def ids_plan(hotels_path, ids_path, overrides_path, ids, ovs):
+def ids_plan(hotels_path, ids_path, overrides_path, ids, ovs, rej=None):
     known = _hotel_ids(hotels_path)
     cur_ids, cur_ovs = _read_json(ids_path), _read_json(overrides_path)
     out = []
+    for hid, bad in (rej or {}).items():
+        hid = str(hid)
+        cur = cur_ids.get(hid) if isinstance(cur_ids.get(hid), dict) else {}
+        for ident in bad or []:
+            if hid not in known:
+                status = 'unknown hotel'
+            elif ident in (cur.get('rejected_identifiers') or []) and cur.get('identifier') != ident:
+                status = 'already'
+            else:
+                status = 'reject'
+            out.append({'kind': 'rejected', 'hotel_id': hid, 'status': status, 'identifier': ident,
+                        'server_identifier': cur.get('identifier'), 'name': ''})
+    rejected_for = {str(h): set(v or []) for h, v in (rej or {}).items()}
     for kind, incoming, current in (('id', ids, cur_ids), ('override', ovs, cur_ovs)):
         for hid, e in incoming.items():
             hid = str(hid)
@@ -298,6 +313,8 @@ def ids_plan(hotels_path, ids_path, overrides_path, ids, ovs):
             have = (current.get(hid) or {}).get('identifier') if isinstance(current.get(hid), dict) else None
             if not new:
                 status = 'no id'
+            elif new in rejected_for.get(hid, set()):
+                status = 'rejected id'
             elif hid not in known:
                 status = 'unknown hotel'
             elif have == new:
@@ -311,9 +328,9 @@ def ids_plan(hotels_path, ids_path, overrides_path, ids, ovs):
     return out
 
 
-def import_ids(hotels_path, ids_path, overrides_path, ids, ovs, backup_dir, log_path, actor='script'):
-    p = ids_plan(hotels_path, ids_path, overrides_path, ids, ovs)
-    todo = [e for e in p if e['status'] == 'import']
+def import_ids(hotels_path, ids_path, overrides_path, ids, ovs, backup_dir, log_path, actor='script', rej=None):
+    p = ids_plan(hotels_path, ids_path, overrides_path, ids, ovs, rej)
+    todo = [e for e in p if e['status'] in ('import', 'reject')]
     if not todo:
         return {'imported': 0, 'plan': p, 'backups': []}
     os.makedirs(backup_dir, exist_ok=True)
@@ -326,6 +343,16 @@ def import_ids(hotels_path, ids_path, overrides_path, ids, ovs, backup_dir, log_
             backups.append(dest)
     cur_ids, cur_ovs = _read_json(ids_path), _read_json(overrides_path)
     for e in todo:
+        if e['kind'] == 'rejected':
+            cur = dict(cur_ids.get(e['hotel_id']) or {})
+            if cur.get('identifier') == e['identifier']:
+                cur.update(identifier=None, checked=datetime.now().date().isoformat())
+            rej_list = list(cur.get('rejected_identifiers') or [])
+            if e['identifier'] not in rej_list:
+                rej_list.append(e['identifier'])
+            cur['rejected_identifiers'] = rej_list
+            cur_ids[e['hotel_id']] = cur
+            continue
         src = ids if e['kind'] == 'id' else ovs
         entry = dict(src.get(e['hotel_id']) or src.get(int(e['hotel_id'])) or {})
         (cur_ids if e['kind'] == 'id' else cur_ovs)[e['hotel_id']] = entry
@@ -336,5 +363,6 @@ def import_ids(hotels_path, ids_path, overrides_path, ids, ovs, backup_dir, log_
         os.replace(tmp, path)
     _log(log_path, {'at': datetime.now().isoformat(timespec='seconds'), 'action': 'import_ids', 'by': actor,
                     'imported': len(todo), 'ids': sum(e['kind'] == 'id' for e in todo),
-                    'overrides': sum(e['kind'] == 'override' for e in todo), 'backups': backups})
+                    'overrides': sum(e['kind'] == 'override' for e in todo),
+                    'rejected': sum(e['kind'] == 'rejected' for e in todo), 'backups': backups})
     return {'imported': len(todo), 'plan': p, 'backups': backups}

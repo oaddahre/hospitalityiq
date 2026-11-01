@@ -1260,7 +1260,7 @@ document.getElementById('ri-ids-preview').addEventListener('click', async () => 
   if (!ok) { msg.textContent = data.error || 'Preview failed'; msg.style.color = 'var(--negative)'; return; }
   msg.textContent = idsCounts(data.counts); msg.style.color = '';
   idsRows(data.rows);
-  document.getElementById('ri-ids-import').disabled = !Object.keys(data.counts || {}).some(k => k.endsWith(': import'));
+  document.getElementById('ri-ids-import').disabled = !Object.keys(data.counts || {}).some(k => k.endsWith(': import') || k.endsWith(': reject'));
 });
 document.getElementById('ri-ids-import').addEventListener('click', async () => {
   if (!confirm('Import these Google IDs into this server? Both ID files are backed up first.')) return;
@@ -1298,7 +1298,7 @@ async function loadCoordHistory() {
       d.textContent = l.action === 'restore'
         ? `${l.at} · restored ${String(l.file || '').split('/').pop()} from ${String(l.restored_from || '').split('/').pop()} by ${l.by}`
         : l.action === 'import_ids'
-          ? `${l.at} · imported ${l.imported} Google IDs (${l.ids} IDs, ${l.overrides} manual) by ${l.by}`
+          ? `${l.at} · imported ${l.imported} Google ID changes (${l.ids} IDs, ${l.overrides} manual, ${l.rejected || 0} rejected) by ${l.by}`
           : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
       el.appendChild(d);
     });

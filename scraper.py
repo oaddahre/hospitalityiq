@@ -570,6 +570,14 @@ class KodoScraper:
         os.replace(tmp, LOOSE_MATCHES_JSON)
 
     @staticmethod
+    def _rejections(entry, add=None):
+        """The entry's rejected Google IDs (never used again), plus add."""
+        rej = list((entry or {}).get('rejected_identifiers') or [])
+        if add and add not in rej:
+            rej.append(add)
+        return {'rejected_identifiers': rej} if rej else {}
+
+    @staticmethod
     def _gps_fields(gps):
         if not gps:
             return {}
@@ -758,7 +766,11 @@ class KodoScraper:
                     still = []
                     for hid in pending:
                         hotel, found = by_id[hid], None
+                        rejected = set((ids.get(hid) or {}).get('rejected_identifiers') or [])
                         for title, ident, gps in answers.get(hid, []):
+                            if ident in rejected:
+                                best.setdefault(hid, (title, 'a rejected Google ID'))
+                                continue
                             verdict, why = self._judge(hotel, title, gps)
                             if verdict:
                                 found = (title, ident, verdict)
@@ -770,7 +782,8 @@ class KodoScraper:
                             continue
                         title, ident, verdict = found
                         ids[hid] = {'identifier': ident, 'google_title': title, 'checked': today.isoformat(),
-                                    'found_by': label, **self._gps_fields(found_gps.get(hid))}
+                                    'found_by': label, **self._gps_fields(found_gps.get(hid)),
+                                    **self._rejections(ids.get(hid))}
                         if verdict != 'strict':
                             ids[hid]['loose_match_m'] = verdict[1]
                             self.record_loose_match(hotel, title, verdict[1], ident, label)
@@ -779,7 +792,7 @@ class KodoScraper:
                     pending = still
                 for hid in pending:
                     ids[hid] = {'identifier': None, 'checked': today.isoformat(),
-                                'best_result': (best.get(hid) or (None,))[0]}
+                                'best_result': (best.get(hid) or (None,))[0], **self._rejections(ids.get(hid))}
                     self.no_match('DataForSEO lookup', by_id[hid], best.get(hid))
                 self.save_dfs_ids(ids)
 
@@ -788,7 +801,8 @@ class KodoScraper:
                 return
 
             # (2) Prices for the next 30 nights, one call per hotel
-            priced = [h for h in by_id if (ids.get(h) or {}).get('identifier')]
+            priced = [h for h in by_id if (ids.get(h) or {}).get('identifier')
+                      and ids[h]['identifier'] not in (ids[h].get('rejected_identifiers') or [])]
             if not priced:
                 return
             tasks = [{**common, **self._dfs_where(by_id[h]), 'hotel_identifier': ids[h]['identifier'],
@@ -842,7 +856,8 @@ class KodoScraper:
                 if not ok:
                     s['no_match'] += 1
                     self.no_match('DataForSEO hotel info', hotel, (res.get('title', ''), why))
-                    ids[hid] = {'identifier': None, 'checked': today.isoformat(), 'best_result': res.get('title')}
+                    ids[hid] = {'identifier': None, 'checked': today.isoformat(), 'best_result': res.get('title'),
+                                **self._rejections(ids.get(hid), ids[hid].get('identifier'))}
                     continue
                 s['matched'] += 1
                 ids[hid].update(google_title=res.get('title', '') or ids[hid].get('google_title', ''), **self._gps_fields(gps))

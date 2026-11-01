@@ -4866,18 +4866,18 @@ def _ids_summary(p):
     for e in p:
         k = f"{e['kind']}: {e['status']}"
         counts[k] = counts.get(k, 0) + 1
-    return {'counts': counts, 'rows': [e for e in p if e['status'] in ('conflict', 'unknown hotel')][:60]}
+    return {'counts': counts, 'rows': [e for e in p if e['status'] in ('conflict', 'unknown hotel', 'reject', 'rejected id')][:60]}
 
 
 @app.route('/api/admin/google-ids/preview', methods=['POST'])
 @admin_required
 def api_ids_preview():
     try:
-        ids, ovs = _ids_from_request()
+        ids, ovs, rej = _ids_from_request()
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     return jsonify(_ids_summary(CA.ids_plan(os.path.join(DATA_DIR, 'hotels.csv'), GOOGLE_IDS_PATH,
-                                            os.path.join(DATA_DIR, 'hotel_id_overrides.json'), ids, ovs)))
+                                            os.path.join(DATA_DIR, 'hotel_id_overrides.json'), ids, ovs, rej)))
 
 
 @app.route('/api/admin/google-ids/import', methods=['POST'])
@@ -4886,11 +4886,11 @@ def api_ids_import():
     if not (request.get_json(silent=True) or {}).get('confirm'):
         return jsonify({'error': 'Confirmation missing.'}), 400
     try:
-        ids, ovs = _ids_from_request()
+        ids, ovs, rej = _ids_from_request()
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     r = CA.import_ids(os.path.join(DATA_DIR, 'hotels.csv'), GOOGLE_IDS_PATH, os.path.join(DATA_DIR, 'hotel_id_overrides.json'),
-                      ids, ovs, COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
+                      ids, ovs, COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email, rej=rej)
     _log_admin_action('google_ids_imported', '', f'{r["imported"]} entries')
     return jsonify({**_ids_summary(r['plan']), 'imported': r['imported'], 'backups': [os.path.basename(b) for b in r['backups']]})
 
