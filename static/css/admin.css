@@ -1,7 +1,15 @@
 /* ─── Admin — layout, reusing style.css's variables/.list-* pill classes ─── */
 
+/* style.css (shared with the platform) locks body to the window:
+   height 100vh and overflow hidden, because the platform scrolls an inner
+   pane. The admin page has no inner pane, so the document itself must
+   scroll; without this the lower sections (Rates panel forms, coordinate
+   corrections, scraper log) were out of reach. */
 body {
+  height: auto;
+  min-height: 100vh;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* ── Top nav ── */
