@@ -33,7 +33,10 @@ and a reviewable `hotels.coordinates_proposed.csv` with
 would change; `--apply` backs up `hotels.csv`, changes only the approved
 lat/lng values, verifies the rest is byte-identical and logs every change
 (`--restore BACKUP` undoes it). On the server, the same file is uploaded in
-the admin Rates panel (Preview, Apply, Restore).
+the admin Rates panel (Preview, Apply, Restore). The same step imports a
+`google_ids_upload.json` (format `kodo-google-ids-1`: Google IDs and manual
+IDs from a lookup run), so IDs already paid for are not looked up again; IDs
+the server already has are kept, and both ID files are backed up first.
 
 ## Product media
 

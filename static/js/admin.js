@@ -1237,6 +1237,41 @@ document.getElementById('ri-coord-apply').addEventListener('click', async () => 
   document.getElementById('ri-coord-apply').disabled = true;
   loadCoordHistory();
 });
+let idsJson = '';
+document.getElementById('ri-ids-file').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  idsJson = f ? await f.text() : '';
+  document.getElementById('ri-ids-import').disabled = true;
+  document.getElementById('ri-ids-result').replaceChildren();
+});
+function idsCounts(c) { return Object.entries(c || {}).map(([k, v]) => `${k} ${v}`).join(' · ') || 'nothing to import'; }
+function idsRows(rows) {
+  const out = document.getElementById('ri-ids-result');
+  out.replaceChildren();
+  (rows || []).forEach(r => {
+    const d = document.createElement('div');
+    d.textContent = `${r.status}: hotel ${r.hotel_id} ${r.name} · file ${r.identifier}` + (r.server_identifier ? ` · server ${r.server_identifier}` : '');
+    out.appendChild(d);
+  });
+}
+document.getElementById('ri-ids-preview').addEventListener('click', async () => {
+  const msg = document.getElementById('ri-ids-msg');
+  const [ok, data] = await coordPost('/api/admin/google-ids/preview', { json: idsJson });
+  if (!ok) { msg.textContent = data.error || 'Preview failed'; msg.style.color = 'var(--negative)'; return; }
+  msg.textContent = idsCounts(data.counts); msg.style.color = '';
+  idsRows(data.rows);
+  document.getElementById('ri-ids-import').disabled = !Object.keys(data.counts || {}).some(k => k.endsWith(': import'));
+});
+document.getElementById('ri-ids-import').addEventListener('click', async () => {
+  if (!confirm('Import these Google IDs into this server? Both ID files are backed up first.')) return;
+  const msg = document.getElementById('ri-ids-msg');
+  const [ok, data] = await coordPost('/api/admin/google-ids/import', { json: idsJson, confirm: true });
+  msg.textContent = ok ? `Imported ${data.imported} · backups ${(data.backups || []).join(', ') || '—'}` : (data.error || 'Import failed');
+  msg.style.color = ok ? 'var(--positive)' : 'var(--negative)';
+  document.getElementById('ri-ids-import').disabled = true;
+  loadCoordHistory(); loadIdOverrides();
+});
+
 async function loadCoordHistory() {
   const el = document.getElementById('ri-coord-history');
   try {
@@ -1251,7 +1286,7 @@ async function loadCoordHistory() {
       const btn = document.createElement('button');
       btn.className = 'adm-btn adm-btn-secondary'; btn.textContent = 'Restore this backup'; btn.style.marginLeft = '6px';
       btn.addEventListener('click', async () => {
-        if (!confirm(`Put ${b} back as hotels.csv? The current file is backed up first.`)) return;
+        if (!confirm(`Put the backup ${b} back? The current file is backed up first.`)) return;
         const [ok, d] = await coordPost('/api/admin/coordinates/restore', { backup: b });
         toast(ok ? `Restored; previous file saved as ${d.previous_saved_as}` : (d.error || 'Restore failed'), ok ? 'success' : 'error');
         loadCoordHistory();
@@ -1261,8 +1296,10 @@ async function loadCoordHistory() {
     (data.log || []).slice(0, 15).forEach(l => {
       const d = document.createElement('div');
       d.textContent = l.action === 'restore'
-        ? `${l.at} · restored from ${String(l.restored_from || '').split('/').pop()} by ${l.by}`
-        : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
+        ? `${l.at} · restored ${String(l.file || '').split('/').pop()} from ${String(l.restored_from || '').split('/').pop()} by ${l.by}`
+        : l.action === 'import_ids'
+          ? `${l.at} · imported ${l.imported} Google IDs (${l.ids} IDs, ${l.overrides} manual) by ${l.by}`
+          : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
       el.appendChild(d);
     });
   } catch {}

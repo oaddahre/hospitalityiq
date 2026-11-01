@@ -340,6 +340,17 @@
     </div>
     <span id="ri-coord-msg" class="adm-inline-msg"></span>
     <div id="ri-coord-result" class="adm-hint"></div>
+    <p class="adm-hint" style="margin-top:12px">Google IDs found by a lookup run elsewhere (google_ids_upload.json), so they are not paid for again. IDs this server already has are kept; nothing is overwritten.</p>
+    <div class="adm-override-grid">
+      <div class="adm-field-group">
+        <label class="adm-label">google_ids_upload.json</label>
+        <input type="file" id="ri-ids-file" class="adm-input" accept=".json,application/json" />
+      </div>
+      <button class="adm-btn adm-btn-secondary" id="ri-ids-preview">Preview</button>
+      <button class="adm-btn adm-btn-primary" id="ri-ids-import" disabled>Import</button>
+    </div>
+    <span id="ri-ids-msg" class="adm-inline-msg"></span>
+    <div id="ri-ids-result" class="adm-hint"></div>
     <p class="adm-list-filter-label" style="margin-top:12px">Backups and change log</p>
     <div id="ri-coord-history" class="adm-hint">—</div>
 

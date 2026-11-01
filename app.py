@@ -4790,7 +4790,16 @@ import coordinates_apply as CA
 
 COORD_BACKUP_DIR = os.path.join(DATA_DIR, 'backups')
 COORD_LOG_PATH   = os.path.join(DATA_DIR, 'coordinate_changes_applied.log')
-_BACKUP_NAME_RE  = re.compile(r'^hotels\.csv\.\d{8}-\d{6}-\d+$')
+_BACKUP_NAME_RE  = re.compile(r'^(hotels\.csv|dataforseo_hotel_ids\.json|hotel_id_overrides\.json)\.\d{8}-\d{6}-\d+$')
+GOOGLE_IDS_PATH  = os.path.join(DATA_DIR, 'dataforseo_hotel_ids.json')
+
+
+def _backup_target(name):
+    """The live file a backup belongs to."""
+    base = name.rsplit('.', 1)[0]
+    return {'hotels.csv': os.path.join(DATA_DIR, 'hotels.csv'),
+            'dataforseo_hotel_ids.json': GOOGLE_IDS_PATH,
+            'hotel_id_overrides.json': os.path.join(DATA_DIR, 'hotel_id_overrides.json')}[base]
 
 
 def _coord_changes_from_request():
@@ -4840,6 +4849,52 @@ def api_coord_apply():
                     'backup': os.path.basename(r['backup']) if r['backup'] else None})
 
 
+def _ids_from_request():
+    text = str((request.get_json(silent=True) or {}).get('json', ''))
+    if not text.strip():
+        raise ValueError('Choose a google_ids_upload.json file.')
+    if len(text) > 5_000_000:
+        raise ValueError('File too large.')
+    try:
+        return CA.read_ids_bundle(text)
+    except json.JSONDecodeError:
+        raise ValueError('Not a JSON file.')
+
+
+def _ids_summary(p):
+    counts = {}
+    for e in p:
+        k = f"{e['kind']}: {e['status']}"
+        counts[k] = counts.get(k, 0) + 1
+    return {'counts': counts, 'rows': [e for e in p if e['status'] in ('conflict', 'unknown hotel')][:60]}
+
+
+@app.route('/api/admin/google-ids/preview', methods=['POST'])
+@admin_required
+def api_ids_preview():
+    try:
+        ids, ovs = _ids_from_request()
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    return jsonify(_ids_summary(CA.ids_plan(os.path.join(DATA_DIR, 'hotels.csv'), GOOGLE_IDS_PATH,
+                                            os.path.join(DATA_DIR, 'hotel_id_overrides.json'), ids, ovs)))
+
+
+@app.route('/api/admin/google-ids/import', methods=['POST'])
+@admin_required
+def api_ids_import():
+    if not (request.get_json(silent=True) or {}).get('confirm'):
+        return jsonify({'error': 'Confirmation missing.'}), 400
+    try:
+        ids, ovs = _ids_from_request()
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    r = CA.import_ids(os.path.join(DATA_DIR, 'hotels.csv'), GOOGLE_IDS_PATH, os.path.join(DATA_DIR, 'hotel_id_overrides.json'),
+                      ids, ovs, COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
+    _log_admin_action('google_ids_imported', '', f'{r["imported"]} entries')
+    return jsonify({**_ids_summary(r['plan']), 'imported': r['imported'], 'backups': [os.path.basename(b) for b in r['backups']]})
+
+
 @app.route('/api/admin/coordinates/history')
 @admin_required
 def api_coord_history():
@@ -4864,7 +4919,7 @@ def api_coord_restore():
         return jsonify({'error': 'Unknown backup.'}), 400
     path = os.path.join(COORD_BACKUP_DIR, name)
     try:
-        saved = CA.restore(os.path.join(DATA_DIR, 'hotels.csv'), path, COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
+        saved = CA.restore(_backup_target(name), path, COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
     except FileNotFoundError:
         return jsonify({'error': 'Unknown backup.'}), 400
     _log_admin_action('coordinates_restored', '', f'from {name}; previous saved as {os.path.basename(saved)}')
