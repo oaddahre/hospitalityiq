@@ -328,6 +328,21 @@
     <p class="adm-list-filter-label" style="margin-top:20px">Loose matches to review</p>
     <div id="ri-loose-list" class="adm-hint">—</div>
 
+    <p class="adm-list-filter-label" style="margin-top:28px">Coordinate corrections (this server's hotels.csv)</p>
+    <p class="adm-hint">Upload a reviewed coordinate_changes.csv from scripts/coordinate_audit.py. Only rows marked "auto" or "yes" are applied, and only their latitude and longitude. The file is backed up first, checked after writing, and every change is logged. Rows already applied are skipped, so applying twice is safe.</p>
+    <div class="adm-override-grid">
+      <div class="adm-field-group">
+        <label class="adm-label">coordinate_changes.csv</label>
+        <input type="file" id="ri-coord-file" class="adm-input" accept=".csv,text/csv" />
+      </div>
+      <button class="adm-btn adm-btn-secondary" id="ri-coord-preview">Preview</button>
+      <button class="adm-btn adm-btn-primary" id="ri-coord-apply" disabled>Apply</button>
+    </div>
+    <span id="ri-coord-msg" class="adm-inline-msg"></span>
+    <div id="ri-coord-result" class="adm-hint"></div>
+    <p class="adm-list-filter-label" style="margin-top:12px">Backups and change log</p>
+    <div id="ri-coord-history" class="adm-hint">—</div>
+
     <p class="adm-list-filter-label" style="margin-top:28px">Scraper log (last 30 lines)</p>
     <pre class="adm-log" id="ri-log">Loading…</pre>
   </section>

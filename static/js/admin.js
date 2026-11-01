@@ -73,7 +73,7 @@ const SECTION_LOADERS = {
   orgs: loadOrgs,
   news: loadArticles,
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
-  rates: () => { loadScraperStatus(); populateHotelSelect(); loadIdOverrides(); },
+  rates: () => { loadScraperStatus(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); },
   occupancy: loadOccupancyStatus,
   system: loadSystemInfo,
 };
@@ -1105,6 +1105,10 @@ async function loadScraperStatus() {
     document.getElementById('ri-cities').textContent = `Cities scraped: ${data.cities === 'all' ? 'all (SCRAPER_CITIES not set)' : data.cities}`
       + (data.limit ? ` · first ${data.limit} hotels (SCRAPER_LIMIT)` : '')
       + ` · browser steps (brand sites, Booking.com) ${data.browser_steps ? 'on' : 'off'}`;
+    const st = data.store || {};
+    if (st.data_dir) document.getElementById('ri-cities').textContent += ` · data folder ${st.data_dir}`
+      + (st.on_railway ? (st.persistent ? ' (Railway volume: kept across deploys)' : ' (NOT the Railway volume: lost at every deploy)') : '')
+      + ` · Google IDs cached ${st.google_ids_cached || 0}, not found ${st.google_ids_not_found || 0}`;
     if ((h.account_problems || []).length) document.getElementById('ri-health').textContent += ' · ' + h.account_problems.join(' ');
   } catch {
     document.getElementById('ri-log').textContent = 'Error loading status';
@@ -1193,6 +1197,76 @@ document.getElementById('ri-gid-save').addEventListener('click', () => {
   if (!hotelId) { msgEl.textContent = 'Choose a hotel.'; msgEl.style.color = 'var(--negative)'; return; }
   saveIdOverride(hotelId, document.getElementById('ri-gid-value').value.trim());
 });
+
+// Coordinate corrections: preview, apply, undo (this server's hotels.csv)
+let coordCsv = '';
+function coordRows(el, rows) {
+  rows.slice(0, 60).forEach(r => {
+    const d = document.createElement('div');
+    d.textContent = `${r.status}: ${r.hotel || r.hotel_id} · ${(r.current || []).join(', ') || '—'} → ${r.new.join(', ')} (${r.approve})`;
+    el.appendChild(d);
+  });
+}
+async function coordPost(url, body) {
+  const res = await fetch(url, { method: 'POST', headers: authHeaders(true), body: JSON.stringify(body) });
+  return [res.ok, await res.json().catch(() => ({}))];
+}
+document.getElementById('ri-coord-file').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  coordCsv = f ? await f.text() : '';
+  document.getElementById('ri-coord-apply').disabled = true;
+  document.getElementById('ri-coord-result').replaceChildren();
+});
+document.getElementById('ri-coord-preview').addEventListener('click', async () => {
+  const msg = document.getElementById('ri-coord-msg'), out = document.getElementById('ri-coord-result');
+  out.replaceChildren();
+  const [ok, data] = await coordPost('/api/admin/coordinates/preview', { csv: coordCsv });
+  if (!ok) { msg.textContent = data.error || 'Preview failed'; msg.style.color = 'var(--negative)'; return; }
+  const c = data.counts || {};
+  msg.textContent = `Would apply ${c.apply || 0} · already applied ${c.already || 0} · changed since the audit ${c.conflict || 0} · not approved ${c['not approved'] || 0} · not found ${c['not found'] || 0}`;
+  msg.style.color = '';
+  coordRows(out, data.rows || []);
+  document.getElementById('ri-coord-apply').disabled = !(c.apply > 0);
+});
+document.getElementById('ri-coord-apply').addEventListener('click', async () => {
+  if (!confirm('Apply the approved coordinate changes to this server\'s hotels.csv? A backup is made first.')) return;
+  const msg = document.getElementById('ri-coord-msg');
+  const [ok, data] = await coordPost('/api/admin/coordinates/apply', { csv: coordCsv, confirm: true });
+  msg.textContent = ok ? `Applied ${data.applied} changes · backup ${data.backup || '—'}` : (data.error || 'Apply failed');
+  msg.style.color = ok ? 'var(--positive)' : 'var(--negative)';
+  document.getElementById('ri-coord-apply').disabled = true;
+  loadCoordHistory();
+});
+async function loadCoordHistory() {
+  const el = document.getElementById('ri-coord-history');
+  try {
+    const res = await fetch('/api/admin/coordinates/history', { headers: authHeaders() });
+    if (!res.ok) return;
+    const data = await res.json();
+    el.replaceChildren();
+    if (!(data.backups || []).length && !(data.log || []).length) { el.textContent = 'No changes applied yet.'; return; }
+    (data.backups || []).slice(0, 5).forEach(b => {
+      const row = document.createElement('div');
+      row.textContent = `Backup ${b} `;
+      const btn = document.createElement('button');
+      btn.className = 'adm-btn adm-btn-secondary'; btn.textContent = 'Restore this backup'; btn.style.marginLeft = '6px';
+      btn.addEventListener('click', async () => {
+        if (!confirm(`Put ${b} back as hotels.csv? The current file is backed up first.`)) return;
+        const [ok, d] = await coordPost('/api/admin/coordinates/restore', { backup: b });
+        toast(ok ? `Restored; previous file saved as ${d.previous_saved_as}` : (d.error || 'Restore failed'), ok ? 'success' : 'error');
+        loadCoordHistory();
+      });
+      row.appendChild(btn); el.appendChild(row);
+    });
+    (data.log || []).slice(0, 15).forEach(l => {
+      const d = document.createElement('div');
+      d.textContent = l.action === 'restore'
+        ? `${l.at} · restored from ${String(l.restored_from || '').split('/').pop()} by ${l.by}`
+        : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
+      el.appendChild(d);
+    });
+  } catch {}
+}
 
 document.getElementById('ri-save-btn').addEventListener('click', async () => {
   const hotelId = document.getElementById('ri-hotel-sel').value;

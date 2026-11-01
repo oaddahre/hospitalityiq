@@ -289,6 +289,23 @@ def loose_match(hotel, cand_name, cand_gps, known_cities=()):
     return round(metres)
 
 
+def same_name(hotel, cand_name, known_cities=()):
+    """Google's name is ours: the same distinctive words both ways (accents,
+    case, "&"/"and", generic words and city names ignored), our brand
+    included. Stricter than name_match, for the coordinate audit."""
+    own = city_names(hotel.get('city', '')) | mentioned_cities(hotel.get('name', ''), known_cities)
+    if mentioned_cities(cand_name, known_cities) - own:
+        return False                      # Google's name names another city
+    strip = set(known_cities) | own
+    T, C = _name_tokens(hotel.get('name', ''), strip), _name_tokens(cand_name, strip)
+    if not T or not C:
+        return bool(norm_text(hotel.get('name', ''))) and norm_text(hotel.get('name', '')) == norm_text(cand_name)
+    if not all(_has_word(t, C) for t in T) or not all(_has_word(c, T) for c in C):
+        return False
+    brand = [w for w in _name_tokens(hotel.get('brand', ''), strip) if w != 'independent']
+    return all(_has_word(b, C) for b in brand)
+
+
 def override_match(hotel, cand_name, cand_gps, known_cities=()):
     """A hand-set Google ID is used when its result carries our brand and is
     in our city (within MAX_KM_FROM_HOTEL, or no other city named)."""
@@ -1099,7 +1116,9 @@ class KodoScraper:
                 logger.error(f'Error on {hotel.get("name")}: {e}')
                 self.save_progress(hotel_id, 'error')
 
-            if hotel_id not in self.dfs_prices:   # pause between live page lookups only
+            # Pause only between live page visits (the browser steps); a
+            # DataForSEO hotel, or a hotel with no source left, needs none
+            if BROWSER_STEPS and hotel_id not in self.dfs_prices:
                 self.random_delay(8, 14)
 
         if datetime.now().weekday() == 6:

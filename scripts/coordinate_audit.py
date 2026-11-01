@@ -13,21 +13,40 @@ run; SCRAPER_LOOKUP_ONLY=on records them without collecting prices.
 Writes, to DATA_DIR:
   coordinate_audit.csv            matched hotels, largest distance first
   coordinate_audit_unmatched.csv  hotels with no Google match yet, and why
-With --propose [--min-m 300] also:
-  hotels.coordinates_proposed.csv a full copy of hotels.csv with Google's
-                                  position for each hotel more than min-m
-                                  metres off (same columns, same order)
-  coordinate_changes.csv          one line per proposed change, to review
+With --propose [--min-m 20] also:
+  coordinate_changes.csv          one line per hotel more than min-m metres
+                                  off, with approve = auto or review:
+                                    auto    Google's name is ours (same_name:
+                                            brand and distinctive words, accents,
+                                            case, "&"/"and" ignored), found by
+                                            the automatic lookup, within 8 km
+                                    review  anything else (name differs, loose
+                                            match, manual ID, over 8 km); set it
+                                            to "yes" to apply it
+                                  plus Google Maps links for both positions
+  hotels.coordinates_proposed.csv a byte-for-byte copy of hotels.csv with the
+                                  "auto" changes applied: what
+                                  scripts/apply_coordinates.py would write now
 """
 import argparse
 import csv
 import json
 import math
 import os
+import sys
 from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.environ.get('DATA_DIR', '').strip() or ROOT
+sys.path.insert(0, ROOT)
+from coordinates_apply import write_proposed          # noqa: E402
+from scraper import EXTRA_CITIES, city_names, same_name  # noqa: E402
+
+AUTO_MAX_M = 8000
+
+
+def maps(lat, lng):
+    return f'https://www.google.com/maps/search/?api=1&query={lat},{lng}'
 
 
 def read_json(name):
@@ -53,7 +72,7 @@ def metres(lat1, lng1, lat2, lng2):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--propose', action='store_true', help='also write the proposed corrected copy and change list')
-    ap.add_argument('--min-m', type=float, default=300, help='propose a change above this distance (default 300 m)')
+    ap.add_argument('--min-m', type=float, default=20, help='list a change above this distance (default 20 m)')
     args = ap.parse_args()
 
     with open(os.path.join(DATA_DIR, 'hotels.csv'), encoding='utf-8', newline='') as f:
@@ -67,6 +86,9 @@ def main():
         if r.get('lat') and r.get('lng'):
             same_spot[(r['lat'].strip(), r['lng'].strip())].append(r['name'])
 
+    known = set(EXTRA_CITIES)
+    for r in all_rows:
+        known |= city_names(r.get('city', ''))
     audit, unmatched = [], []
     for r in hotels:
         hid = str(r['id'])
@@ -99,6 +121,8 @@ def main():
             'fewer_than_4_decimals': 'yes' if min(decimals(r.get('lat')), decimals(r.get('lng'))) < 4 else 'no',
             'shared_with': '; '.join(shared),
             'google_name': e.get('google_title', ''), 'id_source': source, 'found_by': e.get('found_by', ''),
+            'loose': 'yes' if e.get('loose_match_m') is not None else 'no',
+            'same_name': 'yes' if same_name(r, e.get('google_title', ''), known) else 'no',
         })
     audit.sort(key=lambda a: -(a['distance_m'] if a['distance_m'] != '' else 10 ** 9))
 
@@ -109,14 +133,16 @@ def main():
             w.writerows(rows)
 
     write('coordinate_audit.csv', audit, ['hotel_id', 'hotel', 'city', 'our_lat', 'our_lng', 'google_lat', 'google_lng',
-                                          'distance_m', 'fewer_than_4_decimals', 'shared_with', 'google_name', 'id_source', 'found_by'])
+                                          'distance_m', 'fewer_than_4_decimals', 'shared_with', 'google_name', 'id_source', 'found_by',
+                                          'loose', 'same_name'])
     write('coordinate_audit_unmatched.csv', unmatched, ['hotel_id', 'hotel', 'city', 'reason'])
 
     d = [a['distance_m'] for a in audit if a['distance_m'] != '']
     print(f'Open hotels: {len(hotels)} · matched with a Google position: {len(audit)} · not matched / no position: {len(unmatched)}')
     if d:
-        print(f'Distance: over 300 m {sum(x > 300 for x in d)} · over 1 km {sum(x > 1000 for x in d)} · '
-              f'over 3 km {sum(x > 3000 for x in d)} · median {sorted(d)[len(d) // 2]} m')
+        print('Distance: ' + ' · '.join(f'over {lbl} {sum(x > m for x in d)}' for lbl, m in
+                                        (('100 m', 100), ('300 m', 300), ('1 km', 1000), ('3 km', 3000), ('8 km', 8000)))
+              + f' · median {sorted(d)[len(d) // 2]} m')
         print(f'Ours with fewer than 4 decimals: {sum(a["fewer_than_4_decimals"] == "yes" for a in audit)} · '
               f'shared with another hotel: {sum(bool(a["shared_with"]) for a in audit)}')
     print('\nLargest distances (up to 20):')
@@ -132,38 +158,41 @@ def main():
         print(f'  {u["hotel"]} ({u["city"]}): {u["reason"]}')
 
     if args.propose:
-        change = {a['hotel_id']: a for a in audit if a['distance_m'] != '' and a['distance_m'] > args.min_m}
-        # Byte-for-byte copy of hotels.csv: only the lat and lng values of
-        # the changed rows differ (same quoting, line endings, order), so a
-        # plain diff shows exactly the proposed changes
-        i_id, i_lat, i_lng = fields.index('id'), fields.index('lat'), fields.index('lng')
-        with open(os.path.join(DATA_DIR, 'hotels.csv'), encoding='utf-8', newline='') as f:
-            lines = f.readlines()
-        out = []
-        for n, line in enumerate(lines):
-            body = line.rstrip('\r\n')
-            end = line[len(body):]
-            cells = next(csv.reader([body])) if n else None
-            a = change.get(cells[i_id]) if cells and len(cells) > i_lng else None
-            if a and '"' not in body:
-                cells[i_lat], cells[i_lng] = f'{float(a["google_lat"]):.6f}', f'{float(a["google_lng"]):.6f}'
-                line = ','.join(cells) + end
-            elif a:
-                print(f'  skipped (quoted fields, edit by hand): {a["hotel"]}')
-                change.pop(a['hotel_id'])
-            out.append(line)
-        with open(os.path.join(DATA_DIR, 'hotels.coordinates_proposed.csv'), 'w', encoding='utf-8', newline='') as f:
-            f.writelines(out)
-        write('coordinate_changes.csv', [{
-            'hotel_id': a['hotel_id'], 'hotel': a['hotel'], 'city': a['city'],
-            'old_lat': a['our_lat'], 'old_lng': a['our_lng'],
-            'new_lat': f'{float(a["google_lat"]):.6f}', 'new_lng': f'{float(a["google_lng"]):.6f}',
-            'distance_m': a['distance_m'], 'google_name': a['google_name'], 'id_source': a['id_source'],
-            'approve': '',
-        } for a in change.values()], ['hotel_id', 'hotel', 'city', 'old_lat', 'old_lng', 'new_lat', 'new_lng',
-                                      'distance_m', 'google_name', 'id_source', 'approve'])
-        print(f'\nProposed: {len(change)} coordinate changes (over {args.min_m:.0f} m) in hotels.coordinates_proposed.csv '
-              f'and coordinate_changes.csv. hotels.csv was not changed.')
+        changes = []
+        for a in audit:
+            if a['distance_m'] == '' or a['distance_m'] <= args.min_m:
+                continue
+            why = []
+            if a['same_name'] != 'yes':
+                why.append('name differs')
+            if a['loose'] == 'yes':
+                why.append('loose match')
+            if a['id_source'] == 'manual override':
+                why.append('manual ID')
+            if a['distance_m'] > AUTO_MAX_M:
+                why.append('over 8 km')
+            changes.append({
+                'hotel_id': a['hotel_id'], 'hotel': a['hotel'], 'city': a['city'],
+                'old_lat': a['our_lat'], 'old_lng': a['our_lng'],
+                'new_lat': f'{float(a["google_lat"]):.6f}', 'new_lng': f'{float(a["google_lng"]):.6f}',
+                'distance_m': a['distance_m'], 'google_name': a['google_name'], 'id_source': a['id_source'],
+                'approve': 'review' if why else 'auto', 'review_reason': '; '.join(why),
+                'maps_ours': maps(a['our_lat'], a['our_lng']),
+                'maps_google': maps(f'{float(a["google_lat"]):.6f}', f'{float(a["google_lng"]):.6f}'),
+            })
+        write('coordinate_changes.csv', changes, ['hotel_id', 'hotel', 'city', 'old_lat', 'old_lng', 'new_lat', 'new_lng',
+                                                  'distance_m', 'google_name', 'id_source', 'approve', 'review_reason',
+                                                  'maps_ours', 'maps_google'])
+        n_auto = write_proposed(os.path.join(DATA_DIR, 'hotels.csv'), changes,
+                                os.path.join(DATA_DIR, 'hotels.coordinates_proposed.csv'))
+        review = [c for c in changes if c['approve'] == 'review']
+        print(f'\nChanges over {args.min_m:.0f} m: {len(changes)} · approve=auto {n_auto} · approve=review {len(review)}')
+        print('hotels.coordinates_proposed.csv = hotels.csv with the auto changes applied. hotels.csv was not changed.')
+        if review:
+            print('\nReview list:')
+            for c in review:
+                print(f'  {c["distance_m"]:>6} m  {c["hotel"]} ({c["city"]}) · Google: "{c["google_name"]}" · {c["review_reason"]}')
+                print(f'           ours   {c["maps_ours"]}\n           Google {c["maps_google"]}')
 
 
 if __name__ == '__main__':

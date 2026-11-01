@@ -4376,6 +4376,10 @@ def _data_health(live_account: bool = True):
             balance = acct['balance']
         elif acct.get('status') not in (None, 'ok'):
             account_problems.append(f"DataForSEO now: {acct.get('message')}.")
+    store = _data_store()
+    if store['on_railway'] and not store['persistent']:
+        account_problems.append(f"DATA_DIR ({store['data_dir']}) is not on the Railway volume: Google IDs, prices and "
+                                "accounts are lost at every deploy. Set DATA_DIR to the volume's mount path.")
     if balance is not None and balance < DFS_MIN_BALANCE:
         account_problems.append(f'DataForSEO balance is ${balance:.2f}, under ${DFS_MIN_BALANCE:.2f}: top it up before the next runs.')
 
@@ -4401,6 +4405,18 @@ try:
     DFS_MIN_BALANCE = float(os.environ.get('DATAFORSEO_MIN_BALANCE', '') or 10)
 except ValueError:
     DFS_MIN_BALANCE = 10.0
+
+
+def _data_store() -> dict:
+    """Where runtime data lives, and whether it survives deploys: on Railway
+    a volume's mount path is in RAILWAY_VOLUME_MOUNT_PATH."""
+    vol = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '').strip()
+    on_railway = bool(os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_ENVIRONMENT_NAME') or vol)
+    persistent = bool(vol) and os.path.abspath(DATA_DIR).startswith(os.path.abspath(vol))
+    ids = _read_json_dict(os.path.join(DATA_DIR, 'dataforseo_hotel_ids.json'))
+    return {'data_dir': DATA_DIR, 'volume': vol or None, 'on_railway': on_railway, 'persistent': persistent,
+            'google_ids_cached': sum(1 for v in ids.values() if isinstance(v, dict) and v.get('identifier')),
+            'google_ids_not_found': sum(1 for v in ids.values() if isinstance(v, dict) and not v.get('identifier'))}
 
 
 def _dfs_configured() -> bool:
@@ -4706,6 +4722,7 @@ def api_scraper_status():
         'cities':            os.environ.get('SCRAPER_CITIES', '').strip() or 'all',
         'dataforseo':        _dataforseo_panel(stats.get('dataforseo') or {}),
         'browser_steps':     os.environ.get('SCRAPER_BROWSER_STEPS', '').strip().lower() in ('1', 'on', 'true', 'yes'),
+        'store':             _data_store(),
         'limit':             os.environ.get('SCRAPER_LIMIT', '').strip() or None,
         'health':            _data_health(),
     })
@@ -4762,6 +4779,96 @@ def api_id_overrides_save():
     _log_admin_action('google_id_override_set' if identifier else 'google_id_override_removed', '',
                       f'hotel={hotel_id} ({name})' + (f' id={identifier}' if identifier else ''))
     return jsonify({'status': 'saved', 'overrides': data})
+
+
+# ─── Coordinate corrections (admin) ────────────────────────────────────────────
+# The production volume keeps its own hotels.csv (seeded once, never
+# overwritten by deploys). An admin uploads the reviewed
+# coordinate_changes.csv here: preview, apply (backed up, verified,
+# logged, idempotent), and undo from a backup. See coordinates_apply.py.
+import coordinates_apply as CA
+
+COORD_BACKUP_DIR = os.path.join(DATA_DIR, 'backups')
+COORD_LOG_PATH   = os.path.join(DATA_DIR, 'coordinate_changes_applied.log')
+_BACKUP_NAME_RE  = re.compile(r'^hotels\.csv\.\d{8}-\d{6}-\d+$')
+
+
+def _coord_changes_from_request():
+    body = request.get_json(silent=True) or {}
+    text = str(body.get('csv', ''))
+    if not text.strip():
+        raise ValueError('Choose a coordinate_changes.csv file.')
+    if len(text) > 1_000_000:
+        raise ValueError('File too large for a change list.')
+    return CA.read_changes(text)
+
+
+def _coord_summary(p):
+    counts = {}
+    for e in p:
+        counts[e['status']] = counts.get(e['status'], 0) + 1
+    rows = [{'hotel_id': e['hotel_id'], 'hotel': e['hotel'], 'status': e['status'], 'approve': e['approve'],
+             'current': list(e.get('current') or []), 'new': list(e['new'])}
+            for e in p if e['status'] != 'not approved']
+    return {'counts': counts, 'rows': rows}
+
+
+@app.route('/api/admin/coordinates/preview', methods=['POST'])
+@admin_required
+def api_coord_preview():
+    try:
+        return jsonify(_coord_summary(CA.plan(os.path.join(DATA_DIR, 'hotels.csv'), _coord_changes_from_request())))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/admin/coordinates/apply', methods=['POST'])
+@admin_required
+def api_coord_apply():
+    if not (request.get_json(silent=True) or {}).get('confirm'):
+        return jsonify({'error': 'Confirmation missing.'}), 400
+    try:
+        r = CA.apply(os.path.join(DATA_DIR, 'hotels.csv'), _coord_changes_from_request(),
+                     COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except RuntimeError as e:
+        app.logger.error(f'Coordinate apply failed: {e}')
+        return jsonify({'error': str(e)}), 500
+    _log_admin_action('coordinates_applied', '', f'{r["applied"]} rows, backup {os.path.basename(r["backup"] or "-")}')
+    return jsonify({**_coord_summary(r['plan']), 'applied': r['applied'],
+                    'backup': os.path.basename(r['backup']) if r['backup'] else None})
+
+
+@app.route('/api/admin/coordinates/history')
+@admin_required
+def api_coord_history():
+    backups = sorted((f for f in os.listdir(COORD_BACKUP_DIR) if _BACKUP_NAME_RE.match(f)), reverse=True) \
+        if os.path.isdir(COORD_BACKUP_DIR) else []
+    log = []
+    if os.path.exists(COORD_LOG_PATH):
+        with open(COORD_LOG_PATH, encoding='utf-8') as f:
+            for line in f.readlines()[-50:]:
+                try:
+                    log.append(json.loads(line))
+                except ValueError:
+                    pass
+    return jsonify({'backups': backups[:20], 'log': log[::-1]})
+
+
+@app.route('/api/admin/coordinates/restore', methods=['POST'])
+@admin_required
+def api_coord_restore():
+    name = str((request.get_json(silent=True) or {}).get('backup', ''))
+    if not _BACKUP_NAME_RE.match(name):
+        return jsonify({'error': 'Unknown backup.'}), 400
+    path = os.path.join(COORD_BACKUP_DIR, name)
+    try:
+        saved = CA.restore(os.path.join(DATA_DIR, 'hotels.csv'), path, COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
+    except FileNotFoundError:
+        return jsonify({'error': 'Unknown backup.'}), 400
+    _log_admin_action('coordinates_restored', '', f'from {name}; previous saved as {os.path.basename(saved)}')
+    return jsonify({'status': 'restored', 'previous_saved_as': os.path.basename(saved)})
 
 
 @app.route('/api/scraper/override', methods=['POST'])

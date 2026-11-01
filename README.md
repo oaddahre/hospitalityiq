@@ -27,7 +27,13 @@ and Google's map position without collecting prices (about $0.0008 per
 hotel not looked up yet). Then `python3 scripts/coordinate_audit.py
 --propose` writes `coordinate_audit.csv`, `coordinate_audit_unmatched.csv`,
 and a reviewable `hotels.coordinates_proposed.csv` with
-`coordinate_changes.csv`, all in `DATA_DIR`.
+`coordinate_changes.csv`, all in `DATA_DIR`. Each change is marked
+`approve=auto` (Google's name is ours, under 8 km) or `review` (set it to
+`yes` to accept it). `python3 scripts/apply_coordinates.py` shows what
+would change; `--apply` backs up `hotels.csv`, changes only the approved
+lat/lng values, verifies the rest is byte-identical and logs every change
+(`--restore BACKUP` undoes it). On the server, the same file is uploaded in
+the admin Rates panel (Preview, Apply, Restore).
 
 ## Product media
 

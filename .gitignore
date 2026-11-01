@@ -35,3 +35,5 @@ coordinate_audit.csv
 coordinate_audit_unmatched.csv
 hotels.coordinates_proposed.csv
 coordinate_changes.csv
+backups/
+coordinate_changes_applied.log
