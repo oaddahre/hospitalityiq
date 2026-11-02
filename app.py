@@ -95,6 +95,25 @@ def inject_asset_version():
             return '1'
     return dict(asset_version=asset_version)
 
+
+# The site's main address: www, over https. Canonical tags, the sitemap and
+# robots.txt all use it; the bare domain is sent there with a 301.
+SITE_URL = 'https://www.kodohospitality.com'
+BARE_HOSTS = {'kodohospitality.com'}
+
+
+@app.context_processor
+def inject_canonical_url():
+    return dict(canonical_url=SITE_URL + (request.path if request.path != '/' else '/'))
+
+
+@app.before_request
+def redirect_bare_domain():
+    """kodohospitality.com → https://www.kodohospitality.com, same path (301)."""
+    if request.host.split(':')[0].lower() in BARE_HOSTS:
+        qs = request.query_string.decode('utf-8', 'ignore')
+        return redirect(SITE_URL + request.path + ('?' + qs if qs else ''), code=301)
+
 login_manager = LoginManager(app)
 login_manager.login_view = "login_page"
 login_manager.login_message = ""
@@ -1494,20 +1513,39 @@ def google_verification():
     return 'google-site-verification: googleaee534fa29a4d1ca.html'
 
 
+# Public pages, most important first: the only pages in the sitemap.
+# Pages behind the login, the login page itself and the account utility
+# pages (password reset, email verification, invitations) are left out.
+SITEMAP_PAGES = [
+    {'url': '/', 'priority': '1.0', 'changefreq': 'weekly'},
+    {'url': '/methodology', 'priority': '0.8', 'changefreq': 'monthly'},
+    {'url': '/team', 'priority': '0.7', 'changefreq': 'monthly'},
+    {'url': '/contact', 'priority': '0.7', 'changefreq': 'monthly'},
+    {'url': '/register', 'priority': '0.6', 'changefreq': 'monthly'},
+    {'url': '/terms', 'priority': '0.3', 'changefreq': 'yearly'},
+    {'url': '/privacy', 'priority': '0.3', 'changefreq': 'yearly'},
+]
+
+
+@app.route('/robots.txt')
+def robots_txt():
+    body = '\n'.join([
+        'User-agent: *',
+        'Disallow: /admin',
+        'Disallow: /api/',
+        'Disallow: /dashboard',
+        'Disallow: /account',
+        '',
+        f'Sitemap: {SITE_URL}/sitemap.xml',
+        '',
+    ])
+    return Response(body, mimetype='text/plain')
+
+
 @app.route('/sitemap.xml')
 def sitemap():
-    pages = [
-        {'url': '/', 'priority': '1.0', 'changefreq': 'weekly'},
-        {'url': '/team', 'priority': '0.7', 'changefreq': 'monthly'},
-        {'url': '/contact', 'priority': '0.8', 'changefreq': 'monthly'},
-        {'url': '/methodology', 'priority': '0.6', 'changefreq': 'monthly'},
-        {'url': '/terms', 'priority': '0.3', 'changefreq': 'yearly'},
-        {'url': '/privacy', 'priority': '0.3', 'changefreq': 'yearly'},
-        {'url': '/login', 'priority': '0.5', 'changefreq': 'monthly'},
-        {'url': '/register', 'priority': '0.9', 'changefreq': 'monthly'},
-    ]
-
-    base_url = 'https://www.kodohospitality.com'
+    pages = SITEMAP_PAGES
+    base_url = SITE_URL
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
