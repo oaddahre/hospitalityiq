@@ -1307,12 +1307,17 @@ function csvSection(prefix, urls, describe, confirmText, done) {
 }
 csvSection('cand', ['/api/admin/candidates/preview', '/api/admin/candidates/approve'],
   r => `${r.status}: ${r.hotel || r.hotel_id} → "${r.google_name}" (${r.confidence || '—'}) · ${(r.current || []).join(', ') || '—'} → ${(r.new || []).join(', ')}`
-    + (r.server_identifier && r.status === 'conflict' ? ` · this server has ${r.server_identifier}` : ''),
+    + (r.server_identifier && r.status === 'conflict' ? ` · this server has ${r.server_identifier}` : '')
+    + (r.other_hotels ? ` · same Google hotel as ${r.other_hotels.join(', ')}` : '') + (r.unreject ? ' · un-rejects this ID' : ''),
   'Set the approved Google IDs and move those hotels to Google\'s position? Both files are backed up first.', ['approve']);
 csvSection('hl', ['/api/admin/hotels-list/preview', '/api/admin/hotels-list/apply'],
   r => `${r.status}: ${r.hotel || r.hotel_id} (${r.action})` + (r.current_name ? ` · this server calls it "${r.current_name}"` : '')
-    + (r.new_status ? ` · back to ${r.new_status}` : '') + (r.reason ? ` · ${r.reason}` : ''),
-  'Change this server\'s hotel list as previewed? hotels.csv is backed up first.', ['hide', 'unhide', 'remove']);
+    + (r.new_status ? ` · back to ${r.new_status}` : '') + (r.new_name ? ` · → "${r.new_name}"` : '')
+    + (r.new_city ? ` · ${r.old_city || '?'} → ${r.new_city}${r.new_region ? ' (' + r.new_region + ')' : ''}` : '')
+    + (r.pipeline_name ? ` · pipeline project ${r.pipeline_id} "${r.pipeline_name}"${r.pipeline_new ? ' (new)' : ''}` : '')
+    + (r.note ? ` · ${r.note}` : '') + (r.reason ? ` · ${r.reason}` : ''),
+  'Change this server\'s hotel list as previewed? hotels.csv (and pipeline.csv for a pipeline move) is backed up first.',
+  ['hide', 'unhide', 'remove', 'rename', 'city', 'to_pipeline']);
 
 async function loadCoordHistory() {
   const el = document.getElementById('ri-coord-history');
@@ -1345,6 +1350,12 @@ async function loadCoordHistory() {
             ? `${l.at} · approved ${l.approved} Google ID candidates (${l.ids} IDs, ${l.coordinates} coordinates) by ${l.by}`
             : ['hide', 'unhide', 'remove'].includes(l.action)
               ? `${l.at} · ${l.action} ${l.hotel} (status ${l.old_status}${l.new_status ? ' → ' + l.new_status : ''})${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+              : l.action === 'rename'
+                ? `${l.at} · renamed ${l.old_name} → ${l.new_name}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+                : l.action === 'city'
+                  ? `${l.at} · ${l.hotel}: city ${l.old_city} → ${l.new_city}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+                  : l.action === 'to_pipeline'
+                    ? `${l.at} · moved ${l.hotel} to the pipeline as "${l.pipeline_name}" (project ${l.pipeline_id})${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
               : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
       el.appendChild(d);
     });

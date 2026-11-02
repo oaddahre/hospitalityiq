@@ -59,12 +59,24 @@ hotel's Google ID (source `approved`: the nightly price step trusts it
 without the name check) and moves the hotel to Google's position, with
 backups, idempotent, restorable.
 
-Hide or remove hotels: a CSV with `hotel_id`, `action` (hide, unhide,
-remove) and optionally `hotel` (the name, checked) and `reason`, applied
-with `python3 scripts/change_hotels.py FILE [--apply]` or in the Rates
-panel. A hidden hotel keeps its row with status `Hidden` and is left out
-of every page, count, KPI and scraper run; remove deletes the row. Both
-back up `hotels.csv` first and log to `coordinate_changes_applied.log`.
+Change the hotel list: a CSV with `hotel_id`, `action` and optionally
+`hotel` (the current name, checked) and `reason`, applied with `python3
+scripts/change_hotels.py FILE [--apply]` or in the Rates panel. Actions:
+`hide` / `unhide` (status `Hidden`: the row stays but is left out of every
+page, count, KPI and scraper run), `remove` (deletes the row), `rename`
+(`new_name`), `city` (`new_city`, optionally `new_region`) and
+`to_pipeline` (deletes the row and adds the hotel to `pipeline.csv`:
+`new_name`, `pipeline_status`, `expected_opening`; with `pipeline_id`, that
+existing project, which must carry the hotel's name or `new_name`, is
+renamed instead). Several rows may change one hotel (rename and city).
+`hotels.csv` and `pipeline.csv` are backed up first, only the named fields
+change (checked after writing), every change is logged to
+`coordinate_changes_applied.log`, and running a file twice changes nothing.
+
+In the "Approve candidates" step, a row with `unreject=yes` takes its
+Google ID off the hotel's rejected list; an ID that another hotel already
+holds, or that two approved rows give to two hotels, is refused ("duplicate
+id").
 
 ## Product media
 

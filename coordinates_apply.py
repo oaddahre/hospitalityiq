@@ -23,6 +23,7 @@ Also here: the Google ID import, approved ID candidates
 with the same backup, log and restore.
 """
 import csv
+import io
 import json
 import os
 import shutil
@@ -97,7 +98,7 @@ def _set_fields(body, values):
         a, b = spans[k]
         raw = body[a:b]
         new = values[k]
-        if raw.startswith('"'):
+        if raw.startswith('"') or any(ch in new for ch in ',"\r\n'):
             new = '"' + new.replace('"', '""') + '"'
         out.append(body[last:a])
         out.append(new)
@@ -379,12 +380,35 @@ def import_ids(hotels_path, ids_path, overrides_path, ids, ovs, backup_dir, log_
 # price step uses it without the name check, since a person confirmed it)
 # and moves its lat/lng to Google's position (same rules as apply()).
 # Idempotent: a hotel that already has this ID and these coordinates is
-# skipped. Refused: an ID on the hotel's rejected list, a hotel that has
+# skipped. Refused: an ID on the hotel's rejected list (unless the row says
+# unreject=yes: then it is taken off that list), an ID another hotel holds
+# on this server or that two approved rows give to two hotels ("duplicate
+# id"; the same hotel in two languages counts as one ID), a hotel that has
 # another ID on this server, lat/lng changed since the candidate file was
 # made, or two different approved rows for one hotel. Both files are
 # backed up first; restore() undoes either.
 
 YES = {'yes', 'y', 'approve', 'approved', 'ok'}
+
+
+def place_number(identifier):
+    """Google's place number inside a hotel ID: the same hotel found in two
+    languages has two ID spellings but one number."""
+    import base64
+    try:
+        b = base64.urlsafe_b64decode(identifier + '=' * (-len(identifier) % 4))
+        i = 2 if b[0] == 0x0A else 0
+        if b[i] != 0x08:
+            return identifier
+        n, shift, i = 0, 0, i + 1
+        while True:
+            n |= (b[i] & 0x7F) << shift
+            shift += 7
+            if not b[i] & 0x80:
+                return str(n)
+            i += 1
+    except Exception:
+        return identifier
 
 
 def read_candidates(text):
@@ -409,12 +433,20 @@ def _current_coords(hotels_path):
 
 def candidates_plan(hotels_path, ids_path, rows):
     """One entry per approved row: status approve | already | conflict |
-    rejected id | coords changed | two approved | unknown hotel | bad row."""
+    rejected id | duplicate id | coords changed | two approved | unknown
+    hotel | bad row."""
     coords, cur_ids = _current_coords(hotels_path), _read_json(ids_path)
     approved = [r for r in rows if str(r.get('approve', '')).strip().lower() in YES]
-    per_hotel = {}
+    per_hotel, per_place = {}, {}
     for r in approved:
-        per_hotel.setdefault(str(r.get('hotel_id', '')).strip(), set()).add(str(r.get('google_id', '')).strip())
+        hid, ident = str(r.get('hotel_id', '')).strip(), str(r.get('google_id', '')).strip()
+        per_hotel.setdefault(hid, set()).add(ident)
+        if ident:
+            per_place.setdefault(place_number(ident), set()).add(hid)
+    held = {}                                            # place number -> hotels holding it on this server
+    for h, v in cur_ids.items():
+        if isinstance(v, dict) and v.get('identifier') and h in coords:
+            held.setdefault(place_number(v['identifier']), set()).add(h)
     out = []
     for r in approved:
         hid, ident = str(r.get('hotel_id', '')).strip(), str(r.get('google_id', '')).strip()
@@ -431,9 +463,13 @@ def candidates_plan(hotels_path, ids_path, rows):
             e['status'] = 'two approved'
         elif hid not in coords:
             e['status'] = 'unknown hotel'
-        elif ident in (cur.get('rejected_identifiers') or []):
+        elif len(per_place[place_number(ident)]) > 1 or held.get(place_number(ident), set()) - {hid}:
+            e['status'] = 'duplicate id'
+            e['other_hotels'] = sorted((per_place[place_number(ident)] | held.get(place_number(ident), set())) - {hid})
+        elif ident in (cur.get('rejected_identifiers') or []) and str(r.get('unreject', '')).strip().lower() not in YES:
             e['status'] = 'rejected id'
         else:
+            e['unreject'] = ident in (cur.get('rejected_identifiers') or [])
             e['new'], e['current'] = new, coords[hid]
             e['server_identifier'] = cur.get('identifier')
             same_xy = _same(coords[hid][0], new[0]) and _same(coords[hid][1], new[1])
@@ -475,8 +511,11 @@ def approve_candidates(hotels_path, ids_path, rows, backup_dir, log_path, actor=
                      'approved_by': actor, 'approved_at': now.isoformat(timespec='seconds'),
                      'checked': now.date().isoformat(), 'google_lat': float(e['new'][0]), 'google_lng': float(e['new'][1]),
                      'position_checked': now.isoformat(timespec='seconds')}
-            if old.get('rejected_identifiers'):
-                entry['rejected_identifiers'] = old['rejected_identifiers']
+            rej = [x for x in old.get('rejected_identifiers') or [] if not (e.get('unreject') and x == e['identifier'])]
+            if rej:
+                entry['rejected_identifiers'] = rej
+            if e.get('unreject'):
+                entry['unrejected'] = e['identifier']
             cur_ids[e['hotel_id']] = entry
         tmp = ids_path + '.tmp'
         with open(tmp, 'w', encoding='utf-8') as f:
@@ -493,21 +532,36 @@ def approve_candidates(hotels_path, ids_path, rows, backup_dir, log_path, actor=
             backups.append(r['backup'])
     _log(log_path, {'at': datetime.now().isoformat(timespec='seconds'), 'action': 'approve_candidates', 'by': actor,
                     'approved': len(todo), 'ids': sum(e['set_id'] for e in todo), 'coordinates': len(xy),
+                    'unrejected': [e['hotel_id'] for e in todo if e.get('unreject')],
                     'hotels': [f'{e["hotel_id"]} {e["hotel"]}' for e in todo], 'backups': backups})
     return {'approved': len(todo), 'plan': p, 'backups': backups}
 
 
-# ─── Hide or remove hotels ───────────────────────────────────────────────────
-# A CSV with hotel_id and action (hide | unhide | remove), optionally hotel
-# (the name, checked against hotels.csv so an ID typo can't hit another
-# hotel) and reason. hide sets status to "Hidden" (left out everywhere:
-# lists, counts, KPIs, the scraper and the occupancy model); unhide puts the
-# status it had back (from the log; "Open" if unknown); remove deletes the
-# row. Every other byte of the file stays as it is (checked after
-# writing). Backed up first, logged, idempotent; restore() undoes it.
+
+
+# ─── Change the hotels list ──────────────────────────────────────────────────
+# A CSV with hotel_id and action, optionally hotel (the current name,
+# checked so an ID typo can't hit another hotel) and reason:
+#   hide         status "Hidden": left out everywhere (lists, counts, KPIs,
+#                the scraper and the occupancy model)
+#   unhide       puts the status it had back (from the log; "Open" if unknown)
+#   remove       deletes the row
+#   rename       name := new_name
+#   city         city := new_city, and region := new_region when given
+#   to_pipeline  deletes the row and adds the hotel to pipeline.csv (name
+#                new_name or its own, status pipeline_status or "Planning",
+#                expected_opening); with pipeline_id, that pipeline project
+#                (which must carry the hotel's name or new_name) is renamed
+#                instead of a new one added
+# Several rows may change one hotel (rename + city); remove and to_pipeline
+# must be its only row. Only the named fields change: every other byte of
+# hotels.csv and pipeline.csv stays as it is (checked after writing; a
+# failed check restores both). Both are backed up first, every change is
+# logged, a second run changes nothing; restore() undoes it.
 
 HIDDEN = 'Hidden'
-HOTEL_ACTIONS = ('hide', 'unhide', 'remove')
+HOTEL_ACTIONS = ('hide', 'unhide', 'remove', 'rename', 'city', 'to_pipeline')
+PIPELINE_STATUS = 'Planning'
 
 
 def _norm_name(s):
@@ -516,125 +570,281 @@ def _norm_name(s):
     return ' '.join(''.join(ch if ch.isalnum() else ' ' for ch in s).split())
 
 
+def _pipeline_path(hotels_path):
+    return os.path.join(os.path.dirname(os.path.abspath(hotels_path)), 'pipeline.csv')
+
+
 def read_hotel_actions(text):
     rows = list(csv.DictReader(str(text).lstrip('﻿').splitlines()))
     if rows and not {'hotel_id', 'action'} <= set(rows[0]):
-        raise ValueError('needs the columns hotel_id and action (hide, unhide or remove)')
+        raise ValueError('needs the columns hotel_id and action (' + ', '.join(HOTEL_ACTIONS) + ')')
     return rows
 
 
 def _rows_by_id(lines):
+    """{id: {'line', 'cells'}} and the header."""
     header = next(csv.reader([_split(lines[0])[0]]))
-    i_id, i_name, i_status = header.index('id'), header.index('name'), header.index('status')
     out = {}
     for n, line in enumerate(lines[1:], 1):
         body = _split(line)[0]
         cells = next(csv.reader([body])) if body else []
-        if len(cells) > i_status:
-            out[cells[i_id]] = {'line': n, 'name': cells[i_name], 'status': cells[i_status]}
-    return out, i_status
+        if len(cells) >= len(header):
+            out[cells[0]] = {'line': n, 'cells': cells}
+    return out, header
 
 
-def _status_before_hide(log_path, hotel_id):
-    prev = None
+def _logged(log_path):
     try:
         with open(log_path, encoding='utf-8') as f:
             for line in f:
                 try:
-                    e = json.loads(line)
+                    yield json.loads(line)
                 except ValueError:
                     continue
-                if e.get('action') == 'hide' and str(e.get('hotel_id')) == str(hotel_id):
-                    prev = e.get('old_status')
-    except OSError:
-        pass
+    except (OSError, TypeError):
+        return
+
+
+def _status_before_hide(log_path, hotel_id):
+    prev = None
+    for e in _logged(log_path):
+        if e.get('action') == 'hide' and str(e.get('hotel_id')) == str(hotel_id):
+            prev = e.get('old_status')
     return prev or 'Open'
 
 
 def _was_removed(log_path, hotel_id):
-    try:
-        with open(log_path, encoding='utf-8') as f:
-            return any(json.loads(l).get('action') == 'remove' and str(json.loads(l).get('hotel_id')) == str(hotel_id)
-                       for l in f if l.strip().startswith('{'))
-    except (OSError, ValueError, TypeError):
-        return False
+    return any(e.get('action') in ('remove', 'to_pipeline') and str(e.get('hotel_id')) == str(hotel_id)
+               for e in _logged(log_path))
 
 
-def hotels_plan(hotels_path, actions, log_path=None):
-    """One entry per row: status hide | unhide | remove | already |
-    not found | name differs | bad action."""
-    rows, _ = _rows_by_id(_lines(hotels_path))
+def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None):
+    """One entry per row: status = the action (it will be applied) or
+    already | not found | name differs | conflict | bad row | bad action."""
+    pipeline_path = pipeline_path or _pipeline_path(hotels_path)
+    rows, header = _rows_by_id(_lines(hotels_path))
+    col = {c: i for i, c in enumerate(header)}
+    pipe = list(csv.DictReader(_lines(pipeline_path))) if os.path.exists(pipeline_path) else []
+    pipe_ids = [str(r.get('id', '')).strip() for r in pipe]
+    acts = [(str(a.get('hotel_id', '')).strip(), str(a.get('action', '')).strip().lower(), a) for a in actions]
+    per_hotel, renamed = {}, {}
+    for hid, act, a in acts:
+        per_hotel[hid] = per_hotel.get(hid, 0) + 1
+        if act == 'rename':
+            renamed[hid] = a
+    next_pid = max([int(x) for x in pipe_ids if x.isdigit()] or [0]) + 1
     out = []
-    for a in actions:
-        hid, act = str(a.get('hotel_id', '')).strip(), str(a.get('action', '')).strip().lower()
-        e = {'hotel_id': hid, 'action': act, 'hotel': a.get('hotel', ''), 'reason': a.get('reason', '')}
+    for hid, act, a in acts:
+        g = lambda k: str(a.get(k) or '').strip()
+        e = {'hotel_id': hid, 'action': act, 'hotel': g('hotel'), 'reason': g('reason')}
+        for k in ('new_name', 'new_city', 'new_region'):
+            if g(k):
+                e[k] = g(k)
         cur = rows.get(hid)
+        names = set()
+        if cur:
+            names.add(_norm_name(cur['cells'][col['name']]))
+            r = renamed.get(hid)
+            if r and _norm_name(cur['cells'][col['name']]) == _norm_name(r.get('new_name')):
+                names.add(_norm_name(r.get('hotel')))          # already renamed: the old name is fine too
         if act not in HOTEL_ACTIONS:
             e['status'] = 'bad action'
+        elif act in ('remove', 'to_pipeline') and per_hotel[hid] > 1:
+            e['status'] = 'conflict'
+            e['note'] = f'{act} must be the only row for this hotel'
         elif cur is None:
-            e['status'] = 'already' if act == 'remove' and _was_removed(log_path, hid) else 'not found'
-        elif a.get('hotel') and _norm_name(a['hotel']) != _norm_name(cur['name']):
-            e['status'], e['current_name'] = 'name differs', cur['name']
+            if act == 'to_pipeline':
+                pname = g('new_name') or g('hotel')
+                done = _was_removed(log_path, hid) and any(_norm_name(r.get('name')) == _norm_name(pname) for r in pipe)
+                e['status'] = 'already' if done else 'not found'
+            else:
+                e['status'] = 'already' if act == 'remove' and _was_removed(log_path, hid) else 'not found'
+        elif g('hotel') and _norm_name(g('hotel')) not in names:
+            e['status'], e['current_name'] = 'name differs', cur['cells'][col['name']]
         else:
-            e['hotel'], e['current_status'] = cur['name'], cur['status']
+            c = cur['cells']
+            e['hotel'], e['current_status'] = c[col['name']], c[col['status']]
             if act == 'hide':
-                e['status'] = 'already' if cur['status'] == HIDDEN else 'hide'
+                e['status'] = 'already' if c[col['status']] == HIDDEN else 'hide'
+                e['fields'] = {'status': HIDDEN}
             elif act == 'unhide':
-                e['status'] = 'unhide' if cur['status'] == HIDDEN else 'already'
+                e['status'] = 'unhide' if c[col['status']] == HIDDEN else 'already'
                 if e['status'] == 'unhide':
                     e['new_status'] = _status_before_hide(log_path, hid) if log_path else 'Open'
-            else:
+                    e['fields'] = {'status': e['new_status']}
+            elif act == 'remove':
                 e['status'] = 'remove'
+            elif act == 'rename':
+                if not g('new_name'):
+                    e['status'], e['note'] = 'bad row', 'new_name is empty'
+                else:
+                    e['status'] = 'already' if c[col['name']] == g('new_name') else 'rename'
+                    e['fields'] = {'name': g('new_name')}
+            elif act == 'city':
+                f = {'city': g('new_city')}
+                if g('new_region'):
+                    f['region'] = g('new_region')
+                if not g('new_city'):
+                    e['status'], e['note'] = 'bad row', 'new_city is empty'
+                else:
+                    e['old_city'], e['old_region'] = c[col['city']], c[col['region']]
+                    e['status'] = 'already' if all(c[col[k]] == v for k, v in f.items()) else 'city'
+                    e['fields'] = f
+            else:
+                pid = g('pipeline_id')
+                pnames = {_norm_name(c[col['name']]), _norm_name(g('new_name'))} - {''}
+                if pid and pid not in pipe_ids:
+                    e['status'], e['note'] = 'bad row', f'no pipeline project {pid}'
+                elif pid and _norm_name(pipe[pipe_ids.index(pid)].get('name')) not in pnames:
+                    e['status'] = 'name differs'
+                    e['note'] = f'pipeline project {pid} is "{pipe[pipe_ids.index(pid)].get("name")}"'
+                else:
+                    e['status'] = 'to_pipeline'
+                    e['pipeline_id'] = pid or str(next_pid)
+                    e['pipeline_new'] = not pid
+                    e['pipeline_name'] = g('new_name') or c[col['name']]
+                    e['pipeline_status'] = g('pipeline_status') or (None if pid else PIPELINE_STATUS)
+                    e['expected_opening'] = g('expected_opening') or None
+                    if not pid:
+                        next_pid += 1
+            if e.get('fields') and e['status'] not in HOTEL_ACTIONS:
+                e.pop('fields')
         out.append(e)
     return out
 
 
-def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script'):
-    """Hide, unhide or remove. Returns {'changed', 'plan', 'backup'}."""
-    p = hotels_plan(hotels_path, actions, log_path)
-    todo = {e['hotel_id']: e for e in p if e['status'] in HOTEL_ACTIONS}
+def _check_edit(before, after, edits, drop, extra=0):
+    """None if after = before with only the fields in edits changed, the
+    lines in drop removed and extra lines appended; else what differs."""
+    keep = [(n, l) for n, l in enumerate(before[1:], 1) if n not in drop]
+    if after[0] != before[0] or len(after) - 1 != len(keep) + extra:
+        return 'line count or header changed'
+    for (n, b), a in zip(keep, after[1:]):
+        if a == b:
+            continue
+        bc, ac = next(csv.reader([_split(b)[0]])), next(csv.reader([_split(a)[0]]))
+        allowed = edits.get(n, {})
+        if not allowed or len(bc) != len(ac) or any(x != y for k, (x, y) in enumerate(zip(bc, ac)) if k not in allowed) \
+                or any(ac[k] != v for k, v in allowed.items()):
+            return f'row {bc[0] if bc else "?"} changed unexpectedly'
+    return None
+
+
+def _csv_line(cells, end):
+    buf = io.StringIO()
+    csv.writer(buf, lineterminator='').writerow(cells)
+    return buf.getvalue() + end
+
+
+def _write(path, lines):
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8', newline='') as f:
+        f.writelines(lines)
+    os.replace(tmp, path)
+
+
+def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pipeline_path=None):
+    """Apply the plan. Returns {'changed' (hotels), 'plan', 'backup'
+    (hotels.csv's), 'backups' (all)}."""
+    pipeline_path = pipeline_path or _pipeline_path(hotels_path)
+    p = hotels_plan(hotels_path, actions, log_path, pipeline_path)
+    todo = [e for e in p if e['status'] in HOTEL_ACTIONS]
     if not todo:
-        return {'changed': 0, 'plan': p, 'backup': None}
+        return {'changed': 0, 'plan': p, 'backup': None, 'backups': []}
     before = _lines(hotels_path)
-    rows, i_status = _rows_by_id(before)
-    by_line = {rows[h]['line']: e for h, e in todo.items()}
+    rows, header = _rows_by_id(before)
+    col = {c: i for i, c in enumerate(header)}
+    edits, drop = {}, set()
+    for e in todo:
+        n = rows[e['hotel_id']]['line']
+        if e['status'] in ('remove', 'to_pipeline'):
+            drop.add(n)
+        else:
+            edits.setdefault(n, {}).update({col[k]: v for k, v in e['fields'].items()})
     after = [before[0]]
     for n, line in enumerate(before[1:], 1):
-        e = by_line.get(n)
-        if e is None:
-            after.append(line)
-        elif e['status'] != 'remove':
+        if n in drop:
+            continue
+        if n in edits:
             body, end = _split(line)
-            after.append(_set_fields(body, {i_status: HIDDEN if e['status'] == 'hide' else e['new_status']}) + end)
-
-    def check(lines):
-        keep = [l for n, l in enumerate(before[1:], 1) if by_line.get(n, {}).get('status') != 'remove']
-        if lines[0] != before[0] or len(lines) - 1 != len(keep):
-            return 'line count or header changed'
-        for b, a in zip(keep, lines[1:]):
-            if a == b:
-                continue
-            bc, ac = next(csv.reader([_split(b)[0]])), next(csv.reader([_split(a)[0]]))
-            e = todo.get(bc[0] if bc else '')
-            if e is None or [x for k, x in enumerate(bc) if k != i_status] != [x for k, x in enumerate(ac) if k != i_status]:
-                return f'row {bc[0] if bc else "?"} changed unexpectedly'
-        return None
-    problem = check(after)
+            line = _set_fields(body, edits[n]) + end
+        after.append(line)
+    problem = _check_edit(before, after, edits, drop)
     if problem:
         raise RuntimeError(f'not applied: {problem}')
+
+    moves = [e for e in todo if e['status'] == 'to_pipeline']
+    p_before = p_after = None
+    if moves:
+        p_before = _lines(pipeline_path)
+        p_rows, p_header = _rows_by_id(p_before)
+        p_col = {c: i for i, c in enumerate(p_header)}
+        end = _split(p_before[0])[1] or '\n'
+        p_after, p_edits, added = list(p_before), {}, 0
+        if not p_after[-1].endswith(('\n', '\r')):
+            p_after[-1] += end
+            p_before = p_before[:-1] + [p_after[-1]]          # only the line ending differs: compared as such
+        for e in moves:
+            h = rows[e['hotel_id']]['cells']
+            if e['pipeline_new']:
+                cells = [''] * len(p_header)
+                for k in ('city', 'region', 'category', 'brand', 'brand_group', 'owner', 'keys', 'lat', 'lng'):
+                    if k in p_col and k in col:
+                        cells[p_col[k]] = h[col[k]]
+                cells[p_col['id']], cells[p_col['name']] = e['pipeline_id'], e['pipeline_name']
+                cells[p_col['status']] = e['pipeline_status']
+                cells[p_col['expected_opening']] = e['expected_opening'] or ''
+                if 'investment_mad' in p_col:
+                    cells[p_col['investment_mad']] = '0'
+                if 'notes' in p_col:
+                    cells[p_col['notes']] = e['reason']
+                p_after.append(_csv_line(cells, end))
+                added += 1
+            else:
+                n = p_rows[e['pipeline_id']]['line']
+                f = {p_col['name']: e['pipeline_name']}
+                if e['pipeline_status']:
+                    f[p_col['status']] = e['pipeline_status']
+                if e['expected_opening']:
+                    f[p_col['expected_opening']] = e['expected_opening']
+                e['pipeline_old_name'] = p_rows[e['pipeline_id']]['cells'][p_col['name']]
+                p_edits.setdefault(n, {}).update(f)
+                body, le = _split(p_after[n])
+                p_after[n] = _set_fields(body, p_edits[n]) + le
+        problem = _check_edit(p_before, p_after, p_edits, set(), added)
+        if problem:
+            raise RuntimeError(f'not applied (pipeline.csv): {problem}')
+
     backup = _backup(hotels_path, backup_dir)
-    tmp = hotels_path + '.tmp'
-    with open(tmp, 'w', encoding='utf-8', newline='') as f:
-        f.writelines(after)
-    os.replace(tmp, hotels_path)
-    problem = check(_lines(hotels_path))
+    backups = [backup] + ([_backup(pipeline_path, backup_dir)] if moves else [])
+
+    def undo():
+        shutil.copy2(backups[0], hotels_path)
+        if moves:
+            shutil.copy2(backups[1], pipeline_path)
+    _write(hotels_path, after)
+    problem = _check_edit(before, _lines(hotels_path), edits, drop)
+    if not problem and moves:
+        _write(pipeline_path, p_after)
+        problem = _check_edit(p_before, _lines(pipeline_path), p_edits, set(), added)
     if problem:
-        shutil.copy2(backup, hotels_path)
-        raise RuntimeError(f'not applied (file restored from {backup}): {problem}')
+        undo()
+        raise RuntimeError(f'not applied (files restored from the backups): {problem}')
     now = datetime.now().isoformat(timespec='seconds')
-    for e in todo.values():
-        _log(log_path, {'at': now, 'action': e['status'], 'by': actor, 'file': hotels_path, 'backup': backup,
-                        'hotel_id': e['hotel_id'], 'hotel': e['hotel'], 'old_status': e['current_status'],
-                        'new_status': {'hide': HIDDEN, 'unhide': e.get('new_status'), 'remove': None}[e['status']],
-                        'reason': e['reason']})
-    return {'changed': len(todo), 'plan': p, 'backup': backup}
+    for e in todo:
+        entry = {'at': now, 'action': e['status'], 'by': actor, 'file': hotels_path, 'backup': backup,
+                 'hotel_id': e['hotel_id'], 'hotel': e['hotel'], 'reason': e['reason']}
+        if e['status'] in ('hide', 'unhide', 'remove'):
+            entry.update(old_status=e['current_status'],
+                         new_status={'hide': HIDDEN, 'unhide': e.get('new_status'), 'remove': None}[e['status']])
+        elif e['status'] == 'rename':
+            entry.update(old_name=e['hotel'], new_name=e['fields']['name'])
+        elif e['status'] == 'city':
+            entry.update(old_city=e['old_city'], old_region=e['old_region'], new_city=e['fields']['city'],
+                         new_region=e['fields'].get('region', e['old_region']))
+        else:
+            entry.update(old_status=e['current_status'], pipeline_file=pipeline_path, pipeline_backup=backups[1],
+                         pipeline_id=e['pipeline_id'], pipeline_name=e['pipeline_name'],
+                         pipeline_added=e['pipeline_new'], pipeline_old_name=e.get('pipeline_old_name'))
+        _log(log_path, entry)
+    return {'changed': len({e['hotel_id'] for e in todo}), 'plan': p, 'backup': backup, 'backups': backups}
