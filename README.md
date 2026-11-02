@@ -68,7 +68,10 @@ page, count, KPI and scraper run), `remove` (deletes the row), `rename`
 `to_pipeline` (deletes the row and adds the hotel to `pipeline.csv`:
 `new_name`, `pipeline_status`, `expected_opening`; with `pipeline_id`, that
 existing project, which must carry the hotel's name or `new_name`, is
-renamed instead). Several rows may change one hotel (rename and city).
+renamed instead), and `pipeline_position` (moves pipeline project
+`pipeline_id` to `new_lat` / `new_lng`; `hotel` is the project's name;
+`approximate=yes` is recorded in the log). Several rows may change one
+hotel (rename and city).
 `hotels.csv` and `pipeline.csv` are backed up first, only the named fields
 change (checked after writing), every change is logged to
 `coordinate_changes_applied.log`, and running a file twice changes nothing.

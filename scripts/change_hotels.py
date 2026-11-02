@@ -5,9 +5,9 @@
     python3 scripts/change_hotels.py CHANGES.csv --apply    # back up, change, verify, log
 
 CHANGES.csv has the columns hotel_id and action (hide | unhide | remove |
-rename | city | to_pipeline), optionally hotel (the name, checked against
-hotels.csv), new_name, new_city, new_region, pipeline_id, pipeline_status,
-expected_opening and reason. Same rules as the admin Rates panel
+rename | city | to_pipeline | pipeline_position), optionally hotel (the
+name, checked), new_name, new_city, new_region, pipeline_id,
+pipeline_status, expected_opening, new_lat, new_lng, approximate and reason. Same rules as the admin Rates panel
 (coordinates_apply.hotels_apply). Undo with
 scripts/apply_coordinates.py --restore BACKUP. Option: --target (default
 DATA_DIR/hotels.csv).
