@@ -25,7 +25,6 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 38,Ibis Rabat Agdal,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Midscale,Ibis,Accor,170,2017,verified,Operating,33.998654,-6.858756,Risma,verified,
 40,Barceló Fès Medina,Fes,Fès-Meknès,Upscale,Barceló,Barceló Hotel Group,148,2011,verified,Operating,34.043620,-4.997390,Undisclosed,verified,
 41,Ibis Fes,Fes,Fès-Meknès,Midscale,Ibis,Accor,123,1990,verified,Operating,34.046549,-5.004175,Risma,verified,
-44,Radisson Blu Hotel Fes,Fes,Fès-Meknès,Upper Upscale,Radisson Blu,Radisson Hotel Group,224,2019,verified,Operating,34.042,-5.013,Undisclosed,verified,
 49,DoubleTree by Hilton Casablanca City Centre,Casablanca,Grand Casablanca-Settat,Upper Upscale,DoubleTree,Hilton Hotels & Resorts,306,2025,verified,Operating,33.595794,-7.600039,Undisclosed,verified,
 50,Ibis Casablanca Sidi Maarouf,Casablanca,Grand Casablanca-Settat,Midscale,Ibis,Accor,85,2014,verified,Operating,33.538717,-7.640861,Risma,verified,
 52,Ibis Casablanca City Centre,Casablanca,Grand Casablanca-Settat,Midscale,Ibis Styles,Accor,120,2007,verified,Operating,33.597167,-7.615099,Risma,verified,
