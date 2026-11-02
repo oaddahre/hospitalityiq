@@ -73,7 +73,7 @@ const SECTION_LOADERS = {
   orgs: loadOrgs,
   news: loadArticles,
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
-  rates: () => { loadScraperStatus(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); },
+  rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); },
   occupancy: loadOccupancyStatus,
   system: loadSystemInfo,
 };
@@ -1069,6 +1069,38 @@ async function loadRecentUploads() {
 }
 
 // ════════════════════════ RATES / SCRAPER ══════════════════════════════
+// Last scraper run (scrape_coverage.csv): hotels per outcome, the hotels
+// that did not get prices, nights priced out of the nights possible
+async function loadScrapeCoverage() {
+  const stats = document.getElementById('ri-cov-stats'), sum = document.getElementById('ri-cov-summary'),
+    list = document.getElementById('ri-cov-list');
+  try {
+    const res = await fetch('/api/admin/scraper/coverage', { headers: authHeaders() });
+    const d = await res.json();
+    stats.replaceChildren(); list.replaceChildren();
+    if (!res.ok || !d.has_data) { sum.textContent = d.message || d.error || 'No data'; return; }
+    d.counts.forEach(([k, v]) => {   // in outcome order: ok first
+      const box = document.createElement('div'); box.className = 'adm-stat';
+      const val = document.createElement('span'); val.className = 'adm-stat-val'; val.textContent = v;
+      const lab = document.createElement('span'); lab.className = 'adm-stat-label'; lab.textContent = k;
+      box.append(val, lab); stats.appendChild(box);
+    });
+    const pct = d.nights_possible ? Math.round(100 * d.nights_priced / d.nights_possible) : 0;
+    sum.textContent = `Run of ${d.scrape_date} · ${d.hotels} hotels · nights priced ${d.nights_priced.toLocaleString('en')} of `
+      + `${d.nights_possible.toLocaleString('en')} possible (${pct}%) · nights ${d.window[0]} to ${d.window[1]}`;
+    if (!d.problems.length) { list.textContent = 'Every hotel got prices (ok).'; return; }
+    const t = document.createElement('table'); t.className = 'adm-table';
+    t.innerHTML = '<thead><tr><th>Hotel</th><th>City</th><th>Outcome</th><th>Nights priced</th></tr></thead>';
+    const tb = document.createElement('tbody');
+    d.problems.forEach(p => {
+      const tr = document.createElement('tr');
+      [p.name, p.city || '–', p.outcome, String(p.nights)].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); list.appendChild(t);
+  } catch { sum.textContent = 'Error loading the last run'; }
+}
+
 async function loadScraperStatus() {
   try {
     const res = await fetch('/api/scraper/status', { headers: authHeaders() });
@@ -1190,7 +1222,7 @@ document.getElementById('run-scraper-btn').addEventListener('click', async () =>
     const data = await res.json();
     toast(data.status === 'started' ? 'Scraper started.' : (data.error || 'Error'), data.status === 'started' ? 'success' : 'error');
   } catch { toast('Network error.', 'error'); }
-  setTimeout(() => { btn.disabled = false; btn.textContent = 'Run Scraper Now'; loadScraperStatus(); }, 2500);
+  setTimeout(() => { btn.disabled = false; btn.textContent = 'Run Scraper Now'; loadScraperStatus(); loadScrapeCoverage(); }, 2500);
 });
 
 // Google hotel ID overrides, and the loose matches to review

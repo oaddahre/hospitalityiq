@@ -4709,6 +4709,55 @@ def api_scraper_run():
         return jsonify({'error': str(e)}), 500
 
 
+COVERAGE_OUTCOMES = ('ok', 'no_result', 'no_match', 'error', 'other_currency', 'no_id')
+
+
+@app.route('/api/admin/scraper/coverage')
+@admin_required
+def api_admin_scraper_coverage():
+    """The last scraper run from scrape_coverage.csv: hotels per outcome,
+    the hotels with an outcome other than ok, and nights priced out of the
+    nights possible (every hotel in the run x the nights in its window)."""
+    path = os.path.join(DATA_DIR, 'scrape_coverage.csv')
+    try:
+        with open(path, encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+    except OSError:
+        rows = []
+    if not rows:
+        return jsonify({'has_data': False, 'message': 'No scraper run recorded in scrape_coverage.csv yet '
+                        '(it is written from the first run with the current scraper).'})
+    last = max(r.get('scrape_date', '') for r in rows)
+    run = [r for r in rows if r.get('scrape_date') == last]
+    try:
+        with open(os.path.join(DATA_DIR, 'hotels.csv'), encoding='utf-8') as f:
+            hotels = {str(h['id']): h for h in csv.DictReader(f)}
+    except (OSError, KeyError):
+        hotels = {}
+    counts = {k: 0 for k in COVERAGE_OUTCOMES}
+    priced = possible = 0
+    problems = []
+    for r in run:
+        status = r.get('status') or 'error'
+        counts[status] = counts.get(status, 0) + 1
+        try:
+            priced += int(r.get('nights_returned') or 0)
+            possible += (datetime.strptime(r['window_end'], '%Y-%m-%d') - datetime.strptime(r['window_start'], '%Y-%m-%d')).days + 1
+        except (KeyError, ValueError):
+            pass
+        if status != 'ok':
+            h = hotels.get(str(r.get('hotel_id')), {})
+            problems.append({'hotel_id': r.get('hotel_id'), 'name': h.get('name') or f'hotel {r.get("hotel_id")} (no longer listed)',
+                             'city': h.get('city', ''), 'outcome': status, 'nights': int(r.get('nights_returned') or 0)})
+    order = {k: i for i, k in enumerate(COVERAGE_OUTCOMES)}
+    problems.sort(key=lambda p: (order.get(p['outcome'], 99), p['city'], p['name']))
+    return jsonify({'has_data': True, 'scrape_date': last, 'hotels': len(run),
+                    'counts': [[k, counts[k]] for k in list(COVERAGE_OUTCOMES) + sorted(set(counts) - set(COVERAGE_OUTCOMES))],
+                    'nights_priced': priced, 'nights_possible': possible,
+                    'window': [min(r.get('window_start', '') for r in run), max(r.get('window_end', '') for r in run)],
+                    'problems': problems})
+
+
 @app.route('/api/scraper/status')
 @admin_required
 def api_scraper_status():

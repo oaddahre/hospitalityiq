@@ -288,6 +288,12 @@
     <p class="adm-hint" id="ri-health">Data health: —</p>
     <p class="adm-hint" id="ri-cities">Cities scraped: —</p>
 
+    <p class="adm-list-filter-label" style="margin-top:28px">Last scraper run: price lookup per hotel</p>
+    <p class="adm-hint">From scrape_coverage.csv. ok: prices returned · no_result: Google returned nothing · no_match: the result was another hotel · error: the lookup failed (API error, timeout, run stopped) · other_currency: some nights not in MAD, dropped · no_id: no Google ID.</p>
+    <div class="adm-stat-row" id="ri-cov-stats"></div>
+    <p class="adm-hint" id="ri-cov-summary">—</p>
+    <div id="ri-cov-list" class="adm-hint" style="overflow-x:auto"></div>
+
     <p class="adm-list-filter-label" style="margin-top:28px">Manual rate override</p>
     <div class="adm-override-grid">
       <div class="adm-field-group">
