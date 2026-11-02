@@ -352,6 +352,9 @@ def import_ids(hotels_path, ids_path, overrides_path, ids, ovs, backup_dir, log_
             cur = dict(cur_ids.get(e['hotel_id']) or {})
             if cur.get('identifier') == e['identifier']:
                 cur.update(identifier=None, checked=datetime.now().date().isoformat())
+                for k in ('source', 'approved_by', 'approved_at', 'google_title', 'google_lat', 'google_lng',
+                          'position_checked', 'found_by'):
+                    cur.pop(k, None)          # the approval went with the ID
             rej_list = list(cur.get('rejected_identifiers') or [])
             if e['identifier'] not in rej_list:
                 rej_list.append(e['identifier'])
