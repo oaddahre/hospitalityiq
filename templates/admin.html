@@ -351,6 +351,28 @@
     </div>
     <span id="ri-ids-msg" class="adm-inline-msg"></span>
     <div id="ri-ids-result" class="adm-hint"></div>
+    <p class="adm-hint" style="margin-top:12px">Approve candidates: a coordinate_candidates.csv from scripts/find_candidates.py with approve = "yes" on the rows you checked (one per hotel). Each approved row sets that hotel's Google ID and moves its coordinates to Google's position. Other rows are ignored. Both files are backed up first; approving twice is safe.</p>
+    <div class="adm-override-grid">
+      <div class="adm-field-group">
+        <label class="adm-label">coordinate_candidates.csv</label>
+        <input type="file" id="ri-cand-file" class="adm-input" accept=".csv,text/csv" />
+      </div>
+      <button class="adm-btn adm-btn-secondary" id="ri-cand-preview">Preview</button>
+      <button class="adm-btn adm-btn-primary" id="ri-cand-apply" disabled>Approve</button>
+    </div>
+    <span id="ri-cand-msg" class="adm-inline-msg"></span>
+    <div id="ri-cand-result" class="adm-hint"></div>
+    <p class="adm-hint" style="margin-top:12px">Hide or remove hotels: a CSV with the columns hotel_id, action (hide, unhide or remove), and optionally hotel (the name, checked against this server's list) and reason. Hidden hotels keep their row but are left out of every page, count, KPI and scraper run; remove deletes the row. Backed up first; restore a backup below to undo.</p>
+    <div class="adm-override-grid">
+      <div class="adm-field-group">
+        <label class="adm-label">hotel changes CSV</label>
+        <input type="file" id="ri-hl-file" class="adm-input" accept=".csv,text/csv" />
+      </div>
+      <button class="adm-btn adm-btn-secondary" id="ri-hl-preview">Preview</button>
+      <button class="adm-btn adm-btn-primary" id="ri-hl-apply" disabled>Apply</button>
+    </div>
+    <span id="ri-hl-msg" class="adm-inline-msg"></span>
+    <div id="ri-hl-result" class="adm-hint"></div>
     <p class="adm-list-filter-label" style="margin-top:12px">Backups and change log</p>
     <div id="ri-coord-history" class="adm-hint">—</div>
 

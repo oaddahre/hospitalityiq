@@ -37,3 +37,8 @@ hotels.coordinates_proposed.csv
 coordinate_changes.csv
 backups/
 coordinate_changes_applied.log
+coordinate_candidates.csv
+possibly_missing_hotels.csv
+candidate_diagnosis.txt
+candidate_cache.json
+hotel_changes*.csv

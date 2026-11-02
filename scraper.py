@@ -833,6 +833,10 @@ class KodoScraper:
                 res = (task.get('result') or [{}])[0] or {}
                 gps = self._dfs_gps(res.get('location'))
                 ok, why = match_hotel(hotel, res.get('title', ''), res.get('address', '') or '', gps, self.known_cities)
+                if not ok and (ids.get(hid) or {}).get('source') == 'approved':
+                    # A candidate a person checked and approved in the Rates
+                    # panel (Google may name it in Arabic or with extra words)
+                    ok = True
                 if not ok:
                     metres = loose_match(hotel, res.get('title', ''), gps, self.known_cities)
                     is_override = (ids.get(hid) or {}).get('source') == 'override'

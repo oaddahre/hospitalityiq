@@ -1272,6 +1272,48 @@ document.getElementById('ri-ids-import').addEventListener('click', async () => {
   loadCoordHistory(); loadIdOverrides();
 });
 
+// Approve Google ID candidates, and hide or remove hotels (same flow)
+function csvSection(prefix, urls, describe, confirmText, done) {
+  let text = '';
+  const btn = document.getElementById(`ri-${prefix}-apply`), msg = document.getElementById(`ri-${prefix}-msg`),
+    out = document.getElementById(`ri-${prefix}-result`);
+  const show = data => {
+    out.replaceChildren();
+    (data.rows || []).forEach(r => { const d = document.createElement('div'); d.textContent = describe(r); out.appendChild(d); });
+  };
+  const counts = c => Object.entries(c || {}).map(([k, v]) => `${k} ${v}`).join(' · ') || 'nothing in the file';
+  document.getElementById(`ri-${prefix}-file`).addEventListener('change', async e => {
+    const f = e.target.files[0];
+    text = f ? await f.text() : '';
+    btn.disabled = true; out.replaceChildren(); msg.textContent = '';
+  });
+  document.getElementById(`ri-${prefix}-preview`).addEventListener('click', async () => {
+    const [ok, data] = await coordPost(urls[0], { csv: text });
+    if (!ok) { msg.textContent = data.error || 'Preview failed'; msg.style.color = 'var(--negative)'; return; }
+    msg.textContent = counts(data.counts); msg.style.color = '';
+    show(data);
+    btn.disabled = !done.some(s => (data.counts || {})[s] > 0);
+  });
+  btn.addEventListener('click', async () => {
+    if (!confirm(confirmText)) return;
+    const [ok, data] = await coordPost(urls[1], { csv: text, confirm: true });
+    msg.textContent = ok ? `Done: ${data.approved ?? data.changed} · backup ${(data.backups || [data.backup]).filter(Boolean).join(', ') || '—'}`
+      : (data.error || 'Failed');
+    msg.style.color = ok ? 'var(--positive)' : 'var(--negative)';
+    if (ok) show(data);
+    btn.disabled = true;
+    loadCoordHistory(); loadIdOverrides();
+  });
+}
+csvSection('cand', ['/api/admin/candidates/preview', '/api/admin/candidates/approve'],
+  r => `${r.status}: ${r.hotel || r.hotel_id} → "${r.google_name}" (${r.confidence || '—'}) · ${(r.current || []).join(', ') || '—'} → ${(r.new || []).join(', ')}`
+    + (r.server_identifier && r.status === 'conflict' ? ` · this server has ${r.server_identifier}` : ''),
+  'Set the approved Google IDs and move those hotels to Google\'s position? Both files are backed up first.', ['approve']);
+csvSection('hl', ['/api/admin/hotels-list/preview', '/api/admin/hotels-list/apply'],
+  r => `${r.status}: ${r.hotel || r.hotel_id} (${r.action})` + (r.current_name ? ` · this server calls it "${r.current_name}"` : '')
+    + (r.new_status ? ` · back to ${r.new_status}` : '') + (r.reason ? ` · ${r.reason}` : ''),
+  'Change this server\'s hotel list as previewed? hotels.csv is backed up first.', ['hide', 'unhide', 'remove']);
+
 async function loadCoordHistory() {
   const el = document.getElementById('ri-coord-history');
   try {
@@ -1299,7 +1341,11 @@ async function loadCoordHistory() {
         ? `${l.at} · restored ${String(l.file || '').split('/').pop()} from ${String(l.restored_from || '').split('/').pop()} by ${l.by}`
         : l.action === 'import_ids'
           ? `${l.at} · imported ${l.imported} Google ID changes (${l.ids} IDs, ${l.overrides} manual, ${l.rejected || 0} rejected) by ${l.by}`
-          : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
+          : l.action === 'approve_candidates'
+            ? `${l.at} · approved ${l.approved} Google ID candidates (${l.ids} IDs, ${l.coordinates} coordinates) by ${l.by}`
+            : ['hide', 'unhide', 'remove'].includes(l.action)
+              ? `${l.at} · ${l.action} ${l.hotel} (status ${l.old_status}${l.new_status ? ' → ' + l.new_status : ''})${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+              : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
       el.appendChild(d);
     });
   } catch {}

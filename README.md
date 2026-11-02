@@ -44,6 +44,28 @@ the unmatched hotels up again with name variants (strict name match, within
 3 km) and writes `unmatched_hotels.csv` with a Google Travel link per hotel;
 a hotel's Google ID is the part after `/entity/` on its Google Travel page.
 
+`scripts/find_candidates.py --cap 1.00` goes further for the hotels still
+without an ID: it fetches Google's hotel list for each of their cities
+(hotel_searches, up to 140 hotels a call, in French so names come back in
+Latin letters), searches each hotel by name in French, English and Arabic
+and by brand, and compares names with `hotel_names.py` (word order,
+accents, generic and city words ignored; Arabic transliterated), with no
+distance rule. It writes `coordinate_candidates.csv` (best 3 per hotel,
+confidence high / medium / none, an empty `approve` column) and
+`possibly_missing_hotels.csv`; answers are cached in
+`candidate_cache.json`. Nothing is applied: rows marked `approve=yes` are
+uploaded in the Rates panel ("Approve candidates"), which sets each
+hotel's Google ID (source `approved`: the nightly price step trusts it
+without the name check) and moves the hotel to Google's position, with
+backups, idempotent, restorable.
+
+Hide or remove hotels: a CSV with `hotel_id`, `action` (hide, unhide,
+remove) and optionally `hotel` (the name, checked) and `reason`, applied
+with `python3 scripts/change_hotels.py FILE [--apply]` or in the Rates
+panel. A hidden hotel keeps its row with status `Hidden` and is left out
+of every page, count, KPI and scraper run; remove deletes the row. Both
+back up `hotels.csv` first and log to `coordinate_changes_applied.log`.
+
 ## Product media
 
 Screenshots and videos used on the landing page live in `static/img/product/`.

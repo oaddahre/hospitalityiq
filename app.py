@@ -1010,6 +1010,10 @@ _PERF_NUM_COLS  = ("occupancy", "adr_mad", "revpar_mad", "trevpar_mad", "gop_mar
 
 def load_data():
     hotels = pd.read_csv(os.path.join(DATA_DIR, "hotels.csv"))
+    # Hotels hidden in the admin Rates panel are left out of every page,
+    # count and KPI (coordinates_apply.HIDDEN)
+    if "status" in hotels:
+        hotels = hotels[hotels["status"].astype(str).str.strip() != "Hidden"].reset_index(drop=True)
     perf   = pd.read_csv(os.path.join(DATA_DIR, "performance.csv"))
     # Blank or non-numeric cells (e.g. "TBC") become NaN instead of turning
     # the whole column into text; each calculation then skips what it lacks.
@@ -1864,7 +1868,7 @@ def api_brands():
 
     _BRAND_DESCRIPTIONS = {
         'Four Seasons Hotels & Resorts': "Four Seasons Hotels & Resorts is a Canadian luxury hospitality company operating over 120 properties in 50 countries, consistently ranked among the world's finest hotel brands. In Morocco, Four Seasons has established a significant presence with landmark properties in Casablanca, Marrakech, and the newly opened Rabat at Kasr Al Bahr, reflecting the brand's confidence in Morocco's luxury tourism potential. Each Four Seasons property in Morocco is positioned at the very top of its local market, offering bespoke service standards and prime real estate locations that set the benchmark for ultra-luxury hospitality in the country. The brand's continued investment in Morocco aligns with the kingdom's Vision 2030 tourism ambitions and the growing appetite from high-net-worth international travelers.",
-        'Radisson Hotel Group': "Radisson Hotel Group is a Belgian-based multinational hospitality company operating over 1,700 hotels across 120 countries through brands including Radisson Blu, Radisson, Radisson RED, and Park Inn. In Morocco, Radisson has emerged as one of the most active international operators, with a rapidly expanding portfolio spanning Casablanca, Marrakech, Fes, Al Hoceima, Saidia, and the Taghazout Bay resort corridor. The group's Morocco strategy combines full-service Radisson Blu properties in major urban and resort destinations with the newer Radisson Residences concept targeting the branded residential segment. Radisson's aggressive expansion in Morocco reflects its broader Africa and Middle East growth strategy and its early recognition of Morocco's emerging status as a premium tourism and investment destination.",
+        'Radisson Hotel Group': "Radisson Hotel Group is a Belgian-based multinational hospitality company operating over 1,700 hotels across 120 countries through brands including Radisson Blu, Radisson, Radisson RED, and Park Inn. In Morocco, Radisson has emerged as one of the most active international operators, with a rapidly expanding portfolio spanning Casablanca, Marrakech, Al Hoceima, Saidia, and the Taghazout Bay resort corridor. The group's Morocco strategy combines full-service Radisson Blu properties in major urban and resort destinations with the newer Radisson Residences concept targeting the branded residential segment. Radisson's aggressive expansion in Morocco reflects its broader Africa and Middle East growth strategy and its early recognition of Morocco's emerging status as a premium tourism and investment destination.",
         'RIU Hotels & Resorts': "RIU Hotels & Resorts is a Spanish family-owned hotel group founded in 1953 and one of Europe's leading all-inclusive resort operators, with over 100 properties across 20 countries. In Morocco, RIU has built the country's largest beach resort portfolio with six properties concentrated in Agadir and Marrakech, representing a significant share of Morocco's international leisure tourism capacity. The group's Tikida brand operates a cluster of all-inclusive resorts in Agadir that have been foundational to the city's development as a mass-market European beach destination, while the newer Riu Palace Tikida Taghazout positions the group in the premium resort segment. RIU's long-standing commitment to Morocco and its large room count make it one of the most influential operators in the country's leisure tourism ecosystem.",
         'Hilton Hotels & Resorts': "Hilton Hotels & Resorts is one of the world's most recognized hospitality brands, part of the Hilton portfolio of 22 brands operating over 7,000 properties across 123 countries. In Morocco, Hilton has built a diversified portfolio spanning its full-service Hilton brand, Hilton Garden Inn, DoubleTree, Conrad, and the ultra-luxury Waldorf Astoria, with properties across Casablanca, Tanger, Rabat, and the Taghazout Bay resort destination. The group's Morocco expansion has accelerated significantly in recent years, with major openings in Tanger and the Taghazout Bay surf village reinforcing Hilton's commitment to the country's growing tourism infrastructure. The recently opened Waldorf Astoria Rabat Salé represents Hilton's most prestigious Morocco asset and signals the group's confidence in the capital's luxury hospitality potential.",
         'Barceló Hotel Group': "Barceló Hotel Group is a Spanish family-owned hospitality company founded in 1931, operating over 270 hotels across 24 countries through brands including Barceló Hotels, Royal Hideaway, and Occidental. In Morocco, Barceló has assembled one of the largest international operator portfolios in the country with properties spanning Casablanca, Fes, and Tanger, reflecting the group's long-standing strategic interest in the Moroccan market. The group's flagship Royal Hideaway Casablanca positions Barceló at the top of the luxury segment in the economic capital, while the recently rebranded Hotel Borj Rabat expands its presence into the administrative capital. Barceló's deep roots in Spanish-speaking markets and its established relationships with European tour operators make it a natural bridge between Morocco's traditional European feeder markets and its growing international ambitions.",
@@ -4895,6 +4899,90 @@ def api_ids_import():
     return jsonify({**_ids_summary(r['plan']), 'imported': r['imported'], 'backups': [os.path.basename(b) for b in r['backups']]})
 
 
+def _csv_from_request(what):
+    text = str((request.get_json(silent=True) or {}).get('csv', ''))
+    if not text.strip():
+        raise ValueError(f'Choose a {what} file.')
+    if len(text) > 2_000_000:
+        raise ValueError('File too large.')
+    return text
+
+
+def _cand_summary(p):
+    counts = {}
+    for e in p:
+        counts[e['status']] = counts.get(e['status'], 0) + 1
+    rows = [{'hotel_id': e['hotel_id'], 'hotel': e['hotel'], 'status': e['status'], 'google_name': e['google_name'],
+             'identifier': e['identifier'], 'confidence': e['confidence'], 'current': list(e.get('current') or []),
+             'new': list(e['new']), 'server_identifier': e.get('server_identifier')} for e in p]
+    return {'counts': counts, 'rows': rows[:100]}
+
+
+@app.route('/api/admin/candidates/preview', methods=['POST'])
+@admin_required
+def api_candidates_preview():
+    try:
+        rows = CA.read_candidates(_csv_from_request('coordinate_candidates.csv'))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    return jsonify(_cand_summary(CA.candidates_plan(os.path.join(DATA_DIR, 'hotels.csv'), GOOGLE_IDS_PATH, rows)))
+
+
+@app.route('/api/admin/candidates/approve', methods=['POST'])
+@admin_required
+def api_candidates_approve():
+    if not (request.get_json(silent=True) or {}).get('confirm'):
+        return jsonify({'error': 'Confirmation missing.'}), 400
+    try:
+        rows = CA.read_candidates(_csv_from_request('coordinate_candidates.csv'))
+        r = CA.approve_candidates(os.path.join(DATA_DIR, 'hotels.csv'), GOOGLE_IDS_PATH, rows,
+                                  COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except RuntimeError as e:
+        app.logger.error(f'Candidate approval failed: {e}')
+        return jsonify({'error': str(e)}), 500
+    _log_admin_action('google_id_candidates_approved', '', f'{r["approved"]} hotels')
+    return jsonify({**_cand_summary(r['plan']), 'approved': r['approved'], 'backups': [os.path.basename(b) for b in r['backups']]})
+
+
+def _hotels_summary(p):
+    counts = {}
+    for e in p:
+        counts[e['status']] = counts.get(e['status'], 0) + 1
+    return {'counts': counts, 'rows': [{k: e.get(k) for k in ('hotel_id', 'hotel', 'action', 'status', 'current_status',
+                                                              'new_status', 'current_name', 'reason')} for e in p][:200]}
+
+
+@app.route('/api/admin/hotels-list/preview', methods=['POST'])
+@admin_required
+def api_hotels_list_preview():
+    try:
+        actions = CA.read_hotel_actions(_csv_from_request('hotel changes CSV'))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    return jsonify(_hotels_summary(CA.hotels_plan(os.path.join(DATA_DIR, 'hotels.csv'), actions, COORD_LOG_PATH)))
+
+
+@app.route('/api/admin/hotels-list/apply', methods=['POST'])
+@admin_required
+def api_hotels_list_apply():
+    if not (request.get_json(silent=True) or {}).get('confirm'):
+        return jsonify({'error': 'Confirmation missing.'}), 400
+    try:
+        actions = CA.read_hotel_actions(_csv_from_request('hotel changes CSV'))
+        r = CA.hotels_apply(os.path.join(DATA_DIR, 'hotels.csv'), actions, COORD_BACKUP_DIR, COORD_LOG_PATH,
+                            actor=current_user.email)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except RuntimeError as e:
+        app.logger.error(f'Hotel list change failed: {e}')
+        return jsonify({'error': str(e)}), 500
+    _log_admin_action('hotels_list_changed', '', f'{r["changed"]} hotels, backup {os.path.basename(r["backup"] or "-")}')
+    return jsonify({**_hotels_summary(r['plan']), 'changed': r['changed'],
+                    'backup': os.path.basename(r['backup']) if r['backup'] else None})
+
+
 @app.route('/api/admin/coordinates/history')
 @admin_required
 def api_coord_history():
@@ -5008,7 +5096,18 @@ def _read_occupancy_csv():
             rows = list(csv.DictReader(f))
     except Exception:
         pass
-    return rows
+    # Only hotels still listed: a hotel hidden or removed since the last
+    # occupancy model run drops out at once, not the next night
+    visible = _visible_hotel_ids()
+    return [r for r in rows if str(r.get('hotel_id', '')) in visible] if visible else rows
+
+
+def _visible_hotel_ids():
+    try:
+        with open(os.path.join(DATA_DIR, 'hotels.csv'), encoding='utf-8') as f:
+            return {str(r['id']) for r in csv.DictReader(f) if str(r.get('status', '')).strip() != 'Hidden'}
+    except (OSError, KeyError):
+        return set()
 
 
 @app.route('/api/occupancy/<hotel_id>')
