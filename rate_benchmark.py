@@ -17,7 +17,7 @@ import os
 import statistics
 from datetime import date, datetime, timedelta
 
-from occupancy_model import OccupancyModel, estimate_occupancy
+from occupancy_model import OccupancyModel, estimate_occupancy, active_model, row_model, price_coverage
 
 WINDOW_NIGHTS   = 30   # the next 30 nights, from tomorrow
 MAX_PRICE_AGE   = 7    # a price collected more than 7 days ago is not used
@@ -175,9 +175,11 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
         with open(_path(data_dir, 'estimated_occupancy.csv'), encoding='utf-8') as f:
             for r in csv.DictReader(f):
                 hid = str(r.get('hotel_id', ''))
-                if hid in want and r.get('date') in nights:
+                if hid in want and r.get('date') in nights and row_model(r) == active_model():
                     try:
                         out[hid][r['date']] = {'occ': float(r['estimated_occupancy']),
+                                               'low': float(r['low']) if r.get('low') else None,
+                                               'high': float(r['high']) if r.get('high') else None,
                                                'confidence': r.get('confidence') or 'low'}
                         runs.add(r.get('model_run_date') or '')
                     except (KeyError, ValueError):
@@ -185,6 +187,18 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
     except OSError:
         pass
     missing = [(h, n) for h in hotel_ids for n in nights if n not in out[h]]
+    if missing and active_model() == 'v2':
+        try:
+            est = OccupancyModel().v2_estimates(sorted({datetime.strptime(n, '%Y-%m-%d').date() for _, n in missing}),
+                                                as_of=today, hotel_ids=sorted({h for h, _ in missing}))
+            for hid, night in missing:
+                e = est.get((hid, night))
+                if e:
+                    out[hid][night] = {'occ': e['mid'], 'low': e['low'], 'high': e['high'], 'confidence': e['confidence']}
+                    runs.add(today.isoformat())
+        except Exception:
+            pass
+        missing = []
     if missing:
         try:
             model = OccupancyModel()
@@ -264,6 +278,9 @@ def rate_benchmark(data_dir, comp_set, today: date):
             'ranked_of':      (1 + len(comp_rates)) if rank else None,
             'subject_occ':    occ[subject].get(n, {}).get('occ'),
             'subject_conf':   occ[subject].get(n, {}).get('confidence'),
+            'subject_coverage': price_coverage(occ[subject][n]['confidence']) if n in occ[subject] else None,
+            'subject_low':    occ[subject].get(n, {}).get('low'),
+            'subject_high':   occ[subject].get(n, {}).get('high'),
             'comp_occ':       round(sum(comp_occ) / len(comp_occ), 1) if comp_occ else None,
         })
 
@@ -308,6 +325,8 @@ def rate_benchmark(data_dir, comp_set, today: date):
             'occ_subject':       round(avg(subj_occ), 1) if subj_occ else None,
             'occ_comp':          round(avg(comp_occ), 1) if comp_occ else None,
             'occ_confidence':    _confidence_level(conf_counts),
+            'occ_price_coverage': {'high': 'full', 'medium': 'partial', 'low': 'none', 'mixed': 'mixed'}.get(_confidence_level(conf_counts)),
+            'occ_model':         active_model(),
             'occ_confidence_counts': conf_counts,
             'model_run_date':    model_run,
             'nights_with_rate':  len(priced),

@@ -19,7 +19,7 @@ against the hotel's name and city. These are published rates, not achieved
 ADR. Settings (see `.env.example`): `DATAFORSEO_LOGIN`,
 `DATAFORSEO_PASSWORD`, `DATAFORSEO_MIN_BALANCE`, `DATAFORSEO_MAX_WAIT_MIN`,
 `SCRAPER_CITIES`, `SCRAPER_LIMIT`, `SCRAPER_BROWSER_STEPS`, `ALERT_EMAIL`,
-`DATA_DIR`.
+`DATA_DIR`, `OCC_MODEL`.
 
 Coordinate audit (report only, never edits `hotels.csv`):
 `SCRAPER_LOOKUP_ONLY=on python3 scraper.py` records each hotel's Google ID
@@ -80,6 +80,33 @@ In the "Approve candidates" step, a row with `unreject=yes` takes its
 Google ID off the hotel's rejected list; an ID that another hotel already
 holds, or that two approved rows give to two hotels, is refused ("duplicate
 id").
+
+## Occupancy model
+
+`occupancy_model.py` runs after every scraper run (and at 04:00): two
+versions, both written to `estimated_occupancy.csv` (column `model`), for
+the next 30 nights. `OCC_MODEL` (`v1`, the default, or `v2`) picks the one
+the platform shows; the admin Rates panel compares them for one hotel.
+
+- v1: base occupancy by hotel type and segment, day of week, month, a
+  short event list, and the night's published rate against the hotel's
+  estimated ADR (`performance.csv`).
+- v2 (phase 1): same base, day of week and month, plus each hotel's own
+  normal price (median published price per weekday over 60 days; ADR
+  fallback under 14 priced nights), market heat per city and night,
+  sold-out nights (a night missing from two successful lookups in a row,
+  read from `scrape_coverage.csv`, which the scraper writes: `ok`,
+  `no_result`, `no_match`, `error`, `other_currency`, `no_id`), and a
+  2026-2027 holiday calendar. It writes `low`, `mid`, `high` and
+  `signals_used`. Every weight and threshold is in the `V2` block, hand-set.
+
+Price coverage (full / partial / none) says how many recent prices exist
+for the hotel, not how accurate the estimate is. Calibration
+(`python3 occupancy_model.py calibrate`, and automatically after the first
+run of each month) compares both versions with the real figures in
+`daily_performance.csv` by city and hotel type and saves
+`calibration_results.json`; with no real figures it does nothing and says
+so.
 
 ## Product media
 

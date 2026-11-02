@@ -47,6 +47,13 @@ except Exception:
     def classify_hotel_type(*a, **kw): return 'city_business'
     OccupancyModel = None
     def estimate_occupancy(*a, **kw): return 0.60, {}
+try:
+    from occupancy_model import active_model, row_model, price_coverage, PRICE_COVERAGE_NOTE
+except Exception:
+    def active_model(): return 'v1'
+    def row_model(r): return (r.get('model') or 'v1').lower()
+    def price_coverage(c): return {'high': 'full', 'medium': 'partial'}.get(c or 'low', 'none')
+    PRICE_COVERAGE_NOTE = 'Price coverage describes how many recent published prices we have, not how accurate the estimate is.'
 
 try:
     from playwright.sync_api import sync_playwright
@@ -5130,7 +5137,9 @@ def api_scraper_download_log():
 
 # ─── Occupancy Model API ──────────────────────────────────────────────────────
 
-def _read_occupancy_csv():
+def _read_occupancy_csv(model=None):
+    """Rows of estimated_occupancy.csv for one model: the one OCC_MODEL
+    picks (v1 by default), or `model`; 'all' for both."""
     rows = []
     if not os.path.exists(OCCUPANCY_CSV_PATH):
         return rows
@@ -5141,8 +5150,54 @@ def _read_occupancy_csv():
         pass
     # Only hotels still listed: a hotel hidden or removed since the last
     # occupancy model run drops out at once, not the next night
+    want = model or active_model()
+    if want != 'all':
+        rows = [r for r in rows if row_model(r) == want]
     visible = _visible_hotel_ids()
     return [r for r in rows if str(r.get('hotel_id', '')) in visible] if visible else rows
+
+
+def _num(v):
+    try:
+        return float(v) if v not in (None, '') else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _occ_entry(r):
+    """One stored night, as the API sends it."""
+    occ = float(r.get('estimated_occupancy', 0) or 0)
+    return {
+        'date':                r.get('date'),
+        'model':               row_model(r),
+        'estimated_occupancy': occ,
+        'low':                 _num(r.get('low')),
+        'mid':                 _num(r.get('mid')) if r.get('mid') not in (None, '') else occ,
+        'high':                _num(r.get('high')),
+        'scraped_bar':         _num(r.get('scraped_bar')),
+        'estimated_revpar':    _num(r.get('estimated_revpar')),
+        'confidence':          r.get('confidence', 'low'),
+        'price_coverage':      r.get('price_coverage') or price_coverage(r.get('confidence')),
+        'signals_used':        r.get('signals_used', ''),
+        'breakdown': {
+            'base':                    float(r.get('base_occ', 0) or 0),
+            'rate_adjustment':         float(r.get('rate_adj', 0) or 0),
+            'dow_adjustment':          float(r.get('dow_adj', 0) or 0),
+            'seasonality_adjustment':  float(r.get('season_adj', 0) or 0),
+            'event_adjustment':        float(r.get('event_adj', 0) or 0),
+        },
+    }
+
+
+def _v2_entry(night, e):
+    return {
+        'date': night, 'model': 'v2', 'estimated_occupancy': e['mid'], 'low': e['low'], 'mid': e['mid'], 'high': e['high'],
+        'scraped_bar': round(e['price'], 0) if e['price'] else None,
+        'estimated_revpar': round((e['price'] or e['normal_price']) * e['mid'] / 100, 0) if (e['price'] or e['normal_price']) else None,
+        'confidence': e['confidence'], 'price_coverage': price_coverage(e['confidence']), 'signals_used': e['signals'],
+        'breakdown': {'base': e['base'], 'rate_adjustment': round(e['market'] + e['own'], 1), 'dow_adjustment': e['dow'],
+                      'seasonality_adjustment': e['season'], 'event_adjustment': e['calendar']},
+    }
 
 
 def _visible_hotel_ids():
@@ -5167,23 +5222,7 @@ def api_occupancy_hotel(hotel_id):
         window = [(today + timedelta(days=o)).strftime('%Y-%m-%d') for o in range(0, 32)]
         avg_window = set(window[1:31])
 
-        stored = {}
-        for r in hotel_rows:
-            if r.get('date') in window:
-                stored[r['date']] = {
-                    'date':                r.get('date'),
-                    'estimated_occupancy': float(r.get('estimated_occupancy', 0)),
-                    'scraped_bar':         float(r['scraped_bar']) if r.get('scraped_bar') else None,
-                    'estimated_revpar':    float(r['estimated_revpar']) if r.get('estimated_revpar') else None,
-                    'confidence':          r.get('confidence', 'low'),
-                    'breakdown': {
-                        'base':                    float(r.get('base_occ', 0)),
-                        'rate_adjustment':         float(r.get('rate_adj', 0)),
-                        'dow_adjustment':          float(r.get('dow_adj', 0)),
-                        'seasonality_adjustment':  float(r.get('season_adj', 0)),
-                        'event_adjustment':        float(r.get('event_adj', 0)),
-                    },
-                }
+        stored = {r['date']: _occ_entry(r) for r in hotel_rows if r.get('date') in window}
         hotel_name = hotel_rows[0].get('hotel_name', '') if hotel_rows else ''
         model_run  = max((r.get('model_run_date', '') for r in hotel_rows), default='')
 
@@ -5206,6 +5245,13 @@ def api_occupancy_hotel(hotel_id):
                     h            = h_row.iloc[0].to_dict()
                     model        = OccupancyModel()
                     baseline_adr = float(h.get('adr_mad', 0) or 0)
+                    if active_model() == 'v2':
+                        live = model.v2_estimates([datetime.strptime(d, '%Y-%m-%d').date() for d in missing],
+                                                  hotel_ids=[str(hotel_id)])
+                        for stay_str in missing:
+                            if (str(hotel_id), stay_str) in live:
+                                stored[stay_str] = _v2_entry(stay_str, live[(str(hotel_id), stay_str)])
+                        missing = []
                     for stay_str in missing:
                         stay_dt = datetime.strptime(stay_str, '%Y-%m-%d')
                         scraped_bar = model.get_scraped_data_for_date(str(hotel_id), stay_str)
@@ -5218,10 +5264,14 @@ def api_occupancy_hotel(hotel_id):
                         adr_used = scraped_bar or baseline_adr
                         stored[stay_str] = {
                             'date':                stay_str,
+                            'model':               'v1',
                             'estimated_occupancy': round(occ * 100, 1),
+                            'low': None, 'mid': round(occ * 100, 1), 'high': None,
                             'scraped_bar':         round(scraped_bar, 0) if scraped_bar else None,
                             'estimated_revpar':    round(adr_used * occ, 0) if adr_used else None,
                             'confidence':          breakdown['confidence'],
+                            'price_coverage':      price_coverage(breakdown['confidence']),
+                            'signals_used':        '',
                             'breakdown':           breakdown,
                         }
                     hotel_name = hotel_name or h.get('name', '')
@@ -5240,8 +5290,15 @@ def api_occupancy_hotel(hotel_id):
         conf_counts = {'high': 0, 'medium': 0, 'low': 0}
         for e in averaged:
             conf_counts[e.get('confidence', 'low')] = conf_counts.get(e.get('confidence', 'low'), 0) + 1
+        lows  = [e['low'] for e in averaged if e.get('low') is not None]
+        highs = [e['high'] for e in averaged if e.get('high') is not None]
 
         return jsonify({
+            'model':             active_model(),
+            'avg_low_30d':       round(sum(lows) / len(lows)) if lows and len(lows) == len(averaged) else None,
+            'avg_high_30d':      round(sum(highs) / len(highs)) if highs and len(highs) == len(averaged) else None,
+            'price_coverage_counts': {'full': conf_counts['high'], 'partial': conf_counts['medium'], 'none': conf_counts['low']},
+            'price_coverage_note': PRICE_COVERAGE_NOTE,
             'hotel_id':          hotel_id,
             'hotel_name':        hotel_name,
             'estimates':         estimates,
@@ -5309,6 +5366,50 @@ def api_occupancy_run():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/admin/occupancy/compare')
+@admin_required
+def api_admin_occupancy_compare():
+    """v1 against v2 for one hotel and the next 30 nights."""
+    hid = str(request.args.get('hotel_id', '')).strip()
+    today = datetime.utcnow().date()
+    nights = [(today + timedelta(days=o)).isoformat() for o in range(1, 31)]
+    rows = [r for r in _read_occupancy_csv('all') if r.get('hotel_id') == hid and r.get('date') in nights]
+    by = {(row_model(r), r['date']): _occ_entry(r) for r in rows}
+    live = False
+    if SCRAPER_MODULE_OK and OccupancyModel is not None and any(('v2', n) not in by for n in nights):
+        try:
+            est = OccupancyModel().v2_estimates([datetime.strptime(n, '%Y-%m-%d').date() for n in nights], hotel_ids=[hid])
+            for n in nights:
+                if ('v2', n) not in by and (hid, n) in est:
+                    by[('v2', n)] = _v2_entry(n, est[(hid, n)])
+                    live = True
+        except Exception as e:
+            app.logger.warning(f'v2 live estimate failed for {hid}: {e}')
+    out = []
+    for n in nights:
+        a, b = by.get(('v1', n)), by.get(('v2', n))
+        out.append({'night': n, 'v1': a and a['estimated_occupancy'], 'v2_low': b and b['low'], 'v2_mid': b and b['mid'],
+                    'v2_high': b and b['high'], 'price': (b or a or {}).get('scraped_bar'),
+                    'price_coverage': (b or a or {}).get('price_coverage'), 'signals': b and b['signals_used']})
+    v1s = [x['v1'] for x in out if x['v1'] is not None]
+    v2s = [x['v2_mid'] for x in out if x['v2_mid'] is not None]
+    return jsonify({'hotel_id': hid, 'shown_model': active_model(), 'nights': out, 'v2_computed_live': live,
+                    'avg_v1': round(sum(v1s) / len(v1s), 1) if v1s else None,
+                    'avg_v2': round(sum(v2s) / len(v2s), 1) if v2s else None,
+                    'model_run_date': max((r.get('model_run_date', '') for r in rows), default='') or None})
+
+
+@app.route('/api/admin/occupancy/calibration')
+@admin_required
+def api_admin_occupancy_calibration():
+    try:
+        with open(os.path.join(DATA_DIR, 'calibration_results.json'), encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    except (OSError, ValueError):
+        return jsonify({'status': 'not_run', 'message': 'Calibration has not run yet: it runs after the first '
+                        'occupancy model run of each month.'})
+
+
 @app.route('/api/occupancy/status')
 @admin_required
 def api_occupancy_status():
@@ -5330,6 +5431,8 @@ def api_occupancy_status():
     low    = sum(1 for r in rows if r.get('confidence') == 'low')
     return jsonify({
         'has_data':          True,
+        'model':             active_model(),
+        'price_coverage':    {'full': high, 'partial': medium, 'none': low},
         'model_run_date':    model_run,
         'total_estimates':   len(rows),
         'high_confidence':   high,

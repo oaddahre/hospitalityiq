@@ -522,7 +522,7 @@
               <p><strong>How a night's price is chosen.</strong> The most recently collected price for that night, at most 7 days old. A price is used only if the result passed Kodo's name and city check for that hotel.</p>
               <p><strong>What is excluded.</strong> Results for a different hotel or city, prices older than 7 days, prices entered by hand, prices outside 200 to 60,000 MAD, and nights with no price. A night without a live price shows "–" and is left out of every average.</p>
               <p><strong>Rate index and rank.</strong> Rate index = your published rate ÷ the comp set's median published rate × 100, over the nights where both exist (100 = priced like the median). Rank orders your hotel among the comp set by average published rate over the next 30 nights (1 = highest).</p>
-              <p><strong>Modelled occupancy (Kodo Estimates).</strong> Modelled, not measured: a base occupancy for the hotel's type and segment, adjusted for day of week, month, local events and, when a price was collected for the night, that price against the hotel's baseline rate. Kodo does not use "rooms left" messages. Confidence reflects price coverage: low with no price for the night, medium with one, high with one and prices collected for the hotel on at least 4 of the last 7 days.</p>
+              <p><strong>Modelled occupancy (Kodo Estimates).</strong> Modelled, not measured: a base occupancy for the hotel's type and segment, adjusted for day of week, month, holidays and local events, and for published prices (see the Methodology page for how). Where the model gives a range it is shown as low–high. Kodo does not use "rooms left" messages. Price coverage describes how many recent published prices we have for the hotel, not how accurate the estimate is: none with no price for the night, partial with one, full with one and prices collected for the hotel on at least 4 of the last 7 days.</p>
             </div>
           </details>
           <div class="bench-freshness-bar"><span id="rb-status">Loading…</span></div>
@@ -1671,7 +1671,7 @@
           <!-- Occupancy Calendar -->
           <div class="table-card dual-cal-card">
             <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
-              <span class="table-title">Estimated Occupancy · Next 30 Days</span>
+              <span class="table-title">Modelled Occupancy · Next 30 Days</span>
               <span class="rate-source-badge pill--blue" id="hocc-model-badge">Kodo Estimates</span>
             </div>
             <div id="hocc-calendar" class="bar-calendar">

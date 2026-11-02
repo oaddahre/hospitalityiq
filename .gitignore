@@ -42,3 +42,4 @@ possibly_missing_hotels.csv
 candidate_diagnosis.txt
 candidate_cache.json
 hotel_changes*.csv
+scrape_coverage.csv

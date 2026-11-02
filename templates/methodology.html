@@ -139,7 +139,18 @@
       <div class="method-source-item">
         <span class="method-source-name">Occupancy Model</span>
         <span class="method-source-confidence pill--orange">Medium Confidence</span>
-        <p class="method-source-desc">Kodo does not have access to real occupancy data from hotel PMS systems except for properties participating in our Data Sharing Program. For all other properties we estimate occupancy using a statistical model with the following inputs: base occupancy by market segment and hotel type; rate index adjustment; day-of-week patterns; monthly seasonality index derived from ONMT national tourism data; and a major events calendar. It does not use "rooms left" availability messages. Each estimate carries a confidence level from price coverage: low with no published rate for the night, medium with one, high with one and rates collected for the hotel on at least 4 of the last 7 days.</p>
+        <p class="method-source-desc">Kodo does not have access to real occupancy data from hotel PMS systems except for properties participating in our Data Sharing Program. For all other properties occupancy is modelled, not measured. Two versions of the model run every night; the platform shows one of them.</p>
+        <p class="method-source-desc"><strong>Version 1</strong> starts from a base occupancy for the hotel's segment and type (city, resort, leisure, riad or camp), and adjusts it for the day of the week, the month, a short list of events, and the night's published rate compared with the hotel's estimated average rate.</p>
+        <p class="method-source-desc"><strong>Version 2</strong> keeps the same base, day-of-week and monthly pattern, and replaces the rest with signals read from the market every night:</p>
+        <ul class="method-source-desc">
+          <li><strong>The hotel's normal price.</strong> Its own median published price for each day of the week over the last 60 days. A hotel with fewer than 14 priced nights uses its estimated average rate instead, and its range is wider.</li>
+          <li><strong>Market heat.</strong> For each city and night, how far prices are above or below normal across all hotels with a price (by segment when at least 5 hotels have one). Hotels whose price barely moves count less. When a whole city prices up, demand is likely up; one hotel's own move counts too, but less.</li>
+          <li><strong>Nights that disappear.</strong> When a night's price vanishes from a lookup that otherwise worked, while the hotel has prices on the nights around it, the night may be sold out. It counts as sold out only if this shows in two lookups in a row. A hotel with no prices for 5 nights or more in a row is treated as closed or unknown, not sold out, and a failed lookup is never read as sold out. Sold-out hotels in a city raise the estimate for the others.</li>
+          <li><strong>Calendar.</strong> Ramadan, Eid al-Fitr, Eid al-Adha, Throne Day, and Moroccan and French school holidays for 2026 and 2027, with different effects for city, resort, leisure and riad hotels. Islamic holidays in 2027 are estimates until announced.</li>
+        </ul>
+        <p class="method-source-desc">Version 2 gives a range (for example 62–74%), not a single figure. The range is wider when few hotels in the city have prices that night, when the hotel has a short price history, and when there is no price for the night; it is narrower when a sold-out night is confirmed. The range is a judgement of how much the signals agree, not a measured margin of error. All weights are set by hand for now and will be fitted once hotels share real figures.</p>
+        <p class="method-source-desc"><strong>What it cannot know.</strong> Kodo never sees bookings: group and corporate blocks, events not in the calendar, how many rooms a hotel actually has for sale, or why a price changed (a promotion looks like weak demand). A published price is not the rate guests paid. A hotel whose price never changes gives almost no signal. A sold-out night can also be a night the hotel stopped selling online.</p>
+        <p class="method-source-desc"><strong>Price coverage</strong> (full, partial or none) describes how many recent published prices we have for the hotel, not how accurate the estimate is: none with no published rate for the night, partial with one, full with one and rates collected for the hotel on at least 4 of the last 7 days. Neither version uses "rooms left" messages.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Verified Operator Data</span>
@@ -185,8 +196,8 @@
           <td>High (verified only)</td>
         </tr>
         <tr>
-          <td>RevPAR</td>
-          <td>BAR × Estimated Occupancy</td>
+          <td>Indicative RevPAR</td>
+          <td>Published rate (BAR) × modelled occupancy; not achieved RevPAR</td>
           <td>Derived</td>
           <td>Medium</td>
         </tr>
@@ -289,7 +300,7 @@
       <ul>
         <li>Kodo estimates are not a substitute for operator-verified PMS data. For investment underwriting, always seek actual operator performance data.</li>
         <li>BAR (Best Available Rate) is not equivalent to ADR (Average Daily Rate). BAR excludes negotiated corporate rates, loyalty redemptions, wholesale contracts, and package inclusions, which can represent 30–60% of a hotel's actual revenue mix.</li>
-        <li>Occupancy estimates carry a margin of error of approximately ±8–12 percentage points for properties without verified real data. Estimates are more accurate for markets with higher data density and longer observation periods.</li>
+        <li>The error of the occupancy model has not been measured yet: no hotel has shared enough real figures to test it. Once they do, Kodo compares both versions of the model with those figures every month, by city and hotel type, and will publish the result. Until then, treat modelled occupancy as a direction, not a figure.</li>
         <li>Financial estimates — asset values, revenue ranges, and RevPAR figures — are indicative only. They reflect current market conditions and available data, and may differ materially from actual performance or appraised values.</li>
         <li>All data on the Kodo platform should be independently verified before forming the basis of investment decisions, operator negotiations, or financial reporting.</li>
         <li>Kodo Hospitality is a market intelligence provider, not a licensed financial advisor. Nothing on this platform constitutes investment advice.</li>

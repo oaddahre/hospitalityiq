@@ -376,6 +376,20 @@
     <p class="adm-list-filter-label" style="margin-top:12px">Backups and change log</p>
     <div id="ri-coord-history" class="adm-hint">—</div>
 
+    <p class="adm-list-filter-label" style="margin-top:28px">Occupancy model: v1 against v2</p>
+    <p class="adm-hint">Both models run every night; the platform shows the one OCC_MODEL picks (<strong id="ri-occ-shown">—</strong>). For one hotel and the next 30 nights. v2 gives a range (low–mid–high) and lists the signals it used.</p>
+    <div class="adm-override-grid">
+      <div class="adm-field-group">
+        <label class="adm-label">Hotel</label>
+        <select id="ri-occ-hotel" class="adm-input"><option value="">Choose a hotel</option></select>
+      </div>
+      <button class="adm-btn adm-btn-secondary" id="ri-occ-compare">Compare</button>
+    </div>
+    <span id="ri-occ-msg" class="adm-inline-msg"></span>
+    <div id="ri-occ-result" class="adm-hint" style="overflow-x:auto"></div>
+    <p class="adm-list-filter-label" style="margin-top:12px">Calibration (monthly, against real figures)</p>
+    <div id="ri-occ-calib" class="adm-hint">—</div>
+
     <p class="adm-list-filter-label" style="margin-top:28px">Scraper log (last 30 lines)</p>
     <pre class="adm-log" id="ri-log">Loading…</pre>
   </section>
@@ -383,7 +397,7 @@
   <!-- ══════════════════ OCCUPANCY ══════════════════ -->
   <section class="adm-section" id="section-occupancy" style="display:none">
     <h1 class="adm-section-title">Occupancy Model</h1>
-    <p class="adm-section-desc">Estimated occupancy confidence and the last model run.</p>
+    <p class="adm-section-desc">Modelled occupancy: price coverage of the stored nights and the last model run. Price coverage describes how many recent published prices we have, not how accurate the estimate is. Model shown on the platform: <strong id="occ-model-shown">—</strong> (environment variable OCC_MODEL).</p>
 
     <div class="adm-toolbar" style="justify-content:flex-end">
       <button class="adm-btn adm-btn-primary" id="run-occ-btn">Run Model Now</button>
@@ -391,11 +405,11 @@
 
     <div class="adm-stat-row">
       <div class="adm-stat"><span class="adm-stat-val" style="font-size:16px" id="occ-last-run">—</span><span class="adm-stat-label">Last Run</span></div>
-      <div class="adm-stat"><span class="adm-stat-val" id="occ-high">—</span><span class="adm-stat-label">High Confidence</span></div>
-      <div class="adm-stat"><span class="adm-stat-val" id="occ-medium">—</span><span class="adm-stat-label">Medium Confidence</span></div>
-      <div class="adm-stat"><span class="adm-stat-val" id="occ-low">—</span><span class="adm-stat-label">Low Confidence</span></div>
+      <div class="adm-stat"><span class="adm-stat-val" id="occ-high">—</span><span class="adm-stat-label">Price coverage: full</span></div>
+      <div class="adm-stat"><span class="adm-stat-val" id="occ-medium">—</span><span class="adm-stat-label">Price coverage: partial</span></div>
+      <div class="adm-stat"><span class="adm-stat-val" id="occ-low">—</span><span class="adm-stat-label">Price coverage: none</span></div>
     </div>
-    <p class="adm-hint" style="margin-top:16px">Calibration pending — add real hotel data to improve accuracy. Upload a CSV with columns <code>hotel_id, date, actual_occupancy</code> to calibrate.</p>
+    <p class="adm-hint" style="margin-top:16px">Calibration runs once a month, after the first model run of the month, against the real figures in daily_performance.csv (Upload performance). It reports the average error of v1 and v2 by city and hotel type in the Rates panel; with no real figures it does nothing and says so.</p>
   </section>
 
   <!-- ══════════════════ DATA & SYSTEM ══════════════════ -->

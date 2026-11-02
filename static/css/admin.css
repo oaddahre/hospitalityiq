@@ -717,3 +717,9 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 
 /* Pills hug their text inside column layouts (e.g. Featured under a news title) */
 .adm-pill { align-self: flex-start; width: max-content; max-width: 100%; }
+
+/* Occupancy model v1 / v2 comparison (Rates panel) */
+.adm-table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 8px; }
+.adm-table th, .adm-table td { border-bottom: 1px solid var(--border); padding: 4px 8px; text-align: left; vertical-align: top; }
+.adm-table th { color: var(--text-muted, var(--text)); font-weight: 600; white-space: nowrap; }
+.adm-table td:nth-child(-n+5) { white-space: nowrap; }

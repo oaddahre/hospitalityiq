@@ -37,6 +37,12 @@ logger = logging.getLogger('kodo_scraper')
 MOROCCO_TZ  = pytz.timezone('Africa/Casablanca')
 HOTELS_CSV  = os.path.join(DATA_DIR, 'hotels.csv')
 RATES_CSV   = os.path.join(DATA_DIR, 'scraped_rates.csv')
+# One row per hotel per run: what the price lookup returned. The occupancy
+# model (v2) reads it to tell "Google returned no price for that night"
+# (status ok, night missing) from "the lookup failed" (error, no_result,
+# no_match, no_id), so an API error is never read as a sold-out night.
+COVERAGE_CSV = os.path.join(DATA_DIR, 'scrape_coverage.csv')
+COVERAGE_FIELDS = ['scrape_date', 'hotel_id', 'status', 'nights_returned', 'window_start', 'window_end']
 PROGRESS_JSON = os.path.join(DATA_DIR, 'scraper_progress.json')
 STATS_JSON  = os.path.join(DATA_DIR, 'scraper_log.json')
 SCRAPER_LOCK = os.path.join(DATA_DIR, 'scraper.lock')
@@ -425,6 +431,12 @@ class KodoScraper:
         self.dfs = DataForSEO(os.environ.get('DATAFORSEO_LOGIN', '').strip(),
                               os.environ.get('DATAFORSEO_PASSWORD', '').strip())
         self.dfs_prices = {}    # hotel id -> {night: rate in MAD}, from this run
+        # hotel id -> price lookup status this run: ok | no_result (Google
+        # returned nothing) | no_match (result failed the name check) |
+        # error (task not created, not ready, failed) | other_currency
+        # (some nights dropped: not MAD) | no_id (no Google ID). Hotels
+        # never reached count as error. Only "ok" can show a sold-out night.
+        self.dfs_coverage = {}
         self.progress = self.load_progress()
         self.stats = {
             'total': len(self.hotels),
@@ -803,6 +815,8 @@ class KodoScraper:
             # (2) Prices for the next 30 nights, one call per hotel
             priced = [h for h in by_id if (ids.get(h) or {}).get('identifier')
                       and ids[h]['identifier'] not in (ids[h].get('rejected_identifiers') or [])]
+            for h in by_id:
+                self.dfs_coverage[h] = 'error' if h in priced else 'no_id'
             if not priced:
                 return
             tasks = [{**common, **self._dfs_where(by_id[h]), 'hotel_identifier': ids[h]['identifier'],
@@ -825,6 +839,7 @@ class KodoScraper:
                     continue
                 if task.get('status_code') == DFS_NO_RESULT:
                     s['per_hotel'][hid] = {'name': hotel['name'], 'nights': 0, 'note': 'no prices from Google'}
+                    self.dfs_coverage[hid] = 'no_result'
                     continue
                 if task.get('status_code') != 20000:
                     s['failed_tasks'] += 1
@@ -854,11 +869,13 @@ class KodoScraper:
                                         f'"{res.get("title", "")}" ({ov_why})')
                         else:
                             s['no_match'] += 1
+                            self.dfs_coverage[hid] = 'no_match'
                             logger.warning(f'DataForSEO: the manual Google ID for "{hotel["name"]}" returns "{res.get("title", "")}" '
                                            f'({ov_why}): prices not used, check hotel_id_overrides.json')
                             continue
                 if not ok:
                     s['no_match'] += 1
+                    self.dfs_coverage[hid] = 'no_match'
                     self.no_match('DataForSEO hotel info', hotel, (res.get('title', ''), why))
                     ids[hid] = {'identifier': None, 'checked': today.isoformat(), 'best_result': res.get('title'),
                                 **self._rejections(ids.get(hid), ids[hid].get('identifier'))}
@@ -888,6 +905,9 @@ class KodoScraper:
                 if other_currency:
                     self._dfs_error(f'"{hotel["name"]}": prices in {", ".join(sorted(other_currency))}, not MAD: not used')
                 self.dfs_prices[hid] = nights
+                # Nights dropped for another currency look like missing nights:
+                # such a lookup is never sold-out evidence
+                self.dfs_coverage[hid] = 'ok' if not other_currency else ('other_currency' if nights else 'error')
                 s['per_hotel'][hid] = {'name': hotel['name'], 'nights': len(nights),
                                        'google_title': res.get('title', '')}
             self.save_dfs_ids(ids)
@@ -1094,6 +1114,31 @@ class KodoScraper:
                 writer.writerows(rows)
         logger.info(f'Cleanup done — kept {len(rows)} rate records')
 
+    def save_coverage(self, hotels, scrape_date, days_to_keep=120):
+        """Append this run's price lookup status per hotel to COVERAGE_CSV
+        (rows older than days_to_keep are dropped)."""
+        first = datetime.strptime(scrape_date, '%Y-%m-%d').date() + timedelta(days=1)
+        new = [{'scrape_date': scrape_date, 'hotel_id': str(h.get('id', h.get('name', ''))),
+                'status': self.dfs_coverage.get(str(h.get('id', h.get('name', ''))), 'error'),
+                'nights_returned': len(self.dfs_prices.get(str(h.get('id', h.get('name', ''))), {})),
+                'window_start': first.isoformat(),
+                'window_end': (first + timedelta(days=WINDOW_NIGHTS - 1)).isoformat()} for h in hotels]
+        if not new:
+            return
+        cutoff = (datetime.now() - timedelta(days=days_to_keep)).strftime('%Y-%m-%d')
+        replaced = {(n['scrape_date'], n['hotel_id']) for n in new}     # a second run the same day replaces the first
+        old = []
+        if Path(COVERAGE_CSV).exists():
+            with open(COVERAGE_CSV, encoding='utf-8') as f:
+                old = [r for r in csv.DictReader(f) if r.get('scrape_date', '') >= cutoff
+                       and (r.get('scrape_date'), r.get('hotel_id')) not in replaced]
+        tmp = COVERAGE_CSV + '.tmp'
+        with open(tmp, 'w', newline='', encoding='utf-8') as f:
+            w = csv.DictWriter(f, fieldnames=COVERAGE_FIELDS, extrasaction='ignore')
+            w.writeheader()
+            w.writerows(old + new)
+        os.replace(tmp, COVERAGE_CSV)
+
     def run(self):
         # One run at a time, whichever worker, schedule or button starts it.
         # The OS releases the lock when this process ends, crash included.
@@ -1145,6 +1190,7 @@ class KodoScraper:
             if BROWSER_STEPS and hotel_id not in self.dfs_prices:
                 self.random_delay(8, 14)
 
+        self.save_coverage(todo, today)
         if datetime.now().weekday() == 6:
             self.cleanup_old_rates()
 

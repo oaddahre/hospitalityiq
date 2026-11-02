@@ -1115,11 +1115,59 @@ async function loadScraperStatus() {
   }
 }
 
+// Occupancy model: v1 against v2 for one hotel, and the last calibration
+document.getElementById('ri-occ-compare').addEventListener('click', async () => {
+  const hid = document.getElementById('ri-occ-hotel').value, msg = document.getElementById('ri-occ-msg'),
+    out = document.getElementById('ri-occ-result');
+  if (!hid) { msg.textContent = 'Choose a hotel'; return; }
+  msg.textContent = 'Loading…';
+  try {
+    const res = await fetch(`/api/admin/occupancy/compare?hotel_id=${encodeURIComponent(hid)}`, { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) { msg.textContent = d.error || 'Failed'; return; }
+    document.getElementById('ri-occ-shown').textContent = (d.shown_model || 'v1').toUpperCase();
+    msg.textContent = `Average next 30 nights: v1 ${d.avg_v1 ?? '–'}% · v2 ${d.avg_v2 ?? '–'}%`
+      + (d.model_run_date ? ` · model run ${d.model_run_date}` : '') + (d.v2_computed_live ? ' · v2 computed now (not in the last run)' : '');
+    const t = document.createElement('table');
+    t.className = 'adm-table';
+    t.innerHTML = '<thead><tr><th>Night</th><th>v1</th><th>v2 low–mid–high</th><th>Published rate</th><th>Price coverage</th><th>v2 signals</th></tr></thead>';
+    const tb = document.createElement('tbody');
+    (d.nights || []).forEach(n => {
+      const tr = document.createElement('tr');
+      [n.night, n.v1 != null ? `${Math.round(n.v1)}%` : '–',
+       n.v2_mid != null ? `${n.v2_low}–${n.v2_mid}–${n.v2_high}%` : '–',
+       n.price != null ? `MAD ${Math.round(n.price).toLocaleString('en')}` : '–', n.price_coverage || '–',
+       (n.signals || '').split(';').join(' · ')].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+    out.replaceChildren(t);
+  } catch { msg.textContent = 'Failed'; }
+});
+
+async function loadCalibration() {
+  const el = document.getElementById('ri-occ-calib');
+  try {
+    const res = await fetch('/api/admin/occupancy/calibration', { headers: authHeaders() });
+    const c = await res.json();
+    el.replaceChildren();
+    const line = t => { const d = document.createElement('div'); d.textContent = t; el.appendChild(d); };
+    line(`${c.message || c.status}${c.run_at ? ' · run ' + c.run_at : ''}`);
+    if (c.status !== 'ok') return;
+    const fmt = (k, s) => `${k}: ${s.n} nights · average error v1 ${s.v1_mae_pts ?? '–'} pts, v2 ${s.v2_mae_pts ?? '–'} pts`
+      + ` · bias v1 ${s.v1_bias_pts ?? '–'}, v2 ${s.v2_bias_pts ?? '–'}` + (s.v2_inside_range_pct != null ? ` · inside v2 range ${s.v2_inside_range_pct}%` : '');
+    line(fmt('All', c.overall));
+    Object.entries(c.by_city || {}).forEach(([k, s]) => line(fmt(k, s)));
+    Object.entries(c.by_hotel_type || {}).forEach(([k, s]) => line(fmt(k.replace('_', ' '), s)));
+  } catch { el.textContent = '—'; }
+}
+loadCalibration();
+
 async function populateHotelSelect() {
   try {
     const res = await fetch('/api/hotels', { headers: authHeaders() });
     const hotels = await res.json();
-    ['ri-hotel-sel', 'ri-gid-hotel'].forEach(selId => {
+    ['ri-hotel-sel', 'ri-gid-hotel', 'ri-occ-hotel'].forEach(selId => {
       const sel = document.getElementById(selId);
       if (!sel || sel.dataset.populated) return;
       (hotels.hotels || hotels).forEach(h => {
@@ -1399,6 +1447,8 @@ async function loadOccupancyStatus() {
     document.getElementById('occ-high').textContent = data.high_confidence ?? '—';
     document.getElementById('occ-medium').textContent = data.medium_confidence ?? '—';
     document.getElementById('occ-low').textContent = data.low_confidence ?? '—';
+    const om = document.getElementById('occ-model-shown');
+    if (om) om.textContent = (data.model || 'v1').toUpperCase();
   } catch {}
 }
 

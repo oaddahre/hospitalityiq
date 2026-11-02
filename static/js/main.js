@@ -1591,7 +1591,7 @@ async function renderOccCalendar(hotelId) {
     const iso = localIsoDate(d);
     const e   = estMap[iso];
     const occ = e ? +e.estimated_occupancy : null;
-    const conf = e ? e.confidence : 'low';
+    const cov = e ? occCoverage(e) : 'none';
 
     const cell = occ === null ? HEAT_EMPTY
       : occ >= 80 ? heatCell('green', 3, '600')
@@ -1602,9 +1602,9 @@ async function renderOccCalendar(hotelId) {
 
     const styAttr = `background:${bg};color:${col};${fw ? `font-weight:${fw};` : ''}${border ? `border:${border};` : ''}`;
     const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : '—';
-    const confBadge = conf === 'high' ? '●' : conf === 'medium' ? '◑' : '○';
+    const confBadge = cov === 'full' ? '●' : cov === 'partial' ? '◑' : '○';
     const tip = e
-      ? `${iso}\nOccupancy: ${occ.toFixed(1)}%\nConfidence: ${conf}\nBase: ${e.breakdown?.base ?? '—'}% + adj`
+      ? `${iso}\nModelled occupancy ${occRange(e)}\nPrice coverage: ${cov}`
       : `${iso}\nNo estimate`;
     html += `<div class="bar-cal-day" style="${styAttr}" title="${tip}">
       <div class="bar-cal-dn" style="color:${dayNumCol};opacity:1">${d.getDate()}<span style="font-size:7px;margin-left:2px;opacity:0.6">${confBadge}</span></div>
@@ -1613,26 +1613,39 @@ async function renderOccCalendar(hotelId) {
   }
   calEl.innerHTML = html;
 
-  // Modelled, not measured: say so, with the run date and how confident
-  // the model is (most days' level; "mixed" when no level has a majority).
-  const cc = data.confidence_counts || {};
-  const nDays = (cc.high || 0) + (cc.medium || 0) + (cc.low || 0);
-  const top = ['high', 'medium', 'low'].find(k => nDays && (cc[k] || 0) > nDays / 2);
-  const confLabel = top ? top[0].toUpperCase() + top.slice(1) : (nDays ? 'Mixed' : '');
+  // Modelled, not measured: say so, with the run date and the price
+  // coverage (most days' level; "mixed" when no level has a majority).
+  // Price coverage says how many recent prices we have, not accuracy.
+  const cc = data.price_coverage_counts || {};
+  const nDays = (cc.full || 0) + (cc.partial || 0) + (cc.none || 0);
+  const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
   badgeEl.textContent = 'Kodo Estimates';
   if (noteEl) {
     noteEl.textContent = ['Kodo Estimates · modelled, not measured',
       data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
-      confLabel && `Confidence: ${confLabel}`].filter(Boolean).join(' · ');
+      covLabel && `Price coverage: ${covLabel}`].filter(Boolean).join(' · ');
   }
 
   // Averages bar
   if (data.avg_occupancy_30d != null) {
-    const revStr = data.avg_revpar_30d ? ` · Est. RevPAR MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '';
-    avgText.textContent = `30-day averages: Est. Occupancy ${data.avg_occupancy_30d}%${revStr}`;
-    confEl.textContent  = `High confidence: ${cc.high ?? 0} days · Medium: ${cc.medium ?? 0} · Low: ${cc.low ?? 0}`;
+    const range = data.avg_low_30d != null && data.avg_high_30d != null ? ` (range ${data.avg_low_30d}–${data.avg_high_30d}%)` : '';
+    const revStr = data.avg_revpar_30d ? ` · Indicative RevPAR (published rate × modelled occupancy) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '';
+    avgText.textContent = `30-day averages: Modelled occupancy ${data.avg_occupancy_30d}%${range}${revStr}`;
+    confEl.textContent  = `Price coverage: full ${cc.full ?? 0} days · partial ${cc.partial ?? 0} · none ${cc.none ?? 0}. `
+      + 'It describes how many recent published prices we have for the hotel, not how accurate the estimate is.';
     avgBar.style.display = '';
   }
+}
+
+// Price coverage of a stored night (full | partial | none); older rows
+// only carry the former confidence level (high | medium | low)
+function occCoverage(e) {
+  return e.price_coverage || ({ high: 'full', medium: 'partial' })[e.confidence] || 'none';
+}
+// "62–74%" when the model gives a range, else the single value
+function occRange(e) {
+  const mid = e.mid ?? e.estimated_occupancy;
+  return e.low != null && e.high != null ? `${Math.round(e.low)}–${Math.round(e.high)}%` : `${Math.round(+mid)}%`;
 }
 
 function renderHotelFinancials(h) {
@@ -4646,7 +4659,8 @@ const rbState = {
 const rbHotel = id => (hotels || []).find(h => String(h.id) === String(id));
 const rbMad   = v => v == null ? '–' : 'MAD ' + Math.round(v).toLocaleString('en');
 const rbShort = v => v == null ? '–' : Math.round(v).toLocaleString('en');
-const rbConf  = c => c ? c[0].toUpperCase() + c.slice(1) : '';
+// Price coverage label (full | partial | none | mixed) from a level
+const rbConf  = c => ({ high: 'full', medium: 'partial', low: 'none', mixed: 'mixed' })[c] || c || '';
 
 async function initRateBenchmark() {
   const me = window._kodoUser || await fetch('/api/me').then(r => r.ok ? r.json() : {}).catch(() => ({}));
@@ -4760,13 +4774,13 @@ function rbRenderKPIs() {
     ok && k.rank != null ? 'By average published rate · 1 = highest' : '');
   rbCard('rbk-occ', ok && k.occ_subject != null ? `${k.occ_subject.toFixed(1)}%` : null,
     ok && k.occ_subject != null
-      ? `Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo Estimates · modelled, not measured · Confidence: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
+      ? `Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo Estimates · modelled, not measured · Price coverage: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
       : '');
   rbCard('rbk-cover', ok ? `${k.nights_with_rate} of ${d.window.nights}` : null,
     ok ? 'Nights with a live published rate for your hotel' : '');
   const note = document.getElementById('rb-occ-note');
   note.textContent = ok
-    ? `Kodo Estimates · modelled, not measured · your hotel, with the comp set average below · Confidence: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
+    ? `Kodo Estimates · modelled, not measured · your hotel, with the comp set average below · Price coverage: ${rbConf(k.occ_confidence)} (how many recent prices we have, not accuracy) · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
     : 'Kodo Estimates · modelled, not measured';
 }
 
@@ -4795,7 +4809,7 @@ function rbRenderCalendar(type) {
       val = n.subject_occ != null ? `${Math.round(n.subject_occ)}%` : '–';
       subTxt = n.comp_occ != null ? `avg ${Math.round(n.comp_occ)}%` : 'avg –';
       sty = n.subject_occ != null ? occCellStyle(n.subject_occ / 100) : null;
-      tip = `${iso}\nModelled occupancy (Kodo Estimates): ${n.subject_occ != null ? n.subject_occ.toFixed(1) + '%' : '–'}${n.subject_conf ? `, confidence ${n.subject_conf}` : ''}\nComp set average: ${n.comp_occ != null ? n.comp_occ.toFixed(1) + '%' : '–'}`;
+      tip = `${iso}\nModelled occupancy ${n.subject_occ != null ? occRange({ mid: n.subject_occ, low: n.subject_low, high: n.subject_high }) : '–'} (Kodo Estimates)${n.subject_conf ? `\nPrice coverage: ${rbConf(n.subject_conf)}` : ''}\nComp set average: ${n.comp_occ != null ? Math.round(n.comp_occ) + '%' : '–'}`;
     }
     const styAttr = sty ? `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}` : '';
     html += `<div class="bench-cal-day${sty ? '' : ' bench-cal-nodata'}${wk}" style="${styAttr}" title="${fmt.esc(tip)}">
@@ -4832,7 +4846,7 @@ Hotel: ${d.subject.name} (${d.subject.city}, ${d.subject.category}). Comp set: $
 Next 30 nights (${d.window.start} to ${d.window.end}); rates last collected ${d.rates_updated}${d.state === 'stale' ? ' (not updated since)' : ''}.
 Live published rate on ${k.nights_with_rate} of 30 nights for the hotel; ${k.nights_compared} nights also have a comp set median.
 Average published rate MAD ${k.avg_rate ?? 'n/a'} vs comp set median MAD ${k.avg_comp_median ?? 'n/a'}; rate index ${k.rate_index ?? 'n/a'}; rank ${k.rank ?? 'n/a'} of ${k.ranked_of ?? 'n/a'} by average published rate.
-Modelled occupancy ${pct(k.occ_subject)} vs comp set average ${pct(k.occ_comp)} (confidence ${k.occ_confidence || 'n/a'}, model run ${k.model_run_date || 'n/a'}).`;
+Modelled occupancy ${pct(k.occ_subject)} vs comp set average ${pct(k.occ_comp)} (price coverage ${rbConf(k.occ_confidence) || 'n/a'}: how many recent prices exist, not accuracy; model run ${k.model_run_date || 'n/a'}).`;
 }
 
 const rbAiCache = new Map();
@@ -4951,7 +4965,7 @@ function exportRateBenchmark() {
     { 'Metric': 'Rate index', 'Your hotel': na(k.rate_index), 'Comp set': 100, 'Period': period, 'Note': 'Your published rate ÷ comp set median × 100' },
     { 'Metric': 'Average published rate (MAD)', 'Your hotel': na(k.avg_rate), 'Comp set': na(k.avg_comp_median), 'Period': period, 'Note': 'Comp set: median published rate. Published rates, not achieved ADR' },
     { 'Metric': 'Rate rank in comp set', 'Your hotel': k.rank != null ? `${k.rank} of ${k.ranked_of}` : 'Not available yet', 'Comp set': '', 'Period': period, 'Note': 'By average published rate, 1 = highest' },
-    { 'Metric': 'Modelled occupancy % (Kodo Estimates)', 'Your hotel': na(k.occ_subject), 'Comp set': na(k.occ_comp), 'Period': period, 'Note': `Modelled, not measured · confidence ${k.occ_confidence || 'n/a'} · model run ${k.model_run_date || 'n/a'}` },
+    { 'Metric': 'Modelled occupancy % (Kodo Estimates)', 'Your hotel': na(k.occ_subject), 'Comp set': na(k.occ_comp), 'Period': period, 'Note': `Modelled, not measured · price coverage ${rbConf(k.occ_confidence) || 'n/a'} (how many recent prices we have, not accuracy) · model run ${k.model_run_date || 'n/a'}` },
     { 'Metric': 'Rate coverage', 'Your hotel': `${k.nights_with_rate} of ${d.window.nights} nights`, 'Comp set': '', 'Period': period, 'Note': 'Nights with a live published rate for your hotel' },
   ];
   const nights = d.nights.map(n => ({
@@ -4964,8 +4978,9 @@ function exportRateBenchmark() {
     'Rate index': n.rate_index ?? '–',
     'Rank': n.rank != null ? `${n.rank} of ${n.ranked_of}` : '–',
     'Modelled occupancy % (Kodo Estimates)': n.subject_occ ?? '–',
+    'Modelled occupancy range %': n.subject_low != null && n.subject_high != null ? `${n.subject_low}–${n.subject_high}` : '–',
     'Comp set modelled occupancy %': n.comp_occ ?? '–',
-    'Confidence': n.subject_conf || '–',
+    'Price coverage': rbConf(n.subject_conf) || '–',
   }));
   const comp = [d.subject, ...d.comps].map((h, i) => ({ 'Role': i ? 'Comp set' : 'Your hotel', 'Hotel': h.name, 'City': h.city, 'Segment': h.category, 'Keys': h.keys }));
   exportToExcel([

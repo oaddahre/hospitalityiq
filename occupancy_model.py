@@ -1,5 +1,5 @@
 import csv, json, math, os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 import pytz
 
@@ -16,6 +16,9 @@ HOTELS_CSV      = str(DATA_DIR / 'hotels.csv')
 PERFORMANCE_CSV = str(DATA_DIR / 'performance.csv')
 RATES_CSV       = str(DATA_DIR / 'scraped_rates.csv')
 OCCUPANCY_CSV   = str(DATA_DIR / 'estimated_occupancy.csv')
+COVERAGE_CSV    = str(DATA_DIR / 'scrape_coverage.csv')       # written by scraper.py
+DAILY_PERF_CSV  = str(DATA_DIR / 'daily_performance.csv')     # real figures uploaded in the admin
+CALIBRATION_JSON = str(DATA_DIR / 'calibration_results.json')
 PIPELINE_CSV    = str(DATA_DIR / 'pipeline.csv')
 
 EUR_TO_MAD = 10.8
@@ -265,6 +268,437 @@ def estimate_occupancy(hotel, date, scraped_bar=None, baseline_adr=None, recent_
     return estimated, breakdown
 
 
+# ─── MODEL v2 (phase 1) ──────────────────────────────────────────────────────
+# v1 (estimate_occupancy above) is kept as it is; both run every night and
+# OCC_MODEL (v1 | v2, default v1) picks the one the platform shows.
+#
+# v2 reads only data the platform already collects (no extra DataForSEO
+# calls): each hotel's own published prices (scraped_rates.csv), the whole
+# city's prices for the same night, which nights a hotel's price
+# disappeared from a successful lookup (scrape_coverage.csv), and a
+# calendar of holidays. It gives a range (low, mid, high), not one number.
+#
+# Every weight and threshold is here, hand-set, not fitted: they are
+# starting values to be fitted against real figures (calibrate_model) once
+# hotels share them. "pts" are occupancy percentage points.
+
+V2 = {
+    # Normal price: each hotel's own median published price, per weekday
+    'normal_window_days':   60,    # prices collected in the last 60 days
+    'long_history_days':    28,    # 28+ days of collection = long history (narrower range)
+    'min_points':           14,    # fewer priced nights: fall back to the performance.csv ADR (flagged)
+    'min_points_weekday':    3,    # fewer for one weekday: that weekday uses the all-days median
+
+    # Weight of a hotel's prices = how much its price moves from night to night
+    'spread_full_weight': 0.15,    # price ratio varies 15% or more (std): full weight
+    'min_weight':         0.10,    # a hotel whose price almost never changes
+    'fallback_weight':    0.30,    # hotels on the ADR fallback: capped, and left out of market heat
+
+    # Market heat: median of (price / normal price) across a city's hotels that night
+    'heat_min_hotels':           3,    # hotels with a price that night needed for a city score
+    'heat_category_min_hotels':  5,    # city + category group used from 5 hotels
+    'heat_pts_per_10pct':      4.0,    # market 10% above normal: +4 pts
+    'heat_max_pts':           15.0,
+    'own_pts_per_10pct':       2.0,    # the hotel's own deviation from the market (x its weight)
+    'own_max_pts':             6.0,    # own deviation counts, the market counts more
+
+    # Sold out: a night missing from a successful lookup
+    'soldout_neighbour_nights':   2,   # a price within 2 nights before and after (before: or tomorrow)
+    'closed_run_nights':          5,   # 5+ missing nights in a row: closed or unknown, not sold out
+    'soldout_confirm_scrapes':    2,   # confirmed when the gap shows in the 2 latest lookups
+    'soldout_mid':               95,   # a confirmed sold-out night
+    'soldout_low':               85,
+    'candidate_pts':            4.0,   # seen in one lookup only
+    'city_soldout_min_hotels':    3,   # hotels with a successful lookup needed for a city share
+    'city_soldout_pts_per_10pct': 4.0, # 10% of a city's hotels sold out: +4 pts for the others
+    'city_soldout_max_pts':    12.0,
+
+    # Calendar (holidays below, plus v1's event list)
+    'calendar_max_pts':        15.0,
+
+    # Range: half-width in pts, added up
+    'range_base':               6,
+    'range_city_priced':  ((0, 8), (1, 5), (3, 2), (10, 0)),   # (from N hotels priced in the city that night, + pts)
+    'range_no_history':         5,     # ADR fallback or no price history
+    'range_short_history':      2,     # under long_history_days
+    'range_no_price_tonight':   3,
+    'range_candidate':          3,
+    'range_closed':             5,     # closed or unknown (5+ nights without a price in a row)
+    'clamp_low':                5,
+    'clamp_high':              98,
+}
+
+# Holidays 2026-2027: (first night, last night, name, kind). Islamic
+# holidays follow the moon: 2026 dates are the ones Morocco observed,
+# 2027 dates are astronomical estimates (to check against the Ministry of
+# Habous announcements). School holidays exclude the summer, which the
+# monthly seasonality index already covers.
+V2_CALENDAR = [
+    ('2026-02-19', '2026-03-19', 'Ramadan', 'ramadan'),
+    ('2026-03-19', '2026-03-22', 'Eid al-Fitr', 'eid_fitr'),
+    ('2026-05-26', '2026-05-30', 'Eid al-Adha', 'eid_adha'),          # tentative 27 May
+    ('2026-07-29', '2026-07-31', 'Throne Day', 'throne_day'),
+    ('2027-02-08', '2027-03-09', 'Ramadan (estimated)', 'ramadan'),
+    ('2027-03-09', '2027-03-12', 'Eid al-Fitr (estimated)', 'eid_fitr'),
+    ('2027-05-15', '2027-05-19', 'Eid al-Adha (estimated)', 'eid_adha'),
+    ('2027-07-29', '2027-07-31', 'Throne Day', 'throne_day'),
+    # Moroccan public schools (ministerial calendars 2025-26 and 2026-27, decision 047.26)
+    ('2026-01-24', '2026-02-01', 'Moroccan school holidays', 'ma_school'),
+    ('2026-03-14', '2026-03-22', 'Moroccan school holidays', 'ma_school'),
+    ('2026-05-02', '2026-05-10', 'Moroccan school holidays', 'ma_school'),
+    ('2026-10-17', '2026-10-25', 'Moroccan school holidays', 'ma_school'),
+    ('2026-12-05', '2026-12-13', 'Moroccan school holidays', 'ma_school'),
+    ('2027-01-23', '2027-01-31', 'Moroccan school holidays', 'ma_school'),
+    ('2027-03-20', '2027-03-28', 'Moroccan school holidays', 'ma_school'),
+    ('2027-05-08', '2027-05-19', 'Moroccan school holidays', 'ma_school'),
+    # French school holidays (kind fr_school_<zones>: how many of the 3 zones are off)
+    ('2026-02-07', '2026-02-13', 'French school holidays (zone A)', 'fr_school_1'),
+    ('2026-02-14', '2026-02-20', 'French school holidays (zones A, B)', 'fr_school_2'),
+    ('2026-02-21', '2026-02-22', 'French school holidays (zones A, B, C)', 'fr_school_3'),
+    ('2026-02-23', '2026-03-01', 'French school holidays (zones B, C)', 'fr_school_2'),
+    ('2026-03-02', '2026-03-08', 'French school holidays (zone C)', 'fr_school_1'),
+    ('2026-04-04', '2026-04-10', 'French school holidays (zone A)', 'fr_school_1'),
+    ('2026-04-11', '2026-04-17', 'French school holidays (zones A, B)', 'fr_school_2'),
+    ('2026-04-18', '2026-04-19', 'French school holidays (zones A, B, C)', 'fr_school_3'),
+    ('2026-04-20', '2026-04-26', 'French school holidays (zones B, C)', 'fr_school_2'),
+    ('2026-04-27', '2026-05-03', 'French school holidays (zone C)', 'fr_school_1'),
+    ('2026-10-17', '2026-11-01', 'French school holidays (Toussaint)', 'fr_school_3'),
+    ('2026-12-19', '2027-01-03', 'French school holidays (Christmas)', 'fr_school_3'),
+    ('2027-02-06', '2027-02-12', 'French school holidays (zone C)', 'fr_school_1'),
+    ('2027-02-13', '2027-02-19', 'French school holidays (zones A, C)', 'fr_school_2'),
+    ('2027-02-20', '2027-02-21', 'French school holidays (zones A, B, C)', 'fr_school_3'),
+    ('2027-02-22', '2027-02-28', 'French school holidays (zones A, B)', 'fr_school_2'),
+    ('2027-03-01', '2027-03-07', 'French school holidays (zone B)', 'fr_school_1'),
+    ('2027-04-10', '2027-04-16', 'French school holidays (zone A)', 'fr_school_1'),
+    ('2027-04-17', '2027-04-23', 'French school holidays (zones A, B)', 'fr_school_2'),
+    ('2027-04-24', '2027-04-25', 'French school holidays (zones A, B, C)', 'fr_school_3'),   # zone C inferred
+    ('2027-04-26', '2027-05-02', 'French school holidays (zones B, C)', 'fr_school_2'),
+    ('2027-05-03', '2027-05-09', 'French school holidays (zone C)', 'fr_school_1'),
+]
+
+# pts by holiday kind and hotel type (city_business, beach_resort, cultural_leisure, riad_boutique)
+V2_CALENDAR_PTS = {
+    'ramadan':     {'city_business': -4, 'beach_resort': -8, 'cultural_leisure': -6, 'riad_boutique': -6},
+    'eid_fitr':    {'city_business': -8, 'beach_resort': 10, 'cultural_leisure':  6, 'riad_boutique':  4},
+    'eid_adha':    {'city_business': -10, 'beach_resort': 8, 'cultural_leisure':  4, 'riad_boutique':  2},
+    'throne_day':  {'city_business': -2, 'beach_resort':  3, 'cultural_leisure':  2, 'riad_boutique':  2},
+    'ma_school':   {'city_business': -2, 'beach_resort':  6, 'cultural_leisure':  4, 'riad_boutique':  3},
+    'fr_school':   {'city_business':  0, 'beach_resort':  4, 'cultural_leisure':  6, 'riad_boutique':  6},  # x zones off / 3
+}
+
+
+def v2_calendar(hotel_type, night):
+    """(pts, [names]) for one night: holidays plus v1's event list, capped."""
+    iso, pts, names = night.isoformat(), 0.0, []
+    for start, end, name, kind in V2_CALENDAR:
+        if start <= iso <= end:
+            if kind.startswith('fr_school_'):
+                p = V2_CALENDAR_PTS['fr_school'].get(hotel_type, 0) * int(kind[-1]) / 3
+            else:
+                p = V2_CALENDAR_PTS[kind].get(hotel_type, 0)
+            pts += p
+            names.append(name)
+    return pts, names
+
+
+def _median(xs):
+    xs = sorted(xs)
+    n = len(xs)
+    return None if not n else (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2)
+
+
+def _weighted_median(pairs):
+    """Median of values with weights: [(value, weight)]."""
+    pairs = sorted(p for p in pairs if p[1] > 0)
+    total = sum(w for _, w in pairs)
+    if not total:
+        return None
+    acc = 0.0
+    for v, w in pairs:
+        acc += w
+        if acc >= total / 2:
+            return v
+    return pairs[-1][0]
+
+
+def _clamp(x, lo, hi):
+    return max(lo, min(hi, x))
+
+
+def active_model():
+    """The model the platform shows: OCC_MODEL=v1 (default) or v2."""
+    m = os.environ.get('OCC_MODEL', 'v1').strip().lower()
+    return m if m in ('v1', 'v2') else 'v1'
+
+
+def row_model(row):
+    """A row of estimated_occupancy.csv: its model (rows from before v2 are v1)."""
+    return (row.get('model') or 'v1').strip().lower()
+
+
+PRICE_COVERAGE = {'high': 'full', 'medium': 'partial', 'low': 'none'}
+PRICE_COVERAGE_NOTE = ('Price coverage describes how many recent published prices we have for the hotel, '
+                       'not how accurate the estimate is.')
+
+
+def price_coverage(confidence):
+    return PRICE_COVERAGE.get(confidence or 'low', 'none')
+
+
+class V2Inputs:
+    """Everything v2 needs, built once from the loaded rates and coverage,
+    as it stood on as_of (only prices collected up to that day)."""
+
+    def __init__(self, hotels, performance, rate_rows, coverage_rows, as_of):
+        c = V2
+        self.hotels, self.as_of = hotels, as_of
+        start = (as_of - timedelta(days=c['normal_window_days'])).isoformat()
+        self.latest = {}        # hid -> {night: (scrape_date, rate)}
+        self.scraped = {}       # hid -> {scrape_date: set(nights priced)}
+        for r in rate_rows:
+            sd = r.get('scrape_date', '')
+            if not (start <= sd <= as_of.isoformat()):
+                continue
+            hid, night = str(r['hotel_id']), r.get('stay_date', '')
+            try:
+                rate = float(r['rate_mad'])
+            except (TypeError, ValueError):
+                continue
+            self.scraped.setdefault(hid, {}).setdefault(sd, set()).add(night)
+            cur = self.latest.setdefault(hid, {}).get(night)
+            if not cur or sd >= cur[0]:
+                self.latest[hid][night] = (sd, rate)
+        self.runs = {}          # hid -> [coverage rows up to as_of, oldest first]
+        for r in coverage_rows:
+            if r.get('scrape_date', '') <= as_of.isoformat():
+                self.runs.setdefault(str(r.get('hotel_id', '')), []).append(r)
+        for v in self.runs.values():
+            v.sort(key=lambda r: r.get('scrape_date', ''))
+        self.has_coverage = bool(coverage_rows)
+        self._market, self._priced, self._soldout, self._price = {}, {}, {}, {}
+
+        self.normal, self.weight, self.source, self.points, self.history_days = {}, {}, {}, {}, {}
+        for hid, h in hotels.items():
+            obs = self.latest.get(hid, {})
+            self.points[hid] = len(obs)
+            self.history_days[hid] = len(self.scraped.get(hid, {}))
+            if len(obs) >= c['min_points']:
+                by_wd = {}
+                for night, (_, rate) in obs.items():
+                    by_wd.setdefault(datetime.strptime(night, '%Y-%m-%d').weekday(), []).append(rate)
+                overall = _median([rate for _, rate in obs.values()])
+                self.normal[hid] = {wd: (_median(by_wd.get(wd, [])) if len(by_wd.get(wd, [])) >= c['min_points_weekday'] else overall)
+                                    for wd in range(7)}
+                self.source[hid] = 'history'
+                ratios = [rate / self.normal[hid][datetime.strptime(n, '%Y-%m-%d').weekday()] for n, (_, rate) in obs.items()]
+                mean = sum(ratios) / len(ratios)
+                spread = math.sqrt(sum((x - mean) ** 2 for x in ratios) / len(ratios))
+                self.weight[hid] = _clamp(spread / c['spread_full_weight'], c['min_weight'], 1.0)
+            else:
+                try:
+                    adr = float((performance.get(hid) or {}).get('adr_mad') or 0) or None
+                except (TypeError, ValueError):
+                    adr = None
+                if adr:
+                    self.normal[hid] = {wd: adr for wd in range(7)}
+                    self.source[hid] = 'adr_fallback'
+                    self.weight[hid] = c['fallback_weight']
+                else:
+                    self.source[hid] = 'none'
+                    self.weight[hid] = 0.0
+
+    def price(self, hid, night):
+        """The night's latest published price, unless a later successful
+        lookup no longer showed one (then it is gone: None)."""
+        key = (hid, night)
+        if key not in self._price:
+            iso = night.isoformat()
+            v = self.latest.get(hid, {}).get(iso)
+            ok = [r['scrape_date'] for r in self.runs.get(hid, [])
+                  if r.get('status') == 'ok' and r.get('window_start', '') <= iso <= r.get('window_end', '')]
+            self._price[key] = None if not v or (ok and ok[-1] > v[0]) else v[1]
+        return self._price[key]
+
+    def ratio(self, hid, night):
+        p, n = self.price(hid, night), self.normal.get(hid)
+        return p / n[night.weekday()] if p and n else None
+
+    def market(self, hid, night):
+        """(heat ratio or None, group label, hotels priced in the group)."""
+        h = self.hotels[hid]
+        _cache = self._market
+        key = (h.get('city', ''), h.get('category', ''), night)
+        if key in _cache:
+            return _cache[key]
+        same_city = [x for x, xh in self.hotels.items() if xh.get('city', '') == h.get('city', '')
+                     and self.source.get(x) == 'history' and self.price(x, night)]
+        same_cat = [x for x in same_city if self.hotels[x].get('category', '') == h.get('category', '')]
+        if len(same_cat) >= V2['heat_category_min_hotels']:
+            group, label = same_cat, 'city+category'
+        elif len(same_city) >= V2['heat_min_hotels']:
+            group, label = same_city, 'city'
+        else:
+            _cache[key] = (None, 'none', len(same_city))
+            return _cache[key]
+        heat = _weighted_median([(self.ratio(x, night), self.weight[x]) for x in group])
+        _cache[key] = (heat, label, len(group))
+        return _cache[key]
+
+    def city_priced(self, hid, night):
+        key = (self.hotels[hid].get('city', ''), night)
+        if key not in self._priced:
+            self._priced[key] = sum(1 for xh_id, xh in self.hotels.items()
+                                    if xh.get('city', '') == key[0] and self.price(xh_id, night))
+        return self._priced[key]
+
+    def gap(self, hid, night):
+        """'confirmed' | 'candidate' | 'closed' | None for one night."""
+        c = V2
+        runs = [r for r in self.runs.get(hid, []) if r.get('window_start', '') <= night.isoformat() <= r.get('window_end', '')]
+        if not runs:
+            return None
+        def one(run, earlier):
+            if run.get('status') != 'ok':
+                return 'unknown'
+            priced = self.scraped.get(hid, {}).get(run['scrape_date'], set())
+            if not priced:
+                return 'closed'
+            if night.isoformat() in priced:
+                return 'priced'
+            ws, we = date_of(run['window_start']), date_of(run['window_end'])
+            # the run of missing nights around this one
+            a = night
+            while a - timedelta(days=1) >= ws and (a - timedelta(days=1)).isoformat() not in priced:
+                a -= timedelta(days=1)
+            b = night
+            while b + timedelta(days=1) <= we and (b + timedelta(days=1)).isoformat() not in priced:
+                b += timedelta(days=1)
+            if (b - a).days + 1 >= c['closed_run_nights']:
+                return 'closed'
+            k = c['soldout_neighbour_nights']
+            before = a == ws or any((night - timedelta(days=i)).isoformat() in priced for i in range(1, k + 1 + (night - a).days))
+            # a gap running to the end of the window is not evidence: hotels
+            # often show no prices for the last nights Google covers
+            after = any((night + timedelta(days=i)).isoformat() in priced for i in range(1, k + 1 + (b - night).days))
+            if not (before and after) or not earlier:
+                return 'unknown'
+            return 'gap'
+        states = []
+        for run in runs[-c['soldout_confirm_scrapes']:]:
+            earlier = any(self.scraped.get(hid, {}).get(r['scrape_date']) for r in self.runs.get(hid, [])
+                          if r.get('scrape_date', '') < run['scrape_date'])
+            states.append(one(run, earlier))
+        last = states[-1]
+        if last == 'closed':
+            return 'closed'
+        if last != 'gap':
+            return None
+        if len(states) >= c['soldout_confirm_scrapes'] and all(s == 'gap' for s in states):
+            return 'confirmed'
+        return 'candidate'
+
+    def city_soldout_share(self, hid, night, gaps):
+        """Share of the city's other hotels (with a successful latest lookup) confirmed sold out."""
+        key = (self.hotels[hid].get('city', ''), night)
+        if key not in self._soldout:
+            seen, sold = set(), set()
+            for x, xh in self.hotels.items():
+                if xh.get('city', '') != key[0]:
+                    continue
+                runs = [r for r in self.runs.get(x, []) if r.get('window_start', '') <= night.isoformat() <= r.get('window_end', '')]
+                if not runs or runs[-1].get('status') != 'ok' or gaps.get((x, night)) == 'closed':
+                    continue
+                seen.add(x)
+                if gaps.get((x, night)) == 'confirmed':
+                    sold.add(x)
+            self._soldout[key] = (seen, sold)
+        seen, sold = (v - {hid} for v in self._soldout[key])
+        return (len(sold) / len(seen) if len(seen) >= V2['city_soldout_min_hotels'] else None), len(seen)
+
+
+def date_of(iso):
+    return datetime.strptime(iso[:10], '%Y-%m-%d').date()
+
+
+def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
+    """One hotel, one night: a dict with low, mid, high (whole %), the
+    parts in pts and the signals used."""
+    c = V2
+    hotel = inp.hotels[hid]
+    segment, htype = hotel.get('category', 'Upscale'), classify_hotel_type(hotel)
+    signals = []
+    base = BASE_OCCUPANCY.get(htype, BASE_OCCUPANCY['city_business']).get(segment, 0.60) * 100
+    dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
+    season = get_seasonality_adjustment(hotel.get('city', ''), night.month) * 100
+    signals += ['base', 'day_of_week', 'season']
+
+    src = inp.source.get(hid, 'none')
+    signals.append(f'normal_price:{src}' + (f'({inp.points[hid]} nights)' if src == 'history' else ''))
+    price = inp.price(hid, night)
+    heat, group, n_group = inp.market(hid, night)
+    market = own = 0.0
+    if heat is not None:
+        market = _clamp((heat - 1) * 100 / 10 * c['heat_pts_per_10pct'], -c['heat_max_pts'], c['heat_max_pts'])
+        signals.append(f'market_heat:{group}({n_group} hotels,{(heat - 1) * 100:+.0f}%)')
+    r = inp.ratio(hid, night)
+    if r is not None:
+        dev = r / heat - 1 if heat else r - 1
+        own = _clamp(dev * 100 / 10 * c['own_pts_per_10pct'] * inp.weight[hid], -c['own_max_pts'], c['own_max_pts'])
+        signals.append(f'own_price(weight {inp.weight[hid]:.1f})')
+
+    gap = gaps.get((hid, night))
+    soldout_city = 0.0
+    share, seen = inp.city_soldout_share(hid, night, gaps)
+    if share:
+        soldout_city = min(c['city_soldout_max_pts'], share * 100 / 10 * c['city_soldout_pts_per_10pct'])
+        signals.append(f'city_sold_out({share * 100:.0f}% of {seen})')
+    cand = c['candidate_pts'] if gap == 'candidate' else 0.0
+    if gap:
+        signals.append({'confirmed': 'sold_out:confirmed', 'candidate': 'sold_out:candidate',
+                        'closed': 'closed_or_unknown'}[gap])
+
+    cal, names = v2_calendar(htype, night)
+    ev = get_event_adjustment(hotel.get('city', ''), night) * 100
+    if ev:
+        names.append('event')
+    calendar = _clamp(cal + ev, -c['calendar_max_pts'], c['calendar_max_pts'])
+    if names:
+        signals.append('calendar:' + ','.join(dict.fromkeys(names)))
+
+    mid = _clamp(base + dow + season + market + own + soldout_city + calendar + cand, c['clamp_low'], c['clamp_high'])
+
+    priced_city = inp.city_priced(hid, night)
+    half = c['range_base'] + next(p for n, p in reversed(c['range_city_priced']) if priced_city >= n)
+    if src != 'history':
+        half += c['range_no_history']
+    elif inp.history_days.get(hid, 0) < c['long_history_days']:
+        half += c['range_short_history']
+    if price is None and gap != 'confirmed':
+        half += c['range_no_price_tonight']
+    if gap == 'candidate':
+        half += c['range_candidate']
+    if gap == 'closed':
+        half += c['range_closed']
+    low, high = mid - half, mid + half
+    if gap == 'confirmed':
+        mid, low, high = max(mid, c['soldout_mid']), max(low, c['soldout_low']), c['clamp_high']
+    low, mid, high = (int(round(_clamp(x, c['clamp_low'], c['clamp_high']))) for x in (low, mid, high))
+    return {
+        'low': low, 'mid': mid, 'high': high, 'price': price, 'normal_source': src,
+        'normal_price': inp.normal[hid][night.weekday()] if hid in inp.normal else None,
+        'market_heat': round((heat - 1) * 100, 1) if heat is not None else None,
+        'base': round(base, 1), 'dow': round(dow, 1), 'season': round(season, 1),
+        'market': round(market, 1), 'own': round(own, 1), 'soldout': round(soldout_city + cand, 1),
+        'calendar': round(calendar, 1), 'gap': gap or '',
+        'confidence': confidence_for(price, recent_price_days),
+        'signals': ';'.join(signals),
+    }
+
+
+def v2_gaps(inp, nights):
+    return {(h, n): g for h in inp.hotels for n in nights for g in [inp.gap(h, n)] if g}
+
+
 # ─── OCCUPANCY MODEL ─────────────────────────────────────────────────────────
 
 class OccupancyModel:
@@ -273,6 +707,7 @@ class OccupancyModel:
         self.hotels      = self._load_hotels()
         self.performance = self._load_performance()
         self.scraped_rates = self._load_scraped_rates()
+        self.coverage = self._load_coverage()
 
     def _load_hotels(self):
         hotels = {}
@@ -297,7 +732,7 @@ class OccupancyModel:
     def _load_scraped_rates(self):
         """Latest name-checked live price per hotel and night, and the days
         on which each hotel got any such price (for the confidence level)."""
-        rates, self.price_days = {}, {}
+        rates, self.price_days, self.rate_rows = {}, {}, []
         if not Path(RATES_CSV).exists():
             return rates
         try:
@@ -307,6 +742,7 @@ class OccupancyModel:
                             or row.get('source') not in PRICE_SOURCES or not row.get('rate_mad')):
                         continue
                     hid = str(row['hotel_id'])
+                    self.rate_rows.append(row)
                     self.price_days.setdefault(hid, set()).add(row.get('scrape_date', ''))
                     key = f"{hid}_{row['stay_date']}"
                     existing = rates.get(key)
@@ -315,6 +751,31 @@ class OccupancyModel:
         except Exception as e:
             print(f'Error loading scraped rates: {e}')
         return rates
+
+    def _load_coverage(self):
+        try:
+            with open(COVERAGE_CSV, encoding='utf-8') as f:
+                return list(csv.DictReader(f))
+        except OSError:
+            return []
+
+    def open_hotels(self):
+        return {h: r for h, r in self.hotels.items() if r.get('status', '').lower() in ('open', 'operating')}
+
+    def v2_estimates(self, nights, as_of=None, hotel_ids=None):
+        """{(hotel_id, night iso): v2 result} for these nights (dates), with
+        only the prices collected up to as_of (default: today)."""
+        as_of = as_of or datetime.now(MOROCCO_TZ).date()
+        inp = V2Inputs(self.open_hotels(), self.performance, self.rate_rows, self.coverage, as_of)
+        gaps = v2_gaps(inp, nights)
+        out = {}
+        for hid in (hotel_ids or inp.hotels):
+            if hid not in inp.hotels:
+                continue
+            days = self.recent_price_days(hid, as_of)
+            for n in nights:
+                out[(hid, n.isoformat())] = estimate_v2(inp, hid, n, gaps, days)
+        return out
 
     def get_scraped_data_for_date(self, hotel_id, stay_date):
         """The hotel's latest checked live price for that night (MAD), or None."""
@@ -384,12 +845,59 @@ class OccupancyModel:
                     'price_days_7d':       breakdown['price_days_7d'],
                     'event_adj':           breakdown['event_adjustment'],
                     'model_run_date':      today.strftime('%Y-%m-%d'),
+                    'model':               'v1',
+                    'low':                 '',
+                    'mid':                 round(occupancy * 100, 1),
+                    'high':                '',
+                    'price_coverage':      price_coverage(breakdown['confidence']),
+                    'signals_used':        'base;day_of_week;season' + (';price_vs_adr' if scraped_bar and baseline_adr else '')
+                                           + (';event' if breakdown['event_adjustment'] else ''),
                 })
 
+        # v2 for the same hotels and nights
+        nights = [(today + timedelta(days=o)).date() for o in range(1, days_forward + 1)]
+        v2 = self.v2_estimates(nights, today.date())
+        for (hotel_id, stay_str), e in sorted(v2.items()):
+            hotel = self.hotels[hotel_id]
+            adr_to_use = e['price'] or e['normal_price']
+            results.append({
+                'hotel_id':            hotel_id,
+                'hotel_name':          hotel.get('name', ''),
+                'city':                hotel.get('city', ''),
+                'category':            hotel.get('category', ''),
+                'hotel_type':          classify_hotel_type(hotel),
+                'date':                stay_str,
+                'estimated_occupancy': e['mid'],
+                'scraped_bar':         round(e['price'], 0) if e['price'] else '',
+                'baseline_adr':        round(e['normal_price'], 0) if e['normal_price'] else '',
+                'adr_used':            round(adr_to_use, 0) if adr_to_use else '',
+                'estimated_revpar':    round(adr_to_use * e['mid'] / 100, 0) if adr_to_use else '',
+                'confidence':          e['confidence'],
+                'base_occ':            e['base'],
+                'rate_adj':            round(e['market'] + e['own'], 1),
+                'dow_adj':             e['dow'],
+                'season_adj':          e['season'],
+                'price_days_7d':       self.recent_price_days(hotel_id, today.date()),
+                'event_adj':           e['calendar'],
+                'model_run_date':      today.strftime('%Y-%m-%d'),
+                'model':               'v2',
+                'low':                 e['low'],
+                'mid':                 e['mid'],
+                'high':                e['high'],
+                'price_coverage':      price_coverage(e['confidence']),
+                'signals_used':        e['signals'],
+                'market_heat_pct':     e['market_heat'] if e['market_heat'] is not None else '',
+                'market_adj':          e['market'],
+                'own_adj':             e['own'],
+                'soldout_adj':         e['soldout'],
+                'sold_out':            e['gap'],
+                'normal_source':       e['normal_source'],
+            })
+
         if results:
-            fieldnames = list(results[0].keys())
+            fieldnames = list(dict.fromkeys(k for r in results for k in r))
             with open(OCCUPANCY_CSV, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer = csv.DictWriter(f, fieldnames=fieldnames, restval='')
                 writer.writeheader()
                 writer.writerows(results)
             print(f'Occupancy model complete — {len(results)} estimates written to {OCCUPANCY_CSV}')
@@ -402,7 +910,7 @@ class OccupancyModel:
         try:
             with open(OCCUPANCY_CSV, 'r', encoding='utf-8') as f:
                 for row in csv.DictReader(f):
-                    if row['hotel_id'] == str(hotel_id) and row['date'] == date_str:
+                    if row['hotel_id'] == str(hotel_id) and row['date'] == date_str and row_model(row) == active_model():
                         return row
         except Exception:
             pass
@@ -415,7 +923,7 @@ class OccupancyModel:
         try:
             with open(OCCUPANCY_CSV, 'r', encoding='utf-8') as f:
                 for row in csv.DictReader(f):
-                    if row['city'] == city and row['date'] == date_str:
+                    if row['city'] == city and row['date'] == date_str and row_model(row) == active_model():
                         rows.append(row)
         except Exception:
             pass
@@ -437,74 +945,112 @@ def run_occupancy_model():
         return None
     try:
         model = OccupancyModel()
-        return model.run()
+        results = model.run()
+        try:
+            maybe_calibrate()
+        except Exception as e:
+            print(f'Calibration failed: {e}')
+        return results
     finally:
         lock.close()
 
 
 # ─── CALIBRATION ─────────────────────────────────────────────────────────────
+# Compares v1 and v2 with real figures from daily_performance.csv (what
+# hotels upload in the admin: hotel_id, date, occupancy as a fraction or
+# a %). For each real night, both models are run as they would have run
+# the day before (only prices collected up to then). Reports the average
+# error in points by city and hotel type. With no real figures it does
+# nothing and says so. Run monthly after the nightly model run, or by hand
+# (python3 occupancy_model.py calibrate).
 
-def calibrate_model(calibration_csv_path):
-    """
-    Compare model predictions vs real data.
-    calibration_csv: hotel_id, date, actual_occupancy
-    Returns RMSE and suggested coefficient adjustments.
-    """
-    model  = OccupancyModel()
+CALIBRATION_MIN_NIGHTS = 30   # below this the errors are reported but flagged as too few to judge
+
+
+def _real_figures(path):
+    out = {}
+    try:
+        with open(path, encoding='utf-8') as f:
+            for r in csv.DictReader(f):
+                try:
+                    occ = float(r['occupancy'])
+                    d = date_of(r['date'])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                out[(str(r.get('hotel_id', '')), d)] = occ * 100 if occ <= 1.5 else occ   # last row of a night wins
+    except OSError:
+        pass
+    return out
+
+
+def calibrate_model(calibration_csv_path=DAILY_PERF_CSV, today=None):
+    today = today or datetime.now(MOROCCO_TZ).date()
+    real = {k: v for k, v in _real_figures(calibration_csv_path).items() if k[1] < today}
+    model = OccupancyModel()
+    real = {k: v for k, v in real.items() if k[0] in model.open_hotels()}
+    result = {'run_at': datetime.now(MOROCCO_TZ).isoformat(timespec='seconds'), 'month': today.strftime('%Y-%m'),
+              'source': os.path.basename(calibration_csv_path)}
+    if not real:
+        result.update(status='no_data', message='No real figures in daily_performance.csv for open hotels: '
+                      'calibration not run.')
+        return result
     errors = []
+    for night in sorted({d for _, d in real}):
+        hids = [h for h, d in real if d == night]
+        v2 = model.v2_estimates([night], as_of=night - timedelta(days=1), hotel_ids=hids)
+        for hid in hids:
+            hotel = model.hotels[hid]
+            try:
+                adr = float((model.performance.get(hid) or {}).get('adr_mad') or 0) or None
+            except (TypeError, ValueError):
+                adr = None
+            bar = model.get_scraped_data_for_date(hid, night.isoformat())
+            p1, _ = estimate_occupancy(hotel, datetime.combine(night, datetime.min.time()), scraped_bar=bar,
+                                       baseline_adr=adr, recent_price_days=model.recent_price_days(hid, night))
+            e2 = v2.get((hid, night.isoformat()))
+            errors.append({'hotel_id': hid, 'date': night.isoformat(), 'city': hotel.get('city', ''),
+                           'hotel_type': classify_hotel_type(hotel), 'actual': round(real[(hid, night)], 1),
+                           'v1': round(p1 * 100, 1), 'v2': e2['mid'] if e2 else None,
+                           'v2_low': e2['low'] if e2 else None, 'v2_high': e2['high'] if e2 else None})
 
-    with open(calibration_csv_path, 'r') as f:
-        for row in csv.DictReader(f):
-            hotel_id = row['hotel_id']
-            date_str = row['date']
-            actual   = float(row['actual_occupancy'])
+    def summary(rows):
+        out = {'n': len(rows)}
+        for m in ('v1', 'v2'):
+            d = [r[m] - r['actual'] for r in rows if r[m] is not None]
+            out[f'{m}_mae_pts'] = round(sum(abs(x) for x in d) / len(d), 1) if d else None
+            out[f'{m}_bias_pts'] = round(sum(d) / len(d), 1) if d else None
+        inside = [r for r in rows if r['v2_low'] is not None]
+        out['v2_inside_range_pct'] = round(100 * sum(r['v2_low'] <= r['actual'] <= r['v2_high'] for r in inside) / len(inside)) if inside else None
+        return out
+    group = lambda k: {g: summary([r for r in errors if r[k] == g]) for g in sorted({r[k] for r in errors})}
+    result.update(status='ok', hotels=len({r['hotel_id'] for r in errors}), overall=summary(errors),
+                  by_city=group('city'), by_hotel_type=group('hotel_type'), details=errors[:50],
+                  message=f'{len(errors)} real nights from {len({r["hotel_id"] for r in errors})} hotels compared.'
+                  + (f' Too few to judge either model (under {CALIBRATION_MIN_NIGHTS} nights).' if len(errors) < CALIBRATION_MIN_NIGHTS else ''))
+    return result
 
-            hotel = model.hotels.get(hotel_id)
-            if not hotel:
-                continue
 
-            date        = datetime.strptime(date_str, '%Y-%m-%d')
-            scraped_bar = model.get_scraped_data_for_date(hotel_id, date_str)
-            perf        = model.performance.get(hotel_id, {})
-            baseline_adr = float(perf.get('adr_mad', 0)) or None
-
-            predicted, _ = estimate_occupancy(
-                hotel, date,
-                scraped_bar=scraped_bar,
-                baseline_adr=baseline_adr,
-                recent_price_days=model.recent_price_days(hotel_id),
-            )
-
-            error = predicted - (actual / 100)
-            errors.append({
-                'hotel_id':  hotel_id,
-                'date':      date_str,
-                'predicted': round(predicted * 100, 1),
-                'actual':    actual,
-                'error_pts': round(error * 100, 1),
-                'abs_error': round(abs(error) * 100, 1),
-            })
-
-    if not errors:
-        return {'error': 'No matching hotels found in calibration data'}
-
-    rmse = math.sqrt(sum(e['error_pts'] ** 2 for e in errors) / len(errors))
-    mae  = sum(e['abs_error'] for e in errors) / len(errors)
-
-    result = {
-        'n_observations': len(errors),
-        'rmse_pts':       round(rmse, 2),
-        'mae_pts':        round(mae, 2),
-        'mean_error_pts': round(sum(e['error_pts'] for e in errors) / len(errors), 2),
-        'details':        errors[:20],
-    }
-
-    calib_path = str(DATA_DIR / 'calibration_results.json')
-    with open(calib_path, 'w') as f:
-        json.dump(result, f, indent=2)
-
+def maybe_calibrate(today=None, force=False):
+    """Once a month (the first model run of a new month), or when forced:
+    run the calibration and save it to calibration_results.json."""
+    today = today or datetime.now(MOROCCO_TZ).date()
+    try:
+        with open(CALIBRATION_JSON, encoding='utf-8') as f:
+            last = json.load(f)
+    except (OSError, ValueError):
+        last = {}
+    if not force and last.get('month') == today.strftime('%Y-%m'):
+        return last
+    result = calibrate_model(DAILY_PERF_CSV, today)
+    with open(CALIBRATION_JSON, 'w', encoding='utf-8') as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
+    print(f'Calibration: {result["message"]}')
     return result
 
 
 if __name__ == '__main__':
-    run_occupancy_model()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == 'calibrate':
+        print(json.dumps(maybe_calibrate(force=True), indent=2, ensure_ascii=False)[:4000])
+    else:
+        run_occupancy_model()
