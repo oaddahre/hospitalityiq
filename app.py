@@ -31,6 +31,7 @@ from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
 from bench_sample import sample_benchmarking, casablanca_today
 import rate_benchmark as RB
+import events_db as EV
 from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
                    period_history, period_last_known, NOT_AVAILABLE)
 
@@ -5139,6 +5140,65 @@ def api_owners_apply():
     _log_admin_action('owner_profiles_changed', '', f'{r["changed"]} owners, backup {os.path.basename(r["backup"]) if r["backup"] else "-"}')
     return jsonify({**_owners_summary(r['plan']), 'changed': r['changed'],
                     'backup': os.path.basename(r['backup']) if r['backup'] else None})
+
+
+# ─── Events (events.json + the admin's changes; docs/EVENTS.md) ───────────────
+
+def _home_city():
+    """The user's main city: their comp set's subject hotel, if they have one."""
+    try:
+        cs = RB.get_comp_set(DATA_DIR, RB.owner_key(current_user)) or {}
+        sid = str(cs.get('subject_id') or '')
+        if sid:
+            hotels, _, _ = load_data()
+            row = hotels[hotels['id'].astype(str) == sid]
+            if len(row):
+                return str(row.iloc[0]['city'])
+    except Exception:
+        pass
+    return None
+
+
+@app.route('/api/events')
+@login_required
+def api_events():
+    events = EV.load_events(DATA_DIR)
+    for e in events:
+        for k in ('hidden', 'edited', 'added'):
+            e.pop(k, None)
+    resp = jsonify({'events': events, 'types': EV.TYPES, 'home_city': _home_city()})
+    resp.headers['Cache-Control'] = 'private, max-age=60'
+    return resp
+
+
+@app.route('/api/admin/events')
+@admin_required
+def api_admin_events():
+    return jsonify({'events': EV.load_events(DATA_DIR, include_hidden=True), 'types': EV.TYPES,
+                    'log': EV.change_log(DATA_DIR, 40)})
+
+
+@app.route('/api/admin/events/save', methods=['POST'])
+@admin_required
+def api_admin_events_save():
+    if not request.is_json:
+        return jsonify({'error': 'Expected JSON'}), 400
+    event, err = EV.save_event(DATA_DIR, request.get_json(silent=True) or {}, current_user.email)
+    if err:
+        return jsonify({'error': err}), 400
+    _log_admin_action('event_saved', '', f"{event['id']} {event['name']}")
+    return jsonify({'event': event})
+
+
+@app.route('/api/admin/events/hide', methods=['POST'])
+@admin_required
+def api_admin_events_hide():
+    body = request.get_json(silent=True) or {}
+    err = EV.set_hidden(DATA_DIR, str(body.get('id', '')), bool(body.get('hidden')), current_user.email)
+    if err:
+        return jsonify({'error': err}), 400
+    _log_admin_action('event_hidden' if body.get('hidden') else 'event_shown', '', str(body.get('id', '')))
+    return jsonify({'status': 'ok'})
 
 
 @app.route('/api/admin/coordinates/history')

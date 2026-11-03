@@ -43,3 +43,7 @@ candidate_diagnosis.txt
 candidate_cache.json
 hotel_changes*.csv
 scrape_coverage.csv
+
+# Admin changes to the events database (events.json stays tracked)
+event_overrides.json
+event_changes.log

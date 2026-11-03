@@ -66,7 +66,7 @@ document.getElementById('admMobileClose').addEventListener('click', () => mobile
 mobileOverlay.addEventListener('click', e => { if (e.target === mobileOverlay) mobileOverlay.classList.remove('open'); });
 
 // ─── Section navigation (last section remembered in localStorage) ────────
-const SECTIONS = ['overview', 'users', 'orgs', 'news', 'uploads', 'rates', 'occupancy', 'system'];
+const SECTIONS = ['overview', 'users', 'orgs', 'news', 'uploads', 'rates', 'occupancy', 'events', 'system'];
 const SECTION_LOADERS = {
   overview: loadOverview,
   users: loadUsers,
@@ -75,6 +75,7 @@ const SECTION_LOADERS = {
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
   rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); },
   occupancy: loadOccupancyStatus,
+  events: loadEvents,
   system: loadSystemInfo,
 };
 const loadedSections = new Set();
@@ -1604,3 +1605,96 @@ async function loadSystemInfo() {
     `;
   } catch { el.innerHTML = '<p class="adm-empty adm-error">Error loading system info.</p>'; }
 }
+
+// ─── Events (events.json + this server's changes, logged) ───────────────────
+let evData = null;
+async function loadEvents() {
+  const res = await fetch('/api/admin/events', { headers: authHeaders() });
+  if (!res.ok) { document.getElementById('ev-table').innerHTML = '<tr><td>Could not load events.</td></tr>'; return; }
+  evData = await res.json();
+  const typeSel = document.getElementById('ev-type');
+  typeSel.innerHTML = Object.entries(evData.types).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  document.getElementById('ev-cities').innerHTML = ['National', ...new Set(evData.events.map(e => e.city))].sort()
+    .map(c => `<option value="${c.replace(/"/g, '&quot;')}">`).join('');
+  renderEventsTable();
+  const log = document.getElementById('ev-log');
+  log.replaceChildren();
+  if (!evData.log.length) { log.textContent = 'No changes made on this server yet.'; return; }
+  const list = document.createElement('div');
+  list.className = 'adm-changelog';
+  evData.log.forEach(l => {
+    const d = document.createElement('div');
+    d.className = 'adm-changelog-line';
+    const what = l.action === 'edit' ? `edited ${l.name}: ${Object.keys(l.changed || {}).join(', ')}` : `${l.action === 'add' ? 'added' : l.action === 'hide' ? 'hid' : 'showed again'} ${l.name}`;
+    d.textContent = `${l.at} · ${what} by ${l.by}`;
+    list.appendChild(d);
+  });
+  log.appendChild(list);
+}
+function renderEventsTable() {
+  const q = document.getElementById('ev-search').value.trim().toLowerCase();
+  const show = document.getElementById('ev-filter').value;
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = evData.events.filter(e =>
+    (show === 'all' || (show === 'upcoming' && e.end >= today && !e.hidden) || (show === 'hidden' && e.hidden)
+      || (show === 'edited' && (e.edited || e.added)) || (show === 'estimated' && ['estimated', 'moon'].includes(e.date_status)))
+    && (!q || [e.name, e.city, e.type, e.venue].join(' ').toLowerCase().includes(q)));
+  const t = document.getElementById('ev-table');
+  t.innerHTML = '<thead><tr><th>Dates</th><th>Event</th><th>City</th><th>Type</th><th>Impact</th><th>Date</th><th></th></tr></thead>';
+  const tb = document.createElement('tbody');
+  rows.slice(0, 300).forEach(e => {
+    const tr = document.createElement('tr');
+    if (e.hidden) tr.style.opacity = '0.55';
+    const cells = [e.start === e.end ? e.start : `${e.start} → ${e.end}`, e.name + (e.added ? ' (added here)' : e.edited ? ' (edited here)' : ''),
+      e.city, evData.types[e.type] || e.type, e.impact, e.date_status];
+    cells.forEach(c => { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });
+    const td = document.createElement('td');
+    td.style.whiteSpace = 'nowrap';
+    const edit = document.createElement('button');
+    edit.type = 'button'; edit.className = 'adm-btn adm-btn-secondary adm-btn-sm'; edit.textContent = 'Edit';
+    edit.addEventListener('click', () => openEventForm(e));
+    const hide = document.createElement('button');
+    hide.type = 'button'; hide.className = 'adm-btn adm-btn-secondary adm-btn-sm'; hide.style.marginLeft = '6px';
+    hide.textContent = e.hidden ? 'Show' : 'Hide';
+    hide.setAttribute('aria-label', `${e.hidden ? 'Show' : 'Hide'} ${e.name}`);
+    hide.addEventListener('click', async () => {
+      if (!e.hidden && !confirm(`Hide "${e.name}" everywhere (calendar, markers, occupancy model)? You can show it again.`)) return;
+      const [ok, d] = await coordPost('/api/admin/events/hide', { id: e.id, hidden: !e.hidden });
+      eventMsg(ok ? `${e.hidden ? 'Shown' : 'Hidden'}: ${e.name}` : (d.error || 'Failed'), ok);
+      loadEvents();
+    });
+    td.append(edit, hide); tr.appendChild(td); tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  if (!rows.length) t.insertAdjacentHTML('beforeend', '<tbody><tr><td colspan="7">No events match.</td></tr></tbody>');
+}
+function eventMsg(text, ok) {
+  const m = document.getElementById('ev-msg');
+  m.textContent = text; m.style.color = ok ? 'var(--positive)' : 'var(--negative)';
+}
+function openEventForm(e) {
+  const f = document.getElementById('ev-form');
+  f.reset();
+  document.getElementById('ev-form-title').textContent = e ? `Edit: ${e.name}` : 'Add event';
+  const vals = e || { type: 'music', impact: 'medium', date_status: 'confirmed', precision: 'day', recurrence: 'annual', effect: 'up', model: true,
+                      checked: new Date().toISOString().slice(0, 10) };
+  [...f.elements].forEach(el => {
+    if (!el.name) return;
+    const v = vals[el.name];
+    el.value = el.name === 'markets' ? (v || []).join(', ') : el.name === 'model' ? String(v !== false) : (v == null ? '' : v);
+  });
+  f.hidden = false;
+  f.querySelector('[name=name]').focus();
+}
+document.getElementById('ev-add').addEventListener('click', () => openEventForm(null));
+document.getElementById('ev-cancel').addEventListener('click', () => { document.getElementById('ev-form').hidden = true; });
+document.getElementById('ev-search').addEventListener('input', () => evData && renderEventsTable());
+document.getElementById('ev-filter').addEventListener('change', () => evData && renderEventsTable());
+document.getElementById('ev-form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const body = Object.fromEntries(new FormData(ev.target).entries());
+  body.model = body.model === 'true';
+  const [ok, d] = await coordPost('/api/admin/events/save', body);
+  eventMsg(ok ? `Saved: ${d.event.name}` : (d.error || 'Save failed'), ok);
+  if (ok) { ev.target.hidden = true; loadEvents(); }
+});

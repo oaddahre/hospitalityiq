@@ -106,6 +106,7 @@
     <button class="list-pill" data-section="uploads">Uploads</button>
     <button class="list-pill" data-section="rates">Rates</button>
     <button class="list-pill" data-section="occupancy">Occupancy</button>
+    <button class="list-pill" data-section="events">Events</button>
     <button class="list-pill" data-section="system">Data &amp; System</button>
   </div>
 
@@ -427,6 +428,55 @@
       <div class="adm-stat"><span class="adm-stat-val" id="occ-low">—</span><span class="adm-stat-label">Price coverage: none</span></div>
     </div>
     <p class="adm-hint" style="margin-top:16px">Calibration runs once a month, after the first model run of the month, against the real figures in daily_performance.csv (Upload performance). It reports the average error of v1 and v2 by city and hotel type in the Rates panel; with no real figures it does nothing and says so.</p>
+  </section>
+
+  <!-- ══════════════════ EVENTS ══════════════════ -->
+  <section class="adm-section" id="section-events" style="display:none">
+    <h1 class="adm-section-title">Events</h1>
+    <p class="adm-section-desc">The events database behind the Tourism calendar, the calendar markers and the occupancy model. The base list (events.json) ships with the code; changes made here are saved on this server (event_overrides.json), survive deploys and are logged. Hiding an event removes it from every page and from the model; showing it again puts it back.</p>
+    <div class="adm-toolbar" style="gap:8px;flex-wrap:wrap">
+      <input type="search" class="adm-input" id="ev-search" placeholder="Search name, city, type…" style="flex:1 1 220px;max-width:360px" aria-label="Search events" />
+      <select class="adm-select" id="ev-filter" aria-label="Show">
+        <option value="upcoming">Upcoming</option><option value="all">All</option><option value="hidden">Hidden</option><option value="edited">Edited here</option><option value="estimated">Estimated dates</option>
+      </select>
+      <button class="adm-btn adm-btn-primary" id="ev-add">Add event</button>
+    </div>
+    <span id="ev-msg" class="adm-inline-msg"></span>
+    <form id="ev-form" class="adm-ev-form" hidden>
+      <h3 class="adm-list-filter-label" id="ev-form-title">Add event</h3>
+      <input type="hidden" name="id" />
+      <div class="adm-ev-grid">
+        <label class="adm-field-group adm-ev-wide"><span class="adm-label">Name</span><input class="adm-input" name="name" required /></label>
+        <label class="adm-field-group"><span class="adm-label">Type</span><select class="adm-select" name="type" id="ev-type"></select></label>
+        <label class="adm-field-group"><span class="adm-label">City (or National)</span><input class="adm-input" name="city" list="ev-cities" required /></label>
+        <label class="adm-field-group"><span class="adm-label">Hotel market (if different)</span><input class="adm-input" name="market" list="ev-cities" /></label>
+        <label class="adm-field-group"><span class="adm-label">Venue</span><input class="adm-input" name="venue" /></label>
+        <label class="adm-field-group"><span class="adm-label">Start</span><input class="adm-input" type="date" name="start" required /></label>
+        <label class="adm-field-group"><span class="adm-label">End</span><input class="adm-input" type="date" name="end" required /></label>
+        <label class="adm-field-group"><span class="adm-label">Dates known to</span><select class="adm-select" name="precision"><option value="day">the day</option><option value="month">the month only</option></select></label>
+        <label class="adm-field-group"><span class="adm-label">Recurrence</span><select class="adm-select" name="recurrence"><option>annual</option><option>biennial</option><option>one-off</option></select></label>
+        <label class="adm-field-group"><span class="adm-label">Impact</span><select class="adm-select" name="impact"><option>high</option><option>medium</option><option>low</option></select></label>
+        <label class="adm-field-group"><span class="adm-label">Effect</span><select class="adm-select" name="effect"><option value="up">raises demand</option><option value="down">lowers demand</option><option value="mixed">mixed</option></select></label>
+        <label class="adm-field-group"><span class="adm-label">Date status</span><select class="adm-select" name="date_status"><option>confirmed</option><option>announced</option><option>estimated</option><option value="moon">moon-dependent</option></select></label>
+        <label class="adm-field-group"><span class="adm-label">Attendance (if published)</span><input class="adm-input" name="attendance" /></label>
+        <label class="adm-field-group adm-ev-wide"><span class="adm-label">Why it matters for hotels (one line)</span><input class="adm-input" name="impact_reason" /></label>
+        <label class="adm-field-group adm-ev-wide"><span class="adm-label">Date basis (required for estimated and moon-dependent dates)</span><input class="adm-input" name="date_basis" /></label>
+        <label class="adm-field-group adm-ev-wide"><span class="adm-label">Source link</span><input class="adm-input" type="url" name="source" required /></label>
+        <label class="adm-field-group"><span class="adm-label">Date last checked</span><input class="adm-input" type="date" name="checked" /></label>
+        <label class="adm-field-group"><span class="adm-label">Source markets (e.g. FR, UK)</span><input class="adm-input" name="markets" /></label>
+        <label class="adm-field-group"><span class="adm-label">Model kind (advanced)</span><input class="adm-input" name="model_kind" placeholder="ramadan, eid_fitr, ma_school…" /></label>
+        <label class="adm-field-group"><span class="adm-label">Counted in the occupancy model</span><select class="adm-select" name="model"><option value="true">yes</option><option value="false">no (shown only)</option></select></label>
+        <label class="adm-field-group adm-ev-wide"><span class="adm-label">Description</span><input class="adm-input" name="description" /></label>
+      </div>
+      <datalist id="ev-cities"></datalist>
+      <div class="adm-btn-group" style="margin-top:12px">
+        <button type="submit" class="adm-btn adm-btn-primary">Save</button>
+        <button type="button" class="adm-btn adm-btn-secondary" id="ev-cancel">Cancel</button>
+      </div>
+    </form>
+    <div style="overflow-x:auto"><table class="adm-table" id="ev-table" aria-label="Events"></table></div>
+    <p class="adm-list-filter-label" style="margin-top:24px">Change log</p>
+    <div id="ev-log" class="adm-hint">—</div>
   </section>
 
   <!-- ══════════════════ DATA & SYSTEM ══════════════════ -->

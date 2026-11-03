@@ -91,6 +91,10 @@ Google ID off the hotel's rejected list; an ID that another hotel already
 holds, or that two approved rows give to two hotels, is refused ("duplicate
 id").
 
+## Events
+
+The events database (`events.json`, plus the admin's changes in `DATA_DIR`) feeds the Tourism events calendar, the event markers on the hotel and benchmarking calendars and the occupancy model. Format, sources and how to add or update events: [docs/EVENTS.md](docs/EVENTS.md). Check hand edits with `python3 scripts/check_events.py`.
+
 ## Occupancy model
 
 `occupancy_model.py` runs after every scraper run (and at 04:00): two

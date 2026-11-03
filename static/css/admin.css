@@ -772,3 +772,8 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-table th, .adm-table td { border-bottom: 1px solid var(--border); padding: 4px 8px; text-align: left; vertical-align: top; }
 .adm-table th { color: var(--text-muted, var(--text)); font-weight: 600; white-space: nowrap; }
 .adm-table td:nth-child(-n+5) { white-space: nowrap; }
+
+/* ── Events editor ── */
+.adm-ev-form { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 14px 16px; margin: 12px 0; }
+.adm-ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px 14px; }
+.adm-ev-wide { grid-column: 1 / -1; }
