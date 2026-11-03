@@ -1400,6 +1400,44 @@ csvSection('hl', ['/api/admin/hotels-list/preview', '/api/admin/hotels-list/appl
   'Change this server\'s hotel list as previewed? hotels.csv (and pipeline.csv for a pipeline move) is backed up first.',
   ['hide', 'unhide', 'remove', 'rename', 'city', 'to_pipeline', 'pipeline_position']);
 
+const BACKUP_GROUPS = {
+  'hotels.csv': 'Hotel list (hotels.csv)',
+  'pipeline.csv': 'Pipeline (pipeline.csv)',
+  'dataforseo_hotel_ids.json': 'Google IDs (dataforseo_hotel_ids.json)',
+  'hotel_id_overrides.json': 'Manual Google IDs (hotel_id_overrides.json)',
+};
+
+// "hotels.csv.20261102-112609-123456" → "2026-11-02 11:26:09"
+function backupTime(name) {
+  const m = name.match(/\.(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-\d+$/);
+  return m ? `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]}` : '';
+}
+
+function backupRow(b) {
+  const row = document.createElement('div');
+  row.className = 'adm-backup-row';
+  const name = document.createElement('span');
+  name.className = 'adm-backup-name';
+  name.textContent = b; name.title = b;
+  const when = document.createElement('span');
+  when.className = 'adm-backup-time';
+  when.textContent = backupTime(b);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'adm-btn adm-btn-secondary adm-btn-sm';
+  btn.textContent = 'Restore';
+  btn.title = `Restore this backup (${b})`;
+  btn.setAttribute('aria-label', `Restore this backup: ${b}`);
+  btn.addEventListener('click', async () => {
+    if (!confirm(`Put the backup ${b} back? The current file is backed up first.`)) return;
+    const [ok, d] = await coordPost('/api/admin/coordinates/restore', { backup: b });
+    toast(ok ? `Restored; previous file saved as ${d.previous_saved_as}` : (d.error || 'Restore failed'), ok ? 'success' : 'error');
+    loadCoordHistory();
+  });
+  row.append(name, when, btn);
+  return row;
+}
+
 async function loadCoordHistory() {
   const el = document.getElementById('ri-coord-history');
   try {
@@ -1408,21 +1446,50 @@ async function loadCoordHistory() {
     const data = await res.json();
     el.replaceChildren();
     if (!(data.backups || []).length && !(data.log || []).length) { el.textContent = 'No changes applied yet.'; return; }
-    (data.backups || []).slice(0, 5).forEach(b => {
-      const row = document.createElement('div');
-      row.textContent = `Backup ${b} `;
-      const btn = document.createElement('button');
-      btn.className = 'adm-btn adm-btn-secondary'; btn.textContent = 'Restore this backup'; btn.style.marginLeft = '6px';
-      btn.addEventListener('click', async () => {
-        if (!confirm(`Put the backup ${b} back? The current file is backed up first.`)) return;
-        const [ok, d] = await coordPost('/api/admin/coordinates/restore', { backup: b });
-        toast(ok ? `Restored; previous file saved as ${d.previous_saved_as}` : (d.error || 'Restore failed'), ok ? 'success' : 'error');
-        loadCoordHistory();
-      });
-      row.appendChild(btn); el.appendChild(row);
+    const groups = {};
+    (data.backups || []).forEach(b => {
+      const base = b.slice(0, b.lastIndexOf('.'));
+      (groups[base] = groups[base] || []).push(b);
     });
-    (data.log || []).slice(0, 15).forEach(l => {
+    Object.keys(BACKUP_GROUPS).filter(base => groups[base]).forEach(base => {
+      const section = document.createElement('div');
+      section.className = 'adm-backup-group';
+      const h = document.createElement('p');
+      h.className = 'adm-backup-heading';
+      h.textContent = BACKUP_GROUPS[base];
+      const list = document.createElement('div');
+      list.className = 'adm-backup-list';
+      const rows = groups[base].map(b => backupRow(b));
+      rows.forEach((r, i) => { if (i >= 5) r.hidden = true; list.appendChild(r); });
+      section.append(h, list);
+      if (rows.length > 5) {
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.className = 'adm-btn-text adm-backup-more';
+        more.textContent = `Show all ${rows.length}`;
+        more.addEventListener('click', () => {
+          const open = more.dataset.open === '1';
+          rows.forEach((r, i) => { if (i >= 5) r.hidden = open; });
+          more.dataset.open = open ? '' : '1';
+          more.textContent = open ? `Show all ${rows.length}` : 'Show latest 5';
+        });
+        section.appendChild(more);
+      }
+      el.appendChild(section);
+    });
+    const logLines = (data.log || []).slice(0, 15);
+    if (logLines.length) {
+      const h = document.createElement('p');
+      h.className = 'adm-backup-heading';
+      h.textContent = 'Change log';
+      el.appendChild(h);
+    }
+    const logList = document.createElement('div');
+    logList.className = 'adm-changelog';
+    el.appendChild(logList);
+    logLines.forEach(l => {
       const d = document.createElement('div');
+      d.className = 'adm-changelog-line';
       d.textContent = l.action === 'restore'
         ? `${l.at} · restored ${String(l.file || '').split('/').pop()} from ${String(l.restored_from || '').split('/').pop()} by ${l.by}`
         : l.action === 'import_ids'
@@ -1440,7 +1507,7 @@ async function loadCoordHistory() {
                   : l.action === 'to_pipeline'
                     ? `${l.at} · moved ${l.hotel} to the pipeline as "${l.pipeline_name}" (project ${l.pipeline_id})${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
               : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
-      el.appendChild(d);
+      logList.appendChild(d);
     });
   } catch {}
 }

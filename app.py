@@ -5085,8 +5085,13 @@ def api_hotels_list_apply():
 @app.route('/api/admin/coordinates/history')
 @admin_required
 def api_coord_history():
-    backups = sorted((f for f in os.listdir(COORD_BACKUP_DIR) if _BACKUP_NAME_RE.match(f)), reverse=True) \
+    names = [f for f in os.listdir(COORD_BACKUP_DIR) if _BACKUP_NAME_RE.match(f)] \
         if os.path.isdir(COORD_BACKUP_DIR) else []
+    # Newest first within each file, at most 50 per file (the admin shows 5 and a "Show all")
+    by_file = {}
+    for f in sorted(names, key=lambda n: n.rsplit('.', 1)[1], reverse=True):
+        by_file.setdefault(f.rsplit('.', 1)[0], []).append(f)
+    backups = [f for group in by_file.values() for f in group[:50]]
     log = []
     if os.path.exists(COORD_LOG_PATH):
         with open(COORD_LOG_PATH, encoding='utf-8') as f:
@@ -5095,7 +5100,7 @@ def api_coord_history():
                     log.append(json.loads(line))
                 except ValueError:
                     pass
-    return jsonify({'backups': backups[:20], 'log': log[::-1]})
+    return jsonify({'backups': backups, 'log': log[::-1]})
 
 
 @app.route('/api/admin/coordinates/restore', methods=['POST'])
