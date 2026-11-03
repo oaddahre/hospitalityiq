@@ -161,44 +161,106 @@ CITY_SEASONALITY = {
     'Tamuda Bay / Tétouan': {1:55, 2:58, 3:68, 4:78, 5:88, 6:95, 7:115, 8:118, 9:92, 10:78, 11:62, 12:55},
 }
 
-# ─── MAJOR EVENTS CALENDAR ────────────────────────────────────────────────────
-
-EVENTS_CALENDAR = {
-    'Rabat / Salé / Témara': [
-        (5, 23, 31, 'Mawazine Festival', 15),
-        (7, 1, 7, 'Jazz au Chellah', 6),
-    ],
-    'Marrakech': [
-        (11, 28, 30, 'FIFM Film Festival', 12),
-        (4, 25, 28, 'Marrakech Marathon', 6),
-        (6, 10, 15, 'Marrakech Popular Arts Festival', 8),
-    ],
-    'Fes': [
-        (6, 14, 21, 'Fes Festival of World Sacred Music', 14),
-    ],
-    'Casablanca': [
-        (5, 1, 3, 'Casablanca Tech Summit', 5),
-        (10, 15, 18, 'Cityscape Morocco', 6),
-    ],
-    'Agadir / Taghazout': [
-        (2, 20, 25, 'Agadir Wind & Kite Festival', 8),
-        (7, 15, 20, 'Timitar Festival', 10),
-    ],
-    'Tanger': [
-        (7, 1, 31, 'Tanjazz Festival', 8),
-    ],
+# ─── EVENTS (events.json, read by v1 and v2) ─────────────────────────────────
+# Events come from the events database (events_db.py: events.json in the
+# repo plus the admin's changes in DATA_DIR). An event adds points to its
+# nights in its market (its city; "National" = every city), by its impact
+# tier and the hotel's type. THESE SIZES ARE JUDGEMENT, NOT MEASURED: they
+# are first guesses to be checked against real occupancy once the monthly
+# calibration has enough nights. Kinds with their own pattern (Ramadan,
+# the two Eids, Moroccan school holidays) keep their own table, since they
+# move business and leisure hotels in opposite directions.
+#
+# pts by group, impact tier and hotel type
+EVENT_PTS = {
+    # trade fairs, congresses, summits: business hotels first
+    'business': {'high':   {'city_business': 12, 'beach_resort': 4, 'cultural_leisure': 10, 'riad_boutique': 6},
+                 'medium': {'city_business':  6, 'beach_resort': 2, 'cultural_leisure':  5, 'riad_boutique': 3},
+                 'low':    {'city_business':  2, 'beach_resort': 1, 'cultural_leisure':  2, 'riad_boutique': 1}},
+    # music, film, arts, moussems, sport: leisure hotels and riads first
+    'leisure':  {'high':   {'city_business': 10, 'beach_resort': 8, 'cultural_leisure': 12, 'riad_boutique': 12},
+                 'medium': {'city_business':  5, 'beach_resort': 4, 'cultural_leisure':  6, 'riad_boutique':  6},
+                 'low':    {'city_business':  2, 'beach_resort': 1, 'cultural_leisure':  3, 'riad_boutique':  3}},
+    # Moroccan public holidays (fixed dates): domestic short breaks, business pauses
+    'holiday':  {'high':   {'city_business': -4, 'beach_resort': 8, 'cultural_leisure':  5, 'riad_boutique':  4},
+                 'medium': {'city_business': -3, 'beach_resort': 5, 'cultural_leisure':  3, 'riad_boutique':  3},
+                 'low':    {'city_business': -2, 'beach_resort': 2, 'cultural_leisure':  1, 'riad_boutique':  1}},
+    # school and bank holidays in source markets (one French zone = low)
+    'abroad':   {'high':   {'city_business':  0, 'beach_resort': 6, 'cultural_leisure':  8, 'riad_boutique':  8},
+                 'medium': {'city_business':  0, 'beach_resort': 4, 'cultural_leisure':  5, 'riad_boutique':  5},
+                 'low':    {'city_business':  0, 'beach_resort': 1, 'cultural_leisure':  2, 'riad_boutique':  2}},
 }
+# Kinds with their own pattern (pts by hotel type; the impact tier is not used)
+EVENT_KIND_PTS = {
+    'ramadan':     {'city_business': -4, 'beach_resort': -8, 'cultural_leisure': -6, 'riad_boutique': -6},
+    'eid_fitr':    {'city_business': -8, 'beach_resort': 10, 'cultural_leisure':  6, 'riad_boutique':  4},
+    'eid_adha':    {'city_business': -10, 'beach_resort': 8, 'cultural_leisure':  4, 'riad_boutique':  2},
+    'ma_school':   {'city_business': -2, 'beach_resort':  6, 'cultural_leisure':  4, 'riad_boutique':  3},
+    'aefe_school': {'city_business':  0, 'beach_resort':  1, 'cultural_leisure':  1, 'riad_boutique':  1},
+}
+EVENT_GROUP = {'business': 'business', 'music': 'leisure', 'film': 'leisure', 'arts': 'leisure', 'moussem': 'leisure',
+               'sport': 'leisure', 'holiday': 'holiday', 'religious': 'holiday', 'school_ma': 'holiday',
+               'school_abroad': 'abroad', 'holiday_abroad': 'abroad', 'diaspora': 'abroad'}
+# A city event counts more where the hotel stock is small, less where it is large
+EVENT_CITY_FACTOR = {'Casablanca': 0.8, 'Marrakech': 0.9, 'Fes': 1.1, 'Meknes': 1.2, 'Essaouira': 1.3, 'Asilah': 1.3,
+                     'El Jadida': 1.2, 'Dakhla': 1.2, 'Oujda': 1.1, 'Ouarzazate': 1.1, 'Zagora': 1.2}
+# Dates that are not confirmed count less (and widen the v2 range)
+EVENT_STATUS_FACTOR = {'confirmed': 1.0, 'announced': 0.9, 'moon': 0.85, 'estimated': 0.6}
+EVENT_STATUS_RANGE_PTS = {'estimated': 2, 'moon': 1}
+EVENT_RANGE_MAX_PTS = 3
+EVENT_MAX_PTS = 15            # all events of one night together, up or down
+# Not counted: events marked model=false (summer school holidays, Marhaba and
+# others already in the monthly seasonality) and month-only dates.
+
+_EVENT_NIGHTS = {}
 
 
-def get_event_adjustment(city, date):
-    month, day = date.month, date.day
-    total = 0.0
-    for event_city, events in EVENTS_CALENDAR.items():
-        if event_city == city or event_city == 'All Morocco':
-            for (ev_month, ev_start, ev_end, _, ev_pts) in events:
-                if month == ev_month and ev_start <= day <= ev_end:
-                    total += ev_pts / 100
-    return total
+def _event_nights():
+    """{night iso: [events]} for the events the model counts (cached per file version)."""
+    import events_db
+    key = (events_db._mtime(events_db.BASE_PATH), events_db._mtime(events_db.overrides_path(str(DATA_DIR))))
+    if _EVENT_NIGHTS.get('key') != key:
+        idx = {}
+        for e in events_db.load_events(str(DATA_DIR)):
+            if not e.get('model') or e.get('precision', 'day') != 'day':
+                continue
+            d, end = date.fromisoformat(e['start']), date.fromisoformat(e['end'])
+            while d <= end:
+                idx.setdefault(d.isoformat(), []).append(e)
+                d += timedelta(days=1)
+        _EVENT_NIGHTS.clear()
+        _EVENT_NIGHTS.update(key=key, idx=idx)
+    return _EVENT_NIGHTS['idx']
+
+
+def event_points(city, hotel_type, night):
+    """(pts, extra range pts, [event names]) for one night in one city."""
+    pts = rng = 0.0
+    names = []
+    if isinstance(night, datetime):
+        night = night.date()
+    for e in _event_nights().get(night.isoformat(), []):
+        market = e.get('market') or e.get('city')
+        if market not in (city, 'National'):
+            continue
+        kind = e.get('model_kind') or ''
+        if kind in EVENT_KIND_PTS:
+            p = EVENT_KIND_PTS[kind].get(hotel_type, 0)
+        else:
+            p = EVENT_PTS[EVENT_GROUP.get(e['type'], 'leisure')][e['impact']].get(hotel_type, 0)
+        if market != 'National':
+            p *= EVENT_CITY_FACTOR.get(city, 1.0)
+        p *= EVENT_STATUS_FACTOR.get(e.get('date_status'), 1.0)
+        if p:
+            pts += p
+            rng += EVENT_STATUS_RANGE_PTS.get(e.get('date_status'), 0)
+            names.append(e['name'])
+    return (max(-EVENT_MAX_PTS, min(EVENT_MAX_PTS, pts)), min(EVENT_RANGE_MAX_PTS, rng), names)
+
+
+def get_event_adjustment(city, date, hotel_type='city_business'):
+    """v1: the night's event points as a fraction."""
+    return event_points(city, hotel_type, date)[0] / 100
 
 
 def get_rate_adjustment(scraped_bar, baseline_adr):
@@ -249,7 +311,7 @@ def estimate_occupancy(hotel, date, scraped_bar=None, baseline_adr=None, recent_
     rate_adj = get_rate_adjustment(scraped_bar, baseline_adr)
     dow_adj  = DOW_ADJUSTMENTS.get(hotel_type, DOW_ADJUSTMENTS['city_business']).get(date.weekday(), 0)
     season_adj = get_seasonality_adjustment(hotel.get('city', ''), date.month)
-    event_adj  = get_event_adjustment(hotel.get('city', ''), date)
+    event_adj  = get_event_adjustment(hotel.get('city', ''), date, hotel_type)
 
     raw       = base + rate_adj + dow_adj + season_adj + event_adj
     estimated = max(0.05, min(0.98, raw))
@@ -313,7 +375,7 @@ V2 = {
     'city_soldout_pts_per_10pct': 4.0, # 10% of a city's hotels sold out: +4 pts for the others
     'city_soldout_max_pts':    12.0,
 
-    # Calendar (holidays below, plus v1's event list)
+    # Calendar: holidays and events from events.json (EVENT_PTS above)
     'calendar_max_pts':        15.0,
 
     # Range: half-width in pts, added up
@@ -327,79 +389,6 @@ V2 = {
     'clamp_low':                5,
     'clamp_high':              98,
 }
-
-# Holidays 2026-2027: (first night, last night, name, kind). Islamic
-# holidays follow the moon: 2026 dates are the ones Morocco observed,
-# 2027 dates are astronomical estimates (to check against the Ministry of
-# Habous announcements). School holidays exclude the summer, which the
-# monthly seasonality index already covers.
-V2_CALENDAR = [
-    ('2026-02-19', '2026-03-19', 'Ramadan', 'ramadan'),
-    ('2026-03-19', '2026-03-22', 'Eid al-Fitr', 'eid_fitr'),
-    ('2026-05-26', '2026-05-30', 'Eid al-Adha', 'eid_adha'),          # tentative 27 May
-    ('2026-07-29', '2026-07-31', 'Throne Day', 'throne_day'),
-    ('2027-02-08', '2027-03-09', 'Ramadan (estimated)', 'ramadan'),
-    ('2027-03-09', '2027-03-12', 'Eid al-Fitr (estimated)', 'eid_fitr'),
-    ('2027-05-15', '2027-05-19', 'Eid al-Adha (estimated)', 'eid_adha'),
-    ('2027-07-29', '2027-07-31', 'Throne Day', 'throne_day'),
-    # Moroccan public schools (ministerial calendars 2025-26 and 2026-27, decision 047.26)
-    ('2026-01-24', '2026-02-01', 'Moroccan school holidays', 'ma_school'),
-    ('2026-03-14', '2026-03-22', 'Moroccan school holidays', 'ma_school'),
-    ('2026-05-02', '2026-05-10', 'Moroccan school holidays', 'ma_school'),
-    ('2026-10-17', '2026-10-25', 'Moroccan school holidays', 'ma_school'),
-    ('2026-12-05', '2026-12-13', 'Moroccan school holidays', 'ma_school'),
-    ('2027-01-23', '2027-01-31', 'Moroccan school holidays', 'ma_school'),
-    ('2027-03-20', '2027-03-28', 'Moroccan school holidays', 'ma_school'),
-    ('2027-05-08', '2027-05-19', 'Moroccan school holidays', 'ma_school'),
-    # French school holidays (kind fr_school_<zones>: how many of the 3 zones are off)
-    ('2026-02-07', '2026-02-13', 'French school holidays (zone A)', 'fr_school_1'),
-    ('2026-02-14', '2026-02-20', 'French school holidays (zones A, B)', 'fr_school_2'),
-    ('2026-02-21', '2026-02-22', 'French school holidays (zones A, B, C)', 'fr_school_3'),
-    ('2026-02-23', '2026-03-01', 'French school holidays (zones B, C)', 'fr_school_2'),
-    ('2026-03-02', '2026-03-08', 'French school holidays (zone C)', 'fr_school_1'),
-    ('2026-04-04', '2026-04-10', 'French school holidays (zone A)', 'fr_school_1'),
-    ('2026-04-11', '2026-04-17', 'French school holidays (zones A, B)', 'fr_school_2'),
-    ('2026-04-18', '2026-04-19', 'French school holidays (zones A, B, C)', 'fr_school_3'),
-    ('2026-04-20', '2026-04-26', 'French school holidays (zones B, C)', 'fr_school_2'),
-    ('2026-04-27', '2026-05-03', 'French school holidays (zone C)', 'fr_school_1'),
-    ('2026-10-17', '2026-11-01', 'French school holidays (Toussaint)', 'fr_school_3'),
-    ('2026-12-19', '2027-01-03', 'French school holidays (Christmas)', 'fr_school_3'),
-    ('2027-02-06', '2027-02-12', 'French school holidays (zone C)', 'fr_school_1'),
-    ('2027-02-13', '2027-02-19', 'French school holidays (zones A, C)', 'fr_school_2'),
-    ('2027-02-20', '2027-02-21', 'French school holidays (zones A, B, C)', 'fr_school_3'),
-    ('2027-02-22', '2027-02-28', 'French school holidays (zones A, B)', 'fr_school_2'),
-    ('2027-03-01', '2027-03-07', 'French school holidays (zone B)', 'fr_school_1'),
-    ('2027-04-10', '2027-04-16', 'French school holidays (zone A)', 'fr_school_1'),
-    ('2027-04-17', '2027-04-23', 'French school holidays (zones A, B)', 'fr_school_2'),
-    ('2027-04-24', '2027-04-25', 'French school holidays (zones A, B, C)', 'fr_school_3'),   # zone C inferred
-    ('2027-04-26', '2027-05-02', 'French school holidays (zones B, C)', 'fr_school_2'),
-    ('2027-05-03', '2027-05-09', 'French school holidays (zone C)', 'fr_school_1'),
-]
-
-# pts by holiday kind and hotel type (city_business, beach_resort, cultural_leisure, riad_boutique)
-V2_CALENDAR_PTS = {
-    'ramadan':     {'city_business': -4, 'beach_resort': -8, 'cultural_leisure': -6, 'riad_boutique': -6},
-    'eid_fitr':    {'city_business': -8, 'beach_resort': 10, 'cultural_leisure':  6, 'riad_boutique':  4},
-    'eid_adha':    {'city_business': -10, 'beach_resort': 8, 'cultural_leisure':  4, 'riad_boutique':  2},
-    'throne_day':  {'city_business': -2, 'beach_resort':  3, 'cultural_leisure':  2, 'riad_boutique':  2},
-    'ma_school':   {'city_business': -2, 'beach_resort':  6, 'cultural_leisure':  4, 'riad_boutique':  3},
-    'fr_school':   {'city_business':  0, 'beach_resort':  4, 'cultural_leisure':  6, 'riad_boutique':  6},  # x zones off / 3
-}
-
-
-def v2_calendar(hotel_type, night):
-    """(pts, [names]) for one night: holidays plus v1's event list, capped."""
-    iso, pts, names = night.isoformat(), 0.0, []
-    for start, end, name, kind in V2_CALENDAR:
-        if start <= iso <= end:
-            if kind.startswith('fr_school_'):
-                p = V2_CALENDAR_PTS['fr_school'].get(hotel_type, 0) * int(kind[-1]) / 3
-            else:
-                p = V2_CALENDAR_PTS[kind].get(hotel_type, 0)
-            pts += p
-            names.append(name)
-    return pts, names
-
 
 def _median(xs):
     xs = sorted(xs)
@@ -657,11 +646,8 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
         signals.append({'confirmed': 'sold_out:confirmed', 'candidate': 'sold_out:candidate',
                         'closed': 'closed_or_unknown'}[gap])
 
-    cal, names = v2_calendar(htype, night)
-    ev = get_event_adjustment(hotel.get('city', ''), night) * 100
-    if ev:
-        names.append('event')
-    calendar = _clamp(cal + ev, -c['calendar_max_pts'], c['calendar_max_pts'])
+    cal, ev_range, names = event_points(hotel.get('city', ''), htype, night)
+    calendar = _clamp(cal, -c['calendar_max_pts'], c['calendar_max_pts'])
     if names:
         signals.append('calendar:' + ','.join(dict.fromkeys(names)))
 
@@ -679,6 +665,7 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
         half += c['range_candidate']
     if gap == 'closed':
         half += c['range_closed']
+    half += ev_range                     # estimated or moon-dependent event dates
     low, high = mid - half, mid + half
     if gap == 'confirmed':
         mid, low, high = max(mid, c['soldout_mid']), max(low, c['soldout_low']), c['clamp_high']
