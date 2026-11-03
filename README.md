@@ -64,7 +64,10 @@ Change the hotel list: a CSV with `hotel_id`, `action` and optionally
 scripts/change_hotels.py FILE [--apply]` or in the Rates panel. Actions:
 `hide` / `unhide` (status `Hidden`: the row stays but is left out of every
 page, count, KPI and scraper run), `remove` (deletes the row), `rename`
-(`new_name`), `city` (`new_city`, optionally `new_region`) and
+(`new_name`), `city` (`new_city`, optionally `new_region`), `owner`
+(`new_owner`), `add` (a new hotel: `hotel_id` is its new id, `hotel` its
+name, `new_<column>` its other `hotels.csv` columns and `perf_<column>` its
+`performance.csv` row; refused if the id or the name is taken) and
 `to_pipeline` (deletes the row and adds the hotel to `pipeline.csv`:
 `new_name`, `pipeline_status`, `expected_opening`; with `pipeline_id`, that
 existing project, which must carry the hotel's name or `new_name`, is
@@ -72,9 +75,16 @@ renamed instead), and `pipeline_position` (moves pipeline project
 `pipeline_id` to `new_lat` / `new_lng`; `hotel` is the project's name;
 `approximate=yes` is recorded in the log). Several rows may change one
 hotel (rename and city).
-`hotels.csv` and `pipeline.csv` are backed up first, only the named fields
+`hotels.csv`, `pipeline.csv` and `performance.csv` are backed up first, only the named fields
 change (checked after writing), every change is logged to
 `coordinate_changes_applied.log`, and running a file twice changes nothing.
+
+Owner profiles: an `owners_upload.json` (`{"format": "kodo-owners-1",
+"owners": [...]}`) adds an owner profile to `owners.json`, or replaces the
+one with the same id, in the Rates panel (Preview, then Apply). Owners not
+in the file are kept; `owners.json` is backed up and logged the same way.
+An owner's `via` (e.g. OCP Group via Maghreb Hospitality Company) is shown
+next to its name wherever the owner appears.
 
 In the "Approve candidates" step, a row with `unreject=yes` takes its
 Google ID off the hotel's rejected list; an ID that another hotel already

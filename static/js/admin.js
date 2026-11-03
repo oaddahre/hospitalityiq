@@ -1393,16 +1393,25 @@ csvSection('cand', ['/api/admin/candidates/preview', '/api/admin/candidates/appr
 csvSection('hl', ['/api/admin/hotels-list/preview', '/api/admin/hotels-list/apply'],
   r => `${r.status}: ${r.hotel || r.hotel_id} (${r.action})` + (r.current_name ? ` · this server calls it "${r.current_name}"` : '')
     + (r.new_status ? ` · back to ${r.new_status}` : '') + (r.new_name ? ` · → "${r.new_name}"` : '')
-    + (r.new_city ? ` · ${r.old_city || '?'} → ${r.new_city}${r.new_region ? ' (' + r.new_region + ')' : ''}` : '')
+    + (r.action === 'add' ? ` · new hotel ${r.hotel_id} in ${r.new_city || '?'}${r.new_owner ? ', owner ' + r.new_owner : ''}`
+      : r.new_city ? ` · ${r.old_city || '?'} → ${r.new_city}${r.new_region ? ' (' + r.new_region + ')' : ''}` : '')
+    + (r.action === 'owner' && r.new_owner ? ` · owner ${r.old_owner || '?'} → ${r.new_owner}` : '')
     + (r.pipeline_name ? ` · pipeline project ${r.pipeline_id} "${r.pipeline_name}"${r.pipeline_new ? ' (new)' : ''}` : '')
     + (r.new && r.action === 'pipeline_position' ? ` · ${(r.old || []).join(', ')} → ${r.new.join(', ')}${r.approximate ? ' (approximate)' : ''}` : '')
     + (r.note ? ` · ${r.note}` : '') + (r.reason ? ` · ${r.reason}` : ''),
-  'Change this server\'s hotel list as previewed? hotels.csv (and pipeline.csv for a pipeline move) is backed up first.',
-  ['hide', 'unhide', 'remove', 'rename', 'city', 'to_pipeline', 'pipeline_position']);
+  'Change this server\'s hotel list as previewed? hotels.csv (and pipeline.csv for a pipeline move, performance.csv for an added hotel) is backed up first.',
+  ['hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'add', 'to_pipeline', 'pipeline_position']);
+csvSection('own', ['/api/admin/owners/preview', '/api/admin/owners/apply'],
+  r => `${r.status}: ${r.name || r.id} (${r.id})` + (r.hotels != null ? ` · ${r.hotels} hotels` : '')
+    + (r.old_hotels != null ? ` (was ${r.old_hotels})` : '') + ((r.changed || []).length ? ` · changes ${r.changed.join(', ')}` : '')
+    + (r.note ? ` · ${r.note}` : ''),
+  'Add or replace these owner profiles on this server? owners.json is backed up first.', ['add', 'replace']);
 
 const BACKUP_GROUPS = {
   'hotels.csv': 'Hotel list (hotels.csv)',
   'pipeline.csv': 'Pipeline (pipeline.csv)',
+  'performance.csv': 'Performance estimates (performance.csv)',
+  'owners.json': 'Owner profiles (owners.json)',
   'dataforseo_hotel_ids.json': 'Google IDs (dataforseo_hotel_ids.json)',
   'hotel_id_overrides.json': 'Manual Google IDs (hotel_id_overrides.json)',
 };
@@ -1500,6 +1509,12 @@ async function loadCoordHistory() {
               ? `${l.at} · ${l.action} ${l.hotel} (status ${l.old_status}${l.new_status ? ' → ' + l.new_status : ''})${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
               : l.action === 'rename'
                 ? `${l.at} · renamed ${l.old_name} → ${l.new_name}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+                : l.action === 'owner'
+                  ? `${l.at} · ${l.hotel}: owner ${l.old_owner} → ${l.new_owner}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+                : l.action === 'add'
+                  ? `${l.at} · added hotel ${l.hotel_id} ${l.hotel} (${l.new_city}${l.new_owner ? ', owner ' + l.new_owner : ''})${l.performance_file ? ' with its performance.csv row' : ''} by ${l.by}`
+                : ['owner_add', 'owner_replace'].includes(l.action)
+                  ? `${l.at} · ${l.action === 'owner_add' ? 'added' : 'replaced'} owner profile ${l.owner} (${l.hotels} hotels${l.old_hotels != null ? ', was ' + l.old_hotels : ''}) by ${l.by}`
                 : l.action === 'city'
                   ? `${l.at} · ${l.hotel}: city ${l.old_city} → ${l.new_city}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
                   : l.action === 'pipeline_position'

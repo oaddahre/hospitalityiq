@@ -76,6 +76,7 @@ const OWNER_LOGOS = {
   'Valeria Hotels': '/static/images/brands/valeria_logo.png',
   'Tikida Group': '/static/images/brands/tikida_logo.png',
   'Pickalbatros': '/static/images/brands/pickalbatros_logo.png',
+  'OCP Group': '/static/images/brands/ocp_logo.png',
 };
 
 const OWNER_LOGO_DOMAINS = {
@@ -134,6 +135,12 @@ const OWNER_TYPE_FAMILY = {
 
 function ownerTypeBadge(type) {
   return pillHtml(OWNER_TYPE_FAMILY[type] || 'green', type, 'owner-type-badge');
+}
+
+// "OCP Group (via Maghreb Hospitality Company)": the owner and, when its
+// profile says so, the company it holds the hotel through (owner_via)
+function ownerText(h) {
+  return h.owner_via ? `${h.owner} (via ${h.owner_via})` : (h.owner || '');
 }
 
 // Hotel segments
@@ -1036,7 +1043,8 @@ function showBrandDetail(brandGroup, prevScreen) {
 
   const ownerBadge = document.getElementById('brand-owner-badge');
   if (distinctOwners.length === 1) {
-    ownerBadge.textContent = `· Owned by ${distinctOwners[0]}`;
+    const ownerHotel = brandHotelsData.find(h => h.owner === distinctOwners[0]);
+    ownerBadge.textContent = `· Owned by ${ownerText(ownerHotel)}`;
     ownerBadge.style.display = '';
   } else {
     ownerBadge.style.display = 'none';
@@ -1141,7 +1149,7 @@ function renderBrandHotelsTable() {
       <td>${fmt.pct(h.occupancy)}</td>
       <td>${fmt.mad(h.adr_mad)}</td>
       <td>${fmt.mad(h.revpar_mad)}</td>
-      <td>${fmt.esc(h.owner || '—')}</td>
+      <td>${fmt.esc(ownerText(h) || '—')}</td>
     </tr>`;
   }).join('');
 
@@ -1220,7 +1228,7 @@ async function showHotelDetail(id) {
 
   const ownerLine = document.getElementById('hotel-hd-owner');
   if (h.owner && h.owner !== 'Undisclosed') {
-    ownerLine.textContent = `Owner: ${h.owner}`;
+    ownerLine.textContent = `Owner: ${h.owner}${h.owner_via ? ` · via ${h.owner_via}` : ''}`;
     ownerLine.style.display = '';
   } else {
     ownerLine.style.display = 'none';
@@ -1415,9 +1423,9 @@ function renderOwnerSection(h) {
   section.style.display = '';
   document.getElementById('hotel-owner-name').textContent = h.owner;
 
-  let ctx = '';
+  let ctx = h.owner_via ? `via ${h.owner_via}` : '';
   for (const [key, val] of Object.entries(OWNER_CONTEXT)) {
-    if (h.owner.includes(key)) { ctx = val; break; }
+    if (!ctx && h.owner.includes(key)) { ctx = val; break; }
   }
   const ctxEl = document.getElementById('hotel-owner-ctx');
   if (ctx) {
@@ -2055,7 +2063,7 @@ function renderActiveHotelsFilters() {
   const chips = [];
   if (hotelsState.city  !== 'all') chips.push({ type: 'city',  label: hotelsState.city });
   if (hotelsState.seg   !== 'all') chips.push({ type: 'seg',   label: hotelsState.seg });
-  if (hotelsState.owner !== 'all') chips.push({ type: 'owner', label: hotelsState.owner });
+  if (hotelsState.owner !== 'all') chips.push({ type: 'owner', label: ownerText(hotels.find(h => h.owner === hotelsState.owner) || { owner: hotelsState.owner }) });
   if (hotelsState.query)           chips.push({ type: 'query', label: `"${hotelsState.query}"` });
 
   const row     = document.getElementById('hotels-active-filters');
@@ -5065,7 +5073,7 @@ document.getElementById('btn-export-rb')?.addEventListener('click', exportRateBe
 
 // ─── Global Search ────────────────────────────────────────────────
 
-const searchIndex = { hotels: [], brands: [], cities: [], pipeline: [], news: [] };
+const searchIndex = { hotels: [], brands: [], cities: [], owners: [], pipeline: [], news: [] };
 let _srchDebounce = null;
 let _srchActiveIdx = -1;
 
@@ -5078,7 +5086,7 @@ function buildSearchIndex() {
       category: h.category || '',
       brand_group: h.brand_group || '',
       keys: h.keys || 0,
-      searchText: `${h.name || ''} ${h.city || ''} ${h.brand_group || ''} ${h.owner || ''}`.toLowerCase(),
+      searchText: `${h.name || ''} ${h.city || ''} ${h.brand_group || ''} ${h.owner || ''} ${h.owner_via || ''}`.toLowerCase(),
     }));
 
     const cityMap = {};
@@ -5092,6 +5100,17 @@ function buildSearchIndex() {
     searchIndex.brands = Object.entries(brandMap)
       .map(([brand, count]) => ({ brand, count, searchText: brand.toLowerCase() }))
       .sort((a, b) => b.count - a.count);
+  }
+
+  if (ownersData) {
+    searchIndex.owners = ownersData.map(o => ({
+      id: o.id, name: o.name, via: o.via || '', hotels: o.total_hotels || 0,
+      searchText: `${o.name || ''} ${o.full_name || ''} ${o.via || ''}`.toLowerCase(),
+    }));
+  } else if (!buildSearchIndex._owners) {
+    // Owner profiles load with the Owners screen; fetch them once for search
+    buildSearchIndex._owners = fetch('/api/owners').then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && !ownersData) { ownersData = d; buildSearchIndex(); } }).catch(() => {});
   }
 
   if (pipelineData) {
@@ -5125,6 +5144,7 @@ function _srchRun(query) {
     hotels:   searchIndex.hotels.filter(h => h.searchText.includes(q)).slice(0, 4),
     brands:   searchIndex.brands.filter(b => b.searchText.includes(q)).slice(0, 3),
     cities:   searchIndex.cities.filter(c => c.searchText.includes(q)).slice(0, 3),
+    owners:   searchIndex.owners.filter(o => o.searchText.includes(q)).slice(0, 3),
     pipeline: searchIndex.pipeline.filter(p => p.searchText.includes(q)).slice(0, 3),
     news:     searchIndex.news.filter(a => a.searchText.includes(q)).slice(0, 2),
   };
@@ -5274,6 +5294,15 @@ function _srchRender(query) {
     })),
   });
 
+  if (results.owners.length) groups.push({
+    label: 'Owners',
+    items: results.owners.map(o => ({
+      name: o.name,
+      meta: [o.via ? `via ${o.via}` : '', `${o.hotels} ${o.hotels === 1 ? 'hotel' : 'hotels'}`].filter(Boolean).join(' · '),
+      action() { closeSearch(); _srchSaveRecent(query); _srchNavigateToScreen('owners'); showOwnerDetail(o.id); },
+    })),
+  });
+
   if (results.pipeline.length) groups.push({
     label: 'Pipeline',
     items: results.pipeline.map(p => ({
@@ -5369,8 +5398,26 @@ async function boot() {
   buildCityPills();
   buildSegPills();
   buildMobileCityPills();
+  buildOwnerSelect();
   render();
   buildSearchIndex();
+}
+
+// Hotels screen owner filter: every owner in the hotel list (most hotels
+// first), Undisclosed last; the label carries the "via" company
+function buildOwnerSelect() {
+  const sel = document.getElementById('hotels-owner-select');
+  if (!sel) return;
+  const counts = {}, via = {};
+  hotels.forEach(h => { if (h.owner) { counts[h.owner] = (counts[h.owner] || 0) + 1; if (h.owner_via) via[h.owner] = h.owner_via; } });
+  const names = Object.keys(counts).filter(o => o !== 'Undisclosed')
+    .sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
+  if (counts.Undisclosed) names.push('Undisclosed');
+  const keep = names.includes(sel.value) ? sel.value : 'all';
+  sel.replaceChildren(new Option('All Owners', 'all'),
+    ...names.map(o => new Option(via[o] ? `${o} (via ${via[o]})` : o, o)));
+  sel.value = keep;
+  if (keep === 'all' && hotelsState.owner !== 'all') hotelsState.owner = 'all';
 }
 
 // Fetch current user info and populate tier badge
@@ -5707,6 +5754,7 @@ function exportHotels() {
     'Keys As Of':       asOf,
     'Year Established': h.year_opened_verified === 'verified' && h.year_opened != null ? h.year_opened : 'N/A',
     'Owner':            h.owner || 'Undisclosed',
+    'Owner via':        h.owner_via || '',
     'Data Quality':     h.data_quality || 'Estimated',
   }));
   exportToExcel([{ data, name: 'Hotels' }], `Kodo_Hotels_${cityLabel}_${date}`);
@@ -5950,6 +5998,7 @@ function renderOwnerCards() {
           getOwnerLogoImg(o.name, 40) +
           '<div>' +
             '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:13px;font-weight:400;text-transform:uppercase;letter-spacing:0.04em;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
+            (o.via ? '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">via ' + fmt.esc(o.via) + '</div>' : '') +
           '</div>' +
         '</div>' +
         ownerTypeBadge(o.type || 'Private') +
@@ -5990,6 +6039,7 @@ function renderOwnerDetail(o) {
       getOwnerLogoImg(o.name, 52) +
       '<div>' +
         '<h1 style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:20px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
+        (o.via ? '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:12px;color:var(--text-muted);margin-top:4px">via ' + fmt.esc(o.via) + '</div>' : '') +
         '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
           ownerTypeBadge(o.type || 'Private') +
         '</div>' +

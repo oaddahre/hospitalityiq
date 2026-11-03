@@ -1871,6 +1871,10 @@ def api_hotels():
     ]
     # For observer tier, hide financial detail columns (still return them but frontend handles display)
     records = merged[cols].to_dict(orient="records")
+    # "via ..." from the owner's profile (e.g. OCP Group via Maghreb Hospitality Company)
+    vias = _owner_vias()
+    for row in records:
+        row["owner_via"] = vias.get(row.get("owner"))
     # Replace NaN with None so jsonify emits null (not the invalid-JSON literal NaN)
     import math
     for row in records:
@@ -2041,6 +2045,15 @@ def api_pipeline():
 
 
 OWNERS_FILE = os.path.join(DATA_DIR, "owners.json")
+
+
+def _owner_vias():
+    """{owner name: the company it holds its hotels through} from owners.json."""
+    try:
+        with open(OWNERS_FILE, encoding="utf-8") as f:
+            return {o["name"]: o["via"] for o in json.load(f) if o.get("via") and o.get("name")}
+    except (OSError, ValueError, TypeError, KeyError):
+        return {}
 
 
 def _find_hotel_match(hotel_name, hotels_lower):
@@ -4888,7 +4901,7 @@ import coordinates_apply as CA
 
 COORD_BACKUP_DIR = os.path.join(DATA_DIR, 'backups')
 COORD_LOG_PATH   = os.path.join(DATA_DIR, 'coordinate_changes_applied.log')
-_BACKUP_NAME_RE  = re.compile(r'^(hotels\.csv|pipeline\.csv|dataforseo_hotel_ids\.json|hotel_id_overrides\.json)\.\d{8}-\d{6}-\d+$')
+_BACKUP_NAME_RE  = re.compile(r'^(hotels\.csv|pipeline\.csv|performance\.csv|owners\.json|dataforseo_hotel_ids\.json|hotel_id_overrides\.json)\.\d{8}-\d{6}-\d+$')
 GOOGLE_IDS_PATH  = os.path.join(DATA_DIR, 'dataforseo_hotel_ids.json')
 
 
@@ -4897,6 +4910,8 @@ def _backup_target(name):
     base = name.rsplit('.', 1)[0]
     return {'hotels.csv': os.path.join(DATA_DIR, 'hotels.csv'),
             'pipeline.csv': os.path.join(DATA_DIR, 'pipeline.csv'),
+            'performance.csv': os.path.join(DATA_DIR, 'performance.csv'),
+            'owners.json': OWNERS_FILE,
             'dataforseo_hotel_ids.json': GOOGLE_IDS_PATH,
             'hotel_id_overrides.json': os.path.join(DATA_DIR, 'hotel_id_overrides.json')}[base]
 
@@ -5047,8 +5062,8 @@ def _hotels_summary(p):
     for e in p:
         counts[e['status']] = counts.get(e['status'], 0) + 1
     keys = ('hotel_id', 'hotel', 'action', 'status', 'current_status', 'new_status', 'current_name', 'new_name',
-            'old_city', 'new_city', 'new_region', 'pipeline_id', 'pipeline_name', 'pipeline_new', 'old', 'new',
-            'approximate', 'note', 'reason')
+            'old_city', 'new_city', 'new_region', 'old_owner', 'new_owner', 'pipeline_id', 'pipeline_name', 'pipeline_new',
+            'old', 'new', 'approximate', 'note', 'reason')
     return {'counts': counts, 'rows': [{k: e.get(k) for k in keys} for e in p][:200]}
 
 
@@ -5080,6 +5095,50 @@ def api_hotels_list_apply():
     return jsonify({**_hotels_summary(r['plan']), 'changed': r['changed'],
                     'backup': os.path.basename(r['backup']) if r['backup'] else None,
                     'backups': [os.path.basename(b) for b in r['backups']]})
+
+
+def _owners_from_request():
+    body = request.get_json(silent=True) or {}
+    text = str(body.get('json') or body.get('csv') or '')
+    if not text.strip():
+        raise ValueError('Choose an owners_upload.json file.')
+    if len(text) > 2_000_000:
+        raise ValueError('File too large.')
+    return CA.read_owners_bundle(text)
+
+
+def _owners_summary(p):
+    counts = {}
+    for e in p:
+        counts[e['status']] = counts.get(e['status'], 0) + 1
+    keys = ('id', 'name', 'status', 'hotels', 'old_hotels', 'changed', 'note')
+    return {'counts': counts, 'rows': [{k: e.get(k) for k in keys} for e in p][:200]}
+
+
+@app.route('/api/admin/owners/preview', methods=['POST'])
+@admin_required
+def api_owners_preview():
+    try:
+        return jsonify(_owners_summary(CA.owners_plan(OWNERS_FILE, _owners_from_request())))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/admin/owners/apply', methods=['POST'])
+@admin_required
+def api_owners_apply():
+    if not (request.get_json(silent=True) or {}).get('confirm'):
+        return jsonify({'error': 'Confirmation missing.'}), 400
+    try:
+        r = CA.owners_apply(OWNERS_FILE, _owners_from_request(), COORD_BACKUP_DIR, COORD_LOG_PATH, actor=current_user.email)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except RuntimeError as e:
+        app.logger.error(f'Owner profiles change failed: {e}')
+        return jsonify({'error': str(e)}), 500
+    _log_admin_action('owner_profiles_changed', '', f'{r["changed"]} owners, backup {os.path.basename(r["backup"]) if r["backup"] else "-"}')
+    return jsonify({**_owners_summary(r['plan']), 'changed': r['changed'],
+                    'backup': os.path.basename(r['backup']) if r['backup'] else None})
 
 
 @app.route('/api/admin/coordinates/history')
