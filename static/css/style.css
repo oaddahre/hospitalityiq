@@ -252,7 +252,7 @@ textarea::placeholder,
 
 .segment-badge, .owner-type-badge, .owner-portfolio-table th,
 .tier-badge, .cal-legend-label, .bench-cal-dow,
-.timeline-date__day, .chart-unit,
+.chart-unit,
 .bench-idx-badge, .bench-insight-badge {
   font-family: 'Sweet Sans Pro', sans-serif;
 }
@@ -719,7 +719,6 @@ body.light .nav-logout  { color: var(--text-2); }
 .data-table tbody td:nth-child(n+3),
 .num-cell, .num-col,
 .rank-cell,
-.timeline-date__day,
 .cal-legend-label {
   text-transform: uppercase;
 }
@@ -1155,51 +1154,6 @@ body.light .nav-logout  { color: var(--text-2); }
   flex-shrink: 0;
 }
 
-/* Events category legend — same fixed-height-row / centered-dot-slot
-   technique as .map-legend above, laid out horizontally above the
-   events list. Only categories present in the current (filtered)
-   event list are rendered (see renderEventsLegend in main.js). */
-.events-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.events-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 20px;
-}
-
-.events-legend-dot-slot {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.events-legend-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.events-legend-label {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 11px;
-  font-weight: 200;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
 .map-legend-label {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
@@ -1620,7 +1574,7 @@ body.light .nav-logout  { color: var(--text-2); }
 .export-zone { display: contents; }
 
 /* ─── Pills and badges ────────────────────────────── */
-.badge, .pill, .event-type-pill, .news-cat, .pipe-status-pl,
+.badge, .pill, .news-cat, .pipe-status-pl,
 .dq-verified, .dq-estimate, .bench-demo-badge, .seg-pill {
   background: transparent;
   border: 1px solid var(--border-light);
@@ -1870,48 +1824,7 @@ body.light .nav-logout  { color: var(--text-2); }
 /* Plain colored-text treatment — matches .owner-type-badge (Owners'
    portfolio types) exactly: no border, no background, no pill. Color
    is the only thing that carries the category. */
-.event-type-pill {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 8px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-.etype-sport     { color: var(--cat-green); }
-.etype-culture   { color: var(--cat-orange); }
-.etype-music     { color: var(--cat-violet); }
-.etype-business  { color: var(--cat-blue); }
-.etype-religious { color: var(--cat-slate); }
-
-.event-name {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 3px;
-  line-height: 1.35;
-}
-
-.event-meta {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-/* ─── Events Timeline ────────────────────────────── */
-.events-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--border);
-}
+/* ─── Events: filter pill (Nationwide toggle in the events calendar) ─ */
 .events-filter-pill {
   padding: 4px 12px;
   background: var(--bg);
@@ -1928,148 +1841,6 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 .events-filter-pill:hover { color: var(--text); border-color: var(--action); background: var(--action-tint);}
 .events-filter-pill.active { border-color: var(--action); color: var(--on-action); background: var(--action); font-weight: 600;}
-
-.timeline-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 16px 20px;
-}
-.timeline-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  position: relative;
-}
-.timeline-date {
-  width: 80px;
-  flex-shrink: 0;
-  text-align: right;
-  padding-right: 20px;
-  padding-top: 4px;
-}
-.timeline-date__month {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 9px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-faint);
-  display: block;
-  line-height: 1;
-  margin-bottom: 3px;
-}
-.timeline-date__day {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-  color: var(--text);
-  display: block;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.timeline-date__range {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 10px;
-  color: var(--text-muted);
-  display: block;
-  line-height: 1.3;
-  margin-top: 2px;
-}
-.timeline-spine {
-  width: 20px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  align-self: stretch;
-}
-.timeline-spine__line {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--border);
-  transform: translateX(-50%);
-}
-.timeline-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 2px solid var(--border-light);
-  background: var(--bg);
-  position: relative;
-  z-index: 1;
-  margin-top: 6px;
-  flex-shrink: 0;
-}
-.timeline-dot--mega {
-  width: 14px;
-  height: 14px;
-  margin-top: 4px;
-  border-width: 0;
-}
-.timeline-content {
-  flex: 1;
-  padding: 8px 0 32px 20px;
-  border-bottom: 1px solid var(--border);
-  min-width: 0;
-}
-.timeline-item:last-child .timeline-content { border-bottom: none; padding-bottom: 4px; }
-.timeline-event-title {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 6px;
-  line-height: 1.3;
-}
-.timeline-detail {
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin-bottom: 8px;
-}
-.timeline-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
-}
-.timeline-attendance {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 11px;
-  color: var(--text-faint);
-}
-.timeline-attendance__num { color: var(--text); }
-.timeline-city-tag {
-  border: 1px solid var(--border);
-  color: var(--text-faint);
-  font-family: 'Sweet Sans Pro', sans-serif;
-  font-size: 9px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 1px 6px;
-  border-radius: 0;
-  display: inline-block;
-  white-space: nowrap;
-}
-
-@media (max-width: 767px) {
-  .timeline-date { width: 60px; padding-right: 12px; }
-  .timeline-date__day { font-size: 15px; }
-  .timeline-spine { width: 16px; }
-  .timeline-content { padding-left: 12px; }
-}
 
 /* ─── Brand detail ───────────────────────────────── */
 .brand-top {
@@ -6089,3 +5860,112 @@ body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
 @media (max-width: 1259px) { .rb-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
 @media (max-width: 768px)  { .rb-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 @media (max-width: 600px)  { .rb-kpi-grid { grid-template-columns: 1fr !important; } }
+
+/* ═══ Events calendar (static/js/events.js) ════════════════════════
+   Layout only: colours come from the tokens and the pill families
+   (tint fill, saturated text, no border); the tooltip is .cal-tip. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.evc-muted { color: var(--text-2); font-weight: 400; }
+.evc-pill { font-size: 10px; padding: 2px 8px; }
+.evc-impact { display: inline-flex; align-items: center; gap: 5px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); text-transform: capitalize; white-space: nowrap; }
+.evc-impact-bars { display: inline-flex; align-items: flex-end; gap: 1.5px; height: 9px; flex: none; }
+.evc-impact-bars i { display: block; width: 3px; background: var(--border); border-radius: 1px; }
+.evc-impact-bars i:nth-child(1) { height: 4px; } .evc-impact-bars i:nth-child(2) { height: 6.5px; } .evc-impact-bars i:nth-child(3) { height: 9px; }
+.evc-impact--low .evc-impact-bars i:nth-child(1),
+.evc-impact--medium .evc-impact-bars i:nth-child(-n+2),
+.evc-impact--high .evc-impact-bars i { background: currentColor; }
+.evc-impact.evc-impact--high { color: var(--text); }
+.evc-empty { padding: 20px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 13px; color: var(--text-2); }
+
+.evcal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+.evcal-field { display: flex; }
+.evcal-search { flex: 1 1 200px; min-width: 160px; }
+.evcal-search .hotels-search-input { height: 32px; font-size: 13px; padding-left: 36px !important; }
+.evcal-search .search-icon { left: 12px; }
+.evcal-exports { display: flex; gap: 6px; margin-left: auto; }
+.evcal-dens-wrap { padding: 12px 20px 10px; border-bottom: 1px solid var(--border); }
+.evcal-dens-label { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.evcal-dens { display: grid; grid-template-columns: repeat(var(--weeks, 60), minmax(6px, 1fr)); gap: 2px; padding-top: 14px; overflow-x: auto; }
+.evcal-dens-week { position: relative; height: 22px; border: 1px solid var(--border); background: var(--bg); padding: 0; cursor: pointer; }
+.evcal-dens-week:hover, .evcal-dens-week:focus-visible { outline: 2px solid var(--action); outline-offset: 0; z-index: 1; }
+.evcal-dens-month { position: absolute; top: -15px; left: 0; font-family: var(--font-mono); font-size: 9px; color: var(--text-2); white-space: nowrap; pointer-events: none; }
+.evcal-monthnav[hidden] { display: none; }
+.evcal-monthnav { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 20px 8px; }
+.evcal-legend { display: inline-flex; flex-wrap: wrap; gap: 12px; margin-left: auto; align-items: center; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; }
+.evcal-grid { padding: 0 20px 12px; }
+.evcal-dow { margin-bottom: 0; }
+.evcal-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: 22px repeat(var(--lanes, 1), 22px) 6px; column-gap: 0; row-gap: 2px; position: relative; }
+.evcal-day { grid-row: 1 / -1; border: 1px solid var(--border); border-top: none; margin-left: -1px; background: var(--bg); position: relative; padding: 3px 5px; display: flex; justify-content: space-between; align-items: flex-start; min-height: 70px; }
+.evcal-week:first-of-type .evcal-day, .evcal-dow + .evcal-week .evcal-day { border-top: 1px solid var(--border); }
+.evcal-day--out { background: var(--bg-alt); }
+.evcal-day--out .evcal-daynum { color: var(--text-2); opacity: 0.7; }
+.evcal-daynum { font-family: var(--font-mono); font-size: 11px; color: var(--text); }
+.evcal-day--today .evcal-daynum { color: var(--on-action); background: var(--action); border-radius: 999px; padding: 0 6px; font-weight: 600; }
+.evcal-more { position: relative; z-index: 2; line-height: 1.2; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 600; color: var(--action-text); background: none; border: none; padding: 2px 4px; cursor: pointer; text-decoration: underline; }
+.evcal-bar { position: relative; z-index: 1; min-width: 0; margin: 0 3px; height: 22px; padding: 0 7px; font-size: 11px; border-radius: 6px; cursor: pointer; justify-content: flex-start; font-family: 'Sweet Sans Pro', sans-serif; }
+.evcal-bar::before { display: none; }
+.evcal-bar .evc-impact-bars { color: var(--pill-text); }
+.evcal-bar-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.evcal-bar--low { font-weight: 500; }
+.evcal-bar--est { font-style: italic; }
+.evcal-bar--cutl { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0; }
+.evcal-bar--cutr { border-top-right-radius: 0; border-bottom-right-radius: 0; margin-right: 0; }
+.evcal-bar:focus-visible, .evc-row:focus-visible, .evc-chip:focus-visible, .evc-mark:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; }
+.evcal-tba { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 0 0; font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; }
+.evcal-agenda { padding: 4px 20px 12px; }
+.evcal-agenda-month { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-2); margin: 16px 0 6px; }
+.evcal-foot { padding: 10px 20px 14px; border-top: 1px solid var(--border); font-family: 'Sweet Sans Pro', sans-serif; font-size: 10.5px; }
+.evc-list { display: flex; flex-direction: column; }
+.evc-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; text-align: left; width: 100%; padding: 10px 6px; background: none; border: none; border-bottom: 1px solid var(--border); cursor: pointer; color: var(--text); font-family: 'Sweet Sans Pro', sans-serif; }
+.evc-row:hover { background: var(--bg-hover); }
+.evc-row-date { font-family: var(--font-mono); font-size: 11px; color: var(--text-2); padding-top: 2px; }
+.evc-row-main { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.evc-row-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.evc-row-pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.evc-row-why { font-size: 11.5px; color: var(--text-2); line-height: 1.45; }
+
+/* Detail panel (one for the platform): right drawer, bottom sheet on phones */
+.evc-backdrop { position: fixed; inset: 0; background: var(--overlay); z-index: 7000; }
+.evc-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); background: var(--bg-alt); color: var(--text); border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(31, 30, 28, 0.16); z-index: 7001; overflow-y: auto; padding: 16px 20px 24px; font-family: 'Sweet Sans Pro', sans-serif; }
+.evc-panel[hidden], .evc-backdrop[hidden] { display: none; }
+.evc-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.evc-panel-close { background: none; border: 1px solid var(--border); border-radius: 999px; width: 32px; height: 32px; color: var(--text-2); cursor: pointer; font-size: 13px; }
+.evc-panel-close:hover { color: var(--text); border-color: var(--action); }
+.evc-panel-title { font-size: 18px; font-weight: 600; line-height: 1.3; margin: 4px 0 10px; color: var(--text); }
+.evc-panel-pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 14px; }
+.evc-d { margin: 0; }
+.evc-d-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 12.5px; line-height: 1.5; }
+.evc-d-row dt { color: var(--text-2); font-size: 11px; }
+.evc-d-row dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+.evc-d-row a { color: var(--action-text); }
+:root[data-theme="dark"] .evc-panel { box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5); }
+
+/* Markers on the hotel and benchmarking calendars */
+.evc-mark { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1.5px solid var(--bg); background: var(--cat-4-dot); cursor: pointer; z-index: 2; }
+.evc-mark--medium { background: var(--cat-1-dot); }
+.evc-mark--low { background: var(--text-2); }
+.evc-mark::after { content: ''; position: absolute; inset: -8px; }     /* larger tap target */
+.evc-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 20px 16px; }
+.evc-chip { display: grid; grid-template-columns: auto; gap: 3px; text-align: left; padding: 8px 12px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; color: var(--text); font-family: 'Sweet Sans Pro', sans-serif; min-width: 160px; max-width: 260px; }
+.evc-chip:hover { border-color: var(--action); background: var(--action-tint); }
+.evc-chip-date { font-family: var(--font-mono); font-size: 10px; color: var(--text-2); }
+.evc-chip-name { font-size: 12px; font-weight: 600; line-height: 1.35; }
+.evc-chip-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+  .evcal-toolbar { padding: 10px 12px; }
+  .evcal-toolbar .hotels-sort-select { max-width: 46vw; }
+  .evcal-exports { margin-left: 0; }
+  .evcal-dens-wrap, .evcal-monthnav, .evcal-grid, .evcal-agenda, .evcal-foot { padding-left: 12px; padding-right: 12px; }
+  .evcal-legend { margin-left: 0; }
+  .evcal-dens { grid-template-columns: repeat(var(--weeks, 60), 11px); padding-bottom: 4px; }
+  .evcal-day { min-height: 56px; padding: 2px 3px; }
+  .evcal-bar { margin: 0 1px; padding: 0 4px; font-size: 10px; }
+  .evcal-bar .evc-impact-bars { display: none; }
+  .evc-row { grid-template-columns: 70px minmax(0, 1fr); gap: 8px; }
+  .evc-panel { top: auto; left: 0; width: 100vw; max-height: 85vh; border-left: none; border-top: 1px solid var(--border); border-radius: 12px 12px 0 0; }
+  .evc-d-row { grid-template-columns: 96px minmax(0, 1fr); }
+  .evc-chips { padding: 12px; }
+  .evc-chip { max-width: none; flex: 1 1 100%; }
+}

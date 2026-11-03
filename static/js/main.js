@@ -1280,6 +1280,7 @@ async function showHotelDetail(id) {
 
   // ── 8. Owner section ──
   renderOwnerSection(h);
+  KodoEvents.renderNext90(document.getElementById('hotel-events-next90'), h.city);
 
   // ── 9. Live Rate Intelligence ──
   renderRateCalendar(h.id);
@@ -1648,6 +1649,7 @@ async function renderRateCalendar(hotelId) {
     </div>`;
   }
   calEl.innerHTML = html;
+  KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
 }
 
 function fmMad(n) {
@@ -1712,6 +1714,7 @@ async function renderOccCalendar(hotelId) {
     </div>`;
   }
   calEl.innerHTML = html;
+  KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
 
   // Modelled, not measured: say so, with the run date and the price
   // coverage (most days' level; "mixed" when no level has a majority).
@@ -2218,149 +2221,6 @@ function redrawChartsForTheme() {
 
 // ─── Tourism screen ───────────────────────────────────────────────
 
-const TOUR_EVENTS = [
-  { city:'Marrakech',  name:'Marrakech Marathon',                    date:'January 2026',     attendance:'10,000+ runners',      type:'Sport',     desc:'Annual international marathon through the medina and palm groves.' },
-  { city:'Rabat',      name:'Rabat International Fashion Week',      date:'March 2026',        attendance:'',                     type:'Culture',   desc:'Emerging designers showcase alongside established North African labels.' },
-  { city:'Casablanca', name:'Morocco Traders Summit',                date:'March 2026',        attendance:'5,000 delegates',      type:'Business',  desc:'Annual trade and investment summit for North Africa and the MENA region.' },
-  { city:'National',   name:'Eid Al Fitr 2026',                      date:'c. 30 March 2026',  attendance:'National',             type:'Religious', desc:'End of Ramadan — nationwide celebration; peak domestic travel period.' },
-  { city:'Casablanca', name:'Casablanca Finance City Forum',         date:'April 2026',        attendance:'3,000 delegates',      type:'Business',  desc:'CFC flagship event bringing together African financial leaders.' },
-  { city:'Agadir',     name:'International Agadir Fishing Festival', date:'April 2026',        attendance:'',                     type:'Culture',   desc:'Annual festival celebrating the city\'s coastal fishing heritage.' },
-  { city:'Fes',        name:'SIAM International Agriculture Fair',   date:'April 2026',        attendance:'1M+ visitors',         type:'Business',  desc:'Africa\'s leading agricultural exhibition, held at Meknès–Fes.' },
-  { city:'Agadir',     name:'Agadir Beach Soccer World Cup',         date:'May 2026',          attendance:'',                     type:'Sport',     desc:'FIFA-recognised beach soccer tournament on the Agadir seafront.' },
-  { city:'Rabat',      name:'Mawazine Festival',                     date:'May–June 2026',     attendance:'2M+ total',            type:'Music', mega:true, desc:'One of the world\'s largest music festivals by total attendance.' },
-  { city:'Fes',        name:'Fes Festival of World Sacred Music',    date:'June 2026',         attendance:'80,000',               type:'Music',     desc:'Internationally acclaimed spiritual music festival in the ancient medina.' },
-  { city:'Essaouira',  name:'Gnaoua World Music Festival',           date:'June 2026',         attendance:'450,000+ over 4 days', type:'Music',     desc:'UNESCO-endorsed Gnaoua and world music festival on the Atlantic coast.' },
-  { city:'National',   name:'Eid Al Adha 2026',                      date:'c. 6–7 June 2026',  attendance:'National',             type:'Religious', desc:'Feast of Sacrifice — major national holiday with high domestic movement.' },
-  { city:'Marrakech',  name:'Atlas Weekend',                         date:'July 2026',         attendance:'30,000',               type:'Music',     desc:'Multi-genre festival drawing international and regional acts.' },
-  { city:'Agadir',     name:'Timitar Festival',                      date:'July 2026',         attendance:'300,000+',             type:'Music',     desc:'Amazigh world music festival, one of Morocco\'s largest by attendance.' },
-  { city:'Dakhla',     name:'Dakhla Atlantic Festival',              date:'July 2026',         attendance:'',                     type:'Culture',   desc:'Arts and music celebration on the Atlantic coast of southern Morocco.' },
-  { city:'Tanger',     name:'Tanger International Festival',         date:'August 2026',       attendance:'',                     type:'Culture',   desc:'Arts and culture festival at the Cervantes Theatre and open-air venues.' },
-  { city:'Dakhla',     name:'Dakhla Kitesurfing World Cup',          date:'August 2026',       attendance:'5,000+',               type:'Sport',     desc:'IKA World Tour stop on the Dakhla lagoon, one of the top kite venues.' },
-  { city:'Tanger',     name:'Tanger Med Business Forum',             date:'September 2026',    attendance:'',                     type:'Business',  desc:'Annual forum on port logistics, trade, and Mediterranean economies.' },
-  { city:'National',   name:'Aid Al Mawlid 2026',                    date:'September 2026',    attendance:'National',             type:'Religious', desc:'Prophet\'s birthday — observed nationwide; elevated domestic travel.' },
-  { city:'Marrakech',  name:'Oasis Festival',                        date:'October 2026',      attendance:'25,000',               type:'Music',     desc:'Electronic music and arts festival set at the Atlas Studios.' },
-  { city:'Marrakech',  name:'Marrakech International Film Festival', date:'November 2026',     attendance:'50,000+',              type:'Culture',   desc:'Premier film festival showcasing African and world cinema.' },
-  { city:'Marrakech',  name:'Marrakech Airshow',                     date:'2026 (TBC)',         attendance:'TBC',                  type:'Business',  desc:'Biennial aerospace trade exhibition and air display.' },
-];
-
-const EVENT_TYPE_CLASS = {
-  Sport: 'etype-sport', Culture: 'etype-culture', Music: 'etype-music',
-  Business: 'etype-business', Religious: 'etype-religious',
-};
-
-// Event category families — the same colour families as Owners'
-// portfolio types (see FAMILY_INDEX / ownerTypeBadge above), so "type"
-// colours mean the same thing everywhere on the platform. This is the one
-// place event colours are set (pills, timeline dots, legend). Every
-// category has its own hue; grey is reserved for the location pills
-// (Nationwide, city names) and red for losses/errors. Mawazine is a Music
-// event flagged `mega`, which only enlarges its timeline dot.
-const EVENT_TYPE_FAMILY = {
-  Religious: 'violet',
-  Business:  'blue',
-  Sport:     'green',
-  Culture:   'orange',
-  Music:     'sky',
-};
-const eventTypeFamily = t => EVENT_TYPE_FAMILY[t] || 'grey';
-
-// Display order for the events legend — only categories actually
-// present in the current (filtered) event list are shown.
-const EVENT_TYPE_ORDER = ['Sport', 'Culture', 'Business', 'Religious', 'Music'];
-
-function renderEventsLegend(events) {
-  const el = document.getElementById('events-legend');
-  if (!el) return;
-  const present = new Set(events.map(ev => ev.type));
-  const types = EVENT_TYPE_ORDER.filter(t => present.has(t));
-  el.innerHTML = types.map(t => `
-    <span class="events-legend-item">
-      <span class="events-legend-dot-slot"><span class="events-legend-dot" style="background:${familyDot(eventTypeFamily(t))};"></span></span>
-      <span class="events-legend-label">${fmt.esc(t)}</span>
-    </span>`).join('');
-}
-
-function parseEventDate(dateStr) {
-  const MONTH_NUM = {January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
-  const MONTH_ABB = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  // "Month–Month Year" range
-  const rng = dateStr.match(/^(\w+)[–\-](\w+)\s+\d{4}/);
-  if (rng && MONTH_NUM[rng[1]]) {
-    const m1 = MONTH_NUM[rng[1]], m2 = MONTH_NUM[rng[2]];
-    return { sortKey: m1 * 100, month: MONTH_ABB[m1], day: '', range: `${MONTH_ABB[m1]}–${MONTH_ABB[m2]}` };
-  }
-  // "c. D–D Month Year" or "c. D Month Year"
-  const approx = dateStr.match(/c\.\s*(\d{1,2})(?:[–\-](\d{1,2}))?\s+(\w+)\s+\d{4}/);
-  if (approx && MONTH_NUM[approx[3]]) {
-    const m = MONTH_NUM[approx[3]];
-    const day = approx[2] ? `${approx[1]}–${approx[2]}` : approx[1];
-    return { sortKey: m * 100 + parseInt(approx[1]), month: MONTH_ABB[m], day, range: '' };
-  }
-  // "Month Year"
-  for (const [name, num] of Object.entries(MONTH_NUM)) {
-    if (dateStr.includes(name)) {
-      return { sortKey: num * 100, month: MONTH_ABB[num], day: '', range: '' };
-    }
-  }
-  return { sortKey: 9999, month: 'TBC', day: '', range: '' };
-}
-
-let eventsFilter = 'all';
-
-function renderTourismEvents() {
-  const filtered = eventsFilter === 'all' ? TOUR_EVENTS : TOUR_EVENTS.filter(ev => ev.city === eventsFilter);
-  const sorted = [...filtered].sort((a, b) => parseEventDate(a.date).sortKey - parseEventDate(b.date).sortKey);
-
-  renderEventsLegend(sorted);
-
-  if (!sorted.length) {
-    document.getElementById('events-container').innerHTML =
-      '<p style="padding:24px 20px;font-family:\'Sweet Sans Pro\',sans-serif;font-size:13px;color:var(--text-muted)">No events for this selection.</p>';
-    return;
-  }
-
-  document.getElementById('events-container').innerHTML = `<div class="timeline-container">${
-    sorted.map((ev, i) => {
-      const pd = parseEventDate(ev.date);
-      const dotColor = familyDot(eventTypeFamily(ev.type));
-      const isMega = !!ev.mega;
-
-      const dateColHtml = pd.range
-        ? `<span class="timeline-date__month">${pd.month}</span><span class="timeline-date__range">${pd.range}</span>`
-        : pd.day
-        ? `<span class="timeline-date__month">${pd.month}</span><span class="timeline-date__day">${pd.day}</span>`
-        : `<span class="timeline-date__month">${pd.month}</span>`;
-
-      const dotStyle = isMega
-        ? `style="width:14px;height:14px;margin-top:4px;background:${dotColor};border:none;"`
-        : `style="border-color:${dotColor};"`;
-
-      const showAttendance = ev.attendance && ev.attendance !== 'TBC' && ev.attendance !== 'National';
-      const attendanceHtml = showAttendance
-        ? `<span class="timeline-attendance">↗ <span class="timeline-attendance__num">${fmt.esc(ev.attendance)}</span></span>`
-        : '';
-      const cityTagHtml = eventsFilter === 'all'
-        ? `<span class="timeline-city-tag pill--grey">${fmt.esc(ev.city === 'National' ? 'Nationwide' : ev.city)}</span>`
-        : '';
-      const hasMeta = showAttendance || eventsFilter === 'all';
-
-      return `<div class="timeline-item">
-        <div class="timeline-date">${dateColHtml}</div>
-        <div class="timeline-spine">
-          <div class="timeline-spine__line"></div>
-          <div class="timeline-dot${isMega ? ' timeline-dot--mega' : ''}" ${dotStyle}></div>
-        </div>
-        <div class="timeline-content">
-          <div class="timeline-event-title">${fmt.esc(ev.name)}</div>
-          <span class="event-type-pill ${EVENT_TYPE_CLASS[ev.type] || ''} pill--${eventTypeFamily(ev.type)}" style="margin-bottom:8px;">${fmt.esc(ev.type)}</span>
-          ${ev.desc ? `<div class="timeline-detail">${fmt.esc(ev.desc)}</div>` : ''}
-          ${hasMeta ? `<div class="timeline-meta">${attendanceHtml}${cityTagHtml}</div>` : ''}
-        </div>
-      </div>`;
-    }).join('')
-  }</div>`;
-}
-
 const TOUR_NIGHTS_DATA = {
   labels: ['Other','Essaouira','Tanger','Fes','Casablanca','Agadir','Marrakech'],
   years: {
@@ -2712,7 +2572,7 @@ function initTourismCharts() {
     });
   }
 
-  renderTourismEvents();
+  EventCalendar.init();
   tourismInited = true;
 }
 
@@ -3003,8 +2863,8 @@ function newsCoverUrl(slug, query) {
 }
 
 // News category families — same colour families as Owners' portfolio
-// types and Events' categories (see FAMILY_INDEX / EVENT_TYPE_FAMILY
-// above). Keys are the real `category` values seen in news.json; anything
+// types and Events' types (see FAMILY_INDEX above and
+// KodoEvents.TYPE_FAMILY in events.js). Keys are the real `category` values seen in news.json; anything
 // else falls back to grey. Sponsored articles use sky for "Partner".
 const NEWS_CATEGORY_FAMILY = {
   'Market Intelligence': 'blue',
@@ -3422,16 +3282,6 @@ document.getElementById('hotels-city-pills').addEventListener('click', e => {
   pill.classList.add('active');
   hotelsState.city = pill.dataset.hcity;
   renderHotelsTable();
-});
-
-// Tourism: events city filter
-document.getElementById('events-city-filter').addEventListener('click', e => {
-  const pill = e.target.closest('.events-filter-pill');
-  if (!pill) return;
-  eventsFilter = pill.dataset.city;
-  document.querySelectorAll('#events-city-filter .events-filter-pill').forEach(p => p.classList.remove('active'));
-  pill.classList.add('active');
-  renderTourismEvents();
 });
 
 // Hotels: segment pills
@@ -4236,6 +4086,8 @@ function renderBenchCalendar(calType) {
   }
 
   document.getElementById(`bench-${calType}-grid`).innerHTML = html;
+  KodoEvents.markCells(document.getElementById(`bench-${calType}-grid`),
+    ((benchmarkData && benchmarkData.hotels || []).find(x => x.id === benchState.myHotelId) || {}).city);
 }
 
 // Calendar nav + view toggle events
@@ -4896,6 +4748,7 @@ function rbRenderCalendar(type) {
       <span class="bench-cal-dayval">${val}<span class="rb-cal-sub">${subTxt}</span></span></div>`;
   }
   document.getElementById(`rb-${type}-grid`).innerHTML = html + '</div>';
+  KodoEvents.markCells(document.getElementById(`rb-${type}-grid`), (rbHotel(rbState.compSet && rbState.compSet.subject_id) || {}).city);
 }
 
 // Calendar months: from the current month to the one holding the 30th night
