@@ -1454,6 +1454,99 @@ function localIsoDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// ── Calendar tooltip (shared by every calendar) ─────────────────────
+// A cell carries its tooltip as data: calTipAttrs(date, rows) where each
+// row is [label, value] or [label, value, note]. One tooltip element on
+// <body> shows it on hover, keyboard focus and tap, placed above the cell
+// (below when there's no room) and kept inside the viewport.
+const calTipEsc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function calTipAttrs(date, rows) {
+  return ` tabindex="0" data-cal-tip="${calTipEsc(JSON.stringify({ date, rows }))}"`;
+}
+
+const CalTip = (() => {
+  let el = null, cell = null, pinned = false, lastPointer = 'mouse';
+  function node() {
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'cal-tip'; el.id = 'cal-tip'; el.setAttribute('role', 'tooltip'); el.hidden = true;
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+  function show(target, pin) {
+    let tip;
+    try { tip = JSON.parse(target.dataset.calTip); } catch { return; }
+    const t = node();
+    const date = document.createElement('div');
+    date.className = 'cal-tip-date'; date.textContent = tip.date;
+    t.replaceChildren(date);
+    (tip.rows || []).forEach(([label, value, note]) => {
+      const row = document.createElement('div');
+      row.className = 'cal-tip-row';
+      const l = document.createElement('span'); l.className = 'cal-tip-label'; l.textContent = label;
+      row.appendChild(l);
+      if (value != null && value !== '') {
+        const v = document.createElement('span'); v.className = 'cal-tip-value'; v.textContent = value;
+        row.appendChild(v);
+      }
+      t.appendChild(row);
+      if (note) {
+        const n = document.createElement('div'); n.className = 'cal-tip-note'; n.textContent = note;
+        t.appendChild(n);
+      }
+    });
+    if (cell && cell !== target) cell.removeAttribute('aria-describedby');
+    cell = target; pinned = !!pin;
+    cell.setAttribute('aria-describedby', 'cal-tip');
+    t.hidden = false;
+    place();
+  }
+  function place() {
+    if (!el || el.hidden || !cell) return;
+    const GAP = 8, EDGE = 8;
+    const c = cell.getBoundingClientRect();
+    const w = el.offsetWidth, h = el.offsetHeight;
+    const vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    // Above the cell when it fits; else below; else whichever side has more room
+    let top = c.top - GAP - h;
+    if (top < EDGE) top = (c.bottom + GAP + h <= vh - EDGE || vh - c.bottom > c.top) ? c.bottom + GAP : top;
+    let left = c.left + c.width / 2 - w / 2;
+    left = Math.max(EDGE, Math.min(left, vw - EDGE - w));
+    el.style.left = Math.round(left) + 'px';
+    el.style.top = Math.round(top) + 'px';
+  }
+  function hide() {
+    if (el) el.hidden = true;
+    if (cell) cell.removeAttribute('aria-describedby');
+    cell = null; pinned = false;
+  }
+  const target = e => e.target.closest && e.target.closest('[data-cal-tip]');
+  document.addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; }, true);
+  document.addEventListener('mouseover', e => {
+    if (lastPointer !== 'mouse') return;
+    const t = target(e);
+    if (t && t !== cell) show(t);
+  });
+  document.addEventListener('mouseout', e => {
+    if (lastPointer !== 'mouse' || pinned || !cell) return;
+    const t = target(e);
+    if (t === cell && !cell.contains(e.relatedTarget)) hide();
+  });
+  document.addEventListener('focusin', e => { const t = target(e); if (t) show(t); else if (cell) hide(); });
+  document.addEventListener('focusout', e => { if (target(e) === cell && !pinned) hide(); });
+  document.addEventListener('click', e => {
+    const t = target(e);
+    if (lastPointer === 'mouse') return;
+    if (!t) { if (cell) hide(); return; }
+    if (t === cell && pinned) hide(); else show(t, true);
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && cell) hide(); });
+  window.addEventListener('scroll', () => { if (cell) (pinned || document.activeElement === cell) ? place() : hide(); }, true);
+  window.addEventListener('resize', () => place());
+  return { hide };
+})();
+
 function fmtMadShort(v) {
   if (!v) return '—';
   const n = +v;
@@ -1540,11 +1633,10 @@ async function renderRateCalendar(hotelId) {
     const cls      = SOURCE_CLASS[src] || 'src-estimated';
     const rateMAD  = r && r.rate_mad ? +r.rate_mad : null;
     const rateDisp = rateMAD ? fmtMadShort(rateMAD) : '—';
-    const tip = `${iso}<br>Rate: ${rateMAD ? fmtMadLong(rateMAD) : 'Unavailable'}<br>Source: ${SOURCE_LABEL[src]||src}`;
-    html += `<div class="bar-cal-day ${cls}" title="">
+    const tip = calTipAttrs(iso, [['Rate', rateMAD ? fmtMadLong(rateMAD) : 'Unavailable'], ['Source', SOURCE_LABEL[src] || src]]);
+    html += `<div class="bar-cal-day ${cls}"${tip}>
       <div class="bar-cal-dn">${DAYS[d.getDay()]} ${d.getDate()}</div>
       <div class="bar-cal-rate">${rateDisp}</div>
-      <div class="bar-cal-tip">${tip}</div>
     </div>`;
   }
   calEl.innerHTML = html;
@@ -1603,10 +1695,10 @@ async function renderOccCalendar(hotelId) {
     const styAttr = `background:${bg};color:${col};${fw ? `font-weight:${fw};` : ''}${border ? `border:${border};` : ''}`;
     const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : '—';
     const confBadge = cov === 'full' ? '●' : cov === 'partial' ? '◑' : '○';
-    const tip = e
-      ? `${iso}\nModelled occupancy ${occRange(e)}\nPrice coverage: ${cov}`
-      : `${iso}\nNo estimate`;
-    html += `<div class="bar-cal-day" style="${styAttr}" title="${tip}">
+    const tip = calTipAttrs(iso, e
+      ? [['Modelled occupancy', occRange(e)], ['Price coverage', cov]]
+      : [['No estimate']]);
+    html += `<div class="bar-cal-day" style="${styAttr}"${tip}>
       <div class="bar-cal-dn" style="color:${dayNumCol};opacity:1">${d.getDate()}<span style="font-size:7px;margin-left:2px;opacity:0.6">${confBadge}</span></div>
       <div class="bar-cal-rate">${dispVal}</div>
     </div>`;
@@ -4113,12 +4205,12 @@ function renderBenchCalendar(calType) {
       const dispVal = calType === 'adr'
         ? Math.round(d.adr).toLocaleString('en')
         : (d.occupancy * 100).toFixed(0) + '%';
-      const tip = `${dateStr}|${Math.round(d.adr)}|${(d.occupancy*100).toFixed(1)}|${Math.round(d.revpar)}`;
+      const tip = calTipAttrs(dateStr, [['ADR', `MAD ${Math.round(d.adr).toLocaleString('en')}`],
+        ['Occupancy', `${(d.occupancy * 100).toFixed(1)}%`], ['RevPAR', `MAD ${Math.round(d.revpar).toLocaleString('en')}`]]);
       const dayNumCol = 'var(--text)';
       const styAttr = `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}`;
       html += `<div class="bench-cal-day${isWknd ? ' bench-cal-weekend' : ''}"
-        style="${styAttr}"
-        data-btip="${tip}">
+        style="${styAttr}"${tip}>
         <span class="bench-cal-daynum" style="color:${dayNumCol};opacity:1">${day}</span>
         <span class="bench-cal-dayval">${dispVal}</span>
       </div>`;
@@ -4137,31 +4229,6 @@ function renderBenchCalendar(calType) {
 
   document.getElementById(`bench-${calType}-grid`).innerHTML = html;
 }
-
-// Tooltip shared between both calendars
-const benchTip = document.getElementById('bench-cal-tooltip');
-
-document.addEventListener('mousemove', e => {
-  if (benchTip && benchTip.style.display !== 'none') {
-    benchTip.style.left = (e.clientX + 14) + 'px';
-    benchTip.style.top  = (e.clientY - 10) + 'px';
-  }
-});
-
-document.getElementById('screen-benchmarking').addEventListener('mouseover', e => {
-  const cell = e.target.closest('[data-btip]');
-  if (!cell) { benchTip.style.display = 'none'; return; }
-  const [dt, adr, occ, rev] = cell.dataset.btip.split('|');
-  benchTip.innerHTML = `
-    <div class="bct-date">${dt}</div>
-    <div class="bct-row"><span>ADR</span><span>MAD ${Number(adr).toLocaleString('en')}</span></div>
-    <div class="bct-row"><span>Occupancy</span><span>${occ}%</span></div>
-    <div class="bct-row"><span>RevPAR</span><span>MAD ${Number(rev).toLocaleString('en')}</span></div>`;
-  benchTip.style.display = 'block';
-});
-document.getElementById('screen-benchmarking').addEventListener('mouseout', e => {
-  if (!e.target.closest('[data-btip]')) benchTip.style.display = 'none';
-});
 
 // Calendar nav + view toggle events
 document.getElementById('bench-adr-prev').addEventListener('click', () => {
@@ -4799,20 +4866,24 @@ function rbRenderCalendar(type) {
     const iso = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const n = byNight[iso];
     const wk = [0, 6].includes(new Date(y, m - 1, day).getDay()) ? ' bench-cal-weekend' : '';
-    if (!n) { html += `<div class="bench-cal-day bench-cal-nodata rb-cal-out${wk}" title="${iso}: outside the next 30 nights"><span class="bench-cal-daynum">${day}</span></div>`; continue; }
+    if (!n) { html += `<div class="bench-cal-day bench-cal-nodata rb-cal-out${wk}"${calTipAttrs(iso, [['Outside the next 30 nights']])}><span class="bench-cal-daynum">${day}</span></div>`; continue; }
     let val, subTxt, sty, tip;
     if (type === 'rate') {
       val = rbShort(n.subject_rate); subTxt = n.comp_median != null ? `med ${rbShort(n.comp_median)}` : 'med –';
       sty = n.subject_rate != null ? adrCellStyle(n.subject_rate) : null;
-      tip = `${iso}\nYour published rate: ${rbMad(n.subject_rate)}${n.subject_source ? ` (${n.subject_source}, collected ${KodoPeriod.day(n.collected_on)})` : ''}\nComp set median: ${rbMad(n.comp_median)} (${n.comp_priced} hotel${n.comp_priced === 1 ? '' : 's'} with a rate)${n.rate_index != null ? `\nRate index: ${Math.round(n.rate_index)} · rank ${n.rank} of ${n.ranked_of}` : ''}`;
+      tip = [['Your published rate', rbMad(n.subject_rate), n.subject_source ? `${n.subject_source}, collected ${KodoPeriod.day(n.collected_on)}` : ''],
+             ['Comp set median', rbMad(n.comp_median), `${n.comp_priced} hotel${n.comp_priced === 1 ? '' : 's'} with a rate`]];
+      if (n.rate_index != null) tip.push(['Rate index', `${Math.round(n.rate_index)} · rank ${n.rank} of ${n.ranked_of}`]);
     } else {
       val = n.subject_occ != null ? `${Math.round(n.subject_occ)}%` : '–';
       subTxt = n.comp_occ != null ? `avg ${Math.round(n.comp_occ)}%` : 'avg –';
       sty = n.subject_occ != null ? occCellStyle(n.subject_occ / 100) : null;
-      tip = `${iso}\nModelled occupancy ${n.subject_occ != null ? occRange({ mid: n.subject_occ, low: n.subject_low, high: n.subject_high }) : '–'} (Kodo Estimates)${n.subject_conf ? `\nPrice coverage: ${rbConf(n.subject_conf)}` : ''}\nComp set average: ${n.comp_occ != null ? Math.round(n.comp_occ) + '%' : '–'}`;
+      tip = [['Modelled occupancy', n.subject_occ != null ? occRange({ mid: n.subject_occ, low: n.subject_low, high: n.subject_high }) : '–', 'Kodo Estimates']];
+      if (n.subject_conf) tip.push(['Price coverage', rbConf(n.subject_conf)]);
+      tip.push(['Comp set average', n.comp_occ != null ? Math.round(n.comp_occ) + '%' : '–']);
     }
     const styAttr = sty ? `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}` : '';
-    html += `<div class="bench-cal-day${sty ? '' : ' bench-cal-nodata'}${wk}" style="${styAttr}" title="${fmt.esc(tip)}">
+    html += `<div class="bench-cal-day${sty ? '' : ' bench-cal-nodata'}${wk}" style="${styAttr}"${calTipAttrs(iso, tip)}>
       <span class="bench-cal-daynum" style="color:var(--text);opacity:1">${day}</span>
       <span class="bench-cal-dayval">${val}<span class="rb-cal-sub">${subTxt}</span></span></div>`;
   }

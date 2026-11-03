@@ -2433,25 +2433,6 @@ body.light .nav-logout  { color: var(--text-2); }
 .bar-cal-day.src-estimated         { background: var(--bg-alt); color: var(--text-2); border: 1px solid var(--border); }
 .bar-cal-day.src-unavailable       { background: transparent; color: var(--text-faint); border: 1px dashed var(--border); }
 
-/* Tooltip */
-.bar-cal-day .bar-cal-tip {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%; transform: translateX(-50%);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 0;
-  padding: 8px 10px;
-  font-size: 11px;
-  line-height: 1.5;
-  white-space: nowrap;
-  color: var(--text);
-  z-index: 100;
-  pointer-events: none;
-  box-shadow: none;
-}
-.bar-cal-day:hover .bar-cal-tip { display: block; }
 
 /* Legend */
 .bar-cal-legend {
@@ -4047,18 +4028,33 @@ body.light .nav-logout  { color: var(--text-2); }
 .bench-cal-daynum { font-family: 'Sweet Sans Pro', sans-serif; font-size: 9px; font-weight: 400; opacity: 0.7; line-height: 1; }
 .bench-cal-dayval { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
 
-.bench-cal-tooltip {
-  position: fixed; z-index: 1000;
-  background: var(--surface);
-  border: none;
-  border-left: 2px solid var(--action);
-  border-radius: 0; padding: 10px 13px;
-  font-size: 12px; min-width: 160px; pointer-events: none;
-  box-shadow: none;
+/* Calendar tooltip: one element on <body> shared by every calendar (CalTip in main.js).
+   Opaque Warm Paper surface (--bg-alt); dark mode swaps it for the dark ink surface. */
+.cal-tip {
+  position: fixed; z-index: 8000;
+  left: 0; top: 0;
+  background: var(--bg-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(31, 30, 28, 0.14), 0 1px 3px rgba(31, 30, 28, 0.08);
+  padding: 10px 12px;
+  min-width: 180px;
+  max-width: min(300px, calc(100vw - 16px));
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
 }
-.bct-date { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
-.bct-row  { display: flex; justify-content: space-between; gap: 16px; font-family: 'Sweet Sans Pro', sans-serif; color: var(--text-muted); font-size: 11px; margin-bottom: 2px; }
-.bct-row span:last-child { font-weight: 500; color: var(--text); }
+.cal-tip[hidden] { display: none; }
+:root[data-theme="dark"] .cal-tip { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4); }
+.cal-tip-date { font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
+.cal-tip-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.cal-tip-row + .cal-tip-row, .cal-tip-note + .cal-tip-row { margin-top: 4px; }
+.cal-tip-label { font-size: 11px; color: var(--text-2); }
+.cal-tip-value { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cal-tip-note { font-size: 10.5px; color: var(--text-2); text-align: right; }
+[data-cal-tip]:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; position: relative; z-index: 3; }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
 .bench-idx-badge { display: inline-block; padding: 2px 8px; border-radius: 0; font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; }
