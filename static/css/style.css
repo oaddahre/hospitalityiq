@@ -6008,3 +6008,8 @@ body .evcal-leg-type { font-family: inherit; font-size: 10px; cursor: pointer; t
   .evc-chips { padding: 12px; }
   .evc-chip { max-width: none; flex: 1 1 100%; }
 }
+
+/* Owner portfolio: a project not open yet (pipeline) is listed but not counted */
+.owner-stat-pipe { display: block; font-size: 9px; font-weight: 400; color: var(--text-muted); margin-top: 2px; letter-spacing: 0; text-transform: none; }
+body .owner-pipe-pill { font-size: 9.5px; padding: 2px 7px; margin-left: 6px; vertical-align: middle; }
+.owner-row-pipe td { color: var(--text-muted); }

@@ -5985,7 +5985,8 @@ function renderOwnerCards() {
         ownerTypeBadge(o.type || 'Private') +
       '</div>' +
       '<div class="owner-stats-row">' +
-        '<div class="owner-stat-item"><span class="owner-stat-label">Hotels</span><span class="owner-stat-value">' + (o.total_hotels || 0) + '</span></div>' +
+        '<div class="owner-stat-item"><span class="owner-stat-label">Hotels</span><span class="owner-stat-value">' + (o.total_hotels || 0) +
+          (o.pipeline_hotels ? '<span class="owner-stat-pipe" title="' + o.pipeline_hotels + ' not open yet (pipeline), ' + (o.pipeline_keys || 0).toLocaleString() + ' keys">+' + o.pipeline_hotels + ' pipeline</span>' : '') + '</span></div>' +
         '<div class="owner-stat-item"><span class="owner-stat-label">Keys</span><span class="owner-stat-value">' + (o.total_keys || 0).toLocaleString() + '</span></div>' +
         '<div class="owner-stat-item"><span class="owner-stat-label">Cities</span><span class="owner-stat-value">' + (o.cities || []).length + '</span></div>' +
         '<div class="owner-stat-item"><span class="owner-stat-label">Operators</span><span class="owner-stat-value">' + (o.brands_operated || []).length + '</span></div>' +
@@ -6039,6 +6040,15 @@ function renderOwnerDetail(o) {
 
   // KPI row
   document.getElementById('odkpi-hotels').textContent = o.total_hotels || 0;
+  // A project not open yet (pipeline) is listed, but not in these totals
+  const kpiCard = document.getElementById('odkpi-hotels').closest('.kpi-card');
+  kpiCard.querySelector('.owner-kpi-pipe')?.remove();
+  if (o.pipeline_hotels) {
+    const note = document.createElement('span');
+    note.className = 'kpi-meta owner-kpi-pipe';
+    note.textContent = `+ ${o.pipeline_hotels} in the pipeline (${(o.pipeline_keys || 0).toLocaleString()} keys)`;
+    kpiCard.appendChild(note);
+  }
   document.getElementById('odkpi-keys').textContent = (o.total_keys || 0).toLocaleString();
   document.getElementById('odkpi-cities').textContent = (o.cities || []).length;
   document.getElementById('odkpi-brands').textContent = (o.brands_operated || []).length;
@@ -6061,7 +6071,8 @@ function renderOwnerDetail(o) {
     }).join('');
 
   // Portfolio title
-  document.getElementById('owner-portfolio-title').textContent = o.name + ' Hotel Portfolio (' + (o.total_hotels || 0) + ' hotels)';
+  document.getElementById('owner-portfolio-title').textContent = o.name + ' Hotel Portfolio (' + (o.total_hotels || 0) + ' hotels'
+    + (o.pipeline_hotels ? ', ' + o.pipeline_hotels + ' in the pipeline' : '') + ')';
 
   // Portfolio table
   ownerPortfolioSort = { col: null, dir: 1 };
@@ -6109,7 +6120,12 @@ function renderOwnerPortfolioTable(hotels) {
     var nameCell = h.hotel_id
       ? '<span class="owner-hotel-link" onclick="showHotelDetail(' + h.hotel_id + ')">' + fmt.esc(h.name) + '</span>'
       : fmt.esc(h.name);
-    return '<tr>' +
+    if (h.pipeline) {
+      nameCell += ' <span class="pill--grey owner-pipe-pill" title="Not open yet: in the pipeline, not counted in the totals">'
+        + fmt.esc(h.label || h.pipeline_status || 'Pipeline')
+        + (h.expected_opening ? ' · ' + h.expected_opening : '') + '</span>';
+    }
+    return '<tr' + (h.pipeline ? ' class="owner-row-pipe"' : '') + '>' +
       '<td>' + nameCell + '</td>' +
       '<td>' + getBrandLogoImg(h.brand_group, 14) + fmt.esc(h.brand_group || '—') + '</td>' +
       '<td>' + fmt.esc(h.city || '—') + '</td>' +

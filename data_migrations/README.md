@@ -8,7 +8,7 @@ Name: `NNNN_what_it_does.<kind>`, numbered in the order they must run:
 
 | Kind | Same as the Rates panel upload | Format |
 |---|---|---|
-| `.hotels.csv` | Change the hotel list (hide, unhide, remove, rename, city, owner, rooms, add, to_pipeline, pipeline_position) | `hotel_id,action,hotel,…` |
+| `.hotels.csv` | Change the hotel list (hide, unhide, remove, rename, city, owner, rooms, add, to_pipeline, pipeline_add, pipeline_position) | `hotel_id,action,hotel,…` |
 | `.owners.json` | Owner profiles | `{"format": "kodo-owners-1", "owners": [...]}` |
 | `.coordinates.csv` | Coordinate corrections | coordinate_changes.csv, `approve = yes` |
 | `.ids.json` | Google IDs | `{"format": "kodo-google-ids-1", ...}` |

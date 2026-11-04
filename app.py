@@ -2093,6 +2093,26 @@ def _find_hotel_match(hotel_name, hotels_lower):
     return None
 
 
+def _owner_pipeline_lookup():
+    """{lower name: pipeline row} for owner portfolio entries marked
+    "status": "pipeline" (a project not open yet, e.g. a reopening)."""
+    try:
+        with open(os.path.join(DATA_DIR, "pipeline.csv"), encoding="utf-8") as f:
+            return {str(r.get("name", "")).strip().lower(): r for r in csv.DictReader(f)}
+    except OSError:
+        return {}
+
+
+def _pipeline_entry(h, pipe):
+    """A portfolio entry for a pipeline project: its keys, opening and status."""
+    r = _find_hotel_match(h["name"], pipe) or {}
+    entry = dict(h)
+    entry.update(pipeline=True, hotel_id=None, keys=safe_int(r.get("keys")) or 0,
+                 category=r.get("category") or h.get("category", ""), pipeline_id=safe_int(r.get("id")),
+                 expected_opening=safe_int(r.get("expected_opening")), pipeline_status=r.get("status") or "")
+    return entry
+
+
 @app.route("/api/owners")
 @login_required
 def api_owners():
@@ -2100,13 +2120,16 @@ def api_owners():
         owners = json.load(f)
     _, _, merged = load_data()
     hotels_lower = {str(r["name"]).strip().lower(): r for _, r in merged.iterrows()}
+    pipe = _owner_pipeline_lookup()
     result = []
     for o in owners:
         total_keys = 0
         cities = []
         segments = []
         brands = []
-        for h in o.get("hotels", []):
+        open_hotels = [h for h in o.get("hotels", []) if h.get("status") != "pipeline"]
+        in_pipeline = [_pipeline_entry(h, pipe) for h in o.get("hotels", []) if h.get("status") == "pipeline"]
+        for h in open_hotels:
             match = _find_hotel_match(h["name"], hotels_lower)
             if match is not None:
                 keys = match.get("keys", 0)
@@ -2123,8 +2146,10 @@ def api_owners():
                 brands.append(bg)
         result.append({
             **{k: v for k, v in o.items() if k != "hotels"},
-            "total_hotels": len(o.get("hotels", [])),
+            "total_hotels": len(open_hotels),
             "total_keys": total_keys,
+            "pipeline_hotels": len(in_pipeline),
+            "pipeline_keys": sum(p["keys"] for p in in_pipeline),
             "cities": sorted(cities),
             "segments": segments,
             "brands_operated": brands,
@@ -2142,8 +2167,10 @@ def api_owner_detail(owner_id):
         return jsonify({"error": "Not found"}), 404
     _, _, merged = load_data()
     hotels_lower = {str(r["name"]).strip().lower(): r for _, r in merged.iterrows()}
+    pipe = _owner_pipeline_lookup()
     enriched_hotels = []
-    for h in owner.get("hotels", []):
+    in_pipeline = [_pipeline_entry(h, pipe) for h in owner.get("hotels", []) if h.get("status") == "pipeline"]
+    for h in [h for h in owner.get("hotels", []) if h.get("status") != "pipeline"]:
         match = _find_hotel_match(h["name"], hotels_lower)
         entry = dict(h)
         if match is not None:
@@ -2157,12 +2184,14 @@ def api_owner_detail(owner_id):
         enriched_hotels.append(entry)
     total_keys = sum(h["keys"] for h in enriched_hotels)
     cities = sorted(list({h["city"] for h in enriched_hotels if h.get("city")}))
-    brands = list({h["brand_group"] for h in enriched_hotels if h.get("brand_group")})
+    brands = sorted({h["brand_group"] for h in enriched_hotels if h.get("brand_group")})
     return jsonify({
         **{k: v for k, v in owner.items() if k != "hotels"},
-        "hotels": enriched_hotels,
+        "hotels": enriched_hotels + in_pipeline,
         "total_hotels": len(enriched_hotels),
         "total_keys": total_keys,
+        "pipeline_hotels": len(in_pipeline),
+        "pipeline_keys": sum(p["keys"] for p in in_pipeline),
         "cities": cities,
         "brands_operated": brands,
     })
