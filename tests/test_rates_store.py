@@ -119,3 +119,70 @@ class Store(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class NightlyCheck(unittest.TestCase):
+    """The 05:00 check: 7 clean nights -> database; a difference -> CSV."""
+
+    def setUp(self):
+        self.d = tempfile.mkdtemp(prefix='kodo-rs-check-')
+        RS.append(self.d, make_rows(days=10), env={})
+        RS.import_csv(self.d, log=lambda *_: None)
+        self.on = {'RATES_DB': 'on'}
+        self.mails = []
+
+    def tearDown(self):
+        shutil.rmtree(self.d, ignore_errors=True)
+
+    def night(self, n, **kw):
+        return RS.nightly_check(self.d, TODAY + timedelta(days=n), notify=lambda k, rec, r: self.mails.append(k),
+                                env=kw.pop('env', self.on), log=lambda *_: None, **kw)
+
+    def test_seven_clean_nights_switch_then_difference_switches_back(self):
+        for n in range(6):
+            self.assertEqual(self.night(n)['result'], 'same')
+        self.assertEqual(RS.read_from(self.d, self.on), 'csv')
+        rec = self.night(6)
+        self.assertEqual((rec['streak'], rec.get('switched')), (7, 'sqlite'))
+        self.assertEqual(RS.read_from(self.d, self.on), 'sqlite')
+        self.assertEqual(self.mails, ['switched'])
+        self.night(7)
+        self.assertEqual(self.mails, ['switched'])                  # no second email
+        # A row in the CSV only (written with the database off): a difference
+        RS.append(self.d, make_rows(days=1, hotels=('9',), nights=1), env={})
+        rec = self.night(8)
+        self.assertEqual((rec['result'], rec['switched']), ('differences', 'csv'))
+        self.assertEqual(RS.read_from(self.d, self.on), 'csv')
+        self.assertEqual(RS.load_state(self.d)['streak'], 0)
+        self.night(9)
+        self.assertEqual(self.mails, ['switched', 'differences'])   # emailed when it starts, not every night
+        # Fixed: the count starts again from 1
+        RS.import_csv  # (the database gets the missing row)
+        import sqlite3
+        con = sqlite3.connect(RS.db_path(self.d))
+        row = RS.read(self.d, env={}, hotel_ids=['9'])[0]
+        con.execute(f'INSERT OR REPLACE INTO rates VALUES ({",".join("?" * len(RS.FIELDS))})', [row[k] for k in RS.FIELDS])
+        con.commit(); con.close()
+        self.assertEqual(self.night(10)['streak'], 1)
+
+    def test_skipped_nights_neither_count_nor_reset(self):
+        for n in range(3):
+            self.night(n)
+        self.assertEqual(self.night(3, scraper_running=True)['result'], 'skipped')
+        self.assertEqual(self.night(4, env={})['result'], 'skipped')      # RATES_DB off
+        self.assertEqual(RS.load_state(self.d)['streak'], 3)
+        self.assertEqual(self.night(3)['streak'], 4)                    # same night again: replaces, not adds
+        self.assertEqual(len([h for h in RS.load_state(self.d)['history'] if h.get('night') == (TODAY + timedelta(days=3)).isoformat()]), 1)
+
+    def test_overrides(self):
+        for n in range(7):
+            self.night(n)
+        self.assertEqual(RS.read_from(self.d, self.on), 'sqlite')
+        RS.set_manual(self.d, 'csv', 'qa')                              # Rates panel wins over automatic
+        self.assertEqual(RS.read_choice(self.d, self.on), ('csv', 'Rates panel'))
+        self.assertEqual(RS.read_from(self.d, {**self.on, 'RATES_READ': 'sqlite'}), 'sqlite')   # Railway wins over the panel
+        RS.set_manual(self.d, 'auto', 'qa')
+        self.assertEqual(RS.read_choice(self.d, self.on), ('sqlite', 'automatic'))
+        self.assertEqual(RS.read_from(self.d, {'RATES_DB': 'undo'}), 'csv')                     # undo: never the database
+        with self.assertRaises(ValueError):
+            RS.set_manual(self.d, 'mysql', 'qa')

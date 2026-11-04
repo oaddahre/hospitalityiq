@@ -1454,18 +1454,45 @@ function restoreButton(b, label = 'Restore') {
   return btn;
 }
 
-// Rates store (rates_store.py): which store the platform reads, and the
-// CSV against the database per scrape day while both are written
+// Rates store (rates_store.py): which store the platform reads and who
+// chose it, the nightly CSV / database check, and the manual override
+const STORE_NAME = { csv: 'CSV', sqlite: 'database' };
+function storeRender(d) {
+  const db = d.db ? `database ${d.db.rows.toLocaleString('en')} rows, imported ${d.db.imported_at}` : (d.rates_db === 'on' ? 'database importing or not started' : 'no database');
+  const why = d.chosen_by === 'automatic'
+    ? (d.auto_read === 'sqlite' ? 'automatic: 7 clean nights' : `automatic: ${d.streak} of ${d.clean_nights_needed} clean nights so far`)
+    : d.chosen_by === 'RATES_READ' ? `RATES_READ=${d.chosen} in Railway` : 'set in this panel';
+  const fallback = d.chosen === 'sqlite' && d.read_from === 'csv' ? ' (database not ready: CSV meanwhile)' : '';
+  document.getElementById('ri-store').textContent =
+    `Rates store: the platform reads the ${STORE_NAME[d.read_from]} (${why})${fallback} · RATES_DB=${d.rates_db} · `
+    + (d.csv_rows_unique != null ? `CSV ${d.csv_rows_unique.toLocaleString('en')} rows · ` : '') + db;
+  const sel = document.getElementById('ri-store-choice');
+  sel.value = d.manual || 'auto';
+  sel.disabled = d.chosen_by === 'RATES_READ';
+  sel.title = sel.disabled ? 'RATES_READ is set in Railway: it decides. Remove it to choose here.' : '';
+  const list = document.getElementById('ri-store-history');
+  list.replaceChildren();
+  (d.history || []).slice(0, 8).forEach(h => {
+    const line = document.createElement('div');
+    line.className = 'adm-changelog-line';
+    line.textContent = h.event === 'manual'
+      ? `${h.at} · read from set to ${h.choice === 'auto' ? 'Automatic' : STORE_NAME[h.choice]} by ${h.by}`
+      : `${h.at} · nightly check: ` + (h.result === 'same' ? `CSV and database agree (${h.days} scrape days; clean nights ${h.streak})`
+        : h.result === 'differences' ? `differences on ${(h.days || []).map(x => x.day).join(', ')}; back to the CSV, count restarted`
+        : `not run: ${h.note}`) + (h.switched ? ` · switched to the ${STORE_NAME[h.switched]}` : '');
+    if (h.result === 'differences') line.style.color = 'var(--negative)';
+    list.appendChild(line);
+  });
+}
 async function loadRatesStore(full) {
-  const el = document.getElementById('ri-store'), diff = document.getElementById('ri-store-diff');
+  const diff = document.getElementById('ri-store-diff');
   const btn = document.getElementById('ri-store-compare');
   try {
     if (full) { btn.disabled = true; btn.textContent = 'Comparing…'; }
     const res = await fetch('/api/admin/rates-store' + (full ? '?full=1' : ''), { headers: authHeaders() });
     if (!res.ok) return;
     const d = await res.json();
-    const db = d.db ? `database ${d.db.rows.toLocaleString('en')} rows, imported ${d.db.imported_at}` : (d.rates_db === 'on' ? 'database importing or not started' : 'no database');
-    el.firstChild.textContent = `Rates store: the platform reads the ${d.read_from === 'sqlite' ? 'database' : 'CSV'} · RATES_DB=${d.rates_db} ${d.csv_rows_unique != null ? '· CSV ' + d.csv_rows_unique.toLocaleString('en') + ' rows ' : ''}· ${db} `;
+    storeRender(d);
     if (full) {
       diff.hidden = false;
       diff.textContent = !d.db ? 'No database to compare with yet.'
@@ -1475,6 +1502,20 @@ async function loadRatesStore(full) {
   } catch {} finally { btn.disabled = false; btn.textContent = 'Compare CSV and database'; }
 }
 document.getElementById('ri-store-compare').addEventListener('click', () => loadRatesStore(true));
+document.getElementById('ri-store-choice').addEventListener('change', async e => {
+  const choice = e.target.value;
+  const label = choice === 'auto' ? 'Automatic' : STORE_NAME[choice];
+  if (!confirm(`Make the platform read rates from: ${label}?`)) { loadRatesStore(false); return; }
+  const [ok, d] = await coordPost('/api/admin/rates-store/read', { choice });
+  toast(ok ? `Rates are read from: ${label}` : (d.error || 'Not changed'), ok ? 'success' : 'error');
+  if (ok) storeRender(d); else loadRatesStore(false);
+});
+document.getElementById('ri-store-check').addEventListener('click', async e => {
+  e.target.disabled = true; e.target.textContent = 'Checking…';
+  const [ok, d] = await coordPost('/api/admin/rates-store/check', {});
+  e.target.disabled = false; e.target.textContent = 'Run the check now';
+  if (ok) storeRender(d); else toast(d.error || 'Check failed', 'error');
+});
 
 async function loadCoordHistory() {
   const el = document.getElementById('ri-coord-history');
@@ -1550,6 +1591,8 @@ async function loadCoordHistory() {
       d.className = 'adm-changelog-line';
       d.textContent = l.action === 'migration'
         ? `${l.at} · migration ${l.migration}: ${l.summary || 'nothing to do'}${l.changed ? '' : ' (no change)'}`
+        : l.action === 'rates_read_switch'
+          ? `${l.at} · rates read from ${l.to === 'auto' ? 'Automatic' : STORE_NAME[l.to] || l.to} (${l.result === 'manual' ? 'set' : 'nightly check'}) by ${l.by}`
         : l.action === 'migration_failed'
           ? `${l.at} · migration ${l.migration} failed, files put back: ${l.error}`
         : l.action === 'restore'

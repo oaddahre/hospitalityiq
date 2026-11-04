@@ -209,7 +209,8 @@ _reset_requests: dict = {}   # {email: datetime of last forgot-password request}
 _verification_resend_attempts: dict = {}  # {email: [datetime, ...]} — sliding 1h window, 3/hour/email
 
 # ─── APScheduler — daily jobs, Casablanca time ──────────────────────────────
-# 03:00 rate scraper · 04:00 occupancy model · 09:00 data health check.
+# 03:00 rate scraper · 04:00 occupancy model · 05:00 rates database check
+# (CSV against database, automatic switch) · 09:00 data health check.
 # Only one process runs the scheduler: with several workers, each imports
 # this file, and the first to take scheduler.lock in DATA_DIR keeps it for
 # as long as it lives (the OS frees it when the process ends, and the
@@ -233,6 +234,12 @@ try:
         occ_path = os.path.join(APP_DIR, 'occupancy_model.py')
         subprocess.Popen([sys.executable, occ_path])
         app.logger.info('Occupancy model triggered by scheduler')
+
+    def _scheduled_rates_check():
+        try:
+            _run_rates_check()
+        except Exception as e:
+            app.logger.error(f'Rates database check failed: {e}', exc_info=True)
 
     def _scheduled_health_check():
         try:
@@ -260,6 +267,13 @@ try:
             replace_existing=True,
         )
         _scheduler.add_job(
+            func=_scheduled_rates_check,
+            trigger='cron',
+            hour=5, minute=0,
+            id='daily_rates_db_check',
+            replace_existing=True,
+        )
+        _scheduler.add_job(
             func=_scheduled_health_check,
             trigger='cron',
             hour=9, minute=0,
@@ -275,7 +289,7 @@ try:
         )
         _scheduler.start()
         app.logger.info(f'Scheduler started in pid {os.getpid()}: scraper 03:00, occupancy model 04:00, '
-                        'health check 09:00 (Africa/Casablanca)')
+                        'rates database check 05:00, health check 09:00 (Africa/Casablanca)')
 
         import atexit
         atexit.register(lambda: _scheduler.shutdown(wait=False))
@@ -5291,6 +5305,72 @@ def api_scraper_download_rates():
         return jsonify({'status': 'no rates found — scraper has not run yet'})
     path = RS.export_csv(DATA_DIR, os.path.join(DATA_DIR, 'scraped_rates_export.csv'))
     return send_file(path, mimetype='text/csv', as_attachment=True, download_name='kodo_scraped_rates.csv')
+
+
+def _send_alert(subject, body_html):
+    to = _alert_recipient()
+    resend.api_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if not to or not resend.api_key:
+        app.logger.error(f'Alert not sent (set ALERT_EMAIL and RESEND_API_KEY): {subject}')
+        return False
+    try:
+        resend.Emails.send({'from': 'Kodo Hospitality <contact@kodohospitality.com>', 'to': to,
+                            'subject': subject, 'html': body_html})
+        return True
+    except Exception as e:
+        app.logger.error(f'Alert email error: {e}')
+        return False
+
+
+def _rates_check_email(kind, rec, reading):
+    esc = html.escape
+    where = 'the database' if reading == 'sqlite' else 'the CSV'
+    if kind == 'switched':
+        _send_alert('Kodo: the platform now reads rates from the database',
+                    f'<p>The CSV and the rates database matched on {RS.CLEAN_NIGHTS} nights in a row '
+                    f'({rec.get("days")} scrape days, {rec.get("db_rows")} rows), so the platform now reads {where}.</p>'
+                    '<p>The CSV is still written every night. To go back: Rates panel → Rates store → CSV, '
+                    'or RATES_READ=csv in Railway.</p>')
+    else:
+        days = ''.join(f'<li>{esc(d["day"])}: CSV {d["csv"]} rows, database {d["db"]} rows</li>' for d in rec.get('days') or [])
+        _send_alert('Kodo alert: the rates CSV and database differ',
+                    f'<p>Tonight\'s check ({esc(rec.get("night", ""))}) found scrape days that differ between the CSV '
+                    f'and the rates database:</p><ul>{days}</ul>'
+                    f'<p>The automatic choice is back on the CSV (the platform reads {where}) and the count of clean '
+                    f'nights starts again. Details in the Rates panel → Rates store.</p>')
+
+
+def _run_rates_check():
+    """05:00: compare the CSV and the database, switch automatically (rates_store.nightly_check)."""
+    rec = RS.nightly_check(DATA_DIR, today=_casablanca_today(), notify=_rates_check_email,
+                           scraper_running=lock_is_held(SCRAPER_LOCK), log=app.logger.warning)
+    if rec.get('switched'):
+        CA._log(COORD_LOG_PATH, {'at': rec['at'], 'action': 'rates_read_switch', 'by': 'nightly check',
+                                 'to': rec['switched'], 'result': rec['result']})
+    return rec
+
+
+@app.route('/api/admin/rates-store/read', methods=['POST'])
+@admin_required
+def api_rates_store_read():
+    """The Rates panel's override: auto, csv or sqlite."""
+    choice = str((request.get_json(silent=True) or {}).get('choice', ''))
+    try:
+        RS.set_manual(DATA_DIR, choice, current_user.email)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    CA._log(COORD_LOG_PATH, {'at': datetime.now().isoformat(timespec='seconds'), 'action': 'rates_read_switch',
+                             'by': current_user.email, 'to': choice, 'result': 'manual'})
+    _log_admin_action('rates_read_set', '', choice)
+    return jsonify(RS.compare(DATA_DIR, full=False))
+
+
+@app.route('/api/admin/rates-store/check', methods=['POST'])
+@admin_required
+def api_rates_store_check():
+    """Run tonight's check now (same as the 05:00 job)."""
+    _run_rates_check()
+    return jsonify(RS.compare(DATA_DIR, full=False))
 
 
 @app.route('/api/admin/rates-store')

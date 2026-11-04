@@ -288,8 +288,21 @@
     <p class="adm-hint" id="ri-dataforseo">DataForSEO: —</p>
     <p class="adm-hint" id="ri-health">Data health: —</p>
     <p class="adm-hint" id="ri-cities">Cities scraped: —</p>
-    <p class="adm-hint" id="ri-store">Rates store: — <button type="button" class="adm-btn-text" id="ri-store-compare">Compare CSV and database</button></p>
-    <div class="adm-hint" id="ri-store-diff" hidden></div>
+    <div class="adm-store">
+      <p class="adm-hint" id="ri-store">Rates store: —</p>
+      <div class="adm-store-actions">
+        <label class="adm-hint" for="ri-store-choice">Read from</label>
+        <select class="adm-select adm-select-sm" id="ri-store-choice" aria-label="Which store the platform reads">
+          <option value="auto">Automatic (database after 7 clean nights)</option>
+          <option value="csv">CSV</option>
+          <option value="sqlite">Database</option>
+        </select>
+        <button type="button" class="adm-btn adm-btn-secondary adm-btn-sm" id="ri-store-check">Run the check now</button>
+        <button type="button" class="adm-btn-text" id="ri-store-compare">Compare CSV and database</button>
+      </div>
+      <div class="adm-hint" id="ri-store-diff" hidden></div>
+      <div class="adm-changelog" id="ri-store-history"></div>
+    </div>
 
     <p class="adm-list-filter-label" style="margin-top:28px">Last scraper run: price lookup per hotel</p>
     <p class="adm-hint">From scrape_coverage.csv. ok: prices returned · no_result: Google returned nothing · no_match: the result was another hotel · error: the lookup failed (API error, timeout, run stopped) · other_currency: some nights not in MAD, dropped · no_id: no Google ID.</p>

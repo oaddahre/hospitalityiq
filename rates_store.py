@@ -16,8 +16,17 @@ Railway variables (both read on every call, no restart needed for reads):
                     from then on every write goes to both stores.
               undo: rates.db is moved aside (rates.db-undone-<time>, kept)
                     and the platform reads the CSV, which was never stopped.
-  RATES_READ  csv (default) | sqlite: which store the platform reads. sqlite
-              is used only once the import has finished; until then, CSV.
+  RATES_READ  unset (default): automatic, see below | csv | sqlite: forces
+              the store the platform reads (sqlite only once the import has
+              finished; until then, CSV).
+
+Automatic switch (nightly_check, 05:00 Casablanca, after the scraper): the
+CSV and the database are compared per scrape day. After 7 nights in a row
+without a difference the platform reads the database; a difference sends
+it back to the CSV and restarts the count. Both are emailed. Which store is
+read: RATES_READ if set, else the Rates panel's choice (csv / sqlite), else
+the automatic one; never the database before its import, or with
+RATES_DB=undo. State in DATA_DIR/rates_store_state.json.
 
 Which price a night shows: the LATEST observation (the most recent
 scrape_date; on the same scrape day, the source the scraper trusts most).
@@ -109,26 +118,148 @@ CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
 '''
 
 
+_ready = {}
+
+
 def db_ready(data_dir):
-    """The database exists and its import from the CSV finished."""
+    """The database exists and its import from the CSV finished (remembered
+    per file once true: it is asked on every page)."""
     p = db_path(data_dir)
-    if not os.path.exists(p):
+    try:
+        st = os.stat(p)
+    except OSError:
         return False
+    if _ready.get(p) == (st.st_ino, st.st_dev):
+        return True
     try:
         con = _connect(p)
         try:
-            return bool(con.execute("SELECT value FROM meta WHERE key = 'imported_at'").fetchone())
+            ok = bool(con.execute("SELECT value FROM meta WHERE key = 'imported_at'").fetchone())
+            if ok:
+                _ready[p] = (st.st_ino, st.st_dev)
+            return ok
         finally:
             con.close()
     except sqlite3.Error:
         return False
 
 
+def read_choice(data_dir, env=os.environ):
+    """(wanted store, who chose it): the environment variable, the Rates
+    panel, or the automatic nightly check."""
+    v = str(env.get('RATES_READ', '')).strip().lower()
+    if v in ('csv', 'sqlite'):
+        return v, 'RATES_READ'
+    st = load_state(data_dir)
+    if st.get('manual') in ('csv', 'sqlite'):
+        return st['manual'], 'Rates panel'
+    return (st.get('auto_read') if st.get('auto_read') in ('csv', 'sqlite') else 'csv'), 'automatic'
+
+
 def read_from(data_dir, env=os.environ):
-    """'sqlite' when RATES_READ=sqlite, RATES_DB is not undo and the import
-    finished; else 'csv'."""
-    want = str(env.get('RATES_READ', 'csv')).strip().lower()
+    """'sqlite' or 'csv': the chosen store, but never the database before
+    its import finished or with RATES_DB=undo."""
+    want, _ = read_choice(data_dir, env)
     return 'sqlite' if want == 'sqlite' and db_mode(env) != 'undo' and db_ready(data_dir) else 'csv'
+
+
+# ─── State of the automatic switch ───────────────────────────────────────────
+
+CLEAN_NIGHTS = 7
+_state_cache = {}
+
+
+def state_path(data_dir):
+    return os.path.join(data_dir, 'rates_store_state.json')
+
+
+def load_state(data_dir):
+    p = state_path(data_dir)
+    try:
+        m = os.path.getmtime(p)
+    except OSError:
+        return {}
+    c = _state_cache.get(p)
+    if c and c[0] == m:
+        return c[1]
+    try:
+        import json
+        with open(p, encoding='utf-8') as f:
+            d = json.load(f)
+        d = d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        d = {}
+    _state_cache[p] = (m, d)
+    return d
+
+
+def _save_state(data_dir, st):
+    import json
+    p = state_path(data_dir)
+    tmp = p + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(st, f, indent=1, ensure_ascii=False)
+    os.replace(tmp, p)
+    _state_cache.pop(p, None)
+
+
+def set_manual(data_dir, choice, actor):
+    """The Rates panel's override: 'csv', 'sqlite' or 'auto' (none)."""
+    if choice not in ('csv', 'sqlite', 'auto'):
+        raise ValueError('choice must be auto, csv or sqlite')
+    st = dict(load_state(data_dir))
+    st['manual'] = None if choice == 'auto' else choice
+    st.setdefault('history', []).insert(0, {'at': datetime.now().isoformat(timespec='seconds'), 'event': 'manual',
+                                            'choice': choice, 'by': actor})
+    st['history'] = st['history'][:60]
+    _save_state(data_dir, st)
+    return st
+
+
+def nightly_check(data_dir, today=None, notify=None, scraper_running=False, env=os.environ, log=print):
+    """Compare the CSV and the database, count the clean nights, switch the
+    automatic choice after CLEAN_NIGHTS clean ones or back to the CSV on any
+    difference, and email both. One result per night; a second run the same
+    night replaces the first. Returns the night's record."""
+    today = (today or date.today()).isoformat()
+    now = datetime.now().isoformat(timespec='seconds')
+    st = dict(load_state(data_dir))
+    hist = [h for h in st.get('history', []) if not (h.get('event') == 'check' and h.get('night') == today)]
+    rec = {'at': now, 'event': 'check', 'night': today}
+    if db_mode(env) != 'on' or not db_ready(data_dir):
+        rec.update(result='skipped', note='database off (RATES_DB is not on) or not imported yet')
+    elif scraper_running:
+        rec.update(result='skipped', note='a scraper run was still writing; checked again tomorrow')
+    else:
+        c = compare(data_dir, full=True, env=env)
+        diff = c['mismatched_days']
+        before_auto = st.get('auto_read', 'csv')
+        if diff:
+            st['streak'] = 0
+            prev = next((h for h in hist if h.get('event') == 'check' and h.get('result') != 'skipped'), None)
+            first = before_auto == 'sqlite' or not prev or prev.get('result') != 'differences'   # email when it starts
+            st['auto_read'] = 'csv'
+            rec.update(result='differences', days=diff[:10], csv_rows=c['csv_rows_unique'], db_rows=(c['db'] or {}).get('rows'),
+                       switched='csv' if before_auto == 'sqlite' else None)
+            if notify and first:
+                notify('differences', rec, read_from(data_dir, env))
+        else:
+            st['streak'] = int(st.get('streak', 0)) + 1
+            rec.update(result='same', csv_rows=c['csv_rows_unique'], db_rows=(c['db'] or {}).get('rows'),
+                       days=c['days_compared'], streak=st['streak'])
+            if st['streak'] >= CLEAN_NIGHTS and before_auto != 'sqlite':
+                st['auto_read'] = 'sqlite'
+                rec['switched'] = 'sqlite'
+                if notify:
+                    notify('switched', rec, read_from(data_dir, env))
+    if rec.get('result') == 'skipped':
+        rec['streak'] = int(st.get('streak', 0))
+    st['history'] = [rec] + hist[:59]
+    st['last_check'] = rec
+    _save_state(data_dir, st)
+    log(f"[RATES DB] nightly check {today}: {rec['result']}" + (f" ({rec.get('note')})" if rec.get('note') else '')
+        + (f", switched to {rec['switched']}" if rec.get('switched') else ''))
+    return rec
 
 
 def _write_db(data_dir, env=os.environ):
@@ -467,7 +598,7 @@ def on_start(data_dir, log=print, env=os.environ):
         threading.Thread(target=run, name='rates-db-import', daemon=True).start()
 
 
-def compare(data_dir, full=True):
+def compare(data_dir, full=True, env=os.environ):
     """Both stores side by side, per scrape day (for the first week).
     full=False: only the switches and the database's own counts (no CSV scan)."""
     by_day = {}
@@ -477,8 +608,8 @@ def compare(data_dir, full=True):
         with open(csv_path(data_dir), encoding='utf-8') as f:
             seen = set()
             for r in csv.DictReader(f):
-                k = (r.get('hotel_id'), r.get('stay_date'), r.get('scrape_date'), r.get('source') or '')
-                if k in seen:
+                k = hash((r.get('hotel_id'), r.get('stay_date'), r.get('scrape_date'), r.get('source') or ''))
+                if k in seen:                       # a row written twice counts once, as in the database
                     continue
                 seen.add(k)
                 d = by_day.setdefault(r.get('scrape_date') or '', [0, 0])
@@ -497,7 +628,11 @@ def compare(data_dir, full=True):
         finally:
             con.close()
     days = sorted(by_day.items(), reverse=True)
-    return {'read_from': read_from(data_dir), 'rates_db': db_mode(), 'db': db,
+    st = load_state(data_dir)
+    want, by = read_choice(data_dir, env)
+    return {'read_from': read_from(data_dir, env), 'chosen': want, 'chosen_by': by, 'rates_db': db_mode(env), 'db': db,
+            'streak': int(st.get('streak', 0)), 'clean_nights_needed': CLEAN_NIGHTS, 'auto_read': st.get('auto_read', 'csv'),
+            'manual': st.get('manual'), 'history': st.get('history', [])[:14],
             'csv_rows_unique': sum(v[0] for _, v in days) if full else None,
             'mismatched_days': [{'day': d, 'csv': v[0], 'db': v[1]} for d, v in days if db and v[0] != v[1]][:30],
             'days_compared': len(days)}

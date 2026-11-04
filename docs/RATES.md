@@ -24,10 +24,26 @@ ADR.
 | Variable | Values | Effect |
 |---|---|---|
 | `RATES_DB` | `off` (default), `on`, `undo` | `on`: on start, the CSV is copied to `backups/` and imported into `rates.db` (once, under a lock, in the background); every write then goes to both stores. `undo`: `rates.db` is moved aside (kept as `rates.db-undone-<time>`) and the CSV is used. |
-| `RATES_READ` | `csv` (default), `sqlite` | Which store the platform reads; `sqlite` takes effect only once the import has finished. |
+| `RATES_READ` | unset (default: automatic), `csv`, `sqlite` | Forces which store the platform reads; `sqlite` takes effect only once the import has finished. |
 
-Rates panel → "Rates store" shows which store is read and, on **Compare CSV
-and database**, the row counts per scrape day of both stores.
+## Automatic switch (every night at 05:00 Casablanca, after the scraper)
+
+With `RATES_DB=on`, the CSV and the database are compared per scrape day:
+
+- No difference on **7 nights in a row**: the platform reads the database,
+  and ALERT_EMAIL gets an email.
+- A difference on any night: back to the CSV, the count starts again, and
+  the email lists the days that differ (once, when it starts; not every
+  night it lasts).
+- A night when the scraper is still writing, or with the database off, is
+  skipped: it neither counts nor resets.
+
+Which store is read, in order: `RATES_READ` in Railway if set; else the
+Rates panel's **Read from** (CSV or Database); else the automatic choice.
+The database is never read before its import has finished, or with
+`RATES_DB=undo`. Rates panel → Rates store shows the current store and who
+chose it, the count of clean nights, the last checks, **Run the check now**
+and **Compare CSV and database**. Switches are also in the change log.
 
 ## Switching on (production)
 
@@ -36,12 +52,12 @@ and database**, the row counts per scrape day of both stores.
 2. A few minutes later, Rates panel → Rates store should say
    "database N rows, imported …". The import of a year of prices takes
    about 20 seconds; the site keeps working on the CSV meanwhile.
-3. Leave it a week. Every few days, click **Compare CSV and database**: it
-   should say both agree on every scrape day.
-4. Then set `RATES_READ=sqlite`. Pages read only their own rows.
+3. Nothing else: after 7 clean nightly checks the platform reads the
+   database by itself and you get an email.
 
-To go back at any point: `RATES_READ=csv` (instant), or `RATES_DB=undo` to
-also stop writing to the database and move it aside. The CSV was never
+To go back at any point: Rates panel → Read from → CSV, or `RATES_READ=csv`
+in Railway (instant), or `RATES_DB=undo` to also stop writing to the
+database and move it aside. The CSV was never
 stopped, so nothing is lost.
 
 ## Measured (one year of prices: 300 hotels × 30 nights, every day)
