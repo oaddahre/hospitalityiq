@@ -11,7 +11,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 11,Four Seasons Resort Marrakech,Marrakech,Marrakech-Safi,Luxury,Four Seasons,Four Seasons Hotels & Resorts,141,2011,verified,Operating,31.619645,-8.017166,Undisclosed,verified,
 12,Mandarin Oriental Marrakech,Marrakech,Marrakech-Safi,Luxury,Mandarin Oriental,Mandarin Oriental Hotel Group,65,2015,,Operating,31.603914,-7.951025,Undisclosed,verified,
 13,Royal Mansour Marrakech,Marrakech,Marrakech-Safi,Luxury,Royal Mansour,Royal Mansour Collection,53,2010,verified,Operating,31.625211,-7.998381,Royal Mansour Brand,verified,
-14,Sofitel Marrakech Palais Imperial & Spa,Marrakech,Marrakech-Safi,Luxury,Sofitel,Accor,157,,unverified,Operating,31.621380,-8.002614,Risma,verified,
+14,Sofitel Marrakech Palais Imperial & Spa,Marrakech,Marrakech-Safi,Luxury,Sofitel,Accor,330,,unverified,Operating,31.621380,-8.002614,Risma,verified,
 15,Fairmont Royal Palm Marrakech,Marrakech,Marrakech-Safi,Luxury,Fairmont,Accor,134,2017,verified,Operating,31.513379,-8.052131,Risma,verified,
 16,Novotel Marrakech,Marrakech,Marrakech-Safi,Upscale,Novotel,Accor,112,2009,verified,Operating,31.622799,-8.002385,Risma,verified,
 19,Radisson Blu Marrakech Carré Eden,Marrakech,Marrakech-Safi,Upper Upscale,Radisson Blu,Radisson Hotel Group,198,2016,verified,Operating,31.634682,-8.011524,Risma,verified,
