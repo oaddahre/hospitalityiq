@@ -1397,11 +1397,12 @@ csvSection('hl', ['/api/admin/hotels-list/preview', '/api/admin/hotels-list/appl
     + (r.action === 'add' ? ` · new hotel ${r.hotel_id} in ${r.new_city || '?'}${r.new_owner ? ', owner ' + r.new_owner : ''}`
       : r.new_city ? ` · ${r.old_city || '?'} → ${r.new_city}${r.new_region ? ' (' + r.new_region + ')' : ''}` : '')
     + (r.action === 'owner' && r.new_owner ? ` · owner ${r.old_owner || '?'} → ${r.new_owner}` : '')
+    + (r.action === 'rooms' && r.new_rooms ? ` · rooms ${r.old_rooms || '?'} → ${r.new_rooms}` : '')
     + (r.pipeline_name ? ` · pipeline project ${r.pipeline_id} "${r.pipeline_name}"${r.pipeline_new ? ' (new)' : ''}` : '')
     + (r.new && r.action === 'pipeline_position' ? ` · ${(r.old || []).join(', ')} → ${r.new.join(', ')}${r.approximate ? ' (approximate)' : ''}` : '')
     + (r.note ? ` · ${r.note}` : '') + (r.reason ? ` · ${r.reason}` : ''),
   'Change this server\'s hotel list as previewed? hotels.csv (and pipeline.csv for a pipeline move, performance.csv for an added hotel) is backed up first.',
-  ['hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'add', 'to_pipeline', 'pipeline_position']);
+  ['hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'rooms', 'add', 'to_pipeline', 'pipeline_position']);
 csvSection('own', ['/api/admin/owners/preview', '/api/admin/owners/apply'],
   r => `${r.status}: ${r.name || r.id} (${r.id})` + (r.hotels != null ? ` · ${r.hotels} hotels` : '')
     + (r.old_hotels != null ? ` (was ${r.old_hotels})` : '') + ((r.changed || []).length ? ` · changes ${r.changed.join(', ')}` : '')
@@ -1512,6 +1513,8 @@ async function loadCoordHistory() {
                 ? `${l.at} · renamed ${l.old_name} → ${l.new_name}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
                 : l.action === 'owner'
                   ? `${l.at} · ${l.hotel}: owner ${l.old_owner} → ${l.new_owner}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+                : l.action === 'rooms'
+                  ? `${l.at} · ${l.hotel}: rooms ${l.old_rooms} → ${l.new_rooms}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
                 : l.action === 'add'
                   ? `${l.at} · added hotel ${l.hotel_id} ${l.hotel} (${l.new_city}${l.new_owner ? ', owner ' + l.new_owner : ''})${l.performance_file ? ' with its performance.csv row' : ''} by ${l.by}`
                 : ['owner_add', 'owner_replace'].includes(l.action)

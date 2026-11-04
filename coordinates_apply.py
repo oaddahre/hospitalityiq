@@ -557,6 +557,7 @@ def approve_candidates(hotels_path, ids_path, rows, backup_dir, log_path, actor=
 #                (which must carry the hotel's name or new_name) is renamed
 #                instead of a new one added
 #   owner        owner := new_owner
+#   rooms        keys := new_rooms (a whole number of rooms, 1 to 5000)
 #   add          appends a new hotel with id hotel_id: hotel = its name, and
 #                new_<column> for the other hotels.csv columns (new_city,
 #                new_region, new_category, new_brand, new_brand_group,
@@ -575,7 +576,8 @@ def approve_candidates(hotels_path, ids_path, rows, backup_dir, log_path, actor=
 # logged, a second run changes nothing; restore() undoes it.
 
 HIDDEN = 'Hidden'
-HOTEL_ACTIONS = ('hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'add', 'to_pipeline', 'pipeline_position')
+HOTEL_ACTIONS = ('hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'rooms', 'add', 'to_pipeline', 'pipeline_position')
+MAX_ROOMS = 5000
 ADD_REQUIRED = ('name', 'city', 'lat', 'lng')
 PIPELINE_STATUS = 'Planning'
 
@@ -660,7 +662,7 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
     for hid, act, a in acts:
         g = lambda k: str(a.get(k) or '').strip()
         e = {'hotel_id': hid, 'action': act, 'hotel': g('hotel'), 'reason': g('reason')}
-        for k in ('new_name', 'new_city', 'new_region', 'new_owner'):
+        for k in ('new_name', 'new_city', 'new_region', 'new_owner', 'new_rooms'):
             if g(k):
                 e[k] = g(k)
         cur = rows.get(hid)
@@ -768,6 +770,20 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
                     e['old_owner'] = c[col['owner']]
                     e['status'] = 'already' if c[col['owner']] == g('new_owner') else 'owner'
                     e['fields'] = {'owner': g('new_owner')}
+            elif act == 'rooms':
+                raw = g('new_rooms')
+                n = int(raw) if raw.isdigit() else None
+                if n is None or not 1 <= n <= MAX_ROOMS:
+                    e['status'], e['note'] = 'bad row', f'new_rooms must be a whole number from 1 to {MAX_ROOMS}'
+                else:
+                    old = c[col['keys']].strip()
+                    e['old_rooms'], e['new_rooms'] = old, str(n)
+                    try:
+                        same = float(old) == n
+                    except ValueError:
+                        same = False
+                    e['status'] = 'already' if same else 'rooms'
+                    e['fields'] = {'keys': str(n)}
             elif act == 'city':
                 f = {'city': g('new_city')}
                 if g('new_region'):
@@ -983,6 +999,8 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
                          new_region=e['fields'].get('region', e['old_region']))
         elif e['status'] == 'owner':
             entry.update(old_owner=e['old_owner'], new_owner=e['fields']['owner'])
+        elif e['status'] == 'rooms':
+            entry.update(old_rooms=e['old_rooms'], new_rooms=e['new_rooms'])
         elif e['status'] == 'add':
             entry.update(new_city=e['fields'].get('city'), new_owner=e['fields'].get('owner'),
                          new=[e['fields']['lat'], e['fields']['lng']],

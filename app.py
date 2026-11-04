@@ -5063,7 +5063,7 @@ def _hotels_summary(p):
     for e in p:
         counts[e['status']] = counts.get(e['status'], 0) + 1
     keys = ('hotel_id', 'hotel', 'action', 'status', 'current_status', 'new_status', 'current_name', 'new_name',
-            'old_city', 'new_city', 'new_region', 'old_owner', 'new_owner', 'pipeline_id', 'pipeline_name', 'pipeline_new',
+            'old_city', 'new_city', 'new_region', 'old_owner', 'new_owner', 'old_rooms', 'new_rooms', 'pipeline_id', 'pipeline_name', 'pipeline_new',
             'old', 'new', 'approximate', 'note', 'reason')
     return {'counts': counts, 'rows': [{k: e.get(k) for k in keys} for e in p][:200]}
 
