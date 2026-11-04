@@ -41,13 +41,14 @@ load_dotenv()
 # ─── Scraper / occupancy model helpers (graceful import) ─────────────────────
 try:
     from scraper import compute_hotel_financials
-    from occupancy_model import OccupancyModel, estimate_occupancy, classify_hotel_type
+    from occupancy_model import OccupancyModel, estimate_occupancy, classify_hotel_type, recent_model
     SCRAPER_MODULE_OK = True
 except Exception:
     SCRAPER_MODULE_OK = False
     def compute_hotel_financials(*a, **kw): return {}
     def classify_hotel_type(*a, **kw): return 'city_business'
     OccupancyModel = None
+    recent_model = None
     def estimate_occupancy(*a, **kw): return 0.60, {}
 try:
     from occupancy_model import active_model, row_model, price_coverage, PRICE_COVERAGE_NOTE
@@ -2267,6 +2268,20 @@ def api_bench_rates():
         return jsonify({"error": "Rate benchmark could not be computed"}), 500
 
 
+@app.route("/api/benchmarking/rates/past")
+@login_required
+@tier_required("benchmarker")
+def api_bench_rates_past():
+    """Past nights of a month: the last published rate before each night."""
+    month = request.args.get('month', '')
+    if not re.match(r'^\d{4}-\d{2}$', month):
+        return jsonify({'error': 'month must be YYYY-MM'}), 400
+    cs = RB.get_comp_set(DATA_DIR, RB.owner_key(current_user))
+    if not cs:
+        return jsonify({'mode': 'past', 'state': 'no_comp_set'})
+    return jsonify(RB.past_rates(DATA_DIR, cs, month, casablanca_today()))
+
+
 @app.route("/api/test-key")
 @login_required
 def api_test_key():
@@ -4380,10 +4395,7 @@ def _data_health(live_account: bool = True):
     """Is the rate data current? Used by the 09:00 health check, the admin
     Rate Intelligence panel and /status."""
     today = _casablanca_today()
-    rows  = _read_rates_csv()
-    last_live = max((r.get('scrape_date', '') for r in rows
-                     if r.get('source') in LIVE_SOURCES and r.get('scrape_status') == 'success'
-                     and r.get('rate_mad')), default='') or None
+    last_live = RS.last_scrape_date(DATA_DIR, sources=LIVE_SOURCES)
     days_since = None
     if last_live:
         try:
@@ -4407,7 +4419,7 @@ def _data_health(live_account: bool = True):
     total, found = stats.get('nights_total'), stats.get('nights_found')
     if last_end and total is None:
         run_date = str(stats.get('start_time') or last_end)[:10]
-        run_rows = [r for r in rows if r.get('scrape_date') == run_date and r.get('source') != 'manual_override']
+        run_rows = [r for r in RS.read(DATA_DIR, scrape_from=run_date, scrape_to=run_date) if r.get('source') != 'manual_override']
         total = len(run_rows)
         found = sum(1 for r in run_rows if r.get('scrape_status') == 'success')
     pct = round(100 * found / total) if total else None
@@ -4627,32 +4639,6 @@ def data_status():
     return resp, (200 if fresh else 503)
 
 
-def _read_rates_csv():
-    rows = []
-    if not os.path.exists(RATES_CSV_PATH):
-        return rows
-    try:
-        with open(RATES_CSV_PATH, 'r', encoding='utf-8') as f:
-            rows = list(csv.DictReader(f))
-    except Exception:
-        pass
-    return rows
-
-
-def _write_rates_csv(rows):
-    if not rows:
-        return
-    fieldnames = [
-        'hotel_id', 'hotel_name', 'city', 'scrape_date', 'stay_date',
-        'rate_mad', 'rate_eur', 'source', 'data_quality', 'rooms_left',
-        'availability_signal', 'scrape_status',
-    ]
-    with open(RATES_CSV_PATH, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
-        writer.writeheader()
-        writer.writerows(rows)
-
-
 @app.route('/api/rates')
 @login_required
 def api_rates():
@@ -4660,15 +4646,10 @@ def api_rates():
     city     = request.args.get('city', '').strip()
     days     = int(request.args.get('days', 30))
 
-    rows = _read_rates_csv()
     today = datetime.utcnow()
     cutoff = (today - timedelta(days=days)).strftime('%Y-%m-%d')
-
-    filtered = [r for r in rows if r.get('scrape_date', '') >= cutoff]
-    if hotel_id:
-        filtered = [r for r in filtered if str(r.get('hotel_id', '')) == str(hotel_id)]
-    elif city:
-        filtered = [r for r in filtered if r.get('city', '').lower() == city.lower()]
+    scope = {'hotel_ids': [hotel_id]} if hotel_id else {'city': city} if city else {}
+    filtered = RS.read(DATA_DIR, scrape_from=cutoff, **scope)
 
     filtered.sort(key=lambda r: r.get('stay_date', ''))
 
@@ -4688,13 +4669,7 @@ def api_rates():
     # The last day a live price was collected for this hotel (or city), at
     # any time; stale when it is older than yesterday (the scraper runs
     # every night at 03:00 Casablanca time).
-    scope = rows
-    if hotel_id:
-        scope = [r for r in rows if str(r.get('hotel_id', '')) == str(hotel_id)]
-    elif city:
-        scope = [r for r in rows if r.get('city', '').lower() == city.lower()]
-    last_live = max((r.get('scrape_date', '') for r in scope
-                     if r.get('source') in LIVE_SOURCES and r.get('scrape_status') == 'success'), default=None) or None
+    last_live = RS.last_scrape_date(DATA_DIR, sources=LIVE_SOURCES, **scope)
     live_stale = True
     if last_live:
         try:
@@ -4711,6 +4686,31 @@ def api_rates():
         'live_stale': live_stale,
         'source_breakdown': source_counts,
     })
+
+
+@app.route('/api/rates/past')
+@login_required
+def api_rates_past():
+    """The hotel profile's past months: for each night of the month before
+    today, the last published rate observed before that night."""
+    hotel_id = request.args.get('hotel_id', '').strip()
+    month = request.args.get('month', '')
+    if not hotel_id or not re.match(r'^\d{4}-\d{2}$', month):
+        return jsonify({'error': 'hotel_id and month (YYYY-MM) are required'}), 400
+    nights = RB.month_nights(month, casablanca_today())
+    last = {}
+    if nights:
+        rows = RS.read(DATA_DIR, hotel_ids=[hotel_id], stay_from=nights[0], stay_to=nights[-1], priced_only=True,
+                       sources=LIVE_SOURCES | {'manual_override'})
+        last = RS.last_before_night(rows)
+    out = []
+    for n in nights:
+        r = last.get((hotel_id, n))
+        out.append({'night': n, 'rate_mad': float(r['rate_mad']) if r else None, 'source': r['source'] if r else None,
+                    'collected_on': r['scrape_date'] if r else None,
+                    'days_before': (datetime.strptime(n, '%Y-%m-%d') - datetime.strptime(r['scrape_date'], '%Y-%m-%d')).days if r else None})
+    return jsonify({'month': month, 'today': casablanca_today().isoformat(), 'nights': out,
+                    'first_month': RB.first_month(DATA_DIR, [hotel_id])})
 
 
 @app.route('/api/scraper/run', methods=['POST'])
@@ -4798,7 +4798,7 @@ def api_scraper_status():
     done_today  = sum(1 for v in progress.values() if v.get('status', '').startswith(f'done_{today}'))
     error_count = sum(1 for v in progress.values() if v.get('status') == 'error')
 
-    rows = _read_rates_csv()
+    rows = RS.read(DATA_DIR, scrape_from=today)
     live_sources = LIVE_SOURCES
     hotels_with_live = len({r['hotel_id'] for r in rows
                             if r.get('source') in live_sources and r.get('scrape_date') >= today})
@@ -5278,17 +5278,7 @@ def api_scraper_override():
         'rooms_left': '', 'availability_signal': 'available',
         'scrape_status': 'success',
     }
-    fieldnames = [
-        'hotel_id', 'hotel_name', 'city', 'scrape_date', 'stay_date',
-        'rate_mad', 'rate_eur', 'source', 'data_quality', 'rooms_left',
-        'availability_signal', 'scrape_status',
-    ]
-    file_exists = os.path.exists(RATES_CSV_PATH)
-    with open(RATES_CSV_PATH, 'a', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(row)
+    RS.append(DATA_DIR, [row])
 
     app.logger.info(f'Manual override: hotel {hotel_id} | {stay_date} | MAD {rate_mad} | {note}')
     return jsonify({'status': 'saved', 'row': row})
@@ -5297,10 +5287,17 @@ def api_scraper_override():
 @app.route('/api/scraper/download-rates')
 @admin_required
 def api_scraper_download_rates():
-    if not os.path.exists(RATES_CSV_PATH):
+    if RS.read_from(DATA_DIR) == 'csv' and not os.path.exists(RATES_CSV_PATH):
         return jsonify({'status': 'no rates found — scraper has not run yet'})
-    return send_file(RATES_CSV_PATH, mimetype='text/csv',
-                     as_attachment=True, download_name='kodo_scraped_rates.csv')
+    path = RS.export_csv(DATA_DIR, os.path.join(DATA_DIR, 'scraped_rates_export.csv'))
+    return send_file(path, mimetype='text/csv', as_attachment=True, download_name='kodo_scraped_rates.csv')
+
+
+@app.route('/api/admin/rates-store')
+@admin_required
+def api_rates_store():
+    """CSV and database side by side (RATES_DB / RATES_READ)."""
+    return jsonify(RS.compare(DATA_DIR, full=request.args.get('full') == '1'))
 
 
 @app.route('/api/scraper/download-log')
@@ -5420,7 +5417,9 @@ def api_occupancy_hotel(hotel_id):
                         return jsonify({'error': 'Hotel not found'}), 404
                 else:
                     h            = h_row.iloc[0].to_dict()
-                    model        = OccupancyModel()
+                    # v1 needs only this hotel's prices; v2 compares it with its city's hotels
+                    same_city = merged[merged['city'] == h.get('city')]['id'].astype(str).tolist()
+                    model        = recent_model(same_city if active_model() == 'v2' else [str(hotel_id)])
                     baseline_adr = float(h.get('adr_mad', 0) or 0)
                     if active_model() == 'v2':
                         live = model.v2_estimates([datetime.strptime(d, '%Y-%m-%d').date() for d in missing],
@@ -5555,7 +5554,7 @@ def api_admin_occupancy_compare():
     live = False
     if SCRAPER_MODULE_OK and OccupancyModel is not None and any(('v2', n) not in by for n in nights):
         try:
-            est = OccupancyModel().v2_estimates([datetime.strptime(n, '%Y-%m-%d').date() for n in nights], hotel_ids=[hid])
+            est = recent_model().v2_estimates([datetime.strptime(n, '%Y-%m-%d').date() for n in nights], hotel_ids=[hid])
             for n in nights:
                 if ('v2', n) not in by and (hid, n) in est:
                     by[('v2', n)] = _v2_entry(n, est[(hid, n)])
@@ -5661,6 +5660,10 @@ def _run_data_migrations():
 
 
 _run_data_migrations()
+try:
+    RS.on_start(DATA_DIR, log=app.logger.warning)      # RATES_DB=on: import (background); undo: move aside
+except Exception as _e:
+    app.logger.error(f'Rates database start step failed, the platform reads the CSV: {_e}')
 
 
 if __name__ == "__main__":

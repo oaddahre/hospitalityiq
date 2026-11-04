@@ -225,6 +225,13 @@ EVENT_MAX_PTS = 15            # all events of one night together, up or down
 _EVENT_NIGHTS = {}
 
 
+def recent_model(rate_hotels=None):
+    """An OccupancyModel for estimates as of today (pages): reads only the
+    prices of the last ON_DEMAND_DAYS days (of these hotels, when given)."""
+    since = (datetime.now(MOROCCO_TZ).date() - timedelta(days=ON_DEMAND_DAYS)).isoformat()
+    return OccupancyModel(rates_since=since, rate_hotels=rate_hotels)
+
+
 def _event_nights():
     """{night iso: [events]} for the events the model counts (cached per file version)."""
     import events_db
@@ -357,7 +364,7 @@ def estimate_occupancy(hotel, date, scraped_bar=None, baseline_adr=None, recent_
 
 V2 = {
     # Normal price: each hotel's own median published price, per weekday
-    'normal_window_days':   60,    # prices collected in the last 60 days
+    'normal_window_days':   60,    # prices collected in the last 60 days (ON_DEMAND_DAYS follows it)
     'long_history_days':    28,    # 28+ days of collection = long history (narrower range)
     'min_points':           14,    # fewer priced nights: fall back to the performance.csv ADR (flagged)
     'min_points_weekday':    3,    # fewer for one weekday: that weekday uses the all-days median
@@ -443,6 +450,9 @@ PRICE_COVERAGE_NOTE = ('Price coverage describes how many recent published price
 
 def price_coverage(confidence):
     return PRICE_COVERAGE.get(confidence or 'low', 'none')
+
+
+ON_DEMAND_DAYS = V2['normal_window_days'] + 1
 
 
 class V2Inputs:
@@ -701,7 +711,12 @@ def v2_gaps(inp, nights):
 
 class OccupancyModel:
 
-    def __init__(self):
+    def __init__(self, rates_since=None, rate_hotels=None):
+        """rates_since: read only prices collected from that day (an ISO date).
+        Today's estimates need the last ON_DEMAND_DAYS days (v2's 60-day normal
+        price window); the nightly run and the calibration read them all.
+        rate_hotels: only these hotels' prices (v1 for one hotel needs no others)."""
+        self.rates_since, self.rate_hotels = rates_since, rate_hotels
         self.hotels      = self._load_hotels()
         self.performance = self._load_performance()
         self.scraped_rates = self._load_scraped_rates()
@@ -731,21 +746,13 @@ class OccupancyModel:
         """Latest name-checked live price per hotel and night, and the days
         on which each hotel got any such price (for the confidence level)."""
         rates, self.price_days, self.rate_rows = {}, {}, []
-        if not Path(RATES_CSV).exists():
-            return rates
         try:
-            with open(RATES_CSV, 'r', encoding='utf-8') as f:
-                for row in csv.DictReader(f):
-                    if (row.get('scrape_status') != 'success' or row.get('data_quality') != 'name_matched'
-                            or row.get('source') not in PRICE_SOURCES or not row.get('rate_mad')):
-                        continue
-                    hid = str(row['hotel_id'])
-                    self.rate_rows.append(row)
-                    self.price_days.setdefault(hid, set()).add(row.get('scrape_date', ''))
-                    key = f"{hid}_{row['stay_date']}"
-                    existing = rates.get(key)
-                    if not existing or row.get('scrape_date', '') >= existing.get('scrape_date', ''):
-                        rates[key] = row
+            import rates_store as RS
+            self.rate_rows = RS.read(str(DATA_DIR), priced_only=True, sources=PRICE_SOURCES, data_quality='name_matched',
+                                     scrape_from=self.rates_since, hotel_ids=self.rate_hotels)
+            for row in self.rate_rows:
+                self.price_days.setdefault(str(row['hotel_id']), set()).add(row.get('scrape_date', ''))
+            rates = {f'{hid}_{night}': row for (hid, night), row in RS.latest_per_night(self.rate_rows).items()}
         except Exception as e:
             print(f'Error loading scraped rates: {e}')
         return rates
@@ -942,7 +949,7 @@ def run_occupancy_model():
         print('Occupancy model already running in another process: this run exits')
         return None
     try:
-        model = OccupancyModel()
+        model = recent_model()          # the next 30 nights as of today: the last 61 days of prices
         results = model.run()
         try:
             maybe_calibrate()

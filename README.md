@@ -95,7 +95,7 @@ id").
 
 The events database (`events.json`, plus the admin's changes in `DATA_DIR`) feeds the Tourism events calendar, the event markers on the hotel and benchmarking calendars and the occupancy model. Format, sources and how to add or update events: [docs/EVENTS.md](docs/EVENTS.md). Check hand edits with `python3 scripts/check_events.py`.
 
-Data corrections for the production volume (owners, rooms, new hotels, renames, coordinates, Google IDs) ship as numbered files in `data_migrations/` and apply on the next deploy, once, with a backup and a log line in the Rates panel: see [data_migrations/README.md](data_migrations/README.md). Files for the owner to read go in `_handoff/` (git-ignored), never the Desktop.
+Data corrections for the production volume (owners, rooms, new hotels, renames, coordinates, Google IDs) ship as numbered files in `data_migrations/` and apply on the next deploy, once, with a backup and a log line in the Rates panel: see [data_migrations/README.md](data_migrations/README.md). Files for the owner to read go in `_handoff/` (git-ignored), never the Desktop. Scraped prices go through `rates_store.py` (CSV, and an optional SQLite database): see [docs/RATES.md](docs/RATES.md).
 
 ## Occupancy model
 

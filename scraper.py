@@ -1084,35 +1084,20 @@ class KodoScraper:
         return rates_found
 
     def save_rates(self, rates):
-        if not rates:
-            return
-        fieldnames = [
-            'hotel_id', 'hotel_name', 'city', 'scrape_date', 'stay_date',
-            'rate_mad', 'rate_eur', 'source', 'data_quality', 'rooms_left',
-            'availability_signal', 'scrape_status',
-        ]
-        file_exists = Path(RATES_CSV).exists()
-        with open(RATES_CSV, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            if not file_exists:
-                writer.writeheader()
-            writer.writerows(rates)
+        """Append to the rates store (the CSV, and rates.db when RATES_DB=on)."""
+        import rates_store as RS
+        RS.append(DATA_DIR, rates)
 
-    def cleanup_old_rates(self, days_to_keep=90):
-        if not Path(RATES_CSV).exists():
-            return
-        cutoff = (datetime.now() - timedelta(days=days_to_keep)).strftime('%Y-%m-%d')
-        rows, fieldnames = [], None
-        with open(RATES_CSV, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            fieldnames = reader.fieldnames
-            rows = [r for r in reader if r.get('scrape_date', '') >= cutoff]
-        if fieldnames:
-            with open(RATES_CSV, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
-                writer.writeheader()
-                writer.writerows(rows)
-        logger.info(f'Cleanup done — kept {len(rows)} rate records')
+    def cleanup_old_rates(self):
+        """Weekly trim, the same rule in both stores (rates_store): every
+        daily snapshot of the last 60 days; older, only the key lead times
+        (30, 14, 7, 3, 1 days before the night) and the last price observed
+        before each night, kept permanently."""
+        import rates_store as RS
+        r = RS.apply_retention(DATA_DIR, datetime.now(MOROCCO_TZ).date())
+        logger.info(f'Rates trimmed (60 days in full, then key lead times and last price): '
+                    f'CSV {r["csv"][0] if r["csv"] else 0} → {r["csv"][1] if r["csv"] else 0} rows'
+                    + (f', database {r["db"][0]} → {r["db"][1]}' if r['db'] else ''))
 
     def save_coverage(self, hotels, scrape_date, days_to_keep=120):
         """Append this run's price lookup status per hotel to COVERAGE_CSV

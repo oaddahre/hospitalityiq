@@ -57,3 +57,5 @@ data_migrations.lock
 rates.db
 rates.db-*
 rates_db.lock
+scraped_rates_export.csv
+rates.db.importing*

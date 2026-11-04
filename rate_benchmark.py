@@ -17,7 +17,8 @@ import os
 import statistics
 from datetime import date, datetime, timedelta
 
-from occupancy_model import OccupancyModel, estimate_occupancy, active_model, row_model, price_coverage
+import rates_store as RS
+from occupancy_model import OccupancyModel, estimate_occupancy, active_model, row_model, price_coverage, recent_model
 
 WINDOW_NIGHTS   = 30   # the next 30 nights, from tomorrow
 MAX_PRICE_AGE   = 7    # a price collected more than 7 days ago is not used
@@ -126,12 +127,12 @@ def suggest_comp_set(data_dir, subject_id, limit=MAX_COMP):
 
 # ─── Rates ───────────────────────────────────────────────────────────────────
 
-def _read_rates(data_dir):
-    try:
-        with open(_path(data_dir, 'scraped_rates.csv'), encoding='utf-8') as f:
-            return list(csv.DictReader(f))
-    except OSError:
-        return []
+def _read_rates(data_dir, hotel_ids, nights, today):
+    """The comp set's usable prices for these nights, collected in the last
+    MAX_PRICE_AGE days (rates_store: only these rows are read)."""
+    return RS.read(data_dir, hotel_ids=hotel_ids, stay_from=min(nights), stay_to=max(nights),
+                   scrape_from=(today - timedelta(days=MAX_PRICE_AGE)).isoformat(), priced_only=True,
+                   sources=SOURCE_ORDER, data_quality=MATCHED)
 
 
 def _usable(r):
@@ -159,6 +160,57 @@ def best_prices(rows, hotel_ids, nights, today):
         if cur is None or key > (cur['scrape_date'], -SOURCE_ORDER.index(cur['source'])):
             out[hid][night] = r
     return out
+
+
+# ─── Past nights: last published rate ────────────────────────────────────────
+
+def month_nights(month, today):
+    """The nights of month ('YYYY-MM') before today, as ISO dates."""
+    y, m = (int(x) for x in month.split('-'))
+    d, out = date(y, m, 1), []
+    while d.month == m and d < today:
+        out.append(d.isoformat())
+        d += timedelta(days=1)
+    return out
+
+
+def first_month(data_dir, hotel_ids):
+    first = RS.first_stay_date(data_dir, hotel_ids)
+    return first[:7] if first else None
+
+
+def past_rates(data_dir, comp_set, month, today: date):
+    """Each past night of the month: the last published rate observed before
+    the night for the hotel and its comp set (rates_store.last_before_night),
+    the comp set median of those, and the rate index."""
+    hotels = load_hotels(data_dir)
+    subject = str(comp_set['subject_id'])
+    comps = [c for c in comp_set['comp_ids'] if c in hotels]
+    ids = [subject] + comps
+    nights = month_nights(month, today)
+    last = {}
+    if nights:
+        rows = RS.read(data_dir, hotel_ids=ids, stay_from=nights[0], stay_to=nights[-1], priced_only=True,
+                       sources=SOURCE_ORDER, data_quality=MATCHED)
+        last = RS.last_before_night(rows)
+    out = []
+    for n in nights:
+        sub = last.get((subject, n))
+        comp_rates = [float(last[(c, n)]['rate_mad']) for c in comps if (c, n) in last]
+        median = statistics.median(comp_rates) if comp_rates else None
+        rate = float(sub['rate_mad']) if sub else None
+        out.append({
+            'night':          n,
+            'subject_rate':   rate,
+            'subject_source': SOURCE_LABEL.get(sub['source']) if sub else None,
+            'collected_on':   sub['scrape_date'] if sub else None,
+            'days_before':    (date.fromisoformat(n) - date.fromisoformat(sub['scrape_date'])).days if sub else None,
+            'comp_median':    round(median) if median else None,
+            'comp_priced':    len(comp_rates),
+            'rate_index':     round(rate / median * 100, 1) if rate and median else None,
+        })
+    return {'mode': 'past', 'month': month, 'today': today.isoformat(), 'nights': out,
+            'first_month': first_month(data_dir, ids)}
 
 
 # ─── Modelled occupancy ──────────────────────────────────────────────────────
@@ -189,7 +241,9 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
     missing = [(h, n) for h in hotel_ids for n in nights if n not in out[h]]
     if missing and active_model() == 'v2':
         try:
-            est = OccupancyModel().v2_estimates(sorted({datetime.strptime(n, '%Y-%m-%d').date() for _, n in missing}),
+            hotels = load_hotels(data_dir)        # v2 compares each hotel with its city's hotels
+            cities = {hotels[h].get('city') for h in hotel_ids if h in hotels}
+            est = recent_model([x for x, r in hotels.items() if r.get('city') in cities]).v2_estimates(sorted({datetime.strptime(n, '%Y-%m-%d').date() for _, n in missing}),
                                                 as_of=today, hotel_ids=sorted({h for h, _ in missing}))
             for hid, night in missing:
                 e = est.get((hid, night))
@@ -201,7 +255,7 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
         missing = []
     if missing:
         try:
-            model = OccupancyModel()
+            model = recent_model(list(hotel_ids))     # v1: each hotel's own prices
             for hid, night in missing:
                 hotel = model.hotels.get(hid)
                 if not hotel:
@@ -240,11 +294,11 @@ def rate_benchmark(data_dir, comp_set, today: date):
     ids = [subject] + comps
     nights = [(today + timedelta(days=i)).isoformat() for i in range(1, WINDOW_NIGHTS + 1)]
 
-    rows = _read_rates(data_dir)
+    rows = _read_rates(data_dir, ids, nights, today)
     prices = best_prices(rows, ids, nights, today)
 
     # Latest matched live price collected for any hotel of this comp set, at any age
-    latest = max((r['scrape_date'] for r in rows if str(r.get('hotel_id')) in set(ids) and _usable(r)), default=None)
+    latest = RS.last_scrape_date(data_dir, hotel_ids=ids, sources=SOURCE_ORDER, data_quality=MATCHED)
     age = (today - date.fromisoformat(latest)).days if latest else None
     if latest is None:
         state = 'empty'

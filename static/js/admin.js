@@ -73,7 +73,7 @@ const SECTION_LOADERS = {
   orgs: loadOrgs,
   news: loadArticles,
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
-  rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); },
+  rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); loadRatesStore(false); },
   occupancy: loadOccupancyStatus,
   events: loadEvents,
   system: loadSystemInfo,
@@ -1453,6 +1453,28 @@ function restoreButton(b, label = 'Restore') {
   btn.textContent = label;
   return btn;
 }
+
+// Rates store (rates_store.py): which store the platform reads, and the
+// CSV against the database per scrape day while both are written
+async function loadRatesStore(full) {
+  const el = document.getElementById('ri-store'), diff = document.getElementById('ri-store-diff');
+  const btn = document.getElementById('ri-store-compare');
+  try {
+    if (full) { btn.disabled = true; btn.textContent = 'Comparing…'; }
+    const res = await fetch('/api/admin/rates-store' + (full ? '?full=1' : ''), { headers: authHeaders() });
+    if (!res.ok) return;
+    const d = await res.json();
+    const db = d.db ? `database ${d.db.rows.toLocaleString('en')} rows, imported ${d.db.imported_at}` : (d.rates_db === 'on' ? 'database importing or not started' : 'no database');
+    el.firstChild.textContent = `Rates store: the platform reads the ${d.read_from === 'sqlite' ? 'database' : 'CSV'} · RATES_DB=${d.rates_db} ${d.csv_rows_unique != null ? '· CSV ' + d.csv_rows_unique.toLocaleString('en') + ' rows ' : ''}· ${db} `;
+    if (full) {
+      diff.hidden = false;
+      diff.textContent = !d.db ? 'No database to compare with yet.'
+        : d.mismatched_days.length ? 'Scrape days that differ: ' + d.mismatched_days.map(m => `${m.day} (CSV ${m.csv}, database ${m.db})`).join(' · ')
+        : `CSV and database agree on all ${d.days_compared} scrape days.`;
+    }
+  } catch {} finally { btn.disabled = false; btn.textContent = 'Compare CSV and database'; }
+}
+document.getElementById('ri-store-compare').addEventListener('click', () => loadRatesStore(true));
 
 async function loadCoordHistory() {
   const el = document.getElementById('ri-coord-history');
