@@ -85,6 +85,14 @@ CAP_RATES = {
 }
 
 # ─── HOTEL TYPE CLASSIFIER ────────────────────────────────────────────────────
+# Under 30 rooms: riad / boutique. Name words (riad, palais, kasbah, dar,
+# lodge…) make a hotel a riad / boutique only below RIAD_NAME_MAX_KEYS rooms;
+# a bigger "Palais" or "Kasbah" is typed by its city like any other hotel.
+# The aim is ~60 rooms; for now 100, so only hotels of 100+ rooms changed
+# (Nov 2026). The three at 60-99 (Hôtel LAKASBAH Aït Ben Haddou, Valeria
+# Kasbah del Mar, Kasbah Baha Baha) wait for a check.
+RIAD_NAME_MAX_KEYS = 100
+
 
 def classify_hotel_type(hotel):
     city  = hotel.get('city', '')
@@ -95,7 +103,7 @@ def classify_hotel_type(hotel):
     leisure_cities  = ['Marrakech', 'Fes', 'Chefchaouen', 'Essaouira', 'Ouarzazate', 'Merzouga', 'Asilah']
     riad_signals    = ['riad', 'dar ', 'palais', 'kasbah', 'maison', 'camp', 'bivouac', 'lodge']
 
-    if any(signal in name for signal in riad_signals) or keys < 30:
+    if keys < 30 or (keys < RIAD_NAME_MAX_KEYS and any(signal in name for signal in riad_signals)):
         return 'riad_boutique'
     elif city in resort_cities:
         return 'beach_resort'
