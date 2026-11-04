@@ -1,0 +1,38 @@
+{
+  "format": "kodo-owners-1",
+  "owners": [
+    {
+      "id": "ocp",
+      "name": "OCP Group",
+      "full_name": "OCP Group, through Maghreb Hospitality Company",
+      "type": "State-Owned",
+      "parent": "OCP Group",
+      "via": "Maghreb Hospitality Company",
+      "headquarters": "Casablanca, Morocco",
+      "logo_local": "/static/images/brands/ocp_logo.png",
+      "description": "OCP Group is Morocco's phosphate and fertilizer producer, founded in 1920 as the Office Chérifien des Phosphates and headquartered in Casablanca. Its hotels are held through Maghreb Hospitality Company, a joint venture between OCP, which takes part through its subsidiary OCP Hospitality, and the Hassan II Fund for Economic and Social Development. The grouping goes back to December 2019, when OCP, the national railway operator ONCF and the Hassan II Fund announced an alliance to keep La Mamounia in Marrakech, the Palais Jamaï in Fès, the Michlifen in Ifrane and the Marchica Lagoon Resort in Nador under Moroccan ownership and management. OCP has since become La Mamounia's majority shareholder. In November 2024, Aleph Hospitality signed management agreements for the Michlifen Resort & Golf and the Marchica Lagoon Resort. The Ritz-Carlton Rabat, Dar Es Salam, which opened in autumn 2024 as the brand's first hotel in Morocco, completes the portfolio tracked here.",
+      "hotels": [
+        {
+          "name": "La Mamounia",
+          "brand_group": "Independent Luxury",
+          "city": "Marrakech"
+        },
+        {
+          "name": "The Ritz-Carlton Rabat Dar Es Salam",
+          "brand_group": "Marriott International",
+          "city": "Rabat / Salé / Témara"
+        },
+        {
+          "name": "Michlifen Resort and Golf Ifrane",
+          "brand_group": "Independent Luxury",
+          "city": "Ifrane"
+        },
+        {
+          "name": "Marchica Lagoon Resort",
+          "brand_group": "Independent Luxury",
+          "city": "Nador"
+        }
+      ]
+    }
+  ]
+}

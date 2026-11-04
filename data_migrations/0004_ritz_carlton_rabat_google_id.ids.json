@@ -1,0 +1,16 @@
+{
+ "format": "kodo-google-ids-1",
+ "google_ids": {
+  "467": {
+   "identifier": "ChkIq5HoyKP3hsM_Gg0vZy8xMWgyNmI3bGo5EAE",
+   "google_title": "The Ritz-Carlton Rabat, Dar Es Salam",
+   "checked": "2026-11-04",
+   "google_lat": 33.9202062,
+   "google_lng": -6.840899,
+   "position_checked": "2026-11-04T11:05:00",
+   "found_by": "hotel_searches \"Ritz-Carlton Rabat\" (en, Morocco): one result, exact name, 20 m from the OpenStreetMap position"
+  }
+ },
+ "overrides": {},
+ "rejected": {}
+}
