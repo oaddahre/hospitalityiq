@@ -85,32 +85,47 @@ CAP_RATES = {
 }
 
 # ─── HOTEL TYPE CLASSIFIER ────────────────────────────────────────────────────
-# Under 30 rooms: riad / boutique. Name words (riad, palais, kasbah, dar,
-# lodge…) make a hotel a riad / boutique only below RIAD_NAME_MAX_KEYS rooms;
-# a bigger "Palais" or "Kasbah" is typed by its city like any other hotel.
-# The aim is ~60 rooms; for now 100, so only hotels of 100+ rooms changed
-# (Nov 2026). The three at 60-99 (Hôtel LAKASBAH Aït Ben Haddou, Valeria
-# Kasbah del Mar, Kasbah Baha Baha) wait for a check.
-RIAD_NAME_MAX_KEYS = 100
+# Riads typically have 20 to 30 rooms. Under 30 rooms: riad / boutique. A
+# name word (riad, dar, kasbah, palais, lodge, camp…) makes a hotel a riad /
+# boutique only up to RIAD_NAME_MAX_KEYS rooms; a bigger one is typed by its
+# city like any other hotel. A kasbah or camp in a desert or small town
+# (DESERT_TOWNS) is cultural leisure there, not city business.
+# HOTEL_TYPE_OVERRIDES fixes the type of single hotels by id, after a check.
+RIAD_NAME_MAX_KEYS = 40
+RIAD_SIGNALS   = ('riad', 'dar ', 'palais', 'kasbah', 'maison', 'camp', 'bivouac', 'lodge')
+RESORT_CITIES  = ('Agadir / Taghazout', 'Saidia', 'Dakhla', 'Tamuda Bay / Tétouan', 'Al Hoceima')
+LEISURE_CITIES = ('Marrakech', 'Fes', 'Chefchaouen', 'Essaouira', 'Ouarzazate', 'Merzouga', 'Asilah')
+DESERT_TOWNS   = ('Zagora', 'Errachidia', 'Merzouga', 'Ouarzazate')
+HOTEL_TYPE_OVERRIDES = {
+    '210': 'cultural_leisure',   # Hôtel LAKASBAH Aït Ben Haddou, 85 rooms (owner, Nov 2026)
+    '452': 'beach_resort',       # Valeria Kasbah del Mar, 72 rooms (owner, Nov 2026)
+    '238': 'cultural_leisure',   # Kasbah Baha Baha, Zagora, 60 rooms (owner, Nov 2026)
+    # 41-42 rooms just over the line, retreats outside the city: kept boutique
+    # until checked (the city rule would make them city leisure, +3.5 pts)
+    '61':  'riad_boutique',      # Kasbah Tamadot (Asni, Atlas), 42 rooms
+    '232': 'riad_boutique',      # Kasbah Bab Ourika (Ourika valley), 42 rooms
+    '156': 'riad_boutique',      # Palais Namaskar (Palmeraie villas), 41 rooms
+}
 
 
 def classify_hotel_type(hotel):
+    override = HOTEL_TYPE_OVERRIDES.get(str(hotel.get('id', '')).split('.')[0])
+    if override:
+        return override
     city  = hotel.get('city', '')
     name  = hotel.get('name', '').lower()
-    keys  = int(hotel.get('keys', 50) or 50)
-
-    resort_cities   = ['Agadir / Taghazout', 'Saidia', 'Dakhla', 'Tamuda Bay / Tétouan', 'Al Hoceima']
-    leisure_cities  = ['Marrakech', 'Fes', 'Chefchaouen', 'Essaouira', 'Ouarzazate', 'Merzouga', 'Asilah']
-    riad_signals    = ['riad', 'dar ', 'palais', 'kasbah', 'maison', 'camp', 'bivouac', 'lodge']
-
-    if keys < 30 or (keys < RIAD_NAME_MAX_KEYS and any(signal in name for signal in riad_signals)):
+    try:
+        keys = int(float(hotel.get('keys', 50) or 50))
+    except (TypeError, ValueError):
+        keys = 50
+    named = any(signal in name for signal in RIAD_SIGNALS)
+    if keys < 30 or (named and keys <= RIAD_NAME_MAX_KEYS):
         return 'riad_boutique'
-    elif city in resort_cities:
+    if city in RESORT_CITIES:
         return 'beach_resort'
-    elif city in leisure_cities:
+    if city in LEISURE_CITIES or (named and city in DESERT_TOWNS):
         return 'cultural_leisure'
-    else:
-        return 'city_business'
+    return 'city_business'
 
 # ─── BASE OCCUPANCY by segment × hotel_type ───────────────────────────────────
 
