@@ -32,6 +32,7 @@ from run_lock import acquire_lock, lock_is_held
 from bench_sample import sample_benchmarking, casablanca_today
 import rate_benchmark as RB
 import events_db as EV
+import rates_store as RS
 from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
                    period_history, period_last_known, NOT_AVAILABLE)
 
@@ -4675,6 +4676,8 @@ def api_rates():
     # only current sources (older rows from earlier sources stay in the file)
     filtered = [r for r in filtered if r.get('scrape_status') == 'success' and r.get('rate_mad')
                 and r.get('source') in LIVE_SOURCES | {'manual_override'}]
+    # One row per hotel and night: the latest price observed (rates_store)
+    filtered = sorted(RS.latest_per_night(filtered).values(), key=lambda r: (r.get('stay_date', ''), str(r.get('hotel_id', ''))))
 
     # Source breakdown
     source_counts = {}

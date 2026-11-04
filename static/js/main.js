@@ -1606,16 +1606,15 @@ async function renderRateCalendar(hotelId) {
   }
   badgeEl.style.display = '';
 
-  // Build a map stay_date → rate row (prefer live over estimated)
+  // stay_date → rate row: the latest price observed for each night (the
+  // server already sends one per night; on the same scrape day the more
+  // trusted source wins, as in rates_store.py)
+  const priority = {'live_dataforseo':5,'live_brand':5,'manual_override':4,'live_booking':3,'estimated':1,'unavailable':0};
+  const later = (a, b) => a.scrape_date !== b.scrape_date ? a.scrape_date > b.scrape_date : (priority[a.source]||0) > (priority[b.source]||0);
   const rateMap = {};
   for (const r of rates) {
     const sd = r.stay_date;
-    if (!rateMap[sd]) {
-      rateMap[sd] = r;
-    } else {
-      const priority = {'live_dataforseo':5,'live_brand':5,'manual_override':4,'live_booking':3,'estimated':1,'unavailable':0};
-      if ((priority[r.source]||0) > (priority[rateMap[sd].source]||0)) rateMap[sd] = r;
-    }
+    if (!rateMap[sd] || later(r, rateMap[sd])) rateMap[sd] = r;
   }
 
   // Generate next 30 days
