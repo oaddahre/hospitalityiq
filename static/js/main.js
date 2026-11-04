@@ -389,11 +389,11 @@ const fmt = {
 // period_caption() in utils.py write the same strings into the PDF report;
 // keep the two in step.
 //
-// Headline cards show the most recent period the data supports (last 30
-// days, latest month, last 12 months, or a snapshot as of today). A past
-// full year (FY 2025, 2024) is never a headline: such a card shows "Not
-// available yet" with the period of the last known figure (unavailable()),
-// and the old figures appear only as history (history()).
+// Headline cards show the most recent period the data supports (the next
+// 30 nights for the live rate, occupancy and RevPAR cards: KodoLive; a
+// snapshot as of today for counts). The yearly figures of performance.csv
+// (FY 2025) are Kodo's own model estimates: never a headline, and labelled
+// "Kodo model estimate · FY 2025 · not reported data" wherever shown (history()).
 //   {kind:'fy', year:2025}                      → FY 2025
 //   {kind:'year', year:2025}                    → 2025          (calendar year)
 //   {kind:'month', year:2026, month:9}          → Sep 2026
@@ -455,8 +455,9 @@ const KodoPeriod = (() => {
     const l = label(p);
     return l ? [l, compare, updated && `updated ${day(updated)}`].filter(Boolean).join(' · ') : '';
   }
-  const history   = p => p ? `History · ${label(p)}` : '';
-  const lastKnown = p => p ? `Last known figure: ${label(p)}` : '';
+  // The yearly occupancy, ADR and RevPAR (performance.csv) are Kodo's own
+  // model estimates, never reported figures: every place showing them says so
+  const history   = p => p ? `Kodo model estimate · ${label(p)} · not reported data` : '';
 
   function periodEl(card) {
     let el = card.querySelector('.kpi-period');
@@ -483,23 +484,137 @@ const KodoPeriod = (() => {
     if (text && tipText) el.title = tipText; else el.removeAttribute('title');
     if (text) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true');
   }
-  // No current figure for this card: "Not available yet" in the muted style,
-  // its unit and change pill hidden, and the period the last known figure
-  // covers (shown elsewhere only as history). Never the old value itself.
-  function unavailable(card, lastP, tipText) {
+  // A free text period line (live cards: "5 Nov – 4 Dec 2026 · updated 4 Nov 03:20")
+  function setText(card, text, tipText) {
     if (typeof card === 'string') card = document.getElementById(card);
     if (!card) return;
-    const v = card.querySelector('.kpi-value');
-    if (v) { v.textContent = 'Not available yet'; v.classList.add('kpi-value--na'); }
-    card.querySelectorAll('.kpi-meta, .kpi-delta, .kpi-sub').forEach(e => { e.style.display = 'none'; });
     const el = periodEl(card);
-    el.textContent = lastKnown(lastP) || '\u00a0';
-    el.classList.toggle('kpi-period--none', !lastP);
-    if (lastP && tipText) el.title = tipText; else el.removeAttribute('title');
-    el.removeAttribute('aria-hidden');
+    el.textContent = text || ' ';
+    el.classList.toggle('kpi-period--none', !text);
+    if (text && tipText) el.title = tipText; else el.removeAttribute('title');
+    if (text) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true');
   }
-  return { label, caption, history, lastKnown, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set, day,
-           unavailable, date: day, today: () => ({ kind: 'asof', date: new Date() }) };
+  return { label, caption, history, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set, setText, day,
+           date: day, today: () => ({ kind: 'asof', date: new Date() }) };
+})();
+
+// ─── Live KPI cards (/api/live-kpis, live_kpis.py) ────────────────────
+// One set of figures for every page: each hotel's average published rate
+// (latest price per night), modelled occupancy and indicative RevPAR over
+// the next 30 nights; a group (city, brand, owner, market) is the rooms-
+// weighted average over its hotels that have the figure, with the
+// coverage shown. Published booking-site prices, not ADR; modelled, not
+// measured occupancy. The 7-day change only once that snapshot exists.
+const KodoLive = (() => {
+  let data = null, loading = null;
+  function load() {
+    if (data) return Promise.resolve(data);
+    if (!loading) loading = fetch('/api/live-kpis').then(r => r.ok ? r.json() : null).catch(() => null)
+      .then(d => { data = d; loading = null; return d; });
+    return loading;
+  }
+  // list: hotels ({id, keys}); returns the rooms-weighted figures and coverage
+  function agg(list) {
+    const H = (data && data.hotels) || {};
+    const rows = (list || []).map(h => H[String(h.id)]).filter(Boolean);
+    const w = sel => {
+      let num = 0, den = 0, n = 0;
+      rows.forEach(v => { const x = sel(v); if (x != null && v.keys) { num += x * v.keys; den += v.keys; n++; } });
+      return den ? { val: num / den, n } : { val: null, n: 0 };
+    };
+    const change = sel => {
+      if (!data || !data.change_from) return null;
+      let a = 0, b = 0, den = 0;
+      rows.forEach(v => { const x = sel(v), y = v.prev && sel(v.prev); if (x != null && y != null && v.keys) { a += x * v.keys; b += y * v.keys; den += v.keys; } });
+      return den ? { now: a / den, then: b / den } : null;
+    };
+    return {
+      total: (list || []).length, single: (list || []).length === 1 ? rows[0] || null : null,
+      rate: w(v => v.rate), occ: w(v => v.occ), low: w(v => v.occ_low), high: w(v => v.occ_high), revpar: w(v => v.revpar),
+      change: { rate: change(v => v.rate), occ: change(v => v.occ), revpar: change(v => v.revpar) },
+    };
+  }
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function stamp(iso) {                 // "4 Nov 03:20" (or "4 Nov" for a date only)
+    if (!iso) return '';
+    const [d, t] = String(iso).split('T');
+    const [, m, dd] = d.split('-').map(Number);
+    return `${dd} ${MON[m - 1]}` + (t ? ' ' + t.slice(0, 5) : '');
+  }
+  function part(card, cls, tag = 'span') {
+    let el = card.querySelector('.' + cls);
+    if (!el) {
+      el = document.createElement(tag); el.className = cls;
+      const pill = card.querySelector('.kpi-delta');           // coverage line first, then the change pill
+      if (cls === 'kpi-sub' && pill) card.insertBefore(el, pill); else card.appendChild(el);
+    }
+    return el;
+  }
+  function delta(card, ch, kind) {
+    const el = card.querySelector('.kpi-delta') || part(card, 'kpi-delta');
+    if (!ch || ch.then == null || (kind !== 'pts' && !ch.then)) { el.textContent = ''; el.style.display = 'none'; el.className = 'kpi-delta'; return; }
+    const d = kind === 'pts' ? ch.now - ch.then : (ch.now - ch.then) / ch.then * 100;
+    el.style.display = '';
+    el.textContent = `${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)}${kind === 'pts' ? ' pts' : '%'} vs 7 days earlier`;
+    el.className = 'kpi-delta ' + (d >= 0 ? 'up pill--green' : 'down pill--red');
+  }
+  function noData(card, what) {
+    const v = card.querySelector('.kpi-value');
+    v.classList.remove('kpi-value--na');
+    v.innerHTML = `<span class="pill--grey kpi-nodata-pill">${what}</span>`;
+    card.querySelectorAll('.kpi-meta').forEach(e => { e.style.display = 'none'; });
+  }
+  function show(card, text, unit) {
+    const v = card.querySelector('.kpi-value');
+    v.classList.remove('kpi-value--na');
+    v.textContent = text;
+    const m = card.querySelector('.kpi-meta');
+    if (m) { m.style.display = unit ? '' : 'none'; if (unit != null) m.textContent = unit; }
+  }
+  // ids: {occ, rate, revpar} card ids; list: the hotels behind them
+  async function cards(ids, list) {
+    const els = Object.fromEntries(Object.entries(ids).map(([k, id]) => [k, document.getElementById(id)]).filter(([, e]) => e));
+    const LABELS = { rate: 'Avg published rate · next 30 nights', occ: 'Modelled occupancy · next 30 nights', revpar: 'Indicative RevPAR' };
+    Object.entries(els).forEach(([k, c]) => { c.querySelector('.kpi-label').textContent = LABELS[k]; c.querySelector('.kpi-value').textContent = '…'; });
+    const d = await load();
+    if (!d) { Object.values(els).forEach(c => noData(c, 'No live rate data')); return; }
+    const a = agg(list), one = a.single, n = d.window.nights;
+    const period = KodoPeriod.label({ kind: 'range', start: d.window.start, end: d.window.end });
+    const ratesLine = `${period}${d.rates_updated ? ' · updated ' + stamp(d.rates_updated) : ''}`;
+    const occLine = `${period}${d.model_run ? ' · model run ' + stamp(d.model_run) : ''}`;
+    const cover = (fig, noun) => one ? `${noun} on ${one[fig + '_nights'] ?? 0} of ${n} nights`
+      : `based on ${a[fig === 'occ' ? 'occ' : fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
+    const tipRate = KodoPeriod.tip({ source: 'published rates on booking sites (latest price per night, Google Hotels via DataForSEO)', updated: d.rates_updated, note: 'not ADR' });
+    const tipOcc = KodoPeriod.tip({ source: `Kodo Estimates (${d.model === 'v2' ? 'v2' : 'v1'} model), modelled, not measured` });
+    if (els.rate) {
+      const c = els.rate;
+      c.querySelector('.kpi-label').textContent = 'Avg published rate · next 30 nights';
+      KodoPeriod.setText(c, ratesLine, tipRate);
+      if (a.rate.val == null) { noData(c, 'No live rate data'); part(c, 'kpi-sub').textContent = one ? 'No published price collected for these nights' : `0 of ${a.total} hotels priced`; delta(c, null); }
+      else { show(c, fmt.mad(a.rate.val), 'MAD · not ADR'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('rate'); delta(c, a.change.rate, '%'); }
+    }
+    if (els.occ) {
+      const c = els.occ;
+      c.querySelector('.kpi-label').textContent = 'Modelled occupancy · next 30 nights';
+      KodoPeriod.setText(c, occLine, tipOcc);
+      if (a.occ.val == null) { noData(c, 'No model estimate yet'); part(c, 'kpi-sub').textContent = ''; delta(c, null); }
+      else {
+        const range = d.model === 'v2' && a.low.val != null && a.high.val != null && a.low.n === a.occ.n
+          ? `range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%` : '';
+        show(c, `${a.occ.val.toFixed(1)}%`, range ? range : 'Kodo Estimates');
+        part(c, 'kpi-sub').textContent = one ? cover('occ', 'estimated') : cover('occ');
+        delta(c, a.change.occ, 'pts');
+      }
+    }
+    if (els.revpar) {
+      const c = els.revpar;
+      c.querySelector('.kpi-label').textContent = 'Indicative RevPAR';
+      KodoPeriod.setText(c, ratesLine, KodoPeriod.tip({ source: 'published rate × modelled occupancy, night by night', note: 'not achieved RevPAR' }));
+      if (a.revpar.val == null) { noData(c, 'No live rate data'); part(c, 'kpi-sub').textContent = 'published rate × modelled occupancy'; delta(c, null); }
+      else { show(c, fmt.mad(a.revpar.val), 'MAD · published rate × modelled occupancy'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('revpar'); delta(c, a.change.revpar, '%'); }
+    }
+  }
+  return { load, agg, cards, stamp };
 })();
 
 // Performance figures (occupancy, ADR, RevPAR) come from performance.csv,
@@ -612,16 +727,11 @@ function renderKPIs() {
 
   const hotelLabel = kpis.total_hotels + ' hotel' + (kpis.total_hotels !== 1 ? 's' : '');
   set('kpi-keys',   fmt.num(kpis.total_keys), hotelLabel);
-  set('kpi-occ',    fmt.pct(kpis.occupancy),  '');
-  set('kpi-adr',    fmt.mad(kpis.adr_mad));
-  set('kpi-revpar', fmt.mad(kpis.revpar_mad));
-
-  // Keys: a live count. Occupancy, ADR, RevPAR: only a past full year
-  // exists (performance.csv), so there is no current headline figure.
+  // Keys: a live count. Rate, occupancy, RevPAR: live, next 30 nights (KodoLive)
   const list = filteredByCity();
-  const perfP = perfPeriodOf(list), perfTip = perfTipOf(list);
   KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
-  ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => KodoPeriod.unavailable(id, perfP, perfTip));
+  ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
+  KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list);
   labelPerfHistory();
 
   const sub = document.getElementById('dashboard-sub');
@@ -846,17 +956,33 @@ function filteredBrands() {
 function renderBrandsKPIs() {
   const branded = brandsData.filter(b => b.brand_group !== 'Independent Hotels');
   const allKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);
-  const champion = [...brandsData].sort((a, b) => b.weighted_revpar - a.weighted_revpar)[0];
   const largest  = [...brandsData].sort((a, b) => b.total_keys - a.total_keys)[0];
 
   document.querySelector('#brnkpi-groups .kpi-value').textContent  = brandsData.length;
   document.querySelector('#brnkpi-keys .kpi-value').textContent    = allKeys.toLocaleString('en');
-  document.querySelector('#brnkpi-champion .kpi-value').textContent = champion ? champion.brand_group : '—';
+  brnRenderChampion();
   document.querySelector('#brnkpi-largest .kpi-value').textContent  = largest  ? largest.brand_group  : '—';
 
   ['brnkpi-groups', 'brnkpi-keys', 'brnkpi-largest'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), COUNT_TIP));
-  // The RevPAR champion is ranked on past full-year RevPAR: not a current headline
-  KodoPeriod.unavailable('brnkpi-champion', perfPeriodOf(hotels), perfTipOf(hotels));
+}
+
+// Highest indicative RevPAR among brand groups, next 30 nights (live): only
+// groups with prices for at least 2 hotels and half their hotels
+async function brnRenderChampion() {
+  const card = document.getElementById('brnkpi-champion');
+  card.querySelector('.kpi-label').textContent = 'Highest indicative RevPAR · next 30 nights';
+  const d = await KodoLive.load();
+  const groups = [...new Set((hotels || []).map(h => h.brand_group))].map(bg => {
+    const list = hotels.filter(h => h.brand_group === bg);
+    return { bg, list, a: KodoLive.agg(list) };
+  }).filter(g => g.a.revpar.val != null && g.a.revpar.n >= 2 && g.a.revpar.n >= g.list.length / 2);
+  const best = groups.sort((x, y) => y.a.revpar.val - x.a.revpar.val)[0];
+  const v = card.querySelector('.kpi-value');
+  const sub = card.querySelector('.kpi-sub') || card.appendChild(Object.assign(document.createElement('span'), { className: 'kpi-sub' }));
+  if (!d || !best) { v.innerHTML = '<span class="pill--grey kpi-nodata-pill">No live rate data</span>'; sub.textContent = ''; }
+  else { v.textContent = best.bg; sub.textContent = `MAD ${fmt.mad(best.a.revpar.val)} · based on ${best.a.revpar.n} of ${best.list.length} hotels`; }
+  if (d) KodoPeriod.setText(card, `${KodoPeriod.label({ kind: 'range', start: d.window.start, end: d.window.end })}${d.rates_updated ? ' · updated ' + KodoLive.stamp(d.rates_updated) : ''}`,
+    KodoPeriod.tip({ source: 'published rate × modelled occupancy, rooms-weighted', note: 'not achieved RevPAR' }));
 }
 
 function brandLogoOrInitials(bg, size) {
@@ -901,9 +1027,9 @@ function renderBrandsCards() {
       </div>
       ${descRow}
       <div class="brn-card-kpis">
-        <div class="brn-kpi"><div class="brn-kpi-lbl">OCC</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
-        <div class="brn-kpi"><div class="brn-kpi-lbl">ADR</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
-        <div class="brn-kpi"><div class="brn-kpi-lbl">RevPAR</div><div class="brn-kpi-val">${fmt.mad(b.weighted_revpar)}</div></div>
+        <div class="brn-kpi" title="Kodo model estimate, FY 2025: not reported data"><div class="brn-kpi-lbl">OCC est.</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
+        <div class="brn-kpi" title="Kodo model estimate, FY 2025: not reported data"><div class="brn-kpi-lbl">ADR est.</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
+        <div class="brn-kpi" title="Kodo model estimate, FY 2025: not reported data"><div class="brn-kpi-lbl">RevPAR est.</div><div class="brn-kpi-val">${fmt.mad(b.weighted_revpar)}</div></div>
       </div>
       <div class="brn-card-meta">
         <div class="brn-card-cities">${cityList}${cityMore}</div>
@@ -1005,7 +1131,7 @@ function renderBrandsInsights() {
   if (byRevpar) {
     document.getElementById('brni-revpar-val').textContent  = byRevpar.brand_group;
     document.getElementById('brni-revpar-desc').textContent =
-      `MAD ${fmt.mad(byRevpar.weighted_revpar)} weighted RevPAR`;
+      `MAD ${fmt.mad(byRevpar.weighted_revpar)} weighted RevPAR · Kodo model estimate, FY 2025, not reported data`;
   }
   if (byPipe) {
     document.getElementById('brni-pipeline-val').textContent  = byPipe.brand_group;
@@ -1073,11 +1199,8 @@ function showBrandDetail(brandGroup, prevScreen) {
     el.querySelector('.kpi-value').textContent = val;
   };
   setKpi('brand-bkpi-keys',   fmt.num(tk));
-  setKpi('brand-bkpi-occ',    fmt.pct(occ));
-  setKpi('brand-bkpi-adr',    fmt.mad(adr));
-  setKpi('brand-bkpi-revpar', fmt.mad(revpar));
   KodoPeriod.set('brand-bkpi-keys', KodoPeriod.today(), COUNT_TIP);
-  ['brand-bkpi-occ', 'brand-bkpi-adr', 'brand-bkpi-revpar'].forEach(id => KodoPeriod.unavailable(id, perfPeriodOf(brandHotelsData), perfTipOf(brandHotelsData)));
+  KodoLive.cards({ occ: 'brand-bkpi-occ', rate: 'brand-bkpi-adr', revpar: 'brand-bkpi-revpar' }, brandHotelsData);
 
   // Switch to brand screen FIRST so the canvas has visible dimensions for Chart.js
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -1250,11 +1373,8 @@ async function showHotelDetail(id) {
   // ── 2. KPI cards ──
   const setKv = (id, v) => document.getElementById(id).querySelector('.kpi-value').textContent = v;
   setKv('hkpi-detail-keys', fmt.num(h.keys));
-  setKv('hkpi-occ',    fmt.pct(h.occupancy));
-  setKv('hkpi-adr',    fmt.mad(h.adr_mad));
-  setKv('hkpi-revpar', fmt.mad(h.revpar_mad));
   KodoPeriod.set('hkpi-detail-keys', KodoPeriod.today(), COUNT_TIP);
-  ['hkpi-occ', 'hkpi-adr', 'hkpi-revpar'].forEach(id => KodoPeriod.unavailable(id, perfPeriodOf([h]), perfTipOf([h])));
+  KodoLive.cards({ occ: 'hkpi-occ', rate: 'hkpi-adr', revpar: 'hkpi-revpar' }, [h]);
 
   // ── 3. Estimated financials (range model) ──
   renderHotelFinancials(h);
@@ -1873,7 +1993,7 @@ function renderHotelFinancials(h) {
   document.getElementById('hfin-rev-range').textContent =
     `${fmM(revLoM)} — ${fmM(revHiM)}`;
   document.getElementById('hfin-rev-sub').textContent =
-    `Based on BAR × occupancy range × ${keys} keys × 365 days`;
+    `Based on Kodo's FY 2025 model estimates of BAR and occupancy (not reported data) × ${keys} keys × 365 days`;
 
   document.getElementById('hfin-asset-range').textContent =
     `${fmLg(assetLoM)} — ${fmLg(assetHiM)}`;
@@ -1908,15 +2028,15 @@ function popupHTML(h) {
         </div>
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.pct(h.occupancy)}</div>
-          <div class="hiq-popup-stat-lbl">Occupancy</div>
+          <div class="hiq-popup-stat-lbl">Occ. est. FY25</div>
         </div>
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.mad(h.adr_mad)}</div>
-          <div class="hiq-popup-stat-lbl">ADR MAD</div>
+          <div class="hiq-popup-stat-lbl">ADR est. FY25</div>
         </div>
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.mad(h.revpar_mad)}</div>
-          <div class="hiq-popup-stat-lbl">RevPAR MAD</div>
+          <div class="hiq-popup-stat-lbl">RevPAR est. FY25</div>
         </div>
       </div>
       <button class="hiq-popup-profile-btn" onclick="showHotelDetail(${h.id})">View full profile →</button>
@@ -6055,6 +6175,10 @@ function renderOwnerDetail(o) {
   const ownerTip = KodoPeriod.tip({ source: 'Kodo owner profile, keys from the Kodo hotel database', note: 'count when this page loaded' });
   ['odkpi-hotels', 'odkpi-keys', 'odkpi-cities', 'odkpi-brands'].forEach(id =>
     KodoPeriod.set(document.getElementById(id).closest('.kpi-card'), KodoPeriod.today(), ownerTip));
+  // Live figures over the owner's open hotels (not its pipeline projects)
+  const ownHotels = (o.hotels || []).filter(x => x.hotel_id && !x.pipeline)
+    .map(x => (hotels || []).find(h => +h.id === +x.hotel_id)).filter(Boolean);
+  KodoLive.cards({ rate: 'odkpi-rate', occ: 'odkpi-occ', revpar: 'odkpi-revpar' }, ownHotels);
 
   // Destination pills
   document.getElementById('owner-destinations-row').innerHTML =

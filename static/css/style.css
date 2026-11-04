@@ -6013,3 +6013,8 @@ body .evcal-leg-type { font-family: inherit; font-size: 10px; cursor: pointer; t
 .owner-stat-pipe { display: block; font-size: 9px; font-weight: 400; color: var(--text-muted); margin-top: 2px; letter-spacing: 0; text-transform: none; }
 body .owner-pipe-pill { font-size: 9.5px; padding: 2px 7px; margin-left: 6px; vertical-align: middle; }
 .owner-row-pipe td { color: var(--text-muted); }
+
+/* Live KPI cards (KodoLive): "No live rate data" pill in place of a number */
+body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; white-space: nowrap; }
+.kpi-card .kpi-value .kpi-nodata-pill { display: inline-flex; }
+.kpi-card > .kpi-sub { font-size: 11px; line-height: 1.35; color: var(--text-muted); margin-top: 2px; }

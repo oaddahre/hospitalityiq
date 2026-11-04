@@ -219,9 +219,9 @@
                 <th>Brand Group</th>
                 <th>Hotels</th>
                 <th>Keys</th>
-                <th>Occ %</th>
-                <th>ADR (MAD)</th>
-                <th>RevPAR (MAD)</th>
+                <th title="Kodo model estimate, FY 2025: not reported data">Occ % est.</th>
+                <th title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD)</th>
+                <th title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD)</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -409,9 +409,9 @@
             <span class="kpi-value" id="hkpi-keys">—</span>
           </div>
           <div class="kpi-card" id="hkpi-perf-card">
-            <span class="kpi-label">Performance Data</span>
-            <span class="kpi-value" style="font-size:15px;"><span class="kodo-estimate-badge">Estimated</span></span>
-            <span class="kpi-sub">Updated July 2026</span>
+            <span class="kpi-label">Occ, ADR, RevPAR columns</span>
+            <span class="kpi-value" style="font-size:15px;"><span class="kodo-estimate-badge">Model estimate</span></span>
+            <span class="kpi-sub">Kodo model estimate · FY 2025 · not reported data. Live figures: each hotel's profile</span>
           </div>
         </div>
 
@@ -480,9 +480,9 @@
                   <th class="sortable-col col-hide-mobile" data-col="category">Segment <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col col-hide-mobile" data-col="brand_group">Brand Group <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col col-hide-mobile" data-col="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="occupancy">Occ % <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="adr_mad">ADR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-col="revpar_mad">RevPAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="occupancy" title="Kodo model estimate, FY 2025: not reported data">Occ % est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="adr_mad" title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-col="revpar_mad" title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
                 </tr>
               </thead>
               <tbody id="hotels-tbody"></tbody>
@@ -1147,9 +1147,9 @@
                   <th class="sortable-col" data-bccol="hotels">Hotels <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col sort-desc" data-bccol="total_keys">Keys <span class="sort-icon">↓&#xFE0E;</span></th>
                   <th class="sortable-col" data-bccol="market_share_keys_pct">Mkt Share <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="avg_occupancy">Occ % <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="avg_adr">ADR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col sort-desc" data-bccol="weighted_revpar">RevPAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-bccol="avg_occupancy" title="Kodo model estimate, FY 2025: not reported data">Occ % est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-bccol="avg_adr" title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col sort-desc" data-bccol="weighted_revpar" title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col" data-bccol="pipeline_keys">Pipeline Keys <span class="sort-icon">↕&#xFE0E;</span></th>
                 </tr>
               </thead>
@@ -1166,7 +1166,7 @@
             <div class="brni-desc" id="brni-leader-desc">—</div>
           </div>
           <div class="brands-insight-card" id="brni-revpar">
-            <div class="brni-title">RevPAR Champion</div>
+            <div class="brni-title">RevPAR leader (model estimate)</div>
             <div class="brni-value" id="brni-revpar-val">—</div>
             <div class="brni-desc" id="brni-revpar-desc">—</div>
           </div>
@@ -1202,6 +1202,9 @@
             <div class="kpi-card"><span class="kpi-label">Total Keys</span><span class="kpi-value" id="odkpi-keys">—</span></div>
             <div class="kpi-card"><span class="kpi-label">Cities Present</span><span class="kpi-value" id="odkpi-cities">—</span></div>
             <div class="kpi-card"><span class="kpi-label">Brands Operated</span><span class="kpi-value" id="odkpi-brands">—</span></div>
+            <div class="kpi-card" id="odkpi-rate"><span class="kpi-label">Avg published rate · next 30 nights</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
+            <div class="kpi-card" id="odkpi-occ"><span class="kpi-label">Modelled occupancy · next 30 nights</span><span class="kpi-value">—</span><span class="kpi-meta"></span></div>
+            <div class="kpi-card" id="odkpi-revpar"><span class="kpi-label">Indicative RevPAR</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
           </div>
           <div class="brand-meta-row" id="owner-destinations-row" style="margin-bottom:8px"></div>
           <div class="brand-meta-row" id="owner-operators-row" style="margin-bottom:20px"></div>
@@ -1626,9 +1629,9 @@
                 <th class="sortable-col" data-bcol="city">City <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="category">Segment <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="occupancy">Occ % <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="adr_mad">ADR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="revpar_mad">RevPAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th class="sortable-col" data-bcol="occupancy" title="Kodo model estimate, FY 2025: not reported data">Occ % est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th class="sortable-col" data-bcol="adr_mad" title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th class="sortable-col" data-bcol="revpar_mad" title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="owner">Owner <span class="sort-icon">↕&#xFE0E;</span></th>
               </tr>
             </thead>

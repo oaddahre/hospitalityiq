@@ -118,13 +118,15 @@ def period_caption(p, compare=None, updated=None):
 
 
 def period_history(p):
-    """'History · FY 2025'."""
-    return f"History · {period_label(p)}" if p else ""
+    """'Kodo model estimate · FY 2025 · not reported data': the yearly
+    occupancy, ADR and RevPAR in performance.csv are Kodo's own model
+    estimates, never reported figures."""
+    return f"Kodo model estimate · {period_label(p)} · not reported data" if p else ""
 
 
 def period_last_known(p):
-    """'Last known figure: FY 2025'."""
-    return f"Last known figure: {period_label(p)}" if p else ""
+    """For a figure that has no current value: only a model estimate exists."""
+    return f"Only a Kodo model estimate exists ({period_label(p)}), not reported data" if p else ""
 
 
 def period_from_data(code):

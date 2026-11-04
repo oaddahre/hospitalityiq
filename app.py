@@ -33,6 +33,7 @@ from bench_sample import sample_benchmarking, casablanca_today
 import rate_benchmark as RB
 import events_db as EV
 import rates_store as RS
+import live_kpis as LK
 from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
                    period_history, period_last_known, NOT_AVAILABLE)
 
@@ -240,6 +241,10 @@ try:
             _run_rates_check()
         except Exception as e:
             app.logger.error(f'Rates database check failed: {e}', exc_info=True)
+        try:                                   # today's KPI snapshot, for the 7-day change
+            LK.get(DATA_DIR, _casablanca_today())
+        except Exception as e:
+            app.logger.error(f'Live KPI snapshot failed: {e}', exc_info=True)
 
     def _scheduled_health_check():
         try:
@@ -2413,6 +2418,12 @@ You serve hospitality investors, operators, developers, and consultants. Provide
 ══════════════════════════════════════════════════
 KODO PROPRIETARY DATA — MOROCCO BRANDED HOTELS — KODO ESTIMATES
 ══════════════════════════════════════════════════
+IMPORTANT: every occupancy, ADR, RevPAR, TRevPAR and GOP figure below is a
+Kodo MODEL ESTIMATE for FY 2025, not reported or achieved data. Whenever you
+use one, say "Kodo model estimate (FY 2025), not reported data". Never call
+them actual, reported, historical or current performance. Hotel, key and
+pipeline counts are real records. Current published rates and modelled
+occupancy for the next 30 nights are on the platform's hotel profiles.
 
 NATIONAL MARKET SNAPSHOT
   Total branded hotels in database : {len(hotels_df)}
@@ -3576,7 +3587,7 @@ def generate_ai_narrative(report_data: dict) -> dict:
         prompt = f"""You are a senior hotel market analyst at Kodo, Morocco's leading hospitality intelligence firm. Write institutional-grade market analysis in the style of JLL Hotels & Hospitality or Deloitte Real Estate. Be precise, data-driven, and professional. Use MAD for currency.
 
 Market: {city} Hotel Market | Period: {period}
-Data period: occupancy, ADR and RevPAR are Kodo estimates for {report_data['periods']['performance']}, a past full year (describe them as history, not as current performance); hotel, key and pipeline counts are {report_data['periods']['as_of'][:1].lower() + report_data['periods']['as_of'][1:]}
+Data period: occupancy, ADR and RevPAR are Kodo's own model estimates for {report_data['periods']['performance']}, not reported data (say so whenever you use them: "Kodo model estimate"; never call them actual, reported or historical performance); hotel, key and pipeline counts are {report_data['periods']['as_of'][:1].lower() + report_data['periods']['as_of'][1:]}
 Total Hotels: {mo['total_hotels']} | Total Keys: {mo['total_keys']:,}
 Avg Occupancy: {fmt_num(perf['occupancy'], '.1f', 100, suffix='%')} | Avg ADR: {fmt_num(perf['adr'], prefix='MAD ')} | Avg RevPAR: {fmt_num(perf['revpar'], prefix='MAD ')}
 Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} keys, Supply Risk: {pip['supply_risk']}
@@ -3648,7 +3659,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 8)
     pdf.multi_cell(_PW, 4.5, _s(f"Hotel and pipeline counts: {per_asof}. Occupancy, ADR and RevPAR: not available yet; "
-                                f"the last known figures ({per_hist}, Kodo estimates) are in sections 3 and 7."), ln=1)
+                                f"the yearly figures in sections 3, 6 and 7 are a Kodo model estimate, not reported data ({per_hist})."), ln=1)
     pdf.ln(4)
     pdf.kpi_boxes([
         ("Total Hotels",  str(mo["total_hotels"]), per_asof),
@@ -3721,7 +3732,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.section_title("03", "PERFORMANCE ANALYSIS")
     pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, _s(f"Performance by Segment  |  {per_hist} (Kodo estimates)"), ln=1)
+    pdf.cell(_PW, 4, _s(f"Performance by Segment  |  {per_hist}"), ln=1)
     pdf.ln(1)
     cols = ["Segment", "Hotels", "Occ %", "ADR (MAD)", "RevPAR", "Index"]
     cw   = [60, 19, 19, 30, 30, 22]
@@ -3839,6 +3850,9 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
         pdf.set_text_color(*c['text'])
         pdf.cell(_PW, 4, "Rooms Revenue Range by Segment", ln=1)
         pdf.ln(1)
+        pdf.set_font("Helvetica", "", 7)
+        pdf.set_text_color(*c['muted'])
+        pdf.cell(_PW, 4, _s(f"Avg BAR and occupancy: {per_hist}"), ln=1)
         cols1 = ["Segment", "Keys", "Avg BAR (MAD)", "Avg Occ", "Rev Low (MAD M)", "Rev High (MAD M)"]
         cw1   = [40, 16, 32, 22, 35, 35]
         pdf.table_header(cols1, cw1)
@@ -3922,7 +3936,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.section_title("07", "HOTEL DIRECTORY")
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(*c['muted'])
-    pdf.cell(_PW, 4, _s(f"Keys {per_asof[:1].lower() + per_asof[1:]}  |  Occupancy, ADR and RevPAR: {per_hist} (Kodo estimates)"), ln=1)
+    pdf.cell(_PW, 4, _s(f"Keys {per_asof[:1].lower() + per_asof[1:]}  |  Occupancy, ADR and RevPAR: {per_hist}"), ln=1)
     pdf.ln(1)
     cols = ["Name", "Brand Group", "Category", "Keys", "Yr", "Occ %", "ADR", "RevPAR"]
     cw   = [52, 32, 28, 14, 12, 14, 14, 14]
@@ -4144,6 +4158,9 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(*c['text'])
     pdf.cell(0, 6, "Market Context", ln=1)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(*c['muted'])
+    pdf.cell(0, 4, "Market rating: from Kodo model estimates (FY 2025 RevPAR), not reported data", ln=1)
     pdf.rating_box(rating)
 
     pdf.set_font("Helvetica", "B", 10)
@@ -4729,6 +4746,17 @@ def api_rates():
         'live_stale': live_stale,
         'source_breakdown': source_counts,
     })
+
+
+@app.route('/api/live-kpis')
+@login_required
+def api_live_kpis():
+    """Every open hotel's live figures over the next 30 nights (live_kpis.py):
+    published rate, modelled occupancy, indicative RevPAR, and the figures
+    from 7 days earlier when they exist. Pages aggregate them by rooms."""
+    resp = jsonify(LK.get(DATA_DIR, _casablanca_today()))
+    resp.headers['Cache-Control'] = 'private, max-age=120'
+    return resp
 
 
 @app.route('/api/rates/past')
