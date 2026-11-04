@@ -18,9 +18,22 @@ festivals, sport, trade fairs and congresses. It feeds:
 | `events.json` | repo (deploys with the code) | the researched base list |
 | `event_overrides.json` | `DATA_DIR` (survives deploys) | events added, edited or hidden in the admin |
 | `event_changes.log` | `DATA_DIR` | one JSON line per admin change (who, when, what) |
+| `model_holidays.json` | repo | **internal, never displayed:** school holidays in the source markets (France, UK, Spain, Germany, Netherlands, Belgium, UAE, Saudi Arabia), read by the occupancy model only |
 
-`events_db.load_events()` merges the two files; every page and the model
-read that, so there is one source of truth.
+`events_db.load_events()` merges the first two files; every page reads
+that. The occupancy model reads `events_db.load_model_events()`: the same
+events plus the internal list. `/api/events` never includes the internal
+list, so it appears on no page, filter, marker or export. It has no admin
+editor: edit it in the repo, in the same format (`kodo-model-holidays-1`,
+same fields), and run the check below.
+
+## Display labels
+
+Stored values stay lower-case (`high`, `moon`, `one-off`…). What users read
+comes from one map, `events_db.LABELS` (type, impact, date status,
+recurrence, effect, precision), which `/api/events` and `/api/admin/events`
+send as `labels`; the calendar, markers, detail panel, exports and the admin
+editor all use it.
 
 ## Format (`kodo-events-1`)
 
@@ -32,7 +45,7 @@ read that, so there is one source of truth.
 |---|---|
 | `id` | unique, e.g. `mawazine-rhythms-of-the-world-2027-06` (slug of the name + start month, + city when two share a name) |
 | `name` | event name |
-| `type` | `holiday`, `religious`, `school_ma`, `school_abroad`, `holiday_abroad`, `diaspora`, `music`, `film`, `arts`, `moussem`, `sport`, `business` |
+| `type` | `holiday`, `religious`, `school_ma`, `holiday_abroad`, `diaspora`, `music`, `film`, `arts`, `moussem`, `sport`, `business` (`school_abroad` only in `model_holidays.json`) |
 | `city` | the city as the platform names it (`Rabat / Salé / Témara`, `Agadir / Taghazout`…), a town (`Kelaat M'Gouna`), or `National` |
 | `market` | the hotel city it affects when `city` is a town without hotels (e.g. `Ouarzazate` for Kelaat M'Gouna); empty = none |
 | `venue` | venue, if known |
@@ -66,7 +79,7 @@ the event (and its history) but removes it from every page and the model.
 python3 scripts/check_events.py
 ```
 
-which checks every field, the ids and the date bases. Rules:
+which checks every field, the ids and the date bases in both files. Rules:
 
 - Never invent a date. If the organiser hasn't published it, use the last
   edition's pattern with `date_status: "estimated"` and say so in

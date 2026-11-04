@@ -11,12 +11,10 @@ const KodoEvents = (() => {
 
   // Type → pill family (the platform's colour families, tokens.css)
   const TYPE_FAMILY = {
-    holiday: 'violet', religious: 'violet', school_ma: 'grey', school_abroad: 'grey', holiday_abroad: 'grey',
+    holiday: 'violet', religious: 'violet', school_ma: 'grey', holiday_abroad: 'grey',
     diaspora: 'grey', music: 'sky', film: 'orange', arts: 'orange', moussem: 'orange', sport: 'green', business: 'blue',
   };
   const IMPACT_RANK = { high: 3, medium: 2, low: 1 };
-  const IMPACT_LABEL = { high: 'High impact', medium: 'Medium impact', low: 'Low impact' };
-  const STATUS_LABEL = { confirmed: 'Confirmed', announced: 'Announced', estimated: 'Estimated', moon: 'Moon-dependent' };
   const STATUS_FAMILY = { confirmed: 'green', announced: 'blue', estimated: 'orange', moon: 'violet' };
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -26,14 +24,24 @@ const KodoEvents = (() => {
   function load() {
     if (feed) return Promise.resolve(feed);
     if (!loading) {
-      loading = fetch('/api/events').then(r => r.ok ? r.json() : { events: [], types: {} })
-        .catch(() => ({ events: [], types: {} }))
-        .then(d => { feed = d; feed.byId = Object.fromEntries((d.events || []).map(e => [e.id, e])); return feed; });
+      loading = fetch('/api/events').then(r => r.ok ? r.json() : { events: [], types: {}, labels: {} })
+        .catch(() => ({ events: [], types: {}, labels: {} }))
+        .then(d => {
+          feed = d;
+          feed.labelOrder = d.labels || {};     // {field: [[value, label], …]} in display order
+          feed.labels = Object.fromEntries(Object.entries(feed.labelOrder).map(([k, pairs]) => [k, Object.fromEntries(pairs)]));
+          feed.byId = Object.fromEntries((d.events || []).map(e => [e.id, e])); return feed; });
     }
     return loading;
   }
 
-  const typeLabel = t => (feed && feed.types && feed.types[t]) || t;
+  // Display labels come from the server (events_db.LABELS), the one place
+  // stored values ("high", "moon"…) become what users read
+  const label = (field, v) => (feed && feed.labels && feed.labels[field] && feed.labels[field][v]) || v || '';
+  const typeLabel = t => label('type', t);
+  const impactLabel = v => label('impact', v);                 // "High"
+  const impactText = v => `${impactLabel(v)} impact`;          // "High impact"
+  const statusLabel = v => label('date_status', v);            // "Moon-dependent"
   const cityLabel = e => e.city === 'National' ? 'Nationwide' : e.city;
   const parse = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
   const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
@@ -56,8 +64,10 @@ const KodoEvents = (() => {
 
   // Small pills (tint fill, saturated text, no border)
   const typePill = e => `<span class="pill--${TYPE_FAMILY[e.type] || 'grey'} evc-pill">${esc(typeLabel(e.type))}</span>`;
-  const impactPill = e => `<span class="evc-impact evc-impact--${e.impact}" title="${IMPACT_LABEL[e.impact]}"><span class="evc-impact-bars" aria-hidden="true"><i></i><i></i><i></i></span>${esc(e.impact)}</span>`;
-  const statusPill = e => `<span class="pill--${STATUS_FAMILY[e.date_status] || 'grey'} evc-pill">${esc(STATUS_LABEL[e.date_status] || e.date_status)}</span>`;
+  const impactBars = v => `<span class="evc-impact evc-impact--${v}"><span class="evc-impact-bars" aria-hidden="true"><i></i><i></i><i></i></span>${esc(impactLabel(v))}</span>`;
+  const impactPill = e => impactBars(e.impact).replace('<span class', `<span title="${attr(impactText(e.impact))}" class`);
+  const statusBadge = v => `<span class="pill--${STATUS_FAMILY[v] || 'grey'} evc-pill">${esc(statusLabel(v))}</span>`;
+  const statusPill = e => statusBadge(e.date_status);
   const cityPill = e => `<span class="pill--grey evc-pill">${esc(cityLabel(e))}</span>`;
 
   // Events that touch a city (its own, plus nationwide ones)
@@ -110,14 +120,14 @@ const KodoEvents = (() => {
       <div class="evc-panel-pills">${typePill(e)}${impactPill(e)}${statusPill(e)}</div>
       <dl class="evc-d">
         ${row('Dates', esc(dateRange(e)) + (e.precision === 'month' ? '' : ` <span class="evc-muted">· ${nights(e)} ${nights(e) === 1 ? 'day' : 'days'}</span>`))}
-        ${row('Date status', esc(STATUS_LABEL[e.date_status]) + (e.date_basis ? `<div class="evc-muted">${esc(e.date_basis)}</div>` : ''))}
+        ${row('Date status', esc(statusLabel(e.date_status)) + (e.date_basis ? `<div class="evc-muted">${esc(e.date_basis)}</div>` : ''))}
         ${row('City', esc(cityLabel(e)) + (e.market && e.market !== e.city && e.market !== 'National' ? ` <span class="evc-muted">· hotels in ${esc(e.market)}</span>` : ''))}
         ${row('Venue', esc(e.venue))}
         ${row('Why it matters', esc(e.impact_reason) + (e.effect === 'down' ? '<div class="evc-muted">Lowers hotel demand.</div>' : e.effect === 'mixed' ? '<div class="evc-muted">Business hotels down, leisure up.</div>' : ''))}
         ${row('Expected attendance', esc(e.attendance))}
         ${row('Source markets', esc(markets))}
         ${row('About', esc(e.description))}
-        ${row('Recurrence', esc(e.recurrence))}
+        ${row('Recurrence', esc(label('recurrence', e.recurrence)))}
         ${row('Occupancy model', e.model && e.precision !== 'month' ? 'Counted (Kodo Estimates)' : 'Shown only, not counted' + (e.precision === 'month' ? ' (month only)' : ''))}
         ${row('Source', `<a href="${attr(e.source)}" target="_blank" rel="noopener">${esc(e.source.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])} ↗</a>`)}
         ${row('Date last checked', esc(e.checked))}
@@ -151,7 +161,7 @@ const KodoEvents = (() => {
   }
 
   function agendaRow(e) {
-    return `<button type="button" class="evc-row" data-ev-open="${attr(e.id)}" aria-label="${attr(`${e.name}, ${dateRange(e)}, ${cityLabel(e)}, ${IMPACT_LABEL[e.impact]}, ${STATUS_LABEL[e.date_status]}`)}">
+    return `<button type="button" class="evc-row" data-ev-open="${attr(e.id)}" aria-label="${attr(`${e.name}, ${dateRange(e)}, ${cityLabel(e)}, ${impactText(e.impact)}, ${statusLabel(e.date_status)}`)}">
       <span class="evc-row-date">${esc(shortRange(e))}</span>
       <span class="evc-row-main">
         <span class="evc-row-name">${esc(e.name)}</span>
@@ -168,27 +178,29 @@ const KodoEvents = (() => {
     a.download = name; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
   }
-  function exportIcs(events, label) {
+  function exportIcs(events, viewName) {
     const icsEsc = s => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
     const fold = l => l.length <= 74 ? l : l.match(/.{1,74}/g).join('\r\n ');
     const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
-    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Kodo Hospitality//Events//EN', 'CALSCALE:GREGORIAN', `X-WR-CALNAME:${icsEsc('Kodo events · ' + label)}`];
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Kodo Hospitality//Events//EN', 'CALSCALE:GREGORIAN', `X-WR-CALNAME:${icsEsc('Kodo events · ' + viewName)}`];
     events.forEach(e => {
       lines.push('BEGIN:VEVENT', `UID:${e.id}@kodohospitality.com`, `DTSTAMP:${stamp}`,
         `DTSTART;VALUE=DATE:${e.start.replace(/-/g, '')}`, `DTEND;VALUE=DATE:${iso(addDays(parse(e.end), 1)).replace(/-/g, '')}`,
-        fold(`SUMMARY:${icsEsc(e.name + (e.date_status === 'confirmed' ? '' : ` (${STATUS_LABEL[e.date_status].toLowerCase()})`))}`),
+        fold(`SUMMARY:${icsEsc(e.name + (e.date_status === 'confirmed' ? '' : ` (${statusLabel(e.date_status)})`))}`),
         fold(`LOCATION:${icsEsc([e.venue, cityLabel(e)].filter(Boolean).join(', '))}`),
-        fold(`DESCRIPTION:${icsEsc(`${IMPACT_LABEL[e.impact]}: ${e.impact_reason}\n${STATUS_LABEL[e.date_status]}${e.date_basis ? ': ' + e.date_basis : ''}\nSource: ${e.source} (checked ${e.checked})`)}`),
+        fold(`DESCRIPTION:${icsEsc(`${impactText(e.impact)}: ${e.impact_reason}\n${statusLabel(e.date_status)}${e.date_basis ? ': ' + e.date_basis : ''}\nSource: ${e.source} (checked ${e.checked})`)}`),
         fold(`URL:${e.source}`), 'END:VEVENT');
     });
     lines.push('END:VCALENDAR');
-    download(`kodo-events-${label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, lines.join('\r\n') + '\r\n', 'text/calendar');
+    download(`kodo-events-${viewName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, lines.join('\r\n') + '\r\n', 'text/calendar');
   }
-  function exportCsv(events, label) {
+  function exportCsv(events, viewName) {
     const cols = ['name', 'type', 'city', 'venue', 'start', 'end', 'impact', 'impact_reason', 'date_status', 'date_basis', 'attendance', 'recurrence', 'source', 'checked'];
+    const shown = { type: 1, impact: 1, date_status: 1, recurrence: 1 };   // stored value → display label
     const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
-    const rows = [cols.join(',')].concat(events.map(e => cols.map(c => q(c === 'type' ? typeLabel(e.type) : e[c])).join(',')));
-    download(`kodo-events-${label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.csv`, '\ufeff' + rows.join('\r\n'), 'text/csv;charset=utf-8');
+    const head = ['Name', 'Type', 'City', 'Venue', 'Start', 'End', 'Impact', 'Why it matters', 'Date status', 'Date basis', 'Attendance', 'Recurrence', 'Source', 'Date last checked'];
+    const rows = [head.map(q).join(',')].concat(events.map(e => cols.map(c => q(c === 'city' ? cityLabel(e) : shown[c] ? label(c, e[c]) : e[c])).join(',')));
+    download(`kodo-events-${viewName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.csv`, '\ufeff' + rows.join('\r\n'), 'text/csv;charset=utf-8');
   }
 
   // ── Markers on the hotel profile and benchmarking calendars ──────
@@ -236,7 +248,7 @@ const KodoEvents = (() => {
     const title = el.querySelector('[data-ev-title]'), list = el.querySelector('[data-ev-list]');
     if (title) title.textContent = `Events in ${city} · next 90 days`;
     list.innerHTML = evs.length ? evs.map(e => `
-      <button type="button" class="evc-chip" data-ev-open="${attr(e.id)}" aria-label="${attr(`${e.name}, ${dateRange(e)}, ${IMPACT_LABEL[e.impact]}, ${STATUS_LABEL[e.date_status]}`)}">
+      <button type="button" class="evc-chip" data-ev-open="${attr(e.id)}" aria-label="${attr(`${e.name}, ${dateRange(e)}, ${impactText(e.impact)}, ${statusLabel(e.date_status)}`)}">
         <span class="evc-chip-date">${esc(shortRange(e))}</span>
         <span class="evc-chip-name">${esc(e.name)}</span>
         <span class="evc-chip-meta">${impactPill(e)}${e.date_status === 'confirmed' ? '' : statusPill(e)}</span>
@@ -248,8 +260,9 @@ const KodoEvents = (() => {
     load().then(() => openList([b.dataset.evOpen]));
   });
 
-  return { load, forCity, overlaps, dateRange, shortRange, typePill, impactPill, statusPill, cityPill, agendaRow, open: openList, close,
-           exportIcs, exportCsv, markCells, renderNext90, TYPE_FAMILY, IMPACT_RANK, IMPACT_LABEL, STATUS_LABEL, MONTH, MON, parse, addDays, iso, typeLabel, cityLabel };
+  return { load, forCity, overlaps, dateRange, shortRange, typePill, impactPill, impactBars, statusPill, statusBadge, cityPill, agendaRow, open: openList, close,
+           exportIcs, exportCsv, markCells, renderNext90, TYPE_FAMILY, IMPACT_RANK, STATUS_FAMILY, MONTH, MON, parse, addDays, iso,
+           typeLabel, impactLabel, impactText, statusLabel, cityLabel };
 })();
 
 // ═══ Tourism: events calendar ════════════════════════════════════
@@ -276,8 +289,10 @@ const EventCalendar = (() => {
     const cities = [...new Set(f.events.map(e => e.market || e.city).filter(c => c && c !== 'National'))].sort((a, b) => a.localeCompare(b));
     if (st.city !== 'all' && !cities.includes(st.city)) st.city = 'all';
     $('#evcal-city').innerHTML = '<option value="all">All cities</option>' + cities.map(c => `<option value="${fmt.esc(c)}">${fmt.esc(c)}</option>`).join('');
-    const types = Object.keys(f.types).filter(t => f.events.some(e => e.type === t));
-    $('#evcal-type').innerHTML = '<option value="all">All types</option>' + types.map(t => `<option value="${t}">${fmt.esc(f.types[t])}</option>`).join('');
+    const types = Object.keys(f.types).filter(t => f.events.some(e => e.type === t)).sort((a, b) => K.typeLabel(a).localeCompare(K.typeLabel(b)));
+    if (st.type !== 'all' && !types.includes(st.type)) st.type = 'all';
+    $('#evcal-type').innerHTML = '<option value="all">All types</option>' + types.map(t => `<option value="${t}">${fmt.esc(K.typeLabel(t))}</option>`).join('');
+    renderLegend(types);
     $('#evcal-city').value = st.city; $('#evcal-type').value = st.type; $('#evcal-impact').value = st.impact;
     wire();
     render();
@@ -297,6 +312,17 @@ const EventCalendar = (() => {
     K.load().then(f => { _feed = f.events; });
     $('#evcal-city').addEventListener('change', e => { st.city = e.target.value; savePrefs(); render(); });
     $('#evcal-type').addEventListener('change', e => { st.type = e.target.value; savePrefs(); render(); });
+    $('#evcal-legend').addEventListener('click', e => {      // a type in the legend filters to it; again shows all
+      const b = e.target.closest('[data-legtype]');
+      if (!b) return;
+      st.type = st.type === b.dataset.legtype ? 'all' : b.dataset.legtype;
+      $('#evcal-type').value = st.type; savePrefs(); render();
+    });
+    $('#evcal-legend-toggle').addEventListener('click', e => {
+      const open = e.currentTarget.getAttribute('aria-expanded') !== 'true';
+      e.currentTarget.setAttribute('aria-expanded', open);
+      $('#evcal-legend').classList.toggle('evcal-legend--open', open);
+    });
     $('#evcal-impact').addEventListener('change', e => { st.impact = e.target.value; savePrefs(); render(); });
     let t = null;
     $('#evcal-search').addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => { st.q = e.target.value; render(); }, 120); });
@@ -319,7 +345,25 @@ const EventCalendar = (() => {
       if (more) K.open(more.dataset.dayIds.split(','));
     });
   }
-  const label = () => [st.city === 'all' ? 'All cities' : st.city, st.type === 'all' ? '' : K.typeLabel(st.type), st.impact === 'all' ? '' : st.impact + ' impact'].filter(Boolean).join(' · ');
+  const label = () => [st.city === 'all' ? 'All cities' : st.city, st.type === 'all' ? '' : K.typeLabel(st.type),
+    st.impact === 'all' ? '' : st.impact === 'high' ? 'High impact' : 'High and medium impact'].filter(Boolean).join(' · ');
+
+  // Legend: one pill per event type (click to filter), the impact bars and the date badges
+  function renderLegend(types) {
+    $('#evcal-leg-types').innerHTML = types.map(t => `<button type="button" class="pill--${K.TYPE_FAMILY[t] || 'grey'} evc-pill evcal-leg-type" data-legtype="${t}" aria-pressed="false"
+      title="Show only ${fmt.esc(K.typeLabel(t))}">${fmt.esc(K.typeLabel(t))}<span class="evcal-leg-x" aria-hidden="true">×</span></button>`).join('');
+    $('#evcal-leg-impact').innerHTML = ['high', 'medium', 'low'].map(K.impactBars).join('');
+    $('#evcal-leg-status').innerHTML = Object.keys(K.STATUS_FAMILY).map(K.statusBadge).join('')
+      + '<span class="evcal-leg-note"><span class="evcal-leg-est" aria-hidden="true">≈ Name</span> Not yet confirmed</span>';
+  }
+  function syncLegend() {
+    root.querySelectorAll('[data-legtype]').forEach(b => {
+      const on = b.dataset.legtype === st.type;
+      b.setAttribute('aria-pressed', on);
+      b.title = on ? 'Show all types' : `Show only ${K.typeLabel(b.dataset.legtype)}`;
+    });
+    $('#evcal-leg-types').classList.toggle('evcal-leg-types--filtered', st.type !== 'all');
+  }
   const todayIso = () => K.iso(new Date());
   const upcoming = () => current().filter(e => e.end >= todayIso()).sort((a, b) => a.start.localeCompare(b.start));
   function bounds() {
@@ -344,6 +388,7 @@ const EventCalendar = (() => {
     const [lo, hi] = bounds(), cur = new Date(st.y, st.m, 1);
     $('#evcal-prev').disabled = cur <= lo; $('#evcal-next').disabled = cur >= hi;
     root.querySelector('.evcal-monthnav').hidden = st.view !== 'month';
+    syncLegend();
     const n = upcoming().length;
     $('#evcal-count').textContent = `${n} upcoming ${n === 1 ? 'event' : 'events'}`;
     renderDensity(evs);
@@ -367,7 +412,8 @@ const EventCalendar = (() => {
       const level = score === 0 ? -1 : score <= 2 ? 0 : score <= 5 ? 1 : score <= 8 ? 2 : 3;
       const cell = level < 0 ? null : heatCell('blue', level, level >= 2 ? '600' : '');
       const label = level < 0 ? 'Quiet week' : ['Light', 'Busy', 'Very busy', 'Peak'][level] + ' week';
-      const rows = [[label, `${hits.length} ${hits.length === 1 ? 'event' : 'events'}`]].concat(hits.slice(0, 4).map(e => [K.IMPACT_LABEL[e.impact], e.name]));
+      const rows = [[label, `${hits.length} ${hits.length === 1 ? 'event' : 'events'}`]].concat(hits.slice(0, 4).map(e => [K.impactText(e.impact), e.name]));
+      if (hits.length > 4) rows.push(['', `+${hits.length - 4} more`]);
       const mo = w.getMonth() !== prevMonth ? `<span class="evcal-dens-month">${K.MON[w.getMonth()]}${w.getMonth() === 0 || prevMonth === -1 ? ' ' + String(w.getFullYear()).slice(2) : ''}</span>` : '';
       prevMonth = w.getMonth();
       html += `<button type="button" class="evcal-dens-week${level >= 0 ? '' : ' evcal-dens-quiet'}" data-week="${a}"
@@ -417,8 +463,8 @@ const EventCalendar = (() => {
         const est = e.date_status === 'estimated' || e.date_status === 'moon';
         html += `<button type="button" class="evcal-bar pill--${K.TYPE_FAMILY[e.type] || 'grey'} evcal-bar--${e.impact}${est ? ' evcal-bar--est' : ''}${cutL ? ' evcal-bar--cutl' : ''}${cutR ? ' evcal-bar--cutr' : ''}"
           style="grid-column:${s + 1} / span ${t - s + 1};grid-row:${lane + 2}" data-ev-open="${fmt.esc(e.id)}"
-          ${calTipAttrs(e.name, [['Dates', K.dateRange(e)], ['City', K.cityLabel(e)], ['Impact', e.impact], ['Date', K.STATUS_LABEL[e.date_status]]])}
-          aria-label="${fmt.esc(`${e.name}, ${K.dateRange(e)}, ${K.cityLabel(e)}, ${K.IMPACT_LABEL[e.impact]}, ${K.STATUS_LABEL[e.date_status]}`)}">
+          ${calTipAttrs(e.name, [['Dates', K.dateRange(e)], ['City', K.cityLabel(e)], ['Type', K.typeLabel(e.type)], ['Impact', K.impactLabel(e.impact)], ['Date status', K.statusLabel(e.date_status)]])}
+          aria-label="${fmt.esc(`${e.name}, ${K.dateRange(e)}, ${K.cityLabel(e)}, ${K.impactText(e.impact)}, ${K.statusLabel(e.date_status)}`)}">
           <span class="evc-impact-bars evc-impact--${e.impact}" aria-hidden="true"><i></i><i></i><i></i></span><span class="evcal-bar-name">${est ? '≈ ' : ''}${fmt.esc(e.name)}</span></button>`;
       });
       html += '</div>';

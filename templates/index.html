@@ -1023,7 +1023,7 @@
               <select class="hotels-sort-select" id="evcal-impact" aria-label="Impact">
                 <option value="all">All impacts</option><option value="medium">High and medium</option><option value="high">High only</option>
               </select></label>
-            <button type="button" class="events-filter-pill" id="evcal-national" aria-pressed="true" title="Show nationwide holidays and source-market school breaks">Nationwide</button>
+            <button type="button" class="events-filter-pill" id="evcal-national" aria-pressed="true" title="Show nationwide holidays and school breaks">Nationwide</button>
             <div class="hotels-search-wrap evcal-search">
               <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                 <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
@@ -1035,6 +1035,20 @@
               <button type="button" class="export-btn" id="evcal-csv">↓ CSV</button>
             </div>
           </div>
+          <div class="evcal-legend-wrap">
+            <button type="button" class="export-btn evcal-legend-toggle" id="evcal-legend-toggle" aria-expanded="false" aria-controls="evcal-legend">Legend</button>
+            <div class="evcal-legend" id="evcal-legend">
+              <div class="evcal-leg-group" role="group" aria-label="Event types: pick one to show only that type">
+                <span class="evcal-leg-title">Type</span><span class="evcal-leg-items" id="evcal-leg-types"></span>
+              </div>
+              <div class="evcal-leg-group" role="group" aria-label="Impact on hotels">
+                <span class="evcal-leg-title">Impact</span><span class="evcal-leg-items" id="evcal-leg-impact"></span>
+              </div>
+              <div class="evcal-leg-group" role="group" aria-label="Date status">
+                <span class="evcal-leg-title">Date</span><span class="evcal-leg-items" id="evcal-leg-status"></span>
+              </div>
+            </div>
+          </div>
           <div class="evcal-dens-wrap">
             <div class="evcal-dens-label">How busy each week is <span class="evc-muted">· darker = more and bigger events in the selected city · tap a week to open it</span></div>
             <div class="evcal-dens" id="evcal-density" role="group" aria-label="Busy weeks"></div>
@@ -1044,12 +1058,6 @@
             <span class="bench-cal-month-label" id="evcal-month-label" aria-live="polite"></span>
             <button type="button" class="bench-cal-nav-btn" id="evcal-next" aria-label="Next month">&#8594;</button>
             <button type="button" class="export-btn" id="evcal-today">Today</button>
-            <span class="evcal-legend" aria-hidden="true">
-              <span class="evc-impact evc-impact--high"><span class="evc-impact-bars"><i></i><i></i><i></i></span>high</span>
-              <span class="evc-impact evc-impact--medium"><span class="evc-impact-bars"><i></i><i></i><i></i></span>medium</span>
-              <span class="evc-impact evc-impact--low"><span class="evc-impact-bars"><i></i><i></i><i></i></span>low</span>
-              <span class="evc-muted">≈ estimated date</span>
-            </span>
           </div>
           <div class="evcal-grid" id="evcal-grid"></div>
           <div class="evcal-agenda" id="evcal-agenda" hidden></div>

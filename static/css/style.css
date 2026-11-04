@@ -3810,21 +3810,25 @@ body.light .nav-logout  { color: var(--text-2); }
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(31, 30, 28, 0.14), 0 1px 3px rgba(31, 30, 28, 0.08);
   padding: 10px 12px;
+  box-sizing: border-box;
   min-width: 180px;
-  max-width: min(300px, calc(100vw - 16px));
+  max-width: min(320px, calc(100vw - 16px));
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 12px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
   pointer-events: none;
 }
 .cal-tip[hidden] { display: none; }
 :root[data-theme="dark"] .cal-tip { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4); }
 .cal-tip-date { font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
-.cal-tip-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-.cal-tip-row + .cal-tip-row, .cal-tip-note + .cal-tip-row { margin-top: 4px; }
-.cal-tip-label { font-size: 11px; color: var(--text-2); }
-.cal-tip-value { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.cal-tip-note { font-size: 10.5px; color: var(--text-2); text-align: right; }
+/* Labels in one column (wrapping past 130px), values in the other; every
+   line wraps inside the box */
+.cal-tip-grid { display: grid; grid-template-columns: fit-content(130px) minmax(0, 1fr); column-gap: 12px; row-gap: 4px; align-items: baseline; }
+.cal-tip-label { font-size: 11px; color: var(--text-2); min-width: 0; }
+.cal-tip-label--wide { grid-column: 1 / -1; }
+.cal-tip-value { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 0; }
+.cal-tip-note { grid-column: 2; margin-top: -2px; font-size: 10.5px; color: var(--text-2); min-width: 0; }
 [data-cal-tip]:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; position: relative; z-index: 3; }
 
 .bench-monthly-table-wrap { overflow-x: auto; }
@@ -5867,7 +5871,7 @@ body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .evc-muted { color: var(--text-2); font-weight: 400; }
 .evc-pill { font-size: 10px; padding: 2px 8px; }
-.evc-impact { display: inline-flex; align-items: center; gap: 5px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); text-transform: capitalize; white-space: nowrap; }
+.evc-impact { display: inline-flex; align-items: center; gap: 5px; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
 .evc-impact-bars { display: inline-flex; align-items: flex-end; gap: 1.5px; height: 9px; flex: none; }
 .evc-impact-bars i { display: block; width: 3px; background: var(--border); border-radius: 1px; }
 .evc-impact-bars i:nth-child(1) { height: 4px; } .evc-impact-bars i:nth-child(2) { height: 6.5px; } .evc-impact-bars i:nth-child(3) { height: 9px; }
@@ -5891,7 +5895,22 @@ body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
 .evcal-dens-month { position: absolute; top: -15px; left: 0; font-family: var(--font-mono); font-size: 9px; color: var(--text-2); white-space: nowrap; pointer-events: none; }
 .evcal-monthnav[hidden] { display: none; }
 .evcal-monthnav { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 20px 8px; }
-.evcal-legend { display: inline-flex; flex-wrap: wrap; gap: 12px; margin-left: auto; align-items: center; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; }
+.evcal-legend-wrap { padding: 10px 20px; border-bottom: 1px solid var(--border); }
+.evcal-legend-toggle { display: none; }
+.evcal-legend { display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: center; font-family: 'Sweet Sans Pro', sans-serif; font-size: 10px; }
+.evcal-leg-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.evcal-leg-group:first-child { flex: 1 1 100%; }
+.evcal-leg-title { flex: none; width: 44px; font-size: 10px; font-weight: 600; color: var(--text-2); }
+.evcal-leg-items { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; min-width: 0; }
+#evcal-leg-types, #evcal-leg-status { gap: 6px; }
+body .evcal-leg-type { font-family: inherit; font-size: 10px; cursor: pointer; transition: opacity 0.12s; }
+.evcal-leg-type:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; }
+.evcal-leg-x { display: none; font-size: 11px; line-height: 1; margin-left: 1px; }
+.evcal-leg-type[aria-pressed="true"] .evcal-leg-x { display: inline; }
+.evcal-leg-types--filtered .evcal-leg-type[aria-pressed="false"] { opacity: 0.45; }
+.evcal-leg-types--filtered .evcal-leg-type[aria-pressed="false"]:hover { opacity: 0.8; }
+.evcal-leg-note { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); margin-left: 6px; white-space: nowrap; }
+.evcal-leg-est { font-style: italic; font-weight: 600; color: var(--text); padding: 2px 7px; border-radius: 6px; background: var(--cat-6-tint); }
 .evcal-grid { padding: 0 20px 12px; }
 .evcal-dow { margin-bottom: 0; }
 .evcal-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: 22px repeat(var(--lanes, 1), 22px) 6px; column-gap: 0; row-gap: 2px; position: relative; }
@@ -5958,7 +5977,12 @@ body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
   .evcal-toolbar .hotels-sort-select { max-width: 46vw; }
   .evcal-exports { margin-left: 0; }
   .evcal-dens-wrap, .evcal-monthnav, .evcal-grid, .evcal-agenda, .evcal-foot { padding-left: 12px; padding-right: 12px; }
-  .evcal-legend { margin-left: 0; }
+  .evcal-legend-wrap { padding: 8px 12px; }
+  .evcal-legend-toggle { display: inline-flex; }
+  .evcal-legend { display: none; margin-top: 10px; }
+  .evcal-legend.evcal-legend--open { display: flex; }
+  .evcal-leg-group { flex: 1 1 100%; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .evcal-leg-title { width: auto; }
   .evcal-dens { grid-template-columns: repeat(var(--weeks, 60), 11px); padding-bottom: 4px; }
   .evcal-day { min-height: 56px; padding: 2px 3px; }
   .evcal-bar { margin: 0 1px; padding: 0 4px; font-size: 10px; }

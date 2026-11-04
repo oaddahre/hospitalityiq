@@ -1612,8 +1612,16 @@ async function loadEvents() {
   const res = await fetch('/api/admin/events', { headers: authHeaders() });
   if (!res.ok) { document.getElementById('ev-table').innerHTML = '<tr><td>Could not load events.</td></tr>'; return; }
   evData = await res.json();
-  const typeSel = document.getElementById('ev-type');
-  typeSel.innerHTML = Object.entries(evData.types).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  const order = evData.labels || {};     // {field: [[value, label], …]} in display order
+  evData.labels = Object.fromEntries(Object.entries(order).map(([k, pairs]) => [k, Object.fromEntries(pairs)]));
+  // Options show the display labels (events_db.LABELS); values stay the stored ones
+  const form = document.getElementById('ev-form');
+  ['type', 'impact', 'date_status', 'recurrence', 'effect', 'precision'].forEach(field => {
+    const pairs = (order[field] || []).slice();
+    if (field === 'type') pairs.sort((a, b) => a[1].localeCompare(b[1]));
+    form.elements[field].innerHTML = pairs
+      .map(([k, v]) => `<option value="${escHtml(k)}">${escHtml(v)}</option>`).join('');
+  });
   document.getElementById('ev-cities').innerHTML = ['National', ...new Set(evData.events.map(e => e.city))].sort()
     .map(c => `<option value="${c.replace(/"/g, '&quot;')}">`).join('');
   renderEventsTable();
@@ -1631,6 +1639,7 @@ async function loadEvents() {
   });
   log.appendChild(list);
 }
+const evLabel = (field, v) => (evData.labels[field] || {})[v] || v;
 function renderEventsTable() {
   const q = document.getElementById('ev-search').value.trim().toLowerCase();
   const show = document.getElementById('ev-filter').value;
@@ -1638,15 +1647,15 @@ function renderEventsTable() {
   const rows = evData.events.filter(e =>
     (show === 'all' || (show === 'upcoming' && e.end >= today && !e.hidden) || (show === 'hidden' && e.hidden)
       || (show === 'edited' && (e.edited || e.added)) || (show === 'estimated' && ['estimated', 'moon'].includes(e.date_status)))
-    && (!q || [e.name, e.city, e.type, e.venue].join(' ').toLowerCase().includes(q)));
+    && (!q || [e.name, e.city, evLabel('type', e.type), e.venue].join(' ').toLowerCase().includes(q)));
   const t = document.getElementById('ev-table');
-  t.innerHTML = '<thead><tr><th>Dates</th><th>Event</th><th>City</th><th>Type</th><th>Impact</th><th>Date</th><th></th></tr></thead>';
+  t.innerHTML = '<thead><tr><th>Dates</th><th>Event</th><th>City</th><th>Type</th><th>Impact</th><th>Date status</th><th></th></tr></thead>';
   const tb = document.createElement('tbody');
   rows.slice(0, 300).forEach(e => {
     const tr = document.createElement('tr');
     if (e.hidden) tr.style.opacity = '0.55';
     const cells = [e.start === e.end ? e.start : `${e.start} → ${e.end}`, e.name + (e.added ? ' (added here)' : e.edited ? ' (edited here)' : ''),
-      e.city, evData.types[e.type] || e.type, e.impact, e.date_status];
+      e.city, evLabel('type', e.type), evLabel('impact', e.impact), evLabel('date_status', e.date_status)];
     cells.forEach(c => { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });
     const td = document.createElement('td');
     td.style.whiteSpace = 'nowrap';

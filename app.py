@@ -5166,7 +5166,7 @@ def api_events():
     for e in events:
         for k in ('hidden', 'edited', 'added'):
             e.pop(k, None)
-    resp = jsonify({'events': events, 'types': EV.TYPES, 'home_city': _home_city()})
+    resp = jsonify({'events': events, 'types': EV.TYPES, 'labels': EV.labels_for_api(), 'home_city': _home_city()})
     resp.headers['Cache-Control'] = 'private, max-age=60'
     return resp
 
@@ -5174,7 +5174,7 @@ def api_events():
 @app.route('/api/admin/events')
 @admin_required
 def api_admin_events():
-    return jsonify({'events': EV.load_events(DATA_DIR, include_hidden=True), 'types': EV.TYPES,
+    return jsonify({'events': EV.load_events(DATA_DIR, include_hidden=True), 'types': EV.TYPES, 'labels': EV.labels_for_api(),
                     'log': EV.change_log(DATA_DIR, 40)})
 
 

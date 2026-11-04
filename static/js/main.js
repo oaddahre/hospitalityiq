@@ -1489,22 +1489,24 @@ const CalTip = (() => {
     const t = node();
     const date = document.createElement('div');
     date.className = 'cal-tip-date'; date.textContent = tip.date;
-    t.replaceChildren(date);
+    const grid = document.createElement('div');
+    grid.className = 'cal-tip-grid';
+    t.replaceChildren(date, grid);
     (tip.rows || []).forEach(([label, value, note]) => {
-      const row = document.createElement('div');
-      row.className = 'cal-tip-row';
-      const l = document.createElement('span'); l.className = 'cal-tip-label'; l.textContent = label;
-      row.appendChild(l);
-      if (value != null && value !== '') {
+      const hasValue = value != null && value !== '';
+      const l = document.createElement('span');
+      l.className = 'cal-tip-label' + (hasValue ? '' : ' cal-tip-label--wide'); l.textContent = label;
+      grid.appendChild(l);
+      if (hasValue) {
         const v = document.createElement('span'); v.className = 'cal-tip-value'; v.textContent = value;
-        row.appendChild(v);
+        grid.appendChild(v);
       }
-      t.appendChild(row);
       if (note) {
-        const n = document.createElement('div'); n.className = 'cal-tip-note'; n.textContent = note;
-        t.appendChild(n);
+        const n = document.createElement('span'); n.className = 'cal-tip-note'; n.textContent = note;
+        grid.appendChild(n);
       }
     });
+    if (!grid.childElementCount) grid.remove();
     if (cell && cell !== target) cell.removeAttribute('aria-describedby');
     cell = target; pinned = !!pin;
     cell.setAttribute('aria-describedby', 'cal-tip');
@@ -1515,11 +1517,13 @@ const CalTip = (() => {
     if (!el || el.hidden || !cell) return;
     const GAP = 8, EDGE = 8;
     const c = cell.getBoundingClientRect();
+    el.style.left = '0px'; el.style.top = '0px';   // measure at full width, not squeezed by the last position
     const w = el.offsetWidth, h = el.offsetHeight;
     const vw = document.documentElement.clientWidth, vh = window.innerHeight;
     // Above the cell when it fits; else below; else whichever side has more room
     let top = c.top - GAP - h;
     if (top < EDGE) top = (c.bottom + GAP + h <= vh - EDGE || vh - c.bottom > c.top) ? c.bottom + GAP : top;
+    top = Math.max(EDGE, Math.min(top, vh - EDGE - h));
     let left = c.left + c.width / 2 - w / 2;
     left = Math.max(EDGE, Math.min(left, vw - EDGE - w));
     el.style.left = Math.round(left) + 'px';
@@ -1706,7 +1710,7 @@ async function renderOccCalendar(hotelId) {
     const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : '—';
     const confBadge = cov === 'full' ? '●' : cov === 'partial' ? '◑' : '○';
     const tip = calTipAttrs(iso, e
-      ? [['Modelled occupancy', occRange(e)], ['Price coverage', cov]]
+      ? [['Modelled occupancy', occRange(e)], ['Price coverage', COVERAGE_LABEL[cov] || cov]]
       : [['No estimate']]);
     html += `<div class="bar-cal-day" style="${styAttr}"${tip}>
       <div class="bar-cal-dn" style="color:${dayNumCol};opacity:1">${d.getDate()}<span style="font-size:7px;margin-left:2px;opacity:0.6">${confBadge}</span></div>
@@ -1742,6 +1746,7 @@ async function renderOccCalendar(hotelId) {
 
 // Price coverage of a stored night (full | partial | none); older rows
 // only carry the former confidence level (high | medium | low)
+const COVERAGE_LABEL = { full: 'Full', partial: 'Partial', none: 'None', mixed: 'Mixed' };   // tooltip values
 function occCoverage(e) {
   return e.price_coverage || ({ high: 'full', medium: 'partial' })[e.confidence] || 'none';
 }
@@ -4739,7 +4744,7 @@ function rbRenderCalendar(type) {
       subTxt = n.comp_occ != null ? `avg ${Math.round(n.comp_occ)}%` : 'avg –';
       sty = n.subject_occ != null ? occCellStyle(n.subject_occ / 100) : null;
       tip = [['Modelled occupancy', n.subject_occ != null ? occRange({ mid: n.subject_occ, low: n.subject_low, high: n.subject_high }) : '–', 'Kodo Estimates']];
-      if (n.subject_conf) tip.push(['Price coverage', rbConf(n.subject_conf)]);
+      if (n.subject_conf) tip.push(['Price coverage', COVERAGE_LABEL[rbConf(n.subject_conf)] || rbConf(n.subject_conf)]);
       tip.push(['Comp set average', n.comp_occ != null ? Math.round(n.comp_occ) + '%' : '–']);
     }
     const styAttr = sty ? `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}` : '';

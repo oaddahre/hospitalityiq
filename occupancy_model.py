@@ -163,7 +163,9 @@ CITY_SEASONALITY = {
 
 # ─── EVENTS (events.json, read by v1 and v2) ─────────────────────────────────
 # Events come from the events database (events_db.py: events.json in the
-# repo plus the admin's changes in DATA_DIR). An event adds points to its
+# repo plus the admin's changes in DATA_DIR) and from the internal list
+# model_holidays.json (school holidays in the source markets: counted here,
+# never shown on the platform). An event adds points to its
 # nights in its market (its city; "National" = every city), by its impact
 # tier and the hotel's type. THESE SIZES ARE JUDGEMENT, NOT MEASURED: they
 # are first guesses to be checked against real occupancy once the monthly
@@ -218,10 +220,11 @@ _EVENT_NIGHTS = {}
 def _event_nights():
     """{night iso: [events]} for the events the model counts (cached per file version)."""
     import events_db
-    key = (events_db._mtime(events_db.BASE_PATH), events_db._mtime(events_db.overrides_path(str(DATA_DIR))))
+    key = (events_db._mtime(events_db.BASE_PATH), events_db._mtime(events_db.overrides_path(str(DATA_DIR))),
+           events_db._mtime(events_db.INTERNAL_PATH))
     if _EVENT_NIGHTS.get('key') != key:
         idx = {}
-        for e in events_db.load_events(str(DATA_DIR)):
+        for e in events_db.load_model_events(str(DATA_DIR)):
             if not e.get('model') or e.get('precision', 'day') != 'day':
                 continue
             d, end = date.fromisoformat(e['start']), date.fromisoformat(e['end'])

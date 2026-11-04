@@ -5,7 +5,10 @@ that can move hotel demand; event_overrides.json (in DATA_DIR, so it
 survives deploys) holds what admins add, edit or hide in the Rates panel.
 Every admin change is appended to event_changes.log. The calendar, the
 hotel and benchmarking markers and the occupancy model all read
-load_events(), so there is one source of truth. See docs/EVENTS.md.
+load_events(), so there is one source of truth. model_holidays.json (in
+the repo) is an internal list the occupancy model reads on top of it
+(load_model_events): school holidays in the source markets, never shown
+to users. See docs/EVENTS.md.
 """
 import json
 import os
@@ -15,22 +18,43 @@ from datetime import date, datetime
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_PATH = os.path.join(APP_DIR, 'events.json')
+INTERNAL_PATH = os.path.join(APP_DIR, 'model_holidays.json')
 FORMAT = 'kodo-events-1'
+INTERNAL_FORMAT = 'kodo-model-holidays-1'
 OVERRIDES_FORMAT = 'kodo-event-overrides-1'
 
 FIELDS = ('id', 'name', 'type', 'city', 'market', 'venue', 'start', 'end', 'precision', 'recurrence', 'impact',
           'impact_reason', 'effect', 'attendance', 'date_status', 'date_basis', 'model', 'model_kind', 'markets',
           'description', 'source', 'checked')
+# Display labels: the one place stored values become what users read
+# (served as "labels" by /api/events and /api/admin/events)
 TYPES = {
     'holiday': 'Public holiday', 'religious': 'Religious', 'school_ma': 'School holidays (Morocco)',
-    'school_abroad': 'School holidays (abroad)', 'holiday_abroad': 'Holidays abroad', 'diaspora': 'Diaspora',
+    'holiday_abroad': 'Holidays abroad', 'diaspora': 'Diaspora',
     'music': 'Music', 'film': 'Film', 'arts': 'Arts and culture', 'moussem': 'Moussem and tradition',
     'sport': 'Sport', 'business': 'Business and MICE',
 }
-IMPACTS = ('high', 'medium', 'low')
-STATUSES = ('confirmed', 'announced', 'estimated', 'moon')
-RECURRENCES = ('annual', 'biennial', 'one-off')
-EFFECTS = ('up', 'down', 'mixed')
+IMPACT_LABELS = {'high': 'High', 'medium': 'Medium', 'low': 'Low'}
+STATUS_LABELS = {'confirmed': 'Confirmed', 'announced': 'Announced', 'estimated': 'Estimated', 'moon': 'Moon-dependent'}
+RECURRENCE_LABELS = {'annual': 'Annual', 'biennial': 'Biennial', 'one-off': 'One-off'}
+EFFECT_LABELS = {'up': 'Raises demand', 'down': 'Lowers demand', 'mixed': 'Mixed'}
+PRECISION_LABELS = {'day': 'To the day', 'month': 'Month only'}
+LABELS = {'type': TYPES, 'impact': IMPACT_LABELS, 'date_status': STATUS_LABELS, 'recurrence': RECURRENCE_LABELS,
+          'effect': EFFECT_LABELS, 'precision': PRECISION_LABELS}
+
+
+def labels_for_api():
+    """LABELS as ordered [value, label] pairs (JSON objects lose their order
+    when Flask sorts keys)."""
+    return {field: [[k, v] for k, v in m.items()] for field, m in LABELS.items()}
+
+
+# Types only the internal list uses (model_holidays.json; never displayed)
+MODEL_ONLY_TYPES = {'school_abroad': 'School holidays abroad', 'holiday_abroad': 'Holidays abroad'}
+IMPACTS = tuple(IMPACT_LABELS)
+STATUSES = tuple(STATUS_LABELS)
+RECURRENCES = tuple(RECURRENCE_LABELS)
+EFFECTS = tuple(EFFECT_LABELS)
 NATIONAL = 'National'
 
 _cache = {}
@@ -85,6 +109,21 @@ def load_events(data_dir, include_hidden=False):
     return [dict(e) for e in events if include_hidden or not e['hidden']]
 
 
+def load_internal():
+    """The internal model-only list (model_holidays.json), sorted by start date."""
+    key = _mtime(INTERNAL_PATH)
+    if _cache.get('ikey') != key or 'internal' not in _cache:
+        evs = sorted(_read(INTERNAL_PATH, {}).get('events', []), key=lambda e: (e.get('start') or '', e.get('name') or ''))
+        _cache.update(ikey=key, internal=evs)
+    return [dict(e) for e in _cache['internal']]
+
+
+def load_model_events(data_dir):
+    """What the occupancy model counts from: the displayed events plus the
+    internal list. Never send this to a page."""
+    return load_events(data_dir) + load_internal()
+
+
 def slug(s):
     s = unicodedata.normalize('NFKD', str(s or '')).encode('ascii', 'ignore').decode().lower()
     return re.sub(r'[^a-z0-9]+', '-', s).strip('-')
@@ -108,13 +147,13 @@ def clean(fields):
     return e
 
 
-def validate(e):
+def validate(e, types=TYPES):
     """None if the event is usable, else what is wrong (one line)."""
     for k in ('name', 'type', 'city', 'start', 'end', 'impact', 'date_status', 'source'):
         if not e.get(k):
             return f'{k} is required'
-    if e['type'] not in TYPES:
-        return 'type must be one of ' + ', '.join(TYPES)
+    if e['type'] not in types:
+        return 'type must be one of ' + ', '.join(types)
     if e['impact'] not in IMPACTS:
         return 'impact must be high, medium or low'
     if e['date_status'] not in STATUSES:
