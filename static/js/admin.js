@@ -1433,6 +1433,11 @@ function backupRow(b) {
   const when = document.createElement('span');
   when.className = 'adm-backup-time';
   when.textContent = backupTime(b);
+  row.append(name, when, restoreButton(b));
+  return row;
+}
+
+function restoreButton(b, label = 'Restore') {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'adm-btn adm-btn-secondary adm-btn-sm';
@@ -1445,8 +1450,8 @@ function backupRow(b) {
     toast(ok ? `Restored; previous file saved as ${d.previous_saved_as}` : (d.error || 'Restore failed'), ok ? 'success' : 'error');
     loadCoordHistory();
   });
-  row.append(name, when, btn);
-  return row;
+  btn.textContent = label;
+  return btn;
 }
 
 async function loadCoordHistory() {
@@ -1488,6 +1493,26 @@ async function loadCoordHistory() {
       }
       el.appendChild(section);
     });
+    const mig = (data.migrations || {}).migrations || [];
+    if (mig.length || (data.migrations || {}).error) {
+      const h = document.createElement('p');
+      h.className = 'adm-backup-heading';
+      h.textContent = 'Data migrations' + (data.migrations_on === false ? ' (off: DATA_MIGRATIONS=off)' : '');
+      const list = document.createElement('div');
+      list.className = 'adm-changelog';
+      if (data.migrations.error) {
+        const d = document.createElement('div'); d.className = 'adm-changelog-line'; d.textContent = data.migrations.error; list.appendChild(d);
+      }
+      mig.forEach(m => {
+        const d = document.createElement('div');
+        d.className = 'adm-changelog-line';
+        d.textContent = `${m.id} · ${m.status === 'applied' ? 'Applied' : m.status === 'failed' ? 'Failed' : 'Pending'}`
+          + (m.at ? ` ${m.at}` : '') + (m.summary ? ` · ${m.summary}` : '') + (m.error ? ` · ${m.error}` : '');
+        if (m.status === 'failed') d.style.color = 'var(--negative)';
+        list.appendChild(d);
+      });
+      el.append(h, list);
+    }
     const logLines = (data.log || []).slice(0, 15);
     if (logLines.length) {
       const h = document.createElement('p');
@@ -1501,7 +1526,11 @@ async function loadCoordHistory() {
     logLines.forEach(l => {
       const d = document.createElement('div');
       d.className = 'adm-changelog-line';
-      d.textContent = l.action === 'restore'
+      d.textContent = l.action === 'migration'
+        ? `${l.at} · migration ${l.migration}: ${l.summary || 'nothing to do'}${l.changed ? '' : ' (no change)'}`
+        : l.action === 'migration_failed'
+          ? `${l.at} · migration ${l.migration} failed, files put back: ${l.error}`
+        : l.action === 'restore'
         ? `${l.at} · restored ${String(l.file || '').split('/').pop()} from ${String(l.restored_from || '').split('/').pop()} by ${l.by}`
         : l.action === 'import_ids'
           ? `${l.at} · imported ${l.imported} Google ID changes (${l.ids} IDs, ${l.overrides} manual, ${l.rejected || 0} rejected) by ${l.by}`
@@ -1526,6 +1555,11 @@ async function loadCoordHistory() {
                   : l.action === 'to_pipeline'
                     ? `${l.at} · moved ${l.hotel} to the pipeline as "${l.pipeline_name}" (project ${l.pipeline_id})${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
               : `${l.at} · ${l.hotel}: ${(l.old || []).join(', ')} → ${(l.new || []).join(', ')} (${l.approve}) by ${l.by}`;
+      if (l.action === 'migration_failed') d.style.color = 'var(--negative)';
+      if (l.action === 'migration' && (l.backups || []).length) {
+        d.classList.add('adm-changelog-line--actions');
+        l.backups.forEach(b => d.append(' ', restoreButton(b, `Restore ${b.slice(0, b.indexOf('.', b.indexOf('.') + 1)) || b}`)));
+      }
       logList.appendChild(d);
     });
   } catch {}

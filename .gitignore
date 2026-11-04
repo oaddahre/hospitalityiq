@@ -47,3 +47,13 @@ scrape_coverage.csv
 # Admin changes to the events database (events.json stays tracked)
 event_overrides.json
 event_changes.log
+
+# Files for the owner to read or keep (never the Desktop)
+_handoff/
+
+# Data migrations state and lock (DATA_DIR), rates database
+data_migrations_state.json
+data_migrations.lock
+rates.db
+rates.db-*
+rates_db.lock

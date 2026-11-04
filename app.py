@@ -5219,7 +5219,8 @@ def api_coord_history():
                     log.append(json.loads(line))
                 except ValueError:
                     pass
-    return jsonify({'backups': backups, 'log': log[::-1]})
+    return jsonify({'backups': backups, 'log': log[::-1], 'migrations': DM.status(DATA_DIR),
+                    'migrations_on': DM.enabled()})
 
 
 @app.route('/api/admin/coordinates/restore', methods=['POST'])
@@ -5613,6 +5614,50 @@ def api_occupancy_status():
         'low_confidence':    low,
         'hotels_covered':    hotels_covered,
     })
+
+
+# ─── Data migrations (data_migrations/, migrate_data.py) ─────────────────────
+# Changes to the volume's data files shipped with the code: applied once,
+# in order, on start; backed up, logged in the Rates panel's change log,
+# restored and emailed on failure. DATA_MIGRATIONS=off turns them off.
+import migrate_data as DM
+
+
+def _migration_failed_email(mid, reason):
+    to = _alert_recipient()
+    resend.api_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if not to or not resend.api_key:
+        app.logger.error(f'Data migration {mid} failed; no email sent (set ALERT_EMAIL and RESEND_API_KEY): {reason}')
+        return
+    esc = html.escape
+    resend.Emails.send({
+        'from':    'Kodo Hospitality <contact@kodohospitality.com>',
+        'to':      to,
+        'subject': f'Kodo alert: data migration {mid} failed',
+        'html':    (f'<p>The data migration <strong>{esc(mid)}</strong> did not apply on this deploy.</p>'
+                    f'<p><strong>Reason:</strong> {esc(reason)}</p>'
+                    '<p>The files it touches were put back as they were, so the site keeps running on the '
+                    'previous data. The migrations after it wait until it is fixed. The details are in the '
+                    'Rates panel\'s change log.</p>'),
+    })
+
+
+def _run_data_migrations():
+    if os.path.abspath(DATA_DIR) == os.path.abspath(APP_DIR):
+        return                                # the repo's own files already carry every change
+    if not DM.enabled():
+        app.logger.warning('Data migrations are off (DATA_MIGRATIONS=off)')
+        return
+    try:
+        r = DM.run_pending(DATA_DIR, notify=_migration_failed_email, log=app.logger.warning)
+        if r['applied'] or r['failed']:
+            app.logger.warning(f"Data migrations: applied {r['applied'] or 'none'}"
+                               + (f"; {r['failed']} failed: {r['error']}" if r['failed'] else ''))
+    except Exception as e:                    # never take the site down
+        app.logger.error(f'Data migrations not run: {e}', exc_info=True)
+
+
+_run_data_migrations()
 
 
 if __name__ == "__main__":
