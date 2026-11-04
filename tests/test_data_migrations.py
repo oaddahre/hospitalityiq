@@ -58,7 +58,8 @@ class DataMigrations(unittest.TestCase):
     def test_apply_once_then_nothing(self):
         r = self.run_all()
         self.assertEqual(r['applied'], ['0001_ocp_group_hotels', '0002_sofitel_marrakech_palais_imperial_rooms',
-                                        '0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id'])
+                                        '0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id',
+                                        '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai'])
         self.assertIsNone(r['failed'])
         for hid in ('58', '320', '266', '467'):
             self.assertEqual(self.hotel(hid)['owner'], 'OCP Group')
@@ -66,7 +67,14 @@ class DataMigrations(unittest.TestCase):
         self.assertEqual(self.hotel('467')['lat'], '33.920206')
         owners = json.load(open(os.path.join(self.d, 'owners.json'), encoding='utf-8'))
         ocp = next(o for o in owners if o['id'] == 'ocp')
-        self.assertEqual((len(ocp['hotels']), ocp['via']), (4, 'Maghreb Hospitality Company'))
+        self.assertEqual((len(ocp['hotels']), ocp['via']), (5, 'Maghreb Hospitality Company'))
+        self.assertEqual([h['name'] for h in ocp['hotels'] if h.get('status') == 'pipeline'], ['Palais Jamaï'])
+        import csv
+        pipe = {r['id']: r for r in csv.DictReader(open(os.path.join(self.d, 'pipeline.csv'), encoding='utf-8'))}
+        self.assertEqual((pipe['16']['name'], pipe['16']['owner'], pipe['16']['keys'], pipe['16']['status']),
+                         ('Palais Jamaï', 'OCP Group', '94', 'Under Construction'))
+        with open(os.path.join(self.d, 'hotels.csv'), encoding='utf-8') as f:     # not a hotel until it reopens
+            self.assertFalse(any('jama' in r['name'].lower() for r in csv.DictReader(f)))
         ids = json.load(open(os.path.join(self.d, 'dataforseo_hotel_ids.json'), encoding='utf-8'))
         self.assertEqual(ids['467']['identifier'], 'ChkIq5HoyKP3hsM_Gg0vZy8xMWgyNmI3bGo5EAE')
         log = [json.loads(l) for l in open(os.path.join(self.d, 'coordinate_changes_applied.log'), encoding='utf-8')]
@@ -100,7 +108,8 @@ class DataMigrations(unittest.TestCase):
         self.assertEqual(len(self.mails), 1)
         # The next start retries it (and works); the same failure again would not email twice
         r2 = self.run_all()
-        self.assertEqual(r2['applied'], ['0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id'])
+        self.assertEqual(r2['applied'], ['0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id',
+                                         '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai'])
         self.assertEqual(len(self.mails), 1)
 
     def test_unclean_change_is_refused(self):
