@@ -1572,10 +1572,91 @@ function fmtMadLong(v) {
   return `MAD ${(+v).toLocaleString()}`;
 }
 
+// ── Hotel rate calendar: "Next 30 nights", or a past month showing each
+// night's last published rate (the last price seen before the night) ──
+const HR_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const hrState = { hotelId: null, view: 'next', first: null, req: 0 };
+const hrMonthKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+const hrMonthName = k => `${HR_MONTHS[+k.slice(5) - 1]} ${k.slice(0, 4)}`;
+const hrShift = (k, n) => { const d = new Date(+k.slice(0, 4), +k.slice(5) - 1 + n, 1); return hrMonthKey(d); };
+
 async function renderRateCalendar(hotelId) {
+  hrState.hotelId = hotelId; hrState.view = 'next'; hrState.first = null;
+  return hrRender();
+}
+function hrNav() {
+  const cur = hrMonthKey(new Date()), v = hrState.view;
+  document.getElementById('hrate-period').textContent = v === 'next' ? 'Next 30 nights' : hrMonthName(v);
+  document.getElementById('hrate-next').disabled = v === 'next';
+  const prev = v === 'next' ? cur : hrShift(v, -1);
+  document.getElementById('hrate-prev').disabled = !!hrState.first && prev < hrState.first && v !== 'next';
+  document.getElementById('hrate-prev').setAttribute('aria-label', `Show ${hrMonthName(prev)}: last published rates`);
+  document.getElementById('hrate-next').setAttribute('aria-label', v === 'next' ? 'Later' : (hrShift(v, 1) > cur ? 'Show the next 30 nights' : `Show ${hrMonthName(hrShift(v, 1))}`));
+}
+function hrRender() {
+  hrNav();
+  return hrState.view === 'next' ? renderRateNext(hrState.hotelId) : renderRatePast(hrState.hotelId, hrState.view);
+}
+document.getElementById('hrate-prev')?.addEventListener('click', () => {
+  hrState.view = hrState.view === 'next' ? hrMonthKey(new Date()) : hrShift(hrState.view, -1); hrRender();
+});
+document.getElementById('hrate-next')?.addEventListener('click', () => {
+  if (hrState.view === 'next') return;
+  const n = hrShift(hrState.view, 1);
+  hrState.view = n > hrMonthKey(new Date()) ? 'next' : n; hrRender();
+});
+
+const HR_LEGEND_NEXT = '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-google"></span>Live</span>'
+  + '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>N/A</span>';
+const HR_LEGEND_PAST = '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-past"></span>Last published rate</span>'
+  + '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>No price collected</span>'
+  + '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-upcoming"></span>Upcoming night</span>';
+
+async function renderRatePast(hotelId, month) {
+  const calEl = document.getElementById('hrate-calendar');
+  const badgeEl = document.getElementById('hrate-source-badge');
+  const req = ++hrState.req;
+  document.getElementById('hrate-title').textContent = `Last Published Rate · ${hrMonthName(month)}`;
+  document.getElementById('hrate-legend').innerHTML = HR_LEGEND_PAST;
+  badgeEl.style.display = ''; badgeEl.className = 'rate-source-badge pill--grey'; badgeEl.textContent = 'Past nights';
+  document.getElementById('hrate-updated').textContent = 'Last published rate: the last price seen on a booking site before each night. It is not ADR (what guests paid).';
+  calEl.innerHTML = '<div class="bar-cal-loading">Loading past rates…</div>';
+  let d;
+  try { d = await (await fetch(`/api/rates/past?hotel_id=${encodeURIComponent(hotelId)}&month=${month}`)).json(); }
+  catch { calEl.innerHTML = '<div class="bar-cal-loading">Past rates unavailable</div>'; return; }
+  if (req !== hrState.req) return;
+  hrState.first = d.first_month || month;
+  hrNav();
+  const byNight = Object.fromEntries((d.nights || []).map(n => [n.night, n]));
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const total = new Date(+month.slice(0, 4), +month.slice(5), 0).getDate();
+  let html = '';
+  for (let day = 1; day <= total; day++) {
+    const dt = new Date(+month.slice(0, 4), +month.slice(5) - 1, day), iso = localIsoDate(dt);
+    const n = byNight[iso], dn = `${DAYS[dt.getDay()]} ${day}`;
+    if (iso >= d.today) {
+      html += `<div class="bar-cal-day src-upcoming"${calTipAttrs(iso, [['Upcoming night: see Next 30 nights']])}><div class="bar-cal-dn">${dn}</div><div class="bar-cal-rate">·</div></div>`;
+    } else if (!n || n.rate_mad == null) {
+      html += `<div class="bar-cal-day src-unavailable"${calTipAttrs(iso, [['No price collected before this night']])}><div class="bar-cal-dn">${dn}</div><div class="bar-cal-rate">No data</div></div>`;
+    } else {
+      const tip = calTipAttrs(iso, [['Last published rate', fmtMadLong(n.rate_mad)],
+        ['Collected', `${KodoPeriod.day(n.collected_on)} · ${n.days_before} ${n.days_before === 1 ? 'day' : 'days'} before`],
+        ['Source', SOURCE_LABEL[n.source] || n.source]]);
+      html += `<div class="bar-cal-day src-past"${tip}><div class="bar-cal-dn">${dn}</div><div class="bar-cal-rate">${fmtMadShort(n.rate_mad)}</div></div>`;
+    }
+  }
+  calEl.innerHTML = html;
+  KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
+}
+
+async function renderRateNext(hotelId) {
   const calEl    = document.getElementById('hrate-calendar');
   const badgeEl  = document.getElementById('hrate-source-badge');
   const updEl    = document.getElementById('hrate-updated');
+  const req = ++hrState.req;
+  document.getElementById('hrate-title').textContent = 'Best Available Rate · Next 30 Days';
+  document.getElementById('hrate-legend').innerHTML = HR_LEGEND_NEXT;
+  badgeEl.className = 'rate-source-badge pill--blue';
 
   calEl.innerHTML = '<div class="bar-cal-loading">Loading rate data…</div>';
 
@@ -1587,6 +1668,7 @@ async function renderRateCalendar(hotelId) {
     calEl.innerHTML = '<div class="bar-cal-loading">Rate data unavailable</div>';
     return;
   }
+  if (req !== hrState.req) return;
 
   const rates   = data.rates || [];
   const sources = data.source_breakdown || {};
@@ -4585,6 +4667,7 @@ const rbState = {
   editing: false,
   draftSubject: null, draftComps: [],
   rateCal: null, occCal: null,   // { y, m } shown by each calendar
+  past: {}, pastLoading: {}, pastFirst: null,   // past months of the rate calendar (last published rates)
 };
 
 const rbHotel = id => (hotels || []).find(h => String(h.id) === String(id));
@@ -4605,6 +4688,7 @@ async function initRateBenchmark() {
 }
 
 async function loadRateBenchmark() {
+  rbState.past = {}; rbState.pastLoading = {}; rbState.pastFirst = null;
   const res = await fetch('/api/benchmarking/rates').catch(() => null);
   rbState.data = res && res.ok ? await res.json() : { state: 'error' };
 }
@@ -4724,13 +4808,37 @@ function rbRenderCalendar(type) {
   const byNight = {};
   (d && d.nights || []).forEach(n => { byNight[n.night] = n; });
   const first = (new Date(y, m - 1, 1).getDay() + 6) % 7, total = new Date(y, m, 0).getDate();
+  const todayIso = localIsoDate(new Date()), monthKey = `${y}-${String(m).padStart(2, '0')}`;
+  const hasPast = type === 'rate' && `${monthKey}-01` < todayIso;
+  const past = hasPast ? rbState.past[monthKey] : null;
+  if (hasPast && !past) rbLoadPast(monthKey);
+  if (type === 'rate') {
+    document.getElementById('rb-rate-note').textContent = hasPast
+      ? 'Past nights: the last published rate seen before each night (yours, and below it the comp set median). It is not ADR. "No data": no price was collected for that night. Upcoming nights: your published rate and the comp set median.'
+      : 'Each night: your published rate, and below it the comp set median. "–": no live price. Only the next 30 nights are tracked.';
+  }
   let html = '<div class="bench-cal-dow-row">' + ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x => `<div class="bench-cal-dow">${x}</div>`).join('')
     + '</div><div class="bench-cal-days">' + '<div class="bench-cal-day bench-cal-empty"></div>'.repeat(first);
   for (let day = 1; day <= total; day++) {
     const iso = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const n = byNight[iso];
     const wk = [0, 6].includes(new Date(y, m - 1, day).getDay()) ? ' bench-cal-weekend' : '';
-    if (!n) { html += `<div class="bench-cal-day bench-cal-nodata rb-cal-out${wk}"${calTipAttrs(iso, [['Outside the next 30 nights']])}><span class="bench-cal-daynum">${day}</span></div>`; continue; }
+    if (type === 'rate' && iso < todayIso) {           // past night: its last published rate
+      const pn = past && past[iso];
+      if (!past) { html += `<div class="bench-cal-day bench-cal-nodata${wk}"><span class="bench-cal-daynum">${day}</span></div>`; continue; }
+      if (!pn || pn.subject_rate == null && pn.comp_median == null) {
+        html += `<div class="bench-cal-day bench-cal-nodata rb-cal-past${wk}"${calTipAttrs(iso, [['No price collected before this night']])}><span class="bench-cal-daynum">${day}</span><span class="bench-cal-dayval rb-cal-nodata-txt">No data</span></div>`;
+        continue;
+      }
+      const tip = [['Last published rate', rbMad(pn.subject_rate), pn.subject_source ? `${pn.subject_source}, collected ${KodoPeriod.day(pn.collected_on)}, ${pn.days_before} ${pn.days_before === 1 ? 'day' : 'days'} before` : 'No price collected for your hotel'],
+                   ['Comp set median', rbMad(pn.comp_median), `last published rates of ${pn.comp_priced} hotel${pn.comp_priced === 1 ? '' : 's'}`]];
+      if (pn.rate_index != null) tip.push(['Rate index', `${Math.round(pn.rate_index)}`]);
+      html += `<div class="bench-cal-day rb-cal-past${wk}"${calTipAttrs(iso, tip)}>
+        <span class="bench-cal-daynum">${day}</span>
+        <span class="bench-cal-dayval">${pn.subject_rate != null ? rbShort(pn.subject_rate) : '–'}<span class="rb-cal-sub">${pn.comp_median != null ? 'med ' + rbShort(pn.comp_median) : 'med –'}</span></span></div>`;
+      continue;
+    }
+    if (!n) { html += `<div class="bench-cal-day bench-cal-nodata rb-cal-out${wk}"${calTipAttrs(iso, [[iso < todayIso ? 'Past night: modelled occupancy covers upcoming nights only' : 'Outside the next 30 nights']])}><span class="bench-cal-daynum">${day}</span></div>`; continue; }
     let val, subTxt, sty, tip;
     if (type === 'rate') {
       val = rbShort(n.subject_rate); subTxt = n.comp_median != null ? `med ${rbShort(n.comp_median)}` : 'med –';
@@ -4755,13 +4863,29 @@ function rbRenderCalendar(type) {
   KodoEvents.markCells(document.getElementById(`rb-${type}-grid`), (rbHotel(rbState.compSet && rbState.compSet.subject_id) || {}).city);
 }
 
-// Calendar months: from the current month to the one holding the 30th night
+// Past months of the rate calendar: last published rates, loaded once a month
+async function rbLoadPast(month) {
+  if (rbState.pastLoading[month]) return;
+  rbState.pastLoading[month] = true;
+  try {
+    const d = await (await fetch(`/api/benchmarking/rates/past?month=${month}`)).json();
+    rbState.past[month] = Object.fromEntries((d.nights || []).map(n => [n.night, n]));
+    if (d.first_month) rbState.pastFirst = d.first_month;
+  } catch { rbState.past[month] = {}; }
+  const cal = rbState.rateCal;
+  if (`${cal.y}-${String(cal.m).padStart(2, '0')}` === month) rbRenderCalendar('rate');
+}
+
+// Calendar months: up to the one holding the 30th night; the rate calendar
+// goes back to the first month with a price, occupancy starts this month
 function rbStepMonth(type, step) {
   const cal = type === 'rate' ? rbState.rateCal : rbState.occCal;
   const now = new Date(), last = new Date(); last.setDate(last.getDate() + 30);
   let { y, m } = cal; m += step;
   if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
-  const key = y * 12 + m, lo = now.getFullYear() * 12 + now.getMonth() + 1, hi = last.getFullYear() * 12 + last.getMonth() + 1;
+  const key = y * 12 + m, hi = last.getFullYear() * 12 + last.getMonth() + 1;
+  let lo = now.getFullYear() * 12 + now.getMonth() + 1;
+  if (type === 'rate') lo = rbState.pastFirst ? +rbState.pastFirst.slice(0, 4) * 12 + +rbState.pastFirst.slice(5) : lo - 24;
   if (key < lo || key > hi) return;
   cal.y = y; cal.m = m; rbRenderCalendar(type);
 }

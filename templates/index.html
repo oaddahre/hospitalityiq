@@ -579,7 +579,7 @@
               </div>
             </div>
             <div class="bench-cal-wrap" id="rb-rate-grid"></div>
-            <p class="rate-updated-note rb-cal-note">Each night: your published rate, and below it the comp set median. "–": no live price. Only the next 30 nights are tracked.</p>
+            <p class="rate-updated-note rb-cal-note" id="rb-rate-note">Each night: your published rate, and below it the comp set median. "–": no live price. Only the next 30 nights are tracked.</p>
           </div>
 
           <div class="chart-card" style="margin-bottom:20px">
@@ -1685,13 +1685,18 @@
           <!-- BAR Calendar -->
           <div class="table-card dual-cal-card">
             <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
-              <span class="table-title">Best Available Rate · Next 30 Days</span>
+              <span class="table-title" id="hrate-title">Best Available Rate · Next 30 Days</span>
               <span class="rate-source-badge pill--blue" id="hrate-source-badge">Loading…</span>
+            </div>
+            <div class="bar-cal-nav" role="group" aria-label="Rate calendar period">
+              <button type="button" class="bench-cal-nav-btn" id="hrate-prev" aria-label="Earlier month">&#8592;</button>
+              <span class="bar-cal-nav-label" id="hrate-period" aria-live="polite">Next 30 nights</span>
+              <button type="button" class="bench-cal-nav-btn" id="hrate-next" aria-label="Later" disabled>&#8594;</button>
             </div>
             <div id="hrate-calendar" class="bar-calendar">
               <div class="bar-cal-loading">Loading rate data…</div>
             </div>
-            <div class="bar-cal-legend">
+            <div class="bar-cal-legend" id="hrate-legend">
               <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-google"></span>Live</span>
               <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>N/A</span>
             </div>

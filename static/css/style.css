@@ -2203,6 +2203,21 @@ body.light .nav-logout  { color: var(--text-2); }
 .bar-cal-day.src-recent            { background: var(--cat-5-tint); color: var(--cat-5-text); }
 .bar-cal-day.src-estimated         { background: var(--bg-alt); color: var(--text-2); border: 1px solid var(--border); }
 .bar-cal-day.src-unavailable       { background: transparent; color: var(--text-faint); border: 1px dashed var(--border); }
+/* Past months: the last published rate before each night (grey family: not live, not ADR) */
+/* Benchmarking rate calendar, past nights: grey family, like the hotel profile's */
+.bench-cal-day.rb-cal-past { background: var(--cat-6-tint); color: var(--cat-6-text); }
+.bench-cal-day.rb-cal-past.bench-cal-nodata { background: transparent; border: 1px dashed var(--border); }
+.rb-cal-nodata-txt { font-size: 10px; color: var(--text-faint); }
+.bar-cal-day.src-past              { background: var(--cat-6-tint); color: var(--cat-6-text); }
+.bar-cal-day.src-upcoming          { background: transparent; color: var(--text-faint); border: 1px solid var(--border); opacity: 0.6; }
+.bar-cal-day.src-unavailable .bar-cal-rate { font-size: 10px; font-weight: 500; }
+.dot-past     { background: var(--cat-6-dot); }
+.dot-upcoming { background: transparent; border: 1px solid var(--border); }
+/* Period navigation above the hotel rate calendar */
+.bar-cal-nav { display: flex; align-items: center; gap: 10px; padding: 10px 20px 0; }
+.bar-cal-nav-label { font-family: 'Sweet Sans Pro', sans-serif; font-size: 13px; color: var(--text); min-width: 120px; text-align: center; }
+.bar-cal-nav .bench-cal-nav-btn:disabled { opacity: 0.35; cursor: default; }
+.bar-cal-nav .bench-cal-nav-btn:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
 
 
 /* Legend */
