@@ -112,7 +112,7 @@
   <div class="legal-page" style="padding-bottom:0;">
     <span class="page-header-label">Kodo · Platform</span>
     <h1 class="page-header-title">Methodology</h1>
-    <p class="page-header-sub">Last updated July 2026</p>
+    <p class="page-header-sub">Last updated 9 November 2026</p>
   </div>
 </div>
 
@@ -133,14 +133,16 @@
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Rate Intelligence</span>
-        <span class="method-source-confidence pill--blue">High Confidence</span>
-        <p class="method-source-desc">Starting July 2026 Kodo collects Best Available Rates (BAR) daily for the properties in our database from Google Hotels through DataForSEO, for each of the next 30 nights. Every result is checked against the hotel's name and city before it is kept. BAR represents the lowest publicly available nightly rate Google shows for 2 adults, 1 room, 1 night; room type is not controlled. BAR is not equivalent to a hotel's actual Average Daily Rate (ADR) — it excludes negotiated corporate rates, wholesale contracts, and package inclusions — but provides a consistent, comparable daily rate signal across all properties.</p>
+        <span class="method-source-confidence pill--orange">Medium Confidence</span>
+        <p class="method-source-desc">Since 3 November 2026 (the first full run) Kodo has collected published rates (BAR) every night, from 03:00 Casablanca time, for the hotels in our database that Google Hotels lists, through DataForSEO. Before that date there are no collected prices, so any average or trend over past dates covers only the nights since then.</p>
+        <p class="method-source-desc"><strong>What is asked for.</strong> One request per hotel, for its Google Hotels listing: 2 adults, no children, a one-night stay (check-in tomorrow, check-out the day after), prices in Moroccan dirhams (MAD), results in English, located at the hotel's map position (Morocco as a whole when we have no position), with a price for each check-in date over the next 30 nights. The request does not set a number of rooms, a room type, a board basis or cancellation terms; Google's own defaults apply. Each price is the nightly price Google Hotels returns for that check-in date. A price in another currency is not used, and every result is checked against the hotel's name and city before it is kept.</p>
+        <p class="method-source-desc">A published rate is not the hotel's Average Daily Rate (ADR): it excludes negotiated corporate rates, wholesale contracts and package inclusions, and whether taxes and fees are included depends on the booking site. Each price is observed directly, but the history is short, so the source is rated medium for now.</p>
         <p class="method-source-desc"><strong>Headline cards.</strong> The rate, occupancy and RevPAR cards on hotel, city, brand group and owner pages cover the next 30 nights. <em>Avg published rate</em> averages the latest price collected for each night, at most 7 days old; it is a booking-site price, not ADR. <em>Modelled occupancy</em> comes from the nightly model run. <em>Indicative RevPAR</em> is the published rate times the modelled occupancy, night by night. A city, brand group or owner is the average over its hotels that have the figure, weighted by rooms, and the card shows how many hotels that covers. A change against 7 days earlier appears once 7 days of figures exist. The yearly occupancy, ADR and RevPAR still shown in some tables (FY 2025) are Kodo model estimates, not reported data, and are labelled that way.</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Occupancy Model</span>
-        <span class="method-source-confidence pill--orange">Medium Confidence</span>
-        <p class="method-source-desc">Kodo does not have access to real occupancy data from hotel PMS systems except for properties participating in our Data Sharing Program. For all other properties occupancy is modelled, not measured. Two versions of the model run every night; the platform shows one of them.</p>
+        <span class="method-source-confidence pill--grey">Low Confidence</span>
+        <p class="method-source-desc">Kodo does not have access to real occupancy data from hotel PMS systems except for properties participating in our Data Sharing Program. For all other properties occupancy is modelled, not measured. Two versions of the model run every night; the platform shows one of them. Its weights are set by hand and have not yet been checked against real figures, and prices have been collected only since 3 November 2026, so the source is rated low.</p>
         <p class="method-source-desc"><strong>Version 1</strong> starts from a base occupancy for the hotel's segment and type (city, resort, leisure, riad or camp), and adjusts it for the day of the week, the month, a short list of events, and the night's published rate compared with the hotel's estimated average rate.</p>
         <p class="method-source-desc"><strong>Hotel type.</strong> A hotel with fewer than 30 rooms counts as a riad or boutique hotel. A name such as Riad, Dar, Kasbah, Palais, Lodge or Camp also makes it one, but only up to 40 rooms: riads typically have 20 to 30. Larger hotels take their type from their city: beach resort, leisure city or business city. Kasbahs and camps in desert and small towns (Ouarzazate, Zagora, Merzouga, Errachidia) count as leisure. A few hotels have their type set by hand after a check.</p>
         <p class="method-source-desc"><strong>Version 2</strong> keeps the same base, day-of-week and monthly pattern, and replaces the rest with signals read from the market every night:</p>
@@ -157,7 +159,7 @@
       <div class="method-source-item">
         <span class="method-source-name">Verified Operator Data</span>
         <span class="method-source-confidence pill--green">Highest Confidence</span>
-        <p class="method-source-desc">Hotels participating in the Kodo Data Sharing Program share daily operational data (occupancy, ADR, RevPAR) directly from their Property Management System. This data is anonymised before inclusion in any benchmarking output and is never disclosed at the individual property level. Verified data is displayed with a "Verified" badge and is used to calibrate our statistical model, improving estimates for all properties over time.</p>
+        <p class="method-source-desc">Hotels participating in the Kodo Data Sharing Program share daily operational data (occupancy, ADR, RevPAR) directly from their Property Management System. It is the hotel's own reported data, so it is the most reliable source when a hotel shares it. This data is anonymised before inclusion in any benchmarking output and is never disclosed at the individual property level. It is compared with the model's estimates to measure the model's error, and will be used to fit the model's weights. (The "Verified" badge on a hotel profile means the hotel's directory entry has been checked, not that it shares data.)</p>
       </div>
     </div>
   </div>
@@ -183,13 +185,13 @@
           <td>Occupancy %</td>
           <td>Rooms sold ÷ Rooms available</td>
           <td>Model estimate or operator data</td>
-          <td>Medium – High</td>
+          <td>Low (model) · Highest (operator data)</td>
         </tr>
         <tr>
           <td>Best Available Rate (BAR)</td>
-          <td>Lowest publicly available rate, standard room, 2 adults, 1 night</td>
-          <td>Daily OTA / brand scrape</td>
-          <td>High</td>
+          <td>Nightly price Google Hotels returns for a one-night stay, 2 adults, in MAD; room type not controlled</td>
+          <td>Google Hotels through DataForSEO, every night since 3 Nov 2026</td>
+          <td>Medium (short history)</td>
         </tr>
         <tr>
           <td>ADR (Average Daily Rate)</td>
@@ -201,19 +203,19 @@
           <td>Indicative RevPAR</td>
           <td>Published rate (BAR) × modelled occupancy; not achieved RevPAR</td>
           <td>Derived</td>
-          <td>Medium</td>
+          <td>Low</td>
         </tr>
         <tr>
           <td>Rooms Revenue</td>
           <td>BAR × Occupancy × Keys × 365</td>
           <td>Derived</td>
-          <td>Medium</td>
+          <td>Low</td>
         </tr>
         <tr>
           <td>Est. Asset Value</td>
           <td>Rooms Revenue × segment revenue multiple</td>
           <td>Derived</td>
-          <td>Low – Medium</td>
+          <td>Low</td>
         </tr>
       </tbody>
     </table>

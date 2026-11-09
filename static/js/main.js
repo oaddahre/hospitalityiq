@@ -5021,7 +5021,7 @@ function rbDataContext() {
   const d = rbState.data, k = d && d.kpis;
   if (!d || !k || d.state === 'empty' || d.state === 'error') return '';
   const pct = v => v != null ? v.toFixed(1) + '%' : 'n/a';
-  return `RATE BENCHMARK MODE. These figures are PUBLISHED RATES collected from booking sites (lowest nightly price shown for 2 adults, 1 room, 1 night, in MAD) and MODELLED occupancy (Kodo Estimates, modelled, not measured). They are NOT achieved ADR, occupancy or RevPAR: never call them actuals, ADR or achieved occupancy.
+  return `RATE BENCHMARK MODE. These figures are PUBLISHED RATES from Google Hotels (the nightly price Google returns for a one-night stay, 2 adults, no room count set, in MAD; collected every night since 3 Nov 2026) and MODELLED occupancy (Kodo Estimates, modelled, not measured). They are NOT achieved ADR, occupancy or RevPAR: never call them actuals, ADR or achieved occupancy.
 Hotel: ${d.subject.name} (${d.subject.city}, ${d.subject.category}). Comp set: ${d.comps.map(c => c.name).join(', ')}.
 Next 30 nights (${d.window.start} to ${d.window.end}); rates last collected ${d.rates_updated}${d.state === 'stale' ? ' (not updated since)' : ''}.
 Live published rate on ${k.nights_with_rate} of 30 nights for the hotel; ${k.nights_compared} nights also have a comp set median.
