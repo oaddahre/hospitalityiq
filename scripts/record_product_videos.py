@@ -146,9 +146,9 @@ def free_port():
 
 
 def start_server(data_dir, port, log_path):
-    for name in SEED_FILES:
+    for name in SEED_FILES:                      # files already in data_dir (sample data) are kept
         src = os.path.join(ROOT, name)
-        if os.path.exists(src):
+        if os.path.exists(src) and not os.path.exists(os.path.join(data_dir, name)):
             shutil.copy2(src, data_dir)
     env = dict(os.environ, PORT=str(port), DATA_DIR=data_dir, SEED_ADMIN_EMAIL=DEMO_EMAIL,
                SEED_ADMIN_PASS=DEMO_PASS, SEED_ADMIN_NAME=DEMO_NAME, ANTHROPIC_API_KEY="", RESEND_API_KEY="")

@@ -137,12 +137,15 @@ users or organisations.
 python3 scripts/capture_profile_screenshots.py
 ```
 
-Writes `static/img/product/hotel-profile-{light,dark}` (La Mamounia) and
-`owner-profile-{light,dark}` (Madaëf), each as `.webp` (quality 90) and `.png`,
-2880x1800 (1440x900 at deviceScaleFactor 2). Like the video script it starts
-its own copy of the app with a temporary data folder and a local-only demo
-account, so no real user appears. Unlike the video these show the platform's
-own hotel and owner data, so they carry no "Sample data" tag. The script waits
+Writes `static/img/product/hotel-profile-{light,dark}` (Palais Ocre) and
+`owner-profile-{light,dark}` (Ocre Sample Holdings), each as `.webp` (quality
+90) and `.png`, 2880x1800 (1440x900 at deviceScaleFactor 2). Like the video
+script it starts its own copy of the app with a temporary data folder and a
+local-only demo account, so no real user appears. The data folder gets sample
+data from `scripts/sample_profiles.py`: six fictional hotels, their fictional
+owner, a week of fictional published prices and the platform's own occupancy
+model run on them, so no real hotel or owner is shown and the landing page
+labels them "Sample data: fictional hotels". The script waits
 for fonts, data and charts, scrolls as little as possible so the bottom edge
 falls between blocks, and stops on any console error, spinner, toast, bad value
 (NaN, undefined, null, None) or clipped theme toggle. Operator logos from the
@@ -171,7 +174,7 @@ scrolling):
 5. Hover and open the Madaëf owner profile.
 6. Header and KPI cards, then down through its hotel portfolio.
 7. Back to Benchmarking via the top nav, period back to "Last 30 days"; the
-   last 0.5 s crossfades into the first frame, so the loop is seamless.
+   last 0.5 s crossfades into the first frame.
 
 The Benchmarking figures are the page's sample mode (bench_sample.py:
 fictional hotels, illustrative figures, dates relative to the recording
@@ -189,6 +192,11 @@ and every chart; the owner profile is real platform data.
 - Poster: first frame at 2208x1380, WebP quality 90 and PNG.
 - Quality over size: a file over 12 MB is re-encoded at 1792x1120 (the
   exact-16:10 size nearest 1800 wide) rather than at a lower quality.
+
+On the landing page the tour has its own section: poster and play button,
+no autoplay, `preload="none"`, and nothing of the video is fetched until
+someone presses play. Browsers that play WebM VP9 get the WebM (about 4.5 MB);
+the others get the high-quality MP4 (about 7.5 MB).
 
 Needs Playwright with Chromium, Pillow, and ffmpeg with libx264 and
 libvpx-vp9: the `ffmpeg` on PATH, or else the static build from the

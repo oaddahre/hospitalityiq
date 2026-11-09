@@ -4,13 +4,15 @@
     python3 scripts/capture_profile_screenshots.py
 
 Starts its own copy of the app on a free local port: a temporary DATA_DIR
-holding the platform's own hotel, performance, pipeline and owner data (plus
-the local scraped rates and occupancy model output, if present), a
-local-only demo account, and no API keys. Nothing is written to the real
-data files or users, and no real user appears on screen.
+holding the platform's own data plus sample data (sample_profiles.py): six
+fictional hotels owned by a fictional owner, "Ocre Sample Holdings", a week
+of fictional published prices for them, and the platform's own occupancy
+model run on those prices. A local-only demo account, no API keys. Nothing
+is written to the real data files or users, and no real hotel, owner or
+user appears in the screenshots.
 
-For each theme it opens the La Mamounia hotel profile and the Madaef owner
-profile at 1440x900 with deviceScaleFactor 2, waits for fonts, data and
+For each theme it opens the Palais Ocre hotel profile and the Ocre Sample
+Holdings owner profile at 1440x900 with deviceScaleFactor 2, waits for fonts, data and
 charts, scrolls the page as little as possible so the bottom edge falls
 between blocks (never through a row of text), checks for console errors,
 spinners, toasts and a clipped theme toggle, and writes:
@@ -18,7 +20,7 @@ spinners, toasts and a clipped theme toggle, and writes:
     static/img/product/hotel-profile-{light,dark}.webp / .png   2880x1800
     static/img/product/owner-profile-{light,dark}.webp / .png   2880x1800
 
-These use the platform's real data, so no "Sample data" tag is added.
+The landing page labels them "Sample data: fictional hotels".
 
 Operator logos come from a third-party logo CDN that refuses requests from
 localhost. Those requests are blocked here so they fail at once and the page
@@ -36,14 +38,13 @@ from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from record_product_videos import DEMO_EMAIL, DEMO_PASS, free_port, start_server  # noqa: E402
+import sample_profiles  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "static", "img", "product")
 W, H, DSF, WEBP_Q = 1440, 900, 2, 90
-HOTEL_ID = 58                  # La Mamounia, Marrakech
-OWNER_ID = "madaef"            # Madaef, state-owned
-# Local-only data files (gitignored) the profiles read when present
-EXTRA_FILES = ("scraped_rates.csv", "estimated_occupancy.csv")
+HOTEL_ID = sample_profiles.PROFILE_HOTEL_ID     # Palais Ocre (fictional)
+OWNER_ID = sample_profiles.OWNER["id"]          # Ocre Sample Holdings (fictional)
 
 # Smallest scroll (within `limit`) that leaves the bottom edge of the
 # visible area between blocks rather than through one.
@@ -160,9 +161,7 @@ def main():
     work = tempfile.mkdtemp(prefix="kodo-profiles-")
     data = os.path.join(work, "data")
     os.makedirs(data)
-    for name in EXTRA_FILES:
-        if os.path.exists(os.path.join(ROOT, name)):
-            shutil.copy2(os.path.join(ROOT, name), data)
+    sample_profiles.build(data)
     port = free_port()
     server = start_server(data, port, os.path.join(work, "server.log"))
     try:

@@ -1913,6 +1913,12 @@ body.light .nav-logout  { color: var(--text-2); }
   flex-wrap: wrap;
 }
 .brand-kpi-row .kpi-card { flex: 0 0 auto; min-width: 140px; }
+/* Owner profile: the four counts on one row, the three live cards on the next */
+@media (min-width: 769px) {
+  #owner-kpi-row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  #owner-kpi-row > .kpi-card { grid-column: span 3; min-width: 0; }
+  #owner-kpi-row > .kpi-card:nth-child(n+5) { grid-column: span 4; }
+}
 
 .back-btn {
   display: inline-flex;

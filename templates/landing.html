@@ -113,21 +113,31 @@
   </h1>
   <p class="lp-hero-sub">Kodo tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:0;display:inline-block;">Get started today →</a>
+</section>
 
-  <div class="lp-media" id="lpMedia">
+<!-- PRODUCT TOUR: the video alone, poster first; fetched only when someone presses play -->
+<section class="lp-section lp-tour" id="tour" aria-labelledby="lpTourCap">
+  <div class="lp-inner">
+    <div class="lp-media-head">
+      <span class="pill--blue lp-media-pill">Product tour · 0:33</span>
+      <p class="lp-media-cap" id="lpTourCap">Benchmark a hotel against its comp set, then open an owner's portfolio.</p>
+    </div>
     <div class="lp-frame lp-frame-video" id="lpVideoFrame">
-      <video class="lp-video lp-theme-light" data-theme-for="light" muted loop playsinline preload="none"
-             width="2208" height="1380" aria-label="Kodo product tour: Benchmarking a fictional Marrakech riad against a sample comp set (sample data), then the Madaëf owner profile and its hotel portfolio"
+      <video class="lp-video lp-theme-light" data-theme-for="light" muted playsinline preload="none"
+             width="2208" height="1380" aria-label="Kodo product tour, 33 seconds, no sound: Benchmarking a fictional Marrakech riad against a sample comp set, then the Madaëf owner profile and its hotel portfolio"
              data-poster="/static/img/product/video/benchmarking-light-poster.webp?v={{ asset_version('img/product/video/benchmarking-light-poster.webp') }}">
         <source data-src="/static/img/product/video/benchmarking-light.webm?v={{ asset_version('img/product/video/benchmarking-light.webm') }}" type="video/webm">
         <source data-src="/static/img/product/video/benchmarking-light.mp4?v={{ asset_version('img/product/video/benchmarking-light.mp4') }}" type="video/mp4">
       </video>
-      <video class="lp-video lp-theme-dark" data-theme-for="dark" muted loop playsinline preload="none"
-             width="2208" height="1380" aria-label="Kodo product tour: Benchmarking a fictional Marrakech riad against a sample comp set (sample data), then the Madaëf owner profile and its hotel portfolio"
+      <video class="lp-video lp-theme-dark" data-theme-for="dark" muted playsinline preload="none"
+             width="2208" height="1380" aria-label="Kodo product tour, 33 seconds, no sound: Benchmarking a fictional Marrakech riad against a sample comp set, then the Madaëf owner profile and its hotel portfolio"
              data-poster="/static/img/product/video/benchmarking-dark-poster.webp?v={{ asset_version('img/product/video/benchmarking-dark-poster.webp') }}">
         <source data-src="/static/img/product/video/benchmarking-dark.webm?v={{ asset_version('img/product/video/benchmarking-dark.webm') }}" type="video/webm">
         <source data-src="/static/img/product/video/benchmarking-dark.mp4?v={{ asset_version('img/product/video/benchmarking-dark.mp4') }}" type="video/mp4">
       </video>
+      <button type="button" class="lp-play" id="lpPlay" aria-label="Play the product tour (33 seconds, no sound)">
+        <span class="lp-play-icon" aria-hidden="true"></span>
+      </button>
     </div>
     <script>
     // Poster for the current theme only, set before first paint (the other theme's is never fetched)
@@ -137,36 +147,12 @@
       if (v) v.setAttribute('poster', v.getAttribute('data-poster'));
     })();
     </script>
-    <div class="lp-shots">
-    <figure class="lp-shot lp-fade">
-      <div class="lp-frame lp-frame-sm">
-        <picture class="lp-theme-light">
-          <source type="image/webp" data-srcset="/static/img/product/hotel-profile-light.webp?v={{ asset_version('img/product/hotel-profile-light.webp') }}">
-          <img data-src="/static/img/product/hotel-profile-light.png?v={{ asset_version('img/product/hotel-profile-light.png') }}" width="2880" height="1800" alt="Kodo hotel profile for La Mamounia: KPIs, owner, and rate and occupancy calendars" loading="lazy" decoding="async">
-        </picture>
-        <picture class="lp-theme-dark">
-          <source type="image/webp" data-srcset="/static/img/product/hotel-profile-dark.webp?v={{ asset_version('img/product/hotel-profile-dark.webp') }}">
-          <img data-src="/static/img/product/hotel-profile-dark.png?v={{ asset_version('img/product/hotel-profile-dark.png') }}" width="2880" height="1800" alt="Kodo hotel profile for La Mamounia: KPIs, owner, and rate and occupancy calendars" loading="lazy" decoding="async">
-        </picture>
-      </div>
-      <figcaption><span class="lp-shot-cap pill--blue">Hotel profiles</span></figcaption>
-    </figure>
-    <figure class="lp-shot lp-fade">
-      <div class="lp-frame lp-frame-sm">
-        <picture class="lp-theme-light">
-          <source type="image/webp" data-srcset="/static/img/product/owner-profile-light.webp?v={{ asset_version('img/product/owner-profile-light.webp') }}">
-          <img data-src="/static/img/product/owner-profile-light.png?v={{ asset_version('img/product/owner-profile-light.png') }}" width="2880" height="1800" alt="Kodo owner profile for Madaëf: portfolio, cities and operators" loading="lazy" decoding="async">
-        </picture>
-        <picture class="lp-theme-dark">
-          <source type="image/webp" data-srcset="/static/img/product/owner-profile-dark.webp?v={{ asset_version('img/product/owner-profile-dark.webp') }}">
-          <img data-src="/static/img/product/owner-profile-dark.png?v={{ asset_version('img/product/owner-profile-dark.png') }}" width="2880" height="1800" alt="Kodo owner profile for Madaëf: portfolio, cities and operators" loading="lazy" decoding="async">
-        </picture>
-      </div>
-      <figcaption><span class="lp-shot-cap pill--violet">Owner profiles</span></figcaption>
-    </figure>
-    </div>
+    <p class="lp-sample-note">Benchmarking in the tour: sample data, fictional hotels. The owner profile shows Kodo directory records.</p>
   </div>
+</section>
 
+<!-- PROOF STRIP -->
+<section class="lp-proof" aria-label="Kodo coverage">
   <div class="lp-spotlight-wrap" id="lpSpotlightWrap">
 
     <div class="lp-spotlight-stage">
@@ -193,6 +179,79 @@
 
   </div>
 </section>
+
+<!-- HOTEL PROFILE: copy, then screenshot (screenshot on the right on wide screens) -->
+<section class="lp-section lp-feature" id="hotel-profile" aria-labelledby="lpFeatHotel">
+  <div class="lp-inner lp-feature-grid">
+    <div class="lp-feature-copy">
+      <span class="pill--green lp-media-pill">Hotel profile</span>
+      <h2 class="lp-feature-title" id="lpFeatHotel">Every hotel, night by night.</h2>
+      <ul class="lp-feature-points">
+        <li>A rate calendar with the latest published price for each of the next 30 nights, from Google Hotels.</li>
+        <li>Modelled occupancy for the same nights, with the price coverage behind each estimate.</li>
+        <li>Average published rate and indicative RevPAR, each card dated with its period and last update.</li>
+      </ul>
+    </div>
+    <figure class="lp-shot lp-fade">
+      <button type="button" class="lp-shot-open lp-frame lp-frame-sm" data-title="Hotel profile"
+              aria-label="Open the hotel profile screenshot larger">
+        <picture class="lp-theme-light">
+          <source type="image/webp" data-srcset="/static/img/product/hotel-profile-light.webp?v={{ asset_version('img/product/hotel-profile-light.webp') }}">
+          <img data-src="/static/img/product/hotel-profile-light.png?v={{ asset_version('img/product/hotel-profile-light.png') }}" width="2880" height="1800" alt="Kodo hotel profile for Palais Ocre, a fictional Marrakech hotel: published rate, modelled occupancy and indicative RevPAR cards, a 30-night rate calendar and a 30-night modelled occupancy calendar" loading="lazy" decoding="async">
+        </picture>
+        <picture class="lp-theme-dark">
+          <source type="image/webp" data-srcset="/static/img/product/hotel-profile-dark.webp?v={{ asset_version('img/product/hotel-profile-dark.webp') }}">
+          <img data-src="/static/img/product/hotel-profile-dark.png?v={{ asset_version('img/product/hotel-profile-dark.png') }}" width="2880" height="1800" alt="Kodo hotel profile for Palais Ocre, a fictional Marrakech hotel: published rate, modelled occupancy and indicative RevPAR cards, a 30-night rate calendar and a 30-night modelled occupancy calendar" loading="lazy" decoding="async">
+        </picture>
+      </button>
+      <figcaption>
+        <span class="lp-shot-caption">Hotel profile: rate calendar and modelled occupancy, next 30 nights.</span>
+        <span class="lp-sample-note">Sample data: fictional hotels</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- OWNER & PORTFOLIO: copy, then screenshot (screenshot on the left on wide screens) -->
+<section class="lp-section lp-feature lp-feature-rev" id="owner-portfolio" aria-labelledby="lpFeatOwner">
+  <div class="lp-inner lp-feature-grid">
+    <div class="lp-feature-copy">
+      <span class="pill--violet lp-media-pill">Owner &amp; portfolio</span>
+      <h2 class="lp-feature-title" id="lpFeatOwner">A whole portfolio on one page.</h2>
+      <ul class="lp-feature-points">
+        <li>Every hotel an owner holds, with its brand, city, segment and keys.</li>
+        <li>Published rate, modelled occupancy and indicative RevPAR across the portfolio, weighted by rooms.</li>
+        <li>Coverage on every card: how many of the owner's hotels have live prices.</li>
+      </ul>
+    </div>
+    <figure class="lp-shot lp-fade">
+      <button type="button" class="lp-shot-open lp-frame lp-frame-sm" data-title="Owner &amp; portfolio"
+              aria-label="Open the owner and portfolio screenshot larger">
+        <picture class="lp-theme-light">
+          <source type="image/webp" data-srcset="/static/img/product/owner-profile-light.webp?v={{ asset_version('img/product/owner-profile-light.webp') }}">
+          <img data-src="/static/img/product/owner-profile-light.png?v={{ asset_version('img/product/owner-profile-light.png') }}" width="2880" height="1800" alt="Kodo owner profile for Ocre Sample Holdings, a fictional owner: hotel, key, city and brand counts, live published rate, modelled occupancy and indicative RevPAR cards based on 6 of 6 hotels, and its hotel portfolio" loading="lazy" decoding="async">
+        </picture>
+        <picture class="lp-theme-dark">
+          <source type="image/webp" data-srcset="/static/img/product/owner-profile-dark.webp?v={{ asset_version('img/product/owner-profile-dark.webp') }}">
+          <img data-src="/static/img/product/owner-profile-dark.png?v={{ asset_version('img/product/owner-profile-dark.png') }}" width="2880" height="1800" alt="Kodo owner profile for Ocre Sample Holdings, a fictional owner: hotel, key, city and brand counts, live published rate, modelled occupancy and indicative RevPAR cards based on 6 of 6 hotels, and its hotel portfolio" loading="lazy" decoding="async">
+        </picture>
+      </button>
+      <figcaption>
+        <span class="lp-shot-caption">Owner profile: portfolio, cities, operators and live cards.</span>
+        <span class="lp-sample-note">Sample data: fictional hotels</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- Larger screenshot (native dialog: focus stays inside, Escape closes) -->
+<dialog class="lp-lightbox" id="lpLightbox" aria-labelledby="lpLightboxTitle">
+  <div class="lp-lightbox-bar">
+    <span class="lp-lightbox-title" id="lpLightboxTitle"></span>
+    <button type="button" class="lp-lightbox-close" id="lpLightboxClose" aria-label="Close">✕</button>
+  </div>
+  <div class="lp-lightbox-body" id="lpLightboxBody"></div>
+</dialog>
 
 <!-- PLATFORM -->
 <section class="lp-section" id="platform">
@@ -743,67 +802,66 @@ themeToggle.addEventListener('click', () => {
 </script>
 
 <script>
-// HERO MEDIA — Benchmarking video and two screenshots
+// PRODUCT TOUR — poster and play button; nothing of the video is fetched
+// until someone presses play. Then the current theme's file loads (WebM
+// VP9 where the browser plays it, else the high-quality MP4), with native
+// controls. A theme switch stops it and shows the other theme's poster.
 (function() {
   const frame = document.getElementById('lpVideoFrame');
-  if (!frame) return;
+  const btn = document.getElementById('lpPlay');
+  if (!frame || !btn) return;
   const videos = [...frame.querySelectorAll('.lp-video')];
   const root = document.documentElement;
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const saveData = !!(navigator.connection && navigator.connection.saveData);
-  const posterOnly = reduce || saveData;          // never fetch the video, poster only
-  let near = false, visible = false, failed = false;
+  let failed = false;
 
   const theme = () => root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   const current = () => videos.find(v => v.dataset.themeFor === theme());
 
   function unload(v) {
     v.pause();
+    v.controls = false;
     if (!v.dataset.loaded) return;
     v.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
     v.removeAttribute('src');
     v.load();                                      // drops the buffered media
     delete v.dataset.loaded;
   }
-  function load(v) {
-    if (v.dataset.loaded || posterOnly || failed) return;
-    v.querySelectorAll('source').forEach(s => { s.src = s.dataset.src; });
-    v.dataset.loaded = '1';
-    v.load();
+  function reset() {
+    videos.forEach(unload);
+    frame.classList.remove('lp-playing');
+    const v = current();
+    if (v && !v.getAttribute('poster')) v.setAttribute('poster', v.dataset.poster);
   }
-  function update() {
-    videos.forEach(v => {
-      if (v === current()) {
-        if (!v.getAttribute('poster')) v.setAttribute('poster', v.dataset.poster);
-        if (near) load(v);
-        if (visible && !document.hidden && v.dataset.loaded && !failed) {
-          const p = v.play(); if (p && p.catch) p.catch(() => {});
-        } else v.pause();
-      } else unload(v);
-    });
-  }
-  // Load failed (both sources or the element): keep the poster, stop trying
+  btn.addEventListener('click', () => {
+    const v = current();
+    if (!v || failed) return;
+    if (!v.dataset.loaded) {
+      v.querySelectorAll('source').forEach(s => { s.src = s.dataset.src; });
+      v.dataset.loaded = '1';
+      v.preload = 'auto';
+      v.load();
+    }
+    v.controls = true;
+    frame.classList.add('lp-playing');
+    const p = v.play(); if (p && p.catch) p.catch(() => {});
+    v.focus({ preventScroll: true });
+  });
+  // Load failed (both sources or the element): keep the poster, no button
   videos.forEach(v => {
     const last = v.querySelector('source:last-of-type');
     const fail = () => { if (!v.dataset.loaded) return; failed = true; frame.classList.add('lp-video-failed'); unload(v); v.setAttribute('poster', v.dataset.poster); };
     if (last) last.addEventListener('error', fail);
     v.addEventListener('error', fail);
+    v.addEventListener('ended', () => { v.currentTime = 0; });
   });
-
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(es => { near = es.some(e => e.isIntersecting); if (near) update(); },
-                             { rootMargin: '400px 0px' }).observe(frame);
-    new IntersectionObserver(es => { visible = es.some(e => e.intersectionRatio >= 0.4); update(); },
-                             { threshold: [0, 0.4, 1] }).observe(frame);
-  } else { near = visible = true; update(); }
-  document.addEventListener('visibilitychange', update);
-  window.addEventListener('kodo:themechange', update);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) videos.forEach(v => v.pause()); });
+  window.addEventListener('kodo:themechange', reset);
 })();
 
 // Screenshots: fetched only when within 200px of the viewport (native
-// loading="lazy" starts ~1250px early, i.e. on first load right under the
-// video); fade up on first scroll into view (static under reduced motion);
-// a failed image leaves the frame's --bg-alt background, no broken-image icon
+// loading="lazy" starts ~1250px early); fade up on first scroll into view
+// (static under reduced motion); a failed image leaves the frame's
+// --bg-alt background, no broken-image icon
 (function() {
   document.querySelectorAll('.lp-frame img').forEach(img => {
     const fail = () => img.classList.add('lp-img-failed');
@@ -823,6 +881,33 @@ themeToggle.addEventListener('click', () => {
   } else {
     shots.forEach(load);
   }
+
+  // Larger screenshot: the same images (already fetched) in a native
+  // dialog; Escape, the close button or a click outside closes it, and
+  // focus returns to the screenshot
+  const box = document.getElementById('lpLightbox');
+  const body = document.getElementById('lpLightboxBody');
+  const title = document.getElementById('lpLightboxTitle');
+  if (box && typeof box.showModal === 'function') {
+    document.querySelectorAll('.lp-shot-open').forEach(b => b.addEventListener('click', () => {
+      load(b.closest('.lp-shot'));
+      body.innerHTML = '';
+      b.querySelectorAll('picture').forEach(p => {
+        const c = p.cloneNode(true);
+        c.querySelectorAll('img').forEach(i => { i.removeAttribute('loading'); i.classList.remove('lp-img-failed'); });
+        body.appendChild(c);
+      });
+      title.textContent = (b.dataset.title || '') + ' · Sample data: fictional hotels';
+      box.showModal();
+      body.scrollTop = 0;
+    }));
+    document.getElementById('lpLightboxClose').addEventListener('click', () => box.close());
+    box.addEventListener('click', e => { if (e.target === box) box.close(); });
+    box.addEventListener('close', () => { body.innerHTML = ''; });
+  } else {
+    document.querySelectorAll('.lp-shot-open').forEach(b => { b.disabled = true; b.style.cursor = 'default'; });
+  }
+
   if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const items = document.querySelectorAll('.lp-fade');
   items.forEach(el => el.classList.add('lp-fade-js'));

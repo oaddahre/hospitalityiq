@@ -5558,6 +5558,8 @@ def api_occupancy_hotel(hotel_id):
                     same_city = merged[merged['city'] == h.get('city')]['id'].astype(str).tolist()
                     model        = recent_model(same_city if active_model() == 'v2' else [str(hotel_id)])
                     baseline_adr = float(h.get('adr_mad', 0) or 0)
+                    if baseline_adr != baseline_adr:      # NaN: no performance row (e.g. a hotel added later)
+                        baseline_adr = 0.0
                     if active_model() == 'v2':
                         live = model.v2_estimates([datetime.strptime(d, '%Y-%m-%d').date() for d in missing],
                                                   hotel_ids=[str(hotel_id)])
