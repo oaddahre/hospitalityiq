@@ -115,39 +115,41 @@
   <a href="/register" class="btn-fill" style="margin-bottom:0;display:inline-block;">Get started today →</a>
 </section>
 
-<!-- PRODUCT TOUR: the video alone, poster first; fetched only when someone presses play -->
-<section class="lp-section lp-tour" id="tour" aria-labelledby="lpTourCap">
-  <div class="lp-inner">
-    <div class="lp-media-head">
-      <span class="pill--blue lp-media-pill">Product tour · 0:33</span>
-      <p class="lp-media-cap" id="lpTourCap">Benchmark a hotel against its comp set, then open an owner's portfolio.</p>
+<!-- THE PLATFORM: copy beside the product tour (video on the left on wide screens).
+     The video plays muted and looped when its section is in view; nothing of it,
+     poster included, is fetched before the page has loaded and the frame is near
+     the viewport. Under reduced motion: the poster only. -->
+<section class="lp-section lp-feature lp-feature-rev lp-tour" id="tour" aria-labelledby="lpFeatTour">
+  <div class="lp-inner lp-feature-grid">
+    <div class="lp-feature-copy">
+      <span class="pill--blue lp-media-pill">The platform</span>
+      <h2 class="lp-feature-title" id="lpFeatTour">Morocco's hotel market, in one place.</h2>
+      <ul class="lp-feature-points">
+        <li>Google Hotels rates, requested every night for about 300 hotels since 3 November 2026.</li>
+        <li>Benchmark a hotel against a comp set of up to 10 hotels, night by night.</li>
+        <li>Modelled occupancy for every hotel, rolled up across each owner's portfolio.</li>
+      </ul>
     </div>
-    <div class="lp-frame lp-frame-video" id="lpVideoFrame">
-      <video class="lp-video lp-theme-light" data-theme-for="light" muted playsinline preload="none"
-             width="2208" height="1380" aria-label="Kodo product tour, 33 seconds, no sound: Benchmarking a fictional Marrakech riad against a sample comp set, then the Madaëf owner profile and its hotel portfolio"
-             data-poster="/static/img/product/video/benchmarking-light-poster.webp?v={{ asset_version('img/product/video/benchmarking-light-poster.webp') }}">
-        <source data-src="/static/img/product/video/benchmarking-light.webm?v={{ asset_version('img/product/video/benchmarking-light.webm') }}" type="video/webm">
-        <source data-src="/static/img/product/video/benchmarking-light.mp4?v={{ asset_version('img/product/video/benchmarking-light.mp4') }}" type="video/mp4">
-      </video>
-      <video class="lp-video lp-theme-dark" data-theme-for="dark" muted playsinline preload="none"
-             width="2208" height="1380" aria-label="Kodo product tour, 33 seconds, no sound: Benchmarking a fictional Marrakech riad against a sample comp set, then the Madaëf owner profile and its hotel portfolio"
-             data-poster="/static/img/product/video/benchmarking-dark-poster.webp?v={{ asset_version('img/product/video/benchmarking-dark-poster.webp') }}">
-        <source data-src="/static/img/product/video/benchmarking-dark.webm?v={{ asset_version('img/product/video/benchmarking-dark.webm') }}" type="video/webm">
-        <source data-src="/static/img/product/video/benchmarking-dark.mp4?v={{ asset_version('img/product/video/benchmarking-dark.mp4') }}" type="video/mp4">
-      </video>
-      <button type="button" class="lp-play" id="lpPlay" aria-label="Play the product tour (33 seconds, no sound)">
-        <span class="lp-play-icon" aria-hidden="true"></span>
-      </button>
-    </div>
-    <script>
-    // Poster for the current theme only, set before first paint (the other theme's is never fetched)
-    (function() {
-      var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-      var v = document.querySelector('#lpVideoFrame .lp-video[data-theme-for="' + t + '"]');
-      if (v) v.setAttribute('poster', v.getAttribute('data-poster'));
-    })();
-    </script>
-    <p class="lp-sample-note">Benchmarking in the tour: sample data, fictional hotels. The owner profile shows Kodo directory records.</p>
+    <figure class="lp-shot lp-fade">
+      <div class="lp-frame lp-frame-sm lp-frame-video" id="lpVideoFrame">
+        <video class="lp-video lp-theme-light" data-theme-for="light" muted loop playsinline preload="none" disablepictureinpicture
+               width="1728" height="1080" aria-label="Kodo product tour, 50 seconds, no sound, sample data with fictional hotels: the dashboard, the hotel directory filtered to Marrakech, a hotel profile with its published rate and modelled occupancy calendars, the map, benchmarking against a comp set, the events calendar, brands, an owner profile and the valuation tool"
+               data-poster="/static/img/product/video/product-tour-light-poster.webp?v={{ asset_version('img/product/video/product-tour-light-poster.webp') }}">
+          <source data-src="/static/img/product/video/product-tour-light.webm?v={{ asset_version('img/product/video/product-tour-light.webm') }}" type="video/webm">
+          <source data-src="/static/img/product/video/product-tour-light.mp4?v={{ asset_version('img/product/video/product-tour-light.mp4') }}" type="video/mp4">
+        </video>
+        <video class="lp-video lp-theme-dark" data-theme-for="dark" muted loop playsinline preload="none" disablepictureinpicture
+               width="1728" height="1080" aria-label="Kodo product tour, 50 seconds, no sound, sample data with fictional hotels: the dashboard, the hotel directory filtered to Marrakech, a hotel profile with its published rate and modelled occupancy calendars, the map, benchmarking against a comp set, the events calendar, brands, an owner profile and the valuation tool"
+               data-poster="/static/img/product/video/product-tour-dark-poster.webp?v={{ asset_version('img/product/video/product-tour-dark-poster.webp') }}">
+          <source data-src="/static/img/product/video/product-tour-dark.webm?v={{ asset_version('img/product/video/product-tour-dark.webm') }}" type="video/webm">
+          <source data-src="/static/img/product/video/product-tour-dark.mp4?v={{ asset_version('img/product/video/product-tour-dark.mp4') }}" type="video/mp4">
+        </video>
+      </div>
+      <figcaption>
+        <span class="lp-shot-caption">Dashboard, hotels, map, benchmarking, events, brands, owners and valuation.</span>
+        <span class="lp-sample-note">Sample data: fictional hotels</span>
+      </figcaption>
+    </figure>
   </div>
 </section>
 
@@ -802,60 +804,58 @@ themeToggle.addEventListener('click', () => {
 </script>
 
 <script>
-// PRODUCT TOUR — poster and play button; nothing of the video is fetched
-// until someone presses play. Then the current theme's file loads (WebM
-// VP9 where the browser plays it, else the high-quality MP4), with native
-// controls. A theme switch stops it and shows the other theme's poster.
+// THE PLATFORM — the product tour plays by itself: muted, looped, inline,
+// no controls. Nothing of it (poster included) is fetched until the page
+// has finished loading and the frame is within 200px of the viewport; then
+// the current theme's poster and file load (WebM VP9 where the browser
+// plays it, else the high-quality MP4). It plays only while on screen and
+// the tab is visible. Under reduced motion: the poster only, never played.
+// A theme switch pauses the other theme's video and starts this one's.
 (function() {
   const frame = document.getElementById('lpVideoFrame');
-  const btn = document.getElementById('lpPlay');
-  if (!frame || !btn) return;
+  if (!frame) return;
   const videos = [...frame.querySelectorAll('.lp-video')];
   const root = document.documentElement;
-  let failed = false;
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let near = false, onScreen = false, loaded = document.readyState === 'complete', failed = false;
 
   const theme = () => root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   const current = () => videos.find(v => v.dataset.themeFor === theme());
 
-  function unload(v) {
-    v.pause();
-    v.controls = false;
-    if (!v.dataset.loaded) return;
-    v.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
-    v.removeAttribute('src');
-    v.load();                                      // drops the buffered media
-    delete v.dataset.loaded;
-  }
-  function reset() {
-    videos.forEach(unload);
-    frame.classList.remove('lp-playing');
+  function sync() {
     const v = current();
-    if (v && !v.getAttribute('poster')) v.setAttribute('poster', v.dataset.poster);
-  }
-  btn.addEventListener('click', () => {
-    const v = current();
-    if (!v || failed) return;
+    videos.forEach(o => { if (o !== v) o.pause(); });
+    if (!v || !near || !loaded) return;
+    if (!v.getAttribute('poster')) v.setAttribute('poster', v.dataset.poster);
+    if (still.matches || failed) { v.pause(); return; }
     if (!v.dataset.loaded) {
       v.querySelectorAll('source').forEach(s => { s.src = s.dataset.src; });
       v.dataset.loaded = '1';
       v.preload = 'auto';
       v.load();
     }
-    v.controls = true;
-    frame.classList.add('lp-playing');
-    const p = v.play(); if (p && p.catch) p.catch(() => {});
-    v.focus({ preventScroll: true });
-  });
-  // Load failed (both sources or the element): keep the poster, no button
+    if (onScreen && !document.hidden) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+    else v.pause();
+  }
+  // Both sources failed (or the element): keep the poster
   videos.forEach(v => {
+    const fail = () => { if (!v.dataset.loaded) return; failed = true; v.pause(); };
     const last = v.querySelector('source:last-of-type');
-    const fail = () => { if (!v.dataset.loaded) return; failed = true; frame.classList.add('lp-video-failed'); unload(v); v.setAttribute('poster', v.dataset.poster); };
     if (last) last.addEventListener('error', fail);
     v.addEventListener('error', fail);
-    v.addEventListener('ended', () => { v.currentTime = 0; });
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) videos.forEach(v => v.pause()); });
-  window.addEventListener('kodo:themechange', reset);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { near = true; sync(); } },
+                             { rootMargin: '200px 0px' }).observe(frame);
+    new IntersectionObserver(es => { onScreen = es[es.length - 1].isIntersecting; sync(); }).observe(frame);
+  } else {
+    near = onScreen = true;
+  }
+  if (!loaded) window.addEventListener('load', () => { loaded = true; sync(); });
+  document.addEventListener('visibilitychange', sync);
+  window.addEventListener('kodo:themechange', sync);
+  if (still.addEventListener) still.addEventListener('change', sync);
+  sync();
 })();
 
 // Screenshots: fetched only when within 200px of the viewport (native

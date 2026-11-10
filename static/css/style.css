@@ -1938,6 +1938,8 @@ body.light .nav-logout  { color: var(--text-2); }
   transition: 150ms;
 }
 .back-btn:hover { color: var(--text); border-color: var(--border-light); }
+/* Owner profile: the back pill sits above the logo and name, not beside them */
+#owner-back-btn { margin-bottom: 18px; }
 
 .brand-owner-badge {
   margin-top: 5px;
@@ -4409,8 +4411,9 @@ body.light .nav-logout  { color: var(--text-2); }
   .news-card { padding: 16px 16px; }
   .news-headline { font-size: 14px; }
   .news-pdf-btn { position: relative; top: auto; right: auto; margin-bottom: 10px; display: inline-flex; }
-  .brand-top { flex-direction: column; gap: 8px; }
-  .hotel-hd { flex-direction: column; gap: 8px; }
+  .brand-top { flex-direction: column; gap: 14px; }
+  .hotel-hd { flex-direction: column; gap: 14px; }
+  #owner-back-btn { margin-bottom: 14px; }
   .hotel-fin-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 12px 12px; }
   .hotel-brand-row { flex-direction: column; align-items: flex-start; gap: 10px; }
   .hbench-row { flex-wrap: wrap; gap: 8px; }
@@ -5119,7 +5122,7 @@ body.light .nav-logout  { color: var(--text-2); }
   display: grid;
   grid-template-columns: 380px 1fr;
   gap: 0;
-  height: calc(100vh - var(--nav-h));
+  height: calc(100vh - var(--nav-h) - 42px);   /* 42px: .platform-footer, so the Run button stays above it */
   overflow: hidden;
   margin: -28px -30px -40px;
 }

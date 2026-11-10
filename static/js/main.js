@@ -1206,6 +1206,7 @@ function showBrandDetail(brandGroup, prevScreen) {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-brand').classList.add('active');
+  scrollMainToTop();
   setSidebar('brand');
 
   // About card
@@ -1341,6 +1342,7 @@ async function showHotelDetail(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-hotel').classList.add('active');
   setSidebar('hotel');
+  scrollMainToTop();
 
   // ── 1. Header ──
   document.getElementById('hotel-hd-name').textContent = h.name;
@@ -3325,6 +3327,12 @@ function openMobileNav() {
   });
 }
 
+// A new screen or profile opens at the top, not at the previous one's scroll position
+function scrollMainToTop() {
+  const m = document.querySelector('.main-content');
+  if (m) m.scrollTop = 0;
+}
+
 function syncMobileNav(screen) {
   document.querySelectorAll('.mobile-menu-link').forEach(l =>
     l.classList.toggle('active', l.dataset.screen === screen)
@@ -3357,6 +3365,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
     document.getElementById('screen-' + screen).classList.add('active');
     setSidebar(screen);
     syncMobileNav(screen);
+    scrollMainToTop();
 
     if (screen === 'map') {
       if (!googleMap) {
@@ -6123,6 +6132,7 @@ async function showOwnerDetail(ownerId) {
   document.getElementById('owners-grid').style.display = 'none';
   var detail = document.getElementById('screen-owner-detail');
   detail.style.display = '';
+  scrollMainToTop();
   showLoading(document.getElementById('owner-detail-header'));
 
   try {

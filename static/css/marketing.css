@@ -3053,28 +3053,13 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 }
 
 /* ═══════════════════════════════════════
-   LANDING — Product media: the tour video (its own section), then the
-   hotel profile and owner screenshots, each beside its copy, on
-   alternating sides. Every frame holds a light and a dark version; only
-   the one matching <html data-theme> (set before first paint) is shown.
+   LANDING — Product media: the platform (the product tour video), the
+   hotel profile and the owner, each beside its copy, the media on
+   alternating sides (left, right, left). Every frame holds a light and a
+   dark version; only the one matching <html data-theme> (set before
+   first paint) is shown.
 ═══════════════════════════════════════ */
-.lp-landing .lp-tour { padding-top: 0; padding-bottom: 32px; }
-.lp-landing .lp-tour .lp-inner { max-width: 1228px; }
-.lp-media-head {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
 .lp-landing .lp-media-pill { font-size: 13px; letter-spacing: 0.01em; }
-.lp-landing .lp-media-cap {
-  font-size: var(--lp-fs-body);
-  line-height: 1.5;
-  color: var(--lp-text-muted);
-  margin: 0;
-  text-wrap: balance;
-}
 .lp-landing .lp-sample-note {
   display: block;
   font-size: 13px;
@@ -3111,43 +3096,13 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 /* Screenshot not fetched yet (src set near the viewport): no alt text or icon */
 .lp-frame img:not([src]) { visibility: hidden; }
 
-/* Play button over the poster; hidden once the tour plays (native controls take over) */
-.lp-play {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 76px;
-  height: 76px;
-  border: none;
-  border-radius: 50%;
-  background: var(--lp-action);
-  color: var(--lp-on-action);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 24px rgba(31,30,28,.18);
-  transition: transform 160ms ease, background 160ms ease;
-}
-.lp-play:hover { background: var(--lp-action-hover); transform: scale(1.05); }
-.lp-play:focus-visible { outline: 3px solid var(--lp-action-text); outline-offset: 4px; }
-.lp-play-icon {
-  width: 0;
-  height: 0;
-  margin-left: 5px;
-  border-style: solid;
-  border-width: 13px 0 13px 21px;
-  border-color: transparent transparent transparent currentColor;
-}
-.lp-frame-video.lp-playing .lp-play,
-.lp-frame-video.lp-video-failed .lp-play { display: none; }
-
 /* Proof strip: the coverage figures, between the tour and the screenshots */
 .lp-landing .lp-proof { padding: 0 48px; }
 .lp-landing .lp-proof .lp-spotlight-wrap { margin-top: 0; }
 
-/* Screenshot beside its copy; the second section swaps sides */
+/* Media beside its copy; .lp-feature-rev puts the media on the left */
 .lp-landing .lp-feature { padding-top: 56px; padding-bottom: 56px; }
+.lp-landing .lp-tour { padding-top: 24px; }
 .lp-landing .lp-feature .lp-inner.lp-feature-grid {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -3156,6 +3111,7 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   text-align: left;
 }
 .lp-feature-rev .lp-feature-copy { order: 2; }
+.lp-landing .lp-feature-rev .lp-inner.lp-feature-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }   /* media keeps the wide column */
 .lp-feature-copy { display: flex; flex-direction: column; align-items: flex-start; }
 .lp-landing .lp-feature-title {
   font-size: clamp(28px, 22px + 1.2vw, 40px);
@@ -3256,6 +3212,7 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 
 @media (max-width: 1100px) {
   .lp-landing .lp-feature .lp-inner.lp-feature-grid { gap: 40px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+  .lp-landing .lp-feature-rev .lp-inner.lp-feature-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
 }
 /* Phones and small tablets: one column, copy before the screenshot */
 @media (max-width: 860px) {
@@ -3264,13 +3221,9 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   .lp-landing .lp-feature { padding-top: 40px; padding-bottom: 40px; }
 }
 @media (max-width: 768px) {
-  .lp-landing .lp-tour .lp-inner,
   .lp-landing .lp-feature .lp-inner { padding-left: 0; padding-right: 0; }
-  .lp-landing .lp-tour { padding: 0 16px 24px; }
   .lp-landing .lp-feature { padding-left: 16px; padding-right: 16px; }
   .lp-landing .lp-proof { padding: 0 16px; }
-  .lp-play { width: 60px; height: 60px; }
-  .lp-play-icon { border-width: 11px 0 11px 17px; margin-left: 4px; }
   .lp-lightbox { width: calc(100vw - 16px); max-height: calc(100vh - 16px); }
   .lp-lightbox-body { max-height: calc(100vh - 16px - 58px); }
   .lp-lightbox-body picture { width: max-content; }
@@ -3279,8 +3232,6 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 @media (prefers-reduced-motion: reduce) {
   .lp-fade-js { opacity: 1; transform: none; }
   .lp-fade-js.lp-fade-in { transition: none; }
-  .lp-play { transition: none; }
-  .lp-play:hover { transform: none; }
 }
 
 /* ═══════════════════════════════════════

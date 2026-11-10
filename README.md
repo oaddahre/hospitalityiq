@@ -127,9 +127,21 @@ so.
 ## Product media
 
 Screenshots and videos used on the landing page live in `static/img/product/`.
-They are made from the local app with a local-only demo account and the
-platform's reference data (plus the demo benchmarking comp set), never real
-users or organisations.
+They are made from the local app with a local-only demo account and only
+fictional sample data (`scripts/sample_profiles.py`), never real users,
+organisations, hotels or owners. The landing page labels them "Sample data:
+fictional hotels".
+
+`sample_profiles.build()` writes a complete fictional platform into a
+temporary data folder: 31 fictional hotels in ten cities, three fictional
+brand groups (Amberlune Hotels, Corniva Hospitality, Sablière Hotels), three
+fictional owners (Ocre Sample Holdings, Lune Sample Capital, Sahel Sample
+Family Office), four fictional pipeline projects, fictional FY 2025 model
+estimates, a week of fictional published prices for every hotel and the
+platform's own occupancy model run on them. Every name is checked against the
+real hotel list and pipeline. The events calendar is the platform's own public
+calendar. Both scripts start the app with `DATA_MIGRATIONS=off`, so the
+shipped data migrations never touch the sample data.
 
 ### Hotel and owner profile screenshots
 
@@ -141,16 +153,11 @@ Writes `static/img/product/hotel-profile-{light,dark}` (Palais Ocre) and
 `owner-profile-{light,dark}` (Ocre Sample Holdings), each as `.webp` (quality
 90) and `.png`, 2880x1800 (1440x900 at deviceScaleFactor 2). Like the video
 script it starts its own copy of the app with a temporary data folder and a
-local-only demo account, so no real user appears. The data folder gets sample
-data from `scripts/sample_profiles.py`: six fictional hotels, their fictional
-owner, a week of fictional published prices and the platform's own occupancy
-model run on them, so no real hotel or owner is shown and the landing page
-labels them "Sample data: fictional hotels". The script waits
+local-only demo account, so no real user appears, and the sample data above,
+so no real hotel or owner is shown. The script waits
 for fonts, data and charts, scrolls as little as possible so the bottom edge
 falls between blocks, and stops on any console error, spinner, toast, bad value
-(NaN, undefined, null, None) or clipped theme toggle. Operator logos from the
-third-party logo CDN don't load from localhost, so the shots show those
-operators as text.
+(NaN, undefined, null, None) or clipped theme toggle.
 
 ### Product tour video
 
@@ -159,46 +166,52 @@ python3 scripts/record_product_videos.py
 ```
 
 One command records the landing page's product tour in light and dark mode
-and writes `static/img/product/video/benchmarking-{light,dark}.mp4`, `.webm`,
-`-poster.webp` and `-poster.png` (same names as before, so the landing page
-needs no change). The script starts its own copy of the app on a free port
-with a temporary data folder, a local-only demo account and no API keys,
-then captures the tour frame by frame (about 34 s, eased cursor and eased
-scrolling):
+and writes `static/img/product/video/product-tour-{light,dark}.mp4`, `.webm`,
+`-poster.webp` and `-poster.png`. The script starts its own copy of the app on
+a free port with the sample data above, a local-only demo account, no API keys
+and no data migrations, then captures the tour frame by frame (about 50 s):
 
-1. Benchmarking with the comp set loaded; the KPI cards and their period lines.
-2. Period to "Last 90 days": the KPIs and charts update.
-3. Scroll through the calendars to the RevPAR trend and the monthly summary
-   table, then back to the top.
-4. Owners in the top nav; the list loads.
-5. Hover and open the Madaëf owner profile.
-6. Header and KPI cards, then down through its hotel portfolio.
-7. Back to Benchmarking via the top nav, period back to "Last 30 days"; the
-   last 0.5 s crossfades into the first frame.
+1. Dashboard: the market KPI cards, then RevPAR by destination.
+2. Hotels: the Marrakech filter, then Palais Ocre.
+3. Hotel profile: the published rate and modelled occupancy calendars, with a
+   night's tooltip on each.
+4. Map: the Marrakech dot and its hotel list.
+5. Benchmarking: Palais Ocre against a comp set of six; the KPI cards, the
+   published rate calendar and the modelled occupancy calendar.
+6. Tourism (from the menu): the events calendar.
+7. Brands.
+8. Owners: the Ocre Sample Holdings profile and its portfolio.
+9. Valuation tool: Marrakech, Luxury, Run Valuation.
+10. Back to the Dashboard; the last 0.5 s crossfades into the first frame, so
+    the loop is seamless.
 
-The Benchmarking figures are the page's sample mode (bench_sample.py:
-fictional hotels, illustrative figures, dates relative to the recording
-day), with the page's own "Sample data" pills on the title, every KPI card
-and every chart; the owner profile is real platform data.
+The AI Analyst is left out: it needs a live API key, and the video shows only
+what the platform produces from the sample data.
 
+- Pointer: drawn in the page, a solid action-blue (#0075DE) 20 px dot with a
+  white edge and a soft translucent 40 px ring, visible on light and dark,
+  gliding on an eased path, with a ripple on every click.
 - Capture: 1440x900 viewport at deviceScaleFactor 2, one lossless 2880x1800
   PNG per frame, 30 fps on a fixed timeline. Page time is virtual
   (Playwright's fake clock, CSS animations seeked per frame), so no frame is
   dropped or duplicated, and pending requests are awaited before every frame;
-  a spinner, placeholder or error on screen stops the script.
-- Scale: lanczos down to 2208x1380 (exact 16:10; yuv420p needs even sides).
-- MP4: H.264 High, yuv420p, crf 17, preset slow, BT.709, `+faststart`, no audio.
-- WebM: VP9, yuv420p, crf 24, `-b:v 0`, two-pass, row-mt, no audio.
-- Poster: first frame at 2208x1380, WebP quality 90 and PNG.
-- Quality over size: a file over 12 MB is re-encoded at 1792x1120 (the
-  exact-16:10 size nearest 1800 wide) rather than at a lower quality.
+  a spinner, placeholder or error on screen stops the script. Loading never
+  shows, so there are no dead moments: the pace is set by the holds, each
+  long enough to read the figure it is on.
+- Scale: lanczos down to 1728x1080 (1080p, exact 16:10).
+- MP4: H.264 High, yuv420p, crf 20, preset slow, BT.709, `+faststart`, no audio.
+- WebM: VP9, yuv420p, crf 31, `-b:v 0`, two-pass, row-mt, no audio.
+- Poster: first frame at 1728x1080, WebP quality 88 and PNG.
 
-On the landing page the tour has its own section: poster and play button,
-no autoplay, `preload="none"`, and nothing of the video is fetched until
-someone presses play. Browsers that play WebM VP9 get the WebM (about 4.5 MB);
-the others get the high-quality MP4 (about 7.5 MB).
+On the landing page the tour sits beside its copy ("The platform"). It plays
+muted, looped and inline, with no controls. Nothing of it, poster included,
+is fetched until the page has loaded and the frame is within 200 px of the
+viewport; it plays only while on screen and the tab is visible, and under
+`prefers-reduced-motion` it shows the poster only. Browsers that play WebM
+VP9 get the WebM; the others get the MP4.
 
 Needs Playwright with Chromium, Pillow, and ffmpeg with libx264 and
 libvpx-vp9: the `ffmpeg` on PATH, or else the static build from the
 `imageio-ffmpeg` package (`pip install imageio-ffmpeg`, in a virtualenv on
-Homebrew Python). Add `--keep` to keep the raw recordings.
+Homebrew Python). Add `--keep` to keep the raw recordings, `--modes light`
+to record one theme.

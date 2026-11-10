@@ -4,10 +4,10 @@
     python3 scripts/capture_profile_screenshots.py
 
 Starts its own copy of the app on a free local port: a temporary DATA_DIR
-holding the platform's own data plus sample data (sample_profiles.py): six
-fictional hotels owned by a fictional owner, "Ocre Sample Holdings", a week
-of fictional published prices for them, and the platform's own occupancy
-model run on those prices. A local-only demo account, no API keys. Nothing
+holding only fictional sample data (sample_profiles.py: 31 fictional hotels,
+among them the six of "Ocre Sample Holdings", a week of fictional published
+prices, and the platform's own occupancy model run on those prices). A
+local-only demo account, no API keys, no data migrations. Nothing
 is written to the real data files or users, and no real hotel, owner or
 user appears in the screenshots.
 
@@ -22,9 +22,6 @@ spinners, toasts and a clipped theme toggle, and writes:
 
 The landing page labels them "Sample data: fictional hotels".
 
-Operator logos come from a third-party logo CDN that refuses requests from
-localhost. Those requests are blocked here so they fail at once and the page
-falls back to text-only operator names, as it does whenever a logo can't load.
 
 Requires: playwright (with Chromium) and Pillow.
 """
