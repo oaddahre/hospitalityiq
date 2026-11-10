@@ -806,7 +806,7 @@ themeToggle.addEventListener('click', () => {
 <script>
 // THE PLATFORM — the product tour plays by itself: muted, looped, inline,
 // no controls. Nothing of it (poster included) is fetched until the page
-// has finished loading and the frame is within 200px of the viewport; then
+// has finished loading and the frame is within 50px of the viewport; then
 // the current theme's poster and file load (WebM VP9 where the browser
 // plays it, else the high-quality MP4). It plays only while on screen and
 // the tab is visible. Under reduced motion: the poster only, never played.
@@ -846,7 +846,7 @@ themeToggle.addEventListener('click', () => {
   });
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { near = true; sync(); } },
-                             { rootMargin: '200px 0px' }).observe(frame);
+                             { rootMargin: '50px 0px' }).observe(frame);
     new IntersectionObserver(es => { onScreen = es[es.length - 1].isIntersecting; sync(); }).observe(frame);
   } else {
     near = onScreen = true;

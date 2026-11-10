@@ -205,7 +205,7 @@ what the platform produces from the sample data.
 
 On the landing page the tour sits beside its copy ("The platform"). It plays
 muted, looped and inline, with no controls. Nothing of it, poster included,
-is fetched until the page has loaded and the frame is within 200 px of the
+is fetched until the page has loaded and the frame is within 50 px of the
 viewport; it plays only while on screen and the tab is visible, and under
 `prefers-reduced-motion` it shows the poster only. Browsers that play WebM
 VP9 get the WebM; the others get the MP4.
