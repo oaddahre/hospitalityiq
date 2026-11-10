@@ -26,6 +26,7 @@ import shutil
 import sys
 from datetime import datetime, timedelta
 from functools import wraps
+from urllib.parse import quote
 from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
@@ -120,10 +121,13 @@ def inject_canonical_url():
 
 @app.before_request
 def redirect_bare_domain():
-    """kodohospitality.com → https://www.kodohospitality.com, same path (301)."""
-    if request.host.split(':')[0].lower() in BARE_HOSTS:
+    """kodohospitality.com → https://www.kodohospitality.com, same path and
+    query string (301), over http or https. Only the bare host: www and the
+    Railway domain are served as they are, so the target never redirects again."""
+    if request.host.split(':')[0].rstrip('.').lower() in BARE_HOSTS:
+        path = quote(request.path, safe="/:@!$&'()*+,;=-._~")   # request.path is decoded
         qs = request.query_string.decode('utf-8', 'ignore')
-        return redirect(SITE_URL + request.path + ('?' + qs if qs else ''), code=301)
+        return redirect(SITE_URL + path + ('?' + qs if qs else ''), code=301)
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login_page"
