@@ -1548,7 +1548,7 @@ def google_verification():
 SITEMAP_PAGES = [
     {'url': '/', 'priority': '1.0', 'changefreq': 'weekly'},
     {'url': '/methodology', 'priority': '0.8', 'changefreq': 'monthly'},
-    {'url': '/team', 'priority': '0.7', 'changefreq': 'monthly'},
+    {'url': '/about', 'priority': '0.7', 'changefreq': 'monthly'},
     {'url': '/contact', 'priority': '0.7', 'changefreq': 'monthly'},
     {'url': '/register', 'priority': '0.6', 'changefreq': 'monthly'},
     {'url': '/terms', 'priority': '0.3', 'changefreq': 'yearly'},
@@ -1640,9 +1640,15 @@ def methodology():
     return render_template("methodology.html")
 
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
 @app.route("/team")
 def team():
-    return render_template("team.html")
+    """The page was called Team until November 2026: old links and search results land on /about."""
+    return redirect("/about", code=301)
 
 
 @app.route("/contact", methods=["GET", "POST"])
