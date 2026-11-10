@@ -53,13 +53,13 @@ p, li, span, a { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 200; }
 .btn-fill, .btn-outline, .btn-accent-outline, .mk-nav-cta { font-family: 'Sweet Sans Pro', sans-serif; font-weight: 500; }
 
 /* Light-mode surface overrides (colours come from the --lp-* aliases in the
-   "Warm Paper" block further down, which read static/css/tokens.css) */
+   colour block further down, which read static/css/tokens.css) */
 body.lp-light .lp-plan-card { background: var(--lp-panel-bg); }
 body.lp-light .lp-plan-featured { background: var(--lp-featured-bg); }
-body.lp-light .lp-report-card-v2 { background: var(--lp-bg); }
-body.lp-light .lp-report-card-v2:hover { background: var(--lp-module-hover); }
+body.lp-light .lp-report-card-v2 { background: var(--lp-bg-alt); }
+body.lp-light .lp-report-card-v2:hover { background: var(--bg-hover); }
 body.lp-light .lp-section { background: var(--lp-bg); }
-body.lp-light .lp-section-alt { background: var(--lp-bg-alt); }
+body.lp-light .lp-section-alt { background: var(--lp-bg); }
 body.lp-light .lp-cta { background: var(--lp-cta-bg); }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1161,7 +1161,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
   padding-top: 56px;
   padding-bottom: 56px;
 }
-.lp-section-alt { background: var(--lp-bg-alt); }
+.lp-section-alt { background: var(--lp-bg); border-top: 1px solid var(--lp-border); border-bottom: 1px solid var(--lp-border); }   /* set apart by lines, not a grey band */
 .lp-inner {
   width: 100%;
   max-width: 1280px;
@@ -1666,7 +1666,7 @@ body.lp-light .lp-mobile-panel-logo-img.logo-light { display: block; }
 }
 
 .lp-report-card-v2 {
-  background: var(--lp-bg);
+  background: var(--lp-bg-alt);
   padding: 32px;
   display: flex;
   flex-direction: column;
@@ -2087,7 +2087,7 @@ body.lp-light .lp-footer-logo-img.logo-light { display: block; }
 }
 
 .lp-contact-select option {
-  background: var(--lp-bg);
+  background: var(--lp-bg-alt);
   color: var(--lp-text);
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
@@ -3059,7 +3059,7 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
   padding: 0;
   border: 1px solid var(--lp-border);
   border-radius: 12px;
-  background: var(--lp-bg);
+  background: var(--lp-bg-alt);
   color: var(--lp-text);
   overflow: hidden;
 }
@@ -3120,8 +3120,12 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 }
 
 /* ═══════════════════════════════════════
-   LANDING — "Warm Paper" colour system.
-   The single source of truth for every landing colour. Scoped to
+   LANDING — colour system (page and surfaces).
+   Page areas (sections, hero, CTA, footer) use the page colour --lp-bg:
+   pure white in light mode, pure black in dark mode. Cards, panels,
+   frames and the lightbox use --lp-bg-alt, the separate surface colour.
+   A section that needs setting apart gets a --lp-border line, never a
+   second grey page colour. Scoped to
    body.lp-body, so the landing and the shared marketing pages (about,
    contact, methodology, terms, privacy) read the same tokens.
    Light is the default (body.lp-light); dark applies when the visitor
@@ -3178,7 +3182,7 @@ body.lp-body {
   --lp-module-bg: var(--lp-bg);
   --lp-report-stats-bg: var(--lp-bg);
   --lp-cta-bg: var(--lp-bg);
-  --lp-footer-bg: var(--lp-bg-alt);
+  --lp-footer-bg: var(--lp-bg);   /* a page area: page colour, top border */
   --lp-surface: var(--lp-bg-alt);
   --lp-panel-bg: var(--lp-bg-alt);
   --lp-featured-bg: var(--lp-bg-alt);
@@ -3233,11 +3237,11 @@ body.lp-body:not(.lp-landing) { --lp-text-3: var(--text-2); }
 
 /* Surfaces */
 body.lp-landing .lp-section { background: var(--lp-bg); }
-body.lp-landing .lp-section-alt { background: var(--lp-bg-alt); }
+body.lp-landing .lp-section-alt { background: var(--lp-bg); border-top: 1px solid var(--lp-border); border-bottom: 1px solid var(--lp-border); }   /* set apart by lines, not a grey band */
 body.lp-landing .lp-plan-card { background: var(--lp-bg-alt); }
 body.lp-landing .lp-plan-featured { background: var(--lp-bg-alt); border-color: var(--lp-action); }
-body.lp-landing .lp-report-card-v2 { background: var(--lp-bg); }
-body.lp-landing .lp-report-card-v2:hover { background: var(--lp-bg-alt); }
+body.lp-landing .lp-report-card-v2 { background: var(--lp-bg-alt); }
+body.lp-landing .lp-report-card-v2:hover { background: var(--bg-hover); }
 body.lp-landing .lp-cta { background: var(--lp-bg); }
 
 /* Nav: translucent page colour with blur */

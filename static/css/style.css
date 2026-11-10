@@ -830,7 +830,7 @@ body.light .nav-logout  { color: var(--text-2); }
   font-size: 10px;
   font-weight: 400;
   line-height: 1.3;
-  color: var(--text-3);
+  color: var(--text-2)   /* --text-3 is below AA at 10px */;
   text-align: center;
   margin: -2px 0 6px;
 }
@@ -838,7 +838,7 @@ body.light .nav-logout  { color: var(--text-2); }
 /* A KPI with no current figure (KodoPeriod.unavailable): muted, smaller,
    so "Not available yet" fits the card without changing its height */
 .kpi-card .kpi-value.kpi-value--na {
-  color: var(--text-3);
+  color: var(--text-2);   /* 12px text: --text-3 is below AA */
   font-size: 12px !important;
   font-weight: 400;
   text-transform: none;
@@ -3823,7 +3823,7 @@ body.light .nav-logout  { color: var(--text-2); }
 .bench-cal-dayval { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* Calendar tooltip: one element on <body> shared by every calendar (CalTip in main.js).
-   Opaque Warm Paper surface (--bg-alt); dark mode swaps it for the dark ink surface. */
+   Opaque card surface (--bg-alt: #F4F4F2 light, #121212 dark), edged with --border. */
 .cal-tip {
   position: fixed; z-index: 8000;
   left: 0; top: 0;
@@ -4688,7 +4688,7 @@ body.light .nav-logout  { color: var(--text-2); }
   .screen-header p { font-size: 11px; color: #5F5B55; margin-bottom: 20px; }
   .news-feed { max-width: 100%; }
   .news-card {
-    background: #FFFFFF !important; border: 1px solid #E7E4DF !important;
+    background: #FFFFFF !important; border: 1px solid #E5E3DF !important;
     padding: 16px 0 !important; border-left: none !important; border-right: none !important;
     border-radius: 0 !important; page-break-inside: avoid;
   }
@@ -5880,7 +5880,7 @@ body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
 .rb-msg { font-size: 12px; color: var(--text-muted); }
 .rb-kpi-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .rb-kpi-val { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.2; margin: 4px 0 6px; }
-.rb-kpi-val.kpi-value--na { font-size: 12px; font-weight: 400; color: var(--text-3); }
+.rb-kpi-val.kpi-value--na { font-size: 12px; font-weight: 400; color: var(--text-2); }
 .rb-kpi-sub { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
 .rb-cal-note { padding: 4px 20px 14px; }
 .bench-cal-day .rb-cal-sub { display: block; font-size: 9px; font-weight: 400; color: var(--text-muted); }

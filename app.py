@@ -526,13 +526,13 @@ def _issue_verification_email(email: str, name: str) -> bool:
 EMAIL_LOGO_URL = "https://www.kodohospitality.com/static/img/brand/kodo-logo-light-600.png"
 
 EMAIL_COLORS = {
-    "page":      "#F7F6F3",   # --bg-alt
+    "page":      "#F4F4F2",   # --bg-alt (the email's outer band; the message card is white)
     "card":      "#FFFFFF",   # --bg
-    "border":    "#E7E4DF",   # --border
+    "border":    "#E5E3DF",   # --border
     "text":      "#1F1E1C",   # --text
     "text_2":    "#5F5B55",   # --text-2
     "action":    "#0075DE",   # --action (button)
-    "link":      "#0070D5",   # --action-text (links, AA on white)
+    "link":      "#006BCC",   # --action-text (links, AA on white)
     "on_action": "#FFFFFF",   # --on-action
 }
 _EMAIL_FONT = "'Sweet Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif"
@@ -3100,16 +3100,16 @@ _PW = 210 - _LM - _RM  # 182mm
 # print on white pages, whatever the theme the user browses in.
 _PALETTE_LIGHT = {
     'bg':       (255, 255, 255),   # --bg
-    'surface':  (247, 246, 243),   # --bg-alt
-    'border':   (231, 228, 223),   # --border
+    'surface':  (244, 244, 242),   # --bg-alt
+    'border':   (229, 227, 223),   # --border
     'text':     (31, 30, 28),      # --text
     'muted':    (95, 91, 85),      # --text-2
     'faint':    (95, 91, 85),      # --text-2 (--text-3 is below AA at 6-7pt)
     'accent':   (0, 117, 222),     # --action: headings, rules, chart bars
     'white':    (255, 255, 255),
     'row_even': (255, 255, 255),
-    'row_alt':  (247, 246, 243),
-    'hdr_bg':   (247, 246, 243),
+    'row_alt':  (244, 244, 242),
+    'hdr_bg':   (244, 244, 242),
     'hdr_text': (31, 30, 28),
     # Colour families: (dot, text, tint). Labels use tint fill + text + dot.
     'fam': {

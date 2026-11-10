@@ -19,7 +19,7 @@ COLOR = re.compile(r"#[0-9A-Fa-f]{6}\b|#[0-9A-Fa-f]{3}\b(?![0-9A-Fa-f])|rgba?\([
 # (r, g, b) tuples in Python (fpdf palettes); only reported when they match a legacy value
 RGB_TUPLE = re.compile(r"\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)")
 FPDF = re.compile(r"set_(?:fill|text|draw)_color\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)")
-LEGACY = {"#4A7FA5", "#3A6F99", "#5B94BD", "#376A92", "#6A9ABC", "#3A6A8E", "#0A0A0A", "#141414",
+LEGACY = {"#191918", "#222220", "#2E2D2B", "#F7F6F3", "#E7E4DF", "#4A7FA5", "#3A6F99", "#5B94BD", "#376A92", "#6A9ABC", "#3A6A8E", "#0A0A0A", "#141414",
           "#242424", "#F0F0EE", "#4A9B6F", "#C05252", "#6B7A8D", "#F2A33D"}
 
 # Literals that stay on purpose, and why (written into the report)
@@ -30,7 +30,7 @@ KEPT = [
     ("`static/css/style.css` print block", "Paper is always light, so print uses the light token values even in a dark session."),
     ("`static/css/style.css` select chevrons (`%238A857E`)", "SVG data URIs cannot read CSS variables; `--cat-6-dot` grey is 3.4:1 or more on every light and dark surface."),
     ("Box shadows `rgba(15,15,14,…)`", "Neutral near-black shadow tint; shadows are not part of the palette and read the same in both modes."),
-    ("`<meta name=\"theme-color\">` `#FFFFFF` / `#191918`", "Browser chrome colour; meta tags cannot use CSS variables. Values are `--bg` light / dark."),
+    ("`<meta name=\"theme-color\">` `#FFFFFF` / `#000000`", "Browser chrome colour; meta tags cannot use CSS variables. Values are the page colour `--bg`: pure white light / pure black dark."),
     ("`static/js/main.js` `withAlpha` helper", "Builds `rgba()` from palette colours for canvas charts; contains no colour itself."),
     ("`static/images/news-placeholder.svg` (`#141414`, `#242424`, `#B87860`)", "An image containing the text \"KODO\": per the brief, images with text are listed, not edited. Replace the file to update it."),
 ]

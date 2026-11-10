@@ -5763,7 +5763,7 @@ function canExport() {
 // Spreadsheet colours: light-mode values of static/css/tokens.css (Excel has
 // no dark mode). Category cells get the family tint with its text colour.
 const XLSX_COLORS = {
-  headerFill: 'F7F6F3', headerText: '1F1E1C', headerRule: '0075DE', text: '1F1E1C',
+  headerFill: 'F4F4F2', headerText: '1F1E1C', headerRule: '0075DE', text: '1F1E1C',
   families: {
     blue:   { text: '006DD0', tint: 'E6F3FE' },
     green:  { text: '127F48', tint: 'E4F8EC' },

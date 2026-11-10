@@ -5,6 +5,17 @@
    Light is the base. Dark applies when <html data-theme="dark">, which
    static/js/theme.js sets in <head> before first paint.
 
+   Page and surfaces (the background rule):
+     --bg       the page canvas behind everything, including the sidebar,
+                top bar and footer areas: pure white (#FFFFFF) in light
+                mode, pure black (#000000) in dark mode.
+     --bg-alt   cards and containers (panels, tables, modals, dropdowns,
+                tooltips, inputs): a separate, fully opaque surface colour
+                one clear step off the page, edged with --border.
+     --bg-hover nested elements inside a card (and hovers): one more step.
+   Never paint a page-sized area with --bg-alt: a band that needs setting
+   apart uses a --border line, not another grey page.
+
    Families (1 blue, 2 green, 3 orange, 4 violet, 5 sky, 6 grey, 7 red)
    each have three parts:
      --cat-N-tint     pale fill behind a label
@@ -20,9 +31,9 @@
 
 :root {
   /* Neutrals */
-  --bg:      #FFFFFF;
-  --bg-alt:  #F7F6F3;
-  --border:  #E7E4DF;
+  --bg:      #FFFFFF;   /* page */
+  --bg-alt:  #F4F4F2;   /* cards and containers */
+  --border:  #E5E3DF;   /* card edges and dividers */
   --text:    #1F1E1C;
   --text-2:  #5F5B55;
   --text-3:  #948D85;
@@ -33,7 +44,7 @@
   --action:        #0075DE;
   --action-hover:  #0877DA;   /* AA: brief #097FE8 gives 4.0:1 with a white label */
   --action-press:  #005BAB;
-  --action-text:   #0070D5;   /* AA: brief #0075DE gives 4.2:1 on --bg-alt */
+  --action-text:   #006BCC;   /* AA: 4.8:1 on --bg-alt #F4F4F2, 5.3:1 on white (brief #0075DE gives 4.2:1) */
   --action-tint:   #E6F3FE;
   --action-tint-2: #F2F9FF;
   --on-action:     #FFFFFF;
@@ -73,13 +84,14 @@
 }
 
 :root[data-theme="dark"] {
-  --bg:      #191918;
-  --bg-alt:  #222220;
-  --border:  #2E2D2B;
+  --bg:      #000000;   /* page */
+  --bg-alt:  #121212;   /* cards and containers */
+  --border:  #2C2C2B;   /* card edges and dividers: visible on both #000 and #121212 */
   --text:    #F2F1EE;
   --text-2:  #A8A39C;
   --text-3:  #6F6B66;
-  --overlay:  rgba(15,15,14,0.6);
+  --bg-hover: color-mix(in srgb, var(--text) 7%, var(--bg-alt));   /* a visible step inside #121212 cards */
+  --overlay:  rgba(0,0,0,0.65);
 
   --action:        #0075DE;
   --action-hover:  #0E78D5;   /* AA: brief #1A8CF0 gives 3.5:1 with a white label */

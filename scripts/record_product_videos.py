@@ -111,7 +111,8 @@ CURSOR_JS = """
       width: size + 'px', height: size + 'px', borderRadius: '50%', boxSizing: 'border-box'}, css);
     c.appendChild(e); return e; };
   // soft translucent ring, click ripple, then the solid dot with a white edge
-  const ring = part(40, {background: 'rgba(0, 117, 222, 0.16)', border: '1px solid rgba(0, 117, 222, 0.32)'});
+  // ring outline at 55% so it still reads on the pure black dark-mode page
+  const ring = part(40, {background: 'rgba(0, 117, 222, 0.18)', border: '1.5px solid rgba(0, 117, 222, 0.55)'});
   const rip = part(20, {border: '2px solid #0075DE', opacity: '0'});
   const dot = part(20, {background: '#0075DE', border: '2px solid #FFFFFF',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.35)'});

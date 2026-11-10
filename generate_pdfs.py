@@ -17,7 +17,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 ACCENT    = colors.HexColor("#0075DE")   # headings, rules
 TEXT      = colors.HexColor("#1F1E1C")   # body text
 GREY_TEXT = colors.HexColor("#5F5B55")   # secondary text
-HAIRLINE  = colors.HexColor("#E7E4DF")   # thin dividers
+HAIRLINE  = colors.HexColor("#E5E3DF")   # thin dividers
 
 
 def base_styles():
