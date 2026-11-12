@@ -1,0 +1,587 @@
+{
+ "format": "kodo-tourism-forecast-1",
+ "label": "Kodo forecast",
+ "generated": "2026-11-12",
+ "method": "v2",
+ "data_cut_off": "Arrivals to Oct 2026, nights to Sep 2026, receipts to Sep 2026, airport passengers to Aug 2026",
+ "long_run_growth": {
+  "arrivals": 4.3,
+  "receipts": 5.35,
+  "nights": 4.65,
+  "air_passengers": 4.3
+ },
+ "capacity_growth_pct": {
+  "base": 3.2,
+  "low": 2.0,
+  "high": 5.0
+ },
+ "ramadan_month_factor": 0.864,
+ "afcon_january_uplift": 880,
+ "nowcast_2026": {
+  "arrivals": {
+   "base": 20701695,
+   "low": 20521165,
+   "high": 20882224,
+   "how": "Jan–Oct 2026 (17.4 million, +5%) plus Nov–Dec 2025 grown 0% to +5%; ±0.1 million for the rounding of the year-to-date figures."
+  },
+  "nights": {
+   "base": 46249680,
+   "low": 45815411,
+   "high": 46683950,
+   "how": "2025 grown by the Jan–Sep 2026 rate (+7%) minus 0.5 point (Q4 2025 included the AFCON weeks), ±1 point."
+  },
+  "occupancy": {
+   "base": 59.9,
+   "how": "2025 occupancy × nights nowcast ÷ capacity growth."
+  },
+  "receipts": {
+   "base": 150992,
+   "low": 149205,
+   "high": 152779,
+   "how": "Jan–Sep 2026 (115,257, +12.1%) plus Q4 2025 at −5% to +5% (December 2025 was +47%, the AFCON month)."
+  },
+  "air_passengers": {
+   "base": 39316530,
+   "low": 38953530,
+   "high": 39679530,
+   "how": "2025 grown by the Jan–Aug 2026 rate (+8.8%) minus 0.5 point (Dec 2025 had AFCON), ±1 point."
+  }
+ },
+ "forecast_2027": {
+  "arrivals": {
+   "base": 21622126,
+   "low": 20270743,
+   "high": 22973509,
+   "range_pct": 6.2,
+   "growth_vs_2026": 4.4
+  },
+  "nights": {
+   "base": 48827268,
+   "low": 44872259,
+   "high": 52782276,
+   "range_pct": 8.1,
+   "growth_vs_2026": 5.6
+  },
+  "occupancy": {
+   "base": 61.3,
+   "low": 54.4,
+   "high": 67.8,
+   "unit": "%"
+  },
+  "receipts": {
+   "base": 160908,
+   "low": 140231,
+   "high": 181585,
+   "range_pct": 12.8,
+   "growth_vs_2026": 6.6,
+   "unit": "MAD million",
+   "monthly": [
+    {
+     "month": "2027-01",
+     "base": 11920,
+     "low": 9918,
+     "high": 13923
+    },
+    {
+     "month": "2027-02",
+     "base": 9133,
+     "low": 7598,
+     "high": 10667
+    },
+    {
+     "month": "2027-03",
+     "base": 12281,
+     "low": 10218,
+     "high": 14344
+    },
+    {
+     "month": "2027-04",
+     "base": 12403,
+     "low": 10320,
+     "high": 14487
+    },
+    {
+     "month": "2027-05",
+     "base": 12789,
+     "low": 10640,
+     "high": 14937
+    },
+    {
+     "month": "2027-06",
+     "base": 10941,
+     "low": 9103,
+     "high": 12780
+    },
+    {
+     "month": "2027-07",
+     "base": 15114,
+     "low": 12575,
+     "high": 17653
+    },
+    {
+     "month": "2027-08",
+     "base": 22955,
+     "low": 19099,
+     "high": 26812
+    },
+    {
+     "month": "2027-09",
+     "base": 14834,
+     "low": 12342,
+     "high": 17326
+    },
+    {
+     "month": "2027-10",
+     "base": 14147,
+     "low": 11771,
+     "high": 16524
+    },
+    {
+     "month": "2027-11",
+     "base": 12135,
+     "low": 10096,
+     "high": 14173
+    },
+    {
+     "month": "2027-12",
+     "base": 12256,
+     "low": 10197,
+     "high": 14315
+    }
+   ]
+  },
+  "air_passengers": {
+   "base": 41795279,
+   "low": 38263578,
+   "high": 45326980,
+   "range_pct": 8.4,
+   "growth_vs_2026": 6.3
+  }
+ },
+ "regions_2027": {
+  "Marrakech-Safi": {
+   "base": 17870342,
+   "low": 16422844,
+   "high": 19317839,
+   "range_pct": 8.1,
+   "backtest_mape": 3.4
+  },
+  "Souss-Massa": {
+   "base": 10075447,
+   "low": 8881506,
+   "high": 11269387,
+   "range_pct": 11.9,
+   "backtest_mape": 5.9
+  },
+  "Casablanca-Settat": {
+   "base": 4991385,
+   "low": 4347496,
+   "high": 5635274,
+   "range_pct": 12.9,
+   "backtest_mape": 6.6
+  },
+  "Tanger-Tétouan-Al Hoceima": {
+   "base": 4610927,
+   "low": 4168278,
+   "high": 5053576,
+   "range_pct": 9.6,
+   "backtest_mape": 4.4
+  },
+  "Fès-Meknès": {
+   "base": 3483003,
+   "low": 2971001,
+   "high": 3995004,
+   "range_pct": 14.7,
+   "backtest_mape": 7.8
+  },
+  "Rabat-Salé-Kénitra": {
+   "base": 1963734,
+   "low": 1766379,
+   "high": 2161089,
+   "range_pct": 10.1,
+   "backtest_mape": 4.7
+  },
+  "Drâa-Tafilalt": {
+   "base": 2911145,
+   "low": 2186270,
+   "high": 3636020,
+   "range_pct": 24.9,
+   "backtest_mape": 14.6
+  }
+ },
+ "cities_occupancy_2027": {
+  "Marrakech": {
+   "base": 73.9,
+   "low": 65.6,
+   "high": 81.7,
+   "unit": "%",
+   "region": "Marrakech-Safi",
+   "backtest_err_pp": 1.2
+  },
+  "Agadir": {
+   "base": 77.2,
+   "low": 65.7,
+   "high": 88.4,
+   "unit": "%",
+   "region": "Souss-Massa",
+   "backtest_err_pp": -0.3
+  },
+  "Casablanca": {
+   "base": 62.0,
+   "low": 52.2,
+   "high": 71.6,
+   "unit": "%",
+   "region": "Casablanca-Settat",
+   "backtest_err_pp": -2.5
+  },
+  "Tanger": {
+   "base": 59.0,
+   "low": 51.5,
+   "high": 66.2,
+   "unit": "%",
+   "region": "Tanger-Tétouan-Al Hoceima",
+   "backtest_err_pp": -0.1
+  },
+  "Fès": {
+   "base": 59.0,
+   "low": 48.6,
+   "high": 69.2,
+   "unit": "%",
+   "region": "Fès-Meknès",
+   "backtest_err_pp": -4.1
+  },
+  "Rabat": {
+   "base": 59.3,
+   "low": 51.5,
+   "high": 66.7,
+   "unit": "%",
+   "region": "Rabat-Salé-Kénitra",
+   "backtest_err_pp": -3.5
+  },
+  "Essaouira": {
+   "base": 57.7,
+   "low": 51.2,
+   "high": 63.8,
+   "unit": "%",
+   "region": "Marrakech-Safi",
+   "backtest_err_pp": -0.5
+  }
+ },
+ "markets_2027": {
+  "France": {
+   "base": 6212814,
+   "low": 5358552,
+   "high": 7067076,
+   "range_pct": 13.8,
+   "backtest_mape": 6.5
+  },
+  "Spain": {
+   "base": 4953269,
+   "low": 4472802,
+   "high": 5433736,
+   "range_pct": 9.7,
+   "backtest_mape": 3.8
+  },
+  "Belgium": {
+   "base": 1331446,
+   "low": 1142380,
+   "high": 1520511,
+   "range_pct": 14.2,
+   "backtest_mape": 6.8
+  },
+  "Italy": {
+   "base": 1324088,
+   "low": 1199624,
+   "high": 1448552,
+   "range_pct": 9.4,
+   "backtest_mape": 3.6
+  },
+  "Netherlands": {
+   "base": 1053552,
+   "low": 967161,
+   "high": 1139943,
+   "range_pct": 8.2,
+   "backtest_mape": 2.8
+  },
+  "Germany": {
+   "base": 1003256,
+   "low": 863803,
+   "high": 1142708,
+   "range_pct": 13.9,
+   "backtest_mape": 6.6
+  },
+  "United States": {
+   "base": 530178,
+   "low": 438988,
+   "high": 621369,
+   "range_pct": 17.2,
+   "backtest_mape": 8.8
+  }
+ },
+ "airports_2027": {
+  "Casablanca CMN": {
+   "base": 13151142,
+   "low": 11520400,
+   "high": 14781883,
+   "range_pct": 12.4,
+   "share_2025": 31.7,
+   "tested": false
+  },
+  "Marrakech RAK": {
+   "base": 11692395,
+   "low": 10242538,
+   "high": 13142252,
+   "range_pct": 12.4,
+   "share_2025": 28.1,
+   "tested": false
+  },
+  "Agadir AGA": {
+   "base": 4036796,
+   "low": 3536233,
+   "high": 4537358,
+   "range_pct": 12.4,
+   "share_2025": 9.6,
+   "tested": false
+  },
+  "Rabat RBA": {
+   "base": 2643440,
+   "low": 2315654,
+   "high": 2971227,
+   "range_pct": 12.4,
+   "share_2025": 6.0,
+   "tested": false
+  }
+ },
+ "backtest": {
+  "arrivals": {
+   "years": {
+    "2023": {
+     "actual": 14524727,
+     "v1": 15304325,
+     "v2": 13320231,
+     "err_v1": 5.4,
+     "err_v2": -8.3
+    },
+    "2024": {
+     "actual": 17411949,
+     "v1": 15962288,
+     "v2": 17279728,
+     "err_v1": -8.3,
+     "err_v2": -0.8
+    },
+    "2025": {
+     "actual": 19792594,
+     "v1": 16648538,
+     "v2": 19516808,
+     "err_v1": -15.9,
+     "err_v2": -1.4
+    }
+   },
+   "mape_v1": 9.9,
+   "mape_v2": 3.5,
+   "max_v2": 8.3
+  },
+  "nights": {
+   "years": {
+    "2023": {
+     "actual": 25641000,
+     "v1": 30272992,
+     "v2": 25081301,
+     "err_v1": 18.1,
+     "err_v2": -2.2
+    },
+    "2024": {
+     "actual": 28685000,
+     "v1": 31679597,
+     "v2": 30711885,
+     "err_v1": 10.4,
+     "err_v2": 7.1
+    },
+    "2025": {
+     "actual": 43426930,
+     "v1": 45598726,
+     "v2": 43091150,
+     "err_v1": 5.0,
+     "err_v2": -0.8
+    }
+   },
+   "basis": "2023 and 2024 on the previous basis, 2025 on the current basis",
+   "mape_v1": 11.2,
+   "mape_v2": 3.4,
+   "max_v2": 7.1
+  },
+  "occupancy": {
+   "years": {
+    "2025": {
+     "actual": 58,
+     "v2": 56.4,
+     "err_pp": -1.6,
+     "err_v2": -2.8
+    }
+   },
+   "mape_v2": 2.8,
+   "max_v2": 2.8,
+   "note": "Only one year can be tested on the current basis."
+  },
+  "receipts": {
+   "years": {
+    "2023": {
+     "actual": 107562.0,
+     "v1": 96986,
+     "v2": 99193,
+     "err_v1": -9.8,
+     "err_v2": -7.8
+    },
+    "2024": {
+     "actual": 114475.0,
+     "v1": 102171,
+     "v2": 118290,
+     "err_v1": -10.7,
+     "err_v2": 3.3
+    },
+    "2025": {
+     "actual": 138583.0,
+     "v1": 107633,
+     "v2": 121214,
+     "err_v1": -22.3,
+     "err_v2": -12.5
+    }
+   },
+   "mape_v1": 14.3,
+   "mape_v2": 7.9,
+   "max_v2": 12.5
+  },
+  "receipts_monthly": {
+   "years": {
+    "2023": {
+     "mape_months": 11.4,
+     "mape_profile_only": 11.1
+    },
+    "2024": {
+     "mape_months": 6.5,
+     "mape_profile_only": 6.7
+    },
+    "2025": {
+     "mape_months": 13.7,
+     "mape_profile_only": 9.8
+    }
+   },
+   "note": "mape_months: monthly forecast error; mape_profile_only: error of the monthly profile alone, with the actual annual total."
+  },
+  "air_passengers": {
+   "years": {
+    "2025": {
+     "actual": 36300000,
+     "v2": 37141747,
+     "err_v2": 2.3
+    }
+   },
+   "mape_v2": 2.3,
+   "max_v2": 2.3,
+   "note": "One year only; the 2024 growth used is that of tourist arrivals by air (the 2023 airport total could not be verified). ONDA’s own 2025 target was 37.6 million (actual 36.3, +3.6% too high)."
+  },
+  "city_occupancy": {
+   "years": {
+    "2025": {
+     "Marrakech": {
+      "actual": 73,
+      "v2": 74.2,
+      "err_pp": 1.2,
+      "err_v2": 1.7
+     },
+     "Agadir": {
+      "actual": 72,
+      "v2": 71.7,
+      "err_pp": -0.3,
+      "err_v2": -0.4
+     },
+     "Casablanca": {
+      "actual": 57,
+      "v2": 54.5,
+      "err_pp": -2.5,
+      "err_v2": -4.3
+     },
+     "Tanger": {
+      "actual": 54,
+      "v2": 53.9,
+      "err_pp": -0.1,
+      "err_v2": -0.2
+     },
+     "Fès": {
+      "actual": 56,
+      "v2": 51.9,
+      "err_pp": -4.1,
+      "err_v2": -7.4
+     },
+     "Rabat": {
+      "actual": 54,
+      "v2": 50.5,
+      "err_pp": -3.5,
+      "err_v2": -6.4
+     },
+     "Essaouira": {
+      "actual": 57,
+      "v2": 56.5,
+      "err_pp": -0.5,
+      "err_v2": -1.0
+     },
+     "Ouarzazate": {
+      "actual": 47,
+      "v2": 38.4,
+      "err_pp": -8.6,
+      "err_v2": -18.2
+     }
+    }
+   },
+   "note": "City occupancy 2025 forecast from 2024 (current basis), using the region’s nights.",
+   "mape_v2": 5.0
+  }
+ },
+ "check_2026": {
+  "arrivals": {
+   "v2_from_2025": 21571124,
+   "nowcast": 20701695,
+   "err_pct": 4.2
+  },
+  "nights": {
+   "v2_from_2025": 46345964,
+   "nowcast": 46249680,
+   "err_pct": 0.2
+  },
+  "receipts": {
+   "v2_from_2025": 156880,
+   "nowcast": 150992,
+   "err_pct": 3.9
+  }
+ },
+ "assumptions": [
+  "Base: the latest growth slows towards the pre-COVID long-run rate, keeping half of the gap each year (arrivals 4.3% a year 2013–2019, receipts 5.3%, nights 4.6% on the previous basis 2013–2018). This is the slowdown after the 2023–2025 records: arrivals grew 14% in 2025 and about 5% in Jan–Oct 2026.",
+  "2026 is first estimated from the latest year-to-date figures: arrivals 20.7 million (Jan–Oct +5%), nights 46.2 million, receipts MAD 151.0 billion, airport passengers 39.3 million.",
+  "AFCON 2025 (21 Dec 2025 – 18 Jan 2026): receipts jumped 47% in December 2025 and about 0.9 billion above trend in January 2026. That January uplift does not repeat in 2027 and is taken out. Arrivals rose only 3% in January 2026, so no AFCON effect is assumed for arrivals.",
+  "Air capacity: airport passengers grew 8.8% in Jan–Aug 2026, faster than arrivals (+5%), so seats are not assumed to limit 2027. No 2027 seat or route figure from ONDA, RAM or low-cost carriers could be verified, so none is added; new capacity is part of the high scenario.",
+  "Calendar 2027: Ramadan runs about 8 February – 9 March 2027 (about 18 February – 19 March in 2026) and Eid al-Adha falls about 16 May. Months that are mostly Ramadan have historically had -14% of their usual share of receipts; the monthly receipts profile is moved accordingly. School holidays and the summer return of MRE (Opération Marhaba, June–September) are in the seasonal profile.",
+  "Events in events.json for 2027 (e.g. Ramadan (2027-02-08), Eid al-Fitr (2027-03-09), FIFA Congress (77th, elective) (2027-03-16), International Agriculture Show (SIAM) (2027-04-19)) recur every year or are small at national level, so no extra uplift is added. No effect of the 2030 World Cup build-up is assumed for 2027: there is no measurable sign of it yet.",
+  "Hotel supply: bed capacity is assumed to grow 3.2% a year (the rate implied by the official 2025 nights and occupancy), between 2% and 5% in the range. Kodo’s pipeline lists 1,114 rooms due in 2026 and 454 in 2027 in the projects it tracks; it is not a national count, so it is a cross-check only.",
+  "Low scenario: higher air fares and weaker European demand (the DEPF reports Brent at 127.5 dollars on 23 October 2026, +95% on a year; euro-area growth about 1% in 2026–2027). High scenario: 2026’s faster airport growth carries into 2027 with new routes.",
+  "Ranges: 1.5 × the backtest error (at least 3%), plus 2 points where fewer than four comparable years exist and 2 points for secondary sources, plus 1 point for the 2026 estimate. Cities, regions and markets are wider because they rest on two or three years.",
+  "Arrivals include MRE, as in the official series. Nights and occupancy are for classified accommodation only. All figures are calendar years."
+ ],
+ "withheld": [
+  {
+   "item": "2027 arrivals from United Kingdom",
+   "reason": "backtest error 16.5% > 15.0%"
+  },
+  {
+   "item": "2027 occupancy, Ouarzazate",
+   "reason": "backtest error -18.2% > 15.0%"
+  },
+  {
+   "item": "2027 foreign tourists vs MRE",
+   "reason": "The Ministry stopped publishing the split in 2025, so there is no recent base to forecast from."
+  },
+  {
+   "item": "Monthly 2027 arrivals, nights, occupancy and airport traffic",
+   "reason": "No official monthly history could be read (Observatoire dashboards need an account; ONDA blocks automated access). Only receipts are forecast by month."
+  }
+ ]
+}

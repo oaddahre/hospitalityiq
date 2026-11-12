@@ -1,0 +1,7350 @@
+{
+ "format": "kodo-tourism-1",
+ "updated": "2026-11-12",
+ "notes": [
+  "Arrivals at border posts include Moroccans resident abroad (MRE). The Ministry’s \"by nationality\" table counts MRE under their country of residence, so \"France\" there (5.76 million in 2025) is far above foreign French tourists alone (2.42 million in 2024).",
+  "Nights and occupancy are for classified tourist accommodation (EHTC) only, not all accommodation.",
+  "All figures are calendar years. 2020 and 2021 are flagged as COVID years; borders were also closed from 29 Nov 2021 to 7 Feb 2022.",
+  "Receipts are travel receipts in the balance of payments (Office des Changes), in MAD million, current prices."
+ ],
+ "sources": {
+  "mt_ind": {
+   "publisher": "Ministère du Tourisme, de l’Artisanat et de l’Economie Sociale et Solidaire",
+   "kind": "official",
+   "title": "Chiffres clés: Indicateurs touristiques 2025 (arrivées aux postes frontières, nuitées EHTC, recettes)",
+   "url": "https://mtaess.gov.ma/wp-content/uploads/2026/03/Indicateurs-touristiques-2025.xlsx",
+   "published": "2026-03-06",
+   "accessed": "2026-11-12"
+  },
+  "mt_pf": {
+   "publisher": "Ministère du Tourisme",
+   "kind": "official",
+   "title": "Evolution par point d’entrée des arrivées des touristes aux postes frontières, 2019 et 2023–2025",
+   "url": "https://mtaess.gov.ma/wp-content/uploads/2026/03/Tourisme-PF-2025.xlsx",
+   "published": "2026-03-06",
+   "accessed": "2026-11-12"
+  },
+  "mt_dest": {
+   "publisher": "Ministère du Tourisme",
+   "kind": "official",
+   "title": "Evolution par région des nuitées dans les établissements d’hébergement touristique classés, 2019 et 2023–2025",
+   "url": "https://mtaess.gov.ma/wp-content/uploads/2026/03/Tourisme-destination-2025.xlsx",
+   "published": "2026-03-06",
+   "accessed": "2026-11-12"
+  },
+  "mt_nat": {
+   "publisher": "Ministère du Tourisme",
+   "kind": "official",
+   "title": "Evolution par nationalité des arrivées des touristes aux postes frontières, 2019 et 2023–2025 (MRE counted under their country of residence)",
+   "url": "https://mtaess.gov.ma/wp-content/uploads/2026/03/Evolution_nationalite_PF-2025.xlsx",
+   "published": "2026-03-06",
+   "accessed": "2026-11-12"
+  },
+  "mt_mkt": {
+   "publisher": "Ministère du Tourisme",
+   "kind": "official",
+   "title": "Evolution par marché des nuitées dans les établissements d’hébergement touristique classés, 2019 et 2023–2025",
+   "url": "https://mtaess.gov.ma/wp-content/uploads/2026/03/Evolution_marche_nuitees-2025.xlsx",
+   "published": "2026-03-06",
+   "accessed": "2026-11-12"
+  },
+  "mt_cp2025": {
+   "publisher": "Ministère du Tourisme",
+   "kind": "official",
+   "title": "Communiqué: près de 20 millions de touristes en 2025",
+   "url": "https://mtaess.gov.ma/fr/tourisme-le-maroc-atteint-un-seuil-historique-de-pres-de-20-millions-de-touristes-en-2025/",
+   "published": "2026-01-09",
+   "accessed": "2026-11-12"
+  },
+  "obs_home": {
+   "publisher": "Observatoire du Tourisme",
+   "kind": "official",
+   "title": "Headline counters on the home page (arrivals Jan–Oct 2026, nights Jan–Sep 2026, receipts Jan–Sep 2026)",
+   "url": "https://observatoiredutourisme.ma/",
+   "published": "2026-11-09",
+   "accessed": "2026-11-12"
+  },
+  "obs_roadmap": {
+   "publisher": "Observatoire du Tourisme",
+   "kind": "official",
+   "title": "Feuille de route du tourisme 2023–2026 (targets for 2026 and the 2030 vision)",
+   "url": "https://observatoiredutourisme.ma/a-propos/feuille-de-route-du-tourisme/",
+   "published": "2024-12-13",
+   "accessed": "2026-11-12"
+  },
+  "oc_monthly": {
+   "publisher": "Office des Changes",
+   "kind": "official",
+   "title": "Recettes voyages mensuelles (MDH), 2004 – juin 2026",
+   "url": "https://www.oc.gov.ma/sites/default/files/Evol_recettes_Voyages_16.xlsx",
+   "published": "2026-10-01",
+   "accessed": "2026-11-12"
+  },
+  "oc_country": {
+   "publisher": "Office des Changes",
+   "kind": "official",
+   "title": "Recettes voyages par pays (MDH), 2005–2025 (2025 provisional)",
+   "url": "https://www.oc.gov.ma/sites/default/files/Recettes_Voyages%20par%20pays_1.xlsx",
+   "published": "2026-07-31",
+   "accessed": "2026-11-12"
+  },
+  "oc_spend": {
+   "publisher": "Office des Changes",
+   "kind": "official",
+   "title": "Dépenses voyages par nature (MDH)",
+   "url": "https://www.oc.gov.ma/sites/default/files/Dep_Voyages_Nature_0.xlsx",
+   "published": "2026-05-11",
+   "accessed": "2026-11-12"
+  },
+  "oc_imee_2609": {
+   "publisher": "Office des Changes",
+   "kind": "official",
+   "title": "Indicateurs mensuels des échanges extérieurs, septembre 2026 (provisional)",
+   "url": "https://www.oc.gov.ma/sites/default/files/2026-10/IMEE_Septembre_2026_0.pdf",
+   "published": "2026-10-30",
+   "accessed": "2026-11-12"
+  },
+  "bam_ra2025": {
+   "publisher": "Bank Al-Maghrib",
+   "kind": "official",
+   "title": "Rapport annuel 2025 (tables 1.2.2–1.2.4, from Ministry of Tourism data)",
+   "url": "https://www.bkam.ma/content/download/847720/9164323/RAPPORT%20FR%2025.pdf",
+   "published": "2026-07-19",
+   "accessed": "2026-11-12"
+  },
+  "bam_ra2024": {
+   "publisher": "Bank Al-Maghrib",
+   "kind": "official",
+   "title": "Rapport annuel 2024 (tables 1.2.2–1.2.4, from Ministry of Tourism data)",
+   "url": "https://www.bkam.ma/content/download/829011/9037410/Rapport%2024%20FR.pdf",
+   "published": "2025-07-28",
+   "accessed": "2026-11-12"
+  },
+  "bam_ra2023": {
+   "publisher": "Bank Al-Maghrib",
+   "kind": "official",
+   "title": "Rapport annuel 2023",
+   "url": "https://www.bkam.ma/content/download/809663/8903269/RAPPORT%20FR%20_23.pdf",
+   "published": "2024-07-29",
+   "accessed": "2026-11-12"
+  },
+  "bam_ra2022": {
+   "publisher": "Bank Al-Maghrib",
+   "kind": "official",
+   "title": "Rapport annuel 2022 (table 1.2.4 and statistical annex A2.9)",
+   "url": "https://www.bkam.ma/content/download/788536/8758333/RA-2022-FR.pdf",
+   "published": "2023-07-21",
+   "accessed": "2026-11-12"
+  },
+  "depf_355": {
+   "publisher": "DEPF, Ministère de l’Economie et des Finances",
+   "kind": "official",
+   "title": "Note de conjoncture n° 355, septembre 2026",
+   "url": "https://www.finances.gov.ma/Publication/depf/2026/nc355.pdf",
+   "published": "2026-09",
+   "accessed": "2026-11-12"
+  },
+  "depf_356": {
+   "publisher": "DEPF, Ministère de l’Economie et des Finances",
+   "kind": "official",
+   "title": "Note de conjoncture n° 356, octobre 2026",
+   "url": "https://www.finances.gov.ma/Publication/depf/2026/NC356.pdf",
+   "published": "2026-10",
+   "accessed": "2026-11-12"
+  },
+  "sec_ecoactu_onda2025": {
+   "publisher": "EcoActu, reporting ONDA figures announced by the Minister of Transport",
+   "kind": "secondary",
+   "title": "Trafic aérien : plus de 36 millions de passagers en 2025 (ONDA)",
+   "url": "https://ecoactu.ma/trafic-aerien-plus-de-36-millions-de-passagers-en-2025-onda/",
+   "published": "2026-05-26",
+   "accessed": "2026-11-12"
+  },
+  "sec_hespress_depf_air2025": {
+   "publisher": "Hespress FR, reporting the DEPF",
+   "kind": "secondary",
+   "title": "DEPF : le transport aérien signe un record de 36,4 millions de passagers en 2025",
+   "url": "https://fr.hespress.com/460529-460529.html",
+   "published": null,
+   "accessed": "2026-11-12"
+  },
+  "sec_lavieeco_onda2024": {
+   "publisher": "La Vie éco, reporting the ONDA board meeting of 2 April 2025",
+   "kind": "secondary",
+   "title": "ONDA : une dynamique sans précédent (32,7 millions de passagers en 2024, +21%; 2025 target 37,6 millions)",
+   "url": "https://www.lavieeco.com/affaires/onda-une-dynamique-sans-precedent-portee-par-la-strategie-aeroports-2030/",
+   "published": "2025-04-02",
+   "accessed": "2026-11-12"
+  },
+  "sec_bladi_depf_air2024": {
+   "publisher": "Bladi.net, reporting ONDA figures cited by the DEPF",
+   "kind": "secondary",
+   "title": "Trafic aérien au Maroc : l’année de tous les records (32,7 millions, +21%)",
+   "url": "https://www.bladi.net/trafic-aerien-maroc-annee-tous-records,113395.html",
+   "published": "2025-03-02",
+   "accessed": "2026-11-12"
+  },
+  "sec_hespress_air0826": {
+   "publisher": "Hespress FR, reporting ONDA",
+   "kind": "secondary",
+   "title": "Aéroports : le Maroc dépasse les 26 millions de passagers à fin août (2026)",
+   "url": "https://fr.hespress.com/493214-aeroports-marocains-plus-de-26-millions-de-passagers-a-fin-aout.html",
+   "published": "2026-10-20",
+   "accessed": "2026-11-12"
+  },
+  "sec_hespress_rak2025": {
+   "publisher": "Hespress FR, reporting ONDA",
+   "kind": "secondary",
+   "title": "Marrakech-Menara : trafic en hausse de 10,09% en 2025",
+   "url": "https://fr.hespress.com/460832-marrakech-menara-le-trafic-international-des-passagers-en-hausse-de-1009-en-2025.html",
+   "published": "2026-02-04",
+   "accessed": "2026-11-12"
+  },
+  "sec_hespress_aga2025": {
+   "publisher": "Hespress FR, reporting ONDA",
+   "kind": "secondary",
+   "title": "Aéroport Agadir Al-Massira : trafic en hausse de 11,07% en 2025",
+   "url": "https://fr.hespress.com/461002-aeroport-agadir-al-massira-le-trafic-des-passagers-en-hausse-de-11-07-en-2025.html",
+   "published": "2026-02-09",
+   "accessed": "2026-11-12"
+  },
+  "sec_hespress_rba2025": {
+   "publisher": "Hespress FR, reporting ONDA",
+   "kind": "secondary",
+   "title": "Aéroport Rabat-Salé : hausse de plus de 25% du trafic des passagers en 2025",
+   "url": "https://fr.hespress.com/461315-aeroport-rabat-sale-hausse-de-plus-de-25-du-trafic-des-passagers-en-2025.html",
+   "published": "2026-02-05",
+   "accessed": "2026-11-12"
+  },
+  "sec_mwn_cmn2025": {
+   "publisher": "Morocco World News / North Africa Post, reporting an ONDA statement of 25 December 2025",
+   "kind": "secondary",
+   "title": "Casablanca airport: 10.5 million in 2024 to 11.5 million in 2025 (+9.3%), year-end projection",
+   "url": "https://northafricapost.com/93604-casablanca-airport-hits-11-million-passengers-as-can-2025-spurs-record-traffic.html",
+   "published": "2025-12-26",
+   "accessed": "2026-11-12"
+  },
+  "sec_telquel_ytd0926": {
+   "publisher": "TelQuel, reporting the Ministry of Tourism",
+   "kind": "secondary",
+   "title": "15,7 millions de touristes accueillis au Maroc à fin septembre 2026",
+   "url": "https://telquel.ma/instant-t/2026/10/08/157-millions-de-touristes-accueillis-au-maroc-a-fin-septembre-2026_2012035/",
+   "published": "2026-10-08",
+   "accessed": "2026-11-12"
+  }
+ },
+ "series": [
+  {
+   "id": "arrivals_total",
+   "metric": "arrivals",
+   "label": "Arrivals at border posts (foreign tourists and MRE)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2013",
+     "value": 10046264,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2014",
+     "value": 10282944,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2015",
+     "value": 10176762,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2016",
+     "value": 10331731,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2017",
+     "value": 11349344,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2018",
+     "value": 12288708,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2019",
+     "value": 12932734,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2020",
+     "value": 2777802,
+     "status": "final",
+     "source": "mt_ind",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 3721702,
+     "status": "final",
+     "source": "mt_ind",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 10868863,
+     "status": "final",
+     "source": "mt_ind",
+     "note": "Borders closed 29 Nov 2021 – 7 Feb 2022"
+    },
+    {
+     "period": "2023",
+     "value": 14524727,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2024",
+     "value": 17411949,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2025",
+     "value": 19792594,
+     "status": "final",
+     "source": "mt_ind"
+    }
+   ]
+  },
+  {
+   "id": "arrivals_ytd",
+   "metric": "arrivals",
+   "label": "Arrivals at border posts, year to date",
+   "unit": "arrivals",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 14100000,
+     "status": "provisional",
+     "source": "depf_355",
+     "yoy_pct": 4.5,
+     "rounded": true
+    },
+    {
+     "period": "2026-01/2026-09",
+     "value": 15700000,
+     "status": "provisional",
+     "source": "depf_356",
+     "yoy_pct": 5.0,
+     "rounded": true,
+     "also": [
+      "sec_telquel_ytd0926"
+     ]
+    },
+    {
+     "period": "2026-01/2026-10",
+     "value": 17400000,
+     "status": "provisional",
+     "source": "obs_home",
+     "yoy_pct": 5.0,
+     "rounded": true
+    }
+   ]
+  },
+  {
+   "id": "arrivals_tes",
+   "metric": "arrivals",
+   "label": "Arrivals: foreign tourists (TES)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 7043006,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 1407994,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1284335,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 5064774,
+     "status": "final",
+     "source": "bam_ra2022",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 7150000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 8798000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "note": "From 2025 the Ministry no longer splits arrivals into foreign tourists and MRE (Bank Al-Maghrib, Rapport annuel 2025, note 1, p. 36)."
+  },
+  {
+   "id": "arrivals_mre",
+   "metric": "arrivals",
+   "label": "Arrivals: Moroccans resident abroad (MRE)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 5889254,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 1369808,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 2437367,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 5804000,
+     "status": "final",
+     "source": "bam_ra2022",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 7375000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 8614000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "note": "From 2025 the Ministry no longer splits arrivals into foreign tourists and MRE."
+  },
+  {
+   "id": "arrivals_tes_France",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from France",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1991000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 1505000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 1999000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 2422000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "France"
+   }
+  },
+  {
+   "id": "arrivals_tes_Spain",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Spain",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 881000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 902000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 1304000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 1498000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Spain"
+   }
+  },
+  {
+   "id": "arrivals_tes_United Kingdom",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from United Kingdom",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 551000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 482000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 679000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 999000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "United Kingdom"
+   }
+  },
+  {
+   "id": "arrivals_tes_Italy",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Italy",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 352000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 240000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 335000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 452000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Italy"
+   }
+  },
+  {
+   "id": "arrivals_tes_Germany",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Germany",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 413000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 171000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 281000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 361000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Germany"
+   }
+  },
+  {
+   "id": "arrivals_tes_United States",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from United States",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 347000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 231000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 332000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 351000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "United States"
+   }
+  },
+  {
+   "id": "arrivals_tes_Canada",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Canada",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 131000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 72000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 108000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 126000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Canada"
+   }
+  },
+  {
+   "id": "arrivals_tes_China",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from China",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 141000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 28000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 60000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 106000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "China"
+   }
+  },
+  {
+   "id": "arrivals_tes_Senegal",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Senegal",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 58000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 57000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 69000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 86000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Senegal"
+   }
+  },
+  {
+   "id": "arrivals_tes_Mauritania",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Mauritania",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 49000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 44000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 61000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 74000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Mauritania"
+   }
+  },
+  {
+   "id": "arrivals_tes_Ireland",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Ireland",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 26000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 30000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 43000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 56000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Ireland"
+   }
+  },
+  {
+   "id": "arrivals_tes_Tunisia",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Tunisia",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 58000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 36000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 48000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 56000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Tunisia"
+   }
+  },
+  {
+   "id": "arrivals_tes_Russia",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Russia",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 40000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 18000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 33000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 53000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Russia"
+   }
+  },
+  {
+   "id": "arrivals_tes_Algeria",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from Algeria",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 117000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 35000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 47000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 51000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "Algeria"
+   }
+  },
+  {
+   "id": "arrivals_tes_India",
+   "metric": "arrivals_tes_by_nationality",
+   "label": "Foreign tourists (TES) from India",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 17000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2022",
+     "value": 13000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2023",
+     "value": 29000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 41000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "dim": {
+    "market": "India"
+   }
+  },
+  {
+   "id": "arrivals_mkt_France",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from France (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 4189230,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 4403040,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 5194625,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 5763404,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "France"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Spain",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Spain (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2148639,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 3536715,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 4052867,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 4551618,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Spain"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Belgium",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Belgium (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 900643,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 956197,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 1126791,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 1241679,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Belgium"
+   }
+  },
+  {
+   "id": "arrivals_mkt_United Kingdom",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from United Kingdom (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 630461,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 824775,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 1194222,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 1405135,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "United Kingdom"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Italy",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Italy (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 865876,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 760015,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 951253,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 1148433,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Italy"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Netherlands",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Netherlands (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 776609,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 694985,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 822718,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 948400,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Netherlands"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Germany",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Germany (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 682863,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 665696,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 843024,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 932712,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Germany"
+   }
+  },
+  {
+   "id": "arrivals_mkt_United States",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from United States (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 437451,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 399335,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 421862,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 481239,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "United States"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Canada",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Canada (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 214559,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 171878,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 200847,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 258304,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Canada"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Portugal",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Portugal (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 128334,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 172686,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 230780,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 236372,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Portugal"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Switzerland",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Switzerland (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 126908,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 152521,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 186319,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 218364,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Switzerland"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Saudi Arabia",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Saudi Arabia (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 102897,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 128598,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 160418,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 189831,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Saudi Arabia"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Poland",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Poland (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 80125,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 94355,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 152933,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 193137,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Poland"
+   }
+  },
+  {
+   "id": "arrivals_mkt_China",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from China (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 141670,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 59719,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 106483,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 148557,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "China"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Turkey",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Turkey (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 43215,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 111924,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 125909,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 138144,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Turkey"
+   }
+  },
+  {
+   "id": "arrivals_mkt_Other",
+   "metric": "arrivals_by_market",
+   "label": "Arrivals from Other (residence, MRE included)",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1463254,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2023",
+     "value": 1392288,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2024",
+     "value": 1640898,
+     "status": "final",
+     "source": "mt_nat"
+    },
+    {
+     "period": "2025",
+     "value": 1937265,
+     "status": "final",
+     "source": "mt_nat"
+    }
+   ],
+   "dim": {
+    "key": "Other"
+   }
+  },
+  {
+   "id": "nights_mkt_Non-residents",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Non-residents",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 24103539,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 24278595,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 28232335,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 31362960,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Non-residents"
+   }
+  },
+  {
+   "id": "nights_mkt_France",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: France",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 6647551,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 7128999,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 7744049,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 7969903,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "France"
+   }
+  },
+  {
+   "id": "nights_mkt_United Kingdom",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: United Kingdom",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2782623,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 3334871,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 4596425,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 5475421,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "United Kingdom"
+   }
+  },
+  {
+   "id": "nights_mkt_Spain",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Spain",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1369291,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 1675660,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 1782068,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 1819956,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Spain"
+   }
+  },
+  {
+   "id": "nights_mkt_Germany",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Germany",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2218028,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 1368584,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 1740488,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 1839823,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Germany"
+   }
+  },
+  {
+   "id": "nights_mkt_United States",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: United States",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1250376,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 1341394,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 1309686,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 1653777,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "United States"
+   }
+  },
+  {
+   "id": "nights_mkt_Belgium",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Belgium",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 768290,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 726058,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 889764,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 972664,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Belgium"
+   }
+  },
+  {
+   "id": "nights_mkt_Italy",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Italy",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 763751,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 841756,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 1027186,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 1208279,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Italy"
+   }
+  },
+  {
+   "id": "nights_mkt_Netherlands",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Netherlands",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 632244,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 635702,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 808183,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 904329,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Netherlands"
+   }
+  },
+  {
+   "id": "nights_mkt_Portugal",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Portugal",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 403126,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 422597,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 529046,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 495226,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Portugal"
+   }
+  },
+  {
+   "id": "nights_mkt_Poland",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Poland",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 364914,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 303742,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 470582,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 616992,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Poland"
+   }
+  },
+  {
+   "id": "nights_mkt_China",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: China",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 520145,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 254496,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 476771,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 642288,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "China"
+   }
+  },
+  {
+   "id": "nights_mkt_Canada",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Canada",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 323589,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 341747,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 379835,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 469994,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Canada"
+   }
+  },
+  {
+   "id": "nights_mkt_Other",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Other",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 6059611,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 5902989,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 6478252,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 7294308,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Other"
+   }
+  },
+  {
+   "id": "nights_mkt_Residents (Moroccans living in Morocco)",
+   "metric": "nights_by_market",
+   "label": "Nights in classified accommodation: Residents (Moroccans living in Morocco)",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 10618637,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2023",
+     "value": 11595647,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2024",
+     "value": 11683213,
+     "status": "final",
+     "source": "mt_mkt"
+    },
+    {
+     "period": "2025",
+     "value": 12063970,
+     "status": "final",
+     "source": "mt_mkt"
+    }
+   ],
+   "dim": {
+    "key": "Residents (Moroccans living in Morocco)"
+   }
+  },
+  {
+   "id": "arrivals_mode_Air",
+   "metric": "arrivals_by_mode",
+   "label": "Arrivals by air",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 9081935,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 9614665,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 11813294,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 13659344,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air"
+   }
+  },
+  {
+   "id": "arrivals_entry_Marrakech - Ménara",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Marrakech - Ménara",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 3093897,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 3254555,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 4314097,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 4799837,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Marrakech - Ménara"
+   }
+  },
+  {
+   "id": "arrivals_entry_Casablanca Mohammed V",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Casablanca Mohammed V",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2527344,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 2295893,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 2508032,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 3147674,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Casablanca Mohammed V"
+   }
+  },
+  {
+   "id": "arrivals_entry_Agadir Al Massira",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Agadir Al Massira",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 874510,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 944164,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 1272713,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 1402010,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Agadir Al Massira"
+   }
+  },
+  {
+   "id": "arrivals_entry_Tanger Ibn Battouta",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Tanger Ibn Battouta",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 697948,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 789147,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 959362,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 1176783,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Tanger Ibn Battouta"
+   }
+  },
+  {
+   "id": "arrivals_entry_Fès Saïss",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Fès Saïss",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 574206,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 705630,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 798610,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 818399,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Fès Saïss"
+   }
+  },
+  {
+   "id": "arrivals_entry_Rabat-Salé",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Rabat-Salé",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 462918,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 450792,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 638242,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 827717,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Rabat-Salé"
+   }
+  },
+  {
+   "id": "arrivals_entry_Nador El Aroui",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Nador El Aroui",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 354843,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 452355,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 473300,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 565299,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Nador El Aroui"
+   }
+  },
+  {
+   "id": "arrivals_entry_Oujda Angads",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Oujda Angads",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 291963,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 382540,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 402806,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 410811,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Oujda Angads"
+   }
+  },
+  {
+   "id": "arrivals_entry_Tétouan Saniat R'mel",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Tétouan Saniat R'mel",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 11848,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 97260,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 139394,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 153161,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Tétouan Saniat R'mel"
+   }
+  },
+  {
+   "id": "arrivals_entry_Essaouira Mogador",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Essaouira Mogador",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 60559,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 87612,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 106126,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 148722,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Essaouira Mogador"
+   }
+  },
+  {
+   "id": "arrivals_entry_Ouarzazate",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Ouarzazate",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 45003,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 51550,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 58887,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 56775,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Air",
+    "entry": "Ouarzazate"
+   }
+  },
+  {
+   "id": "arrivals_mode_Sea",
+   "metric": "arrivals_by_mode",
+   "label": "Arrivals by sea",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2320964,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 1927728,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 2186737,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 2548003,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Sea"
+   }
+  },
+  {
+   "id": "arrivals_entry_Port de Tanger Med",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Port de Tanger Med",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1258640,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 1049499,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 1219275,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 1409395,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Sea",
+    "entry": "Port de Tanger Med"
+   }
+  },
+  {
+   "id": "arrivals_entry_Port de Tanger Ville",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Port de Tanger Ville",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 670515,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 533991,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 563792,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 668835,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Sea",
+    "entry": "Port de Tanger Ville"
+   }
+  },
+  {
+   "id": "arrivals_entry_Port Nador West Med",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Port Nador West Med",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 315461,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 295246,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 356145,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 416593,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Sea",
+    "entry": "Port Nador West Med"
+   }
+  },
+  {
+   "id": "arrivals_mode_Land",
+   "metric": "arrivals_by_mode",
+   "label": "Arrivals by land",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1529835,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 2982334,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 3411918,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 3585247,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Land"
+   }
+  },
+  {
+   "id": "arrivals_entry_Bab Sebta",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Bab Sebta",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1049192,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 1533951,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 1823649,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 1998114,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Land",
+    "entry": "Bab Sebta"
+   }
+  },
+  {
+   "id": "arrivals_entry_Béni Anzar",
+   "metric": "arrivals_by_entry",
+   "label": "Arrivals through Béni Anzar",
+   "unit": "arrivals",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 435843,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2023",
+     "value": 1391376,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2024",
+     "value": 1518487,
+     "status": "final",
+     "source": "mt_pf"
+    },
+    {
+     "period": "2025",
+     "value": 1512448,
+     "status": "final",
+     "source": "mt_pf"
+    }
+   ],
+   "dim": {
+    "mode": "Land",
+    "entry": "Béni Anzar"
+   }
+  },
+  {
+   "id": "nights_total",
+   "metric": "nights",
+   "label": "Nights in classified tourist accommodation (EHTC), current basis",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 34722176,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2023",
+     "value": 35874242,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2024",
+     "value": 39915548,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2025",
+     "value": 43426930,
+     "status": "final",
+     "source": "mt_ind"
+    }
+   ],
+   "basis": "current",
+   "note": "Current, wider basis. Comparable years: 2019 and 2023 onwards. 2020–2022 exist only on the previous basis."
+  },
+  {
+   "id": "nights_total_previous_basis",
+   "metric": "nights",
+   "label": "Nights in classified accommodation, previous basis (not comparable with the current basis)",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2013",
+     "value": 19121947,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2014",
+     "value": 19601022,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2015",
+     "value": 18458252,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2016",
+     "value": 19219559,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2017",
+     "value": 22075722,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2018",
+     "value": 23996814,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2019",
+     "value": 25244000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2020",
+     "value": 6988019,
+     "status": "final",
+     "source": "mt_ind",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 9191625,
+     "status": "final",
+     "source": "mt_ind",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 19006491,
+     "status": "final",
+     "source": "mt_ind"
+    },
+    {
+     "period": "2023",
+     "value": 25641000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    },
+    {
+     "period": "2024",
+     "value": 28685000,
+     "status": "final",
+     "source": "bam_ra2024",
+     "rounded": true
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "note": "The Ministry’s current file mixes both bases: 2013–2018 and 2020–2022 are on the previous basis, 2019 and 2023+ on the current one. On the current basis 2024 is 39.9 million; on the previous basis 28.7 million. Kept for reference only, not shown on screens."
+  },
+  {
+   "id": "nights_ytd",
+   "metric": "nights",
+   "label": "Nights in classified accommodation, year to date",
+   "unit": "nights",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 30800000,
+     "status": "provisional",
+     "source": "depf_356",
+     "yoy_pct": 8.0,
+     "rounded": true
+    },
+    {
+     "period": "2026-01/2026-09",
+     "value": 34800000,
+     "status": "provisional",
+     "source": "obs_home",
+     "yoy_pct": 7.0,
+     "rounded": true
+    }
+   ],
+   "basis": "current"
+  },
+  {
+   "id": "nights_region_Marrakech-Safi",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Marrakech-Safi region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 14057754,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 13878639,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 16032879,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 16587927,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Marrakech-Safi"
+   }
+  },
+  {
+   "id": "nights_region_Souss-Massa",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Souss-Massa region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 6612595,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 6928972,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 7906504,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 8826281,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Souss-Massa"
+   }
+  },
+  {
+   "id": "nights_region_Casablanca-Settat",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Casablanca-Settat region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 3331815,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 3383889,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 3789184,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 4309378,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Casablanca-Settat"
+   }
+  },
+  {
+   "id": "nights_region_Tanger-Tétouan-Al Hoceima",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Tanger-Tétouan-Al Hoceima region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2700392,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 3280167,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 3461987,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 3961610,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Tanger-Tétouan-Al Hoceima"
+   }
+  },
+  {
+   "id": "nights_region_Fès-Meknès",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Fès-Meknès region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2824277,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 2701483,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 2846060,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 3105488,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Fès-Meknès"
+   }
+  },
+  {
+   "id": "nights_region_Rabat-Salé-Kénitra",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Rabat-Salé-Kénitra region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1201035,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 1405178,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 1462301,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 1681064,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Rabat-Salé-Kénitra"
+   }
+  },
+  {
+   "id": "nights_region_Oriental",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Oriental region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 950106,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 1018053,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 1034930,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 1118316,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Oriental"
+   }
+  },
+  {
+   "id": "nights_region_Drâa-Tafilalt",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Drâa-Tafilalt region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1907486,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 1859335,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 1913433,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 2356993,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Drâa-Tafilalt"
+   }
+  },
+  {
+   "id": "nights_region_Beni Mellal-Khénifra",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Beni Mellal-Khénifra region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 455938,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 624237,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 595705,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 568289,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Beni Mellal-Khénifra"
+   }
+  },
+  {
+   "id": "nights_region_Dakhla-Oued Ed Dahab",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Dakhla-Oued Ed Dahab region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 267388,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 387855,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 456926,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 468324,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Dakhla-Oued Ed Dahab"
+   }
+  },
+  {
+   "id": "nights_region_Laâyoune-Sakia El Hamra",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Laâyoune-Sakia El Hamra region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 222909,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 212030,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 250048,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 274809,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Laâyoune-Sakia El Hamra"
+   }
+  },
+  {
+   "id": "nights_region_Guelmim-Oued Noun",
+   "metric": "nights_by_region",
+   "label": "Nights in classified accommodation, Guelmim-Oued Noun region",
+   "unit": "nights",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 190481,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2023",
+     "value": 194404,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2024",
+     "value": 165591,
+     "status": "final",
+     "source": "mt_dest"
+    },
+    {
+     "period": "2025",
+     "value": 168451,
+     "status": "final",
+     "source": "mt_dest"
+    }
+   ],
+   "dim": {
+    "key": "Guelmim-Oued Noun"
+   }
+  },
+  {
+   "id": "occupancy_Morocco",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Morocco",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 55,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 58,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Morocco"
+   }
+  },
+  {
+   "id": "occupancy_Marrakech",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Marrakech",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 71,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 73,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Marrakech"
+   }
+  },
+  {
+   "id": "occupancy_Agadir",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Agadir",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 69,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 72,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Agadir"
+   }
+  },
+  {
+   "id": "occupancy_Casablanca",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Casablanca",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 53,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 57,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Casablanca"
+   }
+  },
+  {
+   "id": "occupancy_Tanger",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Tanger",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 54,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 54,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Tanger"
+   }
+  },
+  {
+   "id": "occupancy_Fès",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Fès",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 52,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 56,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Fès"
+   }
+  },
+  {
+   "id": "occupancy_Al Haouz",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Al Haouz",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 74,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 78,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Al Haouz"
+   }
+  },
+  {
+   "id": "occupancy_Essaouira",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Essaouira",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 54,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 57,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Essaouira"
+   }
+  },
+  {
+   "id": "occupancy_Rabat",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Rabat",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 51,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 54,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Rabat"
+   }
+  },
+  {
+   "id": "occupancy_Ouarzazate",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Ouarzazate",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 39,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 47,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Ouarzazate"
+   }
+  },
+  {
+   "id": "occupancy_Errachidia",
+   "metric": "occupancy",
+   "label": "Occupancy rate, classified accommodation: Errachidia",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 38,
+     "status": "final",
+     "source": "bam_ra2025"
+    },
+    {
+     "period": "2025",
+     "value": 41,
+     "status": "final",
+     "source": "bam_ra2025"
+    }
+   ],
+   "basis": "current",
+   "dim": {
+    "city": "Errachidia"
+   }
+  },
+  {
+   "id": "occupancy_prev_Morocco",
+   "metric": "occupancy",
+   "label": "Occupancy rate, previous basis: Morocco",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 48,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 26,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 25,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 41,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2023",
+     "value": 48,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2024",
+     "value": 51,
+     "status": "final",
+     "source": "bam_ra2024"
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "dim": {
+    "city": "Morocco"
+   },
+   "note": "Previous basis. Bank Al-Maghrib’s 2025 report restates 2024 on the current basis (Morocco 51% → 55%), so these are not comparable with 2024–2025 above."
+  },
+  {
+   "id": "occupancy_prev_Marrakech",
+   "metric": "occupancy",
+   "label": "Occupancy rate, previous basis: Marrakech",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 64,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 32,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 28,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 55,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2023",
+     "value": 67,
+     "status": "final",
+     "source": "bam_ra2023"
+    },
+    {
+     "period": "2024",
+     "value": 72,
+     "status": "final",
+     "source": "bam_ra2024"
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "dim": {
+    "city": "Marrakech"
+   },
+   "note": "Previous basis. Bank Al-Maghrib’s 2025 report restates 2024 on the current basis (Morocco 51% → 55%), so these are not comparable with 2024–2025 above."
+  },
+  {
+   "id": "occupancy_prev_Agadir",
+   "metric": "occupancy",
+   "label": "Occupancy rate, previous basis: Agadir",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 58,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 36,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 29,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 52,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2023",
+     "value": 61,
+     "status": "final",
+     "source": "bam_ra2023"
+    },
+    {
+     "period": "2024",
+     "value": 69,
+     "status": "final",
+     "source": "bam_ra2024"
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "dim": {
+    "city": "Agadir"
+   },
+   "note": "Previous basis. Bank Al-Maghrib’s 2025 report restates 2024 on the current basis (Morocco 51% → 55%), so these are not comparable with 2024–2025 above."
+  },
+  {
+   "id": "occupancy_prev_Casablanca",
+   "metric": "occupancy",
+   "label": "Occupancy rate, previous basis: Casablanca",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 50,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 22,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 23,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 37,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2023",
+     "value": 43,
+     "status": "final",
+     "source": "bam_ra2023"
+    },
+    {
+     "period": "2024",
+     "value": 47,
+     "status": "final",
+     "source": "bam_ra2024"
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "dim": {
+    "city": "Casablanca"
+   },
+   "note": "Previous basis. Bank Al-Maghrib’s 2025 report restates 2024 on the current basis (Morocco 51% → 55%), so these are not comparable with 2024–2025 above."
+  },
+  {
+   "id": "occupancy_prev_Tanger",
+   "metric": "occupancy",
+   "label": "Occupancy rate, previous basis: Tanger",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 55,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 25,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 33,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 48,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2023",
+     "value": 52,
+     "status": "final",
+     "source": "bam_ra2023"
+    },
+    {
+     "period": "2024",
+     "value": 52,
+     "status": "final",
+     "source": "bam_ra2024"
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "dim": {
+    "city": "Tanger"
+   },
+   "note": "Previous basis. Bank Al-Maghrib’s 2025 report restates 2024 on the current basis (Morocco 51% → 55%), so these are not comparable with 2024–2025 above."
+  },
+  {
+   "id": "occupancy_prev_Rabat",
+   "metric": "occupancy",
+   "label": "Occupancy rate, previous basis: Rabat",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 55,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 27,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 27,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 46,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2023",
+     "value": 52,
+     "status": "final",
+     "source": "bam_ra2023"
+    },
+    {
+     "period": "2024",
+     "value": 52,
+     "status": "final",
+     "source": "bam_ra2024"
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "dim": {
+    "city": "Rabat"
+   },
+   "note": "Previous basis. Bank Al-Maghrib’s 2025 report restates 2024 on the current basis (Morocco 51% → 55%), so these are not comparable with 2024–2025 above."
+  },
+  {
+   "id": "occupancy_prev_Fès",
+   "metric": "occupancy",
+   "label": "Occupancy rate, previous basis: Fès",
+   "unit": "%",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 42,
+     "status": "final",
+     "source": "bam_ra2022"
+    },
+    {
+     "period": "2020",
+     "value": 24,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 37,
+     "status": "final",
+     "source": "bam_ra2022",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 42,
+     "status": "final",
+     "source": "bam_ra2024"
+    },
+    {
+     "period": "2023",
+     "value": 43,
+     "status": "final",
+     "source": "bam_ra2023"
+    },
+    {
+     "period": "2024",
+     "value": 43,
+     "status": "final",
+     "source": "bam_ra2024"
+    }
+   ],
+   "basis": "previous",
+   "display": false,
+   "dim": {
+    "city": "Fès"
+   },
+   "note": "Previous basis. Bank Al-Maghrib’s 2025 report restates 2024 on the current basis (Morocco 51% → 55%), so these are not comparable with 2024–2025 above."
+  },
+  {
+   "id": "receipts_monthly",
+   "metric": "receipts",
+   "label": "Travel receipts, monthly",
+   "unit": "MAD million",
+   "freq": "M",
+   "points": [
+    {
+     "period": "2004-01",
+     "value": 2763.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-02",
+     "value": 2436.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-03",
+     "value": 2269.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-04",
+     "value": 2228.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-05",
+     "value": 1821.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-06",
+     "value": 2124.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-07",
+     "value": 4257.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-08",
+     "value": 6149.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-09",
+     "value": 2695.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-10",
+     "value": 2394.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-11",
+     "value": 2514.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2004-12",
+     "value": 3138.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-01",
+     "value": 3182.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-02",
+     "value": 2556.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-03",
+     "value": 2919.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-04",
+     "value": 2413.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-05",
+     "value": 2708.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-06",
+     "value": 2321.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-07",
+     "value": 4794.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-08",
+     "value": 7685.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-09",
+     "value": 3555.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-10",
+     "value": 2806.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-11",
+     "value": 2764.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005-12",
+     "value": 3259.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-01",
+     "value": 4246.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-02",
+     "value": 2910.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-03",
+     "value": 3404.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-04",
+     "value": 3595.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-05",
+     "value": 4176.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-06",
+     "value": 3691.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-07",
+     "value": 6371.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-08",
+     "value": 8735.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-09",
+     "value": 3797.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-10",
+     "value": 2977.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-11",
+     "value": 3611.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006-12",
+     "value": 4967.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-01",
+     "value": 4774.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-02",
+     "value": 3205.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-03",
+     "value": 4005.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-04",
+     "value": 4156.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-05",
+     "value": 3614.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-06",
+     "value": 3717.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-07",
+     "value": 7694.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-08",
+     "value": 9798.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-09",
+     "value": 4225.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-10",
+     "value": 4581.5,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-11",
+     "value": 3946.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007-12",
+     "value": 4953.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-01",
+     "value": 4323.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-02",
+     "value": 3507.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-03",
+     "value": 4053.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-04",
+     "value": 4419.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-05",
+     "value": 4118.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-06",
+     "value": 4041.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-07",
+     "value": 8307.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-08",
+     "value": 8141.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-09",
+     "value": 3458.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-10",
+     "value": 3822.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-11",
+     "value": 3030.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008-12",
+     "value": 4328.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-01",
+     "value": 3361.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-02",
+     "value": 2551.5,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-03",
+     "value": 3197.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-04",
+     "value": 3843.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-05",
+     "value": 3743.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-06",
+     "value": 3963.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-07",
+     "value": 7967.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-08",
+     "value": 7519.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-09",
+     "value": 3933.1,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-10",
+     "value": 4196.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-11",
+     "value": 4104.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009-12",
+     "value": 4452.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-01",
+     "value": 3559.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-02",
+     "value": 3076.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-03",
+     "value": 3764.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-04",
+     "value": 4125.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-05",
+     "value": 3970.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-06",
+     "value": 4111.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-07",
+     "value": 7864.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-08",
+     "value": 7287.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-09",
+     "value": 4982.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-10",
+     "value": 4607.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-11",
+     "value": 4783.5,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010-12",
+     "value": 4287.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-01",
+     "value": 4213.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-02",
+     "value": 3499.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-03",
+     "value": 4406.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-04",
+     "value": 4343.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-05",
+     "value": 4364.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-06",
+     "value": 4572.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-07",
+     "value": 8201.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-08",
+     "value": 6734.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-09",
+     "value": 4889.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-10",
+     "value": 4821.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-11",
+     "value": 4702.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011-12",
+     "value": 4160.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-01",
+     "value": 4115.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-02",
+     "value": 3865.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-03",
+     "value": 3943.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-04",
+     "value": 4507.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-05",
+     "value": 4115.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-06",
+     "value": 4216.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-07",
+     "value": 6144.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-08",
+     "value": 7169.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-09",
+     "value": 5276.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-10",
+     "value": 5276.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-11",
+     "value": 4743.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012-12",
+     "value": 4466.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-01",
+     "value": 4348.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-02",
+     "value": 3653.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-03",
+     "value": 3701.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-04",
+     "value": 4466.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-05",
+     "value": 4744.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-06",
+     "value": 4021.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-07",
+     "value": 4719.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-08",
+     "value": 9209.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-09",
+     "value": 5185.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-10",
+     "value": 5376.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-11",
+     "value": 3998.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013-12",
+     "value": 4194.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-01",
+     "value": 4585.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-02",
+     "value": 3619.5,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-03",
+     "value": 4589.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-04",
+     "value": 5178.5,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-05",
+     "value": 4745.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-06",
+     "value": 4556.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-07",
+     "value": 5416.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-08",
+     "value": 10079.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-09",
+     "value": 5589.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-10",
+     "value": 5533.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-11",
+     "value": 3755.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014-12",
+     "value": 4383.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-01",
+     "value": 4192.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-02",
+     "value": 3586.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-03",
+     "value": 4226.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-04",
+     "value": 4747.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-05",
+     "value": 4491.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-06",
+     "value": 4153.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-07",
+     "value": 6409.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-08",
+     "value": 10247.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-09",
+     "value": 5803.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-10",
+     "value": 5453.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-11",
+     "value": 3842.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015-12",
+     "value": 4001.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-01",
+     "value": 3902.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-02",
+     "value": 3849.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-03",
+     "value": 4978.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-04",
+     "value": 5085.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-05",
+     "value": 4893.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-06",
+     "value": 3715.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-07",
+     "value": 6555.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-08",
+     "value": 11562.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-09",
+     "value": 6834.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-10",
+     "value": 4740.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-11",
+     "value": 4258.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016-12",
+     "value": 3855.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-01",
+     "value": 4190.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-02",
+     "value": 3609.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-03",
+     "value": 4985.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-04",
+     "value": 5272.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-05",
+     "value": 5739.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-06",
+     "value": 3499.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-07",
+     "value": 7961.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-08",
+     "value": 12959.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-09",
+     "value": 7168.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-10",
+     "value": 5869.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-11",
+     "value": 5448.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017-12",
+     "value": 5428.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-01",
+     "value": 6256.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-02",
+     "value": 4535.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-03",
+     "value": 5372.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-04",
+     "value": 6165.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-05",
+     "value": 5201.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-06",
+     "value": 3905.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-07",
+     "value": 7256.6,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-08",
+     "value": 11278.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-09",
+     "value": 6245.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-10",
+     "value": 6229.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-11",
+     "value": 5397.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018-12",
+     "value": 5177.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-01",
+     "value": 5933.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-02",
+     "value": 4656.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-03",
+     "value": 5893.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-04",
+     "value": 6472.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-05",
+     "value": 5605.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-06",
+     "value": 4976.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-07",
+     "value": 7947.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-08",
+     "value": 11201.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-09",
+     "value": 7469.2,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-10",
+     "value": 6867.7,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-11",
+     "value": 5837.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019-12",
+     "value": 5885.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2020-01",
+     "value": 6746.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-02",
+     "value": 5420.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-03",
+     "value": 5043.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-04",
+     "value": 1562.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-05",
+     "value": 1051.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-06",
+     "value": 1249.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-07",
+     "value": 1728.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-08",
+     "value": 1813.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-09",
+     "value": 1727.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-10",
+     "value": 2392.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-11",
+     "value": 2983.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2020-12",
+     "value": 4736.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-01",
+     "value": 2593.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-02",
+     "value": 1847.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-03",
+     "value": 1020.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-04",
+     "value": 1152.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-05",
+     "value": 900.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-06",
+     "value": 1458.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-07",
+     "value": 4177.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-08",
+     "value": 7440.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-09",
+     "value": 4509.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-10",
+     "value": 3692.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-11",
+     "value": 3747.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021-12",
+     "value": 2041.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2022-01",
+     "value": 1148.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-02",
+     "value": 2422.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-03",
+     "value": 6750.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-04",
+     "value": 4814.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-05",
+     "value": 6064.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-06",
+     "value": 7116.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-07",
+     "value": 9689.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-08",
+     "value": 15967.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-09",
+     "value": 10336.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-10",
+     "value": 9154.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-11",
+     "value": 10870.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2022-12",
+     "value": 9527.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-01",
+     "value": 8680.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-02",
+     "value": 7412.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-03",
+     "value": 9150.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-04",
+     "value": 7269.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-05",
+     "value": 8612.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-06",
+     "value": 7579.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-07",
+     "value": 9739.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-08",
+     "value": 14708.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-09",
+     "value": 9090.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-10",
+     "value": 8597.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-11",
+     "value": 9164.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023-12",
+     "value": 7562.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-01",
+     "value": 8104.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-02",
+     "value": 7465.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-03",
+     "value": 8875.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-04",
+     "value": 8096.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-05",
+     "value": 9645.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-06",
+     "value": 7797.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-07",
+     "value": 10658.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-08",
+     "value": 17200.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-09",
+     "value": 10774.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-10",
+     "value": 10009.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-11",
+     "value": 7673.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024-12",
+     "value": 8179.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-01",
+     "value": 9835.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-02",
+     "value": 7669.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-03",
+     "value": 7593.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-04",
+     "value": 11515.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-05",
+     "value": 10302.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-06",
+     "value": 9093.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-07",
+     "value": 13637.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-08",
+     "value": 19595.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-09",
+     "value": 13609.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-10",
+     "value": 13395.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-11",
+     "value": 10287.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025-12",
+     "value": 12053.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2026-01",
+     "value": 11905.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2026-02",
+     "value": 10062.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2026-03",
+     "value": 9386.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2026-04",
+     "value": 13622.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2026-05",
+     "value": 9402.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2026-06",
+     "value": 11311.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    }
+   ]
+  },
+  {
+   "id": "receipts_total",
+   "metric": "receipts",
+   "label": "Travel receipts (spending by non-residents and MRE in Morocco)",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2004",
+     "value": 34793.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2005",
+     "value": 40967.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2006",
+     "value": 52485.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2007",
+     "value": 58673.9,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2008",
+     "value": 55550.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2009",
+     "value": 52833.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2010",
+     "value": 56421.5,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2011",
+     "value": 58904.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2012",
+     "value": 57835.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2013",
+     "value": 57614.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2014",
+     "value": 62033.8,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2015",
+     "value": 61150.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2016",
+     "value": 64226.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2017",
+     "value": 72127.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2018",
+     "value": 73022.3,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2019",
+     "value": 78747.4,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2020",
+     "value": 36450.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 34576.0,
+     "status": "final",
+     "source": "oc_monthly",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 93857.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2023",
+     "value": 107562.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2024",
+     "value": 114475.0,
+     "status": "final",
+     "source": "oc_monthly"
+    },
+    {
+     "period": "2025",
+     "value": 138583.0,
+     "status": "provisional",
+     "source": "oc_monthly"
+    }
+   ]
+  },
+  {
+   "id": "receipts_ytd",
+   "metric": "receipts",
+   "label": "Travel receipts, year to date",
+   "unit": "MAD million",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 97900,
+     "status": "provisional",
+     "source": "depf_356",
+     "yoy_pct": 9.7,
+     "rounded": true
+    },
+    {
+     "period": "2026-01/2026-09",
+     "value": 115257,
+     "status": "provisional",
+     "source": "oc_imee_2609",
+     "yoy_pct": 12.1,
+     "prior": 102848,
+     "also": [
+      "obs_home"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "receipts_country_France",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from France",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 25712.3,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 12156.9,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 13184.3,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 31005.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 34528.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 36914.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 43004.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "France"
+   }
+  },
+  {
+   "id": "receipts_country_Spain",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Spain",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 6684.1,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 3387.7,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 3226.0,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 14036.4,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 16458.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 17411.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 20531.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Spain"
+   }
+  },
+  {
+   "id": "receipts_country_Italy",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Italy",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 4809.1,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 1971.7,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 2043.8,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 6909.3,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 7781.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 8327.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 10556.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Italy"
+   }
+  },
+  {
+   "id": "receipts_country_United Kingdom",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from United Kingdom",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 6316.2,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 2986.6,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1373.2,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 6402.1,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 7654.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 8191.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 10120.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "United Kingdom"
+   }
+  },
+  {
+   "id": "receipts_country_Germany",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Germany",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 4742.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 2108.0,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1417.3,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 4241.8,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 5269.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 5634.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 6545.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Germany"
+   }
+  },
+  {
+   "id": "receipts_country_Belgium",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Belgium",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 3691.1,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 1472.2,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1699.0,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 4697.4,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 5179.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 5526.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 6394.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Belgium"
+   }
+  },
+  {
+   "id": "receipts_country_United States",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from United States",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 4815.8,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 1825.4,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1915.6,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 4303.2,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 5036.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 5369.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 6431.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "United States"
+   }
+  },
+  {
+   "id": "receipts_country_Netherlands",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Netherlands",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2753.9,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 1175.9,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1219.6,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 4262.5,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 4808.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 5160.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 6246.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Netherlands"
+   }
+  },
+  {
+   "id": "receipts_country_Saudi Arabia",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Saudi Arabia",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2788.6,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 1389.0,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1648.9,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 2179.9,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 2429.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 2602.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 3233.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Saudi Arabia"
+   }
+  },
+  {
+   "id": "receipts_country_Canada",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Canada",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1664.7,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 669.5,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 683.8,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 2005.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 2324.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 2492.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 3365.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Canada"
+   }
+  },
+  {
+   "id": "receipts_country_United Arab Emirates",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from United Arab Emirates",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 2106.4,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 1100.3,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 1326.1,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 1628.6,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 1819.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 1960.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 2517.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "United Arab Emirates"
+   }
+  },
+  {
+   "id": "receipts_country_Switzerland",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from Switzerland",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1219.4,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 556.7,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 557.5,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 893.2,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 1127.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 1214.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 1494.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "Switzerland"
+   }
+  },
+  {
+   "id": "receipts_country_China",
+   "metric": "receipts_by_country",
+   "label": "Travel receipts from China",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2019",
+     "value": 1147.9,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2020",
+     "value": 385.1,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 97.7,
+     "status": "final",
+     "source": "oc_country",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 264.9,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2023",
+     "value": 485.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2024",
+     "value": 543.0,
+     "status": "final",
+     "source": "oc_country"
+    },
+    {
+     "period": "2025",
+     "value": 795.0,
+     "status": "provisional",
+     "source": "oc_country"
+    }
+   ],
+   "dim": {
+    "country": "China"
+   }
+  },
+  {
+   "id": "travel_spending",
+   "metric": "travel_spending",
+   "label": "Travel spending by Moroccan residents abroad",
+   "unit": "MAD million",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2013",
+     "value": 11076.9,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2014",
+     "value": 12225.9,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2015",
+     "value": 13696.0,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2016",
+     "value": 14302.2,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2017",
+     "value": 17341.3,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2018",
+     "value": 18566.8,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2019",
+     "value": 20934.5,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2020",
+     "value": 10537.4,
+     "status": "final",
+     "source": "oc_spend",
+     "covid": true
+    },
+    {
+     "period": "2021",
+     "value": 10845.0,
+     "status": "final",
+     "source": "oc_spend",
+     "covid": true
+    },
+    {
+     "period": "2022",
+     "value": 19351.0,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2023",
+     "value": 26858.0,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2024",
+     "value": 29368.0,
+     "status": "final",
+     "source": "oc_spend"
+    },
+    {
+     "period": "2025",
+     "value": 33231.0,
+     "status": "final",
+     "source": "oc_spend"
+    }
+   ]
+  },
+  {
+   "id": "air_passengers_total",
+   "metric": "air_passengers",
+   "label": "Passengers at Moroccan airports (all airports)",
+   "unit": "passengers",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 32700000,
+     "status": "final",
+     "source": "sec_lavieeco_onda2024",
+     "rounded": true,
+     "also": [
+      "sec_bladi_depf_air2024"
+     ]
+    },
+    {
+     "period": "2025",
+     "value": 36300000,
+     "status": "final",
+     "source": "sec_ecoactu_onda2025",
+     "rounded": true,
+     "international": 32400000,
+     "domestic": 3900000,
+     "also": [
+      "sec_hespress_depf_air2025"
+     ]
+    }
+   ],
+   "secondary": true,
+   "note": "ONDA (Airports of Morocco) blocks automated access to its statistics; figures are ONDA’s as reported by the press."
+  },
+  {
+   "id": "air_passengers_ytd",
+   "metric": "air_passengers",
+   "label": "Passengers at Moroccan airports, year to date",
+   "unit": "passengers",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 26040927,
+     "status": "provisional",
+     "source": "sec_hespress_air0826",
+     "yoy_pct": 8.81,
+     "international": 23228711,
+     "domestic": 2812216,
+     "also": [
+      "depf_356"
+     ]
+    }
+   ],
+   "secondary": true,
+   "note": "Growth +8.8% to end-August also in the DEPF note n° 356 (official)."
+  },
+  {
+   "id": "airport_Casablanca CMN",
+   "metric": "airport_passengers",
+   "label": "Passengers, Casablanca CMN",
+   "unit": "passengers",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 10500000,
+     "status": "final",
+     "source": "sec_mwn_cmn2025",
+     "rounded": true
+    },
+    {
+     "period": "2025",
+     "value": 11500000,
+     "status": "estimate",
+     "source": "sec_mwn_cmn2025",
+     "rounded": true,
+     "note": "ONDA statement published 26 Dec 2025, before the year end; rounded. Consistent with Mohammed V’s 32% share of 36.3 million (11.6 million) reported in Feb 2026."
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Casablanca CMN"
+   }
+  },
+  {
+   "id": "airport_Marrakech RAK",
+   "metric": "airport_passengers",
+   "label": "Passengers, Marrakech RAK",
+   "unit": "passengers",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 9263261,
+     "status": "final",
+     "source": "sec_hespress_rak2025"
+    },
+    {
+     "period": "2025",
+     "value": 10197736,
+     "status": "final",
+     "source": "sec_hespress_rak2025"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Marrakech RAK"
+   }
+  },
+  {
+   "id": "airport_Agadir AGA",
+   "metric": "airport_passengers",
+   "label": "Passengers, Agadir AGA",
+   "unit": "passengers",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 3129257,
+     "status": "final",
+     "source": "sec_hespress_aga2025"
+    },
+    {
+     "period": "2025",
+     "value": 3495277,
+     "status": "final",
+     "source": "sec_hespress_aga2025"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Agadir AGA"
+   }
+  },
+  {
+   "id": "airport_Rabat RBA",
+   "metric": "airport_passengers",
+   "label": "Passengers, Rabat RBA",
+   "unit": "passengers",
+   "freq": "A",
+   "points": [
+    {
+     "period": "2024",
+     "value": 1725812,
+     "status": "final",
+     "source": "sec_hespress_rba2025"
+    },
+    {
+     "period": "2025",
+     "value": 2169189,
+     "status": "final",
+     "source": "sec_hespress_rba2025"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Rabat RBA"
+   }
+  },
+  {
+   "id": "airport_ytd_Casablanca CMN",
+   "metric": "airport_passengers",
+   "label": "Passengers Jan–Aug 2026, Casablanca CMN",
+   "unit": "passengers",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 8252410,
+     "status": "provisional",
+     "source": "sec_hespress_air0826"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Casablanca CMN"
+   }
+  },
+  {
+   "id": "airport_ytd_Marrakech RAK",
+   "metric": "airport_passengers",
+   "label": "Passengers Jan–Aug 2026, Marrakech RAK",
+   "unit": "passengers",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 7235705,
+     "status": "provisional",
+     "source": "sec_hespress_air0826"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Marrakech RAK"
+   }
+  },
+  {
+   "id": "airport_ytd_Agadir AGA",
+   "metric": "airport_passengers",
+   "label": "Passengers Jan–Aug 2026, Agadir AGA",
+   "unit": "passengers",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 2498637,
+     "status": "provisional",
+     "source": "sec_hespress_air0826"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Agadir AGA"
+   }
+  },
+  {
+   "id": "airport_ytd_Tanger TNG",
+   "metric": "airport_passengers",
+   "label": "Passengers Jan–Aug 2026, Tanger TNG",
+   "unit": "passengers",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 2058606,
+     "status": "provisional",
+     "source": "sec_hespress_air0826"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Tanger TNG"
+   }
+  },
+  {
+   "id": "airport_ytd_Rabat RBA",
+   "metric": "airport_passengers",
+   "label": "Passengers Jan–Aug 2026, Rabat RBA",
+   "unit": "passengers",
+   "freq": "YTD",
+   "points": [
+    {
+     "period": "2026-01/2026-08",
+     "value": 1695890,
+     "status": "provisional",
+     "source": "sec_hespress_air0826"
+    }
+   ],
+   "secondary": true,
+   "dim": {
+    "airport": "Rabat RBA"
+   }
+  }
+ ],
+ "targets": [
+  {
+   "id": "arrivals_2026",
+   "label": "Arrivals target, roadmap 2023–2026",
+   "period": "2026",
+   "value": 17500000,
+   "unit": "arrivals",
+   "source": "obs_roadmap",
+   "also": [
+    "bam_ra2025"
+   ]
+  },
+  {
+   "id": "receipts_2026",
+   "label": "Foreign-currency tourism receipts target, roadmap 2023–2026",
+   "period": "2026",
+   "value": 120000,
+   "unit": "MAD million",
+   "source": "obs_roadmap"
+  },
+  {
+   "id": "jobs_2026",
+   "label": "New direct and indirect jobs target, roadmap 2023–2026",
+   "period": "2026",
+   "value": 200000,
+   "unit": "jobs",
+   "source": "obs_roadmap"
+  },
+  {
+   "id": "arrivals_2030",
+   "label": "Arrivals target, 2030 vision",
+   "period": "2030",
+   "value": 26000000,
+   "unit": "arrivals",
+   "source": "obs_roadmap"
+  }
+ ],
+ "crosschecks": [
+  {
+   "metric": "Arrivals 2025",
+   "used": 19792594,
+   "values": [
+    [
+     "mt_ind",
+     19792594
+    ],
+    [
+     "bam_ra2025",
+     19793000
+    ],
+    [
+     "mt_cp2025",
+     19800000
+    ]
+   ],
+   "max_diff_pct": 0.04,
+   "note": "Agree."
+  },
+  {
+   "metric": "Arrivals 2024",
+   "used": 17411949,
+   "values": [
+    [
+     "mt_ind",
+     17411949
+    ],
+    [
+     "bam_ra2024",
+     17412000
+    ],
+    [
+     "bam_ra2025",
+     17412000
+    ]
+   ],
+   "max_diff_pct": 0.0,
+   "note": "Agree."
+  },
+  {
+   "metric": "Arrivals 2023",
+   "used": 14524727,
+   "values": [
+    [
+     "mt_ind",
+     14524727
+    ],
+    [
+     "bam_ra2023",
+     14525000
+    ]
+   ],
+   "max_diff_pct": 0.0,
+   "note": "Agree."
+  },
+  {
+   "metric": "Arrivals 2019",
+   "used": 12932734,
+   "values": [
+    [
+     "mt_ind",
+     12932734
+    ],
+    [
+     "bam_ra2022",
+     12932260
+    ]
+   ],
+   "max_diff_pct": 0.004,
+   "note": "Agree (474 arrivals apart)."
+  },
+  {
+   "metric": "Arrivals Jan–Sep 2026",
+   "used": 15700000,
+   "values": [
+    [
+     "depf_356",
+     15700000
+    ],
+    [
+     "sec_telquel_ytd0926",
+     15700000
+    ]
+   ],
+   "max_diff_pct": 0.0,
+   "note": "Agree."
+  },
+  {
+   "metric": "Nights 2025 (current basis)",
+   "used": 43426930,
+   "values": [
+    [
+     "mt_ind",
+     43426930
+    ],
+    [
+     "bam_ra2025",
+     43427000
+    ]
+   ],
+   "max_diff_pct": 0.0,
+   "note": "Agree."
+  },
+  {
+   "metric": "Nights 2024",
+   "used": 39915548,
+   "values": [
+    [
+     "mt_ind",
+     39915548
+    ],
+    [
+     "bam_ra2025",
+     39916000
+    ],
+    [
+     "bam_ra2024",
+     28685000
+    ]
+   ],
+   "max_diff_pct": -28.14,
+   "note": "Bank Al-Maghrib’s 2024 report (previous basis) gives 28.7 million; the Ministry’s 2026 file and Bank Al-Maghrib’s 2025 report give 39.9 million on the current, wider basis. A change of basis, not an error: the current basis is used and the previous one is not shown."
+  },
+  {
+   "metric": "Nights 2019",
+   "used": 34722176,
+   "values": [
+    [
+     "mt_ind",
+     34722176
+    ],
+    [
+     "bam_ra2025",
+     34722000
+    ],
+    [
+     "bam_ra2024",
+     25244000
+    ]
+   ],
+   "max_diff_pct": -27.3,
+   "note": "Same change of basis as 2024."
+  },
+  {
+   "metric": "Receipts 2025",
+   "used": 138583,
+   "values": [
+    [
+     "oc_monthly",
+     138583
+    ],
+    [
+     "oc_country",
+     138583
+    ],
+    [
+     "mt_ind",
+     138101
+    ],
+    [
+     "bam_ra2025",
+     138600
+    ]
+   ],
+   "max_diff_pct": -0.35,
+   "note": "Ministry file (March 2026) is 0.35% lower than the Office des Changes’ later release; the Office des Changes figure is used (still provisional)."
+  },
+  {
+   "metric": "Receipts 2024",
+   "used": 114475,
+   "values": [
+    [
+     "oc_monthly",
+     114475
+    ],
+    [
+     "mt_ind",
+     114475
+    ],
+    [
+     "bam_ra2024",
+     112500
+    ]
+   ],
+   "max_diff_pct": -1.73,
+   "note": "Bank Al-Maghrib’s 2024 report used the first estimate (112.5 billion); the Office des Changes revised it to 114.5 billion."
+  },
+  {
+   "metric": "Receipts 2023",
+   "used": 107562,
+   "values": [
+    [
+     "oc_monthly",
+     107562
+    ],
+    [
+     "mt_ind",
+     107562
+    ],
+    [
+     "bam_ra2023",
+     104700
+    ]
+   ],
+   "max_diff_pct": -2.66,
+   "note": "Same: first estimate 104.7 billion, revised 107.6 billion."
+  },
+  {
+   "metric": "Receipts Jan–Sep 2026",
+   "used": 115257,
+   "values": [
+    [
+     "oc_imee_2609",
+     115257
+    ],
+    [
+     "obs_home",
+     115300
+    ]
+   ],
+   "max_diff_pct": 0.04,
+   "note": "Agree."
+  },
+  {
+   "metric": "Airport passengers 2025",
+   "used": 36300000,
+   "values": [
+    [
+     "sec_ecoactu_onda2025",
+     36300000
+    ],
+    [
+     "sec_hespress_depf_air2025",
+     36400000
+    ]
+   ],
+   "max_diff_pct": 0.28,
+   "note": "Agree within rounding."
+  },
+  {
+   "metric": "Airport passengers 2024",
+   "used": 32700000,
+   "values": [
+    [
+     "sec_lavieeco_onda2024",
+     32700000
+    ],
+    [
+     "sec_bladi_depf_air2024",
+     32700000
+    ]
+   ],
+   "max_diff_pct": 0.0,
+   "note": "Agree."
+  },
+  {
+   "metric": "Airport passengers Jan–Aug 2026 growth",
+   "used": 8.81,
+   "values": [
+    [
+     "sec_hespress_air0826",
+     8.81
+    ],
+    [
+     "depf_356",
+     8.8
+    ]
+   ],
+   "max_diff_pct": 0.0,
+   "note": "Agree."
+  }
+ ],
+ "withheld": [
+  {
+   "item": "Tanger Ibn Battouta and national airport passengers 2023 (27.1 million), Tanger 2024–2025",
+   "reason": "Could not be read on a source page (only in search-engine summaries, one of which matched an unrelated figure). Not published; Tanger is shown for Jan–Aug 2026 only."
+  },
+  {
+   "item": "Fès-Saïss airport passengers 2025",
+   "reason": "Sources conflict by more than 5%: 1.77 million (Hespress), 1.92 million (Infomédiaire, reporting ONDA), close to 2.5 million (Fes News). ONDA’s own release could not be read."
+  },
+  {
+   "item": "Foreign tourists vs MRE for 2025 and 2026",
+   "reason": "No longer published: from 2025 the Ministry does not split arrivals (Bank Al-Maghrib, Rapport annuel 2025). The split is shown for 2019–2024 only and is not forecast."
+  },
+  {
+   "item": "Nights in classified accommodation before 2023 (except 2019)",
+   "reason": "Only on the previous basis, which differs from the current one by more than 25% (e.g. 2024: 28.7 vs 39.9 million). Kept in the file for reference, not shown."
+  },
+  {
+   "item": "Occupancy by city 2019–2023",
+   "reason": "Previous basis; Bank Al-Maghrib restated 2024 from 51% to 55% (Morocco) on the current basis. Kept for reference, not shown."
+  },
+  {
+   "item": "Monthly arrivals, monthly nights, average length of stay, bed capacity, classified hotels and guesthouses by city and category",
+   "reason": "Published by the Observatoire du Tourisme in its monthly dashboards and annual report, which are behind an account sign-up (free). Not read."
+  },
+  {
+   "item": "Monthly airport traffic by airport, international vs domestic by airport, aircraft movements by airport",
+   "reason": "ONDA (Airports of Morocco) blocks automated access to its statistics pages and reports."
+  },
+  {
+   "item": "A claim that the final 2025 figure is 18.2 million arrivals (2024: 15.9 million)",
+   "reason": "Single aggregator site (wafir.ma); contradicted by the Ministry’s own March 2026 file and by Bank Al-Maghrib. Disregarded."
+  }
+ ]
+}

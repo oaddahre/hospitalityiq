@@ -856,10 +856,10 @@
         <div class="screen-header">
           <h1>Morocco — Tourism Intelligence</h1>
         </div>
-        <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:8px">
-          <select id="tourism-export-year" class="export-select" title="Export year">
-            <option value="2021">2021</option>
-            <option value="2022">2022</option>
+        <div class="tour-toolbar">
+          <label class="tour-year-label" for="tourism-export-year">Year</label>
+          <select id="tourism-export-year" class="export-select" title="Year shown in the cards and breakdowns">
+            <option value="2019">2019</option>
             <option value="2023">2023</option>
             <option value="2024">2024</option>
             <option value="2025" selected>2025</option>
@@ -867,143 +867,166 @@
           <button class="export-btn" id="btn-export-tourism">↓ Export</button>
         </div>
 
-        <!-- KPI cards -->
-        <div class="kpi-grid brand-kpi-grid">
-          <div class="kpi-card">
-            <span class="kpi-label" id="tour-kpi-arrivals-label">Int'l Arrivals</span>
-            <span class="kpi-value" id="tour-kpi-arrivals-value">20.1M</span>
-            <span class="kpi-meta">tourists</span>
-            <span class="kpi-delta up pill--green" id="tour-kpi-arrivals-delta">+16% vs 2024</span>
+        <!-- KPI cards: official figures for the selected year (tourism.json) -->
+        <div class="kpi-grid brand-kpi-grid" id="tour-kpis">
+          <div class="kpi-card" id="tour-kpi-arrivals">
+            <span class="kpi-label">Arrivals</span>
+            <span class="kpi-value" id="tour-kpi-arrivals-value">—</span>
+            <span class="kpi-meta">at border posts, MRE included</span>
+            <span class="kpi-delta" id="tour-kpi-arrivals-delta" style="display:none"></span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label" id="tour-kpi-nights-label">Tourist Nights</span>
-            <span class="kpi-value" id="tour-kpi-nights-value">52.1M</span>
-            <span class="kpi-meta">nights</span>
-            <span class="kpi-delta up pill--green" id="tour-kpi-nights-delta">+14% vs 2024</span>
+          <div class="kpi-card" id="tour-kpi-nights">
+            <span class="kpi-label">Tourist Nights</span>
+            <span class="kpi-value" id="tour-kpi-nights-value">—</span>
+            <span class="kpi-meta">classified accommodation</span>
+            <span class="kpi-delta" id="tour-kpi-nights-delta" style="display:none"></span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label" id="tour-kpi-revenue-label">Tourism Revenue</span>
-            <span class="kpi-value" id="tour-kpi-revenue-value">MAD 118B</span>
-            <span class="kpi-meta">Moroccan Dirhams</span>
-            <span class="kpi-delta up pill--green" id="tour-kpi-revenue-delta">+12% vs 2024</span>
+          <div class="kpi-card" id="tour-kpi-revenue">
+            <span class="kpi-label">Travel Receipts</span>
+            <span class="kpi-value" id="tour-kpi-revenue-value">—</span>
+            <span class="kpi-meta">Moroccan dirhams</span>
+            <span class="kpi-delta" id="tour-kpi-revenue-delta" style="display:none"></span>
           </div>
-          <div class="kpi-card" id="tour-kpi-alos">
-            <span class="kpi-label">Avg Length of Stay</span>
-            <span class="kpi-value">6.2</span>
-            <span class="kpi-meta">nights per visitor</span>
+          <div class="kpi-card" id="tour-kpi-occ">
+            <span class="kpi-label">Occupancy</span>
+            <span class="kpi-value" id="tour-kpi-occ-value">—</span>
+            <span class="kpi-meta">classified accommodation</span>
+            <span class="kpi-delta" id="tour-kpi-occ-delta" style="display:none"></span>
           </div>
-          <div class="kpi-card">
+          <div class="kpi-card" id="tour-kpi-origin">
             <span class="kpi-label">Top Origin Market</span>
-            <span class="kpi-value" id="tour-kpi-origin-value">France</span>
-            <span class="kpi-meta" id="tour-kpi-origin-meta">22% of arrivals</span>
+            <span class="kpi-value" id="tour-kpi-origin-value">—</span>
+            <span class="kpi-meta" id="tour-kpi-origin-meta">of arrivals, MRE included</span>
           </div>
         </div>
 
-        <!-- Arrivals trend — full width -->
+        <!-- 2026 year to date (provisional official figures) -->
+        <div class="tour-ytd" id="tour-ytd" aria-label="2026 so far"></div>
+
+        <!-- Arrivals trend: official, then the 2026 estimate and the 2027 forecast with its range -->
         <div class="charts-row">
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-title">International Arrivals Trend</span>
-              <span class="chart-unit">millions</span>
+              <span class="chart-title">Arrivals at Border Posts</span>
+              <span class="chart-unit">millions · MRE included</span>
             </div>
             <div class="chart-wrap" id="twrap-arrivals"><canvas id="chart-tour-arrivals"></canvas></div>
-            <div class="chart-dot-legend">
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-1-dot);"></span>ONMT Official Data</span>
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-5-dot);"></span>2026E Kodo Forecast</span>
+            <div class="chart-dot-legend tour-legend">
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-official"></span>Official</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-covid"></span>COVID years (2020–2021)</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-forecast"></span>Kodo estimate (2026) and forecast (2027), with range</span>
             </div>
           </div>
         </div>
 
-        <!-- Transport mode + Origin markets — 2-col -->
         <div class="charts-row tour-2col">
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-title">Arrivals by Mode of Transport</span>
-              <span class="chart-unit">millions per year</span>
+              <span class="chart-title">Arrivals by Entry Mode</span>
+              <span class="chart-unit">millions</span>
             </div>
             <div class="chart-wrap" id="twrap-transport"><canvas id="chart-tour-transport"></canvas></div>
           </div>
           <div class="chart-card">
             <div class="chart-card-header">
               <span class="chart-title">Top Origin Markets</span>
-              <span class="chart-unit">2025 · share of arrivals</span>
+              <span class="chart-unit" id="tour-origins-unit">share of arrivals</span>
             </div>
             <div class="chart-wrap" id="twrap-origins"><canvas id="chart-tour-origins"></canvas></div>
-            <p class="tour-note">MRE arrivals primarily via Tanger Med ferry — peak July/August</p>
+            <p class="tour-note">By country of residence: Moroccans resident abroad (MRE) are counted in the country they live in, as in the official table.</p>
           </div>
         </div>
 
-        <!-- Tourist nights + Airport traffic — 2-col -->
         <div class="charts-row tour-2col">
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-title">Tourist Nights by Destination</span>
-              <span class="chart-unit">2025 · millions</span>
+              <span class="chart-title">Foreign Tourists and MRE</span>
+              <span class="chart-unit">millions</span>
+            </div>
+            <div class="chart-wrap" id="twrap-tesmre"><canvas id="chart-tour-tesmre"></canvas></div>
+            <p class="tour-note">From 2025 the official figures no longer split arrivals into foreign tourists and MRE.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Tourist Nights by Region</span>
+              <span class="chart-unit" id="tour-nights-unit">millions · classified accommodation</span>
             </div>
             <div class="chart-wrap" id="twrap-nights"><canvas id="chart-tour-nights"></canvas></div>
           </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Airport Traffic — Top Gateways</span>
-              <span class="chart-unit">2025 · millions passengers</span>
-            </div>
-            <div class="chart-wrap" id="twrap-airports"><canvas id="chart-tour-airports"></canvas></div>
-          </div>
         </div>
 
-        <!-- Revenue trend + Seasonality — 2-col -->
         <div class="charts-row tour-2col">
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-title">Tourism Revenue Trend</span>
+              <span class="chart-title">Occupancy by City</span>
+              <span class="chart-unit">% · classified accommodation</span>
+            </div>
+            <div class="chart-wrap" id="twrap-occ"><canvas id="chart-tour-occ"></canvas></div>
+            <p class="tour-note" id="tour-occ-note">2024 and 2025 on the current official basis.</p>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Airport Passengers</span>
+              <span class="chart-unit">millions · all passengers</span>
+            </div>
+            <div class="chart-wrap" id="twrap-airports"><canvas id="chart-tour-airports"></canvas></div>
+            <p class="tour-note" id="tour-airports-note"></p>
+          </div>
+        </div>
+
+        <div class="charts-row tour-2col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">Travel Receipts</span>
               <span class="chart-unit">MAD billions</span>
             </div>
             <div class="chart-wrap" id="twrap-revenue"><canvas id="chart-tour-revenue"></canvas></div>
-            <div class="chart-dot-legend">
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-1-dot);"></span>ONMT Official Data</span>
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot" style="background:var(--cat-5-dot);"></span>2026E Kodo Forecast</span>
+            <div class="chart-dot-legend tour-legend">
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-official"></span>Official</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-forecast"></span>Kodo estimate / forecast, with range</span>
             </div>
           </div>
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-title">Seasonality Index</span>
-              <span class="chart-unit">relative demand · July = 100</span>
+              <span class="chart-title">Travel Receipts by Month</span>
+              <span class="chart-unit">MAD billions</span>
             </div>
             <div class="chart-wrap" id="twrap-season"><canvas id="chart-tour-season"></canvas></div>
+            <div class="chart-dot-legend tour-legend" id="tour-season-legend"></div>
           </div>
         </div>
 
-        <!-- Demand catalysts -->
+        <!-- 2027 Kodo forecast: kept apart from the official figures -->
+        <div class="table-card tour-fc" id="tour-fc" style="margin-bottom:20px">
+          <div class="table-card-header">
+            <span class="table-title">2027 Outlook</span>
+            <span class="pill--sky tour-fc-pill">Kodo forecast · not official</span>
+          </div>
+          <p class="tour-fc-intro" id="tour-fc-intro"></p>
+          <div class="tour-fc-grid" id="tour-fc-grid"></div>
+          <div class="tour-fc-tables">
+            <div class="tour-fc-table-wrap">
+              <div class="tour-fc-sub">Main markets · arrivals</div>
+              <table class="tour-table" id="tour-fc-markets"></table>
+            </div>
+            <div class="tour-fc-table-wrap">
+              <div class="tour-fc-sub">Occupancy by city</div>
+              <table class="tour-table" id="tour-fc-cities"></table>
+            </div>
+            <div class="tour-fc-table-wrap">
+              <div class="tour-fc-sub">Airport passengers</div>
+              <table class="tour-table" id="tour-fc-airports"></table>
+            </div>
+          </div>
+          <p class="tour-fc-foot" id="tour-fc-foot"></p>
+        </div>
+
+        <!-- Demand catalysts (each from an official source or the data above) -->
         <div class="table-card" style="margin-bottom:20px">
           <div class="table-card-header">
             <span class="table-title">Key Demand Catalysts</span>
           </div>
-          <div class="catalyst-grid">
-            <div class="catalyst-card">
-              <div class="catalyst-card-title">AFCON 2025 — Morocco Host</div>
-              <div class="catalyst-card-desc">+2.1M estimated incremental international visitors generated by the tournament</div>
-            </div>
-            <div class="catalyst-card">
-              <div class="catalyst-card-title">FIFA World Cup 2030</div>
-              <div class="catalyst-card-desc">Co-host with Spain &amp; Portugal · projected +4–6M visitor uplift for Morocco</div>
-            </div>
-            <div class="catalyst-card">
-              <div class="catalyst-card-title">Vision Maroc 2030</div>
-              <div class="catalyst-card-desc">National tourism strategy targeting 26M annual arrivals and MAD 200B revenue by 2030</div>
-            </div>
-            <div class="catalyst-card">
-              <div class="catalyst-card-title">Tanger Med Port Expansion</div>
-              <div class="catalyst-card-desc">Largest port in Africa — expanding MRE ferry capacity and cruise terminal operations</div>
-            </div>
-            <div class="catalyst-card">
-              <div class="catalyst-card-title">Air Connectivity Growth</div>
-              <div class="catalyst-card-desc">180+ new direct air routes launched 2023–2025, including Gulf and North American connections</div>
-            </div>
-            <div class="catalyst-card">
-              <div class="catalyst-card-title">Hotel Development Pipeline</div>
-              <div class="catalyst-card-desc">45+ luxury and upscale hotel projects under development across Marrakech, Agadir, and emerging destinations</div>
-            </div>
-          </div>
+          <div class="catalyst-grid" id="tour-catalysts"></div>
         </div>
 
         <!-- Events calendar (static/js/events.js; data: events.json) -->
@@ -1064,10 +1087,8 @@
           <p class="evcal-foot evc-muted">Sources and the date each was checked are in every event’s detail. Estimated dates follow last year’s pattern; moon-dependent dates are confirmed the evening before.</p>
         </div>
 
-        <p class="screen-sub-tags">ONMT · Ministère du Tourisme · ONDA</p>
-
-        <!-- Disclaimer -->
-        <p class="tour-disclaimer">Tourism statistics: ONMT official publications 2020–2025. 2026E: Kodo estimates based on YTD trends and forward bookings. Airport data: ONDA. Events: organisers, ministries and press (sources in each event) — dates subject to change.</p>
+        <!-- Sources: each official figure's publisher, title and publication date (tourism.json) -->
+        <div class="tour-sources" id="tour-sources"></div>
       </section>
 
       <!-- ── Brands ── -->

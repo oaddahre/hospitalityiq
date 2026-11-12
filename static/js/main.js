@@ -2387,9 +2387,7 @@ function redrawChartsForTheme() {
 
   // Tourism charts — destroy and reset flag; reinit if screen is active
   if (tourismInited) {
-    ['chart-tour-arrivals','chart-tour-transport','chart-tour-origins',
-     'chart-tour-nights','chart-tour-airports','chart-tour-revenue','chart-tour-season',
-    ].forEach(id => { const c = Chart.getChart(id); if (c) c.destroy(); });
+    TOUR_CHART_IDS.forEach(id => { const c = Chart.getChart(id); if (c) c.destroy(); });
     tourismInited = false;
     const tourismEl = document.getElementById('screen-tourism');
     if (tourismEl && tourismEl.classList.contains('active')) {
@@ -2428,360 +2426,484 @@ function redrawChartsForTheme() {
 }
 
 // ─── Tourism screen ───────────────────────────────────────────────
+// Official figures and the Kodo forecast both come from /api/tourism
+// (tourism.json and tourism_forecast.json, each figure with its source).
+// Forecast values are always drawn in the forecast style, labelled "Kodo
+// forecast" and shown with their range, never mixed with official bars.
 
-const TOUR_NIGHTS_DATA = {
-  labels: ['Other','Essaouira','Tanger','Fes','Casablanca','Agadir','Marrakech'],
-  years: {
-    2021: [2.8, 0.6, 1.1, 1.4, 2.8, 6.2, 8.1],
-    2022: [4.8, 1.0, 1.8, 2.2, 4.2, 9.1, 12.4],
-    2023: [6.1, 1.2, 2.2, 2.9, 5.1, 10.8, 15.2],
-    2024: [6.8, 1.4, 2.5, 3.2, 5.7, 11.6, 16.8],
-    2025: [7.3, 1.6, 2.8, 3.6, 6.2, 12.4, 18.2],
-  },
+let tourismData = null;
+let tourismLoading = null;
+
+const TOUR_YEARS = [2019, 2023, 2024, 2025];
+const TOUR_CHART_IDS = ['chart-tour-arrivals', 'chart-tour-transport', 'chart-tour-origins', 'chart-tour-tesmre',
+  'chart-tour-nights', 'chart-tour-occ', 'chart-tour-airports', 'chart-tour-revenue', 'chart-tour-season'];
+const TOUR_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const tourSeries = id => tourismData.series.find(s => s.id === id);
+const tourAnnual = id => {
+  const s = tourSeries(id), out = {};
+  if (s) s.points.forEach(p => { if (/^\d{4}$/.test(p.period)) out[+p.period] = p.value; });
+  return out;
+};
+const tourBy = metric => tourismData.series.filter(s => s.metric === metric);
+const tourM = v => v == null ? '—' : (v / 1e6).toFixed(1) + 'M';
+const tourB = v => v == null ? '—' : (v / 1000).toFixed(1) + 'B';     // MAD million → billions
+const tourPct = (a, b) => (a == null || b == null || !b) ? null : (a / b - 1) * 100;
+const tourSigned = (v, d = 1) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d);
+// "Mar 2026" from a source's published date ('2026-03-06' or '2026-10')
+const tourPub = s => {
+  if (!s || !s.published) return 'publication date not stated';
+  const [y, m, d] = s.published.split('-').map(Number);
+  return (d ? d + ' ' : '') + (m ? TOUR_MON[m - 1] + ' ' : '') + y;
+};
+const tourSrcName = id => {
+  const s = tourismData.sources[id];
+  return s ? s.publisher.split(',')[0] : id;
 };
 
-const TOUR_AIRPORT_DATA = {
-  labels: ['Nador NDR','Oujda OUD','Rabat RBA','Fes FEZ','Tanger TNG','Agadir AGA','Marrakech RAK','Casablanca CMN'],
-  years: {
-    2021: [0.2, 0.3, 0.4, 0.6, 0.8, 1.2, 2.1, 4.2],
-    2022: [0.4, 0.5, 0.7, 1.1, 1.4, 2.1, 4.2, 7.8],
-    2023: [0.5, 0.6, 0.9, 1.4, 1.7, 2.8, 5.6, 9.4],
-    2024: [0.55, 0.7, 1.0, 1.6, 1.9, 3.1, 6.2, 10.6],
-    2025: [0.6, 0.8, 1.1, 1.8, 2.1, 3.4, 6.8, 11.2],
-  },
-};
-
-const TOUR_ORIGINS_DATA = {
-  labels: ['France','MRE','Spain','UK','Germany','Gulf States','USA','Italy','Other'],
-  years: {
-    2021: [24, 20, 12, 9, 7, 5, 4, 3, 16],
-    2022: [23, 19, 13, 10, 7, 6, 4, 3, 15],
-    2023: [23, 18, 14, 10, 8, 6, 5, 4, 12],
-    2024: [22, 18, 14, 10, 8, 7, 5, 4, 12],
-    2025: [22, 18, 14, 10, 8, 7, 5, 4, 12],
-  },
-};
-
-// Hoisted out of initTourismCharts (where these were previously inline
-// consts) so the top KPI cards can reuse the exact same trend numbers
-// instead of duplicating them.
-const TOUR_ARRIVALS_TREND = {
-  labels: ['2020','2021','2022','2023','2024','2025','2026E'],
-  values: [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5],
-};
-const TOUR_REVENUE_TREND = {
-  labels: ['2020','2021','2022','2023','2024','2025','2026E'],
-  values: [34, 44, 76, 89, 105, 118, 132],
-};
-
-// Top KPI-card figures for each selectable year, derived from the same
-// series driving the charts above (TOUR_ARRIVALS_TREND, TOUR_REVENUE_TREND,
-// TOUR_NIGHTS_DATA, TOUR_ORIGINS_DATA) rather than separately hand-typed.
-const TOUR_KPI_BY_YEAR = {};
-(function buildTourKpiByYear() {
-  const pctDelta = (curr, prev) => {
-    if (curr == null || prev == null || !prev) return null;
-    const pct = Math.round(((curr / prev) - 1) * 100);
-    return (pct >= 0 ? '+' : '') + pct + '%';
-  };
-  const sum = arr => arr.reduce((a, b) => a + b, 0);
-
-  [2021, 2022, 2023, 2024, 2025].forEach(yr => {
-    const arrIdx     = TOUR_ARRIVALS_TREND.labels.indexOf(String(yr));
-    const prevArrIdx = TOUR_ARRIVALS_TREND.labels.indexOf(String(yr - 1));
-    const revIdx     = TOUR_REVENUE_TREND.labels.indexOf(String(yr));
-    const prevRevIdx = TOUR_REVENUE_TREND.labels.indexOf(String(yr - 1));
-    const nightsVals     = TOUR_NIGHTS_DATA.years[yr];
-    const prevNightsVals = TOUR_NIGHTS_DATA.years[yr - 1];
-    const originVals   = TOUR_ORIGINS_DATA.years[yr];
-    const topOriginIdx = originVals ? originVals.indexOf(Math.max(...originVals)) : -1;
-
-    TOUR_KPI_BY_YEAR[yr] = {
-      arrivals:      arrIdx > -1 ? TOUR_ARRIVALS_TREND.values[arrIdx] : null,
-      arrivalsDelta: (arrIdx > -1 && prevArrIdx > -1)
-        ? pctDelta(TOUR_ARRIVALS_TREND.values[arrIdx], TOUR_ARRIVALS_TREND.values[prevArrIdx]) : null,
-      revenue:      revIdx > -1 ? TOUR_REVENUE_TREND.values[revIdx] : null,
-      revenueDelta: (revIdx > -1 && prevRevIdx > -1)
-        ? pctDelta(TOUR_REVENUE_TREND.values[revIdx], TOUR_REVENUE_TREND.values[prevRevIdx]) : null,
-      nights:      nightsVals ? +sum(nightsVals).toFixed(1) : null,
-      nightsDelta: (nightsVals && prevNightsVals) ? pctDelta(sum(nightsVals), sum(prevNightsVals)) : null,
-      topOrigin:    topOriginIdx > -1 ? TOUR_ORIGINS_DATA.labels[topOriginIdx] : null,
-      topOriginPct: topOriginIdx > -1 ? originVals[topOriginIdx] : null,
-    };
-  });
-})();
-
-// Period lines on the tourism KPI cards: calendar-year ONMT figures for the
-// selected year. Average length of stay is a single figure with no year in
-// the data, so its period line stays blank.
 function tourismKpiPeriods(yr) {
-  const tip = KodoPeriod.tip({ source: 'ONMT official publications' });
-  ['tour-kpi-arrivals-value', 'tour-kpi-nights-value', 'tour-kpi-revenue-value', 'tour-kpi-origin-value'].forEach(id =>
-    KodoPeriod.set(document.getElementById(id)?.closest('.kpi-card'), { kind: 'year', year: yr }, tip));
-  KodoPeriod.set('tour-kpi-alos', null);
+  ['tour-kpi-arrivals', 'tour-kpi-nights', 'tour-kpi-revenue', 'tour-kpi-occ', 'tour-kpi-origin'].forEach(id =>
+    KodoPeriod.set(id, { kind: 'year', year: yr }, null));
+}
+
+function setTourismYear(yr) {
+  yr = +yr;
+  if (!tourismData) return;
+  const sel = document.getElementById('tourism-export-year');
+  if (sel && sel.value !== String(yr)) sel.value = String(yr);
+  tourismKpiPeriods(yr);
+
+  const arr = tourAnnual('arrivals_total'), nts = tourAnnual('nights_total'), rec = tourAnnual('receipts_total');
+  const occ = tourAnnual('occupancy_Morocco');
+  const src = (id, y) => { const p = tourSeries(id)?.points.find(q => q.period === String(y)); return p ? tourismData.sources[p.source] : null; };
+  const card = (key, value, delta, deltaText, tipSrc, status) => {
+    const v = document.getElementById(`tour-kpi-${key}-value`);
+    if (v) {
+      v.textContent = value;
+      v.title = tipSrc ? `Source: ${tipSrc.publisher.split(',')[0]}, ${tourPub(tipSrc)}${status ? ' · ' + status : ''}` : '';
+    }
+    const d = document.getElementById(`tour-kpi-${key}-delta`);
+    if (!d) return;
+    if (delta == null) { d.style.display = 'none'; return; }
+    d.textContent = deltaText;
+    d.className = 'kpi-delta ' + (delta < 0 ? 'down pill--red' : 'up pill--green');
+    d.style.display = '';
+  };
+  const vsPrev = { kind: 'year', year: yr - 1 };
+  const dA = tourPct(arr[yr], arr[yr - 1]);
+  card('arrivals', tourM(arr[yr]), dA, dA != null && `${tourSigned(dA, 0)}% ${KodoPeriod.vs(vsPrev)}`, src('arrivals_total', yr));
+  const dN = tourPct(nts[yr], nts[yr - 1]);
+  card('nights', tourM(nts[yr]), dN, dN != null && `${tourSigned(dN, 0)}% ${KodoPeriod.vs(vsPrev)}`, src('nights_total', yr));
+  const dR = tourPct(rec[yr], rec[yr - 1]);
+  const recStatus = tourSeries('receipts_total').points.find(p => p.period === String(yr))?.status;
+  card('revenue', rec[yr] != null ? 'MAD ' + tourB(rec[yr]) : '—', dR, dR != null && `${tourSigned(dR, 0)}% ${KodoPeriod.vs(vsPrev)}`,
+       src('receipts_total', yr), recStatus === 'provisional' ? 'provisional' : '');
+  const dO = (occ[yr] != null && occ[yr - 1] != null) ? occ[yr] - occ[yr - 1] : null;
+  card('occ', occ[yr] != null ? occ[yr] + '%' : '—', dO, dO != null && `${tourSigned(dO, 0)} pts ${KodoPeriod.vs(vsPrev)}`, src('occupancy_Morocco', yr));
+  const occMeta = document.querySelector('#tour-kpi-occ .kpi-meta');
+  if (occMeta) occMeta.textContent = occ[yr] != null ? 'classified accommodation' : 'not published on the current basis';
+
+  // Top market of residence (MRE included)
+  const mk = tourBy('arrivals_by_market').filter(s => s.dim.key !== 'Other')
+    .map(s => [s.dim.key, s.points.find(p => p.period === String(yr))?.value]).filter(x => x[1] != null).sort((a, b) => b[1] - a[1]);
+  if (mk.length && arr[yr]) {
+    document.getElementById('tour-kpi-origin-value').textContent = mk[0][0];
+    document.getElementById('tour-kpi-origin-meta').textContent = `${(mk[0][1] / arr[yr] * 100).toFixed(0)}% of arrivals, MRE included`;
+  }
+
+  // Breakdown charts for the selected year
+  const upd = (id, labels, values) => { const c = Chart.getChart(id); if (c) { c.data.labels = labels; c.data.datasets[0].data = values; c.update(); } };
+  const o = tourOrigins(yr), n = tourRegions(yr);
+  upd('chart-tour-origins', o.labels, o.values);
+  upd('chart-tour-nights', n.labels, n.values);
+  document.getElementById('tour-origins-unit').textContent = `${yr} · % of arrivals`;
+  document.getElementById('tour-nights-unit').textContent = `${yr} · millions · classified accommodation`;
+}
+
+function tourOrigins(yr) {
+  const arr = tourAnnual('arrivals_total')[yr];
+  const rows = tourBy('arrivals_by_market').filter(s => s.dim.key !== 'Other')
+    .map(s => [s.dim.key, s.points.find(p => p.period === String(yr))?.value || 0]).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const top = rows.reduce((a, r) => a + r[1], 0);
+  rows.push(['Other markets', arr - top]);
+  return { labels: rows.map(r => r[0]), values: rows.map(r => +(r[1] / arr * 100).toFixed(1)) };
+}
+
+function tourRegions(yr) {
+  const rows = tourBy('nights_by_region').map(s => [s.dim.key, s.points.find(p => p.period === String(yr))?.value || 0])
+    .sort((a, b) => b[1] - a[1]);
+  return { labels: rows.map(r => r[0]), values: rows.map(r => +(r[1] / 1e6).toFixed(2)) };
+}
+
+async function loadTourismData() {
+  if (tourismData) return tourismData;
+  if (!tourismLoading) {
+    tourismLoading = fetch('/api/tourism', { credentials: 'same-origin' })
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(d => (tourismData = d))
+      .finally(() => { tourismLoading = null; });
+  }
+  return tourismLoading;
 }
 
 function initTourismCharts() {
   if (tourismInited) return;
-
-  // Defensive: if this ever re-runs (e.g. after redrawChartsForTheme
-  // destroys and rebuilds these charts), drop any leftover year-tab rows
-  // instead of stacking a duplicate set in front of each chart.
-  document.querySelectorAll('.chart-year-tabs').forEach(el => el.remove());
-
-  // Set chart-wrap height: also zeroes min-height so CSS 360px default doesn't interfere
-  const setH = (id, h) => {
-    const el = document.getElementById(id);
-    el.style.minHeight = '0';
-    el.style.height = h + 'px';
-  };
-
-  // Charts with per-year data, registered here so the standalone year
-  // <select> above the KPI cards (previously wired to Excel export only)
-  // can drive all of them too, instead of only the individual tab rows.
-  const yearFilterableCharts = [];
-
-  function setTourismYear(yr) {
-    yearFilterableCharts.forEach(({ canvas, data, tabsDiv }) => {
-      const chart = Chart.getChart(canvas);
-      if (chart && data.years[yr]) {
-        chart.data.datasets[0].data = data.years[yr];
-        chart.update();
-      }
-      tabsDiv.querySelectorAll('.chart-year-tab').forEach(b => {
-        b.classList.toggle('active', Number(b.dataset.year) === Number(yr));
-      });
+  if (!tourismData) {
+    loadTourismData().then(() => initTourismCharts()).catch(e => {
+      console.error('Tourism data failed to load:', e);
+      const y = document.getElementById('tour-ytd');
+      if (y) y.textContent = 'Tourism figures could not be loaded. Refresh the page to try again.';
     });
-    const exportSel = document.getElementById('tourism-export-year');
-    if (exportSel && exportSel.value !== String(yr)) exportSel.value = String(yr);
-
-    // Update the top KPI cards to match the selected year
-    const kpi = TOUR_KPI_BY_YEAR[yr];
-    if (!kpi) return;
-
-    const setCard = (labelId, valueId, labelPrefix, value) => {
-      const labelEl = document.getElementById(labelId);
-      if (labelEl) labelEl.textContent = labelPrefix;
-      const valueEl = document.getElementById(valueId);
-      if (valueEl && value != null) valueEl.textContent = value;
-    };
-    tourismKpiPeriods(yr);
-    const setDelta = (deltaId, delta) => {
-      const deltaEl = document.getElementById(deltaId);
-      if (!deltaEl) return;
-      if (delta) {
-        deltaEl.textContent = `${delta} ${KodoPeriod.vs({ kind: 'year', year: yr - 1 })}`;
-        deltaEl.className = 'kpi-delta ' + (delta.startsWith('-') ? 'down pill--red' : 'up pill--green');
-        deltaEl.style.display = '';
-      } else {
-        deltaEl.style.display = 'none';
-      }
-    };
-
-    setCard('tour-kpi-arrivals-label', 'tour-kpi-arrivals-value',
-      "Int'l Arrivals", kpi.arrivals != null ? kpi.arrivals + 'M' : null);
-    setDelta('tour-kpi-arrivals-delta', kpi.arrivalsDelta);
-
-    setCard('tour-kpi-nights-label', 'tour-kpi-nights-value',
-      'Tourist Nights', kpi.nights != null ? kpi.nights + 'M' : null);
-    setDelta('tour-kpi-nights-delta', kpi.nightsDelta);
-
-    setCard('tour-kpi-revenue-label', 'tour-kpi-revenue-value',
-      'Tourism Revenue', kpi.revenue != null ? 'MAD ' + kpi.revenue + 'B' : null);
-    setDelta('tour-kpi-revenue-delta', kpi.revenueDelta);
-
-    const originValueEl = document.getElementById('tour-kpi-origin-value');
-    if (originValueEl && kpi.topOrigin) originValueEl.textContent = kpi.topOrigin;
-    const originMetaEl = document.getElementById('tour-kpi-origin-meta');
-    if (originMetaEl && kpi.topOriginPct != null) originMetaEl.textContent = `${kpi.topOriginPct}% of arrivals`;
+    return;
   }
+  TOUR_CHART_IDS.forEach(id => { const c = Chart.getChart(id); if (c) c.destroy(); });
+  const cc = getChartColors();
+  const F = tourismData.forecast, F27 = F.forecast_2027, N26 = F.nowcast_2026;
+  const setH = (id, h) => { const el = document.getElementById(id); el.style.minHeight = '0'; el.style.height = h + 'px'; };
+  const tip = () => ({
+    backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
+    titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy, padding: { top: 8, bottom: 8, left: 12, right: 12 },
+  });
+  const ticks = { color: cc.tick, font: { size: 11, weight: '400', family: "'Sweet Sans Pro', sans-serif" } };
+  const fcFill = withAlpha(cc.forecastColor, 0.28);
+  const covidColor = cc.compColor;
 
-  const addYearTabs = (canvasId, data) => {
-    const canvas = document.getElementById(canvasId);
-    const wrap = canvas.closest('.chart-wrap');
-    const tabsDiv = document.createElement('div');
-    tabsDiv.className = 'chart-year-tabs';
-    [2021, 2022, 2023, 2024, 2025].forEach(yr => {
-      const btn = document.createElement('button');
-      btn.className = 'chart-year-tab' + (yr === 2025 ? ' active' : '');
-      btn.textContent = yr;
-      btn.dataset.year = yr;
-      btn.addEventListener('click', () => setTourismYear(yr));
-      tabsDiv.appendChild(btn);
-    });
-    wrap.parentNode.insertBefore(tabsDiv, wrap);
-    yearFilterableCharts.push({ canvas, data, tabsDiv });
-  };
-
-  // Terracotta for historical bars, amber for the trailing "…E" forecast
-  // bar — used by the arrivals and revenue trend charts below so the
-  // forecast year reads as visually distinct instead of relying on a
-  // text subtitle to say so.
-  const FORECAST_BAR_COLOR = getChartColors().forecastColor;
-  function forecastBarColors(labels) {
-    const base = getChartColors().barColor;
-    return labels.map(l => /E$/.test(String(l)) ? FORECAST_BAR_COLOR : base);
-  }
-
-  // ── Helper for vertical bar charts ──────────────────────────────
-  function vBar(labels, values, bgColors, lblFmt, tipFmt) {
-    const cc = getChartColors();
-    return {
-      type: 'bar',
-      data: { labels, datasets: [{ data: values, backgroundColor: bgColors, hoverBackgroundColor: getChartColors().hoverColor, borderRadius: 4, borderSkipped: false }] },
-      options: {
-        responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
-        layout: { padding: { top: 28 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
-            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
-            padding: { top: 8, bottom: 8, left: 12, right: 12 },
-            callbacks: { label: ctx => '  ' + tipFmt(ctx.raw) },
-          },
-          datalabels: {
-            anchor: 'end', align: 'top', clip: false,
-            color: cc.label, font: { size: 11, weight: '600' },
-            padding: { bottom: 2 }, formatter: lblFmt,
-          },
-        },
-        scales: {
-          x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
-          y: { ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Sweet Sans Pro', sans-serif" } } },
-        },
-      },
-    };
-  }
-
-  // 1. International Arrivals Trend
-  setH('twrap-arrivals', 290);
-  const arrLbls = TOUR_ARRIVALS_TREND.labels;
-  const arrVals = TOUR_ARRIVALS_TREND.values;
-  new Chart(document.getElementById('chart-tour-arrivals'),
-    vBar(arrLbls, arrVals, forecastBarColors(arrLbls),
-      v => v + 'M', v => v + 'M arrivals'));
-
-  // 2. Arrivals by Mode of Transport (grouped)
-  setH('twrap-transport', 290);
-  {
-    const cc = getChartColors();
-    new Chart(document.getElementById('chart-tour-transport'), {
+  // Official bars, then the 2026 estimate and 2027 forecast with a floating range bar
+  function trendChart(canvasId, hist, est, fc, scale, unitFmt, firstYear) {
+    const years = Object.keys(hist).map(Number).filter(y => y >= firstYear).sort();
+    const labels = years.map(String).concat(['2026 est.', '2027 fcst.']);
+    const n = years.length;
+    const off = years.map(y => +(hist[y] / scale).toFixed(2)).concat([null, null]);
+    const kodo = Array(n).fill(null).concat([+(est.base / scale).toFixed(2), +(fc.base / scale).toFixed(2)]);
+    const range = Array(n).fill(null).concat([[est.low / scale, est.high / scale], [fc.low / scale, fc.high / scale]]);
+    return new Chart(document.getElementById(canvasId), {
       type: 'bar',
       data: {
-        labels: ['2022','2023','2024','2025','2026E'],
+        labels,
         datasets: [
-          { label: 'Air',  data: [7.2, 9.8, 12.1, 14.2, 15.8], backgroundColor: cc.barColor,  borderRadius: 3, borderSkipped: false },
-          { label: 'Sea',  data: [2.8, 3.2,  3.8,  4.1,  4.6], backgroundColor: cc.barColor2, borderRadius: 3, borderSkipped: false },
-          { label: 'Land', data: [1.0, 1.5,  1.5,  1.8,  2.1], backgroundColor: cc.barColor3, borderRadius: 3, borderSkipped: false },
+          { label: 'Official', data: off, order: 2, borderRadius: 4, borderSkipped: false,
+            backgroundColor: years.map(y => (y === 2020 || y === 2021) ? covidColor : cc.barColor).concat([null, null]) },
+          { label: 'Kodo', data: kodo, order: 2, borderRadius: 4, borderSkipped: false, backgroundColor: fcFill,
+            borderColor: cc.forecastColor, borderWidth: 1.5, borderDash: [4, 3] },
+          { label: 'Range', data: range, order: 1, backgroundColor: cc.forecastColor, barPercentage: 0.12, categoryPercentage: 1,
+            datalabels: { display: false } },
         ],
       },
       options: {
         responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
-        layout: { padding: { top: 12 } },
+        layout: { padding: { top: 28 } },
+        datasets: { bar: { grouped: false } },
         plugins: {
           legend: { display: false },
-          datalabels: { display: false },
           tooltip: {
-            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
-            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
-            callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}M` },
+            ...tip(),
+            filter: item => item.raw != null && item.dataset.label !== 'Range',
+            callbacks: {
+              label: ctx => {
+                const i = ctx.dataIndex;
+                if (ctx.dataset.label === 'Official') {
+                  const y = years[i];
+                  return '  Official: ' + unitFmt(ctx.raw) + ((y === 2020 || y === 2021) ? ' (COVID year)' : '');
+                }
+                const r = range[i];
+                return `  ${i === n ? 'Kodo estimate' : 'Kodo forecast'}: ${unitFmt(ctx.raw)} (range ${unitFmt(r[0])}–${unitFmt(r[1])})`;
+              },
+            },
+          },
+          datalabels: {
+            anchor: 'end', align: 'top', clip: false, color: cc.label, font: { size: 10, weight: '600' },
+            display: ctx => ctx.dataset.label !== 'Range' && ctx.raw != null,
+            formatter: v => (+v).toFixed(1),
           },
         },
-        scales: {
-          x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
-          y: { ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Sweet Sans Pro', sans-serif" } } },
-        },
+        scales: { x: { ticks: { ...ticks, padding: 6 } }, y: { beginAtZero: true, ticks } },
       },
     });
   }
 
-  // 3. Origin Markets (horizontal, with year tabs)
-  const origLbls = TOUR_ORIGINS_DATA.labels;
-  const origVals = TOUR_ORIGINS_DATA.years[2025];
-  setH('twrap-origins', Math.max(260, origLbls.length * 34 + 50));
-  const origCfg = chartConfig(origLbls, origVals, '%', origLbls.map(() => getChartColors().barColor), v => v + '%');
-  origCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + '%';
-  new Chart(document.getElementById('chart-tour-origins'), origCfg);
-  addYearTabs('chart-tour-origins', TOUR_ORIGINS_DATA);
+  // 1. Arrivals trend
+  setH('twrap-arrivals', 300);
+  trendChart('chart-tour-arrivals', tourAnnual('arrivals_total'), N26.arrivals, F27.arrivals, 1e6, v => (+v).toFixed(1) + 'M', 2013);
 
-  // 4. Tourist Nights by Destination (horizontal, sorted asc so Marrakech is top, with year tabs)
-  const nightsLbls = TOUR_NIGHTS_DATA.labels;
-  const nightsVals = TOUR_NIGHTS_DATA.years[2025];
-  setH('twrap-nights', Math.max(240, nightsLbls.length * 34 + 50));
-  const nightsCfg = chartConfig(nightsLbls, nightsVals, 'M', nightsLbls.map(() => getChartColors().barColor), v => v + 'M');
-  nightsCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M nights';
-  new Chart(document.getElementById('chart-tour-nights'), nightsCfg);
-  addYearTabs('chart-tour-nights', TOUR_NIGHTS_DATA);
-
-  // 5. Airport Traffic (horizontal, sorted asc so CMN is top, with year tabs)
-  const airLbls = TOUR_AIRPORT_DATA.labels;
-  const airVals  = TOUR_AIRPORT_DATA.years[2025];
-  setH('twrap-airports', Math.max(260, airLbls.length * 34 + 50));
-  const airCfg = chartConfig(airLbls, airVals, 'M pax', airLbls.map(() => getChartColors().barColor), v => v + 'M');
-  airCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + 'M passengers';
-  new Chart(document.getElementById('chart-tour-airports'), airCfg);
-  addYearTabs('chart-tour-airports', TOUR_AIRPORT_DATA);
-
-  // Standalone year selector above the KPI cards — was previously read only
-  // at Excel-export time, so picking a year here had no visible effect on
-  // the charts. Now it drives the same per-year charts as the tab rows.
-  document.getElementById('tourism-export-year')?.addEventListener('change', e => {
-    setTourismYear(parseInt(e.target.value, 10));
-  });
-  tourismKpiPeriods(parseInt(document.getElementById('tourism-export-year')?.value, 10) || 2025);
-
-  // 6. Tourism Revenue Trend
-  setH('twrap-revenue', 290);
-  const revLbls = TOUR_REVENUE_TREND.labels;
-  const revVals = TOUR_REVENUE_TREND.values;
-  new Chart(document.getElementById('chart-tour-revenue'),
-    vBar(revLbls, revVals, forecastBarColors(revLbls),
-      v => v + 'B', v => 'MAD ' + v + 'B'));
-
-  // 7. Seasonality Index (line)
-  setH('twrap-season', 220);
+  // 2. Entry mode (official: 2019, 2023-2025)
+  setH('twrap-transport', 290);
   {
-    const cc = getChartColors();
-    new Chart(document.getElementById('chart-tour-season'), {
-      type: 'line',
+    const modes = ['Air', 'Sea', 'Land'].map(m => tourAnnual('arrivals_mode_' + m));
+    new Chart(document.getElementById('chart-tour-transport'), {
+      type: 'bar',
       data: {
-        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-        datasets: [{
-          data: [55, 58, 72, 88, 95, 92, 100, 98, 82, 75, 60, 58],
-          borderColor: getChartColors().barColor,
-          backgroundColor: getChartColors().fillColor,
-          fill: false, tension: 0.4,
-          pointRadius: 4, pointBackgroundColor: getChartColors().barColor,
-          pointBorderColor: getChartColors().pointBorder, pointBorderWidth: 2,
-        }],
+        labels: TOUR_YEARS.map(String),
+        datasets: ['Air', 'Sea', 'Land'].map((m, i) => ({
+          label: m, data: TOUR_YEARS.map(y => +(modes[i][y] / 1e6).toFixed(2)),
+          backgroundColor: [cc.barColor, cc.barColor2, cc.barColor3][i], borderRadius: 3, borderSkipped: false,
+        })),
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 350 }, layout: { padding: { top: 12 } },
+        plugins: {
+          legend: { display: true, position: 'bottom', labels: { color: cc.label, boxWidth: 10, font: { size: 11 } } },
+          datalabels: { display: false },
+          tooltip: { ...tip(), callbacks: { label: ctx => `  ${ctx.dataset.label}: ${(+ctx.raw).toFixed(2)}M` } },
+        },
+        scales: { x: { ticks: { ...ticks, padding: 8 } }, y: { beginAtZero: true, ticks } },
+      },
+    });
+  }
+
+  // 3. Origin markets (selected year)
+  const yr0 = +(document.getElementById('tourism-export-year')?.value || 2025);
+  {
+    const o = tourOrigins(yr0);
+    setH('twrap-origins', Math.max(260, o.labels.length * 30 + 50));
+    const cfg = chartConfig(o.labels, o.values, '%', o.labels.map(() => cc.barColor), v => v + '%');
+    cfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + '% of arrivals';
+    new Chart(document.getElementById('chart-tour-origins'), lightenCityChartLabels(cfg));
+  }
+
+  // 4. Foreign tourists and MRE (2019-2024; no split from 2025)
+  setH('twrap-tesmre', 290);
+  {
+    const tes = tourAnnual('arrivals_tes'), mre = tourAnnual('arrivals_mre');
+    const ys = Object.keys(tes).map(Number).sort();
+    new Chart(document.getElementById('chart-tour-tesmre'), {
+      type: 'bar',
+      data: {
+        labels: ys.map(y => (y === 2020 || y === 2021) ? `${y} (COVID)` : String(y)),
+        datasets: [
+          { label: 'Foreign tourists', data: ys.map(y => +(tes[y] / 1e6).toFixed(2)), backgroundColor: cc.barColor, stack: 's' },
+          { label: 'MRE', data: ys.map(y => +(mre[y] / 1e6).toFixed(2)), backgroundColor: cc.barColor2, stack: 's' },
+        ],
       },
       options: {
         responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
-        layout: { padding: { top: 20 } },
         plugins: {
-          legend: { display: false },
-          datalabels: {
-            anchor: 'top', align: 'top', clip: false,
-            color: cc.label, font: { size: 10, weight: '600' },
-            formatter: v => v,
-          },
-          tooltip: {
-            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
-            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
-            callbacks: { label: ctx => '  Index: ' + ctx.raw },
-          },
+          legend: { display: true, position: 'bottom', labels: { color: cc.label, boxWidth: 10, font: { size: 11 } } },
+          datalabels: { display: false },
+          tooltip: { ...tip(), callbacks: { label: ctx => `  ${ctx.dataset.label}: ${(+ctx.raw).toFixed(2)}M` } },
         },
-        scales: {
-          x: { ticks: { color: cc.tick, font: { size: 11 } } },
-          y: { min: 0, max: 115, ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Sweet Sans Pro', sans-serif" } } },
-        },
+        scales: { x: { stacked: true, ticks }, y: { stacked: true, beginAtZero: true, ticks } },
       },
     });
   }
 
+  // 5. Nights by region (selected year)
+  {
+    const r = tourRegions(yr0);
+    setH('twrap-nights', Math.max(260, r.labels.length * 28 + 50));
+    const cfg = chartConfig(r.labels, r.values, 'M', r.labels.map(() => cc.barColor), v => (+v).toFixed(1) + 'M');
+    cfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + (+ctx.raw).toFixed(2) + 'M nights';
+    new Chart(document.getElementById('chart-tour-nights'), lightenCityChartLabels(cfg));
+  }
+
+  // 6. Occupancy by city, 2024 vs 2025
+  {
+    const rows = tourBy('occupancy').filter(s => s.dim.city !== 'Morocco')
+      .map(s => [s.dim.city, tourAnnual(s.id)]).sort((a, b) => b[1][2025] - a[1][2025]);
+    setH('twrap-occ', Math.max(280, rows.length * 34 + 60));
+    new Chart(document.getElementById('chart-tour-occ'), {
+      type: 'bar',
+      data: {
+        labels: rows.map(r => r[0]),
+        datasets: [
+          { label: '2024', data: rows.map(r => r[1][2024]), backgroundColor: cc.compColor, borderRadius: 3, borderSkipped: false },
+          { label: '2025', data: rows.map(r => r[1][2025]), backgroundColor: cc.barColor, borderRadius: 3, borderSkipped: false },
+        ],
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+        layout: { padding: { right: 36 } },
+        plugins: {
+          legend: { display: true, position: 'bottom', labels: { color: cc.label, boxWidth: 10, font: { size: 11 } } },
+          datalabels: { anchor: 'end', align: 'right', clip: false, color: cc.label, font: { size: 10, weight: '500' }, formatter: v => v + '%' },
+          tooltip: { ...tip(), callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}%` } },
+        },
+        scales: { x: { min: 0, max: 100, ticks }, y: { ticks: { color: cc.catLabel, font: { size: 11 } } } },
+      },
+    });
+    const m = tourAnnual('occupancy_Morocco');
+    document.getElementById('tour-occ-note').textContent =
+      `Morocco: ${m[2024]}% in 2024, ${m[2025]}% in 2025. Current official basis; earlier years were published on a different basis and are not comparable.`;
+  }
+
+  // 7. Airport passengers, 2024 vs 2025 (ONDA, as reported by the press)
+  {
+    const aps = tourBy('airport_passengers').filter(s => s.freq === 'A');
+    setH('twrap-airports', Math.max(240, aps.length * 44 + 60));
+    new Chart(document.getElementById('chart-tour-airports'), {
+      type: 'bar',
+      data: {
+        labels: aps.map(s => s.dim.airport),
+        datasets: [2024, 2025].map((y, i) => ({
+          label: String(y), data: aps.map(s => +(tourAnnual(s.id)[y] / 1e6).toFixed(2)),
+          backgroundColor: i ? cc.barColor : cc.compColor, borderRadius: 3, borderSkipped: false,
+        })),
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+        layout: { padding: { right: 40 } },
+        plugins: {
+          legend: { display: true, position: 'bottom', labels: { color: cc.label, boxWidth: 10, font: { size: 11 } } },
+          datalabels: { anchor: 'end', align: 'right', clip: false, color: cc.label, font: { size: 10, weight: '500' }, formatter: v => (+v).toFixed(1) + 'M' },
+          tooltip: { ...tip(), callbacks: { label: ctx => `  ${ctx.dataset.label}: ${(+ctx.raw).toFixed(2)}M passengers` + (ctx.label.startsWith('Casablanca') && ctx.dataset.label === '2025' ? ' (rounded)' : '') } },
+        },
+        scales: { x: { beginAtZero: true, ticks }, y: { ticks: { color: cc.catLabel, font: { size: 11 } } } },
+      },
+    });
+    const tot = tourAnnual('air_passengers_total');
+    const ytd = tourSeries('air_passengers_ytd').points[0];
+    const ytdAp = tourBy('airport_passengers').filter(s => s.freq === 'YTD')
+      .map(s => `${s.dim.airport.split(' ')[0]} ${tourM(s.points[0].value)}`).join(', ');
+    document.getElementById('tour-airports-note').textContent =
+      `All airports: ${tourM(tot[2024])} in 2024, ${tourM(tot[2025])} in 2025; ${tourM(ytd.value)} in Jan–Aug 2026 (${tourSigned(ytd.yoy_pct)}%). `
+      + `Jan–Aug 2026: ${ytdAp}. Airport authority figures as reported in the press; Casablanca 2025 is rounded. Fès and Tanger annual totals are not shown: the published figures could not be confirmed.`;
+  }
+
+  // 8. Receipts trend
+  setH('twrap-revenue', 290);
+  trendChart('chart-tour-revenue', tourAnnual('receipts_total'), N26.receipts, F27.receipts, 1000, v => 'MAD ' + (+v).toFixed(1) + 'B', 2013);
+
+  // 9. Receipts by month: 2025, 2026 so far, 2027 Kodo forecast with its range
+  setH('twrap-season', 290);
+  {
+    const mon = {};
+    tourSeries('receipts_monthly').points.forEach(p => { mon[p.period] = p.value / 1000; });
+    const yr = y => TOUR_MON.map((_, i) => mon[`${y}-${String(i + 1).padStart(2, '0')}`] ?? null);
+    const fm = F27.receipts.monthly;
+    const last26 = Object.keys(mon).filter(k => k.startsWith('2026')).sort().pop();
+    new Chart(document.getElementById('chart-tour-season'), {
+      type: 'line',
+      data: {
+        labels: TOUR_MON,
+        datasets: [
+          { label: '2027 low', data: fm.map(m => m.low / 1000), borderWidth: 0, pointRadius: 0, fill: false },
+          { label: '2027 range', data: fm.map(m => m.high / 1000), borderWidth: 0, pointRadius: 0, backgroundColor: withAlpha(cc.forecastColor, 0.16), fill: '-1' },
+          { label: '2027 Kodo forecast', data: fm.map(m => m.base / 1000), borderColor: cc.forecastColor, borderDash: [5, 4], borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+          { label: '2025 official', data: yr(2025), borderColor: cc.compColor, borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+          { label: '2026 official', data: yr(2026), borderColor: cc.barColor, borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+        plugins: {
+          legend: { display: false }, datalabels: { display: false },
+          tooltip: {
+            ...tip(), mode: 'index', intersect: false,
+            filter: item => !['2027 low', '2027 range'].includes(item.dataset.label) && item.raw != null,
+            callbacks: {
+              label: ctx => {
+                if (ctx.dataset.label.startsWith('2027')) {
+                  const m = fm[ctx.dataIndex];
+                  return `  Kodo forecast 2027: MAD ${(m.base / 1000).toFixed(1)}B (range ${(m.low / 1000).toFixed(1)}–${(m.high / 1000).toFixed(1)})`;
+                }
+                return `  ${ctx.dataset.label}: MAD ${(+ctx.raw).toFixed(1)}B`;
+              },
+            },
+          },
+        },
+        scales: { x: { ticks }, y: { beginAtZero: true, ticks } },
+      },
+    });
+    const [ly, lm] = last26.split('-').map(Number);
+    document.getElementById('tour-season-legend').innerHTML = [
+      ['tour-dot-official', `2026 official (to ${TOUR_MON[lm - 1]} ${ly})`],
+      ['tour-dot-prior', '2025 official'],
+      ['tour-dot-forecast', '2027 Kodo forecast, with range'],
+    ].map(([c, t]) => `<span class="chart-dot-legend-item"><span class="chart-dot-legend-dot ${c}"></span>${t}</span>`).join('');
+  }
+
+  renderTourismPanels();
+  const yearSel = document.getElementById('tourism-export-year');
+  if (yearSel) yearSel.onchange = e => setTourismYear(e.target.value);
+  setTourismYear(yr0);
   EventCalendar.init();
   tourismInited = true;
+}
+
+// The 2026 year-to-date strip, the forecast section, the catalysts and the sources
+function renderTourismPanels() {
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const period = p => { const [a, b] = p.split('/'); const m1 = +a.slice(5), m2 = +b.slice(5); return `${TOUR_MON[m1 - 1]}–${TOUR_MON[m2 - 1]} ${b.slice(0, 4)}`; };
+  const last = id => tourSeries(id).points[tourSeries(id).points.length - 1];
+
+  // 2026 so far
+  const ytd = [
+    ['Arrivals', last('arrivals_ytd'), v => tourM(v)],
+    ['Tourist nights', last('nights_ytd'), v => tourM(v)],
+    ['Travel receipts', last('receipts_ytd'), v => 'MAD ' + tourB(v)],
+    ['Airport passengers', last('air_passengers_ytd'), v => tourM(v)],
+  ];
+  document.getElementById('tour-ytd').innerHTML =
+    `<span class="tour-ytd-title">2026 so far <span class="pill--grey tour-ytd-pill">provisional</span></span>` +
+    ytd.map(([l, p, f]) => `<span class="tour-ytd-item" title="Source: ${esc(tourSrcName(p.source))}, ${esc(tourPub(tourismData.sources[p.source]))}">
+        <span class="tour-ytd-label">${l} · ${period(p.period)}</span>
+        <span class="tour-ytd-value">${f(p.value)}</span>
+        <span class="tour-ytd-delta">${tourSigned(p.yoy_pct)}% vs same period 2025</span></span>`).join('');
+
+  // 2027 Kodo forecast
+  const F = tourismData.forecast, F27 = F.forecast_2027, N26 = F.nowcast_2026, BT = F.backtest;
+  document.getElementById('tour-fc-intro').innerHTML =
+    'Kodo’s own projection for 2027, built from the official figures above. It is not an official forecast. '
+    + 'Each figure is a base case with a low–high range; the range is wider where the history is short. '
+    + '<a href="/methodology#tourism-forecast">Method, assumptions and backtest</a>.';
+  const cards = [
+    ['Arrivals', F27.arrivals, tourM, N26.arrivals, BT.arrivals],
+    ['Tourist nights', F27.nights, tourM, N26.nights, BT.nights],
+    ['Occupancy', F27.occupancy, v => v.toFixed(1) + '%', N26.occupancy, BT.occupancy],
+    ['Travel receipts', F27.receipts, v => 'MAD ' + tourB(v), N26.receipts, BT.receipts],
+    ['Airport passengers', F27.air_passengers, tourM, N26.air_passengers, BT.air_passengers],
+  ].filter(c => c[1]);
+  document.getElementById('tour-fc-grid').innerHTML = cards.map(([l, f, fmt, n, bt]) => `
+    <div class="tour-fc-card">
+      <span class="tour-fc-label">${l} · 2027</span>
+      <span class="tour-fc-value">${fmt(f.base)}</span>
+      <span class="tour-fc-range">range ${fmt(f.low)} – ${fmt(f.high)}</span>
+      ${n && n.base != null ? `<span class="tour-fc-meta">2026 estimate ${fmt(n.base)}${f.growth_vs_2026 != null ? ` · ${tourSigned(f.growth_vs_2026)}%` : ''}</span>` : ''}
+      <span class="tour-fc-meta">Backtest error ${bt.mape_v2}%${Object.keys(bt.years).length > 1 ? ' (average)' : ' (one year)'}</span>
+    </div>`).join('');
+  const table = (id, head, rows) => {
+    document.getElementById(id).innerHTML = `<thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`
+      + rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') + '</tbody>';
+  };
+  table('tour-fc-markets', ['Market', '2025', '2027', 'Range'],
+    Object.entries(F.markets_2027).sort((x, y) => y[1].base - x[1].base).map(([m, v]) => [esc(m), tourM(tourAnnual('arrivals_mkt_' + m)[2025]), tourM(v.base), `${tourM(v.low)}–${tourM(v.high)}`]));
+  table('tour-fc-cities', ['City', '2025', '2027', 'Range'],
+    Object.entries(F.cities_occupancy_2027).sort((x, y) => y[1].base - x[1].base).map(([c, v]) => [esc(c), tourAnnual('occupancy_' + c)[2025] + '%', v.base.toFixed(0) + '%', `${v.low.toFixed(0)}–${v.high.toFixed(0)}%`]));
+  table('tour-fc-airports', ['Airport', '2025', '2027', 'Range'],
+    Object.entries(F.airports_2027).sort((x, y) => y[1].base - x[1].base).map(([a, v]) => [esc(a), tourM(tourAnnual('airport_' + a)[2025]), tourM(v.base), `${tourM(v.low)}–${tourM(v.high)}`]));
+  const held = F.withheld.map(w => esc(w.item)).join('; ');
+  document.getElementById('tour-fc-foot').innerHTML =
+    'Markets include MRE in their country of residence. Airport figures are not backtested (no earlier history could be verified), so their range is wider. '
+    + `Travel receipts are also forecast by month (chart above). Not forecast: ${held}.`;
+
+  // Catalysts, each from the figures above or an official source
+  const arr = tourAnnual('arrivals_total'), rec = tourAnnual('receipts_total'), tot = tourAnnual('air_passengers_total');
+  const tgt = Object.fromEntries(tourismData.targets.map(t => [t.id, t.value]));
+  const mon = {}; tourSeries('receipts_monthly').points.forEach(p => { mon[p.period] = p.value; });
+  const mk = id => tourAnnual('arrivals_mkt_' + id);
+  const g = (h, y) => tourPct(h[y], h[y - 1]);
+  const airYtd = tourSeries('air_passengers_ytd').points[0];
+  const cats = [
+    ['Roadmap 2023–2026', `Targets for 2026: ${tourM(tgt.arrivals_2026)} arrivals and MAD ${tourB(tgt.receipts_2026)} of receipts. Both passed in 2025: ${tourM(arr[2025])} arrivals and MAD ${tourB(rec[2025])}.`],
+    ['2030 vision', `${tourM(tgt.arrivals_2030)} arrivals targeted by 2030, the year Morocco co-hosts the FIFA World Cup with Spain and Portugal.`],
+    ['AFCON 2025', `Africa Cup of Nations, 21 Dec 2025 – 18 Jan 2026: travel receipts ${tourSigned(tourPct(mon['2025-12'], mon['2024-12']), 0)}% in December 2025 on a year earlier.`],
+    ['Air traffic', `${tourM(tot[2025])} airport passengers in 2025 (${tourSigned(g(tot, 2025), 0)}%), and ${tourSigned(airYtd.yoy_pct)}% in Jan–Aug 2026.`],
+    ['Long-haul markets', `Arrivals in 2025: United States ${tourSigned(g(mk('United States'), 2025), 0)}%, Canada ${tourSigned(g(mk('Canada'), 2025), 0)}%, China ${tourSigned(g(mk('China'), 2025), 0)}%.`],
+    ['Tourism in the economy', 'Tourism was 7.5% of GDP in 2025, up from 7.2% in 2024 (HCP tourism satellite account, as published by the Observatoire du Tourisme).'],
+  ];
+  document.getElementById('tour-catalysts').innerHTML = cats.map(([t, d]) =>
+    `<div class="catalyst-card"><div class="catalyst-card-title">${t}</div><div class="catalyst-card-desc">${esc(d)}</div></div>`).join('');
+
+  // Sources
+  const srcs = Object.entries(tourismData.sources);
+  const li = ([id, s]) => `<li>${esc(s.publisher)} — <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>, published ${esc(tourPub(s))}.</li>`;
+  document.getElementById('tour-sources').innerHTML =
+    `<p class="tour-sources-title">Sources</p>
+     <ul class="tour-sources-list">${srcs.filter(([, s]) => s.kind === 'official').map(li).join('')}</ul>
+     <p class="tour-sources-title">Reported in the press (the airport authority’s own releases could not be read)</p>
+     <ul class="tour-sources-list">${srcs.filter(([, s]) => s.kind !== 'official').map(li).join('')}</ul>
+     <p class="tour-disclaimer">${tourismData.notes.map(esc).join(' ')} Figures checked ${esc(KodoPeriod.day(tourismData.updated))}. `
+     + `Provisional figures may be revised. The 2026 estimate and the 2027 figures are Kodo forecasts, not official data. `
+     + `Events: organisers, ministries and press (sources in each event); dates subject to change.</p>`;
 }
 
 // ─── Pipeline screen ──────────────────────────────────────────────
@@ -6007,57 +6129,33 @@ function exportTourism() {
     showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download tourism intelligence data.');
     return;
   }
-  const yearEl = document.getElementById('tourism-export-year');
-  const year   = yearEl ? yearEl.value : '2025';
-  const yearNum = parseInt(year, 10);
-
-  // Sheet 1 — International Arrivals (all years with YoY growth, filtered to selected year)
-  const ARR_YEARS = ['2020','2021','2022','2023','2024','2025','2026E'];
-  const ARR_VALS  = [2.3, 5.2, 11.0, 14.5, 17.4, 20.1, 22.5];
-  const arrivalsData = ARR_YEARS
-    .filter(yr => yr === year)
-    .map(yr => {
-      const idx  = ARR_YEARS.indexOf(yr);
-      const prev = idx > 0 ? ARR_VALS[idx - 1] : null;
-      const growth = prev ? ((ARR_VALS[idx] - prev) / prev * 100).toFixed(1) + '%' : 'N/A';
-      return { 'Year': yr, 'Total Arrivals (M)': ARR_VALS[idx], 'YoY Growth %': growth };
-    });
-
-  // Sheet 2 — Airport Traffic for selected year
-  const airYearVals = TOUR_AIRPORT_DATA.years[yearNum];
-  const airportData = airYearVals
-    ? TOUR_AIRPORT_DATA.labels.map((airport, i) => ({
-        'Airport': airport,
-        'Passengers (M)': airYearVals[i],
-        'Year': year,
-      }))
-    : TOUR_AIRPORT_DATA.labels.map((airport, i) => {
-        const row = { 'Airport': airport };
-        Object.entries(TOUR_AIRPORT_DATA.years).forEach(([yr, vals]) => { row[`${yr} (M pax)`] = vals[i]; });
-        return row;
-      });
-
-  // Sheet 3 — Origin Markets for selected year
-  const origYearVals = TOUR_ORIGINS_DATA.years[yearNum];
-  const originsData = origYearVals
-    ? TOUR_ORIGINS_DATA.labels.map((origin, i) => ({
-        'Country': origin,
-        'Arrivals Share %': origYearVals[i] + '%',
-        'Year': year,
-      }))
-    : TOUR_ORIGINS_DATA.labels.map((origin, i) => {
-        const row = { 'Origin Market': origin };
-        Object.entries(TOUR_ORIGINS_DATA.years).forEach(([yr, vals]) => { row[`${yr} (%)`] = vals[i]; });
-        return row;
-      });
-
+  if (!tourismData) { loadTourismData().then(exportTourism).catch(() => {}); return; }
+  const src = id => { const s = tourismData.sources[id]; return s ? `${s.publisher.split(',')[0]} (${s.published || 'date not stated'})` : id; };
+  const rowsOf = metric => tourBy(metric).flatMap(s => s.points.map(p => ({
+    Series: s.label, Period: p.period, Value: p.value, Unit: s.unit, Status: p.status + (p.covid ? ' · COVID year' : ''),
+    Source: src(p.source), Note: [p.note, s.note].filter(Boolean).join(' '),
+  })));
+  const F = tourismData.forecast;
+  const fc = [];
+  const add = (what, unit, f) => fc.push({ Item: what, Unit: unit, Base: f.base, Low: f.low, High: f.high, Label: 'Kodo forecast, not official' });
+  Object.entries(F.forecast_2027).forEach(([k, f]) => add(`${k} 2027`, f.unit || (k === 'occupancy' ? '%' : ''), f));
+  Object.entries(F.nowcast_2026).forEach(([k, f]) => f.low != null && add(`${k} 2026 estimate`, '', f));
+  Object.entries(F.markets_2027).forEach(([k, f]) => add(`Arrivals from ${k} 2027`, 'arrivals', f));
+  Object.entries(F.cities_occupancy_2027).forEach(([k, f]) => add(`Occupancy ${k} 2027`, '%', f));
+  Object.entries(F.airports_2027).forEach(([k, f]) => add(`Passengers ${k} 2027`, 'passengers', f));
+  (F.forecast_2027.receipts?.monthly || []).forEach(m => add(`Receipts ${m.month}`, 'MAD million', m));
   exportToExcel(
     [
-      { data: arrivalsData.length ? arrivalsData : [{ 'Note': 'No data for selected year' }], name: 'International Arrivals' },
-      { data: airportData, name: 'Airport Traffic' },
-      { data: originsData, name: 'Origin Markets' },
+      { data: [...rowsOf('arrivals'), ...rowsOf('arrivals_by_mode'), ...rowsOf('arrivals_by_entry')], name: 'Arrivals' },
+      { data: rowsOf('arrivals_by_market'), name: 'Arrivals by market' },
+      { data: [...rowsOf('nights'), ...rowsOf('nights_by_region'), ...rowsOf('nights_by_market')], name: 'Nights' },
+      { data: rowsOf('occupancy'), name: 'Occupancy' },
+      { data: [...rowsOf('receipts'), ...rowsOf('receipts_by_country')], name: 'Receipts' },
+      { data: [...rowsOf('air_passengers'), ...rowsOf('airport_passengers')], name: 'Airports' },
+      { data: fc, name: 'Kodo forecast' },
+      { data: Object.values(tourismData.sources).map(s => ({ Publisher: s.publisher, Title: s.title, Published: s.published || 'not stated', URL: s.url, Kind: s.kind })), name: 'Sources' },
     ],
-    `Kodo_Tourism_Morocco_${year}`
+    'Kodo_Tourism_Morocco'
   );
 }
 

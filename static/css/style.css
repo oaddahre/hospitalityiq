@@ -1752,6 +1752,167 @@ body.light .nav-logout  { color: var(--text-2); }
   padding: 4px 0 16px;
 }
 
+.tour-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tour-year-label {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* 2026 so far: provisional official figures */
+.tour-ytd {
+  display: grid;
+  grid-template-columns: auto repeat(4, minmax(0, 1fr));
+  gap: 0;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 20px;
+  font-family: 'Sweet Sans Pro', sans-serif;
+}
+.tour-ytd-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  border-right: 1px solid var(--border);
+}
+.tour-ytd-pill { align-self: flex-start; font-size: 10px; }
+.tour-ytd-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-right: 1px solid var(--border);
+}
+.tour-ytd-item:last-child { border-right: none; }
+.tour-ytd-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+.tour-ytd-value { font-size: 18px; font-weight: 600; color: var(--text); }
+.tour-ytd-delta { font-size: 11px; color: var(--text-2); }
+
+/* Legend dots: official, COVID years, prior year, Kodo forecast */
+.tour-legend { flex-wrap: wrap; }
+.chart-dot-legend-dot.tour-dot-official { background: var(--cat-1-dot); }
+.chart-dot-legend-dot.tour-dot-covid    { background: var(--text-2); }
+.chart-dot-legend-dot.tour-dot-prior    { background: var(--text-2); }
+.chart-dot-legend-dot.tour-dot-forecast {
+  background: color-mix(in srgb, var(--cat-5-dot) 30%, transparent);
+  border: 1.5px dashed var(--cat-5-dot);
+  box-sizing: border-box;
+}
+
+/* 2027 outlook: Kodo forecast, set apart from the official figures */
+.tour-fc { border-style: dashed; border-color: var(--cat-5-dot); }
+.tour-fc .table-card-header { gap: 12px; flex-wrap: wrap; }
+.tour-fc-pill { font-size: 11px; }
+.tour-fc-intro, .tour-fc-foot {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-2);
+  padding: 12px 20px 0;
+  margin: 0;
+}
+.tour-fc-foot { padding: 4px 20px 18px; font-size: 11px; }
+.tour-fc-intro a { color: var(--action-text); }
+.tour-fc-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px 20px;
+}
+.tour-fc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border: 1px dashed var(--cat-5-dot);
+  background: var(--bg);
+  font-family: 'Sweet Sans Pro', sans-serif;
+  min-width: 0;
+}
+.tour-fc-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+.tour-fc-value { font-size: 22px; font-weight: 600; color: var(--cat-5-text); }
+.tour-fc-range { font-size: 12px; font-weight: 500; color: var(--text); }
+.tour-fc-meta  { font-size: 11px; color: var(--text-2); }
+.tour-fc-tables {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 4px 20px 12px;
+}
+.tour-fc-table-wrap { min-width: 0; overflow-x: auto; }
+.tour-fc-sub {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 6px 0;
+}
+.tour-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+}
+.tour-table th {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  text-align: right;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tour-table td {
+  text-align: right;
+  padding: 5px 6px;
+  color: var(--text);
+  border-bottom: 0.5px solid var(--border);
+  white-space: nowrap;
+}
+.tour-table th:first-child, .tour-table td:first-child { text-align: left; }
+.tour-table td:nth-child(3) { color: var(--cat-5-text); font-weight: 600; }
+.tour-table td:nth-child(4) { color: var(--text-2); }
+
+/* Sources */
+.tour-sources { font-family: 'Sweet Sans Pro', sans-serif; padding: 4px 0 8px; }
+.tour-sources-title { font-size: 11px; font-weight: 600; color: var(--text); margin: 10px 0 4px; }
+.tour-sources-list { margin: 0 0 6px; padding-left: 18px; font-size: 11px; line-height: 1.6; color: var(--text-2); }
+.tour-sources-list a { color: var(--action-text); word-break: break-word; }
+
+@media (max-width: 1200px) {
+  .tour-fc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tour-fc-tables { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 900px) {
+  .tour-ytd { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tour-ytd-title { grid-column: 1 / -1; flex-direction: row; align-items: center; border-right: none; border-bottom: 1px solid var(--border); }
+  .tour-ytd-item { border-bottom: 1px solid var(--border); }
+  .tour-ytd-item:nth-child(odd) { border-right: none; }
+  .tour-fc-tables { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .tour-fc-grid { grid-template-columns: 1fr 1fr; padding: 12px; gap: 8px; }
+  .tour-fc-value { font-size: 18px; }
+  .tour-fc-tables { padding: 4px 12px 12px; }
+  .tour-fc-intro, .tour-fc-foot { padding-left: 12px; padding-right: 12px; }
+}
+
 .catalyst-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -4336,7 +4497,7 @@ body.light .nav-logout  { color: var(--text-2); }
   .screen-header { margin-bottom: 12px; }
   .screen-sub { font-size: 12px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  #screen-tourism .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  #screen-tourism .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kpi-value { font-size: 20px; }
   #screen-dashboard .kpi-value { font-size: 18px; }
   .kpi-card { padding: 10px 10px; }

@@ -221,9 +221,99 @@
     </table>
   </div>
 
-  <!-- 03 — Asset Valuation -->
-  <div class="method-section">
+  <!-- 03 — Tourism data and the 2027 Kodo forecast (tourism.json, tourism_forecast.json) -->
+  {% set F = tourism_forecast %}
+  {% macro m(v) %}{{ '%.1f'|format(v / 1000000) }}M{% endmacro %}
+  {% macro b(v) %}MAD {{ '%.1f'|format(v / 1000) }}B{% endmacro %}
+  {% macro sgn(v) %}{{ '+' if v >= 0 else '−' }}{{ '%.1f'|format(v|abs) }}%{% endmacro %}
+  <div class="method-section" id="tourism">
     <span class="method-section-label">03</span>
+    <h2 class="method-section-title">Tourism Data and the 2027 Kodo Forecast</h2>
+    <div class="method-section-body">
+      <p>The Tourism screen shows official figures only, each stored with its source, its publication date, the period it covers and whether it is final or provisional. The 2026 estimate and the 2027 figures are Kodo’s own forecast, drawn in a separate style and never presented as official.</p>
+      <ul>
+        <li><strong>Arrivals</strong> are arrivals at border posts and include Moroccans resident abroad (MRE). The official table by nationality counts MRE under their country of residence, so “France” there is far larger than foreign French tourists alone. From 2025 the official figures no longer split foreign tourists and MRE.</li>
+        <li><strong>Nights and occupancy</strong> cover classified tourist accommodation (EHTC) only, not all accommodation. The official series was widened: 2019 and 2023 onwards are on the current basis, 2020–2022 only on the previous, narrower one (2024: 39.9 million nights on the current basis, 28.7 million on the previous). Only the current basis is shown; occupancy is shown for 2024 and 2025, the years published on that basis.</li>
+        <li><strong>Travel receipts</strong> are the balance-of-payments travel receipts of the Office des Changes, in dirhams at current prices; the latest year is provisional.</li>
+        <li><strong>Airport passengers</strong> are the airport authority’s figures as reported in the press, because its own releases could not be read; they are marked as secondary.</li>
+        <li>All figures are calendar years. 2020 and 2021 are marked as COVID years.</li>
+      </ul>
+    </div>
+
+    <table class="method-table">
+      <thead><tr><th>Source</th><th>Document</th><th>Published</th><th>Type</th></tr></thead>
+      <tbody>
+      {% for id, s in tourism_sources.items() %}
+        <tr><td>{{ s.publisher }}</td><td><a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.title }}</a></td><td>{{ s.published or 'not stated' }}</td><td>{{ 'Official' if s.kind == 'official' else 'Press report' }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="method-section-body" style="margin-top:28px">
+      <p><strong>Cross-checks.</strong> Every headline figure was compared with a second source. Where they differ, the official, latest release is used.</p>
+    </div>
+    <table class="method-table">
+      <thead><tr><th>Figure</th><th>Sources compared</th><th>Largest gap</th><th>Outcome</th></tr></thead>
+      <tbody>
+      {% for c in tourism_crosschecks %}
+        <tr><td>{{ c.metric }}</td><td>{% for v in c['values'] %}{{ tourism_sources[v[0]].publisher.split(',')[0] }}{{ ', ' if not loop.last }}{% endfor %}</td><td>{{ '%.2f'|format(c.max_diff_pct|abs) }}%</td><td>{{ c.note }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="method-section-body" style="margin-top:28px" id="tourism-forecast">
+      <p><strong>How the Kodo forecast is made.</strong> First, 2026 is estimated from the latest year-to-date figures. Then next year’s growth is the long-run rate (2013–2019: arrivals {{ F.long_run_growth.arrivals }}% a year, receipts {{ F.long_run_growth.receipts }}%, nights {{ F.long_run_growth.nights }}%) plus half of the gap between the latest growth and that rate, so the growth after the 2023–2025 records slows step by step. Known one-off effects are then added. Each figure has a low–high range: 1.5 times its backtest error (at least 3%), wider where the history is short or the source secondary.</p>
+      <p><strong>Assumptions, in plain words.</strong></p>
+      <ul>
+      {% for a in F.assumptions %}<li>{{ a }}</li>{% endfor %}
+      </ul>
+    </div>
+
+    <table class="method-table">
+      <thead><tr><th>Kodo forecast</th><th>2026 estimate</th><th>2027 base case</th><th>2027 range</th></tr></thead>
+      <tbody>
+        <tr><td>Arrivals (MRE included)</td><td>{{ m(F.nowcast_2026.arrivals.base) }}</td><td>{{ m(F.forecast_2027.arrivals.base) }}</td><td>{{ m(F.forecast_2027.arrivals.low) }} – {{ m(F.forecast_2027.arrivals.high) }}</td></tr>
+        <tr><td>Nights, classified accommodation</td><td>{{ m(F.nowcast_2026.nights.base) }}</td><td>{{ m(F.forecast_2027.nights.base) }}</td><td>{{ m(F.forecast_2027.nights.low) }} – {{ m(F.forecast_2027.nights.high) }}</td></tr>
+        <tr><td>Occupancy, classified accommodation</td><td>{{ F.nowcast_2026.occupancy.base }}%</td><td>{{ F.forecast_2027.occupancy.base }}%</td><td>{{ F.forecast_2027.occupancy.low }}% – {{ F.forecast_2027.occupancy.high }}%</td></tr>
+        <tr><td>Travel receipts</td><td>{{ b(F.nowcast_2026.receipts.base) }}</td><td>{{ b(F.forecast_2027.receipts.base) }}</td><td>{{ b(F.forecast_2027.receipts.low) }} – {{ b(F.forecast_2027.receipts.high) }}</td></tr>
+        <tr><td>Airport passengers</td><td>{{ m(F.nowcast_2026.air_passengers.base) }}</td><td>{{ m(F.forecast_2027.air_passengers.base) }}</td><td>{{ m(F.forecast_2027.air_passengers.low) }} – {{ m(F.forecast_2027.air_passengers.high) }}</td></tr>
+      </tbody>
+    </table>
+
+    <div class="method-section-body" style="margin-top:28px">
+      <p><strong>Backtest.</strong> Each year from 2023 to 2025 was forecast using only the data available before it, and compared with what happened. The first method (v1: the 2013–2019 trend carried forward) missed the post-COVID surge, with errors up to {{ '%.0f'|format(F.backtest.receipts.years['2025'].err_v1|abs) }}%. The method used now (v2, above) cut the average error as shown. Nights for 2023 and 2024 are tested on the previous basis, which is what was known at the time.</p>
+    </div>
+    <table class="method-table">
+      <thead><tr><th>Metric</th><th>Year</th><th>Actual</th><th>v1 error</th><th>v2 forecast</th><th>v2 error</th></tr></thead>
+      <tbody>
+      {% for key, label, fmt in [('arrivals', 'Arrivals', 'm'), ('nights', 'Nights', 'm'), ('receipts', 'Travel receipts', 'b')] %}
+        {% for y, r in F.backtest[key].years.items() %}
+        <tr><td>{{ label if loop.first }}</td><td>{{ y }}</td><td>{{ m(r.actual) if fmt == 'm' else b(r.actual) }}</td><td>{{ sgn(r.err_v1) }}</td><td>{{ m(r.v2) if fmt == 'm' else b(r.v2) }}</td><td>{{ sgn(r.err_v2) }}</td></tr>
+        {% endfor %}
+        <tr><td></td><td>Average</td><td></td><td>{{ F.backtest[key].mape_v1 }}%</td><td></td><td>{{ F.backtest[key].mape_v2 }}%</td></tr>
+      {% endfor %}
+        <tr><td>Occupancy (Morocco)</td><td>2025</td><td>{{ F.backtest.occupancy.years['2025'].actual }}%</td><td>—</td><td>{{ F.backtest.occupancy.years['2025'].v2 }}%</td><td>{{ sgn(F.backtest.occupancy.years['2025'].err_v2) }}</td></tr>
+        <tr><td>Airport passengers</td><td>2025</td><td>{{ m(F.backtest.air_passengers.years['2025'].actual) }}</td><td>—</td><td>{{ m(F.backtest.air_passengers.years['2025'].v2) }}</td><td>{{ sgn(F.backtest.air_passengers.years['2025'].err_v2) }}</td></tr>
+      </tbody>
+    </table>
+    <div class="method-section-body" style="margin-top:20px">
+      <ul>
+        <li><strong>Monthly receipts:</strong> average error per month {% for y, r in F.backtest.receipts_monthly.years.items() %}{{ r.mape_months }}% in {{ y }}{{ ', ' if not loop.last else '.' }}{% endfor %}</li>
+        <li><strong>Occupancy by city, 2025:</strong> {% for c, r in F.backtest.city_occupancy.years['2025'].items() %}{{ c }} {{ '%+.1f'|format(r.err_pp) }} pts{{ ', ' if not loop.last else '.' }}{% endfor %}</li>
+        <li><strong>2026 so far:</strong> forecast from the 2025 data alone, the method would have put 2026 arrivals {{ sgn(F.check_2026.arrivals.err_pct) }} and receipts {{ sgn(F.check_2026.receipts.err_pct) }} above today’s estimate, and nights {{ sgn(F.check_2026.nights.err_pct) }}: growth is slowing faster than the method assumes, which the range allows for.</li>
+        <li><strong>Airport passengers</strong> rest on one test year, and the figures by airport are not tested at all, so their ranges are the widest.</li>
+        <li>Any forecast whose backtest error is above 15% is not published. Not published: {% for w in F.withheld %}{{ w.item }} ({{ w.reason }}){{ '; ' if not loop.last else '.' }}{% endfor %}</li>
+      </ul>
+      <p><strong>Figures not shown.</strong></p>
+      <ul>
+      {% for w in tourism_withheld %}<li>{{ w.item }}: {{ w.reason }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- 04 — Asset Valuation -->
+  <div class="method-section">
+    <span class="method-section-label">04</span>
     <h2 class="method-section-title">Asset Value Estimation</h2>
     <div class="method-section-body">
       <p>Kodo estimates indicative asset values using revenue multiples by segment — a standard methodology in hotel real estate. These multiples represent the relationship between annual rooms revenue and total asset value, calibrated against available Morocco transaction data and regional benchmarks.</p>
@@ -276,7 +366,7 @@
 
   <!-- 04 — Data Quality Labels -->
   <div class="method-section">
-    <span class="method-section-label">04</span>
+    <span class="method-section-label">05</span>
     <h2 class="method-section-title">Understanding Our Data Quality Labels</h2>
     <div class="method-section-body">
       <p>Every property and metric on the Kodo platform carries a data quality label. These are not cosmetic — they indicate the source and reliability of the underlying data.</p>
@@ -297,7 +387,7 @@
 
   <!-- 05 — Limitations -->
   <div class="method-section">
-    <span class="method-section-label">05</span>
+    <span class="method-section-label">06</span>
     <h2 class="method-section-title">What We Don't Claim</h2>
     <div class="method-section-body">
       <p>Transparency about limitations is a core part of our methodology. The following points should be understood by all users of Kodo data.</p>
@@ -314,7 +404,7 @@
 
   <!-- 06 — Data Partnership -->
   <div class="method-section">
-    <span class="method-section-label">06</span>
+    <span class="method-section-label">07</span>
     <h2 class="method-section-title">Improving Accuracy Through Partnership</h2>
     <div class="method-section-body">
       <p>The accuracy of Kodo's market intelligence improves with every hotel that contributes real operational data. Properties in our Data Sharing Program share daily occupancy, ADR, and RevPAR from their PMS. This data is anonymised and aggregated — individual hotel figures are never disclosed to other subscribers.</p>

@@ -537,6 +537,7 @@ body {
 }
 
 .method-table td:first-child { color: var(--text); }
+.method-table a { color: var(--action-text); text-underline-offset: 2px; }
 
 .method-table tr:hover td { background: var(--card); }
 /* Phones: the table scrolls inside its own box, words stay whole */

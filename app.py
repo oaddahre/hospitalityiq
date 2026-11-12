@@ -33,6 +33,7 @@ from run_lock import acquire_lock, lock_is_held
 from bench_sample import sample_benchmarking, casablanca_today
 import rate_benchmark as RB
 import events_db as EV
+import tourism_data as TD
 import rates_store as RS
 import live_kpis as LK
 from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
@@ -1660,7 +1661,9 @@ def account_change_password():
 
 @app.route("/methodology")
 def methodology():
-    return render_template("methodology.html")
+    d = TD.data()
+    return render_template("methodology.html", tourism_forecast=TD.forecast(), tourism_sources=d['sources'],
+                           tourism_crosschecks=d['crosschecks'], tourism_withheld=d['withheld'])
 
 
 @app.route("/about")
@@ -2479,6 +2482,8 @@ BRAND GROUP PERFORMANCE (ranked by total keys)
 
 INDIVIDUAL HOTEL DETAIL
 {hotel_lines}
+
+{TD.ai_context()}
 ══════════════════════════════════════════════════
 
 Answer only from the data above. If asked about hotels, cities, or markets not in the Kodo database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers.
@@ -5276,6 +5281,14 @@ def api_events():
             e.pop(k, None)
     resp = jsonify({'events': events, 'types': EV.TYPES, 'labels': EV.labels_for_api(), 'home_city': _home_city()})
     resp.headers['Cache-Control'] = 'private, max-age=60'
+    return resp
+
+
+@app.route('/api/tourism')
+@login_required
+def api_tourism():
+    resp = jsonify(TD.view())
+    resp.headers['Cache-Control'] = 'private, max-age=300'
     return resp
 
 
