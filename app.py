@@ -1595,9 +1595,28 @@ def sitemap():
     return Response(xml, mimetype='application/xml')
 
 
+_hotel_count_cache = {}
+
+
+def public_hotel_count():
+    """Hotels on the platform (hidden ones left out, as in load_data), rounded
+    down to the nearest 50 for the landing copy ("300+", then "350+"...).
+    None if hotels.csv can't be read, so the copy is shown without a number."""
+    path = os.path.join(DATA_DIR, "hotels.csv")
+    try:
+        mtime = os.path.getmtime(path)
+        if _hotel_count_cache.get("mtime") != mtime:
+            hotels, _, _ = load_data()
+            _hotel_count_cache.update(mtime=mtime, n=len(hotels))
+        n = _hotel_count_cache["n"]
+    except Exception:
+        return None
+    return n // 50 * 50 if n >= 50 else None
+
+
 @app.route("/")
 def landing():
-    return render_template("landing.html")
+    return render_template("landing.html", hotel_count=public_hotel_count())
 
 
 @app.route("/dashboard")
@@ -2434,8 +2453,11 @@ use one, say "Kodo model estimate (FY 2025), not reported data". Never call
 them actual, reported, historical or current performance. Hotel, key and
 pipeline counts are real records. Current published rates and modelled
 occupancy for the next 30 nights are on the platform's hotel profiles.
-Kodo has collected published rates (Google Hotels, through DataForSEO) every
-night only since 3 November 2026: there is no rate history before that date.
+Kodo has collected published rates every night only since 3 November 2026:
+there is no rate history before that date. Don't name a data provider or quote
+the start date; if asked where the rates come from or how far back they go,
+say there is no rate history before Kodo began collecting and point to the
+Methodology page (/methodology).
 
 NATIONAL MARKET SNAPSHOT
   Total branded hotels in database : {len(hotels_df)}
@@ -2463,7 +2485,7 @@ Answer only from the data above. If asked about hotels, cities, or markets not i
 
 BENCHMARKING PAGE DATA: a question from the Benchmarking page carries its own figures and says which mode is showing.
   - "SAMPLE MODE": fictional hotels and illustrative figures, not real hotels or real performance. Say it is sample data; never present it as real results.
-  - "RATE BENCHMARK MODE": published rates from Google Hotels (collected every night since 3 Nov 2026) and Kodo's modelled occupancy (Kodo Estimates, modelled, not measured). These are not achieved ADR, occupancy or RevPAR: call them published rates and modelled occupancy, never actuals, ADR or achieved occupancy."""
+  - "RATE BENCHMARK MODE": published hotel rates (collected every night) and Kodo's modelled occupancy (Kodo Estimates, modelled, not measured). These are not achieved ADR, occupancy or RevPAR: call them published rates and modelled occupancy, never actuals, ADR or achieved occupancy."""
 
 
 @app.route("/api/chat", methods=["POST"])

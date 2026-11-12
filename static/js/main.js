@@ -584,7 +584,7 @@ const KodoLive = (() => {
     const occLine = `${period}${d.model_run ? ' · model run ' + stamp(d.model_run) : ''}`;
     const cover = (fig, noun) => one ? `${noun} on ${one[fig + '_nights'] ?? 0} of ${n} nights`
       : `based on ${a[fig === 'occ' ? 'occ' : fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
-    const tipRate = KodoPeriod.tip({ source: 'published rates on booking sites (latest price per night, Google Hotels via DataForSEO)', updated: d.rates_updated, note: 'not ADR' });
+    const tipRate = KodoPeriod.tip({ source: 'published hotel rates (latest price per night)', updated: d.rates_updated, note: 'not ADR' });
     const tipOcc = KodoPeriod.tip({ source: `Kodo Estimates (${d.model === 'v2' ? 'v2' : 'v1'} model), modelled, not measured` });
     if (els.rate) {
       const c = els.rate;
@@ -1571,9 +1571,9 @@ const SOURCE_CLASS = {
 };
 
 const SOURCE_LABEL = {
-  live_dataforseo: 'Google Hotels',
+  live_dataforseo: 'Published rates',
   live_brand:      'Brand Direct',
-  live_booking:    'Booking.com',
+  live_booking:    'Published rates',
   manual_override: 'Manual Override',
   estimated:       'Estimated',
   unavailable:     'Unavailable',
@@ -1741,7 +1741,7 @@ async function renderRatePast(hotelId, month) {
   document.getElementById('hrate-title').textContent = `Last Published Rate · ${hrMonthName(month)}`;
   document.getElementById('hrate-legend').innerHTML = HR_LEGEND_PAST;
   badgeEl.style.display = ''; badgeEl.className = 'rate-source-badge pill--grey'; badgeEl.textContent = 'Past nights';
-  document.getElementById('hrate-updated').textContent = 'Last published rate: the last price seen on a booking site before each night. It is not ADR (what guests paid).';
+  document.getElementById('hrate-updated').textContent = 'Last published rate: the last price seen before each night. It is not ADR (what guests paid).';
   calEl.innerHTML = '<div class="bar-cal-loading">Loading past rates…</div>';
   let d;
   try { d = await (await fetch(`/api/rates/past?hotel_id=${encodeURIComponent(hotelId)}&month=${month}`)).json(); }
@@ -5030,7 +5030,7 @@ function rbDataContext() {
   const d = rbState.data, k = d && d.kpis;
   if (!d || !k || d.state === 'empty' || d.state === 'error') return '';
   const pct = v => v != null ? v.toFixed(1) + '%' : 'n/a';
-  return `RATE BENCHMARK MODE. These figures are PUBLISHED RATES from Google Hotels (the nightly price Google returns for a one-night stay, 2 adults, no room count set, in MAD; collected every night since 3 Nov 2026) and MODELLED occupancy (Kodo Estimates, modelled, not measured). They are NOT achieved ADR, occupancy or RevPAR: never call them actuals, ADR or achieved occupancy.
+  return `RATE BENCHMARK MODE. These figures are PUBLISHED RATES (the nightly price shown for a one-night stay, 2 adults, no room count set, in MAD; collected every night) and MODELLED occupancy (Kodo Estimates, modelled, not measured). They are NOT achieved ADR, occupancy or RevPAR: never call them actuals, ADR or achieved occupancy.
 Hotel: ${d.subject.name} (${d.subject.city}, ${d.subject.category}). Comp set: ${d.comps.map(c => c.name).join(', ')}.
 Next 30 nights (${d.window.start} to ${d.window.end}); rates last collected ${d.rates_updated}${d.state === 'stale' ? ' (not updated since)' : ''}.
 Live published rate on ${k.nights_with_rate} of 30 nights for the hotel; ${k.nights_compared} nights also have a comp set median.
