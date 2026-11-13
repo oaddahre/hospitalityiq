@@ -1810,7 +1810,7 @@ function openEventForm(e) {
   [...f.elements].forEach(el => {
     if (!el.name) return;
     const v = vals[el.name];
-    el.value = el.name === 'markets' ? (v || []).join(', ') : el.name === 'model' ? String(v !== false) : (v == null ? '' : v);
+    el.value = el.name === 'model' ? String(v !== false) : (v == null ? '' : v);
   });
   f.hidden = false;
   f.querySelector('[name=name]').focus();

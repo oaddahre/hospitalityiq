@@ -187,8 +187,9 @@ CITY_SEASONALITY = {
 # ─── EVENTS (events.json, read by v1 and v2) ─────────────────────────────────
 # Events come from the events database (events_db.py: events.json in the
 # repo plus the admin's changes in DATA_DIR) and from the internal list
-# model_holidays.json (school holidays in the source markets: counted here,
-# never shown on the platform). An event adds points to its
+# model_holidays.json (school holidays in visitors' home countries: counted
+# here, never shown on the platform; the calendar shows only Moroccan
+# holidays and events in Morocco). An event adds points to its
 # nights in its market (its city; "National" = every city), by its impact
 # tier and the hotel's type. THESE SIZES ARE JUDGEMENT, NOT MEASURED: they
 # are first guesses to be checked against real occupancy once the monthly
@@ -210,7 +211,7 @@ EVENT_PTS = {
     'holiday':  {'high':   {'city_business': -4, 'beach_resort': 8, 'cultural_leisure':  5, 'riad_boutique':  4},
                  'medium': {'city_business': -3, 'beach_resort': 5, 'cultural_leisure':  3, 'riad_boutique':  3},
                  'low':    {'city_business': -2, 'beach_resort': 2, 'cultural_leisure':  1, 'riad_boutique':  1}},
-    # school and bank holidays in source markets (one French zone = low)
+    # school holidays in visitors' home countries, internal list only (one French zone = low)
     'abroad':   {'high':   {'city_business':  0, 'beach_resort': 6, 'cultural_leisure':  8, 'riad_boutique':  8},
                  'medium': {'city_business':  0, 'beach_resort': 4, 'cultural_leisure':  5, 'riad_boutique':  5},
                  'low':    {'city_business':  0, 'beach_resort': 1, 'cultural_leisure':  2, 'riad_boutique':  2}},

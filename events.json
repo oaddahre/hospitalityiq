@@ -1,6 +1,6 @@
 {
  "format": "kodo-events-1",
- "updated": "2026-11-04",
+ "updated": "2026-11-13",
  "events": [
   {
    "id": "moroccan-public-schools-mid-year-school-holidays-2026-01",
@@ -21,7 +21,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial calendar 2025-26.",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-2025-2026-ecoles-maroc-420533",
    "checked": "2026-11-03"
@@ -45,7 +44,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/01/15/marrakech-la-foire-dart-contemporain-africain-1-54-revient-du-5-au-8-fevrier_1970418/",
    "checked": "2026-11-03"
@@ -69,7 +67,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ramadan",
-   "markets": [],
    "description": "Observed in 2026.",
    "source": "https://wafir.ma/en/guide/calendrier-jours-feries-maroc-2026-2027",
    "checked": "2026-11-03"
@@ -93,7 +90,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial calendar 2025-26.",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-2025-2026-ecoles-maroc-420533",
    "checked": "2026-11-03"
@@ -117,7 +113,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "eid_fitr",
-   "markets": [],
    "description": "",
    "source": "https://wafir.ma/en/guide/calendrier-jours-feries-maroc-2026-2027",
    "checked": "2026-11-03"
@@ -141,7 +136,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.tradefairdates.com/GITEX-Africa-M8765/Marrakech.html",
    "checked": "2026-11-03"
@@ -165,7 +159,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/466998-le-18e-siam-du-20-au-28-avril-a-meknes-sous-un-format-elargi-sur-9-jours.html",
    "checked": "2026-11-03"
@@ -189,7 +182,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/470785-470785.html",
    "checked": "2026-11-03"
@@ -213,7 +205,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://siel.ma/en/journal-isic-cp/siel-2026-welcomes-france-as-guest-of-honor/",
    "checked": "2026-11-03"
@@ -237,7 +228,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial calendar 2025-26.",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-2025-2026-ecoles-maroc-420533",
    "checked": "2026-11-03"
@@ -261,7 +251,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/472884-kelaat-mgouna-le-carnaval-des-roses-celebre-traditions-et-patrimoine.html",
    "checked": "2026-11-03"
@@ -285,7 +274,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.wearetech.africa/en/fils-uk/brief/brief-one/rabat-to-host-morocco-gaming-expo-in-may-2026",
    "checked": "2026-11-03"
@@ -309,7 +297,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "50th edition (2026). 2027 dates not announced: the event moved from February (2025) to May (2026).",
    "source": "https://www.pgatour.com/pgatour-champions/article/news/latest/2026/05/19/pga-tour-champions-trophy-hassan-ii-royal-golf-dar-es-salam-how-to-watch-pre-tournament-notes-storylines-rabat",
    "checked": "2026-11-03"
@@ -333,7 +320,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "eid_adha",
-   "markets": [],
    "description": "",
    "source": "https://wafir.ma/en/guide/calendrier-jours-feries-maroc-2026-2027",
    "checked": "2026-11-03"
@@ -357,7 +343,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/117820-117820.html",
    "checked": "2026-11-03"
@@ -381,7 +366,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "Successor of the Marrakech du Rire (first edition 2026).",
    "source": "https://fr.hespress.com/467030-467030.html",
    "checked": "2026-11-03"
@@ -405,7 +389,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/05/21/festival-de-fes-des-musiques-sacrees-du-monde-plus-de-160-artistes-venus-des-quatre-continents-du-4-au-7-juin_1990708/",
    "checked": "2026-11-03"
@@ -429,7 +412,6 @@
    "date_basis": "",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "2026 edition (25th). Display only: summer is already in the seasonality.",
    "source": "https://fr.le360.ma/societe/marhaba-2026-plus-de-41-millions-de-mre-accueillis_PHLNCNXZWFG3DMJEWYOQBNIMNA/",
    "checked": "2026-11-03"
@@ -453,7 +435,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://aujourdhui.ma/?p=520664",
    "checked": "2026-11-03"
@@ -477,7 +458,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
    "checked": "2026-11-03"
@@ -501,7 +481,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://medias24.com/2026/07/03/mawazine-2026-revendique-pres-de-36-millions-de-festivaliers-a-rabat-et-sale-1715281/",
    "checked": "2026-11-03"
@@ -525,7 +504,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.festival-gnaoua.net/wp-content/uploads/2026/04/CP-GNAOUA-VF-TEMPS-FORTS-2026.pdf",
    "checked": "2026-11-03"
@@ -549,7 +527,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://visitmarrakech.com/en/listing/national-festival-of-popular-arts/",
    "checked": "2026-11-03"
@@ -573,7 +550,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.7news.ma/?p=14308",
    "checked": "2026-11-03"
@@ -597,7 +573,6 @@
    "date_basis": "",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "Display only (summer peak).",
    "source": "https://fr.hespress.com/481858-481858.html",
    "checked": "2026-11-03"
@@ -621,7 +596,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/07/07/le-festival-du-rai-de-loriental-du-22-au-25-juillet-a-oujda_1997844/",
    "checked": "2026-11-03"
@@ -645,7 +619,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/07/16/agadir-la-21e-edition-du-festival-timitar-du-23-au-25-juillet_1999328/",
    "checked": "2026-11-03"
@@ -669,7 +642,6 @@
    "date_basis": "",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/133165-caf-reschedules-2026-womens-africa-cup-of-nations-in-morocco.html",
    "checked": "2026-11-03"
@@ -693,7 +665,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/08/03/la-premiere-edition-du-saidia-music-festival-du-5-au-9-aout_2001865/",
    "checked": "2026-11-03"
@@ -717,7 +688,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://snrtnews.com/fr/article/el-jadida-ouverture-du-moussem-de-moulay-abdellah-amghar-156605",
    "checked": "2026-11-03"
@@ -741,7 +711,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/08/07/le-festival-voix-de-femmes-revient-a-tetouan-du-12-au-15-aout_2002701/",
    "checked": "2026-11-03"
@@ -765,7 +734,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/?p=138184",
    "checked": "2026-11-03"
@@ -789,7 +757,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/?p=138184",
    "checked": "2026-11-03"
@@ -813,7 +780,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/?p=138184",
    "checked": "2026-11-03"
@@ -837,7 +803,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -861,7 +826,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -885,7 +849,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://flysurfer.com/?p=4345",
    "checked": "2026-11-03"
@@ -909,7 +872,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "Biennial: next edition in 2028.",
    "source": "https://lematin.ma/nation/marrakech-airshow-2026-pres-de-200-exposants-attendus-pour-la-8e-edition/367698/amp",
    "checked": "2026-11-03"
@@ -933,7 +895,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -957,7 +918,6 @@
    "date_basis": "Headline only: 17th edition announced for 13–18 October 2026.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/467030-467030.html",
    "checked": "2026-11-03"
@@ -981,7 +941,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://lepetitjournal.com/maroc/agenda/spectacles/26e-festival-national-du-theatre-a-tetouan",
    "checked": "2026-11-03"
@@ -1005,7 +964,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1029,7 +987,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "Morocco hosts the tournament every year from 2025 to 2029.",
    "source": "https://www.moroccoworldnews.com/2026/03/283591/fifa-confirms-dates-for-u-17-womens-world-cup-in-morocco/",
    "checked": "2026-11-03"
@@ -1053,7 +1010,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial decision 047.26 (2026-27).",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
    "checked": "2026-11-03"
@@ -1077,7 +1033,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://visitcasablanca.ma/en/?p=10742",
    "checked": "2026-11-03"
@@ -1101,7 +1056,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.hdsports.org/running/morocco-races-running-calendar",
    "checked": "2026-11-03"
@@ -1125,7 +1079,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/10/20/essaouira-le-festival-des-andalousies-atlantiques-de-retour-du-29-au-31-octobre_2013905/",
    "checked": "2026-11-03"
@@ -1149,7 +1102,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1173,7 +1125,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://lematin.ma/culture/moussem-de-tan-tan-la-19e-edition-se-tiendra-du-30-octobre-au-3-novembre/366795",
    "checked": "2026-11-03"
@@ -1197,7 +1148,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1221,7 +1171,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
    "checked": "2026-11-03"
@@ -1245,7 +1194,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -1269,7 +1217,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
    "checked": "2026-11-03"
@@ -1293,7 +1240,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://vivre-marrakech.com/actualites-news/art-culture-exposition-marrakech/agenda-art-culture-marrakech-dernier-trimestre-2026/",
    "checked": "2026-11-03"
@@ -1317,7 +1263,6 @@
    "date_basis": "Provisional date from the Centre cinématographique marocain, to be confirmed by the organisers.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1341,7 +1286,6 @@
    "date_basis": "Provisional date from the Centre cinématographique marocain, to be confirmed by the organisers.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1365,7 +1309,6 @@
    "date_basis": "Provisional date from the Centre cinématographique marocain, to be confirmed by the organisers.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1389,7 +1332,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
    "checked": "2026-11-03"
@@ -1413,7 +1355,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -1437,7 +1378,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/492398-visa-for-music-2026-rabat-devoile-la-programmation-de-sa-13e-edition.html",
    "checked": "2026-11-03"
@@ -1461,7 +1401,6 @@
    "date_basis": "2025: 20–23 November; 2026 dates not announced.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1485,7 +1424,6 @@
    "date_basis": "One agenda gives 27 Nov–5 Dec; Unifrance and the festival’s partners give 20–28 November.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.unifrance.org/festivals-et-marches/1232/festival-international-du-film-de-marrakech/2026",
    "checked": "2026-11-03"
@@ -1509,7 +1447,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.foiresinfo.fr/Casablanca-X101-S1-Foires-Casablanca.html",
    "checked": "2026-11-03"
@@ -1533,7 +1470,6 @@
    "date_basis": "Single listing; 2025 edition ran 26–29 November.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://modeldiplomat.com/conferences/professional/medays-2026-18th-edition-2026",
    "checked": "2026-11-03"
@@ -1557,7 +1493,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.foiresinfo.fr/Foires-Maroc-Z135-S1.html",
    "checked": "2026-11-03"
@@ -1581,7 +1516,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
    "checked": "2026-11-03"
@@ -1605,7 +1539,6 @@
    "date_basis": "Provisional date from the Centre cinématographique marocain, to be confirmed by the organisers.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1629,7 +1562,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
    "checked": "2026-11-03"
@@ -1653,35 +1585,8 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "spain-constitution-and-immaculate-conception-bridge-2026-12",
-   "name": "Spain: Constitution and Immaculate Conception bridge",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2026-12-05",
-   "end": "2026-12-08",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "medium",
-   "impact_reason": "Puente de diciembre: Spanish short breaks to Tanger, Tetouan and Marrakech",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "announced",
-   "date_basis": "6 December (Sunday) and 8 December (Tuesday) are national holidays; regions move the 6th.",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "ES"
-   ],
-   "description": "",
-   "source": "https://www.boe.es/",
    "checked": "2026-11-03"
   },
   {
@@ -1703,7 +1608,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1727,7 +1631,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial decision 047.26 (2026-27).",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
    "checked": "2026-11-03"
@@ -1751,7 +1654,6 @@
    "date_basis": "Provisional date from the Centre cinématographique marocain, to be confirmed by the organisers.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1775,7 +1677,6 @@
    "date_basis": "Provisional date from the Centre cinématographique marocain, to be confirmed by the organisers.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1799,7 +1700,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.policycenter.ma/events/atlantic-dialogues-2026",
    "checked": "2026-11-03"
@@ -1823,7 +1723,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "aefe_school",
-   "markets": [],
    "description": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
    "checked": "2026-11-03"
@@ -1847,7 +1746,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1871,7 +1769,6 @@
    "date_basis": "2025 winter edition: 26–27 December; 2026 dates not announced.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1895,7 +1792,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -1919,7 +1815,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -1943,7 +1838,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -1967,7 +1861,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -1991,7 +1884,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "Race 24 January – 6 February 2027 to Lac Rose (Senegal).",
    "source": "https://www.racecar.com/news/103270/motorsport/africa-eco-race-confirms-18th-edition-january-24-2027-february-6-2027",
    "checked": "2026-11-03"
@@ -2015,7 +1907,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial decision 047.26 (2026-27).",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
    "checked": "2026-11-03"
@@ -2039,7 +1930,6 @@
    "date_basis": "Stage days inferred from the 24 January start in Tanger and the published route; exact days by stage not published.",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.moroccoworldnews.com/2026/10/343203/tangier-to-launch-2027-africa-eco-race-across-three-countries/",
    "checked": "2026-11-03"
@@ -2063,7 +1953,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://culturama.ma/agenda/festival-on-marche-marrakech-2027-0023cf9e-0167-4634-a1ba-196bec26c54e",
    "checked": "2026-11-03"
@@ -2087,7 +1976,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "Marathon and half marathon on Sunday 31 January; fun run on Saturday 30.",
    "source": "https://marathonmarrakech.ma/?lang=en",
    "checked": "2026-11-03"
@@ -2111,7 +1999,6 @@
    "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. astronomical estimate: 1 Ramadan 1448 on Monday 8 February 2027 (±1 day).",
    "model": true,
    "model_kind": "ramadan",
-   "markets": [],
    "description": "",
    "source": "https://www.khaleejtimes.com/uae/ramadan-eid-al-fitr-eid-al-adha-2027-likely-dates",
    "checked": "2026-11-03"
@@ -2135,7 +2022,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "aefe_school",
-   "markets": [],
    "description": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
    "checked": "2026-11-03"
@@ -2159,7 +2045,6 @@
    "date_basis": "Postponed from October 2026 to March 2027 by the Centre cinématographique marocain (1 September 2026); exact dates not published.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -2183,7 +2068,6 @@
    "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. expected 9–10 March (OfficeHolidays) or 10–11 March (Wafir); the range covers both.",
    "model": true,
    "model_kind": "eid_fitr",
-   "markets": [],
    "description": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -2207,7 +2091,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://meetingspremium.com/congres",
    "checked": "2026-11-03"
@@ -2231,7 +2114,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.foiresinfo.fr/Solaire-Expo-Maroc-M9623/Casablanca.html",
    "checked": "2026-11-03"
@@ -2255,7 +2137,6 @@
    "date_basis": "Congress day 18 March confirmed; arrival and departure nights are an estimate.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "Congress on 18 March 2027; delegations arrive from the 16th.",
    "source": "https://en.7news.ma/official-morocco-to-host-fifa-elective-congress-in-2027/",
    "checked": "2026-11-03"
@@ -2279,7 +2160,6 @@
    "date_basis": "Third-party listing only (after Ramadan 2027); the 2026 edition was 5–8 February.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://cantonfair.net/event/56219-1-54-contemporary-african-art-fair-marrakech-2027",
    "checked": "2026-11-03"
@@ -2303,7 +2183,6 @@
    "date_basis": "Official site gives the welcome (20 March) and start (21 March); the end date comes from an event listing.",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.rallyeaichadesgazelles.com/en/2027-edition/dates-2027/",
    "checked": "2026-11-03"
@@ -2327,7 +2206,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial decision 047.26 (2026-27).",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
    "checked": "2026-11-03"
@@ -2351,39 +2229,8 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://moroccofranchiseexhibition.com/",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "easter-weekend-europe-2027-03",
-   "name": "Easter weekend (Europe)",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2027-03-26",
-   "end": "2027-03-29",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "medium",
-   "impact_reason": "Good Friday to Easter Monday: short breaks from the UK, Spain, Germany, Benelux",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "confirmed",
-   "date_basis": "",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "UK",
-    "ES",
-    "DE",
-    "NL",
-    "BE"
-   ],
-   "description": "Easter Sunday: 28 March 2027.",
-   "source": "https://www.gov.uk/bank-holidays",
    "checked": "2026-11-03"
   },
   {
@@ -2405,7 +2252,6 @@
    "date_basis": "ATP 2027 calendar lists the week of 28 March; 2026: 30 March – 5 April.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.atptour.com/-/media/files/calendar-pdfs/2026/2027-atp-tour-calendar-14-january-2026.pdf",
    "checked": "2026-11-03"
@@ -2429,7 +2275,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://meetingspremium.com/congres",
    "checked": "2026-11-03"
@@ -2453,7 +2298,6 @@
    "date_basis": "Listed on Expomaroc; not yet on the organiser’s site.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.expomaroc.ma/",
    "checked": "2026-11-03"
@@ -2477,7 +2321,6 @@
    "date_basis": "Listings give the end of April 2027; stage dates not published.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.finishers.com/en/event/titan-desert",
    "checked": "2026-11-03"
@@ -2501,7 +2344,6 @@
    "date_basis": "MDS Legendary 2027 page: 2–12 April; another source gives a 5 April start.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://halfmds.zendesk.com/hc/en-us/articles/28553082224530-When-will-registration-for-the-MDS-LEGENDARY-2027-open",
    "checked": "2026-11-03"
@@ -2525,7 +2367,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.conferencelists.org/marrakech/",
    "checked": "2026-11-03"
@@ -2549,7 +2390,6 @@
    "date_basis": "2026: 20–28 April (18th edition); April. 2027 dates not announced.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://salon-agriculture.ma/en",
    "checked": "2026-11-03"
@@ -2573,7 +2413,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "aefe_school",
-   "markets": [],
    "description": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
    "checked": "2026-11-03"
@@ -2597,7 +2436,6 @@
    "date_basis": "Several listings give 26–28 April 2027; one gives 25–27 April. Not yet on the organiser’s site.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.financialafrik.com/en/event/marrakech-5th-edition-of-gitex-africa/",
    "checked": "2026-11-03"
@@ -2621,7 +2459,6 @@
    "date_basis": "2026: 30 April – 3 May (22nd edition); around 1 May.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/470785-470785.html",
    "checked": "2026-11-03"
@@ -2645,35 +2482,8 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "uk-early-may-bank-holiday-weekend-2027-05",
-   "name": "UK: Early May bank holiday weekend",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2027-05-01",
-   "end": "2027-05-03",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "low",
-   "impact_reason": "Three-day weekend: short breaks",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "confirmed",
-   "date_basis": "",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "UK"
-   ],
-   "description": "",
-   "source": "https://www.gov.uk/bank-holidays",
    "checked": "2026-11-03"
   },
   {
@@ -2695,7 +2505,6 @@
    "date_basis": "2026: 1–10 May (aligned with Rabat World Book Capital 2026); earlier editions ran from late May to June. 2027 dates not announced.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://siel.ma/",
    "checked": "2026-11-03"
@@ -2719,7 +2528,6 @@
    "date_basis": "Depends on the rose bloom; 2026 edition started 7 May. Usually early to mid May.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.exoticca.com/us/blog/rose-festival-morocco-dates-events-and-travel-guide-to-kelaat-mgouna/",
    "checked": "2026-11-03"
@@ -2743,7 +2551,6 @@
    "date_basis": "2026: Sunday 10 May (9th edition).",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.watchathletics.com/schedule/watchlive/11507",
    "checked": "2026-11-03"
@@ -2767,38 +2574,8 @@
    "date_basis": "",
    "model": true,
    "model_kind": "ma_school",
-   "markets": [],
    "description": "Ministerial decision 047.26 (2026-27).",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "pentecost-weekend-france-germany-benelux-2027-05",
-   "name": "Pentecost weekend (France, Germany, Benelux)",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2027-05-15",
-   "end": "2027-05-17",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "low",
-   "impact_reason": "Whit Monday off: short breaks; overlaps Eid al-Adha",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "confirmed",
-   "date_basis": "",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "FR",
-    "DE",
-    "NL",
-    "BE"
-   ],
-   "description": "",
-   "source": "https://lepetitjournal.com/expat-pratique/famille/calendrier-scolaire-2026-2027-vacances-jours-feries-france-monde-444566",
    "checked": "2026-11-03"
   },
   {
@@ -2820,7 +2597,6 @@
    "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. expected 16–17 May (OfficeHolidays) or 17–18 May (Wafir).",
    "model": true,
    "model_kind": "eid_adha",
-   "markets": [],
    "description": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -2844,35 +2620,8 @@
    "date_basis": "2026: 18–23 May; the WTA 2027 calendar was not checked.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.wtatennis.com/tournaments/1005/rabat/2026",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "uk-spring-bank-holiday-weekend-2027-05",
-   "name": "UK: Spring bank holiday weekend",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2027-05-29",
-   "end": "2027-05-31",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "low",
-   "impact_reason": "Three-day weekend: short breaks",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "confirmed",
-   "date_basis": "",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "UK"
-   ],
-   "description": "",
-   "source": "https://www.gov.uk/bank-holidays",
    "checked": "2026-11-03"
   },
   {
@@ -2894,7 +2643,6 @@
    "date_basis": "2026: 30 May – 6 June (Centre cinématographique marocain listing); late May to early June.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/117820-117820.html",
    "checked": "2026-11-03"
@@ -2918,7 +2666,6 @@
    "date_basis": "First edition: 4–6 June 2026; the Marrakech du Rire it replaces was held in June.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/467030-467030.html",
    "checked": "2026-11-03"
@@ -2942,7 +2689,6 @@
    "date_basis": "2026: Thursday 4 – Sunday 7 June (29th edition); late May to early June.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/05/21/festival-de-fes-des-musiques-sacrees-du-monde-plus-de-160-artistes-venus-des-quatre-continents-du-4-au-7-juin_1990708/",
    "checked": "2026-11-03"
@@ -2966,7 +2712,6 @@
    "date_basis": "2025: 14–20 June; 2026: 6–12 June. Early to mid June.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://aujourdhui.ma/?p=520664",
    "checked": "2026-11-03"
@@ -2990,7 +2735,6 @@
    "date_basis": "2026 edition ran 5 June–15 September (Fondation Mohammed V); the 2027 dates are set in spring.",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.lesmre.com/fr/actualites/marhaba-2026-dates-ports-officiels-algesiras-sete-genes",
    "checked": "2026-11-03"
@@ -3014,7 +2758,6 @@
    "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. expected Sunday 6 June 2027.",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -3038,7 +2781,6 @@
    "date_basis": "2026: 19–24 June; mid to late June.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
    "checked": "2026-11-03"
@@ -3062,7 +2804,6 @@
    "date_basis": "2026: Friday 19 – Saturday 27 June; held in the second half of June.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://medias24.com/2026/07/03/mawazine-2026-revendique-pres-de-36-millions-de-festivaliers-a-rabat-et-sale-1715281/",
    "checked": "2026-11-03"
@@ -3086,7 +2827,6 @@
    "date_basis": "2026: Thursday 25 – Saturday 27 June; held in late June.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.festival-gnaoua.net/wp-content/uploads/2026/04/CP-GNAOUA-VF-TEMPS-FORTS-2026.pdf",
    "checked": "2026-11-03"
@@ -3110,7 +2850,6 @@
    "date_basis": "2026: 2–6 July; early July.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://visitmarrakech.com/en/listing/national-festival-of-popular-arts/",
    "checked": "2026-11-03"
@@ -3134,7 +2873,6 @@
    "date_basis": "2026: 2–11 July (19th edition); early July.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.7news.ma/?p=14308",
    "checked": "2026-11-03"
@@ -3158,7 +2896,6 @@
    "date_basis": "End of classes for 2026-27 not yet published; the 2026-27 year started on 1 September 2026 and classes usually end in late June.",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "Display only: summer is already in the monthly seasonality of the occupancy model.",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-ecoles-maroc-420533",
    "checked": "2026-11-03"
@@ -3182,7 +2919,6 @@
    "date_basis": "Seasonal pattern, not an event: most weddings fall between the end of Ramadan and September; summer is in the seasonality.",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.moroccoworldnews.com/2019/06/79324/guide-summer-festivals-morocco/",
    "checked": "2026-11-03"
@@ -3206,7 +2942,6 @@
    "date_basis": "2026: 22–25 July; late July.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/07/07/le-festival-du-rai-de-loriental-du-22-au-25-juillet-a-oujda_1997844/",
    "checked": "2026-11-03"
@@ -3230,7 +2965,6 @@
    "date_basis": "2026: 23–25 July (21st edition); late July.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/07/16/agadir-la-21e-edition-du-festival-timitar-du-23-au-25-juillet_1999328/",
    "checked": "2026-11-03"
@@ -3254,7 +2988,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -3278,7 +3011,6 @@
    "date_basis": "2026: 7–15 August; early to mid August.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://visitcasablanca.ma/en/?p=10754",
    "checked": "2026-11-03"
@@ -3302,7 +3034,6 @@
    "date_basis": "2026: 12–15 August; mid-August.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/08/07/le-festival-voix-de-femmes-revient-a-tetouan-du-12-au-15-aout_2002701/",
    "checked": "2026-11-03"
@@ -3326,7 +3057,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -3350,7 +3080,6 @@
    "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. expected 14 or 15 August, two days off (Wafir, OfficeHolidays).",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -3374,7 +3103,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -3398,35 +3126,8 @@
    "date_basis": "Tanger Med announced a 25–30 August peak in 2026.",
    "model": false,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.le360.ma/society/traveling-through-tanger-med-marhaba-traffic-to-peak-aug-25-30_YXS5XWMJHJADZGNL2XKQCS2BCE/",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "uk-summer-bank-holiday-weekend-2027-08",
-   "name": "UK: Summer bank holiday weekend",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2027-08-28",
-   "end": "2027-08-30",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "low",
-   "impact_reason": "Three-day weekend: short breaks",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "confirmed",
-   "date_basis": "",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "UK"
-   ],
-   "description": "",
-   "source": "https://www.gov.uk/bank-holidays",
    "checked": "2026-11-03"
   },
   {
@@ -3448,7 +3149,6 @@
    "date_basis": "2026: 4–6 September (24th edition); early September.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/?p=138184",
    "checked": "2026-11-03"
@@ -3472,7 +3172,6 @@
    "date_basis": "2026: 18–20 September (23rd edition); mid-September.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/?p=138184",
    "checked": "2026-11-03"
@@ -3496,7 +3195,6 @@
    "date_basis": "2026: 30 September – 4 October; turn of September and October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://en.hespress.com/?p=138184",
    "checked": "2026-11-03"
@@ -3520,7 +3218,6 @@
    "date_basis": "2026: 3–10 October (31st edition); early October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.ccm.ma/en/festival.php?id=10",
    "checked": "2026-11-03"
@@ -3544,35 +3241,8 @@
    "date_basis": "2025: 8–12 October; “early October” on the GKA 2026 calendar.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.gkakiteworldtour.com/event/gka-kite-surf-world-cup-dakhla-2025/",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "spain-hispanic-day-bridge-2027-10",
-   "name": "Spain: Hispanic Day bridge",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2027-10-09",
-   "end": "2027-10-12",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "low",
-   "impact_reason": "Tuesday 12 October: a four-day bridge for many",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "estimated",
-   "date_basis": "12 October is a fixed national holiday; the 2027 BOE list is not yet published.",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "ES"
-   ],
-   "description": "",
-   "source": "https://www.boe.es/",
    "checked": "2026-11-03"
   },
   {
@@ -3594,7 +3264,6 @@
    "date_basis": "2026: 13–17 October; mid-October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -3618,7 +3287,6 @@
    "date_basis": "2026: 13–18 October (17th edition); mid-October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://fr.hespress.com/467030-467030.html",
    "checked": "2026-11-03"
@@ -3642,7 +3310,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.cosmetistaexpo.com/",
    "checked": "2026-11-03"
@@ -3666,7 +3333,6 @@
    "date_basis": "2026: 17–24 October (18th edition); mid-October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
    "checked": "2026-11-03"
@@ -3690,7 +3356,6 @@
    "date_basis": "2026: Sunday 25 October (17th edition); last Sunday of October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://visitcasablanca.ma/en/?p=10742",
    "checked": "2026-11-03"
@@ -3714,7 +3379,6 @@
    "date_basis": "2026: 25 October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.hdsports.org/running/morocco-races-running-calendar",
    "checked": "2026-11-03"
@@ -3738,35 +3402,8 @@
    "date_basis": "2026: 29–31 October (21st edition); late October.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://telquel.ma/instant-t/2026/10/20/essaouira-le-festival-des-andalousies-atlantiques-de-retour-du-29-au-31-octobre_2013905/",
-   "checked": "2026-11-03"
-  },
-  {
-   "id": "spain-all-saints-weekend-2027-10",
-   "name": "Spain: All Saints weekend",
-   "type": "holiday_abroad",
-   "city": "National",
-   "market": "National",
-   "venue": "",
-   "start": "2027-10-30",
-   "end": "2027-11-01",
-   "precision": "day",
-   "recurrence": "annual",
-   "impact": "low",
-   "impact_reason": "Monday 1 November: three-day weekend",
-   "effect": "up",
-   "attendance": "",
-   "date_status": "estimated",
-   "date_basis": "1 November is a fixed national holiday; the 2027 BOE list is not yet published.",
-   "model": true,
-   "model_kind": "abroad_holiday",
-   "markets": [
-    "ES"
-   ],
-   "description": "",
-   "source": "https://www.boe.es/",
    "checked": "2026-11-03"
   },
   {
@@ -3788,7 +3425,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.maroc.ma/fr/actualites/sa-majeste-le-roi-decrete-le-31-octobre-fete-de-lunite-communique-du-cabinet-royal",
    "checked": "2026-11-03"
@@ -3812,7 +3448,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -3836,7 +3471,6 @@
    "date_basis": "2026: 18–21 November (13th edition); held in mid-November.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.musicinafrica.net/magazine/open-call-visa-music-2026",
    "checked": "2026-11-03"
@@ -3860,7 +3494,6 @@
    "date_basis": "",
    "model": true,
    "model_kind": "holiday",
-   "markets": [],
    "description": "Public holiday (fixed date).",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
    "checked": "2026-11-03"
@@ -3884,7 +3517,6 @@
    "date_basis": "2025: 28 Nov–6 Dec; 2026: 20–28 November. Late November, nine days.",
    "model": true,
    "model_kind": "",
-   "markets": [],
    "description": "",
    "source": "https://www.unifrance.org/festivals-et-marches/1232/festival-international-du-film-de-marrakech/2026",
    "checked": "2026-11-03"

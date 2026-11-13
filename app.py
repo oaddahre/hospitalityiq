@@ -5599,7 +5599,7 @@ def _occ_entry(r):
         'estimated_revpar':    _num(r.get('estimated_revpar')),
         'confidence':          r.get('confidence', 'low'),
         'price_coverage':      r.get('price_coverage') or price_coverage(r.get('confidence')),
-        'signals_used':        r.get('signals_used', ''),
+        'signals_used':        _public_signals(r.get('signals_used', '')),
         'breakdown': {
             'base':                    float(r.get('base_occ', 0) or 0),
             'rate_adjustment':         float(r.get('rate_adj', 0) or 0),
@@ -5610,12 +5610,30 @@ def _occ_entry(r):
     }
 
 
-def _v2_entry(night, e):
+def _public_signals(signals):
+    """The model's signals without the names of internal-only calendar
+    entries (model_holidays.json), which are never shown to users."""
+    if not signals or 'calendar:' not in signals:
+        return signals
+    internal = {e.get('name') for e in EV.load_internal()}
+    out = []
+    for part in signals.split(';'):
+        if part.startswith('calendar:'):
+            names = [n for n in part[len('calendar:'):].split(',') if n and n not in internal]
+            if not names:
+                continue
+            part = 'calendar:' + ','.join(names)
+        out.append(part)
+    return ';'.join(out)
+
+
+def _v2_entry(night, e, public=True):
     return {
         'date': night, 'model': 'v2', 'estimated_occupancy': e['mid'], 'low': e['low'], 'mid': e['mid'], 'high': e['high'],
         'scraped_bar': round(e['price'], 0) if e['price'] else None,
         'estimated_revpar': round((e['price'] or e['normal_price']) * e['mid'] / 100, 0) if (e['price'] or e['normal_price']) else None,
-        'confidence': e['confidence'], 'price_coverage': price_coverage(e['confidence']), 'signals_used': e['signals'],
+        'confidence': e['confidence'], 'price_coverage': price_coverage(e['confidence']),
+        'signals_used': _public_signals(e['signals']) if public else e['signals'],
         'breakdown': {'base': e['base'], 'rate_adjustment': round(e['market'] + e['own'], 1), 'dow_adjustment': e['dow'],
                       'seasonality_adjustment': e['season'], 'event_adjustment': e['calendar']},
     }
@@ -5807,7 +5825,7 @@ def api_admin_occupancy_compare():
             est = recent_model().v2_estimates([datetime.strptime(n, '%Y-%m-%d').date() for n in nights], hotel_ids=[hid])
             for n in nights:
                 if ('v2', n) not in by and (hid, n) in est:
-                    by[('v2', n)] = _v2_entry(n, est[(hid, n)])
+                    by[('v2', n)] = _v2_entry(n, est[(hid, n)], public=False)     # admin: full signals
                     live = True
         except Exception as e:
             app.logger.warning(f'v2 live estimate failed for {hid}: {e}')

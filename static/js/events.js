@@ -11,7 +11,7 @@ const KodoEvents = (() => {
 
   // Type → pill family (the platform's colour families, tokens.css)
   const TYPE_FAMILY = {
-    holiday: 'violet', religious: 'violet', school_ma: 'grey', holiday_abroad: 'grey',
+    holiday: 'violet', religious: 'violet', school_ma: 'grey',
     diaspora: 'grey', music: 'sky', film: 'orange', arts: 'orange', moussem: 'orange', sport: 'green', business: 'blue',
   };
   const IMPACT_RANK = { high: 3, medium: 2, low: 1 };
@@ -110,7 +110,6 @@ const KodoEvents = (() => {
   function nights(e) { return Math.round((parse(e.end) - parse(e.start)) / 864e5) + 1; }
   function detailHtml(e, back) {
     const row = (label, html) => html ? `<div class="evc-d-row"><dt>${label}</dt><dd>${html}</dd></div>` : '';
-    const markets = (e.markets || []).length ? e.markets.join(', ') : '';
     return `
       <div class="evc-panel-head">
         ${back ? '<button type="button" class="export-btn" data-ev-back>← All events</button>' : '<span></span>'}
@@ -125,7 +124,6 @@ const KodoEvents = (() => {
         ${row('Venue', esc(e.venue))}
         ${row('Why it matters', esc(e.impact_reason) + (e.effect === 'down' ? '<div class="evc-muted">Lowers hotel demand.</div>' : e.effect === 'mixed' ? '<div class="evc-muted">Business hotels down, leisure up.</div>' : ''))}
         ${row('Expected attendance', esc(e.attendance))}
-        ${row('Source markets', esc(markets))}
         ${row('About', esc(e.description))}
         ${row('Recurrence', esc(label('recurrence', e.recurrence)))}
         ${row('Occupancy model', e.model && e.precision !== 'month' ? 'Counted (Kodo Estimates)' : 'Shown only, not counted' + (e.precision === 'month' ? ' (month only)' : ''))}

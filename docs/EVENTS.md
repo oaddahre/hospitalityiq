@@ -1,8 +1,10 @@
 # Events database
 
-One list of every event that can move hotel demand in Morocco: public and
-religious holidays, school holidays in Morocco and the source markets,
-festivals, sport, trade fairs and congresses. It feeds:
+One list of what moves hotel demand in Morocco: Moroccan public and
+religious holidays, Moroccan school holidays (public schools and
+French-curriculum schools in Morocco), and events held in Morocco
+(festivals, moussems, sport, trade fairs and congresses). Holidays of other
+countries are never in this list or on any page. It feeds:
 
 - the **Events calendar** on the Tourism screen (month and agenda views,
   filters, busy-week strip, detail panel, .ics and CSV export);
@@ -18,7 +20,7 @@ festivals, sport, trade fairs and congresses. It feeds:
 | `events.json` | repo (deploys with the code) | the researched base list |
 | `event_overrides.json` | `DATA_DIR` (survives deploys) | events added, edited or hidden in the admin |
 | `event_changes.log` | `DATA_DIR` | one JSON line per admin change (who, when, what) |
-| `model_holidays.json` | repo | **internal, never displayed:** school holidays in the source markets (France, UK, Spain, Germany, Netherlands, Belgium, UAE, Saudi Arabia), read by the occupancy model only |
+| `model_holidays.json` | repo | **internal, never displayed:** school holidays in visitors' home countries (France, UK, Spain, Germany, Netherlands, Belgium, UAE, Saudi Arabia), read by the occupancy model only. Kept pending a decision: removing them would lower modelled occupancy by up to about 7 points on a city-month (Nov 2026 analysis) |
 
 `events_db.load_events()` merges the first two files; every page reads
 that. The occupancy model reads `events_db.load_model_events()`: the same
@@ -45,7 +47,7 @@ editor all use it.
 |---|---|
 | `id` | unique, e.g. `mawazine-rhythms-of-the-world-2027-06` (slug of the name + start month, + city when two share a name) |
 | `name` | event name |
-| `type` | `holiday`, `religious`, `school_ma`, `holiday_abroad`, `diaspora`, `music`, `film`, `arts`, `moussem`, `sport`, `business` (`school_abroad` only in `model_holidays.json`) |
+| `type` | `holiday`, `religious`, `school_ma`, `diaspora`, `music`, `film`, `arts`, `moussem`, `sport`, `business` (`school_abroad` and `holiday_abroad` only in `model_holidays.json`) |
 | `city` | the city as the platform names it (`Rabat / Salé / Témara`, `Agadir / Taghazout`…), a town (`Kelaat M'Gouna`), or `National` |
 | `market` | the hotel city it affects when `city` is a town without hotels (e.g. `Ouarzazate` for Kelaat M'Gouna); empty = none |
 | `venue` | venue, if known |
@@ -60,12 +62,16 @@ editor all use it.
 | `date_basis` | required for `estimated` and `moon`: what the date is based on |
 | `model` | `false` for events shown but not counted in the model (summer holidays and Marhaba, already in the monthly seasonality) |
 | `model_kind` | optional pattern with its own point table: `ramadan`, `eid_fitr`, `eid_adha`, `ma_school`, `aefe_school` |
-| `markets` | source markets for holidays abroad (`FR`, `UK`, `ES`, `DE`, `NL`, `BE`, `AE`, `SA`) |
+| `markets` | `model_holidays.json` only: the visitors' countries a school holiday belongs to (`FR`, `UK`, `ES`, `DE`, `NL`, `BE`, `AE`, `SA`) |
 | `description` | short note |
 | `source` | link to the source used |
 | `checked` | date the source was last checked |
 
 ## Adding or updating events
+
+Only Moroccan holidays and school breaks, and events that take place in
+Morocco, belong in `events.json` (check_events.py refuses the abroad types
+there).
 
 **In the admin (production):** Admin → Events. Add, edit or hide an event;
 the change is saved in `event_overrides.json` on that server, takes effect
@@ -95,7 +101,7 @@ which checks every field, the ids and the date bases in both files. Rules:
 ## How the model uses it
 
 See the commented config block `EVENT_PTS` in `occupancy_model.py`. In short:
-points by group (business, leisure, holiday, abroad), impact tier and hotel
+points by group (business, leisure, holiday, and abroad for the internal list), impact tier and hotel
 type; the four patterns in `EVENT_KIND_PTS` keep their own table; a city
 factor for small or large hotel stocks; `estimated` dates count 0.6× and
 widen the v2 range by 2 points (`moon` 0.85× and 1 point); all events of a

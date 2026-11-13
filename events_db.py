@@ -7,8 +7,10 @@ Every admin change is appended to event_changes.log. The calendar, the
 hotel and benchmarking markers and the occupancy model all read
 load_events(), so there is one source of truth. model_holidays.json (in
 the repo) is an internal list the occupancy model reads on top of it
-(load_model_events): school holidays in the source markets, never shown
-to users. See docs/EVENTS.md.
+(load_model_events): school holidays in the visitors' home countries,
+never shown to users. The displayed list holds only what matters in
+Morocco: Moroccan holidays and school breaks, and events held in Morocco.
+See docs/EVENTS.md.
 """
 import json
 import os
@@ -30,7 +32,7 @@ FIELDS = ('id', 'name', 'type', 'city', 'market', 'venue', 'start', 'end', 'prec
 # (served as "labels" by /api/events and /api/admin/events)
 TYPES = {
     'holiday': 'Public holiday', 'religious': 'Religious', 'school_ma': 'School holidays (Morocco)',
-    'holiday_abroad': 'Holidays abroad', 'diaspora': 'Diaspora',
+    'diaspora': 'Diaspora',
     'music': 'Music', 'film': 'Film', 'arts': 'Arts and culture', 'moussem': 'Moussem and tradition',
     'sport': 'Sport', 'business': 'Business and MICE',
 }
@@ -203,7 +205,6 @@ def save_event(data_dir, fields, actor):
     merged.setdefault('recurrence', 'one-off')
     merged.setdefault('effect', 'up')
     merged.setdefault('model', True)
-    merged.setdefault('markets', [])
     if not merged.get('market') and merged.get('city'):
         merged['market'] = merged['city']
     if not merged.get('checked'):
