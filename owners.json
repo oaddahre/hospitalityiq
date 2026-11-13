@@ -13,25 +13,28 @@
       {"name": "Banyan Tree Tamuda Bay", "brand_group": "Banyan Tree", "city": "Tamuda Bay / Tétouan"},
       {"name": "Marriott Rabat", "brand_group": "Marriott International", "city": "Rabat / Salé / Témara"},
       {"name": "Marriott Jnane Palace Fes", "brand_group": "Marriott International", "city": "Fes"},
-      {"name": "Hyatt Regency Taghazout Bay", "brand_group": "Hyatt Hotels Corporation", "city": "Agadir / Taghazout"},
       {"name": "Hyatt Place Taghazout", "brand_group": "Hyatt Hotels Corporation", "city": "Agadir / Taghazout"},
       {"name": "Hilton Taghazout Bay Beach Resort & Spa", "brand_group": "Hilton Hotels & Resorts", "city": "Agadir / Taghazout"},
       {"name": "Radisson Blu Resort Taghazout Bay", "brand_group": "Radisson Hotel Group", "city": "Agadir / Taghazout"},
       {"name": "Pullman El Jadida Beach Resort", "brand_group": "Accor", "city": "El Jadida"},
       {"name": "Mazagan Beach & Golf Resort", "brand_group": "Independent Luxury", "city": "El Jadida"},
-      {"name": "Vichy Thermalia Spa Hotel", "brand_group": "Vichy Thermalia", "city": "Moulay Yacoub"},
-      {"name": "Radisson Blu Resort Saidia Beach", "brand_group": "Radisson Hotel Group", "city": "Saidia"},
-      {"name": "Radisson Blu Resort Saidia Garden", "brand_group": "Radisson Hotel Group", "city": "Saidia"},
+      {"name": "Vichy Thermalia Spa Hotel", "brand_group": "Vichy Thermalia", "city": "Fes"},
       {"name": "Be Live Saidia", "brand_group": "Globalia Hotels", "city": "Saidia"},
-      {"name": "Radisson Blu Resort Al Hoceima", "brand_group": "Radisson Hotel Group", "city": "Al Hoceima"},
       {"name": "Radisson Blu Residences Al Hoceima", "brand_group": "Radisson Hotel Group", "city": "Al Hoceima"},
       {"name": "Mercure Quemado Al Hoceima", "brand_group": "Accor", "city": "Al Hoceima"},
       {"name": "Suites Mohammed V Al Hoceima", "brand_group": "Independent Midscale", "city": "Al Hoceima"},
       {"name": "Mercure Rif Nador", "brand_group": "Accor", "city": "Nador"},
       {"name": "Club Med Yasmina", "brand_group": "Club Med", "city": "Tamuda Bay / Tétouan"},
-      {"name": "Club Med Marrakech La Palmeraie", "brand_group": "Club Med", "city": "Marrakech"},
+      {"name": "Club Med Marrakech la Palmeraie", "brand_group": "Club Med", "city": "Marrakech"},
       {"name": "Le Méridien N'Fis Marrakech", "brand_group": "Marriott International", "city": "Marrakech"},
-      {"name": "Lunja Village", "brand_group": "Independent Midscale", "city": "Agadir / Taghazout"}
+      {"name": "Lunja Village", "brand_group": "Independent Midscale", "city": "Agadir / Taghazout"},
+      {"name": "Hyatt Regency Taghazout", "brand_group": "Hyatt Hotels Corporation", "city": "Agadir / Taghazout"},
+      {"name": "Hôtel Al Hoceima Bay", "brand_group": "Independent Upscale", "city": "Al Hoceima"},
+      {"name": "Radisson Blu Al Hoceima", "brand_group": "Radisson Hotel Group", "city": "Al Hoceima"},
+      {"name": "Marrakech Le Semiramis", "brand_group": "Independent Upscale", "city": "Marrakech"},
+      {"name": "Radisson Blu Residences Saidia", "brand_group": "Radisson Hotel Group", "city": "Saidia"},
+      {"name": "Radisson Blu Saidia", "brand_group": "Radisson Hotel Group", "city": "Saidia"},
+      {"name": "Restinga Lyla Confort", "brand_group": "Independent Midscale", "city": "Tamuda Bay / Tétouan"}
     ]
   },
   {
@@ -46,7 +49,6 @@
     "hotels": [
       {"name": "Sofitel Rabat Jardin des Roses", "brand_group": "Accor", "city": "Rabat / Salé / Témara"},
       {"name": "Sofitel Marrakech Palais Imperial & Spa", "brand_group": "Accor", "city": "Marrakech"},
-      {"name": "Sofitel Casablanca Tour Blanche", "brand_group": "Accor", "city": "Casablanca"},
       {"name": "Sofitel Agadir Thalassa Sea & Spa", "brand_group": "Accor", "city": "Agadir / Taghazout"},
       {"name": "Le Médina Essaouira Thalassa Sea & Spa MGallery Collection", "brand_group": "Accor", "city": "Essaouira"},
       {"name": "Diwan MGallery Rabat", "brand_group": "Accor", "city": "Rabat / Salé / Témara"},
@@ -66,8 +68,8 @@
       {"name": "Ibis Meknes", "brand_group": "Accor", "city": "Meknes"},
       {"name": "Ibis Oujda", "brand_group": "Accor", "city": "Oujda"},
       {"name": "Ibis El Jadida", "brand_group": "Accor", "city": "El Jadida"},
-      {"name": "Ibis Ouarzazate", "brand_group": "Accor", "city": "Ouarzazate"},
-      {"name": "Ibis Tanger City Center", "brand_group": "Accor", "city": "Tanger"}
+      {"name": "Ibis Tanger City Center", "brand_group": "Accor", "city": "Tanger"},
+      {"name": "Ibis Ouarzazate Centre", "brand_group": "Accor", "city": "Ouarzazate"}
     ]
   },
   {
@@ -98,7 +100,9 @@
       {"name": "Atlas Beni Mellal", "brand_group": "Atlas Hospitality Group", "city": "Beni Mellal"},
       {"name": "Hotel Atlas Safari Meknes", "brand_group": "Atlas Hospitality Group", "city": "Meknes"},
       {"name": "Relax Hotel Kenitra", "brand_group": "Atlas Hospitality Group", "city": "Kenitra"},
-      {"name": "Relax Hotel Oujda", "brand_group": "Atlas Hospitality Group", "city": "Oujda"}
+      {"name": "Relax Hotel Oujda", "brand_group": "Atlas Hospitality Group", "city": "Oujda"},
+      {"name": "Bianca Beach Agadir", "brand_group": "Atlas Hospitality Group", "city": "Agadir / Taghazout"},
+      {"name": "Atlas Asni Marrakech", "brand_group": "Atlas Hospitality Group", "city": "Marrakech"}
     ]
   },
   {
@@ -145,14 +149,16 @@
     "parent": "Pickalbatros Group",
     "headquarters": "Cairo, Egypt",
     "logo_local": "/static/images/brands/pickalbatros_logo.png",
-    "description": "Pickalbatros is an Egyptian hospitality group operating a portfolio of upscale and upper upscale all-inclusive resorts across North Africa and the Middle East, with a growing presence in Morocco. The group's Morocco portfolio is concentrated in Marrakech and Agadir, where it operates six large-scale resort properties ranging from family-oriented all-inclusive clubs to adults-only beachfront resorts and golf properties. Pickalbatros targets the European and regional leisure travel market with a consistent all-inclusive product offering that combines extensive amenities, entertainment programming, and prime resort locations. The group's expansion into Morocco reflects its confidence in the country's growing appeal as a year-round leisure destination for European and Middle Eastern travelers.",
+    "description": "Pickalbatros is an Egyptian hospitality group operating a portfolio of upscale and upper upscale all-inclusive resorts across North Africa and the Middle East, with a growing presence in Morocco. In Casablanca it has bought two city hotels that keep their Accor brands: the Sofitel Casablanca Tour Blanche, from Risma (final contract April 2026), and the Mövenpick Hotel Casablanca. The group's Moroccan resorts are concentrated in Marrakech and Agadir, where it operates six large-scale resort properties ranging from family-oriented all-inclusive clubs to adults-only beachfront resorts and golf properties. Pickalbatros targets the European and regional leisure travel market with a consistent all-inclusive product offering that combines extensive amenities, entertainment programming, and prime resort locations. The group's expansion into Morocco reflects its confidence in the country's growing appeal as a year-round leisure destination for European and Middle Eastern travelers.",
     "hotels": [
       {"name": "Pickalbatros Aqua Fun Club Resort", "brand_group": "Pickalbatros", "city": "Marrakech"},
       {"name": "Pickalbatros Sungo Club", "brand_group": "Pickalbatros", "city": "Marrakech"},
       {"name": "Pickalbatros Hotel du Golf Palmeraie", "brand_group": "Pickalbatros", "city": "Marrakech"},
       {"name": "Pickalbatros Savoy Le Grand Hotel", "brand_group": "Pickalbatros", "city": "Marrakech"},
       {"name": "Pickalbatros White Beach Taghazout", "brand_group": "Pickalbatros", "city": "Agadir / Taghazout"},
-      {"name": "Pickalbatros Palais des Roses", "brand_group": "Pickalbatros", "city": "Agadir / Taghazout"}
+      {"name": "Pickalbatros Palais des Roses", "brand_group": "Pickalbatros", "city": "Agadir / Taghazout"},
+      {"name": "Movenpick Hotel Casablanca", "brand_group": "Accor", "city": "Casablanca"},
+      {"name": "Sofitel Casablanca Tour Blanche", "brand_group": "Accor", "city": "Casablanca"}
     ]
   },
   {
@@ -187,9 +193,9 @@
     "logo_local": null,
     "description": "Babylon Invest is a Moroccan private investment group with a focused luxury hospitality portfolio spanning Fes and Casablanca. The group owns three prestigious hotel addresses — the Hotel Sahrai Fes, a contemporary design hotel perched above the Fes medina with panoramic views over the ancient city, the Villa Sahrai Casablanca, a luxury urban retreat in Morocco's economic capital, and the Riad Fès, a member of Relais & Châteaux and one of the finest riad hotels in Morocco. Babylon Invest's approach to hospitality reflects a conviction in Morocco's potential as a world-class luxury destination, combining architectural sensitivity with international brand partnerships to deliver experiences that attract the most discerning global travelers.",
     "hotels": [
-      {"name": "Hotel Sahrai Fes", "brand_group": "Independent Luxury", "city": "Fes"},
-      {"name": "Riad Fes", "brand_group": "Relais & Châteaux", "city": "Fes"},
-      {"name": "Villa Sahrai Casablanca", "brand_group": "Independent Luxury", "city": "Casablanca"}
+      {"name": "Villa Sahrai Casablanca", "brand_group": "Independent Luxury", "city": "Casablanca"},
+      {"name": "Riad Fès Relais & Châteaux", "brand_group": "Relais & Châteaux", "city": "Fes"},
+      {"name": "Sahrai Fes", "brand_group": "Independent Luxury", "city": "Fes"}
     ]
   },
   {
@@ -208,6 +214,85 @@
       {"name": "Michlifen Resort and Golf Ifrane", "brand_group": "Independent Luxury", "city": "Ifrane"},
       {"name": "Marchica Lagoon Resort", "brand_group": "Independent Luxury", "city": "Nador"},
       {"name": "Palais Jamaï", "brand_group": "Independent Luxury", "city": "Fes", "status": "pipeline", "label": "Reopening"}
+    ]
+  },
+  {
+    "id": "absholding",
+    "name": "ABS Holding",
+    "full_name": "ABS Holding (Emirati)",
+    "type": "Undisclosed",
+    "hotels": [
+      {"name": "Sofitel Agadir Royal Bay Resort", "brand_group": "Accor", "city": "Agadir / Taghazout"}
+    ]
+  },
+  {
+    "id": "delma",
+    "name": "Delma d'investissements touristiques",
+    "full_name": "Delma d'investissements touristiques (Actis, Westmont Hospitality)",
+    "type": "Private",
+    "hotels": [
+      {"name": "Marriott Casablanca", "brand_group": "Marriott International", "city": "Casablanca"}
+    ]
+  },
+  {
+    "id": "inveravante",
+    "name": "Inveravante",
+    "full_name": "Inveravante",
+    "type": "Private",
+    "hotels": [
+      {"name": "Four Seasons Hotel Casablanca", "brand_group": "Four Seasons Hotels & Resorts", "city": "Casablanca"}
+    ]
+  },
+  {
+    "id": "barcelo",
+    "name": "Barceló Hotel Group",
+    "full_name": "Barceló Hotel Group",
+    "type": "Private",
+    "hotels": [
+      {"name": "Royal Hideaway Casablanca", "brand_group": "Barceló Hotel Group", "city": "Casablanca"},
+      {"name": "Hotel Borj Rabat", "brand_group": "Barceló Hotel Group", "city": "Rabat / Salé / Témara"}
+    ]
+  },
+  {
+    "id": "ynna",
+    "name": "Ynna Holding",
+    "full_name": "Ynna Holding (Chaabi family)",
+    "type": "Family-Owned",
+    "hotels": [
+      {"name": "Mogador Al Madina Agadir", "brand_group": "Mogador Hotels Group", "city": "Agadir / Taghazout"},
+      {"name": "Hôtel Mogador Marina Casablanca", "brand_group": "Mogador Hotels Group", "city": "Casablanca"},
+      {"name": "Grand Mogador Agdal Marrakech", "brand_group": "Mogador Hotels Group", "city": "Marrakech"},
+      {"name": "Grand Mogador Aqua Resort Marrakech", "brand_group": "Mogador Hotels Group", "city": "Marrakech"},
+      {"name": "Grand Mogador Menara Marrakech", "brand_group": "Mogador Hotels Group", "city": "Marrakech"},
+      {"name": "Mogador Menzah Appart Hotel Marrakech", "brand_group": "Mogador Hotels Group", "city": "Marrakech"},
+      {"name": "Grand Mogador Sea View Tanger", "brand_group": "Mogador Hotels Group", "city": "Tanger"}
+    ]
+  },
+  {
+    "id": "beachcomber",
+    "name": "Beachcomber",
+    "full_name": "Beachcomber (New Mauritius Hotels)",
+    "type": "Undisclosed",
+    "hotels": [
+      {"name": "Fairmont Royal Palm Marrakech", "brand_group": "Accor", "city": "Marrakech"}
+    ]
+  },
+  {
+    "id": "otower",
+    "name": "O Tower",
+    "full_name": "O Tower (Bank of Africa, RMA, O Capital Group)",
+    "type": "Private",
+    "hotels": [
+      {"name": "Waldorf Astoria Rabat Salé", "brand_group": "Hilton Hotels & Resorts", "city": "Rabat / Salé / Témara"}
+    ]
+  },
+  {
+    "id": "ajial",
+    "name": "Ajial Holding SA",
+    "full_name": "Ajial Holding SA",
+    "type": "Undisclosed",
+    "hotels": [
+      {"name": "Hotel Farah Tanger", "brand_group": "Farah Hotels", "city": "Tanger"}
     ]
   }
 ]

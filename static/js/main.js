@@ -134,6 +134,7 @@ const OWNER_TYPE_FAMILY = {
 };
 
 function ownerTypeBadge(type) {
+  if (type === 'Undisclosed') return '';          // type not known: no badge rather than a guess
   return pillHtml(OWNER_TYPE_FAMILY[type] || 'green', type, 'owner-type-badge');
 }
 
@@ -5589,8 +5590,9 @@ function _srchRender(query) {
   });
 }
 
-// Search event wiring
-(function initSearchEvents() {
+// Search event wiring. main.js loads before the search modal's markup in
+// index.html, so the listeners are attached once the page is parsed.
+function initSearchEvents() {
   const input   = document.getElementById('search-input');
   const clearBtn = document.getElementById('search-clear-btn');
   const overlay = document.getElementById('search-overlay');
@@ -5625,7 +5627,9 @@ function _srchRender(query) {
     else if (e.key === 'ArrowUp')   { e.preventDefault(); _srchNavigate(-1); }
     else if (e.key === 'Enter')     { e.preventDefault(); _srchSelectActive(); }
   });
-})();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSearchEvents);
+else initSearchEvents();
 
 // ─── Boot ─────────────────────────────────────────────────────────
 
