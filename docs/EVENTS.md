@@ -20,7 +20,7 @@ countries are never in this list or on any page. It feeds:
 | `events.json` | repo (deploys with the code) | the researched base list |
 | `event_overrides.json` | `DATA_DIR` (survives deploys) | events added, edited or hidden in the admin |
 | `event_changes.log` | `DATA_DIR` | one JSON line per admin change (who, when, what) |
-| `model_holidays.json` | repo | **internal, never displayed:** school holidays in visitors' home countries (France, UK, Spain, Germany, Netherlands, Belgium, UAE, Saudi Arabia), read by the occupancy model only. Kept pending a decision: removing them would lower modelled occupancy by up to about 7 points on a city-month (Nov 2026 analysis) |
+| `model_holidays.json` | repo | **internal, never displayed:** school holidays in visitors' home countries (France, UK, Spain, Germany, Netherlands, Belgium, UAE, Saudi Arabia), read by the occupancy model only. Removing them would lower modelled occupancy by up to about 7 points on a city-month (Nov 2026 analysis). They stay only if they make the model more accurate: the monthly calibration compares each real night with and without them, and without each country (`abroad_holidays` in `calibration_results.json`, shown in the admin), once at least 30 real nights fall inside them |
 
 `events_db.load_events()` merges the first two files; every page reads
 that. The occupancy model reads `events_db.load_model_events()`: the same

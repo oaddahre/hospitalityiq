@@ -38,6 +38,22 @@ class EventsMorocco(unittest.TestCase):
         self.assertEqual(app._public_signals(s), 'normal_price:history;calendar:Throne Day;market_heat:x')
         self.assertEqual(app._public_signals(f'a;calendar:{internal}'), 'a')
 
+    def test_abroad_holidays_comparison(self):
+        import csv
+        os.environ.setdefault('DATA_DIR', ROOT)
+        import occupancy_model as M
+        model = type('Stub', (), {})()
+        model.hotels = {r['id']: r for r in csv.DictReader(open(os.path.join(ROOT, 'hotels.csv'), encoding='utf-8'))}
+        fr = next(e for e in EV.load_internal() if 'FR' in e['markets'])
+        errs = [{'hotel_id': '19', 'date': n, 'city': 'Marrakech', 'actual': 70.0, 'v1': 72.0, 'v2': 74.0}
+                for n in (fr['start'], '2027-07-10')]
+        r = M.abroad_holidays_test(errs, model)
+        self.assertEqual((r['nights_compared'], r['nights_in_periods']), (2, 1))
+        self.assertIn('no conclusion', r['verdict'])
+        self.assertIn('FR', r['countries'])
+        # without the holidays the estimate is lower on that night (they add points)
+        self.assertGreater(r['overall']['without_all']['v2'], r['overall']['with']['v2'])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -267,13 +267,16 @@ def _event_nights():
     return _EVENT_NIGHTS['idx']
 
 
-def event_points(city, hotel_type, night):
-    """(pts, extra range pts, [event names]) for one night in one city."""
+def event_points(city, hotel_type, night, skip=None):
+    """(pts, extra range pts, [event names]) for one night in one city.
+    skip: leave out the events it returns True for (calibration tests)."""
     pts = rng = 0.0
     names = []
     if isinstance(night, datetime):
         night = night.date()
     for e in _event_nights().get(night.isoformat(), []):
+        if skip and skip(e):
+            continue
         market = e.get('market') or e.get('city')
         if market not in (city, 'National'):
             continue
@@ -1046,9 +1049,70 @@ def calibrate_model(calibration_csv_path=DAILY_PERF_CSV, today=None):
     group = lambda k: {g: summary([r for r in errors if r[k] == g]) for g in sorted({r[k] for r in errors})}
     result.update(status='ok', hotels=len({r['hotel_id'] for r in errors}), overall=summary(errors),
                   by_city=group('city'), by_hotel_type=group('hotel_type'), details=errors[:50],
+                  abroad_holidays=abroad_holidays_test(errors, model),
                   message=f'{len(errors)} real nights from {len({r["hotel_id"] for r in errors})} hotels compared.'
                   + (f' Too few to judge either model (under {CALIBRATION_MIN_NIGHTS} nights).' if len(errors) < CALIBRATION_MIN_NIGHTS else ''))
     return result
+
+
+# The school holidays of visitors' home countries (model_holidays.json, never
+# displayed) stay in the model only if they make it more accurate. For every
+# real night, each model's estimate is recomputed without them, and without
+# each country's periods: the calendar points enter the estimate additively,
+# so the variant is the estimate minus the difference in points (clamped as
+# the model clamps). A variant is judged only on nights inside the periods,
+# and only with at least CALIBRATION_MIN_NIGHTS of them. Report only: the
+# model is not changed automatically.
+
+def _internal_ids():
+    import events_db
+    return {e['id']: e for e in events_db.load_internal()}
+
+
+def abroad_holidays_test(errors, model):
+    internal = _internal_ids()
+    countries = sorted({m for e in internal.values() for m in e.get('markets') or []})
+    variants = {'without_all': lambda e: e.get('id') in internal}
+    for c in countries:
+        variants[f'without_{c}'] = (lambda c: lambda e: e.get('id') in internal and c in (e.get('markets') or []))(c)
+    lo, hi = V2['clamp_low'], V2['clamp_high']
+    rows = []
+    for r in errors:
+        hotel = model.hotels[r['hotel_id']]
+        night = date.fromisoformat(r['date'])
+        t = classify_hotel_type(hotel)
+        cal_all, _, names = event_points(hotel.get('city', ''), t, night)
+        cal_all = _clamp(cal_all, -V2['calendar_max_pts'], V2['calendar_max_pts'])
+        in_period = any(e.get('id') in internal for e in _event_nights().get(r['date'], []))
+        row = {'city': r['city'], 'month': r['date'][:7], 'actual': r['actual'], 'in_period': in_period,
+               'with': {'v1': r['v1'], 'v2': r['v2']}}
+        for name, skip in variants.items():
+            cal = _clamp(event_points(hotel.get('city', ''), t, night, skip)[0],
+                         -V2['calendar_max_pts'], V2['calendar_max_pts'])
+            d = cal_all - cal
+            row[name] = {m: (None if r[m] is None else round(_clamp(r[m] - d, lo, hi), 1)) for m in ('v1', 'v2')}
+        rows.append(row)
+    judged = [r for r in rows if r['in_period']]
+
+    def mae(rs, variant, m):
+        d = [abs(r[variant][m] - r['actual']) for r in rs if r[variant][m] is not None]
+        return round(sum(d) / len(d), 2) if d else None
+    names = ['with'] + list(variants)
+    table = lambda rs: {v: {m: mae(rs, v, m) for m in ('v1', 'v2')} for v in names}
+    out = {'nights_compared': len(rows), 'nights_in_periods': len(judged), 'countries': countries,
+           'overall': table(judged),
+           'by_city': {c: table([r for r in judged if r['city'] == c]) for c in sorted({r['city'] for r in judged})},
+           'by_month': {m: table([r for r in judged if r['month'] == m]) for m in sorted({r['month'] for r in judged})}}
+    if len(judged) < CALIBRATION_MIN_NIGHTS:
+        out['verdict'] = (f'Not enough real nights inside these periods yet ({len(judged)}, need '
+                          f'{CALIBRATION_MIN_NIGHTS}): no conclusion.')
+        return out
+    base = out['overall']['with']['v2']
+    helps = {v[len('without_'):]: out['overall'][v]['v2'] > base for v in variants}
+    out['helps'] = helps
+    out['verdict'] = ('They improve accuracy overall.' if helps['all'] else 'They do not improve accuracy overall.') + \
+        ' Countries that do not help: ' + (', '.join(c for c in countries if not helps[c]) or 'none') + '.'
+    return out
 
 
 def maybe_calibrate(today=None, force=False):

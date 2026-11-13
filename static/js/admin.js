@@ -1192,6 +1192,17 @@ async function loadCalibration() {
     line(fmt('All', c.overall));
     Object.entries(c.by_city || {}).forEach(([k, s]) => line(fmt(k, s)));
     Object.entries(c.by_hotel_type || {}).forEach(([k, s]) => line(fmt(k.replace('_', ' '), s)));
+    const ab = c.abroad_holidays;
+    if (ab) {            // visitors' home-country school holidays (internal list): with and without
+      line(`School holidays abroad (internal list): ${ab.nights_in_periods} of ${ab.nights_compared} real nights fall in them · ${ab.verdict}`);
+      const row = (k, t) => line(`${k}: v2 error with ${t.with.v2 ?? '–'} pts, without ${t.without_all.v2 ?? '–'} pts · ` +
+        ab.countries.map(cc => `without ${cc} ${t['without_' + cc].v2 ?? '–'}`).join(', '));
+      if (ab.nights_in_periods) {
+        row('All', ab.overall);
+        Object.entries(ab.by_city || {}).forEach(([k, t]) => row(k, t));
+        Object.entries(ab.by_month || {}).forEach(([k, t]) => row(k, t));
+      }
+    }
   } catch { el.textContent = '—'; }
 }
 loadCalibration();
