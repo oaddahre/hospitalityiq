@@ -1403,9 +1403,12 @@ csvSection('hl', ['/api/admin/hotels-list/preview', '/api/admin/hotels-list/appl
     + (r.action === 'pipeline_add' ? ` · new pipeline project ${r.pipeline_id || '?'} in ${r.new_city || '?'}${r.new_owner ? ', owner ' + r.new_owner : ''}` : '')
     + (r.pipeline_name ? ` · pipeline project ${r.pipeline_id} "${r.pipeline_name}"${r.pipeline_new ? ' (new)' : ''}` : '')
     + (r.new && r.action === 'pipeline_position' ? ` · ${(r.old || []).join(', ')} → ${r.new.join(', ')}${r.approximate ? ' (approximate)' : ''}` : '')
+    + (r.action === 'pipeline_update' && r.pipeline_fields ? ' · ' + Object.entries(r.pipeline_fields).map(([k, v]) =>
+        `${k} ${(r.old_fields || {})[k] || '—'} → ${k === 'notes' ? '(new notes)' : v}`).join(', ') : '')
+    + (r.action === 'pipeline_remove' ? ` · removed from the pipeline${r.into_hotel_id ? ', now operating hotel ' + r.into_hotel_id : ''}` : '')
     + (r.note ? ` · ${r.note}` : '') + (r.reason ? ` · ${r.reason}` : ''),
   'Change this server\'s hotel list as previewed? hotels.csv (and pipeline.csv for a pipeline move, performance.csv for an added hotel) is backed up first.',
-  ['hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'rooms', 'brand', 'notes', 'merge', 'add', 'to_pipeline', 'pipeline_position', 'pipeline_add']);
+  ['hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'rooms', 'brand', 'notes', 'merge', 'add', 'to_pipeline', 'pipeline_position', 'pipeline_add', 'pipeline_update', 'pipeline_remove']);
 csvSection('own', ['/api/admin/owners/preview', '/api/admin/owners/apply'],
   r => `${r.status}: ${r.name || r.id} (${r.id})` + (r.hotels != null ? ` · ${r.hotels} hotels` : '')
     + (r.old_hotels != null ? ` (was ${r.old_hotels})` : '') + ((r.changed || []).length ? ` · changes ${r.changed.join(', ')}` : '')
@@ -1620,6 +1623,10 @@ async function loadCoordHistory() {
                   ? `${l.at} · merged hotel ${l.hotel_id} ${l.hotel} into ${l.into} ${l.into_name} (${l.comp_sets_changed || 0} comp sets updated)${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
                 : l.action === 'pipeline_add'
                   ? `${l.at} · added pipeline project ${l.pipeline_id} ${l.hotel} (${l.new_city}${l.new_owner ? ', owner ' + l.new_owner : ''}, ${l.pipeline_status}, ${l.keys} keys) by ${l.by}`
+                : l.action === 'pipeline_update'
+                  ? `${l.at} · pipeline project ${l.pipeline_id} ${l.hotel}: ${Object.keys(l.new_fields || {}).join(', ')} changed${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
+                : l.action === 'pipeline_remove'
+                  ? `${l.at} · removed pipeline project ${l.pipeline_id} ${l.hotel}${l.into_hotel_id ? ' (now operating hotel ' + l.into_hotel_id + ')' : ''}${l.reason ? ' · ' + l.reason : ''} by ${l.by}`
                 : l.action === 'add'
                   ? `${l.at} · added hotel ${l.hotel_id} ${l.hotel} (${l.new_city}${l.new_owner ? ', owner ' + l.new_owner : ''})${l.performance_file ? ' with its performance.csv row' : ''} by ${l.by}`
                 : ['owner_add', 'owner_replace'].includes(l.action)

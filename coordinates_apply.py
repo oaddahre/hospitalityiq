@@ -576,6 +576,17 @@ def approve_candidates(hotels_path, ids_path, rows, backup_dir, log_path, actor=
 #   pipeline_position  moves pipeline project pipeline_id (hotel = its
 #                name, checked) to new_lat / new_lng; approximate=yes is
 #                recorded in the log (hotel_id stays empty on these rows)
+#   pipeline_update  sets the new_<column> values given on pipeline project
+#                pipeline_id (hotel = its name, checked; new_name renames it).
+#                Empty new_ cells leave the field as it is. new_keys is a
+#                whole number of rooms, new_expected_opening a year.
+#                new_converts_hotel_id links a project that converts an
+#                operating hotel (that hotel's id): its keys are not new rooms
+#   pipeline_remove  deletes pipeline project pipeline_id (hotel = its name,
+#                checked); into_hotel_id records the operating hotel it
+#                became, if any (that hotel must exist)
+# A pipeline_add or pipeline_update naming a column pipeline.csv doesn't have
+# yet (only those in PIPELINE_NEW_COLUMNS) adds it, empty on the other rows.
 # Several rows may change one hotel (rename + city); remove, to_pipeline and
 # add must be its only row. Only the named fields change: every other byte of
 # hotels.csv and pipeline.csv stays as it is (checked after writing; a
@@ -583,8 +594,10 @@ def approve_candidates(hotels_path, ids_path, rows, backup_dir, log_path, actor=
 # logged, a second run changes nothing; restore() undoes it.
 
 HIDDEN = 'Hidden'
+PIPELINE_ONLY = ('pipeline_position', 'pipeline_add', 'pipeline_update', 'pipeline_remove')
 HOTEL_ACTIONS = ('hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'rooms', 'add', 'to_pipeline', 'pipeline_position',
-                 'pipeline_add', 'brand', 'notes', 'merge')
+                 'pipeline_add', 'brand', 'notes', 'merge', 'pipeline_update', 'pipeline_remove')
+PIPELINE_NEW_COLUMNS = ('converts_hotel_id',)
 PIPELINE_ADD_REQUIRED = ('name', 'city', 'status', 'lat', 'lng')
 MAX_ROOMS = 5000
 ADD_REQUIRED = ('name', 'city', 'lat', 'lng')
@@ -716,6 +729,15 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
     next_pid = max([int(x) for x in pipe_ids if x.isdigit()] or [0]) + 1
     pipe_renamed = {str(a.get('pipeline_id') or '').strip(): _norm_name(a.get('new_name'))
                     for _, act, a in acts if act == 'to_pipeline' and str(a.get('pipeline_id') or '').strip()}
+    p_header = next(csv.reader([_split(_lines(pipeline_path)[0])[0]])) if os.path.exists(pipeline_path) else []
+    new_cols = [c for c in PIPELINE_NEW_COLUMNS if c not in p_header and any(
+        act in ('pipeline_add', 'pipeline_update') and str(a.get('new_' + c) or '').strip() for _, act, a in acts)]
+    p_header = p_header + new_cols
+    per_pipe = {}
+    for _, act, a in acts:
+        if act in ('pipeline_update', 'pipeline_remove'):
+            k = str(a.get('pipeline_id') or '').strip()
+            per_pipe[k] = per_pipe.get(k, 0) + 1
     out = []
     for hid, act, a in acts:
         g = lambda k: str(a.get(k) or '').strip()
@@ -735,7 +757,6 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
         elif act == 'pipeline_add':
             pid = g('pipeline_id')
             e['pipeline_id'], e['pipeline_name'] = pid, g('hotel')
-            p_header = next(csv.reader([_split(_lines(pipeline_path)[0])[0]])) if os.path.exists(pipeline_path) else []
             cells = {c: g('new_' + c) for c in p_header if c not in ('id', 'name')}
             cells['name'] = g('hotel')
             missing = [c for c in PIPELINE_ADD_REQUIRED if not cells.get(c)]
@@ -765,9 +786,81 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
                 e['status'], e['note'] = 'conflict', f'"{cells["name"]}" is on the do-not-add list ({blocked(cells["name"], cells.get("city")).get("reason")})'
             elif as_hotel is not None:
                 e['status'], e['note'] = 'conflict', f'"{cells["name"]}" is already hotel {as_hotel["cells"][0]}'
+            elif cells.get('converts_hotel_id') and cells['converts_hotel_id'] not in rows:
+                e['status'], e['note'] = 'bad row', f'no hotel {cells["converts_hotel_id"]} (new_converts_hotel_id)'
             else:
                 e['status'], e['pipeline_fields'] = 'pipeline_add', cells
                 e['new_city'], e['new_owner'] = cells.get('city'), cells.get('owner')
+                e['add_columns'] = [c for c in new_cols if cells.get(c)]
+        elif act in ('pipeline_update', 'pipeline_remove'):
+            pid = g('pipeline_id')
+            e['pipeline_id'] = pid
+            pr = pipe[pipe_ids.index(pid)] if pid in pipe_ids else None
+            pnames = {_norm_name(g('hotel'))}
+            if act == 'pipeline_update' and g('new_name'):
+                pnames.add(_norm_name(g('new_name')))      # already renamed by this row
+            if per_pipe.get(pid, 0) > 1:
+                e['status'], e['note'] = 'conflict', f'{act} must be the only row for pipeline project {pid}'
+            elif not pid.isdigit() or not g('hotel'):
+                e['status'], e['note'] = 'bad row', 'pipeline_id (a number) and hotel (the project name) are required'
+            elif act == 'pipeline_remove':
+                e['pipeline_name'] = g('hotel')
+                into = g('into_hotel_id')
+                adding = {h for h, x, _ in acts if x == 'add'}
+                e['into_hotel_id'] = into or None
+                named = next((r for r in pipe if _norm_name(r.get('name')) == _norm_name(g('hotel'))), None)
+                if into and into not in rows and into not in adding:
+                    e['status'], e['note'] = 'bad row', f'no hotel {into} (into_hotel_id)'
+                elif pr is None:
+                    e['status'] = 'already' if named is None else 'conflict'
+                    if named is not None:
+                        e['note'] = f'"{g("hotel")}" is pipeline project {named.get("id")}'
+                elif _norm_name(pr.get('name')) not in pnames:
+                    e['status'], e['current_name'] = 'name differs', pr.get('name')
+                else:
+                    e['status'], e['old_fields'] = 'pipeline_remove', dict(pr)
+                    e['pipeline_name'] = pr.get('name')
+            elif pr is None:
+                e['status'], e['note'] = 'not found', f'no pipeline project {pid}'
+            elif _norm_name(pr.get('name')) not in pnames:
+                e['status'], e['current_name'] = 'name differs', pr.get('name')
+            else:
+                e['pipeline_name'] = pr.get('name')
+                f = {c: g('new_' + c) for c in p_header if c != 'id' and g('new_' + c)}
+                bad = None
+                if 'keys' in f:
+                    bad = None if f['keys'].isdigit() and 1 <= int(f['keys']) <= MAX_ROOMS else f'new_keys must be a whole number from 1 to {MAX_ROOMS}'
+                if not bad and 'expected_opening' in f and not (f['expected_opening'].isdigit() and len(f['expected_opening']) == 4):
+                    bad = 'new_expected_opening must be a year'
+                if not bad and 'converts_hotel_id' in f and f['converts_hotel_id'] not in rows:
+                    bad = f'no hotel {f["converts_hotel_id"]} (new_converts_hotel_id)'
+                if not bad and ('lat' in f or 'lng' in f):
+                    try:
+                        for c in ('lat', 'lng'):
+                            if c in f:
+                                f[c] = f'{float(f[c]):.6f}'
+                    except ValueError:
+                        bad = 'new_lat / new_lng are not a position'
+                if not f:
+                    bad = 'no new_ value given'
+                if bad:
+                    e['status'], e['note'] = 'bad row', bad
+                else:
+                    def same(c, v):
+                        old = str(pr.get(c) or '').strip()
+                        if c in ('lat', 'lng'):
+                            return bool(old) and _same(old, v)
+                        if c in ('keys', 'expected_opening', 'converts_hotel_id'):
+                            try:
+                                return float(old) == float(v)
+                            except ValueError:
+                                return False
+                        return old == v
+                    changed = {c: v for c, v in f.items() if not same(c, v)}
+                    e['old_fields'] = {c: pr.get(c, '') for c in changed}
+                    e['pipeline_fields'] = changed
+                    e['add_columns'] = [c for c in new_cols if c in changed]
+                    e['status'] = 'pipeline_update' if changed else 'already'
         elif act == 'pipeline_position':
             pid = g('pipeline_id')
             e['pipeline_id'], e['approximate'] = pid, g('approximate').lower() in YES
@@ -995,7 +1088,7 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
     col = {c: i for i, c in enumerate(header)}
     edits, drop = {}, set()
     for e in todo:
-        if e['status'] in ('pipeline_position', 'add', 'pipeline_add'):
+        if e['status'] in PIPELINE_ONLY + ('add',):
             continue
         n = rows[e['hotel_id']]['line']
         if e['status'] in ('remove', 'to_pipeline', 'merge'):
@@ -1052,17 +1145,27 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
     moves = [e for e in todo if e['status'] == 'to_pipeline']
     places = [e for e in todo if e['status'] == 'pipeline_position']
     padds = [e for e in todo if e['status'] == 'pipeline_add']
-    touch_hotels = len(todo) > len(places) + len(padds)
+    pupds = [e for e in todo if e['status'] == 'pipeline_update']
+    prems = [e for e in todo if e['status'] == 'pipeline_remove']
+    touch_hotels = any(e['status'] not in PIPELINE_ONLY for e in todo)
+    touch_pipe = bool(moves or places or padds or pupds or prems)
     p_before = p_after = None
-    if moves or places or padds:
+    p_drop = set()
+    if touch_pipe:
         p_before = _lines(pipeline_path)
+        if not p_before[-1].endswith(('\n', '\r')):
+            p_before = p_before[:-1] + [p_before[-1] + (_split(p_before[0])[1] or '\n')]   # compared as such
+        new_cols = [c for c in PIPELINE_NEW_COLUMNS if any(c in e.get('add_columns', ()) for e in padds + pupds)]
+        if new_cols:                    # a new column: empty on every row, then edited like the others
+            p_before = [_split(l)[0] + ''.join(',' + c if n == 0 else ',' for c in new_cols) + _split(l)[1]
+                        if _split(l)[0] else l for n, l in enumerate(p_before)]
+            p_header_line = next(csv.reader([_split(p_before[0])[0]]))
+            if p_header_line[-len(new_cols):] != new_cols:
+                raise RuntimeError('not applied (pipeline.csv): could not add the column ' + ', '.join(new_cols))
         p_rows, p_header = _rows_by_id(p_before)
         p_col = {c: i for i, c in enumerate(p_header)}
         end = _split(p_before[0])[1] or '\n'
         p_after, p_edits, added = list(p_before), {}, 0
-        if not p_after[-1].endswith(('\n', '\r')):
-            p_after[-1] += end
-            p_before = p_before[:-1] + [p_after[-1]]          # only the line ending differs: compared as such
         for e in moves:
             h = rows[e['hotel_id']]['cells']
             if e['pipeline_new']:
@@ -1098,11 +1201,17 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
             p_edits.setdefault(n, {}).update({p_col['lat']: e['new'][0], p_col['lng']: e['new'][1]})
             body, le = _split(p_after[n])
             p_after[n] = _set_fields(body, p_edits[n]) + le
-        problem = _check_edit(p_before, p_after, p_edits, set(), added)
+        for e in pupds:
+            n = p_rows[e['pipeline_id']]['line']
+            p_edits.setdefault(n, {}).update({p_col[c]: v for c, v in e['pipeline_fields'].items()})
+            body, le = _split(p_after[n])
+            p_after[n] = _set_fields(body, p_edits[n]) + le
+        for e in prems:
+            p_drop.add(p_rows[e['pipeline_id']]['line'])
+        p_after = [l for n, l in enumerate(p_after) if n not in p_drop]
+        problem = _check_edit(p_before, p_after, p_edits, p_drop, added)
         if problem:
             raise RuntimeError(f'not applied (pipeline.csv): {problem}')
-
-    touch_pipe = bool(moves or places or padds)
     backup = _backup(hotels_path, backup_dir) if touch_hotels else None
     p_backup = _backup(pipeline_path, backup_dir) if touch_pipe else None
     f_backup = _backup(performance_path, backup_dir) if perfs else None
@@ -1124,7 +1233,7 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
         problem = _check_edit(before, _lines(hotels_path), edits, drop, len(adds))
     if not problem and touch_pipe:
         _write(pipeline_path, p_after)
-        problem = _check_edit(p_before, _lines(pipeline_path), p_edits, set(), added)
+        problem = _check_edit(p_before, _lines(pipeline_path), p_edits, p_drop, added)
     if not problem and perfs:
         _write(performance_path, f_after)
         problem = _check_edit(f_before, _lines(performance_path), {}, set(), len(perfs))
@@ -1174,6 +1283,12 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
         elif e['status'] == 'pipeline_position':
             entry.update(file=pipeline_path, backup=p_backup, pipeline_id=e['pipeline_id'], hotel=e['pipeline_name'],
                          old=list(e['old']), new=list(e['new']), approximate=e['approximate'])
+        elif e['status'] == 'pipeline_update':
+            entry.update(file=pipeline_path, backup=p_backup, pipeline_id=e['pipeline_id'], hotel=e['pipeline_name'],
+                         old_fields=e['old_fields'], new_fields=e['pipeline_fields'])
+        elif e['status'] == 'pipeline_remove':
+            entry.update(file=pipeline_path, backup=p_backup, pipeline_id=e['pipeline_id'], hotel=e['pipeline_name'],
+                         old_fields=e['old_fields'], into_hotel_id=e['into_hotel_id'])
         else:
             entry.update(old_status=e['current_status'], pipeline_file=pipeline_path, pipeline_backup=p_backup,
                          pipeline_id=e['pipeline_id'], pipeline_name=e['pipeline_name'],

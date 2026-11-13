@@ -1600,20 +1600,43 @@ def sitemap():
 _public_stats_cache = {}
 
 
+def is_conversion(project):
+    """A pipeline project that converts an operating hotel (pipeline.csv
+    converts_hotel_id): its keys are already counted with that hotel, so they
+    are left out of every new-supply total."""
+    v = project.get("converts_hotel_id") if hasattr(project, "get") else None
+    return safe_int(v) is not None
+
+
 def _count_stats(data_dir):
     """Hotels (hidden ones left out, as in load_data), destinations (cities),
-    brand groups (not Independent) and pipeline projects."""
+    brand groups (not Independent), pipeline projects with their new keys
+    (rounded down to 100; a conversion's keys are already counted) and cities, and owner profiles with the hotels their owners
+    hold (rounded down to 10)."""
     with open(os.path.join(data_dir, "hotels.csv"), encoding="utf-8") as f:
         hotels = [r for r in csv.DictReader(f) if (r.get("status") or "").strip() != "Hidden"]
     try:
         with open(os.path.join(data_dir, "pipeline.csv"), encoding="utf-8") as f:
-            pipeline = sum(1 for _ in csv.DictReader(f))
-    except OSError:
-        pipeline = None
+            projects = list(csv.DictReader(f))
+        pipeline = len(projects)
+        keys = sum(int(float(r["keys"])) for r in projects if (r.get("keys") or "").strip() and not is_conversion(r))
+        pipeline_keys = keys // 100 * 100 if keys >= 100 else keys
+        pipeline_cities = len({r["city"].strip() for r in projects if (r.get("city") or "").strip()})
+    except (OSError, ValueError):
+        pipeline = pipeline_keys = pipeline_cities = None
+    try:
+        with open(os.path.join(data_dir, "owners.json"), encoding="utf-8") as f:
+            names = {o["name"] for o in json.load(f)}
+        owners = len(names)
+        held = sum(1 for r in hotels if any(p.strip() in names for p in (r.get("owner") or "").split(" / ")))
+        owner_hotels = held // 10 * 10 if held >= 10 else held
+    except (OSError, ValueError, KeyError, TypeError):
+        owners = owner_hotels = None
     groups = {r["brand_group"].strip() for r in hotels if r.get("brand_group", "").strip()
               and not r["brand_group"].strip().startswith("Independent")}
     return {"hotels_exact": len(hotels), "destinations": len({r["city"].strip() for r in hotels if r.get("city")}),
-            "brand_groups": len(groups), "pipeline": pipeline}
+            "brand_groups": len(groups), "pipeline": pipeline, "pipeline_keys": pipeline_keys,
+            "pipeline_cities": pipeline_cities, "owners": owners, "owner_hotels": owner_hotels}
 
 
 def public_stats():
@@ -1621,7 +1644,7 @@ def public_stats():
     welcome email). hotels is rounded down to the nearest 50 ("300+", then
     "350+"...). Read from DATA_DIR's files, cached until they change; if they
     can't be read, the last good figures or the repo's own files."""
-    paths = [os.path.join(DATA_DIR, f) for f in ("hotels.csv", "pipeline.csv")]
+    paths = [os.path.join(DATA_DIR, f) for f in ("hotels.csv", "pipeline.csv", "owners.json")]
     try:
         key = tuple(os.path.getmtime(p) if os.path.exists(p) else 0 for p in paths)
         if _public_stats_cache.get("key") != key:
@@ -2044,8 +2067,9 @@ def api_brands():
         pipe_df = pd.read_csv(os.path.join(DATA_DIR, 'pipeline.csv'))
         pipe_df['_bg'] = pipe_df['brand_group'].apply(_norm_bg)
         pipe_df['keys'] = pd.to_numeric(pipe_df['keys'], errors='coerce')
+        pipe_df['_conv'] = pipe_df.apply(is_conversion, axis=1)
     except Exception:
-        pipe_df = pd.DataFrame(columns=['_bg', 'keys'])
+        pipe_df = pd.DataFrame(columns=['_bg', 'keys', '_conv'])
 
     results = []
     def _wavg(grp, col, weight):
@@ -2088,7 +2112,9 @@ def api_brands():
 
         pg = pipe_df[pipe_df['_bg'] == bg]
         pipeline_projects = int(len(pg))
-        pipeline_keys     = safe_int(pg['keys'].sum(), 0) if len(pg) else 0
+        new_pg            = pg[~pg['_conv'].astype(bool)] if len(pg) else pg
+        pipeline_keys     = safe_int(new_pg['keys'].sum(), 0) if len(new_pg) else 0
+        pipeline_conversions = int(pg['_conv'].astype(bool).sum()) if len(pg) else 0
 
         results.append({
             'brand_group':               bg,
@@ -2106,6 +2132,7 @@ def api_brands():
             'total_rooms_revenue_mad_m': total_rev_m,
             'pipeline_projects':         pipeline_projects,
             'pipeline_keys':             pipeline_keys,
+            'pipeline_conversions':      pipeline_conversions,
             'newest_hotel':              newest,
             'oldest_hotel':              oldest,
             'ownership':                 ownership,
@@ -2123,8 +2150,15 @@ def api_pipeline():
     pipeline_file = os.path.join(DATA_DIR, "pipeline.csv")
     df = pd.read_csv(pipeline_file)
     # Missing / non-numeric values go out as null (never NaN, which is invalid JSON)
-    int_cols, float_cols = ("keys", "expected_opening", "investment_mad"), ("lat", "lng")
+    int_cols, float_cols = ("keys", "expected_opening", "investment_mad", "converts_hotel_id"), ("lat", "lng")
     records = df.to_dict(orient="records")
+    names = {}
+    if "converts_hotel_id" in df:
+        try:
+            with open(os.path.join(DATA_DIR, "hotels.csv"), encoding="utf-8") as f:
+                names = {r["id"]: r["name"] for r in csv.DictReader(f)}
+        except (OSError, KeyError):
+            pass
     for r in records:
         for k, v in r.items():
             if k in int_cols:
@@ -2133,6 +2167,10 @@ def api_pipeline():
                 r[k] = safe_float(v)
             elif isinstance(v, float) and not math.isfinite(v):
                 r[k] = None
+        # A conversion of an operating hotel: its keys are not new rooms
+        r["conversion"] = r.get("converts_hotel_id") is not None
+        r["converts_hotel_id"] = r.get("converts_hotel_id")
+        r["converts_hotel_name"] = names.get(str(r["converts_hotel_id"])) if r["conversion"] else None
     return jsonify(records)
 
 
@@ -3493,16 +3531,18 @@ def compute_city_report_data(city: str, period: str) -> dict:
             "category": safe_text(r.get("category"), ""), "keys": safe_int(r.get("keys")),
             "opening": safe_int(r.get("expected_opening")),
             "status": safe_text(r.get("status"), ""), "investment_mad": safe_int(r.get("investment_mad")),
+            "conversion": is_conversion(r),
         })
     pip_projects.sort(key=lambda x: (x["opening"] is None, x["opening"] or 0))
 
-    pip_total_keys = sum(p["keys"] for p in pip_projects if p["keys"] is not None)
+    # A conversion's keys are already in the hotel count: not new supply
+    pip_total_keys = sum(p["keys"] for p in pip_projects if p["keys"] is not None and not p["conversion"])
     pip_total_inv  = sum(p["investment_mad"] for p in pip_projects if p["investment_mad"] is not None) / 1_000_000_000
     pip_by_year: dict = {}
     for p in pip_projects:
-        if p["opening"] is None or p["keys"] is None:
+        if p["keys"] is None or p["conversion"]:
             continue
-        yr = str(p["opening"])
+        yr = str(p["opening"]) if p["opening"] is not None else "Date not announced"
         pip_by_year[yr] = pip_by_year.get(yr, 0) + p["keys"]
 
     ratio = pip_total_keys / total_keys if total_keys else 0
@@ -3867,7 +3907,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
                 safe_text(p.get("brand"))[:18],
                 safe_text(p.get("category")),
                 fmt_num(p.get("keys")),
-                str(p["opening"]) if p.get("opening") is not None else NA,
+                str(p["opening"]) if p.get("opening") is not None else "Not announced",
                 safe_text(p.get("status")),
                 inv_m,
             ], cw, fill=(i % 2 == 1))
@@ -3885,7 +3925,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.set_text_color(*c['muted'])
     ratio_pct = (pip["total_keys"] / mo["total_keys"] * 100) if mo["total_keys"] else 0
     pdf.cell(_PW, 4,
-        f"{pip['total_projects']} projects  |  {pip['total_keys']:,} keys in pipeline  "
+        f"{pip['total_projects']} projects  |  {pip['total_keys']:,} new keys in pipeline  "
         f"|  {ratio_pct:.1f}% of existing supply  |  {per_asof}",
         align="C", ln=1)
 
@@ -5199,7 +5239,8 @@ def _hotels_summary(p):
         counts[e['status']] = counts.get(e['status'], 0) + 1
     keys = ('hotel_id', 'hotel', 'action', 'status', 'current_status', 'new_status', 'current_name', 'new_name',
             'old_city', 'new_city', 'new_region', 'old_owner', 'new_owner', 'old_rooms', 'new_rooms', 'pipeline_id', 'pipeline_name', 'pipeline_new',
-            'old', 'new', 'approximate', 'old_brand', 'new_brand', 'new_brand_group', 'into', 'into_name', 'note', 'reason')
+            'old', 'new', 'approximate', 'old_brand', 'new_brand', 'new_brand_group', 'into', 'into_name', 'note', 'reason',
+            'pipeline_fields', 'old_fields', 'into_hotel_id')
     return {'counts': counts, 'rows': [{k: e.get(k) for k in keys} for e in p][:200]}
 
 

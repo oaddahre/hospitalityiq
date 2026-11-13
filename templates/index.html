@@ -276,6 +276,7 @@
           <div class="screen-header-legend">
             <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-1-dot);"></span>Under Construction</span>
             <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-6-dot);"></span>Planning</span>
+            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-3-dot);"></span>Conversion</span>
           </div>
         </div>
 
@@ -289,7 +290,7 @@
           <div class="kpi-card" id="pkpi-keys">
             <span class="kpi-label">Keys in Pipeline</span>
             <span class="kpi-value">—</span>
-            <span class="kpi-meta">new rooms</span>
+            <span class="kpi-meta">new rooms · conversions not counted</span>
           </div>
           <div class="kpi-card" id="pkpi-inv">
             <span class="kpi-label">Est. Investment</span>
@@ -312,6 +313,9 @@
             </button>
             <button class="seg-btn" data-pstatus="Planning">
               <span class="seg-dot" style="background:var(--cat-6-dot)"></span>Planning
+            </button>
+            <button class="seg-btn" data-pstatus="Conversion">
+              <span class="seg-dot" style="background:var(--cat-3-dot)"></span>Conversion
             </button>
           </div>
           <select id="pipe-city-filter" class="pipe-select">
@@ -338,6 +342,22 @@
               <span class="chart-unit">MAD billions · total pipeline</span>
             </div>
             <div class="chart-wrap" id="pwrap-city"><canvas id="chart-pipeline-city"></canvas></div>
+          </div>
+        </div>
+        <div class="charts-row tour-2col" style="margin-bottom:24px">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">New Keys by Opening Year</span>
+              <span class="chart-unit">conversions not counted</span>
+            </div>
+            <div class="chart-wrap" id="pwrap-year"><canvas id="chart-pipeline-year"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-title">New Keys by City</span>
+              <span class="chart-unit">conversions not counted</span>
+            </div>
+            <div class="chart-wrap" id="pwrap-citykeys"><canvas id="chart-pipeline-citykeys"></canvas></div>
           </div>
         </div>
 
@@ -2005,7 +2025,7 @@
       <div style="background:var(--bg);border:1px solid var(--border);padding:16px;margin-bottom:20px">
         <p style="font-family:'Sweet Sans Pro', sans-serif;font-size:0.6875rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2);margin-bottom:8px">Benchmarker includes</p>
         <ul style="list-style:none;font-size:0.8125rem;color:var(--text-2);line-height:1.9">
-          <li>✓ &nbsp;Development pipeline — 50+ projects</li>
+          <li>✓ &nbsp;Development pipeline — {{ public_stats().pipeline }} projects</li>
           <li>✓ &nbsp;Benchmarking comparisons and trend data</li>
           <li>✓ &nbsp;Hotel-level financial details (ADR, TRevPAR)</li>
           <li>✓ &nbsp;Unlimited AI Analyst queries</li>

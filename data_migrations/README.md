@@ -8,7 +8,7 @@ Name: `NNNN_what_it_does.<kind>`, numbered in the order they must run:
 
 | Kind | Same as the Rates panel upload | Format |
 |---|---|---|
-| `.hotels.csv` | Change the hotel list (hide, unhide, remove, rename, city, owner, rooms, brand, notes, merge, add, to_pipeline, pipeline_add, pipeline_position) | `hotel_id,action,hotel,…` |
+| `.hotels.csv` | Change the hotel list (hide, unhide, remove, rename, city, owner, rooms, brand, notes, merge, add, to_pipeline, pipeline_add, pipeline_position, pipeline_update, pipeline_remove) | `hotel_id,action,hotel,…` |
 | `.owners.json` | Owner profiles | `{"format": "kodo-owners-1", "owners": [...]}` |
 | `.coordinates.csv` | Coordinate corrections | coordinate_changes.csv, `approve = yes` |
 | `.ids.json` | Google IDs | `{"format": "kodo-google-ids-1", ...}` |
@@ -27,6 +27,13 @@ Rules:
   kept hotel in every saved comp set (comp_sets.json, backed up first); the
   summary says how many comp sets changed. Add the pair to
   `MERGED_HOTEL_IDS` in app.py so old ids open the kept hotel.
+- `pipeline_update` (pipeline_id, hotel = the project's name, new_… values)
+  changes only the fields given. `new_converts_hotel_id` marks a conversion
+  of that operating hotel (adding the `converts_hotel_id` column if the file
+  has none): its keys stay on the project but are left out of every
+  new-supply total. `pipeline_remove` (pipeline_id, hotel) deletes a project;
+  `into_hotel_id` records the operating hotel it became. A project with no
+  `expected_opening` shows "Date not announced".
 - `do_not_add.json` (repo root) lists hotels that must never come back
   (closed, part of another hotel, not on Google Hotels). `add` and
   `pipeline_add` refuse them; research scripts should skip them with

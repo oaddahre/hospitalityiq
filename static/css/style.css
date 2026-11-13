@@ -3269,6 +3269,13 @@ body.light .nav-logout  { color: var(--text-2); }
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
+.pipe-card-year-tba { font-size: 15px; line-height: 1.3; }
+.pipe-card-conversion {
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
 .pipe-card-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;

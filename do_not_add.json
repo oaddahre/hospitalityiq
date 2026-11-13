@@ -54,6 +54,24 @@
    "city": "Casablanca",
    "reason": "Not found on Google Hotels",
    "date": "2026-11-13"
+  },
+  {
+   "name": "Residence Inn by Marriott",
+   "city": "",
+   "reason": "Owner decision (Nov 2026): not to be added; announced for Morocco with no city",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Residence Inn by Marriott (Morocco, city not stated)",
+   "city": "",
+   "reason": "Owner decision (Nov 2026): not to be added (research candidate name)",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Risma hotel project, Tangier Corniche",
+   "city": "Tanger",
+   "reason": "Owner decision (Nov 2026): not to be added (plot bought, studies only)",
+   "date": "2026-11-13"
   }
  ]
 }

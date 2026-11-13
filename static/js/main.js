@@ -1019,7 +1019,7 @@ function renderBrandsCards() {
     const segPills  = b.segments.map(s => pillHtml(SEGMENT_FAMILY[s] || 'grey', s, 'brn-seg-pill')).join('');
     const mktBar    = Math.min(b.market_share_keys_pct * 4, 100);
     const pipeRow   = b.pipeline_projects > 0
-      ? `<div class="brn-card-pipeline">Pipeline: ${b.pipeline_projects} project${b.pipeline_projects !== 1 ? 's' : ''} · ${b.pipeline_keys.toLocaleString('en')} keys →</div>`
+      ? `<div class="brn-card-pipeline">Pipeline: ${b.pipeline_projects} project${b.pipeline_projects !== 1 ? 's' : ''}${b.pipeline_conversions ? ` (${b.pipeline_conversions} conversion${b.pipeline_conversions !== 1 ? 's' : ''})` : ''} · ${b.pipeline_keys.toLocaleString('en')} new keys →</div>`
       : '';
     const _desc     = BRAND_DESCRIPTIONS[b.brand_group] || '';
     const descRow   = _desc
@@ -1532,17 +1532,30 @@ async function renderHotelPipeline(h) {
     return;
   }
 
-  const totalKeys = cityPipe.reduce((s, p) => s + p.keys, 0);
-  const lastYear  = Math.max(...cityPipe.map(p => p.expected_opening));
-  const items = cityPipe.map(p => `
+  const totalKeys = cityPipe.reduce((s, p) => s + pipeNewKeys(p), 0);
+  const years     = cityPipe.filter(p => !p.conversion).map(p => p.expected_opening).filter(Boolean);
+  const lastYear  = years.length ? Math.max(...years) : null;
+  const items = cityPipe.map(p => {
+    const conv = !p.conversion ? ''
+      : String(p.converts_hotel_id) === String(h.id) ? ' · conversion of this hotel'
+      : ` · conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')}`;
+    return `
     <div class="hpipe-item">
       <div class="hpipe-item-name">${fmt.esc(p.name)}</div>
-      <span class="hpipe-item-meta">${fmt.esc(p.brand)} · ${p.keys || 'TBC'} keys · ${p.expected_opening}</span>
-      <span class="${p.status === 'Under Construction' ? 'pipe-status-uc pill--blue' : 'pipe-status-pl pill--grey'}">${fmt.esc(p.status)}</span>
-    </div>`).join('');
+      <span class="hpipe-item-meta">${fmt.esc(p.brand)} · ${p.keys || 'TBC'} keys · ${fmt.esc(pipeYear(p))}${conv}</span>
+      ${pipeStatusPill(p)}
+    </div>`;
+  }).join('');
+  const undated = cityPipe.some(p => !p.expected_opening && !p.conversion);
+  const when = lastYear ? ` by ${lastYear}${undated ? ', plus projects with no date announced' : ''}` : '';
+  const summary = totalKeys
+    ? `${totalKeys.toLocaleString('en')} new keys entering ${fmt.esc(h.city)}${when}`
+    : cityPipe.every(p => p.conversion)
+      ? `No new rooms announced in ${fmt.esc(h.city)}: ${cityPipe.length === 1 ? 'one conversion' : cityPipe.length + ' conversions'} of an existing hotel`
+      : `Projects in ${fmt.esc(h.city)} with no room count announced yet`;
 
   content.innerHTML = `
-    <p class="hpipe-summary">${totalKeys.toLocaleString('en')} new keys entering ${fmt.esc(h.city)} by ${lastYear}</p>
+    <p class="hpipe-summary">${summary}</p>
     <div class="hpipe-list">${items}</div>`;
 }
 
@@ -2392,6 +2405,8 @@ function redrawChartsForTheme() {
   // Pipeline charts
   if (pipelineChartProj) { pipelineChartProj.destroy(); pipelineChartProj = null; }
   if (pipelineChartCity) { pipelineChartCity.destroy(); pipelineChartCity = null; }
+  if (pipelineChartYear) { pipelineChartYear.destroy(); pipelineChartYear = null; }
+  if (pipelineChartCityKeys) { pipelineChartCityKeys.destroy(); pipelineChartCityKeys = null; }
   if (pipelineInited && pipelineData) renderPipelineCharts();
 
   // Tourism charts — destroy and reset flag; reinit if screen is active
@@ -2916,6 +2931,27 @@ function renderTourismPanels() {
 }
 
 // ─── Pipeline screen ──────────────────────────────────────────────
+// A project with no announced opening shows "Date not announced" (never a
+// year). A conversion of an operating hotel keeps its keys on its card, but
+// they are already counted with that hotel, so every new-supply total leaves
+// them out.
+const PIPE_NO_DATE = 'Date not announced';
+const pipeYear   = p => p.expected_opening || PIPE_NO_DATE;
+const pipeNewKeys = p => p.conversion ? 0 : (p.keys || 0);
+const pipeStatusPill = p => p.status === 'Under Construction'
+  ? `<span class="pipe-status-uc pill--blue">${fmt.esc(p.status)}</span>`
+  : p.conversion ? `<span class="pipe-status-pl pill--orange">${fmt.esc(p.status)}</span>`
+  : `<span class="pipe-status-pl pill--grey">${fmt.esc(p.status)}</span>`;
+const pipeConversionLine = p => p.conversion
+  ? `<div class="pipe-card-conversion">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')} · keys already counted</div>` : '';
+// Keys per group (opening year or city), new rooms only; "Date not announced" last
+// (groups with no known new keys, e.g. only a conversion, are left out)
+function pipeKeysBy(data, key) {
+  const t = {};
+  data.forEach(p => { if (pipeNewKeys(p)) { const k = key(p); t[k] = (t[k] || 0) + pipeNewKeys(p); } });
+  return t;
+}
+
 
 async function initPipeline() {
   if (pipelineInited) {
@@ -2960,9 +2996,9 @@ function filteredPipeline() {
 
 function renderPipelineKPIs() {
   const all = pipelineData;
-  const totalKeys = all.reduce((s, p) => s + p.keys, 0);
-  const totalInv  = all.reduce((s, p) => s + p.investment_mad, 0);
-  const by2027    = all.filter(p => p.expected_opening <= 2027).length;
+  const totalKeys = all.reduce((s, p) => s + pipeNewKeys(p), 0);
+  const totalInv  = all.reduce((s, p) => s + (p.investment_mad || 0), 0);
+  const by2027    = all.filter(p => p.expected_opening && p.expected_opening <= 2027).length;
 
   const setKpi = (id, val) => {
     const el = document.getElementById(id);
@@ -2989,8 +3025,8 @@ function initPipelineMap() {
     });
 
     pipelineMarkers = pipelineData.map(p => {
-      const color  = familyDot(p.status === 'Under Construction' ? 'blue' : 'grey');
-      const radius = Math.max(8, Math.sqrt(p.keys) * 0.85);
+      const color  = familyDot(p.status === 'Under Construction' ? 'blue' : p.conversion ? 'orange' : 'grey');
+      const radius = Math.max(8, Math.sqrt(p.keys || 0) * 0.85);
       const marker = new google.maps.Marker({
         position: { lat: p.lat, lng: p.lng },
         map:      googlePipelineMap,
@@ -3017,15 +3053,15 @@ function initPipelineMap() {
 
 function pipelinePopupHTML(p) {
   const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
-  const statusPill = p.status === 'Under Construction'
-    ? `<span class="pill--blue" style="font-family:'Sweet Sans Pro',sans-serif;font-size:10px;">${fmt.esc(p.status)}</span>`
-    : `<span class="pill--grey" style="font-family:'Sweet Sans Pro',sans-serif;font-size:10px;">${fmt.esc(p.status)}</span>`;
+  const pillCls = p.status === 'Under Construction' ? 'pill--blue' : p.conversion ? 'pill--orange' : 'pill--grey';
+  const statusPill = `<span class="${pillCls}" style="font-family:'Sweet Sans Pro',sans-serif;font-size:10px;">${fmt.esc(p.status)}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
     <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${getSegmentBadgeHtml(p.category)}</div>
+    ${p.conversion ? `<div class="hiq-popup-meta">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')} · keys already counted</div>` : ''}
     <div class="hiq-popup-grid">
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys || 'TBC'}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
-      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.expected_opening}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${fmt.esc(pipeYear(p))}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.investment_mad ? 'MAD ' + invB : invB}</div><div class="hiq-popup-stat-lbl">Investment</div></div>
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${statusPill}</div><div class="hiq-popup-stat-lbl">Status</div></div>
     </div>
@@ -3034,6 +3070,8 @@ function pipelinePopupHTML(p) {
 
 let pipelineChartProj = null;
 let pipelineChartCity = null;
+let pipelineChartYear = null;
+let pipelineChartCityKeys = null;
 
 function renderPipelineCards() {
   const data = filteredPipeline();
@@ -3047,7 +3085,7 @@ function renderPipelineCards() {
   }
   grid.innerHTML = data.map(p => {
     const isUC = p.status === 'Under Construction';
-    const pill  = isUC ? `<span class="pipe-status-uc pill--blue">${p.status}</span>` : `<span class="pipe-status-pl pill--grey">${p.status}</span>`;
+    const pill  = pipeStatusPill(p);
     const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
     return `<div class="pipe-card ${isUC ? 'pipe-card-uc' : 'pipe-card-pl'}">
       <div>
@@ -3057,8 +3095,9 @@ function renderPipelineCards() {
         </div>
         <div class="pipe-card-location">${fmt.esc(p.city)} · ${getSegmentBadgeHtml(p.category)}</div>
         <div class="pipe-card-brand">${getBrandLogoImg(p.brand, 16)} ${fmt.esc(p.brand)}</div>
+        ${pipeConversionLine(p)}
       </div>
-      <div class="pipe-card-year">${p.expected_opening}</div>
+      <div class="pipe-card-year${p.expected_opening ? '' : ' pipe-card-year-tba'}">${fmt.esc(pipeYear(p))}</div>
       <div class="pipe-card-metrics">
         <div>
           <div class="pipe-card-metric-val">${p.keys ? p.keys.toLocaleString('en') : 'TBC'}</div>
@@ -3078,7 +3117,8 @@ function renderPipelineTableView() {
   const tbody = document.getElementById('pipeline-tbody');
   data.sort((a, b) => {
     const av = a[pipelineSort.col], bv = b[pipelineSort.col];
-    if (PIPE_STR_COLS.has(pipelineSort.col)) return pipelineSort.dir * String(av).localeCompare(String(bv));
+    if (PIPE_STR_COLS.has(pipelineSort.col)) return pipelineSort.dir * String(av ?? '').localeCompare(String(bv ?? ''));
+    if (av == null || bv == null) return (av == null) - (bv == null);       // no value (e.g. no date): last
     return pipelineSort.dir * (av - bv);
   });
   if (!data.length) {
@@ -3086,15 +3126,15 @@ function renderPipelineTableView() {
     return;
   }
   tbody.innerHTML = data.map(p => {
-    const pill  = p.status === 'Under Construction' ? `<span class="pipe-status-uc pill--blue">${p.status}</span>` : `<span class="pipe-status-pl pill--grey">${p.status}</span>`;
+    const pill  = pipeStatusPill(p);
     const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
     return `<tr>
-      <td style="font-weight:600">${fmt.esc(p.name)}</td>
+      <td style="font-weight:600">${fmt.esc(p.name)}${p.conversion ? `<div class="pipe-card-conversion">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')}</div>` : ''}</td>
       <td>${fmt.esc(p.city)}</td>
       <td>${fmt.esc(p.brand)}</td>
-      <td class="num-col">${p.expected_opening}</td>
+      <td class="num-col">${fmt.esc(pipeYear(p))}</td>
       <td>${pill}</td>
-      <td class="num-col">${p.keys.toLocaleString('en')}</td>
+      <td class="num-col">${p.keys ? p.keys.toLocaleString('en') : 'TBC'}</td>
       <td class="num-col">${invM}</td>
     </tr>`;
   }).join('');
@@ -3111,9 +3151,10 @@ function togglePipelineTable() {
 function renderPipelineCharts() {
   const data = filteredPipeline();
 
-  // Keys by project (horizontal bar, sorted asc so largest at top)
-  const sorted = [...data].sort((a, b) => a.keys - b.keys);
-  const projLabels = sorted.map(p => p.name);
+  // Keys by project (horizontal bar, sorted asc so largest at top); projects
+  // without a room count are left out, a conversion is labelled as such
+  const sorted = data.filter(p => p.keys).sort((a, b) => a.keys - b.keys);
+  const projLabels = sorted.map(p => p.conversion ? p.name + ' (conversion)' : p.name);
   const projVals   = sorted.map(p => p.keys);
   const projColors = sorted.map(() => getChartColors().barColor);
 
@@ -3126,8 +3167,8 @@ function renderPipelineCharts() {
 
   // Investment by city (horizontal bar, sorted asc)
   const cityTotals = {};
-  data.forEach(p => { cityTotals[p.city] = (cityTotals[p.city] || 0) + p.investment_mad; });
-  const cityEntries = Object.entries(cityTotals).sort((a, b) => a[1] - b[1]);
+  data.forEach(p => { if (p.investment_mad) cityTotals[p.city] = (cityTotals[p.city] || 0) + p.investment_mad; });
+  const cityEntries = Object.entries(cityTotals).sort((a, b) => a[1] - b[1]);   // cities with no known figure left out
   const cityLabels  = cityEntries.map(e => e[0]);
   const cityVals    = cityEntries.map(e => parseFloat((e[1] / 1e9).toFixed(2)));
 
@@ -3137,6 +3178,24 @@ function renderPipelineCharts() {
   const cityCfg = chartConfig(cityLabels, cityVals, 'B', cityLabels.map(() => getChartColors().barColor), v => v + 'B');
   cityCfg.options.plugins.tooltip.callbacks.label = ctx => '  MAD ' + ctx.raw + 'B';
   pipelineChartCity = new Chart(document.getElementById('chart-pipeline-city'), cityCfg);
+
+  // New keys by opening year (years in order, "Date not announced" last) and by city
+  const byYear = pipeKeysBy(data, pipeYear);
+  const yLabels = Object.keys(byYear).sort((a, b) => (a === PIPE_NO_DATE) - (b === PIPE_NO_DATE) || a.localeCompare(b));
+  if (pipelineChartYear) { pipelineChartYear.destroy(); pipelineChartYear = null; }
+  const yearCfg = chartConfig(yLabels, yLabels.map(y => byYear[y]), ' keys', yLabels.map(() => getChartColors().barColor), v => v);
+  yearCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toLocaleString('en') + ' new keys';
+  const yWrap = document.getElementById('pwrap-year');
+  if (yWrap) { yWrap.style.minHeight = '0'; yWrap.style.height = Math.max(200, yLabels.length * 38 + 50) + 'px'; }
+  pipelineChartYear = new Chart(document.getElementById('chart-pipeline-year'), yearCfg);
+
+  const byCity = Object.entries(pipeKeysBy(data, p => p.city)).sort((a, b) => a[1] - b[1]);
+  if (pipelineChartCityKeys) { pipelineChartCityKeys.destroy(); pipelineChartCityKeys = null; }
+  const ckCfg = chartConfig(byCity.map(e => e[0]), byCity.map(e => e[1]), ' keys', byCity.map(() => getChartColors().barColor), v => v);
+  ckCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toLocaleString('en') + ' new keys';
+  const ckWrap = document.getElementById('pwrap-citykeys');
+  if (ckWrap) { ckWrap.style.minHeight = '0'; ckWrap.style.height = Math.max(200, byCity.length * 38 + 50) + 'px'; }
+  pipelineChartCityKeys = new Chart(document.getElementById('chart-pipeline-citykeys'), ckCfg);
 }
 
 function applyPipelineFilter() {
@@ -5360,7 +5419,7 @@ function buildSearchIndex() {
       name: p.name || '',
       city: p.city || '',
       brand: p.brand || '',
-      expected_opening: p.expected_opening || '',
+      expected_opening: p.expected_opening || PIPE_NO_DATE,
       status: p.status || '',
       searchText: `${p.name || ''} ${p.city || ''} ${p.brand || ''}`.toLowerCase(),
     }));
@@ -6019,7 +6078,9 @@ function exportPipeline() {
     'Brand':              p.brand,
     'Brand Group':        p.brand_group,
     'Keys':               p.keys || 'TBC',
-    'Expected Opening':   p.expected_opening ?? 'TBC',
+    'New Keys':           p.conversion ? 0 : (p.keys || 'TBC'),
+    'Converts Hotel':     p.conversion ? (p.converts_hotel_name || p.converts_hotel_id) : '',
+    'Expected Opening':   p.expected_opening ?? PIPE_NO_DATE,
     'Status':             p.status,
     'Investment (MAD M)': p.investment_mad ? Math.round(p.investment_mad / 1e6) : 'N/A',
     'Data As Of':         asOf,

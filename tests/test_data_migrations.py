@@ -62,7 +62,8 @@ class DataMigrations(unittest.TestCase):
                                         '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai',
                                         '0007_room_corrections', '0008_merge_duplicates', '0009_be_live',
                                         '0010_be_live_risma_names', '0011_new_hotels', '0012_new_hotels_google_ids',
-                                        '0013_pipeline_projects', '0014_owner_decisions', '0015_owner_profiles'])
+                                        '0013_pipeline_projects', '0014_owner_decisions', '0015_owner_profiles',
+                                        '0016_pipeline_decisions'])
         self.assertIsNone(r['failed'])
         for hid in ('58', '320', '266', '467'):
             self.assertEqual(self.hotel(hid)['owner'], 'OCP Group')
@@ -158,6 +159,62 @@ class DataMigrations(unittest.TestCase):
                               'new_city': 'Casablanca', 'new_lat': '33.5', 'new_lng': '-7.6'}],
                               os.path.join(self.d, 'coordinate_changes_applied.log'))
         self.assertEqual(plan[0]['status'], 'conflict')
+
+    def test_pipeline_decisions_nov_2026(self):
+        import csv
+        r = self.run_all()
+        self.assertIsNone(r['failed'], r['error'])
+        pipe_path = os.path.join(self.d, 'pipeline.csv')
+        pipe = {p['id']: p for p in csv.DictReader(open(pipe_path, encoding='utf-8'))}
+        # the volume ends up with the repo's own pipeline.csv
+        repo = {p['id']: p for p in csv.DictReader(open(os.path.join(ROOT, 'pipeline.csv'), encoding='utf-8'))}
+        self.assertEqual(pipe, repo)
+        self.assertEqual(len(pipe), 28)
+        self.assertNotIn('6', pipe)                                   # Hilton Tanger City: open as hotel 394
+        self.assertEqual(self.hotel('394')['status'], 'Open')
+        self.assertEqual((pipe['25']['name'], pipe['25']['converts_hotel_id'], pipe['25']['keys']),
+                         ('Hyatt Regency Mazagan', '123', '122'))
+        self.assertEqual(self.hotel('123')['status'], 'Operating')    # still the operating hotel
+        self.assertEqual(sum(1 for p in pipe.values() if p['converts_hotel_id']), 1)
+        self.assertEqual(pipe['19']['expected_opening'], '')          # Four Seasons: no date announced
+        self.assertEqual({k: pipe[k]['keys'] for k in ('4', '10', '11', '17')},
+                         {'4': '141', '10': '178', '11': '162', '17': '127'})
+        for p in pipe.values():
+            self.assertTrue(p['lat'] and p['lng'], p['name'])
+        # running the rows again changes nothing
+        acts = CA.read_hotel_actions(open(os.path.join(DM.MIGRATIONS_DIR, '0016_pipeline_decisions.hotels.csv'),
+                                          encoding='utf-8').read())
+        plan = CA.hotels_plan(os.path.join(self.d, 'hotels.csv'), acts, None, pipe_path)
+        self.assertEqual({e['status'] for e in plan}, {'already'})
+        # removed projects can't be added back
+        plan = CA.hotels_plan(os.path.join(self.d, 'hotels.csv'), [{'hotel_id': '', 'action': 'pipeline_add',
+                              'pipeline_id': '40', 'hotel': 'Risma hotel project, Tangier Corniche', 'new_city': 'Tanger',
+                              'new_status': 'Planning', 'new_lat': '35.78', 'new_lng': '-5.81'}], None, pipe_path)
+        self.assertEqual(plan[0]['status'], 'conflict')
+
+    def test_pipeline_update_remove(self):
+        import csv
+        pipe_path = os.path.join(self.d, 'pipeline.csv')
+        hotels_path = os.path.join(self.d, 'hotels.csv')
+        before = read(pipe_path)
+        first = next(csv.DictReader(open(pipe_path, encoding='utf-8')))
+        acts = [{'hotel_id': '', 'action': 'pipeline_update', 'pipeline_id': first['id'], 'hotel': first['name'],
+                 'new_keys': '101', 'new_converts_hotel_id': '1'},
+                {'hotel_id': '', 'action': 'pipeline_remove', 'pipeline_id': '2', 'hotel': 'wrong name'}]
+        self.assertEqual([e['status'] for e in CA.hotels_plan(hotels_path, acts, None, pipe_path)],
+                         ['pipeline_update', 'name differs'])
+        acts[1]['hotel'] = next(p['name'] for p in csv.DictReader(open(pipe_path, encoding='utf-8')) if p['id'] == '2')
+        log = os.path.join(self.d, 'log')
+        CA.hotels_apply(hotels_path, acts, os.path.join(self.d, 'bk'), log, pipeline_path=pipe_path)
+        rows = list(csv.DictReader(open(pipe_path, encoding='utf-8')))
+        self.assertEqual((rows[0]['keys'], rows[0]['converts_hotel_id']), ('101', '1'))
+        self.assertNotIn('2', [p['id'] for p in rows])
+        self.assertTrue(all(p['converts_hotel_id'] == '' for p in rows[1:]))
+        self.assertEqual(read(hotels_path), git_show(BEFORE, 'hotels.csv'))          # hotels.csv untouched
+        self.assertEqual({e['status'] for e in CA.hotels_plan(hotels_path, acts, None, pipe_path)}, {'already'})
+        bad = CA.hotels_plan(hotels_path, [dict(acts[0], new_keys='many')], None, pipe_path)
+        self.assertEqual(bad[0]['status'], 'bad row')
+        self.assertNotEqual(read(pipe_path), before)
 
     def test_switch(self):
         self.assertTrue(DM.enabled({}))

@@ -360,7 +360,7 @@ withheld += [
 pipe_keys = {}
 import csv
 for r in csv.DictReader(open(os.path.join(ROOT, 'pipeline.csv'), encoding='utf-8')):
-    if r.get('expected_opening') in ('2026', '2027'):
+    if r.get('expected_opening') in ('2026', '2027') and not (r.get('converts_hotel_id') or '').strip():   # a conversion adds no rooms
         try:
             pipe_keys[r['expected_opening']] = pipe_keys.get(r['expected_opening'], 0) + int(float(r['keys']))
         except (TypeError, ValueError):
