@@ -186,7 +186,7 @@ const BRAND_DESCRIPTIONS = {
   'Groupe Barrière': "Groupe Barrière is a French family-owned luxury hospitality and entertainment company founded in 1912, operating a portfolio of prestigious hotels, casinos, and spas primarily in France and internationally. In Morocco, Groupe Barrière is represented by the Barrière Naroua Marrakech, a luxury property opened in 2023 that brings the group's signature blend of refined French hospitality traditions and contemporary lifestyle experiences to one of the world's most celebrated leisure destinations. The Naroua marks Barrière's first African property and reflects the group's ambition to selectively expand its luxury hotel portfolio beyond its traditional European strongholds into destinations that attract the cosmopolitan high-net-worth travelers it serves. Groupe Barrière's entry into Marrakech adds a distinctly French luxury sensibility to a city already renowned for its concentration of world-class hospitality experiences.",
   'Groupe Lucien Barrière': "Groupe Barrière is a French family-owned luxury hospitality and entertainment company founded in 1912, operating a portfolio of prestigious hotels, casinos, and spas primarily in France and internationally. In Morocco, Groupe Barrière is represented by the Barrière Naroua Marrakech, a luxury property opened in 2023 that brings the group's signature blend of refined French hospitality traditions and contemporary lifestyle experiences to one of the world's most celebrated leisure destinations. The Naroua marks Barrière's first African property and reflects the group's ambition to selectively expand its luxury hotel portfolio beyond its traditional European strongholds into destinations that attract the cosmopolitan high-net-worth travelers it serves. Groupe Barrière's entry into Marrakech adds a distinctly French luxury sensibility to a city already renowned for its concentration of world-class hospitality experiences.",
   'Virgin Limited Edition': "Virgin Limited Edition is the ultra-luxury hotel collection of Sir Richard Branson's Virgin Group, operating a small portfolio of extraordinary private island and wilderness retreats that emphasize exclusivity, sustainability, and transformative guest experiences. In Morocco, Virgin Limited Edition's single property is Kasbah Tamadot in the High Atlas Mountains near Marrakech, a stunning converted kasbah offering 28 rooms and suites with panoramic mountain views that has become one of Morocco's most iconic luxury retreats since its opening. The property embodies the Virgin Limited Edition philosophy of placing guests in remarkable natural and cultural settings with highly personalised service and a strong commitment to supporting local communities and environmental conservation. Kasbah Tamadot's presence in Morocco adds a dimension of adventure-tinged luxury to the country's hotel offer that few other properties can match.",
-  'Globalia Hotels': "Globalia Hotels is the hotel division of Globalia, one of Spain's largest travel and tourism conglomerates, operating the Be Live Hotels brand across popular Mediterranean, Caribbean, and North African leisure destinations. In Morocco, Globalia's Be Live brand is represented by the Belive Saidia property in the Mediterrania Saidia resort complex, targeting the all-inclusive European package travel segment that forms the backbone of Saidia's hotel market. The property serves primarily Spanish and European charter travelers seeking a cost-effective all-inclusive beach holiday experience in Morocco's northeastern Mediterranean resort corridor. Globalia's presence in Saidia reflects the strong historical ties between Spanish tour operators and Morocco's northern coastal resort destinations and the continued importance of the all-inclusive format for European mass-market leisure tourism in Morocco.",
+  'Globalia Hotels': "Globalia Hotels is the hotel division of Globalia, one of Spain's largest travel and tourism conglomerates, operating the Be Live brand across popular Mediterranean, Caribbean, and North African leisure destinations. In Morocco, Globalia's Be Live brand is represented by Be Live Saidia in the Mediterrania Saidia resort complex and by Be Live Collection Marrakech (adults only). Be Live Saidia targets the all-inclusive European package travel segment that forms the backbone of Saidia's hotel market. The property serves primarily Spanish and European charter travelers seeking a cost-effective all-inclusive beach holiday experience in Morocco's northeastern Mediterranean resort corridor. Globalia's presence in Saidia reflects the strong historical ties between Spanish tour operators and Morocco's northern coastal resort destinations and the continued importance of the all-inclusive format for European mass-market leisure tourism in Morocco.",
   'Banyan Tree': "Banyan Tree Hotels & Resorts is a Singapore-based luxury hospitality company founded in 1994, renowned for pioneering the private pool villa concept and operating a portfolio of award-winning luxury resorts, spas, and residences across Asia, the Middle East, Africa, and the Americas. In Morocco, Banyan Tree operates a single ultra-luxury property in Tamuda Bay, the Banyan Tree Tamuda Bay, bringing the brand's signature blend of intimate seclusion, world-class spa philosophy, and deep environmental sensitivity to Morocco's emerging Mediterranean luxury corridor. The property's presence in Tamuda Bay reflects Banyan Tree's deliberate strategy of establishing footholds in destinations at the early stages of luxury development, positioning the brand ahead of the wave of international interest that follows. Banyan Tree Tamuda Bay adds an Asian luxury sensibility to a destination already attracting significant international brand investment.",
   'Vichy Thermalia': "Vichy Thermalia is a French thermal wellness hospitality brand operated under the Vichy Célestins Spa Hotels network, specializing in medically supervised thermal spa hotels that combine hydrotherapy treatments with premium hotel accommodation in destinations with natural mineral water sources. In Morocco, Vichy Thermalia operates the Vichy Thermalia Spa Hotel in Moulay Yacoub, a thermal resort town located 20 kilometers northwest of Fes renowned for its natural hot springs and longstanding reputation as a wellness destination. The property is developed in partnership with Madaëf and represents Morocco's most sophisticated medically oriented thermal spa offering, targeting both domestic wellness travelers and international guests seeking therapeutic spa experiences in a culturally rich environment. Vichy Thermalia's presence in Moulay Yacoub reinforces Morocco's ambition to develop its natural thermal assets into internationally competitive wellness tourism destinations.",
   'Valeria Hotels': "Valeria Hotels is a Moroccan independent hotel group specializing in large-scale club resort properties targeting the European all-inclusive leisure market. Operating exclusively within Morocco, Valeria has built a significant resort portfolio concentrated in Marrakech's Palmeraie district and Agadir, with properties that combine extensive leisure facilities, entertainment programming, and all-inclusive packages tailored to family and group travelers. The group's Marrakech properties in the Palmeraie have established Valeria as one of the largest resort operators in the city's leisure segment, while the Agadir property serves the Atlantic coast's strong European charter market. Valeria's most recent addition, the Valeria Kasbah del Mar in Cabo Negro on the Mediterranean coast, signals the group's ambition to expand into Morocco's emerging northern resort corridor.",
@@ -376,10 +376,12 @@ function getEmptyStateHtml(message, subtext) {
 
 // ─── Formatters ───────────────────────────────────────────────────
 
+// A missing figure (null, e.g. a hotel added without an FY estimate) shows as "—", never 0
+const _missing = v => v == null || v === '' || Number.isNaN(Number(v));
 const fmt = {
-  pct: v  => (v * 100).toFixed(1) + '%',
-  num: v  => Math.round(v).toLocaleString('en'),
-  mad: v  => Math.round(v).toLocaleString('en'),
+  pct: v  => _missing(v) ? '—' : (v * 100).toFixed(1) + '%',
+  num: v  => _missing(v) ? '—' : Math.round(v).toLocaleString('en'),
+  mad: v  => _missing(v) ? '—' : Math.round(v).toLocaleString('en'),
   esc: s  => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),
 };
 
@@ -642,6 +644,25 @@ function labelPerfHistory() {
 
 // ─── Aggregation ──────────────────────────────────────────────────
 
+// Room-weighted averages over the hotels that have the figure: a hotel with
+// no estimate (just added) is left out instead of counting as zero. ADR is
+// weighted by occupied rooms. null when no hotel has it.
+function perfAggs(hs) {
+  const has = (h, k) => h[k] != null && !Number.isNaN(Number(h[k]));
+  const avg = (k, w) => {
+    const rows = hs.filter(h => has(h, k) && w(h) > 0);
+    const den = rows.reduce((s, h) => s + w(h), 0);
+    return den ? rows.reduce((s, h) => s + h[k] * w(h), 0) / den : null;
+  };
+  const rooms = h => h.keys || 0;
+  return {
+    occupancy:  avg('occupancy', rooms),
+    adr_mad:    avg('adr_mad', h => has(h, 'occupancy') ? rooms(h) * h.occupancy : 0),
+    revpar_mad: avg('revpar_mad', rooms),
+    gop_margin: avg('gop_margin', rooms),
+  };
+}
+
 function cityAggs(hotelList) {
   const map = new Map();
   hotelList.forEach(h => {
@@ -650,15 +671,11 @@ function cityAggs(hotelList) {
   });
   return [...map.entries()].map(([city, hs]) => {
     const tk = hs.reduce((s, h) => s + h.keys, 0);
-    const ok = hs.reduce((s, h) => s + h.keys * h.occupancy, 0);
     return {
       city,
       hotel_count: hs.length,
       total_keys:  tk,
-      occupancy:   ok / tk,
-      adr_mad:     hs.reduce((s, h) => s + h.adr_mad * h.keys * h.occupancy, 0) / ok,
-      revpar_mad:  hs.reduce((s, h) => s + h.revpar_mad * h.keys, 0) / tk,
-      gop_margin:  hs.reduce((s, h) => s + h.gop_margin * h.keys, 0) / tk,
+      ...perfAggs(hs),
     };
   });
 }
@@ -671,29 +688,21 @@ function brandAggs(hotelList) {
   });
   return [...map.entries()].map(([bg, hs]) => {
     const tk = hs.reduce((s, h) => s + h.keys, 0);
-    const ok = hs.reduce((s, h) => s + h.keys * h.occupancy, 0);
     return {
       brand_group:  bg,
       hotel_count:  hs.length,
       total_keys:   tk,
-      occupancy:    ok / tk,
-      adr_mad:      hs.reduce((s, h) => s + h.adr_mad * h.keys * h.occupancy, 0) / ok,
-      revpar_mad:   hs.reduce((s, h) => s + h.revpar_mad * h.keys, 0) / tk,
-      gop_margin:   hs.reduce((s, h) => s + h.gop_margin * h.keys, 0) / tk,
+      ...perfAggs(hs),
     };
   }).sort((a, b) => b.total_keys - a.total_keys);
 }
 
 function nationalKPIs(hotelList) {
   const tk = hotelList.reduce((s, h) => s + h.keys, 0);
-  const ok = hotelList.reduce((s, h) => s + h.keys * h.occupancy, 0);
   return {
     total_hotels: hotelList.length,
     total_keys:   tk,
-    occupancy:    ok / tk,
-    adr_mad:      hotelList.reduce((s, h) => s + h.adr_mad * h.keys * h.occupancy, 0) / ok,
-    revpar_mad:   hotelList.reduce((s, h) => s + h.revpar_mad * h.keys, 0) / tk,
-    gop_margin:   hotelList.reduce((s, h) => s + h.gop_margin * h.keys, 0) / tk,
+    ...perfAggs(hotelList),
   };
 }
 
@@ -861,7 +870,7 @@ function renderCharts() {
   document.getElementById('chart-occ').closest('.chart-wrap').style.height = chartH + 'px';
 
   // RevPAR chart — sorted high→low
-  const revSorted = [...allCityData].sort((a, b) => b.revpar_mad - a.revpar_mad);
+  const revSorted = allCityData.filter(c => c.revpar_mad != null).sort((a, b) => b.revpar_mad - a.revpar_mad);
   const revLabels = revSorted.map(c => c.city);
   const revVals   = revSorted.map(c => c.revpar_mad);
 
@@ -879,7 +888,7 @@ function renderCharts() {
   }
 
   // Occupancy chart — sorted high→low
-  const occSorted  = [...allCityData].sort((a, b) => b.occupancy - a.occupancy);
+  const occSorted  = allCityData.filter(c => c.occupancy != null).sort((a, b) => b.occupancy - a.occupancy);
   const occLabels  = occSorted.map(c => c.city);
   const occVals    = occSorted.map(c => parseFloat((c.occupancy * 100).toFixed(1)));
   const occLabelFmt = v => v.toFixed(1) + '%';
@@ -1154,10 +1163,7 @@ function showBrandDetail(brandGroup, prevScreen) {
     || (brandGroup === 'Independent Hotels' && (h.brand_group === 'Independent' || h.brand_group === 'Independent Luxury')));
 
   const tk    = brandHotelsData.reduce((s, h) => s + h.keys, 0);
-  const ok    = brandHotelsData.reduce((s, h) => s + h.keys * h.occupancy, 0);
-  const occ   = ok / tk;
-  const adr   = brandHotelsData.reduce((s, h) => s + h.adr_mad * h.keys * h.occupancy, 0) / ok;
-  const revpar= brandHotelsData.reduce((s, h) => s + h.revpar_mad * h.keys, 0) / tk;
+  const { occupancy: occ, adr_mad: adr, revpar_mad: revpar } = perfAggs(brandHotelsData);
   const cities      = [...new Set(brandHotelsData.map(h => h.city))].sort();
   const ownerValues = [...new Set(brandHotelsData.map(h => h.owner).filter(Boolean))];
   const distinctOwners = ownerValues.filter(o => o !== 'Undisclosed');
@@ -1221,7 +1227,9 @@ function showBrandDetail(brandGroup, prevScreen) {
     : '';
 
   // City RevPAR chart
-  const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
+  // Only cities with an estimate; hidden when none has one (a group just added)
+  const cityData = cityAggs(brandHotelsData).filter(c => c.revpar_mad != null).sort((a, b) => b.revpar_mad - a.revpar_mad);
+  document.getElementById('brand-chart-card').hidden = !cityData.length;
   const chartH   = Math.max(240, cityData.length * 38 + 50);
   document.getElementById('brand-chart-wrap').style.height = chartH + 'px';
 

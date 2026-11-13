@@ -12,8 +12,10 @@ where the kind picks the same apply function (and checks) as the matching
 admin upload panel in the Rates panel:
 
     .hotels.csv        Change the hotel list (hide, unhide, remove, rename,
-                       city, owner, rooms, add, to_pipeline,
-                       pipeline_position): coordinates_apply.hotels_apply
+                       city, owner, rooms, brand, notes, merge, add,
+                       to_pipeline, pipeline_add, pipeline_position):
+                       coordinates_apply.hotels_apply (a merge also updates
+                       the saved comp sets, comp_sets.json)
     .owners.json       Owner profiles (kodo-owners-1): owners_apply
     .coordinates.csv   Coordinate corrections (approve = yes): apply
     .ids.json          Google IDs (kodo-google-ids-1): import_ids
@@ -67,6 +69,7 @@ def paths(data_dir):
         'pipeline': os.path.join(data_dir, 'pipeline.csv'),
         'performance': os.path.join(data_dir, 'performance.csv'),
         'owners': os.path.join(data_dir, 'owners.json'),
+        'comp_sets': os.path.join(data_dir, 'comp_sets.json'),
         'ids': os.path.join(data_dir, 'dataforseo_hotel_ids.json'),
         'overrides': os.path.join(data_dir, 'hotel_id_overrides.json'),
         'backups': os.path.join(data_dir, 'backups'),
@@ -77,7 +80,7 @@ def paths(data_dir):
 
 
 # Files each kind can write (copied first, put back on failure)
-TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance'), 'owners.json': ('owners',),
+TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance', 'comp_sets'), 'owners.json': ('owners',),
            'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides')}
 
 
@@ -137,10 +140,13 @@ def _apply(kind, path, P, actor):
         acts = CA.read_hotel_actions(text)
         plan = CA.hotels_plan(P['hotels'], acts, P['log'], P['pipeline'], P['performance'])
         _problems(plan, set(CA.HOTEL_ACTIONS) | {'already'}, 'hotel list')
-        r = CA.hotels_apply(P['hotels'], acts, P['backups'], P['log'], actor, P['pipeline'], P['performance'])
+        r = CA.hotels_apply(P['hotels'], acts, P['backups'], P['log'], actor, P['pipeline'], P['performance'],
+                            P['comp_sets'])
         counts = {}
         for e in plan:
             counts[e['status']] = counts.get(e['status'], 0) + 1
+        if counts.get('merge'):
+            counts['comp sets changed'] = r['comp_sets_changed']
         return r['changed'], counts.get('already', 0), r['backups'], counts
     if kind == 'owners.json':
         incoming = CA.read_owners_bundle(text)

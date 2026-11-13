@@ -1,10 +1,11 @@
+{%- set ps = public_stats() -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kodo Hospitality, Morocco Hotel Intelligence</title>
-  <meta name="description" content="Morocco's first independent hotel market intelligence platform. 300+ hotels, 23 destinations, institutional-grade data.">
+  <meta name="description" content="Morocco's first independent hotel market intelligence platform. {{ ps.hotels }}+ hotels, {{ ps.destinations }} destinations, institutional-grade data.">
   <link rel="canonical" href="{{ canonical_url }}">
   <link rel="icon" href="/static/img/brand/favicon-light.ico?v={{ asset_version('img/brand/favicon-light.ico') }}" sizes="any" media="(prefers-color-scheme: light)">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/img/brand/favicon-light-16.png?v={{ asset_version('img/brand/favicon-light-16.png') }}" media="(prefers-color-scheme: light)">
@@ -111,7 +112,7 @@
     <span class="lp-sr-only">The data layer for Moroccan hospitality.</span>
     <span aria-hidden="true"><span class="lp-hero-l1"><span class="lp-hero-the">The</span> <span class="lp-pill" id="lpHeroPill" data-i="0" aria-live="off"><span class="lp-pill-dot"></span><span class="lp-pill-track"><span class="lp-pill-word lp-pill-cur">data layer</span><span class="lp-pill-word">benchmark</span><span class="lp-pill-word">market index</span><span class="lp-pill-word">intelligence platform</span></span></span></span> <span class="lp-hero-l2">for Moroccan hospitality.</span></span>
   </h1>
-  <p class="lp-hero-sub">Kodo tracks 300+ hotels, 35 brand groups, and 23 destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
+  <p class="lp-hero-sub">Kodo tracks {{ ps.hotels }}+ hotels, {{ ps.brand_groups }} brand groups, and {{ ps.destinations }} destinations, delivering institutional-grade market intelligence for hospitality professionals, investors, and asset managers.</p>
   <a href="/register" class="btn-fill" style="margin-bottom:0;display:inline-block;">Get started today →</a>
 </section>
 
@@ -162,7 +163,7 @@
         <span class="lp-spotlight-label" id="lpSpotlightLabel">Hotel Supply Database</span>
       </div>
       <div class="lp-spotlight-num-wrap">
-        <span class="lp-spotlight-num" id="lpSpotlightNum">300+</span>
+        <span class="lp-spotlight-num" id="lpSpotlightNum">{{ ps.hotels }}+</span>
       </div>
       <div class="lp-spotlight-desc-wrap">
         <span class="lp-spotlight-desc" id="lpSpotlightDesc">Independent verified hotel records across Morocco's classified market</span>
@@ -299,12 +300,12 @@
 
       <div class="lp-modules-preview-item lp-preview-active" data-module="0">
         <span class="lp-modules-preview-num">01</span>
-        <span class="lp-modules-preview-metric">300+</span>
+        <span class="lp-modules-preview-metric">{{ ps.hotels }}+</span>
         <span class="lp-modules-preview-label">Hotels Tracked</span>
-        <p class="lp-modules-preview-desc">300+ hotels with verified room counts, segment classification, brand affiliation, ownership, and opening years across 23 destinations.</p>
+        <p class="lp-modules-preview-desc">{{ ps.hotels }}+ hotels with verified room counts, segment classification, brand affiliation, ownership, and opening years across {{ ps.destinations }} destinations.</p>
         <div class="lp-modules-preview-stats">
           <div class="lp-modules-preview-stat">
-            <span class="lp-modules-preview-stat-val">23</span>
+            <span class="lp-modules-preview-stat-val">{{ ps.destinations }}</span>
             <span class="lp-modules-preview-stat-lbl">Destinations</span>
           </div>
           <div class="lp-modules-preview-stat">
@@ -316,12 +317,12 @@
 
       <div class="lp-modules-preview-item" data-module="1">
         <span class="lp-modules-preview-num">02</span>
-        <span class="lp-modules-preview-metric">35</span>
+        <span class="lp-modules-preview-metric">{{ ps.brand_groups }}</span>
         <span class="lp-modules-preview-label">Brand Groups</span>
-        <p class="lp-modules-preview-desc">35 brand groups profiled with performance benchmarks, market share analysis, city presence, and Morocco-specific descriptions.</p>
+        <p class="lp-modules-preview-desc">{{ ps.brand_groups }} brand groups profiled with performance benchmarks, market share analysis, city presence, and Morocco-specific descriptions.</p>
         <div class="lp-modules-preview-stats">
           <div class="lp-modules-preview-stat">
-            <span class="lp-modules-preview-stat-val">23</span>
+            <span class="lp-modules-preview-stat-val">{{ ps.destinations }}</span>
             <span class="lp-modules-preview-stat-lbl">Cities</span>
           </div>
           <div class="lp-modules-preview-stat">
@@ -665,7 +666,7 @@
       <div class="lp-plan-price"><span class="lp-plan-amount">990</span></div>
       <span class="lp-plan-currency">MAD / month</span>
       <ul class="lp-plan-features">
-        <li><span class="lp-ck">✓</span>Hotel Directory (300+ hotels)</li>
+        <li><span class="lp-ck">✓</span>Hotel Directory ({{ ps.hotels }}+ hotels)</li>
         <li><span class="lp-ck">✓</span>Interactive Map</li>
         <li><span class="lp-ck">✓</span>Development Pipeline</li>
         <li><span class="lp-ck">✓</span>Brand Intelligence</li>
@@ -1019,22 +1020,22 @@ themeToggle.addEventListener('click', () => {
 
   const stats = [
     {
-      num: '300+',
+      num: '{{ ps.hotels }}+',
       label: 'Hotel Supply Database',
       desc: 'Independent verified hotel records across Morocco\'s classified market'
     },
     {
-      num: '23',
+      num: '{{ ps.destinations }}',
       label: 'Destination Coverage',
       desc: 'Cities and resort destinations actively tracked and updated'
     },
     {
-      num: '35',
+      num: '{{ ps.brand_groups }}',
       label: 'Brand Intelligence',
       desc: 'International and domestic brand groups profiled and benchmarked'
     },
     {
-      num: '16',
+      num: '{{ ps.pipeline }}',
       label: 'Development Pipeline',
       desc: 'Confirmed hotel pipeline projects tracked across Morocco'
     }

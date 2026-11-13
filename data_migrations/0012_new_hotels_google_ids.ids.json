@@ -1,0 +1,498 @@
+{
+ "format": "kodo-google-ids-1",
+ "google_ids": {
+  "468": {
+   "identifier": "ChgIo-jzrKzm0PCmARoLL2cvMXRkcDF0engQAQ",
+   "google_title": "Allegro Agadir",
+   "checked": "2026-11-12",
+   "google_lat": 30.41291,
+   "google_lng": -9.600397,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "469": {
+   "identifier": "ChkI-6Kg5f3kvOFNGg0vZy8xMWI2eGYwdmp6EAE",
+   "google_title": "Atlantic Hôtel",
+   "checked": "2026-11-12",
+   "google_lat": 30.419357,
+   "google_lng": -9.597615,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "470": {
+   "identifier": "ChoIwoCZ8_mZtNzLARoNL2cvMTFiN3EyYjF5ahAB",
+   "google_title": "Bianca Beach Agadir",
+   "checked": "2026-11-12",
+   "google_lat": 30.422394,
+   "google_lng": -9.618809,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "471": {
+   "identifier": "ChgIrummvYL84PGEARoLL2cvMXRyN2tyZ3QQAQ",
+   "google_title": "Hotel Decameron Tafoukt Beach",
+   "checked": "2026-11-12",
+   "google_lat": 30.416528,
+   "google_lng": -9.604164,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "472": {
+   "identifier": "ChkIh-Otr_SCiM0YGg0vZy8xMWI3M2xkYzFnEAE",
+   "google_title": "Mogador Al Madina - Agadir",
+   "checked": "2026-11-12",
+   "google_lat": 30.41569,
+   "google_lng": -9.602158,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "473": {
+   "identifier": "ChcIorW_2uyf270qGgsvZy8xdGh0MnRiehAB",
+   "google_title": "Odyssee Park Hotel",
+   "checked": "2026-11-12",
+   "google_lat": 30.418646,
+   "google_lng": -9.601663,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "474": {
+   "identifier": "ChkIh9Sd1Nqf7oS9ARoML2cvMTJod2d2OGY2EAE",
+   "google_title": "Riad Villa Blanche - Boutique Hotel & Spa",
+   "checked": "2026-11-12",
+   "google_lat": 30.389866,
+   "google_lng": -9.594167,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "475": {
+   "identifier": "ChgI5YDRraW89eIfGgwvZy8xMTNqOGo1bXkQAQ",
+   "google_title": "Royal Mirage",
+   "checked": "2026-11-12",
+   "google_lat": 30.419289,
+   "google_lng": -9.604039,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "476": {
+   "identifier": "ChoIvsqUtLD7y9vHARoNL2cvMTF6M3c1bmxfMxAB",
+   "google_title": "Taghazout Bay Marriott Resort",
+   "checked": "2026-11-12",
+   "google_lat": 30.513901,
+   "google_lng": -9.685689,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "477": {
+   "identifier": "ChkI6JPtg4Kk1eHuARoML2cvMTJ2dGpoZmg5EAE",
+   "google_title": "Hôtel Al Hoceima Bay",
+   "checked": "2026-11-12",
+   "google_lat": 35.207549,
+   "google_lng": -3.8999,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "478": {
+   "identifier": "ChkIurjgsPmvuuguGg0vZy8xMW53OWhtbjVkEAE",
+   "google_title": "Radisson Blu Residences Al Hoceima",
+   "checked": "2026-11-12",
+   "google_lat": 35.20755,
+   "google_lng": -3.897577,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "479": {
+   "identifier": "ChoIy6XBuZiM4rfHARoNL2cvMTF2bGdkcmdzbhAB",
+   "google_title": "DoubleTree by Hilton Ben Guerir Hotel & Residences",
+   "checked": "2026-11-12",
+   "google_lat": 32.214373,
+   "google_lng": -7.938684,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "480": {
+   "identifier": "ChoI3umYsdmXzJqaARoNL2cvMTF5cXg3NnZrahAB",
+   "google_title": "Hampton by Hilton Ben Guerir",
+   "checked": "2026-11-12",
+   "google_lat": 32.219404,
+   "google_lng": -7.9337,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "481": {
+   "identifier": "ChkIr4aomb-Lh_mHARoML2cvMTJobXBkZGw3EAE",
+   "google_title": "Hôtel Chems Le Tazarkount",
+   "checked": "2026-11-12",
+   "google_lat": 32.21743,
+   "google_lng": -6.532115,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "482": {
+   "identifier": "ChgIt_iSyf_-jqi8ARoLL2cvMXYyeV82a2MQAQ",
+   "google_title": "Avanti Beach Hôtel",
+   "checked": "2026-11-12",
+   "google_lat": 33.706502,
+   "google_lng": -7.383745,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "483": {
+   "identifier": "ChgIoq_fwpHe3finARoLL2cvMXRzamZfZjYQAQ",
+   "google_title": "Best Western Plus Casablanca City Center",
+   "checked": "2026-11-12",
+   "google_lat": 33.582044,
+   "google_lng": -7.623548,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "484": {
+   "identifier": "ChoI2N2midOGxaPwARoNL2cvMTF5N3NrNHM0dBAB",
+   "google_title": "Citadines Almaz Casablanca",
+   "checked": "2026-11-12",
+   "google_lat": 33.510481,
+   "google_lng": -7.676136,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "485": {
+   "identifier": "ChkIgb_0mNzH_INPGg0vZy8xMWNsdnY4a2o3EAE",
+   "google_title": "Domo Hotel Casablanca",
+   "checked": "2026-11-12",
+   "google_lat": 33.537349,
+   "google_lng": -7.64032,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "486": {
+   "identifier": "ChoI9pOfpOH1zOaHARoNL2cvMTF3MzE1c2s2NhAB",
+   "google_title": "Eurostars Casa Anfa",
+   "checked": "2026-11-12",
+   "google_lat": 33.566169,
+   "google_lng": -7.651007,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "487": {
+   "identifier": "ChoI9J_Qub3iuNyJARoNL2cvMTFjbXp6anBoNBAB",
+   "google_title": "Hôtel Gauthier Casablanca",
+   "checked": "2026-11-12",
+   "google_lat": 33.587419,
+   "google_lng": -7.629505,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "488": {
+   "identifier": "ChgIvcbe_43K0r0xGgwvZy8xaGYycWgzOXMQAQ",
+   "google_title": "Hôtel Mogador Marina",
+   "checked": "2026-11-12",
+   "google_lat": 33.594704,
+   "google_lng": -7.600129,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "489": {
+   "identifier": "ChgIqNTn-9Pr2r-ZARoLL2cvMXR4YzhjeHgQAQ",
+   "google_title": "Idou Anfa Hotel & Spa",
+   "checked": "2026-11-12",
+   "google_lat": 33.592262,
+   "google_lng": -7.632572,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "490": {
+   "identifier": "ChcItPSp6JbR2JBDGgsvZy8xdGRzbDQ1ZhAB",
+   "google_title": "JM Suites Hotel",
+   "checked": "2026-11-12",
+   "google_lat": 33.592188,
+   "google_lng": -7.625467,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "491": {
+   "identifier": "ChgI94O3jPO85LP0ARoLL2cvMXRmZnFxMDcQAQ",
+   "google_title": "LE PALACE D'ANFA HOTEL",
+   "checked": "2026-11-12",
+   "google_lat": 33.589939,
+   "google_lng": -7.638271,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "492": {
+   "identifier": "ChkI393t5vjrppQjGg0vZy8xMWM1MXl5cWt3EAE",
+   "google_title": "Le Casablanca Hotel",
+   "checked": "2026-11-12",
+   "google_lat": 33.588777,
+   "google_lng": -7.647884,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "493": {
+   "identifier": "ChoIz_7WlKKvq5qQARoNL2cvMTF2cnd4bjJkbhAB",
+   "google_title": "Le Méridien Casablanca",
+   "checked": "2026-11-12",
+   "google_lat": 33.604813,
+   "google_lng": -7.538438,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "494": {
+   "identifier": "ChoI163t6cf3mdX2ARoNL2cvMTFmeTU2NDRrehAB",
+   "google_title": "Novotel Mohammedia",
+   "checked": "2026-11-12",
+   "google_lat": 33.706963,
+   "google_lng": -7.395675,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "495": {
+   "identifier": "ChoIkNy_p8CJiZm6ARoNL2cvMTFzazR6azBiMBAB",
+   "google_title": "ONE HOTEL Casablanca",
+   "checked": "2026-11-12",
+   "google_lat": 33.591345,
+   "google_lng": -7.615564,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "496": {
+   "identifier": "ChoI6ZrezfOGlbzGARoNL2cvMTFuOXA5emw3MRAB",
+   "google_title": "Occidental Casablanca Medina",
+   "checked": "2026-11-12",
+   "google_lat": 33.59474,
+   "google_lng": -7.60803,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "497": {
+   "identifier": "ChgIgdyv8qTasf58GgwvZy8xcHAydHpfc2IQAQ",
+   "google_title": "Pestana Casablanca",
+   "checked": "2026-11-12",
+   "google_lat": 33.598503,
+   "google_lng": -7.666799,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "498": {
+   "identifier": "ChoIh5Xz46CBgpLpARoNL2cvMTF2bTJ4MDliOBAB",
+   "google_title": "Radisson Hotel Casablanca Gauthier La Citadelle",
+   "checked": "2026-11-12",
+   "google_lat": 33.588019,
+   "google_lng": -7.627944,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "499": {
+   "identifier": "ChoI2b7cs_DJiMX6ARoNL2cvMTF5Zm1qdmRiZBAB",
+   "google_title": "Soho Boutique Hotels Casablanca",
+   "checked": "2026-11-12",
+   "google_lat": 33.560891,
+   "google_lng": -7.652496,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "500": {
+   "identifier": "ChkIzbCTzPPV54dLGg0vZy8xMWI2ZGZ6bGI3EAE",
+   "google_title": "Dades Xaluca Hotel",
+   "checked": "2026-11-12",
+   "google_lat": 31.374317,
+   "google_lng": -5.982729,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "501": {
+   "identifier": "ChcI-LaAxfLg8690GgsvZy8xdGY3Nnc3NhAB",
+   "google_title": "Kasbah Hôtel Xaluca Arfoud",
+   "checked": "2026-11-12",
+   "google_lat": 31.48704,
+   "google_lng": -4.213226,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "502": {
+   "identifier": "ChkI2Mni2f7HweWMARoML2cvMTF4OXhqbHJsEAE",
+   "google_title": "Le Jardin des Douars",
+   "checked": "2026-11-12",
+   "google_lat": 31.449628,
+   "google_lng": -9.705253,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "503": {
+   "identifier": "ChoIpqKHvfiojayDARoNL2cvMTFycnIxamdrdxAB",
+   "google_title": "MAMA LOVA Essaouira - Boutique Hôtel, Riad, Restaurant & SPA",
+   "checked": "2026-11-12",
+   "google_lat": 31.512959,
+   "google_lng": -9.769165,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "504": {
+   "identifier": "ChgI4rjj7PL707jQARoLL2cvMXRsZDFqcnYQAQ",
+   "google_title": "Riad Mimouna",
+   "checked": "2026-11-12",
+   "google_lat": 31.515645,
+   "google_lng": -9.770258,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "505": {
+   "identifier": "ChkItdqH5Jr6kdtYGg0vZy8xMWowM3F3djBfEAE",
+   "google_title": "Suite Azur Hotel",
+   "checked": "2026-11-12",
+   "google_lat": 31.514838,
+   "google_lng": -9.769456,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "506": {
+   "identifier": "ChcIwqGC9rKRhZE-GgsvZy8xdHF0ejZfbBAB",
+   "google_title": "Hotel Fes INN & SPA",
+   "checked": "2026-11-12",
+   "google_lat": 34.027489,
+   "google_lng": -4.989097,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "507": {
+   "identifier": "ChkI2OryyJSakoQwGg0vZy8xMWI2Yzk3OXFsEAE",
+   "google_title": "Ramada by Wyndham Fes",
+   "checked": "2026-11-12",
+   "google_lat": 34.03844,
+   "google_lng": -5.005823,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "508": {
+   "identifier": "ChgI4emw07SJ9vApGgwvZy8xMXkyNnluc3QQAQ",
+   "google_title": "Riad Dar Bensouda",
+   "checked": "2026-11-12",
+   "google_lat": 34.062525,
+   "google_lng": -4.97542,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "509": {
+   "identifier": "ChoIhK6h85CL-oruARoNL2cvMTFidzUwa2gxMBAB",
+   "google_title": "Royal Mirage Hotel Fes",
+   "checked": "2026-11-12",
+   "google_lat": 34.037062,
+   "google_lng": -5.004562,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "510": {
+   "identifier": "ChkIqd_q38jTqPRAGg0vZy8xMWM1czZxMDJqEAE",
+   "google_title": "Hôtel Atlas Asni",
+   "checked": "2026-11-12",
+   "google_lat": 31.623041,
+   "google_lng": -8.011907,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "511": {
+   "identifier": "ChkIrNCZgti6vI3oARoML2cvMTFoMWQxcHYzEAE",
+   "google_title": "Barceló Palmeraie Oasis Resort",
+   "checked": "2026-11-12",
+   "google_lat": 31.661301,
+   "google_lng": -7.933357,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "512": {
+   "identifier": "ChoIw663oNyE3fmdARoNL2cvMTFmeTFkZDE3ZxAB",
+   "google_title": "Be Live Collection Marrakech Adults Only, Marrakesch",
+   "checked": "2026-11-12",
+   "google_lat": 31.65126,
+   "google_lng": -7.921565,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "513": {
+   "identifier": "ChkIraOFgO63paW3ARoML2cvMTI2MGYwNDJkEAE",
+   "google_title": "Delta Hotels by Marriott Marrakech Eden Andalou",
+   "checked": "2026-11-12",
+   "google_lat": 31.544525,
+   "google_lng": -8.047132,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "514": {
+   "identifier": "ChkIxaqetYjOz7xjGg0vZy8xMWYyZ3NqdzEzEAE",
+   "google_title": "Eden Lodges",
+   "checked": "2026-11-12",
+   "google_lat": 31.678311,
+   "google_lng": -7.923647,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "515": {
+   "identifier": "ChcI3tCFt9Wa5fAyGgsvZy8xdGQzOWx3dhAB",
+   "google_title": "Les Jardins de La Koutoubia de Morocco",
+   "checked": "2026-11-12",
+   "google_lat": 31.62606,
+   "google_lng": -7.991731,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "516": {
+   "identifier": "ChkIstLv96D2h7-pARoML2cvMWhjODJwczIyEAE",
+   "google_title": "Hôtel Marrakech Le Semiramis",
+   "checked": "2026-11-12",
+   "google_lat": 31.647464,
+   "google_lng": -8.017865,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "517": {
+   "identifier": "ChgIyIXjwun1saujARoLL2cvMXRkdndueG0QAQ",
+   "google_title": "Angsana Riads Collection Morocco",
+   "checked": "2026-11-12",
+   "google_lat": 31.622721,
+   "google_lng": -7.983691,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "518": {
+   "identifier": "ChcI7avw47iW1IVZGgsvZy8xdGdtNDY4MhAB",
+   "google_title": "Riad Mabrouk",
+   "checked": "2026-11-12",
+   "google_lat": 31.623921,
+   "google_lng": -7.989363,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "519": {
+   "identifier": "ChcIxd7ywtjE0I0hGgsvZy8xdGZjZGpqeRAB",
+   "google_title": "Royal Mirage Deluxe Hotel",
+   "checked": "2026-11-12",
+   "google_lat": 31.626066,
+   "google_lng": -8.002721,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "521": {
+   "identifier": "ChgI0KPtjYum5MnTARoLL2cvMXRoaGx3Z3QQAQ",
+   "google_title": "Kasbah Hôtel Tombouctou",
+   "checked": "2026-11-12",
+   "google_lat": 31.127942,
+   "google_lng": -4.013357,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "522": {
+   "identifier": "ChkIyczmus-N-rJ0Gg0vZy8xMWc4Zjk5MTkyEAE",
+   "google_title": "Castle Eden El Rouh & Spa",
+   "checked": "2026-11-12",
+   "google_lat": 32.734802,
+   "google_lng": -9.033343,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "523": {
+   "identifier": "ChkIs7_4t6Hyrvy7ARoML2cvMTF5MGw5Mm0zEAE",
+   "google_title": "La Kasbah d'Ouzoud",
+   "checked": "2026-11-12",
+   "google_lat": 32.005422,
+   "google_lng": -6.720953,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "524": {
+   "identifier": "ChkIuOa1pafq09pFGg0vZy8xMXQ5cnB5MmptEAE",
+   "google_title": "Conrad Rabat Arzana",
+   "checked": "2026-11-12",
+   "google_lat": 33.901273,
+   "google_lng": -7.000557,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "525": {
+   "identifier": "ChkI4-SXvO2yjOZkGg0vZy8xMXF0NGN0MDljEAE",
+   "google_title": "The White Palace",
+   "checked": "2026-11-12",
+   "google_lat": 33.973589,
+   "google_lng": -6.863116,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "526": {
+   "identifier": "ChgI9r75h-KAsZl2GgwvZy8xMnFmdnJfM2IQAQ",
+   "google_title": "Hôtel Lyla Confort Restinga",
+   "checked": "2026-11-12",
+   "google_lat": 35.7642,
+   "google_lng": -5.347647,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "527": {
+   "identifier": "ChkI_pq7hPPnicwcGg0vZy8xMWZodzg2ZDZoEAE",
+   "google_title": "Hilton Tangier Al Houara Resort & Spa",
+   "checked": "2026-11-12",
+   "google_lat": 35.667465,
+   "google_lng": -5.965837,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  },
+  "529": {
+   "identifier": "ChcIoPWO0qDejZIaGgsvZy8xdGN5NW5zcRAB",
+   "google_title": "Hôtel Idou Tiznit",
+   "checked": "2026-11-12",
+   "google_lat": 29.692459,
+   "google_lng": -9.725564,
+   "found_by": "hotel_searches with the scraper's match rules (database expansion, Nov 2026)"
+  }
+ },
+ "overrides": {
+  "520": {
+   "identifier": "ChkI9q6umtLFubZaGg0vZy8xMWZxY3RjX3ZjEAE",
+   "google_title": "",
+   "reason": "Google lists it as Sol Oasis Marrakech - All Inclusive (Derb Ben Rahmoun Sghir; 4 stars); address and position checked 12 Nov 2026"
+  },
+  "528": {
+   "identifier": "ChgIvMiu29zxssLfARoLL2cvMXRnZjkwcjkQAQ",
+   "google_title": "",
+   "reason": "Google lists it as Mövenpick Hôtel (Baie de Tanger, Ave Mohammed VI; 5 stars); address and position checked 12 Nov 2026"
+  }
+ },
+ "rejected": {}
+}

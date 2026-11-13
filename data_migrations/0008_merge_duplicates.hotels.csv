@@ -1,0 +1,4 @@
+hotel_id,action,hotel,into,into_hotel,reason
+52,merge,Ibis Casablanca City Centre,7,Ibis Casablanca City Center,Risma and Accor list one ibis Casablanca City Center (266 rooms); same Google listing and position
+303,merge,Zelis Hotel Asilah,225,Zelis Hotel Asilah,"Exact duplicate of 225 (same name and position); 225 kept, 65 rooms (unsourced)"
+304,merge,Patio de la Luna Asilah,226,Hotel Patio de la Luna Asilah,"Exact duplicate of 226 (same position); 226 kept, 20 rooms (unsourced)"

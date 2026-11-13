@@ -8,7 +8,7 @@ Name: `NNNN_what_it_does.<kind>`, numbered in the order they must run:
 
 | Kind | Same as the Rates panel upload | Format |
 |---|---|---|
-| `.hotels.csv` | Change the hotel list (hide, unhide, remove, rename, city, owner, rooms, add, to_pipeline, pipeline_add, pipeline_position) | `hotel_id,action,hotel,…` |
+| `.hotels.csv` | Change the hotel list (hide, unhide, remove, rename, city, owner, rooms, brand, notes, merge, add, to_pipeline, pipeline_add, pipeline_position) | `hotel_id,action,hotel,…` |
 | `.owners.json` | Owner profiles | `{"format": "kodo-owners-1", "owners": [...]}` |
 | `.coordinates.csv` | Coordinate corrections | coordinate_changes.csv, `approve = yes` |
 | `.ids.json` | Google IDs | `{"format": "kodo-google-ids-1", ...}` |
@@ -22,5 +22,15 @@ Rules:
   write, puts the files back, emails ALERT_EMAIL and holds the later ones.
 - Each run is in the Rates panel: "Data migrations" (applied, failed,
   pending) and the change log, with a Restore button per backup.
+- `merge` (hotel_id = the duplicate, `into` = the hotel kept, optionally
+  `into_hotel` = its name) removes the duplicate's row and switches it to the
+  kept hotel in every saved comp set (comp_sets.json, backed up first); the
+  summary says how many comp sets changed. Add the pair to
+  `MERGED_HOTEL_IDS` in app.py so old ids open the kept hotel.
+- `do_not_add.json` (repo root) lists hotels that must never come back
+  (closed, part of another hotel, not on Google Hotels). `add` and
+  `pipeline_add` refuse them; research scripts should skip them with
+  `coordinates_apply.blocked(name, city)`; tests/test_do_not_add.py checks
+  the repo's files.
 - `DATA_MIGRATIONS=off` in Railway turns them off.
 - Test: `python3 -m unittest tests.test_data_migrations -v`.

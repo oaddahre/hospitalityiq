@@ -59,7 +59,10 @@ class DataMigrations(unittest.TestCase):
         r = self.run_all()
         self.assertEqual(r['applied'], ['0001_ocp_group_hotels', '0002_sofitel_marrakech_palais_imperial_rooms',
                                         '0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id',
-                                        '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai'])
+                                        '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai',
+                                        '0007_room_corrections', '0008_merge_duplicates', '0009_be_live',
+                                        '0010_be_live_risma_names', '0011_new_hotels', '0012_new_hotels_google_ids',
+                                        '0013_pipeline_projects'])
         self.assertIsNone(r['failed'])
         for hid in ('58', '320', '266', '467'):
             self.assertEqual(self.hotel(hid)['owner'], 'OCP Group')
@@ -108,8 +111,8 @@ class DataMigrations(unittest.TestCase):
         self.assertEqual(len(self.mails), 1)
         # The next start retries it (and works); the same failure again would not email twice
         r2 = self.run_all()
-        self.assertEqual(r2['applied'], ['0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id',
-                                         '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai'])
+        self.assertEqual(r2['applied'][:4], ['0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id',
+                                             '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai'])
         self.assertEqual(len(self.mails), 1)
 
     def test_unclean_change_is_refused(self):
@@ -124,6 +127,37 @@ class DataMigrations(unittest.TestCase):
             self.assertEqual(read(os.path.join(self.d, 'hotels.csv')), before['hotels.csv'])
         finally:
             shutil.rmtree(mdir)
+
+    def test_expansion_nov_2026(self):
+        import csv
+        json.dump({'sets': {'user:1': {'subject_id': '52', 'comp_ids': ['7', '8', '303']},
+                            'org:2': {'subject_id': '1', 'comp_ids': ['2', '3']}}},
+                  open(os.path.join(self.d, 'comp_sets.json'), 'w'))
+        r = self.run_all()
+        self.assertIsNone(r['failed'], r['error'])
+        hotels = {h['id']: h for h in csv.DictReader(open(os.path.join(self.d, 'hotels.csv'), encoding='utf-8'))}
+        for hid in ('52', '303', '304'):
+            self.assertNotIn(hid, hotels)
+        self.assertEqual({h: hotels[h]['keys'] for h in ('75', '436', '71', '437', '100', '23', '441')},
+                         {'75': '170', '436': '128', '71': '232', '437': '130', '100': '25', '23': '132', '441': '245'})
+        self.assertIn('madaef.ma', hotels['75']['notes'])
+        self.assertEqual((hotels['296']['name'], hotels['296']['brand']), ('Be Live Saidia', 'Be Live'))
+        self.assertEqual(sum(1 for h in hotels if int(h) >= 468), 62)
+        cs = json.load(open(os.path.join(self.d, 'comp_sets.json')))['sets']
+        self.assertEqual((cs['user:1']['subject_id'], cs['user:1']['comp_ids']), ('7', ['8', '225']))
+        self.assertEqual(cs['org:2']['comp_ids'], ['2', '3'])
+        log = [json.loads(l) for l in open(os.path.join(self.d, 'coordinate_changes_applied.log'), encoding='utf-8')]
+        m = next(l for l in log if l.get('migration') == '0008_merge_duplicates')
+        self.assertIn('comp sets changed 1', m['summary'])
+        owners = json.load(open(os.path.join(self.d, 'owners.json'), encoding='utf-8'))
+        names = {h['name'] for o in owners for h in o['hotels']}
+        self.assertIn('Be Live Saidia', names)
+        self.assertNotIn('Belive Saidia', names)
+        # an id used by a merged hotel is never reused
+        plan = CA.hotels_plan(os.path.join(self.d, 'hotels.csv'), [{'hotel_id': '52', 'action': 'add', 'hotel': 'X',
+                              'new_city': 'Casablanca', 'new_lat': '33.5', 'new_lng': '-7.6'}],
+                              os.path.join(self.d, 'coordinate_changes_applied.log'))
+        self.assertEqual(plan[0]['status'], 'conflict')
 
     def test_switch(self):
         self.assertTrue(DM.enabled({}))

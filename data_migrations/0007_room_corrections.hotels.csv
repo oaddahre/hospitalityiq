@@ -1,0 +1,15 @@
+hotel_id,action,hotel,reason,new_rooms,new_notes
+75,rooms,Hilton Taghazout Bay Beach Resort & Spa,was 280; source: Madaëf asset page: https://madaef.ma/assets/hilton-taghazout-bay-beach-resort-spa-2/,170,
+75,notes,Hilton Taghazout Bay Beach Resort & Spa,room count source,,Rooms 170: Madaëf asset page: https://madaef.ma/assets/hilton-taghazout-bay-beach-resort-spa-2/
+436,rooms,Ibis Casablanca Nearshore,"was 200; source: Risma prospectus, portfolio table p.23 (31.12.2025): https://risma.com/wp-content/uploads/2026/01/Resume-Anglais-AK-RISMA.pdf",128,
+436,notes,Ibis Casablanca Nearshore,room count source,,"Rooms 128: Risma prospectus, portfolio table p.23 (31.12.2025): https://risma.com/wp-content/uploads/2026/01/Resume-Anglais-AK-RISMA.pdf"
+71,rooms,Club Med Marrakech la Palmeraie,was 350; source: Madaëf asset page: https://madaef.ma/assets/club-med-marrakech-la-palmeraie-2/,232,
+71,notes,Club Med Marrakech la Palmeraie,room count source,,Rooms 232: Madaëf asset page: https://madaef.ma/assets/club-med-marrakech-la-palmeraie-2/
+437,rooms,Ibis Casablanca Casa Voyageurs,"was 180; source: Risma prospectus, portfolio table p.23 (31.12.2025): https://risma.com/wp-content/uploads/2026/01/Resume-Anglais-AK-RISMA.pdf",130,
+437,notes,Ibis Casablanca Casa Voyageurs,room count source,,"Rooms 130: Risma prospectus, portfolio table p.23 (31.12.2025): https://risma.com/wp-content/uploads/2026/01/Resume-Anglais-AK-RISMA.pdf"
+100,rooms,Palais Faraj Suites & Spa,was 31; source: Visitez Fès (CRT Fès): https://festourism.org/ficheitem.php?id=1,25,
+100,notes,Palais Faraj Suites & Spa,room count source,,Rooms 25: Visitez Fès (CRT Fès): https://festourism.org/ficheitem.php?id=1
+23,rooms,Radisson Blu Resort Taghazout Bay,was 91; source: Madaëf asset page: https://madaef.ma/assets/radisson-blu-resort-taghazout-bay-surf-village-2/,132,
+23,notes,Radisson Blu Resort Taghazout Bay,room count source,,Rooms 132: Madaëf asset page: https://madaef.ma/assets/radisson-blu-resort-taghazout-bay-surf-village-2/
+441,rooms,Aqualis Club Resort Marrakech,was 239; source: figure confirmed by Kodo (Nov 2026). Formerly Labranda Targa Club Aqua Parc; Labranda's site listed 239,245,
+441,notes,Aqualis Club Resort Marrakech,room count source,,Rooms 245: figure confirmed by Kodo (Nov 2026). Formerly Labranda Targa Club Aqua Parc; Labranda's site listed 239

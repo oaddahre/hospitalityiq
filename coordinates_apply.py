@@ -584,7 +584,7 @@ def approve_candidates(hotels_path, ids_path, rows, backup_dir, log_path, actor=
 
 HIDDEN = 'Hidden'
 HOTEL_ACTIONS = ('hide', 'unhide', 'remove', 'rename', 'city', 'owner', 'rooms', 'add', 'to_pipeline', 'pipeline_position',
-                 'pipeline_add')
+                 'pipeline_add', 'brand', 'notes', 'merge')
 PIPELINE_ADD_REQUIRED = ('name', 'city', 'status', 'lat', 'lng')
 MAX_ROOMS = 5000
 ADD_REQUIRED = ('name', 'city', 'lat', 'lng')
@@ -595,6 +595,55 @@ def _norm_name(s):
     import unicodedata
     s = unicodedata.normalize('NFKD', str(s or '')).encode('ascii', 'ignore').decode().lower()
     return ' '.join(''.join(ch if ch.isalnum() else ' ' for ch in s).split())
+
+
+# Hotels that must never be added again (closed, merged into another hotel,
+# not found on Google Hotels): add and pipeline_add refuse them, matched on
+# name and city with accents and case ignored.
+DO_NOT_ADD_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'do_not_add.json')
+
+
+def do_not_add(path=DO_NOT_ADD_PATH):
+    """[{name, city, reason, date}] from do_not_add.json ([] if missing)."""
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f).get('hotels') or []
+    except (OSError, ValueError, AttributeError):
+        return []
+
+
+def blocked(name, city, entries=None):
+    """The do-not-add entry matching this name and city, or None."""
+    n, c = _norm_name(name), _norm_name(city)
+    for d in do_not_add() if entries is None else entries:
+        if _norm_name(d.get('name')) == n and (not d.get('city') or _norm_name(d.get('city')) == c):
+            return d
+    return None
+
+
+def _comp_sets_path(hotels_path):
+    return os.path.join(os.path.dirname(os.path.abspath(hotels_path)), 'comp_sets.json')
+
+
+def remap_comp_sets(path, merges):
+    """merges {removed id: kept id}. Replaces the removed ids in every saved
+    comp set (subject and comps, duplicates dropped). Returns the new data and
+    the keys of the sets that changed (the file is not written here)."""
+    try:
+        with open(path, encoding='utf-8') as f:
+            db = json.load(f)
+    except (OSError, ValueError):
+        return None, []
+    changed = []
+    for key, cs in (db.get('sets') or {}).items():
+        subj = str(cs.get('subject_id', ''))
+        new_subj = merges.get(subj, subj)
+        comps = list(dict.fromkeys(merges.get(str(c), str(c)) for c in cs.get('comp_ids') or []))
+        comps = [c for c in comps if c != new_subj]
+        if new_subj != subj or comps != [str(c) for c in cs.get('comp_ids') or []]:
+            cs['subject_id'], cs['comp_ids'] = new_subj, comps
+            changed.append(key)
+    return db, changed
 
 
 def _pipeline_path(hotels_path):
@@ -645,7 +694,7 @@ def _status_before_hide(log_path, hotel_id):
 
 
 def _was_removed(log_path, hotel_id):
-    return any(e.get('action') in ('remove', 'to_pipeline') and str(e.get('hotel_id')) == str(hotel_id)
+    return any(e.get('action') in ('remove', 'to_pipeline', 'merge') and str(e.get('hotel_id')) == str(hotel_id)
                for e in _logged(log_path))
 
 
@@ -712,6 +761,8 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
                     e['note'] = f'pipeline project {pid} is "{same_id.get("name")}"'
             elif named is not None:
                 e['status'], e['note'] = 'conflict', f'"{cells["name"]}" is already pipeline project {named.get("id")}'
+            elif blocked(cells['name'], cells.get('city')):
+                e['status'], e['note'] = 'conflict', f'"{cells["name"]}" is on the do-not-add list ({blocked(cells["name"], cells.get("city")).get("reason")})'
             elif as_hotel is not None:
                 e['status'], e['note'] = 'conflict', f'"{cells["name"]}" is already hotel {as_hotel["cells"][0]}'
             else:
@@ -763,6 +814,8 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
                     e['note'] = f'id {hid} is already "{cur["cells"][col["name"]]}"'
             elif taken is not None:
                 e['status'], e['note'] = 'conflict', f'"{e["hotel"]}" already exists as hotel {taken["cells"][0]}'
+            elif blocked(e['hotel'], cells.get('city')):
+                e['status'], e['note'] = 'conflict', f'"{e["hotel"]}" is on the do-not-add list ({blocked(e["hotel"], cells.get("city")).get("reason")})'
             elif _was_removed(log_path, hid):
                 e['status'], e['note'] = 'conflict', f'id {hid} was used by a removed hotel'
             else:
@@ -775,6 +828,26 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
                         e['note'] = 'performance.csv already has this hotel: its row is kept'
                     else:
                         e['perf'] = perf
+        elif act == 'merge':
+            into = g('into')
+            e['into'] = into
+            kept = rows.get(into)
+            if per_hotel[hid] > 1:
+                e['status'], e['note'] = 'conflict', 'merge must be the only row for this hotel'
+            elif not into or into == hid:
+                e['status'], e['note'] = 'bad row', 'into (the id of the hotel kept) is missing'
+            elif kept is None:
+                e['status'], e['note'] = 'bad row', f'no hotel {into} to merge into'
+            elif g('into_hotel') and _norm_name(g('into_hotel')) != _norm_name(kept['cells'][col['name']]):
+                e['status'], e['current_name'] = 'name differs', kept['cells'][col['name']]
+            elif cur is None:
+                e['status'] = 'already' if _was_removed(log_path, hid) else 'not found'
+            elif g('hotel') and _norm_name(g('hotel')) not in names:
+                e['status'], e['current_name'] = 'name differs', cur['cells'][col['name']]
+            else:
+                e['hotel'], e['current_status'] = cur['cells'][col['name']], cur['cells'][col['status']]
+                e['into_name'] = kept['cells'][col['name']]
+                e['status'] = 'merge'
         elif act in ('remove', 'to_pipeline') and per_hotel[hid] > 1:
             e['status'] = 'conflict'
             e['note'] = f'{act} must be the only row for this hotel'
@@ -827,6 +900,23 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
                         same = False
                     e['status'] = 'already' if same else 'rooms'
                     e['fields'] = {'keys': str(n)}
+            elif act == 'brand':
+                f = {k: g('new_' + k) for k in ('brand', 'brand_group') if g('new_' + k)}
+                if not f:
+                    e['status'], e['note'] = 'bad row', 'new_brand and new_brand_group are empty'
+                else:
+                    e['old_brand'], e['new_brand'] = c[col['brand']], f.get('brand', c[col['brand']])
+                    e['old_brand_group'] = c[col['brand_group']]
+                    e['new_brand_group'] = f.get('brand_group', c[col['brand_group']])
+                    e['status'] = 'already' if all(c[col[k]] == v for k, v in f.items()) else 'brand'
+                    e['fields'] = f
+            elif act == 'notes':
+                if not g('new_notes'):
+                    e['status'], e['note'] = 'bad row', 'new_notes is empty'
+                else:
+                    e['old_notes'] = c[col['notes']]
+                    e['status'] = 'already' if c[col['notes']] == g('new_notes') else 'notes'
+                    e['fields'] = {'notes': g('new_notes')}
             elif act == 'city':
                 f = {'city': g('new_city')}
                 if g('new_region'):
@@ -890,15 +980,16 @@ def _write(path, lines):
     os.replace(tmp, path)
 
 
-def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pipeline_path=None, performance_path=None):
+def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pipeline_path=None, performance_path=None,
+                 comp_sets_path=None):
     """Apply the plan. Returns {'changed' (hotels), 'plan', 'backup'
-    (hotels.csv's), 'backups' (all)}."""
+    (hotels.csv's), 'backups' (all), 'comp_sets_changed'}."""
     pipeline_path = pipeline_path or _pipeline_path(hotels_path)
     performance_path = performance_path or _performance_path(hotels_path)
     p = hotels_plan(hotels_path, actions, log_path, pipeline_path, performance_path)
     todo = [e for e in p if e['status'] in HOTEL_ACTIONS]
     if not todo:
-        return {'changed': 0, 'plan': p, 'backup': None, 'backups': []}
+        return {'changed': 0, 'plan': p, 'backup': None, 'backups': [], 'comp_sets_changed': 0}
     before = _lines(hotels_path)
     rows, header = _rows_by_id(before)
     col = {c: i for i, c in enumerate(header)}
@@ -907,7 +998,7 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
         if e['status'] in ('pipeline_position', 'add', 'pipeline_add'):
             continue
         n = rows[e['hotel_id']]['line']
-        if e['status'] in ('remove', 'to_pipeline'):
+        if e['status'] in ('remove', 'to_pipeline', 'merge'):
             drop.add(n)
         else:
             edits.setdefault(n, {}).update({col[k]: v for k, v in e['fields'].items()})
@@ -952,6 +1043,11 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
         problem = _check_edit(f_before, f_after, {}, set(), len(perfs))
         if problem:
             raise RuntimeError(f'not applied (performance.csv): {problem}')
+
+    # saved comp sets: a merged hotel's id becomes the kept hotel's
+    merges = {e['hotel_id']: e['into'] for e in todo if e['status'] == 'merge'}
+    cs_path = comp_sets_path or _comp_sets_path(hotels_path)
+    cs_db, cs_changed = remap_comp_sets(cs_path, merges) if merges else (None, [])
 
     moves = [e for e in todo if e['status'] == 'to_pipeline']
     places = [e for e in todo if e['status'] == 'pipeline_position']
@@ -1010,9 +1106,12 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
     backup = _backup(hotels_path, backup_dir) if touch_hotels else None
     p_backup = _backup(pipeline_path, backup_dir) if touch_pipe else None
     f_backup = _backup(performance_path, backup_dir) if perfs else None
-    backups = [b for b in (backup, p_backup, f_backup) if b]
+    c_backup = _backup(cs_path, backup_dir) if cs_changed else None
+    backups = [b for b in (backup, p_backup, f_backup, c_backup) if b]
 
     def undo():
+        if c_backup:
+            shutil.copy2(c_backup, cs_path)
         if backup:
             shutil.copy2(backup, hotels_path)
         if p_backup:
@@ -1029,6 +1128,13 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
     if not problem and perfs:
         _write(performance_path, f_after)
         problem = _check_edit(f_before, _lines(performance_path), {}, set(), len(perfs))
+    if not problem and cs_changed:
+        try:
+            _write(cs_path, [json.dumps(cs_db, indent=2)])
+            with open(cs_path, encoding='utf-8') as f:
+                json.load(f)
+        except (OSError, ValueError) as ex:
+            problem = f'comp_sets.json: {ex}'
     if problem:
         undo()
         raise RuntimeError(f'not applied (files restored from the backups): {problem}')
@@ -1036,7 +1142,11 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
     for e in todo:
         entry = {'at': now, 'action': e['status'], 'by': actor, 'file': hotels_path, 'backup': backup,
                  'hotel_id': e['hotel_id'], 'hotel': e['hotel'], 'reason': e['reason']}
-        if e['status'] in ('hide', 'unhide', 'remove'):
+        if e['status'] == 'merge':
+            entry.update(old_status=e['current_status'], into=e['into'], into_name=e['into_name'],
+                         comp_sets_file=cs_path if cs_changed else None, comp_sets_backup=c_backup,
+                         comp_sets_changed=len(cs_changed))
+        elif e['status'] in ('hide', 'unhide', 'remove'):
             entry.update(old_status=e['current_status'],
                          new_status={'hide': HIDDEN, 'unhide': e.get('new_status'), 'remove': None}[e['status']])
         elif e['status'] == 'rename':
@@ -1048,6 +1158,11 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
             entry.update(old_owner=e['old_owner'], new_owner=e['fields']['owner'])
         elif e['status'] == 'rooms':
             entry.update(old_rooms=e['old_rooms'], new_rooms=e['new_rooms'])
+        elif e['status'] == 'brand':
+            entry.update(old_brand=e['old_brand'], new_brand=e['new_brand'], old_brand_group=e['old_brand_group'],
+                         new_brand_group=e['new_brand_group'])
+        elif e['status'] == 'notes':
+            entry.update(old_notes=e['old_notes'], new_notes=e['fields']['notes'])
         elif e['status'] == 'add':
             entry.update(new_city=e['fields'].get('city'), new_owner=e['fields'].get('owner'),
                          new=[e['fields']['lat'], e['fields']['lng']],
@@ -1065,7 +1180,7 @@ def hotels_apply(hotels_path, actions, backup_dir, log_path, actor='script', pip
                          pipeline_added=e['pipeline_new'], pipeline_old_name=e.get('pipeline_old_name'))
         _log(log_path, entry)
     return {'changed': len({e['hotel_id'] or 'pipeline ' + e['pipeline_id'] for e in todo}), 'plan': p, 'backup': backup,
-            'backups': backups}
+            'backups': backups, 'comp_sets_changed': len(cs_changed)}
 
 
 # ─── Owner profiles (owners.json) ─────────────────────────────────────────────

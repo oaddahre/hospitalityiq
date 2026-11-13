@@ -665,6 +665,7 @@ def _welcome_email_html(name: str, active: bool) -> str:
         status_line = "Your subscription is currently pending activation. We will notify you as soon as your access is confirmed."
 
     c = EMAIL_COLORS
+    ps = public_stats()
     stat = lambda value, label, sides="": (
         f'<td width="33%" style="padding:16px;background:{c["page"]};text-align:center;{sides}">'
         f'<p style="font-size:18px;font-weight:700;color:{c["text"]};margin:0 0 6px;">{value}</p>'
@@ -673,9 +674,9 @@ def _welcome_email_html(name: str, active: bool) -> str:
     stats = (
         '\n          <tr>\n            <td style="padding:0 40px 32px;">'
         '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-radius:8px;overflow:hidden;"><tr>'
-        + stat("300+", "Hotels")
-        + stat("23", "Destinations", f'border-left:1px solid {c["card"]};border-right:1px solid {c["card"]};')
-        + stat("35", "Brand Groups")
+        + stat(f'{ps["hotels"]}+', "Hotels")
+        + stat(str(ps["destinations"]), "Destinations", f'border-left:1px solid {c["card"]};border-right:1px solid {c["card"]};')
+        + stat(str(ps["brand_groups"]), "Brand Groups")
         + "</tr></table></td>\n          </tr>"
     )
     return _email_layout(
@@ -1596,23 +1597,54 @@ def sitemap():
     return Response(xml, mimetype='application/xml')
 
 
-_hotel_count_cache = {}
+_public_stats_cache = {}
+
+
+def _count_stats(data_dir):
+    """Hotels (hidden ones left out, as in load_data), destinations (cities),
+    brand groups (not Independent) and pipeline projects."""
+    with open(os.path.join(data_dir, "hotels.csv"), encoding="utf-8") as f:
+        hotels = [r for r in csv.DictReader(f) if (r.get("status") or "").strip() != "Hidden"]
+    try:
+        with open(os.path.join(data_dir, "pipeline.csv"), encoding="utf-8") as f:
+            pipeline = sum(1 for _ in csv.DictReader(f))
+    except OSError:
+        pipeline = None
+    groups = {r["brand_group"].strip() for r in hotels if r.get("brand_group", "").strip()
+              and not r["brand_group"].strip().startswith("Independent")}
+    return {"hotels_exact": len(hotels), "destinations": len({r["city"].strip() for r in hotels if r.get("city")}),
+            "brand_groups": len(groups), "pipeline": pipeline}
+
+
+def public_stats():
+    """The platform's counts for public copy (landing, register, methodology,
+    welcome email). hotels is rounded down to the nearest 50 ("300+", then
+    "350+"...). Read from DATA_DIR's files, cached until they change; if they
+    can't be read, the last good figures or the repo's own files."""
+    paths = [os.path.join(DATA_DIR, f) for f in ("hotels.csv", "pipeline.csv")]
+    try:
+        key = tuple(os.path.getmtime(p) if os.path.exists(p) else 0 for p in paths)
+        if _public_stats_cache.get("key") != key:
+            _public_stats_cache.update(key=key, stats=_count_stats(DATA_DIR))
+        st = dict(_public_stats_cache["stats"])
+    except Exception:
+        st = dict(_public_stats_cache.get("stats") or _count_stats(APP_DIR))
+    n = st["hotels_exact"]
+    st["hotels"] = n // 50 * 50 if n >= 50 else n
+    return st
 
 
 def public_hotel_count():
-    """Hotels on the platform (hidden ones left out, as in load_data), rounded
-    down to the nearest 50 for the landing copy ("300+", then "350+"...).
-    None if hotels.csv can't be read, so the copy is shown without a number."""
-    path = os.path.join(DATA_DIR, "hotels.csv")
+    """Hotels on the platform rounded down to the nearest 50, or None."""
     try:
-        mtime = os.path.getmtime(path)
-        if _hotel_count_cache.get("mtime") != mtime:
-            hotels, _, _ = load_data()
-            _hotel_count_cache.update(mtime=mtime, n=len(hotels))
-        n = _hotel_count_cache["n"]
+        return public_stats()["hotels"] or None
     except Exception:
         return None
-    return n // 50 * 50 if n >= 50 else None
+
+
+@app.context_processor
+def inject_public_stats():
+    return dict(public_stats=public_stats)
 
 
 @app.route("/")
@@ -1836,27 +1868,36 @@ def api_org_remove_member(uid):
     return jsonify({"error": "Member not found in your organisation"}), 404
 
 
+def _kpi_avg(grp, col, digits):
+    """Room-weighted average of a performance column over the hotels that have
+    it: a hotel with no performance row (one just added) is left out of the
+    average instead of counting as zero. ADR is weighted by occupied rooms.
+    None when no hotel in the group has the figure."""
+    if col == "adr_mad":
+        w = grp["keys"] * grp["occupancy"]
+        ok = grp[col].notna() & w.notna() & (w > 0)
+    else:
+        w = grp["keys"]
+        ok = grp[col].notna() & w.notna()
+    den = float(w[ok].sum())
+    return round(float((grp.loc[ok, col] * w[ok]).sum()) / den, digits) if den else None
+
+
 @app.route("/api/data")
 @login_required
 def api_data():
     hotels, perf, merged = load_data()
 
     total_keys      = int(hotels["keys"].sum())
-    weighted_occ    = float((merged["occupancy"] * merged["keys"]).sum() / merged["keys"].sum())
-    weighted_adr    = float((merged["adr_mad"] * merged["keys"] * merged["occupancy"]).sum() /
-                            (merged["keys"] * merged["occupancy"]).sum())
-    weighted_revpar = float((merged["revpar_mad"] * merged["keys"]).sum() / merged["keys"].sum())
-    weighted_trevpar= float((merged["trevpar_mad"] * merged["keys"]).sum() / merged["keys"].sum())
-    weighted_gop    = float((merged["gop_margin"] * merged["keys"]).sum() / merged["keys"].sum())
 
     national_kpis = {
         "total_hotels":  len(hotels),
         "total_keys":    total_keys,
-        "occupancy":     round(weighted_occ, 4),
-        "adr_mad":       round(weighted_adr, 1),
-        "revpar_mad":    round(weighted_revpar, 1),
-        "trevpar_mad":   round(weighted_trevpar, 1),
-        "gop_margin":    round(weighted_gop, 4),
+        "occupancy":     _kpi_avg(merged, "occupancy", 4),
+        "adr_mad":       _kpi_avg(merged, "adr_mad", 1),
+        "revpar_mad":    _kpi_avg(merged, "revpar_mad", 1),
+        "trevpar_mad":   _kpi_avg(merged, "trevpar_mad", 1),
+        "gop_margin":    _kpi_avg(merged, "gop_margin", 4),
     }
 
     city_rows = []
@@ -1866,12 +1907,11 @@ def api_data():
             "city":        city,
             "hotel_count": len(grp),
             "total_keys":  int(keys_sum),
-            "occupancy":   round(float((grp["occupancy"] * grp["keys"]).sum() / keys_sum), 4),
-            "adr_mad":     round(float((grp["adr_mad"] * grp["keys"] * grp["occupancy"]).sum() /
-                                       (grp["keys"] * grp["occupancy"]).sum()), 1),
-            "revpar_mad":  round(float((grp["revpar_mad"] * grp["keys"]).sum() / keys_sum), 1),
-            "trevpar_mad": round(float((grp["trevpar_mad"] * grp["keys"]).sum() / keys_sum), 1),
-            "gop_margin":  round(float((grp["gop_margin"] * grp["keys"]).sum() / keys_sum), 4),
+            "occupancy":   _kpi_avg(grp, "occupancy", 4),
+            "adr_mad":     _kpi_avg(grp, "adr_mad", 1),
+            "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),
+            "trevpar_mad": _kpi_avg(grp, "trevpar_mad", 1),
+            "gop_margin":  _kpi_avg(grp, "gop_margin", 4),
         })
     city_rows.sort(key=lambda x: x["total_keys"], reverse=True)
 
@@ -1882,11 +1922,10 @@ def api_data():
             "segment":     seg,
             "hotel_count": len(grp),
             "total_keys":  int(keys_sum),
-            "occupancy":   round(float((grp["occupancy"] * grp["keys"]).sum() / keys_sum), 4),
-            "adr_mad":     round(float((grp["adr_mad"] * grp["keys"] * grp["occupancy"]).sum() /
-                                       (grp["keys"] * grp["occupancy"]).sum()), 1),
-            "revpar_mad":  round(float((grp["revpar_mad"] * grp["keys"]).sum() / keys_sum), 1),
-            "gop_margin":  round(float((grp["gop_margin"] * grp["keys"]).sum() / keys_sum), 4),
+            "occupancy":   _kpi_avg(grp, "occupancy", 4),
+            "adr_mad":     _kpi_avg(grp, "adr_mad", 1),
+            "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),
+            "gop_margin":  _kpi_avg(grp, "gop_margin", 4),
         })
     seg_order = ["Luxury", "Upper Upscale", "Upscale", "Midscale"]
     segment_rows.sort(key=lambda x: seg_order.index(x["segment"]) if x["segment"] in seg_order else 99)
@@ -1898,11 +1937,10 @@ def api_data():
             "brand_group": brand,
             "hotel_count": len(grp),
             "total_keys":  int(keys_sum),
-            "occupancy":   round(float((grp["occupancy"] * grp["keys"]).sum() / keys_sum), 4),
-            "adr_mad":     round(float((grp["adr_mad"] * grp["keys"] * grp["occupancy"]).sum() /
-                                       (grp["keys"] * grp["occupancy"]).sum()), 1),
-            "revpar_mad":  round(float((grp["revpar_mad"] * grp["keys"]).sum() / keys_sum), 1),
-            "gop_margin":  round(float((grp["gop_margin"] * grp["keys"]).sum() / keys_sum), 4),
+            "occupancy":   _kpi_avg(grp, "occupancy", 4),
+            "adr_mad":     _kpi_avg(grp, "adr_mad", 1),
+            "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),
+            "gop_margin":  _kpi_avg(grp, "gop_margin", 4),
         })
     brand_rows.sort(key=lambda x: x["total_keys"], reverse=True)
 
@@ -2374,72 +2412,46 @@ def api_test_key():
 def build_system_prompt():
     hotels_df, _, merged = load_data()
 
+    # Averages over the hotels that have an estimate (hotels just added have
+    # none yet and are not counted as zero)
     tk = merged["keys"].sum()
-    ok = (merged["occupancy"] * merged["keys"]).sum()
+    nat_occ, nat_adr = _kpi_avg(merged, "occupancy", 4), _kpi_avg(merged, "adr_mad", 1)
+    nat_revpar, nat_trev = _kpi_avg(merged, "revpar_mad", 1), _kpi_avg(merged, "trevpar_mad", 1)
+    nat_gop = _kpi_avg(merged, "gop_margin", 4)
 
-    nat_occ    = ok / tk
-    nat_adr    = (merged["adr_mad"]    * merged["keys"] * merged["occupancy"]).sum() / ok
-    nat_revpar = (merged["revpar_mad"] * merged["keys"]).sum() / tk
-    nat_trev   = (merged["trevpar_mad"]* merged["keys"]).sum() / tk
-    nat_gop    = (merged["gop_margin"] * merged["keys"]).sum() / tk
+    def group_rows(col):
+        return [(k, len(g), int(g["keys"].sum()), _kpi_avg(g, "occupancy", 4), _kpi_avg(g, "adr_mad", 1),
+                 _kpi_avg(g, "revpar_mad", 1), _kpi_avg(g, "gop_margin", 4)) for k, g in merged.groupby(col)]
 
-    city_rows = []
-    for city, g in merged.groupby("city"):
-        ctk = g["keys"].sum()
-        cok = (g["occupancy"] * g["keys"]).sum()
-        city_rows.append((
-            city, len(g), int(ctk),
-            cok / ctk,
-            (g["adr_mad"] * g["keys"] * g["occupancy"]).sum() / cok,
-            (g["revpar_mad"] * g["keys"]).sum() / ctk,
-            (g["gop_margin"] * g["keys"]).sum() / ctk,
-        ))
-    city_rows.sort(key=lambda x: x[5], reverse=True)
-
+    city_rows = sorted(group_rows("city"), key=lambda x: x[5] or 0, reverse=True)
     seg_order = ["Luxury", "Upper Upscale", "Upscale", "Midscale"]
-    seg_rows = []
-    for seg, g in merged.groupby("category"):
-        stk = g["keys"].sum()
-        sok = (g["occupancy"] * g["keys"]).sum()
-        seg_rows.append((
-            seg, len(g), int(stk),
-            sok / stk,
-            (g["adr_mad"] * g["keys"] * g["occupancy"]).sum() / sok,
-            (g["revpar_mad"] * g["keys"]).sum() / stk,
-            (g["gop_margin"] * g["keys"]).sum() / stk,
-        ))
-    seg_rows.sort(key=lambda x: seg_order.index(x[0]) if x[0] in seg_order else 99)
+    seg_rows = sorted(group_rows("category"), key=lambda x: seg_order.index(x[0]) if x[0] in seg_order else 99)
+    brand_rows = sorted(group_rows("brand_group"), key=lambda x: x[2], reverse=True)
 
-    brand_rows = []
-    for brand, g in merged.groupby("brand_group"):
-        btk = g["keys"].sum()
-        bok = (g["occupancy"] * g["keys"]).sum()
-        brand_rows.append((
-            brand, len(g), int(btk),
-            bok / btk,
-            (g["adr_mad"] * g["keys"] * g["occupancy"]).sum() / bok,
-            (g["revpar_mad"] * g["keys"]).sum() / btk,
-            (g["gop_margin"] * g["keys"]).sum() / btk,
-        ))
-    brand_rows.sort(key=lambda x: x[2], reverse=True)
+    def pct(v):
+        return "  n/a" if v is None or pd.isna(v) else f"{v*100:>4.1f}%"
+
+    def mad(v):
+        return "   n/a" if v is None or pd.isna(v) else f"{v:>6,.0f}"
+
+    def fmt_row(r, width):
+        return (f"  {r[0]:<{width}} | {r[1]:>2} hotels | {r[2]:>5,} keys | "
+                f"Occ {pct(r[3])} | ADR {mad(r[4])} | RevPAR {mad(r[5])} | GOP {pct(r[6])}")
 
     def fmt_city(r):
-        return (f"  {r[0]:<14} | {r[1]:>2} hotels | {r[2]:>5,} keys | "
-                f"Occ {r[3]*100:>4.1f}% | ADR {r[4]:>6,.0f} | RevPAR {r[5]:>6,.0f} | GOP {r[6]*100:>4.1f}%")
+        return fmt_row(r, 14)
 
     def fmt_seg(r):
-        return (f"  {r[0]:<15} | {r[1]:>2} hotels | {r[2]:>5,} keys | "
-                f"Occ {r[3]*100:>4.1f}% | ADR {r[4]:>6,.0f} | RevPAR {r[5]:>6,.0f} | GOP {r[6]*100:>4.1f}%")
+        return fmt_row(r, 15)
 
     def fmt_brand(r):
-        return (f"  {r[0]:<32} | {r[1]:>2} hotels | {r[2]:>5,} keys | "
-                f"Occ {r[3]*100:>4.1f}% | ADR {r[4]:>6,.0f} | RevPAR {r[5]:>6,.0f} | GOP {r[6]*100:>4.1f}%")
+        return fmt_row(r, 32)
 
     hotel_lines = "\n".join(
-        f"  {row['name']} ({row['city']}, {row['category']}, {row['brand_group']}) — "
-        f"{int(row['keys'])} keys | Occ {row['occupancy']*100:.1f}% | "
-        f"ADR {row['adr_mad']:,.0f} MAD | RevPAR {row['revpar_mad']:,.0f} MAD | "
-        f"GOP {row['gop_margin']*100:.1f}%"
+        f"  {row['name']} ({row['city']}, {row['category']}, {row['brand_group']}) — {int(row['keys'])} keys | "
+        + (f"Occ {row['occupancy']*100:.1f}% | ADR {row['adr_mad']:,.0f} MAD | RevPAR {row['revpar_mad']:,.0f} MAD | "
+           f"GOP {row['gop_margin']*100:.1f}%" if pd.notna(row['occupancy']) and pd.notna(row['adr_mad'])
+           and pd.notna(row['revpar_mad']) and pd.notna(row['gop_margin']) else "no FY 2025 estimate yet (recently added)")
         for _, row in merged.iterrows()
     )
 
@@ -4738,10 +4750,20 @@ def data_status():
     return resp, (200 if fresh else 503)
 
 
+# Duplicate hotels merged into another (data_migrations/0008): an old link
+# or saved id for the removed row opens the hotel that was kept.
+MERGED_HOTEL_IDS = {'52': '7', '303': '225', '304': '226'}
+
+
+def current_hotel_id(hotel_id):
+    hid = str(hotel_id or '').strip()
+    return MERGED_HOTEL_IDS.get(hid, hid)
+
+
 @app.route('/api/rates')
 @login_required
 def api_rates():
-    hotel_id = request.args.get('hotel_id', '').strip()
+    hotel_id = current_hotel_id(request.args.get('hotel_id', ''))
     city     = request.args.get('city', '').strip()
     days     = int(request.args.get('days', 30))
 
@@ -4803,7 +4825,7 @@ def api_live_kpis():
 def api_rates_past():
     """The hotel profile's past months: for each night of the month before
     today, the last published rate observed before that night."""
-    hotel_id = request.args.get('hotel_id', '').strip()
+    hotel_id = current_hotel_id(request.args.get('hotel_id', ''))
     month = request.args.get('month', '')
     if not hotel_id or not re.match(r'^\d{4}-\d{2}$', month):
         return jsonify({'error': 'hotel_id and month (YYYY-MM) are required'}), 400
@@ -5177,7 +5199,7 @@ def _hotels_summary(p):
         counts[e['status']] = counts.get(e['status'], 0) + 1
     keys = ('hotel_id', 'hotel', 'action', 'status', 'current_status', 'new_status', 'current_name', 'new_name',
             'old_city', 'new_city', 'new_region', 'old_owner', 'new_owner', 'old_rooms', 'new_rooms', 'pipeline_id', 'pipeline_name', 'pipeline_new',
-            'old', 'new', 'approximate', 'note', 'reason')
+            'old', 'new', 'approximate', 'old_brand', 'new_brand', 'new_brand_group', 'into', 'into_name', 'note', 'reason')
     return {'counts': counts, 'rows': [{k: e.get(k) for k in keys} for e in p][:200]}
 
 
@@ -5569,6 +5591,7 @@ def _visible_hotel_ids():
 @app.route('/api/occupancy/<hotel_id>')
 @login_required
 def api_occupancy_hotel(hotel_id):
+    hotel_id = current_hotel_id(hotel_id)
     try:
         rows = _read_occupancy_csv()
         hotel_rows = [r for r in rows if r.get('hotel_id') == str(hotel_id)]

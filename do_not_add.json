@@ -1,0 +1,59 @@
+{
+ "about": "Hotels that must never be added to hotels.csv or pipeline.csv again. Checked by the add and pipeline_add actions (migrations and the admin upload), by the research scripts and by tests/test_do_not_add.py. Matched on name and city, accents and case ignored. Add an entry rather than removing one.",
+ "hotels": [
+  {
+   "name": "Palmeraie Oasis Camp",
+   "city": "Marrakech",
+   "reason": "Part of Barceló Palmeraie Oasis Resort (its 6 tents are counted there)",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Hôtel Farah Khouribga",
+   "city": "Khouribga",
+   "reason": "No longer exists (owner decision)",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Golden Tulip Karam Ouarzazate",
+   "city": "Ouarzazate",
+   "reason": "Closed (owner decision)",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Ryad Mogador Essaouira",
+   "city": "Essaouira",
+   "reason": "Owner decision: not to be added",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Hôtel Farah Safi",
+   "city": "Safi",
+   "reason": "Not found on Google Hotels",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Hôtel Farah Marrakech",
+   "city": "Marrakech",
+   "reason": "Not found on Google Hotels",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Mogador Opera Marrakech",
+   "city": "Marrakech",
+   "reason": "Not found on Google Hotels",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Amerruk, Marrakech, Autograph Collection",
+   "city": "Marrakech",
+   "reason": "Not found on Google Hotels",
+   "date": "2026-11-13"
+  },
+  {
+   "name": "Atlas Almohades Casablanca City Center",
+   "city": "Casablanca",
+   "reason": "Not found on Google Hotels",
+   "date": "2026-11-13"
+  }
+ ]
+}

@@ -4004,6 +4004,7 @@ body.light .nav-logout  { color: var(--text-2); }
   pointer-events: none;
 }
 .cal-tip[hidden] { display: none; }
+.chart-card[hidden] { display: none; }
 :root[data-theme="dark"] .cal-tip { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4); }
 .cal-tip-date { font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
 /* Labels in one column (wrapping past 130px), values in the other; every
