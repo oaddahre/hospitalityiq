@@ -15,7 +15,7 @@ const BRAND_DOMAINS = {
   'View Hotels': 'almada.ma',
   'The View': 'almada.ma',
   'Terminus Hotels': 'almada.ma',
-  'Mogador Hotels Group': 'hotelmogador.com',
+  'Mogador Hotels Group': 'mogadorhotels.com',
   'Onomo Hotels': 'onomohotel.com',
   'Zalagh Hotels Group': 'zalagh.com',
   'Louvre Hotels Group': 'louvrehotels.com',
@@ -55,6 +55,29 @@ const LOCAL_BRAND_LOGOS = {
   'Vichy Thermalia': '/static/images/brands/vichy_logo.png',
   'Valeria Hotels': '/static/images/brands/valeria_logo.png',
   'Pickalbatros': '/static/images/brands/pickalbatros_logo.png',
+  // Official logos from each company's own website (Nov 2026; sources in
+  // _handoff/logos/sources.json): trimmed, 200 px high, transparent
+  "Accor": '/static/images/brands/accor_logo.png',
+  "Aman Resorts": '/static/images/brands/aman_logo.png',
+  "Barceló Hotel Group": '/static/images/brands/barcelo_logo.png',
+  "Decameron Hotels & Resorts": '/static/images/brands/decameron_logo.png',
+  "Hilton Hotels & Resorts": '/static/images/brands/hilton_logo.png',
+  "Hotusa (Eurostars Hotel Company)": '/static/images/brands/eurostars_logo.png',
+  "Hyatt Hotels Corporation": '/static/images/brands/hyatt_logo.png',
+  "IHG Hotels & Resorts": '/static/images/brands/ihg_logo.png',
+  "Kenzi Hotels Group": '/static/images/brands/kenzi_logo.png',
+  "Mandarin Oriental Hotel Group": '/static/images/brands/mandarin_logo.png',
+  "Mogador Hotels Group": '/static/images/brands/mogador_logo.png',
+  "Nobu Hospitality": '/static/images/brands/nobu_logo.png',
+  "Oberoi Hotels & Resorts": '/static/images/brands/oberoi_logo.png',
+  "Pestana Hotel Group": '/static/images/brands/pestana_logo.png',
+  "Relais & Châteaux": '/static/images/brands/relais_logo.png',
+  "Royal Mansour Collection": '/static/images/brands/royalmansour_logo.png',
+  "Soho Boutique Hotels": '/static/images/brands/soho_logo.png',
+  "TUI Hotels & Resorts": '/static/images/brands/tui_logo.png',
+  "Virgin Limited Edition": '/static/images/brands/virgin_logo.png',
+  "Wyndham Hotels & Resorts": '/static/images/brands/wyndham_logo.png',
+  "Xaluca Hotels": '/static/images/brands/xaluca_logo.png',
 };
 
 const BRAND_CUSTOM_LOGOS = {
@@ -77,6 +100,13 @@ const OWNER_LOGOS = {
   'Tikida Group': '/static/images/brands/tikida_logo.png',
   'Pickalbatros': '/static/images/brands/pickalbatros_logo.png',
   'OCP Group': '/static/images/brands/ocp_logo.png',
+  "Barceló Hotel Group": '/static/images/brands/barcelo_logo.png',
+  "Kenzi Hotels Group": '/static/images/brands/kenzi_logo.png',
+  "Al Mada": '/static/images/brands/almada_logo.png',
+  "Babylon Invest": '/static/images/brands/babylon_logo.png',
+  "Inveravante": '/static/images/brands/inveravante_logo.png',
+  "Ynna Holding": '/static/images/brands/ynna_logo.png',
+  "Beachcomber": '/static/images/brands/beachcomber_logo.png',
 };
 
 const OWNER_LOGO_DOMAINS = {
@@ -85,18 +115,30 @@ const OWNER_LOGO_DOMAINS = {
   'Kenzi Hotels Group': 'kenzi-hotels.com',
 };
 
+// A logo sits on a white chip in both themes (readable on the pure black
+// dark-mode page as well as on white). The chip is as high as `size` and as
+// wide as the logo needs, up to 2.6 × size, so wordmarks stay legible. If
+// the image fails to load, its initials take its place.
+function logoChipImg(src, alt, size, gap, fallbackHtml) {
+  const pad = Math.max(2, Math.round(size * 0.08));
+  const fb = fallbackHtml ? ` data-fallback="${encodeURIComponent(fallbackHtml)}"` : '';
+  return `<img class="logo-chip" src="${src}" alt="${fmt.esc(alt)}"${fb} style="height:${size}px;width:auto;min-width:${size}px;max-width:${Math.round(size * 2.6)}px;object-fit:contain;vertical-align:middle;border-radius:${size >= 32 ? 4 : 3}px;background:#fff;padding:${pad}px;margin-right:${gap}px;box-sizing:border-box;flex-shrink:0" onerror="logoFallback(this)">`;
+}
+function logoFallback(img) {
+  const fb = img.dataset.fallback;
+  if (fb) img.outerHTML = decodeURIComponent(fb); else img.style.display = 'none';
+}
+function ownerInitials(ownerName, size) {
+  var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:var(--cat-1-tint);color:var(--cat-1-text);border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + fmt.esc(initials) + '</span>';
+}
+
 function getOwnerLogoImg(ownerName, size) {
   size = size || 40;
   var localLogo = OWNER_LOGOS[ownerName];
-  if (localLogo) {
-    return '<img src="' + localLogo + '" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
-  }
   var domainLogo = OWNER_LOGO_DOMAINS[ownerName];
-  if (domainLogo) {
-    return '<img src="https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC" alt="' + ownerName + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:4px;background:white;padding:3px;margin-right:10px;" onerror="this.style.display=\'none\'">';
-  }
-  var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:var(--cat-1-tint);color:var(--cat-1-text);border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+  var src = localLogo || (domainLogo && 'https://cdn.brandfetch.io/domain/' + domainLogo + '?c=1idptYpdMe9b8BdTIPC');
+  return src ? logoChipImg(src, ownerName, size, 10, ownerInitials(ownerName, size)) : ownerInitials(ownerName, size);
 }
 
 // Colour families from static/css/tokens.css — the single source of truth
@@ -200,18 +242,16 @@ function getBrandLogoUrl(brandGroup) {
   return `https://cdn.brandfetch.io/domain/${domain}?c=1idptYpdMe9b8BdTIPC`;
 }
 
-function getBrandLogoImg(brandGroup, size=24) {
+function getBrandLogoImg(brandGroup, size=24, fallbackHtml='') {
   const localLogo = LOCAL_BRAND_LOGOS[brandGroup];
-  if (localLogo) {
-    return '<img src="' + localLogo + '" alt="' + brandGroup + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:3px;background:white;padding:2px;margin-right:6px;" onerror="this.style.display=\'none\'">';
-  }
+  if (localLogo) return logoChipImg(localLogo, brandGroup, size, 6, fallbackHtml);
   const custom = BRAND_CUSTOM_LOGOS[brandGroup];
   if (custom) {
     return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:' + custom.bg + ';color:' + custom.color + ';border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size*0.55) + 'px;flex-shrink:0;vertical-align:middle;margin-right:6px;">' + custom.letter + '</span>';
   }
   const domain = BRAND_DOMAINS[brandGroup];
   if (!domain) return '';
-  return '<img src="https://cdn.brandfetch.io/domain/' + domain + '?c=1idptYpdMe9b8BdTIPC" alt="' + brandGroup + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;border-radius:3px;background:white;padding:2px;margin-right:6px;" onerror="this.style.display=\'none\'">';
+  return logoChipImg('https://cdn.brandfetch.io/domain/' + domain + '?c=1idptYpdMe9b8BdTIPC', brandGroup, size, 6, fallbackHtml);
 }
 
 // Segment colours for charts/dots follow the segment label families (see SEGMENT_FAMILY)
@@ -997,8 +1037,12 @@ async function brnRenderChampion() {
 
 function brandLogoOrInitials(bg, size) {
   if (LOCAL_BRAND_LOGOS[bg] || BRAND_CUSTOM_LOGOS[bg] || getBrandLogoUrl(bg)) {
-    return getBrandLogoImg(bg, size);
+    return getBrandLogoImg(bg, size, brandInitials(bg, size));
   }
+  return brandInitials(bg, size);
+}
+
+function brandInitials(bg, size) {
   const initials = bg.replace('Hotels', '').replace('Hotel', '').replace('Resorts', '').replace('International', '')
     .trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   // Tinted tile in one of the six chart families (tokens.css), picked by name
@@ -1566,7 +1610,8 @@ function renderOwnerSection(h) {
     return;
   }
   section.style.display = '';
-  document.getElementById('hotel-owner-name').textContent = h.owner;
+  const ownerName = document.getElementById('hotel-owner-name');
+  ownerName.innerHTML = (OWNER_LOGOS[h.owner] ? getOwnerLogoImg(h.owner, 32) : '') + fmt.esc(h.owner);
 
   let ctx = h.owner_via ? `via ${h.owner_via}` : '';
   for (const [key, val] of Object.entries(OWNER_CONTEXT)) {
@@ -5575,6 +5620,7 @@ function _srchRender(query) {
     label: 'Brands',
     items: results.brands.map(b => ({
       name: b.brand,
+      iconHtml: b.brand.startsWith('Independent') ? '' : brandLogoOrInitials(b.brand, 26),
       meta: `${b.count} ${b.count === 1 ? 'hotel' : 'hotels'}`,
       action() { closeSearch(); _srchSaveRecent(query); showBrandDetail(b.brand, 'dashboard'); },
     })),
@@ -5598,6 +5644,7 @@ function _srchRender(query) {
     label: 'Owners',
     items: results.owners.map(o => ({
       name: o.name,
+      iconHtml: getOwnerLogoImg(o.name, 26),
       meta: [o.via ? `via ${o.via}` : '', `${o.hotels} ${o.hotels === 1 ? 'hotel' : 'hotels'}`].filter(Boolean).join(' · '),
       action() { closeSearch(); _srchSaveRecent(query); _srchNavigateToScreen('owners'); showOwnerDetail(o.id); },
     })),
@@ -5641,7 +5688,8 @@ function _srchRender(query) {
     g.items.forEach(item => {
       const el = document.createElement('div');
       el.className = 'search-result-item';
-      el.innerHTML = `<div class="search-result-name">${fmt.esc(item.name)}</div><div class="search-result-meta">${item.metaHtml || fmt.esc(item.meta)}</div>`;
+      const text = `<div class="search-result-name">${fmt.esc(item.name)}</div><div class="search-result-meta">${item.metaHtml || fmt.esc(item.meta)}</div>`;
+      el.innerHTML = item.iconHtml ? `<div class="search-result-row"><span class="search-result-logo">${item.iconHtml}</span><div>${text}</div></div>` : text;
       el.addEventListener('click', item.action);
       groupEl.appendChild(el);
     });

@@ -4749,6 +4749,10 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 .search-result-item:hover,
 .search-result-item.srch-active { background: var(--surface-hover); }
+.search-result-row { display: flex; align-items: center; gap: 10px; }
+.search-result-logo { display: inline-flex; flex-shrink: 0; }
+.search-result-logo img, .search-result-logo span, .search-result-logo div { margin-right: 0 !important; }
+.search-result-logo .brn-initials { font-size: 10px; border-radius: 4px; }
 .search-result-name {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 13px;
