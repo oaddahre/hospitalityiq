@@ -4154,6 +4154,10 @@ body.light .nav-logout  { color: var(--text-2); }
   margin: 16px 0 6px;
 }
 .list-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 4px; }
+/* Space between the last pill row and the list's first separator line:
+   18 px, close to the 16 px between that line and the first row (the
+   4 px bottom margin of .list-filters collapses into it) */
+.list-filters + :not(.list-filter-label) { margin-top: 18px; }
 .list-pill {
   background: var(--bg);
   color: var(--text);
