@@ -22,7 +22,7 @@
    "base": 20701695,
    "low": 20521165,
    "high": 20882224,
-   "how": "Jan–Oct 2026 (17.4 million, +5%) plus Nov–Dec 2025 grown 0% to +5%; ±0.1 million for the rounding of the year-to-date figures."
+   "how": "Jan–Oct 2026 (17.4 million, +5%) plus the rest of 2025 grown 0% to +5%; ±0.1 million for the rounding of the year-to-date figures."
   },
   "nights": {
    "base": 46249680,
@@ -38,7 +38,7 @@
    "base": 150992,
    "low": 149205,
    "high": 152779,
-   "how": "Jan–Sep 2026 (115,257, +12.1%) plus Q4 2025 at −5% to +5% (December 2025 was +47%, the AFCON month)."
+   "how": "Jan–Sep 2026 (115,257, +12.1%) plus the rest of 2025 at −5% to +5% (December 2025 was +47%, the AFCON month)."
   },
   "air_passengers": {
    "base": 39316530,
@@ -352,6 +352,65 @@
    "tested": false
   }
  },
+ "estimate_2026": {
+  "official": {
+   "arrivals": "2026-01/2026-10",
+   "nights": "2026-01/2026-09",
+   "receipts": "2026-01/2026-09",
+   "air_passengers": "2026-01/2026-08"
+  },
+  "markets": {
+   "France": 5975511,
+   "Spain": 4748874,
+   "Belgium": 1282870,
+   "Italy": 1244793,
+   "Netherlands": 1003070,
+   "Germany": 965643,
+   "United States": 506195
+  },
+  "cities_occupancy": {
+   "Marrakech": 73.3,
+   "Agadir": 75.1,
+   "Casablanca": 60.0,
+   "Tanger": 57.0,
+   "Fès": 57.7,
+   "Rabat": 57.2,
+   "Essaouira": 57.2
+  },
+  "airports": {
+   "Casablanca CMN": 12459469,
+   "Marrakech RAK": 10924450,
+   "Agadir AGA": 3772436,
+   "Rabat RBA": 2560451
+  },
+  "airports_official": "2026-01/2026-08",
+  "receipts_monthly": [
+   {
+    "month": "2026-07",
+    "value": 14431
+   },
+   {
+    "month": "2026-08",
+    "value": 20736
+   },
+   {
+    "month": "2026-09",
+    "value": 14402
+   },
+   {
+    "month": "2026-10",
+    "value": 13395
+   },
+   {
+    "month": "2026-11",
+    "value": 10287
+   },
+   {
+    "month": "2026-12",
+    "value": 12053
+   }
+  ]
+ },
  "backtest": {
   "arrivals": {
    "years": {
@@ -478,7 +537,7 @@
    },
    "mape_v2": 2.3,
    "max_v2": 2.3,
-   "note": "One year only; the 2024 growth used is that of tourist arrivals by air (the 2023 airport total could not be verified). ONDA’s own 2025 target was 37.6 million (actual 36.3, +3.6% too high)."
+   "note": "One year only; the 2024 growth used is that of tourist arrivals by air (the 2023 airport total could not be verified)."
   },
   "city_occupancy": {
    "years": {
@@ -556,13 +615,13 @@
  },
  "assumptions": [
   "Base: the latest growth slows towards the pre-COVID long-run rate, keeping half of the gap each year (arrivals 4.3% a year 2013–2019, receipts 5.3%, nights 4.6% on the previous basis 2013–2018). This is the slowdown after the 2023–2025 records: arrivals grew 14% in 2025 and about 5% in Jan–Oct 2026.",
-  "2026 is first estimated from the latest year-to-date figures: arrivals 20.7 million (Jan–Oct +5%), nights 46.2 million, receipts MAD 151.0 billion, airport passengers 39.3 million.",
+  "2026 is first estimated from the latest year-to-date figures: arrivals 20.7 million (Jan–Oct 2026 +5%), nights 46.2 million, receipts MAD 151.0 billion, airport passengers 39.3 million.",
   "AFCON 2025 (21 Dec 2025 – 18 Jan 2026): receipts jumped 47% in December 2025 and about 0.9 billion above trend in January 2026. That January uplift does not repeat in 2027 and is taken out. Arrivals rose only 3% in January 2026, so no AFCON effect is assumed for arrivals.",
-  "Air capacity: airport passengers grew 8.8% in Jan–Aug 2026, faster than arrivals (+5%), so seats are not assumed to limit 2027. No 2027 seat or route figure from ONDA, RAM or low-cost carriers could be verified, so none is added; new capacity is part of the high scenario.",
+  "Air capacity: airport passengers grew 8.8% in Jan–Aug 2026, faster than arrivals (+5%), so seats are not assumed to limit 2027. No 2027 seat or route figure from airports or airlines could be verified, so none is added; new capacity is part of the high scenario.",
   "Calendar 2027: Ramadan runs about 8 February – 9 March 2027 (about 18 February – 19 March in 2026) and Eid al-Adha falls about 16 May. Months that are mostly Ramadan have historically had -14% of their usual share of receipts; the monthly receipts profile is moved accordingly. School holidays and the summer return of MRE (Opération Marhaba, June–September) are in the seasonal profile.",
-  "Events in events.json for 2027 (e.g. Ramadan (2027-02-08), Eid al-Fitr (2027-03-09), FIFA Congress (77th, elective) (2027-03-16), International Agriculture Show (SIAM) (2027-04-19)) recur every year or are small at national level, so no extra uplift is added. No effect of the 2030 World Cup build-up is assumed for 2027: there is no measurable sign of it yet.",
+  "Events in the Kodo calendar for 2027 (e.g. Ramadan (2027-02-08), Eid al-Fitr (2027-03-09), FIFA Congress (77th, elective) (2027-03-16), International Agriculture Show (SIAM) (2027-04-19)) recur every year or are small at national level, so no extra uplift is added. No effect of the 2030 World Cup build-up is assumed for 2027: there is no measurable sign of it yet.",
   "Hotel supply: bed capacity is assumed to grow 3.2% a year (the rate implied by the official 2025 nights and occupancy), between 2% and 5% in the range. Kodo’s pipeline lists 1,103 rooms due in 2026 and 808 in 2027 in the projects it tracks; it is not a national count, so it is a cross-check only.",
-  "Low scenario: higher air fares and weaker European demand (the DEPF reports Brent at 127.5 dollars on 23 October 2026, +95% on a year; euro-area growth about 1% in 2026–2027). High scenario: 2026’s faster airport growth carries into 2027 with new routes.",
+  "Low scenario: higher air fares and weaker European demand (Brent at 127.5 dollars on 23 October 2026, +95% on a year; euro-area growth about 1% in 2026–2027). High scenario: 2026’s faster airport growth carries into 2027 with new routes.",
   "Ranges: 1.5 × the backtest error (at least 3%), plus 2 points where fewer than four comparable years exist and 2 points for secondary sources, plus 1 point for the 2026 estimate. Cities, regions and markets are wider because they rest on two or three years.",
   "Arrivals include MRE, as in the official series. Nights and occupancy are for classified accommodation only. All figures are calendar years."
  ],
@@ -577,11 +636,11 @@
   },
   {
    "item": "2027 foreign tourists vs MRE",
-   "reason": "The Ministry stopped publishing the split in 2025, so there is no recent base to forecast from."
+   "reason": "The official split stopped being published in 2025, so there is no recent base to forecast from."
   },
   {
    "item": "Monthly 2027 arrivals, nights, occupancy and airport traffic",
-   "reason": "No official monthly history could be read (Observatoire dashboards need an account; ONDA blocks automated access). Only receipts are forecast by month."
+   "reason": "No official monthly history is available to Kodo for these. Only receipts are forecast by month."
   }
  ]
 }

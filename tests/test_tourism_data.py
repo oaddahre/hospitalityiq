@@ -121,6 +121,92 @@ class Forecast(unittest.TestCase):
         self.assertEqual(json.loads(before), json.loads(after))
 
 
+class Estimate2026(unittest.TestCase):
+    """2026E: one figure for every row of the outlook tables, consistent with
+    the national estimate and built on the latest official months."""
+    E = F['estimate_2026']
+
+    def test_a_2026e_for_every_2027f_row(self):
+        self.assertEqual(set(self.E['markets']), set(F['markets_2027']))
+        self.assertEqual(set(self.E['cities_occupancy']), set(F['cities_occupancy_2027']))
+        self.assertEqual(set(self.E['airports']), set(F['airports_2027']))
+
+    def test_official_months_are_the_latest_published(self):
+        for k, sid in (('arrivals', 'arrivals_ytd'), ('nights', 'nights_ytd'), ('receipts', 'receipts_ytd'),
+                       ('air_passengers', 'air_passengers_ytd')):
+            self.assertEqual(self.E['official'][k], S[sid]['points'][-1]['period'], k)
+
+    def test_splits_add_up_to_the_national_estimate(self):
+        arr26 = F['nowcast_2026']['arrivals']['base']
+        self.assertLess(sum(self.E['markets'].values()), arr26)
+        ytd = S['receipts_ytd']['points'][-1]
+        later = sum(m['value'] for m in self.E['receipts_monthly'] if m['month'] > ytd['period'][-7:])
+        self.assertAlmostEqual(ytd['value'] + later, F['nowcast_2026']['receipts']['base'], delta=3)
+        months = [p['period'] for p in S['receipts_monthly']['points'] if p['period'].startswith('2026')]
+        self.assertEqual(len(months) + len(self.E['receipts_monthly']), 12)
+        air_ytd = S['air_passengers_ytd']['points'][-1]['value']
+        for a, v in self.E['airports'].items():
+            self.assertGreater(v, S['airport_ytd_' + a]['points'][-1]['value'], a)
+        self.assertLess(sum(self.E['airports'].values()), F['nowcast_2026']['air_passengers']['base'])
+        self.assertLess(sum(S['airport_ytd_' + a]['points'][-1]['value'] for a in self.E['airports']), air_ytd)
+
+    def test_2026e_to_2027f_change_is_plausible(self):
+        for group, key in (('markets', 'markets_2027'), ('airports', 'airports_2027')):
+            for k, v in self.E[group].items():
+                self.assertTrue(-5 < (F[key][k]['base'] / v - 1) * 100 < 15, (k, v))
+        for c, v in self.E['cities_occupancy'].items():
+            self.assertTrue(-5 < F['cities_occupancy_2027'][c]['base'] - v < 5, c)
+
+
+# Names of the documents, institutions and press outlets behind the figures:
+# kept in tourism.json for Kodo's traceability, never shown to clients.
+SOURCE_NAMES = ('Bank Al-Maghrib', 'Al-Maghrib', 'DEPF', 'Ministère', 'Ministry', 'Observatoire', 'Office des Changes',
+                'Bladi', 'EcoActu', 'Hespress', 'Vie éco', 'Vie eco', 'Morocco World News', 'TelQuel', 'ONDA', 'HCP',
+                'wafir', 'Infomédiaire', 'Fes News', 'mtaess', 'Rapport annuel')
+
+
+class NoSourcesShownToClients(unittest.TestCase):
+    def assertClean(self, text, where):
+        for n in SOURCE_NAMES:
+            flags = 0 if n.isupper() else re.IGNORECASE      # acronyms: whole words, as written
+            found = re.search(r'\b' + re.escape(n) + r'\b', text, flags)
+            self.assertIsNone(found, f'{n} in {where}: …{text[max(0, found.start() - 60):found.end() + 60] if found else ""}…')
+
+    def test_screen_data_has_no_source_records(self):
+        v = TD.view()
+        self.assertNotIn('sources', v)
+        text = json.dumps(v, ensure_ascii=False)
+        self.assertNotIn('"source"', text)
+        self.assertNotIn('"published"', text)
+        self.assertNotIn('http', text)
+        self.assertClean(text, '/api/tourism')
+
+    def test_page_script_and_template(self):
+        js = open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8').read()
+        start, end = js.index('// ─── Tourism screen'), js.index('// ─── Pipeline screen')
+        self.assertClean(js[start:end], 'tourism screen script')
+        start = js.index('function exportTourism')
+        self.assertClean(js[start:js.index('// ─── Owners screen')], 'tourism export')
+        html = open(os.path.join(ROOT, 'templates', 'index.html'), encoding='utf-8').read()
+        start = html.index('id="screen-tourism"')
+        self.assertClean(html[start:html.index('id="screen-brands"')], 'tourism template')
+        self.assertIn('Source: official Moroccan statistics and Kodo analysis. See <a href="/methodology#tourism">Methodology</a>.', html)
+
+    def test_methodology_and_ai_context(self):
+        import app as A
+        A.app.config['TESTING'] = True
+        page = A.app.test_client().get('/methodology').get_data(as_text=True)
+        start = page.index('id="tourism"')
+        self.assertClean(page[start:page.index('method-section-label">04', start)], '/methodology')
+        self.assertClean(TD.ai_context(), 'AI context')
+
+    def test_internal_records_kept(self):
+        self.assertTrue(D['sources'])
+        for s in D['series']:
+            for p in s['points']:
+                self.assertIn(p['source'], D['sources'])
+
+
 class Wiring(unittest.TestCase):
     def test_ai_context_labels_the_forecast(self):
         t = TD.ai_context()

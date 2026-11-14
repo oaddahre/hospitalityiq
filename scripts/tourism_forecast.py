@@ -36,8 +36,23 @@ def annual(sid):
     return {int(p['period']): p['value'] for p in S[sid]['points'] if p['period'].isdigit()}
 
 
-def ytd(sid, period):
-    return next(p for p in S[sid]['points'] if p['period'] == period)
+def ytd(sid, period=None):
+    """A year-to-date point; by default the latest one published."""
+    pts = S[sid]['points']
+    return pts[-1] if period is None else next(p for p in pts if p['period'] == period)
+
+
+MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+
+def span(period):
+    """'2026-01/2026-10' -> 'Jan–Oct 2026'."""
+    a, b = period.split('/')
+    return f"{MON[int(a[5:]) - 1]}–{MON[int(b[5:]) - 1]} {b[:4]}"
+
+
+def last_month(period):
+    return int(period.split('/')[1][5:])
 
 
 def cagr(a, b, years):
@@ -108,13 +123,13 @@ BT, F27, NOW26, CHECK26 = {}, {}, {}, {}
 
 # ── Arrivals ────────────────────────────────────────────────────────
 BT['arrivals'] = backtest(ARR, LR['arrivals'], (2023, 2024, 2025))
-a_oct = ytd('arrivals_ytd', '2026-01/2026-10')
-oct25 = a_oct['value'] / (1 + a_oct['yoy_pct'] / 100)          # Jan-Oct 2025 implied by the official growth
-novdec25 = ARR[2025] - oct25
-ND_GROWTH = (0.0, 0.025, 0.05)                                   # Nov-Dec 2026 vs 2025 (Dec 2025 had AFCON)
-now = [a_oct['value'] + novdec25 * (1 + g) for g in ND_GROWTH]
+a_ytd = ytd('arrivals_ytd')
+ytd25 = a_ytd['value'] / (1 + a_ytd['yoy_pct'] / 100)          # same months of 2025 implied by the official growth
+rest25 = ARR[2025] - ytd25
+ND_GROWTH = (0.0, 0.025, 0.05)                                   # rest of 2026 vs 2025 (Dec 2025 had AFCON)
+now = [a_ytd['value'] + rest25 * (1 + g) for g in ND_GROWTH]
 NOW26['arrivals'] = dict(base=round(now[1]), low=round(now[0] - 100_000), high=round(now[2] + 100_000),
-                         how='Jan–Oct 2026 (17.4 million, +5%) plus Nov–Dec 2025 grown 0% to +5%; ±0.1 million for the rounding of the year-to-date figures.')
+                         how=f"{span(a_ytd['period'])} ({a_ytd['value'] / 1e6:.1f} million, {a_ytd['yoy_pct']:+g}%) plus the rest of 2025 grown 0% to +5%; ±0.1 million for the rounding of the year-to-date figures.")
 CHECK26['arrivals'] = dict(v2_from_2025=round(v2(ARR, LR['arrivals'], 2026)), nowcast=NOW26['arrivals']['base'])
 CHECK26['arrivals']['err_pct'] = err(CHECK26['arrivals']['v2_from_2025'], CHECK26['arrivals']['nowcast'])
 h = dict(ARR); h[2026] = now[1]
@@ -136,11 +151,11 @@ BT['nights'] = dict(years=rows, basis='2023 and 2024 on the previous basis, 2025
                     mape_v1=round(sum(abs(r['err_v1']) for r in rows.values()) / 3, 1),
                     mape_v2=round(sum(abs(r['err_v2']) for r in rows.values()) / 3, 1),
                     max_v2=max(abs(r['err_v2']) for r in rows.values()))
-n_sep = ytd('nights_ytd', '2026-01/2026-09')
+n_sep = ytd('nights_ytd')
 NG26 = (n_sep['yoy_pct'] - 1.5, n_sep['yoy_pct'] - 0.5, n_sep['yoy_pct'] + 0.5)   # Q4 2025 includes the AFCON weeks
 now = [NIGHTS[2025] * (1 + g / 100) for g in NG26]
 NOW26['nights'] = dict(base=round(now[1]), low=round(now[0]), high=round(now[2]),
-                       how='2025 grown by the Jan–Sep 2026 rate (+7%) minus 0.5 point (Q4 2025 included the AFCON weeks), ±1 point.')
+                       how=f"2025 grown by the {span(n_sep['period'])} rate ({n_sep['yoy_pct']:+g}%) minus 0.5 point (Q4 2025 included the AFCON weeks), ±1 point.")
 CHECK26['nights'] = dict(v2_from_2025=round(v2(cur_known, LR['nights'], 2026)), nowcast=NOW26['nights']['base'])
 CHECK26['nights']['err_pct'] = err(CHECK26['nights']['v2_from_2025'], CHECK26['nights']['nowcast'])
 h = dict(cur_known); h[2026] = now[1]
@@ -171,12 +186,12 @@ NOW26['occupancy'] = dict(base=round(o26, 1), how='2025 occupancy × nights nowc
 # ── Receipts (annual and monthly) ───────────────────────────────────
 BT['receipts'] = backtest(REC, LR['receipts'], (2023, 2024, 2025))
 months = {p['period']: p['value'] for p in S['receipts_monthly']['points']}
-r_sep = ytd('receipts_ytd', '2026-01/2026-09')
+r_sep = ytd('receipts_ytd')
 q4_25 = REC[2025] - r_sep['prior']
 Q4G = (-0.05, 0.0, 0.05)              # Q4 2026 vs Q4 2025 (Dec 2025: +47%, the AFCON month)
 now = [r_sep['value'] + q4_25 * (1 + g) for g in Q4G]
 NOW26['receipts'] = dict(base=round(now[1]), low=round(now[0]), high=round(now[2]),
-                         how='Jan–Sep 2026 (115,257, +12.1%) plus Q4 2025 at −5% to +5% (December 2025 was +47%, the AFCON month).')
+                         how=f"{span(r_sep['period'])} ({r_sep['value']:,}, {r_sep['yoy_pct']:+g}%) plus the rest of 2025 at −5% to +5% (December 2025 was +47%, the AFCON month).")
 CHECK26['receipts'] = dict(v2_from_2025=round(v2(REC, LR['receipts'], 2026)), nowcast=NOW26['receipts']['base'])
 CHECK26['receipts']['err_pct'] = err(CHECK26['receipts']['v2_from_2025'], CHECK26['receipts']['nowcast'])
 # AFCON uplift in January 2026 that will not repeat in January 2027: January 2026
@@ -259,12 +274,12 @@ g_proxy = air_mode[2024] / air_mode[2023] - 1        # 2023 airport total could 
 f_air25 = AIR[2024] * (1 + LR['air_passengers'] + DAMP * (g_proxy - LR['air_passengers']))
 BT['air_passengers'] = dict(years={'2025': dict(actual=AIR[2025], v2=round(f_air25), err_v2=err(f_air25, AIR[2025]))},
                             mape_v2=abs(err(f_air25, AIR[2025])), max_v2=abs(err(f_air25, AIR[2025])),
-                            note='One year only; the 2024 growth used is that of tourist arrivals by air (the 2023 airport total could not be verified). ONDA’s own 2025 target was 37.6 million (actual 36.3, +3.6% too high).')
-a_aug = ytd('air_passengers_ytd', '2026-01/2026-08')
+                            note='One year only; the 2024 growth used is that of tourist arrivals by air (the 2023 airport total could not be verified).')
+a_aug = ytd('air_passengers_ytd')
 AG26 = (a_aug['yoy_pct'] - 1.5, a_aug['yoy_pct'] - 0.5, a_aug['yoy_pct'] + 0.5)
 now = [AIR[2025] * (1 + g / 100) for g in AG26]
 NOW26['air_passengers'] = dict(base=round(now[1]), low=round(now[0]), high=round(now[2]),
-                               how='2025 grown by the Jan–Aug 2026 rate (+8.8%) minus 0.5 point (Dec 2025 had AFCON), ±1 point.')
+                               how=f"2025 grown by the {span(a_aug['period'])} rate ({a_aug['yoy_pct']:+.1f}%) minus 0.5 point (Dec 2025 had AFCON), ±1 point.")
 g26a = now[1] / AIR[2025] - 1
 abase = now[1] * (1 + LR['air_passengers'] + DAMP * (g26a - LR['air_passengers']))
 F27['air_passengers'] = rng(abase, width(BT['air_passengers']['mape_v2'], thin=True, secondary=True) + 0.01)
@@ -333,6 +348,46 @@ for m in MKT:
     wm = width(mk_bt[m]['mape_v2'], thin=True) + 0.02          # two years ahead from the last market data
     markets[m] = dict(rng(mk[m] * scale, wm), backtest_mape=mk_bt[m]['mape_v2'])
 
+# ── 2026E by market, city and airport ──────────────────────────────
+# One 2026 figure per row of the 2027 tables, consistent with the national
+# 2026 estimate above (official months published so far plus Kodo's model
+# for the rest of the year). No official 2026 split by market or city is
+# published yet, so those splits are Kodo's: the first year of the same
+# growth path as the 2027 figures, scaled to the national 2026 estimate.
+# Airports use their own official months, plus their share of the national
+# estimate for the remaining months.
+def first_step(prefix, k, lr):
+    h = annual(f'{prefix}{k}')
+    return h[2025] * (1 + lr + DAMP * (h[2025] / h[2024] - 1 - lr))
+
+
+EST26 = dict(official={k: p['period'] for k, p in (('arrivals', a_ytd), ('nights', n_sep), ('receipts', r_sep),
+                                                   ('air_passengers', a_aug))})
+mk26 = {m: first_step('arrivals_mkt_', m, LR['arrivals']) for m in MKT}
+s26 = (NOW26['arrivals']['base'] - mk_other_25 * NOW26['arrivals']['base'] / ARR[2025]) / sum(mk26.values())
+EST26['markets'] = {m: round(mk26[m] * s26) for m in markets}
+rg26 = {r: first_step('nights_region_', r, LR['nights']) for r in REG}
+s26 = (NOW26['nights']['base'] - reg_hist_other * NOW26['nights']['base'] / NIGHTS[2025]) / sum(rg26.values())
+EST26['cities_occupancy'] = {c: round(min(90.0, occ[c][2025] * (rg26[r] * s26 / annual(f'nights_region_{r}')[2025]) / (1 + CAP[1])), 1)
+                             for c, r in CITY_REGION.items() if c in cities}
+rest_air = NOW26['air_passengers']['base'] - a_aug['value']
+EST26['airports'] = {}
+for a in airports:
+    ya = ytd(f'airport_ytd_{a}')
+    if ya['period'] == a_aug['period']:
+        EST26['airports'][a] = round(ya['value'] + rest_air * ya['value'] / a_aug['value'])
+EST26['airports_official'] = a_aug['period']
+# Monthly receipts: the official months, then the months inside the latest
+# year-to-date total spread like 2025, then the rest of 2025 at the base
+# growth used for the annual estimate.
+m26 = sorted(k for k in months if k.startswith('2026'))
+ytd_last = last_month(r_sep['period'])
+gap = r_sep['value'] - sum(months[k] for k in m26)
+fill = [f'2026-{m:02d}' for m in range(int(m26[-1][5:]) + 1, ytd_last + 1)]
+fill25 = sum(months['2025' + k[4:]] for k in fill)
+EST26['receipts_monthly'] = [dict(month=k, value=round(gap * months['2025' + k[4:]] / fill25)) for k in fill] + \
+    [dict(month=f'2026-{m:02d}', value=round(months[f'2025-{m:02d}'] * (1 + Q4G[1]))) for m in range(ytd_last + 1, 13)]
+
 # ── Withhold anything whose backtest error is above 15% ────────────
 LIMIT = 15.0
 withheld = []
@@ -353,9 +408,13 @@ for c in list(cities):
         withheld.append(dict(item=f'2027 occupancy, {c}', reason=f'backtest error {city_bt[c]["err_v2"]}% > {LIMIT}%'))
         cities.pop(c)
 withheld += [
-    dict(item='2027 foreign tourists vs MRE', reason='The Ministry stopped publishing the split in 2025, so there is no recent base to forecast from.'),
-    dict(item='Monthly 2027 arrivals, nights, occupancy and airport traffic', reason='No official monthly history could be read (Observatoire dashboards need an account; ONDA blocks automated access). Only receipts are forecast by month.'),
+    dict(item='2027 foreign tourists vs MRE', reason='The official split stopped being published in 2025, so there is no recent base to forecast from.'),
+    dict(item='Monthly 2027 arrivals, nights, occupancy and airport traffic', reason='No official monthly history is available to Kodo for these. Only receipts are forecast by month.'),
 ]
+
+# 2026E only for the rows still published for 2027
+EST26['markets'] = {m: v for m, v in EST26['markets'].items() if m in markets}
+EST26['cities_occupancy'] = {c: v for c, v in EST26['cities_occupancy'].items() if c in cities}
 
 pipe_keys = {}
 import csv
@@ -369,25 +428,26 @@ events27 = [f"{e['name']} ({e['start']})" for e in json.load(open(os.path.join(R
             if e['start'][:4] == '2027' and e.get('impact') == 'high' and e.get('type') not in ('holiday',)]
 
 ASSUMPTIONS = [
-    f"Base: the latest growth slows towards the pre-COVID long-run rate, keeping half of the gap each year (arrivals {LR['arrivals']*100:.1f}% a year 2013–2019, receipts {LR['receipts']*100:.1f}%, nights {LR['nights']*100:.1f}% on the previous basis 2013–2018). This is the slowdown after the 2023–2025 records: arrivals grew 14% in 2025 and about 5% in Jan–Oct 2026.",
-    f"2026 is first estimated from the latest year-to-date figures: arrivals {NOW26['arrivals']['base']/1e6:.1f} million (Jan–Oct +5%), nights {NOW26['nights']['base']/1e6:.1f} million, receipts MAD {NOW26['receipts']['base']/1000:.1f} billion, airport passengers {NOW26['air_passengers']['base']/1e6:.1f} million.",
+    f"Base: the latest growth slows towards the pre-COVID long-run rate, keeping half of the gap each year (arrivals {LR['arrivals']*100:.1f}% a year 2013–2019, receipts {LR['receipts']*100:.1f}%, nights {LR['nights']*100:.1f}% on the previous basis 2013–2018). This is the slowdown after the 2023–2025 records: arrivals grew 14% in 2025 and about {a_ytd['yoy_pct']:g}% in {span(a_ytd['period'])}.",
+    f"2026 is first estimated from the latest year-to-date figures: arrivals {NOW26['arrivals']['base']/1e6:.1f} million ({span(a_ytd['period'])} {a_ytd['yoy_pct']:+g}%), nights {NOW26['nights']['base']/1e6:.1f} million, receipts MAD {NOW26['receipts']['base']/1000:.1f} billion, airport passengers {NOW26['air_passengers']['base']/1e6:.1f} million.",
     f"AFCON 2025 (21 Dec 2025 – 18 Jan 2026): receipts jumped 47% in December 2025 and about {AFCON_JAN/1000:.1f} billion above trend in January 2026. That January uplift does not repeat in 2027 and is taken out. Arrivals rose only 3% in January 2026, so no AFCON effect is assumed for arrivals.",
-    "Air capacity: airport passengers grew 8.8% in Jan–Aug 2026, faster than arrivals (+5%), so seats are not assumed to limit 2027. No 2027 seat or route figure from ONDA, RAM or low-cost carriers could be verified, so none is added; new capacity is part of the high scenario.",
+    f"Air capacity: airport passengers grew {a_aug['yoy_pct']:.1f}% in {span(a_aug['period'])}, faster than arrivals ({a_ytd['yoy_pct']:+g}%), so seats are not assumed to limit 2027. No 2027 seat or route figure from airports or airlines could be verified, so none is added; new capacity is part of the high scenario.",
     f"Calendar 2027: Ramadan runs about 8 February – 9 March 2027 (about 18 February – 19 March in 2026) and Eid al-Adha falls about 16 May. Months that are mostly Ramadan have historically had {(RAM_FACTOR-1)*100:+.0f}% of their usual share of receipts; the monthly receipts profile is moved accordingly. School holidays and the summer return of MRE (Opération Marhaba, June–September) are in the seasonal profile.",
-    "Events in events.json for 2027 (e.g. " + ', '.join(events27[:4]) + ") recur every year or are small at national level, so no extra uplift is added. No effect of the 2030 World Cup build-up is assumed for 2027: there is no measurable sign of it yet.",
+    "Events in the Kodo calendar for 2027 (e.g. " + ', '.join(events27[:4]) + ") recur every year or are small at national level, so no extra uplift is added. No effect of the 2030 World Cup build-up is assumed for 2027: there is no measurable sign of it yet.",
     f"Hotel supply: bed capacity is assumed to grow {CAP[1]*100:.1f}% a year (the rate implied by the official 2025 nights and occupancy), between {CAP[0]*100:.0f}% and {CAP[2]*100:.0f}% in the range. Kodo’s pipeline lists {pipe_keys.get('2026', 0):,} rooms due in 2026 and {pipe_keys.get('2027', 0):,} in 2027 in the projects it tracks; it is not a national count, so it is a cross-check only.",
-    "Low scenario: higher air fares and weaker European demand (the DEPF reports Brent at 127.5 dollars on 23 October 2026, +95% on a year; euro-area growth about 1% in 2026–2027). High scenario: 2026’s faster airport growth carries into 2027 with new routes.",
+    "Low scenario: higher air fares and weaker European demand (Brent at 127.5 dollars on 23 October 2026, +95% on a year; euro-area growth about 1% in 2026–2027). High scenario: 2026’s faster airport growth carries into 2027 with new routes.",
     "Ranges: 1.5 × the backtest error (at least 3%), plus 2 points where fewer than four comparable years exist and 2 points for secondary sources, plus 1 point for the 2026 estimate. Cities, regions and markets are wider because they rest on two or three years.",
     "Arrivals include MRE, as in the official series. Nights and occupancy are for classified accommodation only. All figures are calendar years.",
 ]
 
 out = dict(format='kodo-tourism-forecast-1', label='Kodo forecast', generated=T['updated'], method='v2',
-           data_cut_off='Arrivals to Oct 2026, nights to Sep 2026, receipts to Sep 2026, airport passengers to Aug 2026',
+           data_cut_off=', '.join(f"{k} to {MON[last_month(p['period']) - 1]} {p['period'][-7:-3]}" for k, p in
+                            (('Arrivals', a_ytd), ('nights', n_sep), ('receipts', r_sep), ('airport passengers', a_aug))),
            long_run_growth={k: round(v * 100, 2) for k, v in LR.items()},
            capacity_growth_pct=dict(base=round(CAP[1] * 100, 1), low=CAP[0] * 100, high=CAP[2] * 100),
            ramadan_month_factor=round(RAM_FACTOR, 3), afcon_january_uplift=round(AFCON_JAN),
            nowcast_2026=NOW26, forecast_2027=F27, regions_2027=regions, cities_occupancy_2027=cities,
-           markets_2027=markets, airports_2027=airports, backtest=BT, check_2026=CHECK26,
+           markets_2027=markets, airports_2027=airports, estimate_2026=EST26, backtest=BT, check_2026=CHECK26,
            assumptions=ASSUMPTIONS, withheld=withheld)
 json.dump(out, open(os.path.join(ROOT, 'tourism_forecast.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 if __name__ == '__main__':

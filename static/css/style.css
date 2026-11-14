@@ -1809,12 +1809,18 @@ body.light .nav-logout  { color: var(--text-2); }
 .chart-dot-legend-dot.tour-dot-prior    { background: var(--text-2); }
 .chart-dot-legend-dot.tour-dot-forecast {
   background: color-mix(in srgb, var(--cat-5-dot) 30%, transparent);
-  border: 1.5px dashed var(--cat-5-dot);
+  border: 1.5px solid var(--cat-5-dot);
+  box-sizing: border-box;
+}
+.chart-dot-legend-dot.tour-dot-estimate {
+  background: color-mix(in srgb, var(--cat-5-dot) 12%, transparent);
+  border: 1px solid var(--cat-5-dot);
   box-sizing: border-box;
 }
 
-/* 2027 outlook: Kodo forecast, set apart from the official figures */
-.tour-fc { border-style: dashed; border-color: var(--cat-5-dot); }
+/* Outlook: 2026E estimate and 2027F forecast. The card keeps the normal
+   solid border; the three states differ by column style and tag. */
+.tour-fc { scroll-margin-top: 64px; }
 .tour-fc .table-card-header { gap: 12px; flex-wrap: wrap; }
 .tour-fc-pill { font-size: 11px; }
 .tour-fc-intro, .tour-fc-foot {
@@ -1838,7 +1844,7 @@ body.light .nav-logout  { color: var(--text-2); }
   flex-direction: column;
   gap: 3px;
   padding: 14px 16px;
-  border: 1px dashed var(--cat-5-dot);
+  border: 1px solid var(--border);
   background: var(--bg);
   font-family: 'Sweet Sans Pro', sans-serif;
   min-width: 0;
@@ -1847,13 +1853,15 @@ body.light .nav-logout  { color: var(--text-2); }
 .tour-fc-value { font-size: 22px; font-weight: 600; color: var(--cat-5-text); }
 .tour-fc-range { font-size: 12px; font-weight: 500; color: var(--text); }
 .tour-fc-meta  { font-size: 11px; color: var(--text-2); }
+.tour-fc-est   { font-style: italic; }
+.tour-fc-months { color: var(--text); }
 .tour-fc-tables {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+  gap: 16px 24px;
   padding: 4px 20px 12px;
 }
-.tour-fc-table-wrap { min-width: 0; overflow-x: auto; }
+.tour-fc-table-wrap { min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .tour-fc-sub {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 11px;
@@ -1886,25 +1894,49 @@ body.light .nav-logout  { color: var(--text-2); }
   white-space: nowrap;
 }
 .tour-table th:first-child, .tour-table td:first-child { text-align: left; }
-.tour-table td:nth-child(3) { color: var(--cat-5-text); font-weight: 600; }
-.tour-table td:nth-child(4) { color: var(--text-2); }
+/* Three states: 2025 official (plain), 2026E estimate (italic, tinted), 2027F forecast (forecast colour, bold) */
+.tour-table td.tour-col-est { font-style: italic; color: var(--text-2); background: color-mix(in srgb, var(--cat-5-dot) 5%, transparent); }
+.tour-table th.tour-col-est { background: color-mix(in srgb, var(--cat-5-dot) 5%, transparent); }
+.tour-table td.tour-col-fc  { color: var(--cat-5-text); font-weight: 600; }
+.tour-table td.tour-col-rng { color: var(--text-2); }
+.tour-table td.tour-col-chg { color: var(--text-2); }
+.tour-table tr.tour-row-total td { font-weight: 600; border-bottom: 1px solid var(--border); }
+.tour-table tr.tour-row-total td.tour-col-est { font-weight: 500; }
+.tour-tag {
+  display: inline-block;
+  margin-left: 3px;
+  padding: 0 4px;
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  line-height: 14px;
+  vertical-align: 1px;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+.tour-tag--fc { border-color: var(--cat-5-dot); color: var(--cat-5-text); }
+/* Briefly highlighted column, from a search result */
+@keyframes tour-col-flash { 0%, 55% { background: color-mix(in srgb, var(--cat-5-dot) 26%, transparent); } 100% { background: transparent; } }
+.tour-table .tour-col-flash { animation: tour-col-flash 2.4s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .tour-table .tour-col-flash { animation: none; outline: 2px solid var(--cat-5-dot); outline-offset: -2px; }
+}
 
-/* Sources */
-.tour-sources { font-family: 'Sweet Sans Pro', sans-serif; padding: 4px 0 8px; }
-.tour-sources-title { font-size: 11px; font-weight: 600; color: var(--text); margin: 10px 0 4px; }
-.tour-sources-list { margin: 0 0 6px; padding-left: 18px; font-size: 11px; line-height: 1.6; color: var(--text-2); }
-.tour-sources-list a { color: var(--action-text); word-break: break-word; }
+/* How to read the figures, and the one source line */
+.tour-notes-wrap { margin: -4px 0 20px; }
+.tour-notes-wrap .tour-disclaimer { padding: 0 0 4px; }
+.tour-source-line { font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; color: var(--text-2); margin: 0; }
+.tour-source-line a { color: var(--action-text); }
 
 @media (max-width: 1200px) {
   .tour-fc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .tour-fc-tables { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 900px) {
   .tour-ytd { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tour-ytd-title { grid-column: 1 / -1; flex-direction: row; align-items: center; border-right: none; border-bottom: 1px solid var(--border); }
   .tour-ytd-item { border-bottom: 1px solid var(--border); }
   .tour-ytd-item:nth-child(odd) { border-right: none; }
-  .tour-fc-tables { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .tour-fc-grid { grid-template-columns: 1fr 1fr; padding: 12px; gap: 8px; }

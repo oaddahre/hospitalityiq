@@ -1716,9 +1716,7 @@ def account_change_password():
 
 @app.route("/methodology")
 def methodology():
-    d = TD.data()
-    return render_template("methodology.html", tourism_forecast=TD.forecast(), tourism_sources=d['sources'],
-                           tourism_crosschecks=d['crosschecks'], tourism_withheld=d['withheld'])
+    return render_template("methodology.html", tourism_forecast=TD.forecast(), tourism_not_shown=TD.NOT_SHOWN)
 
 
 @app.route("/about")

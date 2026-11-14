@@ -2495,10 +2495,11 @@ function redrawChartsForTheme() {
 }
 
 // ─── Tourism screen ───────────────────────────────────────────────
-// Official figures and the Kodo forecast both come from /api/tourism
-// (tourism.json and tourism_forecast.json, each figure with its source).
-// Forecast values are always drawn in the forecast style, labelled "Kodo
-// forecast" and shown with their range, never mixed with official bars.
+// Official figures and the Kodo figures both come from /api/tourism
+// (tourism.json and tourism_forecast.json; the source records stay on the
+// server). Three states, always labelled: 2025 and earlier are official,
+// 2026E is a Kodo estimate (official months so far plus the model for the
+// rest of the year), 2027F is a Kodo forecast with its range.
 
 let tourismData = null;
 let tourismLoading = null;
@@ -2519,16 +2520,12 @@ const tourM = v => v == null ? '—' : (v / 1e6).toFixed(1) + 'M';
 const tourB = v => v == null ? '—' : (v / 1000).toFixed(1) + 'B';     // MAD million → billions
 const tourPct = (a, b) => (a == null || b == null || !b) ? null : (a / b - 1) * 100;
 const tourSigned = (v, d = 1) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d);
-// "Mar 2026" from a source's published date ('2026-03-06' or '2026-10')
-const tourPub = s => {
-  if (!s || !s.published) return 'publication date not stated';
-  const [y, m, d] = s.published.split('-').map(Number);
-  return (d ? d + ' ' : '') + (m ? TOUR_MON[m - 1] + ' ' : '') + y;
-};
-const tourSrcName = id => {
-  const s = tourismData.sources[id];
-  return s ? s.publisher.split(',')[0] : id;
-};
+// Change from 2026E to 2027F, from the published base values (cards and tables use the same)
+const tourChange = (a, b, pts) => (a == null || b == null) ? '—'
+  : pts ? `${tourSigned(b - a)} pts` : `${tourSigned(tourPct(b, a))}%`;
+// "Jan–Oct 2026" from a year-to-date period '2026-01/2026-10'
+const tourSpan = p => { const [a, b] = p.split('/'); return `${TOUR_MON[+a.slice(5) - 1]}–${TOUR_MON[+b.slice(5) - 1]} ${b.slice(0, 4)}`; };
+const TOUR_TAG = { est: '<span class="tour-tag tour-tag--est">est.</span>', fc: '<span class="tour-tag tour-tag--fc">fcst.</span>' };
 
 function tourismKpiPeriods(yr) {
   ['tour-kpi-arrivals', 'tour-kpi-nights', 'tour-kpi-revenue', 'tour-kpi-occ', 'tour-kpi-origin'].forEach(id =>
@@ -2544,12 +2541,11 @@ function setTourismYear(yr) {
 
   const arr = tourAnnual('arrivals_total'), nts = tourAnnual('nights_total'), rec = tourAnnual('receipts_total');
   const occ = tourAnnual('occupancy_Morocco');
-  const src = (id, y) => { const p = tourSeries(id)?.points.find(q => q.period === String(y)); return p ? tourismData.sources[p.source] : null; };
-  const card = (key, value, delta, deltaText, tipSrc, status) => {
+  const card = (key, value, delta, deltaText, status) => {
     const v = document.getElementById(`tour-kpi-${key}-value`);
     if (v) {
       v.textContent = value;
-      v.title = tipSrc ? `Source: ${tipSrc.publisher.split(',')[0]}, ${tourPub(tipSrc)}${status ? ' · ' + status : ''}` : '';
+      v.title = status ? 'Provisional figure, may be revised' : '';
     }
     const d = document.getElementById(`tour-kpi-${key}-delta`);
     if (!d) return;
@@ -2560,15 +2556,15 @@ function setTourismYear(yr) {
   };
   const vsPrev = { kind: 'year', year: yr - 1 };
   const dA = tourPct(arr[yr], arr[yr - 1]);
-  card('arrivals', tourM(arr[yr]), dA, dA != null && `${tourSigned(dA, 0)}% ${KodoPeriod.vs(vsPrev)}`, src('arrivals_total', yr));
+  card('arrivals', tourM(arr[yr]), dA, dA != null && `${tourSigned(dA, 0)}% ${KodoPeriod.vs(vsPrev)}`);
   const dN = tourPct(nts[yr], nts[yr - 1]);
-  card('nights', tourM(nts[yr]), dN, dN != null && `${tourSigned(dN, 0)}% ${KodoPeriod.vs(vsPrev)}`, src('nights_total', yr));
+  card('nights', tourM(nts[yr]), dN, dN != null && `${tourSigned(dN, 0)}% ${KodoPeriod.vs(vsPrev)}`);
   const dR = tourPct(rec[yr], rec[yr - 1]);
   const recStatus = tourSeries('receipts_total').points.find(p => p.period === String(yr))?.status;
   card('revenue', rec[yr] != null ? 'MAD ' + tourB(rec[yr]) : '—', dR, dR != null && `${tourSigned(dR, 0)}% ${KodoPeriod.vs(vsPrev)}`,
-       src('receipts_total', yr), recStatus === 'provisional' ? 'provisional' : '');
+       recStatus === 'provisional');
   const dO = (occ[yr] != null && occ[yr - 1] != null) ? occ[yr] - occ[yr - 1] : null;
-  card('occ', occ[yr] != null ? occ[yr] + '%' : '—', dO, dO != null && `${tourSigned(dO, 0)} pts ${KodoPeriod.vs(vsPrev)}`, src('occupancy_Morocco', yr));
+  card('occ', occ[yr] != null ? occ[yr] + '%' : '—', dO, dO != null && `${tourSigned(dO, 0)} pts ${KodoPeriod.vs(vsPrev)}`);
   const occMeta = document.querySelector('#tour-kpi-occ .kpi-meta');
   if (occMeta) occMeta.textContent = occ[yr] != null ? 'classified accommodation' : 'not published on the current basis';
 
@@ -2634,13 +2630,13 @@ function initTourismCharts() {
     titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy, padding: { top: 8, bottom: 8, left: 12, right: 12 },
   });
   const ticks = { color: cc.tick, font: { size: 11, weight: '400', family: "'Sweet Sans Pro', sans-serif" } };
-  const fcFill = withAlpha(cc.forecastColor, 0.28);
+  const fcFill = withAlpha(cc.forecastColor, 0.28), estFill = withAlpha(cc.forecastColor, 0.12);
   const covidColor = cc.compColor;
 
-  // Official bars, then the 2026 estimate and 2027 forecast with a floating range bar
+  // Official bars, then the 2026E estimate and the 2027F forecast with a floating range bar
   function trendChart(canvasId, hist, est, fc, scale, unitFmt, firstYear) {
     const years = Object.keys(hist).map(Number).filter(y => y >= firstYear).sort();
-    const labels = years.map(String).concat(['2026 est.', '2027 fcst.']);
+    const labels = years.map(String).concat(['2026E', '2027F']);
     const n = years.length;
     const off = years.map(y => +(hist[y] / scale).toFixed(2)).concat([null, null]);
     const kodo = Array(n).fill(null).concat([+(est.base / scale).toFixed(2), +(fc.base / scale).toFixed(2)]);
@@ -2652,8 +2648,9 @@ function initTourismCharts() {
         datasets: [
           { label: 'Official', data: off, order: 2, borderRadius: 4, borderSkipped: false,
             backgroundColor: years.map(y => (y === 2020 || y === 2021) ? covidColor : cc.barColor).concat([null, null]) },
-          { label: 'Kodo', data: kodo, order: 2, borderRadius: 4, borderSkipped: false, backgroundColor: fcFill,
-            borderColor: cc.forecastColor, borderWidth: 1.5, borderDash: [4, 3] },
+          { label: 'Kodo', data: kodo, order: 2, borderRadius: 4, borderSkipped: false,
+            backgroundColor: Array(n).fill(null).concat([estFill, fcFill]),
+            borderColor: cc.forecastColor, borderWidth: Array(n).fill(0).concat([1, 1.5]) },
           { label: 'Range', data: range, order: 1, backgroundColor: cc.forecastColor, barPercentage: 0.12, categoryPercentage: 1,
             datalabels: { display: false } },
         ],
@@ -2675,7 +2672,7 @@ function initTourismCharts() {
                   return '  Official: ' + unitFmt(ctx.raw) + ((y === 2020 || y === 2021) ? ' (COVID year)' : '');
                 }
                 const r = range[i];
-                return `  ${i === n ? 'Kodo estimate' : 'Kodo forecast'}: ${unitFmt(ctx.raw)} (range ${unitFmt(r[0])}–${unitFmt(r[1])})`;
+                return `  ${i === n ? '2026E estimate' : '2027F forecast'}: ${unitFmt(ctx.raw)} (range ${unitFmt(r[0])}–${unitFmt(r[1])})`;
               },
             },
           },
@@ -2794,7 +2791,7 @@ function initTourismCharts() {
       `Morocco: ${m[2024]}% in 2024, ${m[2025]}% in 2025. Current official basis; earlier years were published on a different basis and are not comparable.`;
   }
 
-  // 7. Airport passengers, 2024 vs 2025 (ONDA, as reported by the press)
+  // 7. Airport passengers, 2024 vs 2025 (a secondary source)
   {
     const aps = tourBy('airport_passengers').filter(s => s.freq === 'A');
     setH('twrap-airports', Math.max(240, aps.length * 44 + 60));
@@ -2824,14 +2821,14 @@ function initTourismCharts() {
       .map(s => `${s.dim.airport.split(' ')[0]} ${tourM(s.points[0].value)}`).join(', ');
     document.getElementById('tour-airports-note').textContent =
       `All airports: ${tourM(tot[2024])} in 2024, ${tourM(tot[2025])} in 2025; ${tourM(ytd.value)} in Jan–Aug 2026 (${tourSigned(ytd.yoy_pct)}%). `
-      + `Jan–Aug 2026: ${ytdAp}. Airport authority figures as reported in the press; Casablanca 2025 is rounded. Fès and Tanger annual totals are not shown: the published figures could not be confirmed.`;
+      + `Jan–Aug 2026: ${ytdAp}. Casablanca 2025 is rounded. Fès and Tanger annual totals are not shown: the published figures could not be confirmed.`;
   }
 
   // 8. Receipts trend
   setH('twrap-revenue', 290);
   trendChart('chart-tour-revenue', tourAnnual('receipts_total'), N26.receipts, F27.receipts, 1000, v => 'MAD ' + (+v).toFixed(1) + 'B', 2013);
 
-  // 9. Receipts by month: 2025, 2026 so far, 2027 Kodo forecast with its range
+  // 9. Receipts by month: 2025, 2026 official, 2026E for the remaining months, 2027F with its range
   setH('twrap-season', 290);
   {
     const mon = {};
@@ -2839,16 +2836,24 @@ function initTourismCharts() {
     const yr = y => TOUR_MON.map((_, i) => mon[`${y}-${String(i + 1).padStart(2, '0')}`] ?? null);
     const fm = F27.receipts.monthly;
     const last26 = Object.keys(mon).filter(k => k.startsWith('2026')).sort().pop();
+    // 2026E continues the official line from its last month
+    const est26 = TOUR_MON.map(() => null);
+    const lastIdx = +last26.slice(5) - 1;
+    est26[lastIdx] = mon[last26];
+    (F.estimate_2026?.receipts_monthly || []).forEach(m => { est26[+m.month.slice(5) - 1] = m.value / 1000; });
+    const estFrom = (F.estimate_2026?.receipts_monthly || [])[0]?.month;
     new Chart(document.getElementById('chart-tour-season'), {
       type: 'line',
       data: {
         labels: TOUR_MON,
         datasets: [
-          { label: '2027 low', data: fm.map(m => m.low / 1000), borderWidth: 0, pointRadius: 0, fill: false },
-          { label: '2027 range', data: fm.map(m => m.high / 1000), borderWidth: 0, pointRadius: 0, backgroundColor: withAlpha(cc.forecastColor, 0.16), fill: '-1' },
-          { label: '2027 Kodo forecast', data: fm.map(m => m.base / 1000), borderColor: cc.forecastColor, borderDash: [5, 4], borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+          { label: '2027F low', data: fm.map(m => m.low / 1000), borderWidth: 0, pointRadius: 0, fill: false },
+          { label: '2027F range', data: fm.map(m => m.high / 1000), borderWidth: 0, pointRadius: 0, backgroundColor: withAlpha(cc.forecastColor, 0.16), fill: '-1' },
+          { label: '2027F forecast', data: fm.map(m => m.base / 1000), borderColor: cc.forecastColor, borderDash: [5, 4], borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
           { label: '2025 official', data: yr(2025), borderColor: cc.compColor, borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
           { label: '2026 official', data: yr(2026), borderColor: cc.barColor, borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+          { label: '2026E estimate', data: est26, borderColor: cc.barColor, borderDash: [2, 3], borderWidth: 2, pointRadius: 2,
+            pointStyle: 'circle', pointBackgroundColor: 'transparent', tension: 0.3, fill: false },
         ],
       },
       options: {
@@ -2857,12 +2862,13 @@ function initTourismCharts() {
           legend: { display: false }, datalabels: { display: false },
           tooltip: {
             ...tip(), mode: 'index', intersect: false,
-            filter: item => !['2027 low', '2027 range'].includes(item.dataset.label) && item.raw != null,
+            filter: item => !['2027F low', '2027F range'].includes(item.dataset.label) && item.raw != null
+              && !(item.dataset.label === '2026E estimate' && item.dataIndex === lastIdx),
             callbacks: {
               label: ctx => {
-                if (ctx.dataset.label.startsWith('2027')) {
+                if (ctx.dataset.label.startsWith('2027F')) {
                   const m = fm[ctx.dataIndex];
-                  return `  Kodo forecast 2027: MAD ${(m.base / 1000).toFixed(1)}B (range ${(m.low / 1000).toFixed(1)}–${(m.high / 1000).toFixed(1)})`;
+                  return `  2027F forecast: MAD ${(m.base / 1000).toFixed(1)}B (range ${(m.low / 1000).toFixed(1)}–${(m.high / 1000).toFixed(1)})`;
                 }
                 return `  ${ctx.dataset.label}: MAD ${(+ctx.raw).toFixed(1)}B`;
               },
@@ -2875,8 +2881,9 @@ function initTourismCharts() {
     const [ly, lm] = last26.split('-').map(Number);
     document.getElementById('tour-season-legend').innerHTML = [
       ['tour-dot-official', `2026 official (to ${TOUR_MON[lm - 1]} ${ly})`],
+      ...(estFrom ? [['tour-dot-estimate', `2026E estimate (${TOUR_MON[+estFrom.slice(5) - 1]}–Dec)`]] : []),
       ['tour-dot-prior', '2025 official'],
-      ['tour-dot-forecast', '2027 Kodo forecast, with range'],
+      ['tour-dot-forecast', '2027F forecast, with range'],
     ].map(([c, t]) => `<span class="chart-dot-legend-item"><span class="chart-dot-legend-dot ${c}"></span>${t}</span>`).join('');
   }
 
@@ -2888,10 +2895,10 @@ function initTourismCharts() {
   tourismInited = true;
 }
 
-// The 2026 year-to-date strip, the forecast section, the catalysts and the sources
+// The 2026 year-to-date strip, the outlook section (2026E and 2027F), the
+// catalysts and the notes on reading the figures
 function renderTourismPanels() {
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const period = p => { const [a, b] = p.split('/'); const m1 = +a.slice(5), m2 = +b.slice(5); return `${TOUR_MON[m1 - 1]}–${TOUR_MON[m2 - 1]} ${b.slice(0, 4)}`; };
   const last = id => tourSeries(id).points[tourSeries(id).points.length - 1];
 
   // 2026 so far
@@ -2903,48 +2910,73 @@ function renderTourismPanels() {
   ];
   document.getElementById('tour-ytd').innerHTML =
     `<span class="tour-ytd-title">2026 so far <span class="pill--grey tour-ytd-pill">provisional</span></span>` +
-    ytd.map(([l, p, f]) => `<span class="tour-ytd-item" title="Source: ${esc(tourSrcName(p.source))}, ${esc(tourPub(tourismData.sources[p.source]))}">
-        <span class="tour-ytd-label">${l} · ${period(p.period)}</span>
+    ytd.map(([l, p, f]) => `<span class="tour-ytd-item">
+        <span class="tour-ytd-label">${l} · ${tourSpan(p.period)}</span>
         <span class="tour-ytd-value">${f(p.value)}</span>
         <span class="tour-ytd-delta">${tourSigned(p.yoy_pct)}% vs same period 2025</span></span>`).join('');
 
-  // 2027 Kodo forecast
-  const F = tourismData.forecast, F27 = F.forecast_2027, N26 = F.nowcast_2026, BT = F.backtest;
+  // Outlook: 2026E estimate and 2027F forecast
+  const F = tourismData.forecast, F27 = F.forecast_2027, N26 = F.nowcast_2026, BT = F.backtest, E26 = F.estimate_2026 || {};
   document.getElementById('tour-fc-intro').innerHTML =
-    'Kodo’s own projection for 2027, built from the official figures above. It is not an official forecast. '
-    + 'Each figure is a base case with a low–high range; the range is wider where the history is short. '
+    'Kodo’s own figures, built from the official figures above; they are not official. '
+    + '<strong>2026E</strong> is an estimate: the official months published so far plus Kodo’s model for the rest of the year. '
+    + '<strong>2027F</strong> is a forecast: a base case with a low–high range, wider where the history is short. '
     + '<a href="/methodology#tourism-forecast">Method, assumptions and backtest</a>.';
+  const pct = v => v.toFixed(1) + '%';
   const cards = [
     ['Arrivals', F27.arrivals, tourM, N26.arrivals, BT.arrivals],
     ['Tourist nights', F27.nights, tourM, N26.nights, BT.nights],
-    ['Occupancy', F27.occupancy, v => v.toFixed(1) + '%', N26.occupancy, BT.occupancy],
+    ['Occupancy', F27.occupancy, pct, N26.occupancy, BT.occupancy, true],
     ['Travel receipts', F27.receipts, v => 'MAD ' + tourB(v), N26.receipts, BT.receipts],
     ['Airport passengers', F27.air_passengers, tourM, N26.air_passengers, BT.air_passengers],
   ].filter(c => c[1]);
-  document.getElementById('tour-fc-grid').innerHTML = cards.map(([l, f, fmt, n, bt]) => `
+  document.getElementById('tour-fc-grid').innerHTML = cards.map(([l, f, fmt, n, bt, pts]) => `
     <div class="tour-fc-card">
-      <span class="tour-fc-label">${l} · 2027</span>
+      <span class="tour-fc-label">${l} · 2027F</span>
       <span class="tour-fc-value">${fmt(f.base)}</span>
       <span class="tour-fc-range">range ${fmt(f.low)} – ${fmt(f.high)}</span>
-      ${n && n.base != null ? `<span class="tour-fc-meta">2026 estimate ${fmt(n.base)}${f.growth_vs_2026 != null ? ` · ${tourSigned(f.growth_vs_2026)}%` : ''}</span>` : ''}
+      ${n && n.base != null ? `<span class="tour-fc-meta"><span class="tour-fc-est">2026E estimate ${fmt(n.base)}</span> · ${tourChange(n.base, f.base, pts)} to 2027F</span>` : ''}
       <span class="tour-fc-meta">Backtest error ${bt.mape_v2}%${Object.keys(bt.years).length > 1 ? ' (average)' : ' (one year)'}</span>
     </div>`).join('');
-  const table = (id, head, rows) => {
-    document.getElementById(id).innerHTML = `<thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`
-      + rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') + '</tbody>';
+
+  // Tables: 2025 (official) | 2026E | 2027F | range of 2027F | change 2026E → 2027F; the total row matches the cards
+  const head = first => `<thead><tr><th>${first}</th><th data-year="2025">2025</th><th data-year="2026" class="tour-col-est">2026E ${TOUR_TAG.est}</th>`
+    + `<th data-year="2027" class="tour-col-fc">2027F ${TOUR_TAG.fc}</th><th data-year="2027" class="tour-col-rng">Range 2027F</th>`
+    + `<th class="tour-col-chg" title="Change from 2026E to 2027F">2026E → 27F</th></tr></thead>`;
+  const row = (name, v25, v26, f, fmt, pts, total) => `<tr${total ? ' class="tour-row-total"' : ''}><td>${esc(name)}</td>`
+    + `<td data-year="2025">${v25 == null ? '—' : fmt(v25)}</td><td data-year="2026" class="tour-col-est">${v26 == null ? '—' : fmt(v26)}</td>`
+    + `<td data-year="2027" class="tour-col-fc">${fmt(f.base)}</td><td data-year="2027" class="tour-col-rng">${fmt(f.low)}–${fmt(f.high)}</td>`
+    + `<td class="tour-col-chg">${tourChange(v26, f.base, pts)}</td></tr>`;
+  const table = (id, first, total, rows) => {
+    document.getElementById(id).innerHTML = head(first) + '<tbody>' + total + rows.join('') + '</tbody>';
   };
-  table('tour-fc-markets', ['Market', '2025', '2027', 'Range'],
-    Object.entries(F.markets_2027).sort((x, y) => y[1].base - x[1].base).map(([m, v]) => [esc(m), tourM(tourAnnual('arrivals_mkt_' + m)[2025]), tourM(v.base), `${tourM(v.low)}–${tourM(v.high)}`]));
-  table('tour-fc-cities', ['City', '2025', '2027', 'Range'],
-    Object.entries(F.cities_occupancy_2027).sort((x, y) => y[1].base - x[1].base).map(([c, v]) => [esc(c), tourAnnual('occupancy_' + c)[2025] + '%', v.base.toFixed(0) + '%', `${v.low.toFixed(0)}–${v.high.toFixed(0)}%`]));
-  table('tour-fc-airports', ['Airport', '2025', '2027', 'Range'],
-    Object.entries(F.airports_2027).sort((x, y) => y[1].base - x[1].base).map(([a, v]) => [esc(a), tourM(tourAnnual('airport_' + a)[2025]), tourM(v.base), `${tourM(v.low)}–${tourM(v.high)}`]));
+  const occFmt = v => (+v).toFixed(0) + '%';
+  const sorted = o => Object.entries(o).sort((x, y) => y[1].base - x[1].base);
+  table('tour-fc-markets', 'Market',
+    row('All markets', tourAnnual('arrivals_total')[2025], N26.arrivals.base, F27.arrivals, tourM, false, true),
+    sorted(F.markets_2027).map(([m, v]) => row(m, tourAnnual('arrivals_mkt_' + m)[2025], E26.markets?.[m], v, tourM)));
+  table('tour-fc-cities', 'City',
+    row('Morocco', tourAnnual('occupancy_Morocco')[2025], N26.occupancy.base, F27.occupancy, pct, true, true),
+    sorted(F.cities_occupancy_2027).map(([c, v]) => row(c, tourAnnual('occupancy_' + c)[2025], E26.cities_occupancy?.[c], v, occFmt, true)));
+  table('tour-fc-airports', 'Airport',
+    row('All airports', tourAnnual('air_passengers_total')[2025], N26.air_passengers.base, F27.air_passengers, tourM, false, true),
+    sorted(F.airports_2027).map(([a, v]) => row(a, tourAnnual('airport_' + a)[2025], E26.airports?.[a], v, tourM)));
+
+  // Which months of 2026 are official, from the periods the estimate was built on
+  const off = E26.official || {};
+  const names = { arrivals: 'arrivals', nights: 'nights', receipts: 'travel receipts', air_passengers: 'airport passengers (also by airport)' };
+  const bySpan = {};
+  Object.keys(names).filter(k => off[k]).forEach(k => (bySpan[tourSpan(off[k])] = bySpan[tourSpan(off[k])] || []).push(names[k]));
+  const spans = Object.entries(bySpan).map(([sp, ks]) => `${sp.replace(/ \d{4}$/, '')} for ${ks.join(' and ')}`);
   const held = F.withheld.map(w => esc(w.item)).join('; ');
   document.getElementById('tour-fc-foot').innerHTML =
-    'Markets include MRE in their country of residence. Airport figures are not backtested (no earlier history could be verified), so their range is wider. '
+    (spans.length ? `<span class="tour-fc-months"><strong>2026E</strong>: official figures for ${spans.join(', ')}; `
+      + 'the remaining months are Kodo’s model. No official 2026 split by market or city is published yet, so those 2026E figures are Kodo’s.</span> ' : '')
+    + 'The range applies to 2027F only; the last column is the change from 2026E to 2027F. '
+    + 'Markets include MRE in their country of residence. Airport figures are not backtested, so their range is wider. '
     + `Travel receipts are also forecast by month (chart above). Not forecast: ${held}.`;
 
-  // Catalysts, each from the figures above or an official source
+  // Catalysts, each from the figures above
   const arr = tourAnnual('arrivals_total'), rec = tourAnnual('receipts_total'), tot = tourAnnual('air_passengers_total');
   const tgt = Object.fromEntries(tourismData.targets.map(t => [t.id, t.value]));
   const mon = {}; tourSeries('receipts_monthly').points.forEach(p => { mon[p.period] = p.value; });
@@ -2955,24 +2987,32 @@ function renderTourismPanels() {
     ['Roadmap 2023–2026', `Targets for 2026: ${tourM(tgt.arrivals_2026)} arrivals and MAD ${tourB(tgt.receipts_2026)} of receipts. Both passed in 2025: ${tourM(arr[2025])} arrivals and MAD ${tourB(rec[2025])}.`],
     ['2030 vision', `${tourM(tgt.arrivals_2030)} arrivals targeted by 2030, the year Morocco co-hosts the FIFA World Cup with Spain and Portugal.`],
     ['AFCON 2025', `Africa Cup of Nations, 21 Dec 2025 – 18 Jan 2026: travel receipts ${tourSigned(tourPct(mon['2025-12'], mon['2024-12']), 0)}% in December 2025 on a year earlier.`],
-    ['Air traffic', `${tourM(tot[2025])} airport passengers in 2025 (${tourSigned(g(tot, 2025), 0)}%), and ${tourSigned(airYtd.yoy_pct)}% in Jan–Aug 2026.`],
+    ['Air traffic', `${tourM(tot[2025])} airport passengers in 2025 (${tourSigned(g(tot, 2025), 0)}%), and ${tourSigned(airYtd.yoy_pct)}% in ${tourSpan(airYtd.period)}.`],
     ['Long-haul markets', `Arrivals in 2025: United States ${tourSigned(g(mk('United States'), 2025), 0)}%, Canada ${tourSigned(g(mk('Canada'), 2025), 0)}%, China ${tourSigned(g(mk('China'), 2025), 0)}%.`],
-    ['Tourism in the economy', 'Tourism was 7.5% of GDP in 2025, up from 7.2% in 2024 (HCP tourism satellite account, as published by the Observatoire du Tourisme).'],
+    ['Tourism in the economy', 'Tourism was 7.5% of GDP in 2025, up from 7.2% in 2024 (tourism satellite account).'],
   ];
   document.getElementById('tour-catalysts').innerHTML = cats.map(([t, d]) =>
     `<div class="catalyst-card"><div class="catalyst-card-title">${t}</div><div class="catalyst-card-desc">${esc(d)}</div></div>`).join('');
 
-  // Sources
-  const srcs = Object.entries(tourismData.sources);
-  const li = ([id, s]) => `<li>${esc(s.publisher)} — <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>, published ${esc(tourPub(s))}.</li>`;
-  document.getElementById('tour-sources').innerHTML =
-    `<p class="tour-sources-title">Sources</p>
-     <ul class="tour-sources-list">${srcs.filter(([, s]) => s.kind === 'official').map(li).join('')}</ul>
-     <p class="tour-sources-title">Reported in the press (the airport authority’s own releases could not be read)</p>
-     <ul class="tour-sources-list">${srcs.filter(([, s]) => s.kind !== 'official').map(li).join('')}</ul>
-     <p class="tour-disclaimer">${tourismData.notes.map(esc).join(' ')} Figures checked ${esc(KodoPeriod.day(tourismData.updated))}. `
-     + `Provisional figures may be revised. The 2026 estimate and the 2027 figures are Kodo forecasts, not official data. `
-     + `Events: organisers, ministries and press (sources in each event); dates subject to change.</p>`;
+  // How to read the figures (the source line under it is in the template)
+  document.getElementById('tour-notes').textContent = tourismData.notes.join(' ');
+}
+
+// Search result → Outlook section, with the year's column briefly highlighted
+function showTourismOutlook(year) {
+  _srchNavigateToScreen('tourism');
+  let tries = 0;
+  const go = () => {
+    const card = document.getElementById('tour-fc');
+    const cells = card ? card.querySelectorAll(`.tour-table [data-year="${year}"]`) : [];
+    if (!cells.length) { if (++tries < 60) setTimeout(go, 100); return; }
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    card.querySelectorAll('.tour-col-flash').forEach(el => el.classList.remove('tour-col-flash'));
+    void card.offsetWidth;   // restart the animation if it is already running
+    cells.forEach(el => el.classList.add('tour-col-flash'));
+    setTimeout(() => cells.forEach(el => el.classList.remove('tour-col-flash')), 2600);
+  };
+  go();
 }
 
 // ─── Pipeline screen ──────────────────────────────────────────────
@@ -5492,6 +5532,7 @@ function _srchRun(query) {
     owners:   searchIndex.owners.filter(o => o.searchText.includes(q)).slice(0, 3),
     pipeline: searchIndex.pipeline.filter(p => p.searchText.includes(q)).slice(0, 3),
     news:     searchIndex.news.filter(a => a.searchText.includes(q)).slice(0, 2),
+    tourism:  window.KodoOutlookSearch ? KodoOutlookSearch.match(q) : [],
   };
 }
 
@@ -5606,6 +5647,17 @@ function _srchRender(query) {
   const results = _srchRun(query);
   const groups = [];
 
+  // Tourism outlook first: these queries are specific (a year, estimate, forecast, outlook)
+  if (results.tourism.length) groups.push({
+    label: 'Tourism',
+    items: results.tourism.map(t => ({
+      name: t.name,
+      tagHtml: `<span class="tour-tag tour-tag--${t.kind}">${t.tag}</span>`,
+      meta: t.meta,
+      action() { closeSearch(); _srchSaveRecent(query); showTourismOutlook(t.year); },
+    })),
+  });
+
   if (results.hotels.length) groups.push({
     label: 'Hotels',
     items: results.hotels.map(h => ({
@@ -5688,7 +5740,7 @@ function _srchRender(query) {
     g.items.forEach(item => {
       const el = document.createElement('div');
       el.className = 'search-result-item';
-      const text = `<div class="search-result-name">${fmt.esc(item.name)}</div><div class="search-result-meta">${item.metaHtml || fmt.esc(item.meta)}</div>`;
+      const text = `<div class="search-result-name">${fmt.esc(item.name)}${item.tagHtml ? ' ' + item.tagHtml : ''}</div><div class="search-result-meta">${item.metaHtml || fmt.esc(item.meta)}</div>`;
       el.innerHTML = item.iconHtml ? `<div class="search-result-row"><span class="search-result-logo">${item.iconHtml}</span><div>${text}</div></div>` : text;
       el.addEventListener('click', item.action);
       groupEl.appendChild(el);
@@ -6251,20 +6303,25 @@ function exportTourism() {
     return;
   }
   if (!tourismData) { loadTourismData().then(exportTourism).catch(() => {}); return; }
-  const src = id => { const s = tourismData.sources[id]; return s ? `${s.publisher.split(',')[0]} (${s.published || 'date not stated'})` : id; };
   const rowsOf = metric => tourBy(metric).flatMap(s => s.points.map(p => ({
     Series: s.label, Period: p.period, Value: p.value, Unit: s.unit, Status: p.status + (p.covid ? ' · COVID year' : ''),
-    Source: src(p.source), Note: [p.note, s.note].filter(Boolean).join(' '),
   })));
-  const F = tourismData.forecast;
+  const F = tourismData.forecast, E26 = F.estimate_2026 || {};
   const fc = [];
-  const add = (what, unit, f) => fc.push({ Item: what, Unit: unit, Base: f.base, Low: f.low, High: f.high, Label: 'Kodo forecast, not official' });
-  Object.entries(F.forecast_2027).forEach(([k, f]) => add(`${k} 2027`, f.unit || (k === 'occupancy' ? '%' : ''), f));
-  Object.entries(F.nowcast_2026).forEach(([k, f]) => f.low != null && add(`${k} 2026 estimate`, '', f));
-  Object.entries(F.markets_2027).forEach(([k, f]) => add(`Arrivals from ${k} 2027`, 'arrivals', f));
-  Object.entries(F.cities_occupancy_2027).forEach(([k, f]) => add(`Occupancy ${k} 2027`, '%', f));
-  Object.entries(F.airports_2027).forEach(([k, f]) => add(`Passengers ${k} 2027`, 'passengers', f));
-  (F.forecast_2027.receipts?.monthly || []).forEach(m => add(`Receipts ${m.month}`, 'MAD million', m));
+  const add = (what, unit, f) => fc.push({ Item: what, Unit: unit, Base: f.base, Low: f.low, High: f.high, Label: 'Kodo forecast (2027F), not official' });
+  const est = (what, unit, v) => v != null && fc.push({ Item: what, Unit: unit, Base: v, Low: '', High: '', Label: 'Kodo estimate (2026E), not official' });
+  const UNITS = { arrivals: 'arrivals', nights: 'nights', occupancy: '%', receipts: 'MAD million', air_passengers: 'passengers' };
+  Object.entries(F.nowcast_2026).forEach(([k, f]) => est(`${k} 2026E`, UNITS[k] || '', f.base));
+  Object.entries(E26.markets || {}).forEach(([k, v]) => est(`Arrivals from ${k} 2026E`, 'arrivals', v));
+  Object.entries(E26.cities_occupancy || {}).forEach(([k, v]) => est(`Occupancy ${k} 2026E`, '%', v));
+  Object.entries(E26.airports || {}).forEach(([k, v]) => est(`Passengers ${k} 2026E`, 'passengers', v));
+  (E26.receipts_monthly || []).forEach(m => est(`Receipts ${m.month} (2026E)`, 'MAD million', m.value));
+  Object.entries(F.forecast_2027).forEach(([k, f]) => add(`${k} 2027F`, f.unit || UNITS[k] || '', f));
+  Object.entries(F.markets_2027).forEach(([k, f]) => add(`Arrivals from ${k} 2027F`, 'arrivals', f));
+  Object.entries(F.cities_occupancy_2027).forEach(([k, f]) => add(`Occupancy ${k} 2027F`, '%', f));
+  Object.entries(F.airports_2027).forEach(([k, f]) => add(`Passengers ${k} 2027F`, 'passengers', f));
+  (F.forecast_2027.receipts?.monthly || []).forEach(m => add(`Receipts ${m.month} (2027F)`, 'MAD million', m));
+  const notes = [...tourismData.notes, 'Source: official Moroccan statistics and Kodo analysis. See kodohospitality.com/methodology.'];
   exportToExcel(
     [
       { data: [...rowsOf('arrivals'), ...rowsOf('arrivals_by_mode'), ...rowsOf('arrivals_by_entry')], name: 'Arrivals' },
@@ -6273,8 +6330,8 @@ function exportTourism() {
       { data: rowsOf('occupancy'), name: 'Occupancy' },
       { data: [...rowsOf('receipts'), ...rowsOf('receipts_by_country')], name: 'Receipts' },
       { data: [...rowsOf('air_passengers'), ...rowsOf('airport_passengers')], name: 'Airports' },
-      { data: fc, name: 'Kodo forecast' },
-      { data: Object.values(tourismData.sources).map(s => ({ Publisher: s.publisher, Title: s.title, Published: s.published || 'not stated', URL: s.url, Kind: s.kind })), name: 'Sources' },
+      { data: fc, name: 'Kodo 2026E and 2027F' },
+      { data: notes.map(n => ({ Note: n })), name: 'Notes' },
     ],
     'Kodo_Tourism_Morocco'
   );

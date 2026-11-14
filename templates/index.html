@@ -923,7 +923,7 @@
         <!-- 2026 year to date (provisional official figures) -->
         <div class="tour-ytd" id="tour-ytd" aria-label="2026 so far"></div>
 
-        <!-- Arrivals trend: official, then the 2026 estimate and the 2027 forecast with its range -->
+        <!-- Arrivals trend: official, then the 2026E estimate and the 2027F forecast with its range -->
         <div class="charts-row">
           <div class="chart-card">
             <div class="chart-card-header">
@@ -934,7 +934,8 @@
             <div class="chart-dot-legend tour-legend">
               <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-official"></span>Official</span>
               <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-covid"></span>COVID years (2020–2021)</span>
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-forecast"></span>Kodo estimate (2026) and forecast (2027), with range</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-estimate"></span>2026E Kodo estimate</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-forecast"></span>2027F Kodo forecast, with range</span>
             </div>
           </div>
         </div>
@@ -1003,7 +1004,8 @@
             <div class="chart-wrap" id="twrap-revenue"><canvas id="chart-tour-revenue"></canvas></div>
             <div class="chart-dot-legend tour-legend">
               <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-official"></span>Official</span>
-              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-forecast"></span>Kodo estimate / forecast, with range</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-estimate"></span>2026E Kodo estimate</span>
+              <span class="chart-dot-legend-item"><span class="chart-dot-legend-dot tour-dot-forecast"></span>2027F Kodo forecast, with range</span>
             </div>
           </div>
           <div class="chart-card">
@@ -1016,11 +1018,11 @@
           </div>
         </div>
 
-        <!-- 2027 Kodo forecast: kept apart from the official figures -->
+        <!-- Outlook: 2026E Kodo estimate and 2027F Kodo forecast, kept apart from the official figures -->
         <div class="table-card tour-fc" id="tour-fc" style="margin-bottom:20px">
           <div class="table-card-header">
-            <span class="table-title">2027 Outlook</span>
-            <span class="pill--sky tour-fc-pill">Kodo forecast · not official</span>
+            <span class="table-title">Outlook · 2026E and 2027F</span>
+            <span class="pill--sky tour-fc-pill">Kodo estimate and forecast · not official</span>
           </div>
           <p class="tour-fc-intro" id="tour-fc-intro"></p>
           <div class="tour-fc-grid" id="tour-fc-grid"></div>
@@ -1047,6 +1049,12 @@
             <span class="table-title">Key Demand Catalysts</span>
           </div>
           <div class="catalyst-grid" id="tour-catalysts"></div>
+        </div>
+
+        <!-- How to read the figures; the source records stay internal (tourism.json) -->
+        <div class="tour-notes-wrap">
+          <p class="tour-disclaimer" id="tour-notes"></p>
+          <p class="tour-source-line">Source: official Moroccan statistics and Kodo analysis. See <a href="/methodology#tourism">Methodology</a>.</p>
         </div>
 
         <!-- Events calendar (static/js/events.js; data: events.json) -->
@@ -1106,9 +1114,6 @@
           <div class="evcal-agenda" id="evcal-agenda" hidden></div>
           <p class="evcal-foot evc-muted">Sources and the date each was checked are in every event’s detail. Estimated dates follow last year’s pattern; moon-dependent dates are confirmed the evening before.</p>
         </div>
-
-        <!-- Sources: each official figure's publisher, title and publication date (tourism.json) -->
-        <div class="tour-sources" id="tour-sources"></div>
       </section>
 
       <!-- ── Brands ── -->
@@ -2006,6 +2011,7 @@
   <!-- xlsx-js-style: SheetJS fork that writes cell styles (same XLSX API) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <script src="/static/js/palette.js?v={{ asset_version('js/palette.js') }}"></script>
+  <script src="/static/js/outlook_search.js?v={{ asset_version('js/outlook_search.js') }}"></script>
   <script src="/static/js/main.js?v={{ asset_version('js/main.js') }}"></script>
   <script src="/static/js/events.js?v={{ asset_version('js/events.js') }}"></script>
   <!-- Loaded after main.js so window.initGoogleMaps already exists before
