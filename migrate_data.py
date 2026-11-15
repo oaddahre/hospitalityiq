@@ -19,6 +19,9 @@ admin upload panel in the Rates panel:
     .owners.json       Owner profiles (kodo-owners-1): owners_apply
     .coordinates.csv   Coordinate corrections (approve = yes): apply
     .ids.json          Google IDs (kodo-google-ids-1): import_ids
+    .news.json         Remove articles from news.json (kodo-news-1:
+                       {"remove": [{"id", "slug"}]}): an article is removed
+                       only when both its id and slug match
 
 On start (app.py), run_pending():
   - takes a lock, so one worker runs them while the others carry on;
@@ -51,7 +54,7 @@ from run_lock import acquire_lock
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 MIGRATIONS_DIR = os.path.join(APP_DIR, 'data_migrations')
-NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json)$')
+NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json)$')
 OFF = {'off', '0', 'false', 'no'}
 
 
@@ -74,6 +77,7 @@ def paths(data_dir):
         'overrides': os.path.join(data_dir, 'hotel_id_overrides.json'),
         'backups': os.path.join(data_dir, 'backups'),
         'log': os.path.join(data_dir, 'coordinate_changes_applied.log'),
+        'news': os.path.join(data_dir, 'news.json'),
         'state': os.path.join(data_dir, 'data_migrations_state.json'),
         'lock': os.path.join(data_dir, 'data_migrations.lock'),
     }
@@ -81,7 +85,7 @@ def paths(data_dir):
 
 # Files each kind can write (copied first, put back on failure)
 TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance', 'comp_sets'), 'owners.json': ('owners',),
-           'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides')}
+           'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',)}
 
 
 def available(migrations_dir=MIGRATIONS_DIR):
@@ -93,7 +97,7 @@ def available(migrations_dir=MIGRATIONS_DIR):
             continue
         m = NAME_RE.match(name)
         if not m:
-            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json>')
+            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json>')
         if m.group(1) in seen:
             raise MigrationError(f'data_migrations: number {m.group(1)} used twice ({seen[m.group(1)]}, {name})')
         seen[m.group(1)] = name
@@ -166,6 +170,8 @@ def _apply(kind, path, P, actor):
         for e in plan:
             counts[e['status']] = counts.get(e['status'], 0) + 1
         return r['applied'], counts.get('already', 0), [b for b in [r.get('backup')] if b], counts
+    if kind == 'news.json':
+        return _apply_news(text, P)
     ids, ovs, rej = CA.read_ids_bundle(text)
     plan = CA.ids_plan(P['hotels'], P['ids'], P['overrides'], ids, ovs, rej)
     _problems(plan, {'import', 'reject', 'already'}, 'Google ID')
@@ -174,6 +180,37 @@ def _apply(kind, path, P, actor):
     for e in plan:
         counts[e['status']] = counts.get(e['status'], 0) + 1
     return r['imported'], counts.get('already', 0), r['backups'], counts
+
+
+def _apply_news(text, P):
+    """Remove the listed articles (id and slug must both match). An
+    article already gone counts as already done."""
+    spec = json.loads(text)
+    if spec.get('format') != 'kodo-news-1' or not isinstance(spec.get('remove'), list):
+        raise MigrationError('news migration: format must be kodo-news-1 with a "remove" list')
+    try:
+        with open(P['news'], encoding='utf-8') as f:
+            arts = json.load(f)
+    except (OSError, ValueError):
+        arts = []
+    gone, already = [], 0
+    for want in spec['remove']:
+        hit = [a for a in arts if a.get('id') == want.get('id') and a.get('slug') == want.get('slug')]
+        if not hit:
+            other = [a for a in arts if a.get('id') == want.get('id')]
+            if other:
+                raise MigrationError(f"news migration: article {want.get('id')} has slug \"{other[0].get('slug')}\", "
+                                     f"not \"{want.get('slug')}\": nothing removed")
+            already += 1
+            continue
+        gone.extend(hit)
+    if gone:
+        keep = [a for a in arts if not any(a is g for g in gone)]
+        tmp = P['news'] + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(keep, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, P['news'])
+    return len(gone), already, [], {'remove': len(gone), 'already': already}
 
 
 def run_pending(data_dir, notify=None, log=print, migrations_dir=MIGRATIONS_DIR):

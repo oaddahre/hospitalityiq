@@ -54,9 +54,7 @@ def fmt_num(value, spec=",.0f", scale=1, prefix="", suffix="", na=NA):
 # ─── Period labels ──────────────────────────────────────────────────────────
 # Same wording as KodoPeriod in static/js/main.js (KPI cards and Excel
 # exports), so a figure carries the same period caption on screen and in the
-# PDF report. Keep the two in step. A past full year is never a headline
-# figure: headlines with only such data show NOT_AVAILABLE and
-# period_last_known(); the old figures appear as period_history().
+# PDF report. Keep the two in step.
 _MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
@@ -67,6 +65,11 @@ def _day(d, with_year=True):
     elif isinstance(d, datetime):
         d = d.date()
     return f"{d.day} {_MON[d.month - 1]}" + (f" {d.year}" if with_year else "")
+
+
+def day_label(d, with_year=True):
+    """'2026-11-03' (or a date) -> '3 Nov 2026'."""
+    return _day(d, with_year)
 
 
 def period_label(p):
@@ -117,44 +120,3 @@ def period_caption(p, compare=None, updated=None):
     return " · ".join(x for x in (label, compare, updated and f"updated {_day(updated)}") if x)
 
 
-def period_history(p):
-    """'Kodo model estimate · FY 2025 · not reported data': the yearly
-    occupancy, ADR and RevPAR in performance.csv are Kodo's own model
-    estimates, never reported figures. With LIVE_FIGURES the same columns
-    hold the live figures of the next 30 nights."""
-    if p and p.get("kind") == "next":
-        return "Published rates and modelled occupancy · next 30 nights · not reported data"
-    return f"Kodo model estimate · {period_label(p)} · not reported data" if p else ""
-
-
-def period_last_known(p):
-    """For a figure that has no current value: only a model estimate exists."""
-    return f"Only a Kodo model estimate exists ({period_label(p)}), not reported data" if p else ""
-
-
-def period_from_data(code):
-    """Period code as stored in the data files ('2025FY', '2025', '2026E', '2026-09') → period dict."""
-    import re
-    s = str(code or "").strip()
-    if s.upper() == "NEXT30":                 # LIVE_FIGURES: live figures, next 30 nights
-        return {"kind": "next", "days": 30}
-    m = re.match(r"^(\d{4})\s*FY$", s, re.I) or re.match(r"^FY\s*(\d{4})$", s, re.I)
-    if m:
-        return {"kind": "fy", "year": int(m.group(1))}
-    m = re.match(r"^(\d{4})E$", s, re.I)
-    if m:
-        return {"kind": "forecast", "year": int(m.group(1))}
-    if re.match(r"^\d{4}$", s):
-        return {"kind": "year", "year": int(s)}
-    m = re.match(r"^(\d{4})-(\d{2})$", s)
-    if m:
-        return {"kind": "month", "year": int(m.group(1)), "month": int(m.group(2))}
-    return None
-
-
-def period_of_codes(codes):
-    """Period of a set of rows from their period codes ('multi' when they differ); None if none parse."""
-    parts = [p for p in (period_from_data(c) for c in sorted({str(c) for c in codes if c and str(c) != "nan"})) if p]
-    if not parts:
-        return None
-    return parts[0] if len(parts) == 1 else {"kind": "multi", "parts": parts}

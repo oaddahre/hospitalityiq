@@ -10,7 +10,18 @@ For every open hotel, over the next 30 nights (from tomorrow, Casablanca):
   revpar   indicative RevPAR: published rate x modelled occupancy, night by
            night, averaged over the nights that have both
 These are published booking-site prices and modelled occupancy, never
-achieved ADR, occupancy or RevPAR.
+achieved figures.
+
+BAR since 3 November 2026 (DATA_START), the one observed rate figure of
+the dashboard, tables, reports and exports:
+  bar         per hotel, the average of its BAR (published rate) over the
+              nights from DATA_START to today: for each night, the last
+              price observed before that night (rates_store.last_before_night)
+  bar_nights  how many of those nights have a price; a hotel with fewer than
+              MIN_BAR_NIGHTS has no `bar` (too little to average)
+  bar_days    days of price collection since DATA_START (top level)
+A destination's BAR is the plain average of its hotels' `bar`, shown as a
+figure only with MIN_BAR_HOTELS hotels or more ("limited data" below).
 
 Groups (city, brand, owner, the whole market) are aggregated on the page
 from these per-hotel figures, weighted by rooms (static/js/main.js,
@@ -39,6 +50,9 @@ import rate_benchmark as RB
 from occupancy_model import active_model, row_model
 
 HISTORY_DAYS = 400
+DATA_START = date(2026, 11, 3)     # Kodo collects published rates every night from this day
+MIN_BAR_NIGHTS = 7                 # priced nights a hotel needs for its BAR
+MIN_BAR_HOTELS = 3                 # hotels a destination needs for its BAR to show as a figure
 _cache = {}
 _lock = threading.Lock()
 
@@ -92,6 +106,31 @@ def _rates_updated(data_dir):
     return RS.last_scrape_date(data_dir)
 
 
+def observed_bar(data_dir, ids, today: date, start: date = None, end: date = None):
+    """({hid: (bar, priced nights)}, days of collection): each hotel's
+    average BAR over the nights start .. end (default DATA_START .. today,
+    never before DATA_START or after today), from the last price observed
+    before each night."""
+    start, end = max(start or DATA_START, DATA_START), min(end or today, today)
+    if end < start:
+        return {h: (None, 0) for h in ids}, 0
+    rows = RS.read(data_dir, hotel_ids=ids, stay_from=start.isoformat(), stay_to=end.isoformat(),
+                   scrape_from=DATA_START.isoformat(), scrape_to=end.isoformat(), priced_only=True,
+                   sources=RB.SOURCE_ORDER, data_quality=RB.MATCHED)
+    days = {r.get('scrape_date') for r in rows if r.get('scrape_date') and r['scrape_date'] >= start.isoformat()}
+    by = {}
+    for (hid, night), r in RS.last_before_night(rows).items():
+        try:
+            by.setdefault(hid, []).append(float(r['rate_mad']))
+        except (KeyError, ValueError):
+            pass
+    out = {}
+    for h in ids:
+        v = [x for x in by.get(h, []) if x > 0]
+        out[h] = (round(statistics.mean(v)) if len(v) >= MIN_BAR_NIGHTS else None, len(v))
+    return out, len(days)
+
+
 def per_hotel(data_dir, today: date):
     """{'window', 'model', 'model_run', 'rates_updated', 'hotels': {hid: {...}}}"""
     hotels = RB.load_hotels(data_dir)
@@ -106,6 +145,7 @@ def per_hotel(data_dir, today: date):
     import flags
     dq = (DQ.load(data_dir) or {}).get('hotels') or {}
     hide_unpriced = flags.on('CONFIDENCE_UI')
+    bars, bar_days = observed_bar(data_dir, ids, today)
     out = {}
     for h in ids:
         p = {n: float(r['rate_mad']) for n, r in prices[h].items()}
@@ -122,13 +162,17 @@ def per_hotel(data_dir, today: date):
             'occ_high': round(statistics.mean(highs), 1) if highs and len(highs) == len(o) else None,
             'occ_nights': len(o),
             'revpar': round(statistics.mean(p[n] * o[n][0] / 100 for n in both)) if both else None,
+            'bar': bars[h][0],
+            'bar_nights': bars[h][1],
             'confidence': (dq.get(h) or {}).get('confidence'),
             'history_days': (dq.get(h) or {}).get('history_days'),
         }
         if hide_unpriced and dq and not (dq.get(h) or {}).get('history_days'):
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, occ_hidden='no price history')
     return {'window': {'start': nights[0], 'end': nights[-1], 'nights': len(nights)}, 'today': today.isoformat(),
-            'model': active_model(), 'model_run': model_run, 'rates_updated': _rates_updated(data_dir), 'hotels': out}
+            'model': active_model(), 'model_run': model_run, 'rates_updated': _rates_updated(data_dir),
+            'bar_since': DATA_START.isoformat(), 'bar_days': bar_days, 'min_bar_nights': MIN_BAR_NIGHTS,
+            'min_bar_hotels': MIN_BAR_HOTELS, 'hotels': out}
 
 
 # ─── Daily snapshot and the 7-day change ─────────────────────────────────────

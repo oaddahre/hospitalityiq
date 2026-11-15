@@ -2017,14 +2017,10 @@ async function loadDhPreview() {
   try { const r = await fetch('/api/admin/data-health/preview', { headers: authHeaders() }); P = await r.json(); if (!r.ok) throw new Error(P.error || r.status); }
   catch (e) { box.innerHTML = `<p class="adm-hint">Could not compute: ${escHtml(e.message)}</p>`; return; }
   const n = (v, d = 1) => v == null ? '—' : dhNum(v, d);
-  const C = P.CONFIDENCE_UI, L = P.LIVE_FIGURES, Q = P.QUALITY_RANGES;
+  const C = P.CONFIDENCE_UI, Q = P.QUALITY_RANGES;
   let h = `<h3 class="dh-h3">CONFIDENCE_UI · modelled occupancy, next 30 nights</h3><div class="dh-scroll"><table class="adm-table"><thead><tr><th>City or hotel</th><th>Before</th><th>After</th><th>Shown as</th></tr></thead><tbody>`
     + C.cities.map(r => `<tr><td>${escHtml(r.city)}</td><td>${n(r.before)}%</td><td>${r.after_shown === 'hidden' ? 'hidden' : n(r.after) + '%'}</td><td>${escHtml(r.after_label)} (${r.after_shown})</td></tr>`).join('')
     + C.hotels.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${n(r.before)}%</td><td>${r.after == null ? 'hidden' : n(r.after) + '%'}</td><td>${escHtml(r.after_label)}<div class="adm-hint">${escHtml(r.reasons.join('; '))}</div></td></tr>`).join('')
-    + '</tbody></table></div>';
-  h += `<h3 class="dh-h3">LIVE_FIGURES · FY 2025 estimate (before) vs live next 30 nights (after)</h3><div class="dh-scroll"><table class="adm-table"><thead><tr><th>City or hotel</th><th>Occ before</th><th>ADR before</th><th>RevPAR before</th><th>Occ after</th><th>Published rate after</th><th>RevPAR after</th></tr></thead><tbody>`
-    + [...L.cities.map(r => [escHtml(r.city), r]), ...L.hotels.map(r => [`${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span>`, r])].map(([name, r]) =>
-      `<tr><td>${name}</td><td>${n(r.before.occ)}%</td><td>${n(r.before.adr, 0)}</td><td>${n(r.before.revpar, 0)}</td><td>${n(r.after.occ)}%</td><td>${n(r.after.rate, 0)}</td><td>${n(r.after.revpar, 0)}</td></tr>`).join('')
     + '</tbody></table></div>';
   h += `<h3 class="dh-h3">QUALITY_RANGES · v2 occupancy over the next 30 nights, low / mid / high</h3>`
     + (Q.error ? `<p class="adm-hint">${escHtml(Q.error)}</p>` : `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Hotel</th><th>Before</th><th>After</th></tr></thead><tbody>`

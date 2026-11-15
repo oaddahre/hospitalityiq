@@ -718,7 +718,6 @@ def preview(data_dir, today=None, report=None):
     report = report or load(data_dir) or run(data_dir, today)
     hs = report['hotels']
     live = LK.get(data_dir, today).get('hotels') or {}
-    perf = {r['hotel_id']: r for r in _read_csv(os.path.join(data_dir, 'performance.csv'))}
     sample = _sample_hotels(report)
 
     def wavg(ids, f):
@@ -749,23 +748,6 @@ def preview(data_dir, today=None, report=None):
                                'after': occ_flag(h) if v['confidence'] != 'insufficient' else None,
                                'after_label': CLIENT_LABEL[v['confidence']], 'reasons': v['confidence_reasons']})
 
-    fnum = lambda r, k, s=1: (_f(r.get(k)) * s if r and _f(r.get(k)) is not None else None)
-    livefig = {'cities': [], 'hotels': []}
-    for c in cities:
-        ids = city_ids(c)
-        livefig['cities'].append({
-            'city': c,
-            'before': {'occ': wavg(ids, lambda i: fnum(perf.get(i), 'occupancy', 100)),
-                       'adr': wavg(ids, lambda i: fnum(perf.get(i), 'adr_mad')),
-                       'revpar': wavg(ids, lambda i: fnum(perf.get(i), 'revpar_mad'))},
-            'after': {'occ': wavg(ids, occ_now), 'rate': wavg(ids, lambda i: (live.get(i) or {}).get('rate')),
-                      'revpar': wavg(ids, lambda i: (live.get(i) or {}).get('revpar'))}})
-    for h in sample:
-        p, l = perf.get(h), live.get(h) or {}
-        livefig['hotels'].append({'hotel': hs[h]['name'], 'city': hs[h]['city'],
-                                  'before': {'occ': fnum(p, 'occupancy', 100), 'adr': fnum(p, 'adr_mad'), 'revpar': fnum(p, 'revpar_mad')},
-                                  'after': {'occ': l.get('occ'), 'rate': l.get('rate'), 'revpar': l.get('revpar')}})
-
     ranges = {'hotels': []}
     try:
         m = OM.recent_model()
@@ -781,7 +763,7 @@ def preview(data_dir, today=None, report=None):
                                      'after': {k: avg(b, h, k) for k in ('low', 'mid', 'high')}})
     except Exception as e:                   # the preview never breaks the page
         ranges['error'] = str(e)
-    return {'today': today.isoformat(), 'CONFIDENCE_UI': conf, 'LIVE_FIGURES': livefig, 'QUALITY_RANGES': ranges,
+    return {'today': today.isoformat(), 'CONFIDENCE_UI': conf, 'QUALITY_RANGES': ranges,
             'VALUATION_V2': {'note': 'Worked out in the browser from the valuation engine (static/js/valuation_engine.js).'}}
 
 
@@ -824,14 +806,15 @@ MODELS = [
      'confidence': 'observed prices; short history'},
     {'name': 'Benchmark occupancy index', 'where': 'rate_benchmark.modelled_occupancy', 'data': 'the stored model run for the hotel and comp set',
      'assumes': 'same as the model', 'label': 'modelled', 'confidence': 'low'},
-    {'name': 'Owner and brand roll-ups', 'where': 'main.js KodoLive.agg, app /api/brands', 'data': 'live per-hotel figures (cards); FY 2025 estimates (brand tables)',
-     'assumes': 'room-weighted averages', 'label': 'live cards labelled; brand table "est." with FY 2025 tooltip',
+    {'name': 'BAR since 3 Nov 2026', 'where': 'live_kpis.observed_bar, app load_data / group_bar',
+     'data': 'the last published price seen before each night, from 3 Nov 2026', 'assumes': 'a hotel needs 7 priced nights; a group 3 such hotels',
+     'label': 'BAR (published rate), "limited data" under 3 hotels', 'confidence': 'observed'},
+    {'name': 'Owner, brand and city roll-ups', 'where': 'main.js, app /api/data and /api/brands', 'data': 'per-hotel BAR (observed) and Kodo estimates',
+     'assumes': 'BAR: plain average of hotels; occupancy and RevPAR: room-weighted', 'label': 'BAR; Kodo estimate',
      'confidence': 'as the figures they average'},
-    {'name': 'FY 2025 estimates', 'where': 'performance.csv', 'data': 'none observed: Kodo model estimates for 2025 (occupancy, ADR, RevPAR, TRevPAR, GOP)',
-     'assumes': 'segment and city norms', 'label': 'Kodo model estimate · FY 2025 · not reported data',
-     'confidence': 'low; still shown in ~10 places (LIVE_FIGURES replaces them)'},
-    {'name': 'Hotel financials (profile)', 'where': 'main.js renderHotelFinancials', 'data': 'FY 2025 ADR and occupancy x keys x 365, revenue multiples by segment',
-     'assumes': 'fixed multiples by segment', 'label': 'indicative ranges, FY 2025 basis', 'confidence': 'low'},
+    {'name': 'FY 2025 estimates (removed for clients)', 'where': 'performance.csv', 'data': 'Kodo model estimates for 2025; no longer shown anywhere',
+     'assumes': 'segment and city norms', 'label': 'never shown to clients (tests/test_real_data_only.py)',
+     'confidence': 'internal input of occupancy model v1 only (reference price)'},
     {'name': 'Valuation tool', 'where': 'static/js/valuation_engine.js', 'data': 'user inputs, segment defaults (no hotel data)',
      'assumes': 'see the tool; v1 deducts rooms costs only, capex unit error, IRR terminal a year late, unlevered equity multiple, fixed ±8% range',
      'label': 'Indicative ranges only', 'confidence': 'v1 overstates value (about 1.9x on the Upscale example); VALUATION_V2 corrects'},

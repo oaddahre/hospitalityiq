@@ -1,0 +1,18 @@
+{
+  "format": "kodo-news-1",
+  "note": "Placeholder articles with invented market figures (written before Kodo collected any data)",
+  "remove": [
+    {
+      "id": 1,
+      "slug": "morocco-hotel-market-h1-2026"
+    },
+    {
+      "id": 2,
+      "slug": "luxury-pipeline-morocco-2028"
+    },
+    {
+      "id": 3,
+      "slug": "casablanca-vs-marrakech-hotel-markets"
+    }
+  ]
+}

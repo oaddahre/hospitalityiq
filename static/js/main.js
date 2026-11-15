@@ -332,7 +332,7 @@ const state = {
 
 let apiData  = null;   // /api/data response
 let hotels   = null;   // /api/hotels response (flat, merged)
-let revChart = null;
+let barChart = null;
 let occChart = null;
 let googleMap          = null;
 let googlePipelineMap  = null;
@@ -432,12 +432,10 @@ const fmt = {
 // period_caption() in utils.py write the same strings into the PDF report;
 // keep the two in step.
 //
-// Headline cards show the most recent period the data supports (the next
-// 30 nights for the live rate, occupancy and RevPAR cards: KodoLive; a
-// snapshot as of today for counts). The yearly figures of performance.csv
-// (FY 2025) are Kodo's own model estimates: never a headline, and labelled
-// "Kodo model estimate · FY 2025 · not reported data" wherever shown (history()).
-//   {kind:'fy', year:2025}                      → FY 2025
+// Headline cards show the period the data covers: BAR since 3 November
+// 2026 (KodoBar), Kodo estimates for the next 30 nights (KodoLive), a
+// snapshot as of today for counts.
+//   {kind:'fy', year:2026}                      → FY 2026
 //   {kind:'year', year:2025}                    → 2025          (calendar year)
 //   {kind:'month', year:2026, month:9}          → Sep 2026
 //   {kind:'ltm', year:2026, month:9}            → Last 12 months to Sep 2026
@@ -482,7 +480,6 @@ const KodoPeriod = (() => {
   function fromData(code) {
     const s = String(code || '').trim();
     let m;
-    if (s.toUpperCase() === 'NEXT30') return { kind: 'next', days: 30 };     // LIVE_FIGURES
     if ((m = s.match(/^(\d{4})\s*FY$/i)) || (m = s.match(/^FY\s*(\d{4})$/i))) return { kind: 'fy', year: +m[1] };
     if ((m = s.match(/^(\d{4})E$/i))) return { kind: 'forecast', year: +m[1] };
     if ((m = s.match(/^(\d{4})$/))) return { kind: 'year', year: +m[1] };
@@ -499,11 +496,6 @@ const KodoPeriod = (() => {
     const l = label(p);
     return l ? [l, compare, updated && `updated ${day(updated)}`].filter(Boolean).join(' · ') : '';
   }
-  // The yearly occupancy, ADR and RevPAR (performance.csv) are Kodo's own
-  // model estimates, never reported figures: every place showing them says so
-  const history   = p => !p ? '' : p.kind === 'next'
-    ? 'Published rates and modelled occupancy · next 30 nights · not reported data'
-    : `Kodo model estimate · ${label(p)} · not reported data`;
 
   function periodEl(card) {
     let el = card.querySelector('.kpi-period');
@@ -540,7 +532,7 @@ const KodoPeriod = (() => {
     if (text && tipText) el.title = tipText; else el.removeAttribute('title');
     if (text) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', 'true');
   }
-  return { label, caption, history, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set, setText, day,
+  return { label, caption, vs: p => p ? 'vs ' + label(p) : '', fromData, tip, set, setText, day,
            date: day, today: () => ({ kind: 'asof', date: new Date() }) };
 })();
 
@@ -549,39 +541,75 @@ const KodoPeriod = (() => {
 // (latest price per night), modelled occupancy and indicative RevPAR over
 // the next 30 nights; a group (city, brand, owner, market) is the rooms-
 // weighted average over its hotels that have the figure, with the
-// coverage shown. Published booking-site prices, not ADR; modelled, not
+// coverage shown. Published booking-site prices (BAR); modelled, not
 // measured occupancy. The 7-day change only once that snapshot exists.
 // Flags for changes to figures clients see (flags.py; window.KODO_FLAGS from
 // the page). All off until approved: with a flag off, nothing changes.
 const KODO_FLAG = name => !!(window.KODO_FLAGS && window.KODO_FLAGS[name]);
-// LIVE_FIGURES: the yearly FY 2025 model estimates give way to each hotel's
-// live figures for the next 30 nights (load_data() on the server); the words
-// that go with each.
-const PERF_LBL = KODO_FLAG('LIVE_FIGURES')
-  ? { occ: 'Occ % model', adr: 'Pub. rate', revpar: 'RevPAR indic.', tip: 'Next 30 nights: published rate and modelled occupancy, not reported data',
-      occPop: 'Occ. model', adrPop: 'Pub. rate', revPop: 'RevPAR indic.', revDesc: 'indicative RevPAR, next 30 nights, not reported data',
-      fin: 'Based on the published rate and modelled occupancy for the next 30 nights (not reported data)' }
-  : { occ: 'OCC est.', adr: 'ADR est.', revpar: 'RevPAR est.', tip: 'Kodo model estimate, FY 2025: not reported data',
-      occPop: 'Occ. est. FY25', adrPop: 'ADR est. FY25', revPop: 'RevPAR est. FY25', revDesc: 'Kodo model estimate, FY 2025, not reported data',
-      fin: "Based on Kodo's FY 2025 model estimates of BAR and occupancy (not reported data)" };
 
-// Table headers written in the page for the FY 2025 columns, relabelled once
-function relabelPerfColumns() {
-  if (!KODO_FLAG('LIVE_FIGURES')) return;
-  const words = { 'Occ % est.': 'Occ % model', 'ADR est. (MAD)': 'Pub. rate (MAD)', 'RevPAR est. (MAD)': 'RevPAR indic. (MAD)' };
-  document.querySelectorAll('th[title*="FY 2025"]').forEach(th => {
-    th.title = PERF_LBL.tip;
-    const t = [...th.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
-    if (t && words[t.textContent.trim()]) t.textContent = words[t.textContent.trim()] + ' ';
-  });
-  const card = document.getElementById('hkpi-perf-card');
-  if (card) {
-    card.querySelector('.kpi-label').textContent = 'Occ, rate, RevPAR columns';
-    const badge = card.querySelector('.kodo-estimate-badge');
-    if (badge) badge.textContent = 'Next 30 nights';
-    card.querySelector('.kpi-sub').textContent = 'Occupancy modelled, rate published (not ADR), RevPAR indicative';
+// ─── BAR (published rate) since 3 November 2026 ───────────────────
+// The one observed rate figure. A hotel's BAR is its average over the
+// nights since 3 November 2026 (the last published price seen before each
+// night), from 7 priced nights (bar_mad, bar_nights in /api/hotels and
+// /api/live-kpis). A group's BAR (destination, brand, owner, segment) is the
+// plain average of its hotels' BAR; under 3 such hotels it reads "Limited
+// data", never a precise-looking number. Kodo has no achieved rate, so
+// this is always called BAR or published rate. Occupancy and RevPAR are Kodo estimates (next 30 nights).
+const KodoBar = (() => {
+  const COLLECTING = 'Collecting data since 3 November';
+  const LIMITED = 'Limited data';
+  let meta = { since: '2026-11-03', days: 0, min_nights: 7, min_hotels: 3 };
+  const setMeta = m => { if (m) meta = { ...meta, ...m }; };
+  const longDay = iso => new Date(String(iso).slice(0, 10) + 'T00:00:00')
+    .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const since = () => `Since ${longDay(meta.since)}`;
+  const days = () => `${meta.days} day${meta.days === 1 ? '' : 's'} of data`;
+  const caption = () => `${since()} · ${days()}`;
+  // list: rows with bar_mad and bar_nights -> {val, n, nights, limited}
+  function group(list) {
+    const ok = (list || []).filter(h => h && h.bar_mad != null && !Number.isNaN(Number(h.bar_mad)));
+    const val = ok.length ? ok.reduce((t, h) => t + Number(h.bar_mad), 0) / ok.length : null;
+    return { val, n: ok.length, nights: ok.reduce((t, h) => t + (Number(h.bar_nights) || 0), 0),
+             limited: ok.length < meta.min_hotels };
   }
-}
+  const shown = g => g && g.val != null && !g.limited;
+  // A table cell: the figure, "Limited data" or "—", with what it rests on
+  function cell(g) {
+    if (!g || g.val == null) return `<span class="bar-na" title="No hotel with ${meta.min_nights} priced nights yet">—</span>`;
+    const tip = `BAR (published rate) · ${caption()} · ${g.n} hotel${g.n === 1 ? '' : 's'}, ${g.nights} nights`;
+    return g.limited ? `<span class="bar-limited" title="${tip}">${LIMITED.toLowerCase()}</span>`
+      : `<span title="${tip}">${fmt.mad(g.val)}</span>`;
+  }
+  // One hotel's BAR in a table: the figure, or "—" under 7 priced nights
+  function hotelCell(h) {
+    if (h.bar_mad == null) return `<span class="bar-na" title="${h.bar_nights || 0} priced night${h.bar_nights === 1 ? '' : 's'} since 3 November: needs ${meta.min_nights}">—</span>`;
+    return `<span title="BAR (published rate) · ${caption()} · ${h.bar_nights} nights">${fmt.mad(h.bar_mad)}</span>`;
+  }
+  // The KPI card. g: a group ({val, n, nights, limited}) or one hotel ({single, val, nights})
+  function card(c, g, d) {
+    const L = KodoLive;
+    c.querySelector('.kpi-label').textContent = 'BAR (published rate)';
+    if (d) setMeta({ since: d.bar_since, days: d.bar_days, min_nights: d.min_bar_nights, min_hotels: d.min_bar_hotels });
+    KodoPeriod.setText(c, caption(), KodoPeriod.tip({ source: 'published hotel rates, the last price seen before each night', note: 'observed; the public price, not what guests paid' }));
+    const v = c.querySelector('.kpi-value');
+    v.classList.remove('kpi-value--limited');
+    const d0 = c.querySelector('.kpi-delta'); if (d0) { d0.textContent = ''; d0.style.display = 'none'; }
+    if (g.single) {
+      if (g.val == null) { L.noData(c, g.nights ? LIMITED : COLLECTING); L.part(c, 'kpi-sub').textContent = `${g.nights} priced night${g.nights === 1 ? '' : 's'}: needs ${meta.min_nights}`; return; }
+      L.show(c, fmt.mad(g.val), 'MAD'); L.part(c, 'kpi-sub').textContent = `average of ${g.nights} nights`; return;
+    }
+    if (g.val == null) { L.noData(c, COLLECTING); L.part(c, 'kpi-sub').textContent = `no hotel with ${meta.min_nights} priced nights yet`; return; }
+    if (g.limited) { L.noData(c, LIMITED); L.part(c, 'kpi-sub').textContent = `${g.n} hotel${g.n === 1 ? '' : 's'} with ${meta.min_nights} priced nights: needs ${meta.min_hotels}`; return; }
+    L.show(c, fmt.mad(g.val), 'MAD'); L.part(c, 'kpi-sub').textContent = `average of ${g.n} hotels · ${g.nights.toLocaleString('en')} nights`;
+  }
+  // The empty state of a chart or card with no real data yet
+  const collecting = (detail = '') => `<div class="collecting-state" role="status"><span class="collecting-dot" aria-hidden="true"></span>`
+    + `<span class="collecting-title">${COLLECTING}</span>${detail ? `<span class="collecting-sub">${detail}</span>` : ''}</div>`;
+  return { COLLECTING, LIMITED, setMeta, since, days, caption, group, shown, cell, hotelCell, card, collecting,
+           meta: () => meta };
+})();
+const EST_TIP = 'Kodo estimate: occupancy model, next 30 nights; RevPAR = BAR × modelled occupancy';
+const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
 
 const KodoLive = (() => {
   let data = null, loading = null;
@@ -628,8 +656,9 @@ const KodoLive = (() => {
     };
     return {
       total: (list || []).length, single: (list || []).length === 1 ? rows[0] || null : null, level: groupLevel(rows),
+      bar: KodoBar.group(rows.map(v => ({ bar_mad: v.bar, bar_nights: v.bar_nights }))),
       rate: w(v => v.rate), occ: w(v => v.occ), low: w(v => v.occ_low), high: w(v => v.occ_high), revpar: w(v => v.revpar),
-      change: { rate: change(v => v.rate), occ: change(v => v.occ), revpar: change(v => v.revpar) },
+      change: { occ: change(v => v.occ), revpar: change(v => v.revpar) },
     };
   }
   const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -669,35 +698,22 @@ const KodoLive = (() => {
     const m = card.querySelector('.kpi-meta');
     if (m) { m.style.display = unit ? '' : 'none'; if (unit != null) m.textContent = unit; }
   }
-  // ids: {occ, rate, revpar} card ids; list: the hotels behind them
+  // ids: {occ, rate, revpar} card ids; list: the hotels behind them.
+  // rate: BAR (published rate) since 3 Nov 2026, observed; occ and revpar:
+  // Kodo estimates for the next 30 nights.
   async function cards(ids, list) {
     const els = Object.fromEntries(Object.entries(ids).map(([k, id]) => [k, document.getElementById(id)]).filter(([, e]) => e));
-    const LABELS = { rate: 'Avg published rate · next 30 nights', occ: 'Modelled occupancy · next 30 nights', revpar: 'Indicative RevPAR' };
+    const LABELS = { rate: 'BAR (published rate)', occ: 'Occupancy · Kodo estimate', revpar: 'RevPAR · Kodo estimate' };
     Object.entries(els).forEach(([k, c]) => { c.querySelector('.kpi-label').textContent = LABELS[k]; c.querySelector('.kpi-value').textContent = '…'; });
     const d = await load();
-    if (!d) { Object.values(els).forEach(c => noData(c, 'No live rate data')); return; }
+    if (!d) { Object.values(els).forEach(c => { noData(c, KodoBar.COLLECTING); part(c, 'kpi-sub').textContent = ''; }); return; }
     const a = agg(list), one = a.single, n = d.window.nights;
     const period = KodoPeriod.label({ kind: 'range', start: d.window.start, end: d.window.end });
-    const ratesLine = `${period}${d.rates_updated ? ' · updated ' + stamp(d.rates_updated) : ''}`;
-    const occLine = `${period}${d.model_run ? ' · model run ' + stamp(d.model_run) : ''}`;
-    const cover = (fig, noun) => one ? `${noun} on ${one[fig + '_nights'] ?? 0} of ${n} nights`
-      : `based on ${a[fig === 'occ' ? 'occ' : fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
-    const tipRate = KodoPeriod.tip({ source: 'published hotel rates (latest price per night)', updated: d.rates_updated, note: 'not ADR' });
-    const tipOcc = KodoPeriod.tip({ source: `Kodo Estimates (${d.model === 'v2' ? 'v2' : 'v1'} model), modelled, not measured` });
-    if (els.rate) {
-      const c = els.rate;
-      c.querySelector('.kpi-label').textContent = 'Avg published rate · next 30 nights';
-      KodoPeriod.setText(c, ratesLine, tipRate);
-      if (a.rate.val == null) { noData(c, 'No live rate data'); part(c, 'kpi-sub').textContent = one ? 'No published price collected for these nights' : `0 of ${a.total} hotels priced`; delta(c, null); }
-      else {
-        show(c, fmt.mad(a.rate.val), 'MAD · not ADR'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('rate'); delta(c, a.change.rate, '%');
-        if (KODO_FLAG('CONFIDENCE_UI')) {
-          const share = one ? (one.rate_nights || 0) / n : a.rate.n / Math.max(1, a.total);
-          part(c, 'kpi-conf').textContent = share >= 0.5 ? 'Observed prices' : 'Observed prices · limited data';
-          c.querySelector('.kpi-value').classList.toggle('kpi-value--limited', share < 0.3);
-        }
-      }
-    }
+    const occLine = `Next 30 nights · ${period}`;
+    const cover = fig => one ? `estimated on ${one[fig + '_nights'] ?? 0} of ${n} nights`
+      : `based on ${a[fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
+    const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: 'Kodo estimate, not measured' });
+    if (els.rate) KodoBar.card(els.rate, one ? { single: true, val: one.bar, nights: one.bar_nights || 0 } : a.bar, d);
     // CONFIDENCE_UI (flags.py, off until approved): a plain label on the
     // modelled cards; greyed under medium, hidden when insufficient
     const conf = KODO_FLAG('CONFIDENCE_UI') && a.level;
@@ -710,76 +726,45 @@ const KodoLive = (() => {
     };
     if (els.occ) {
       const c = els.occ;
-      c.querySelector('.kpi-label').textContent = 'Modelled occupancy · next 30 nights';
       KodoPeriod.setText(c, occLine, tipOcc);
       if (conf === 'insufficient') {
         noData(c, 'Insufficient data');
         part(c, 'kpi-sub').textContent = 'Not enough price history yet to model occupancy';
         confLine(c, null); delta(c, null);
-      } else if (a.occ.val == null) { noData(c, 'No model estimate yet'); part(c, 'kpi-sub').textContent = ''; delta(c, null); }
+      } else if (a.occ.val == null) { noData(c, KodoBar.COLLECTING); part(c, 'kpi-sub').textContent = ''; delta(c, null); }
       else {
         const range = d.model === 'v2' && a.low.val != null && a.high.val != null && a.low.n === a.occ.n
           ? `range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%` : '';
-        show(c, `${a.occ.val.toFixed(1)}%`, range ? range : 'Kodo Estimates');
-        part(c, 'kpi-sub').textContent = one ? cover('occ', 'estimated') : cover('occ');
+        show(c, `${a.occ.val.toFixed(1)}%`, range ? range : 'Kodo estimate');
+        part(c, 'kpi-sub').textContent = cover('occ');
         delta(c, a.change.occ, 'pts');
         if (conf) confLine(c, conf);
       }
     }
     if (els.revpar) {
       const c = els.revpar;
-      c.querySelector('.kpi-label').textContent = 'Indicative RevPAR';
-      KodoPeriod.setText(c, ratesLine, KodoPeriod.tip({ source: 'published rate × modelled occupancy, night by night', note: 'not achieved RevPAR' }));
+      KodoPeriod.setText(c, `Next 30 nights · ${period}`, KodoPeriod.tip({ source: 'published BAR × Kodo occupancy estimate, night by night', note: 'Kodo estimate' }));
       if (conf === 'insufficient') { noData(c, 'Insufficient data'); part(c, 'kpi-sub').textContent = 'Not enough price history yet'; delta(c, null); }
-      else if (a.revpar.val == null) { noData(c, 'No live rate data'); part(c, 'kpi-sub').textContent = 'published rate × modelled occupancy'; delta(c, null); }
-      else { show(c, fmt.mad(a.revpar.val), 'MAD · published rate × modelled occupancy'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('revpar'); delta(c, a.change.revpar, '%'); if (conf) confLine(c, conf); }
+      else if (a.revpar.val == null) { noData(c, KodoBar.COLLECTING); part(c, 'kpi-sub').textContent = 'BAR × Kodo occupancy estimate'; delta(c, null); }
+      else { show(c, fmt.mad(a.revpar.val), 'MAD · BAR × occupancy estimate'); part(c, 'kpi-sub').textContent = one ? `on ${one.occ_nights ?? 0} of ${n} nights` : cover('revpar'); delta(c, a.change.revpar, '%'); if (conf) confLine(c, conf); }
     }
   }
-  return { load, agg, cards, stamp };
+  return { load, agg, cards, stamp, part, noData, show };
 })();
-
-// Performance figures (occupancy, ADR, RevPAR) come from performance.csv,
-// one period per row. The period and source of a set of hotels:
-function perfPeriodOf(list) {
-  const codes = [...new Set((list || []).map(h => h.period).filter(Boolean))].sort();
-  const parts = codes.map(KodoPeriod.fromData).filter(Boolean);
-  if (!parts.length) return null;
-  return parts.length === 1 ? parts[0] : { kind: 'multi', parts };
-}
-function perfTipOf(list) {
-  const src = [...new Set((list || []).map(h => h.source).filter(Boolean).map(s => s.trim()))];
-  const source = src.length && src.every(s => s.toLowerCase() === 'hiq estimate')
-    ? 'Kodo estimates (HIQ Estimate)' : src.join(', ');
-  return KodoPeriod.tip({ source });
-}
-const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
-
-// Charts and tables still built on the past full-year performance figures
-// say so: " · History · FY 2025" after their unit line.
-function labelPerfHistory() {
-  const h = KodoPeriod.history(perfPeriodOf(hotels));
-  document.querySelectorAll('.perf-history').forEach(el => { el.textContent = h ? ' · ' + h : ''; });
-}
 
 // ─── Aggregation ──────────────────────────────────────────────────
 
-// Room-weighted averages over the hotels that have the figure: a hotel with
-// no estimate (just added) is left out instead of counting as zero. ADR is
-// weighted by occupied rooms. null when no hotel has it.
+// A group of hotels: BAR (observed, plain average of its hotels' BAR, see
+// KodoBar) and the Kodo estimates (occupancy and RevPAR, next 30 nights,
+// room-weighted over the hotels that have them; null when none has).
 function perfAggs(hs) {
   const has = (h, k) => h[k] != null && !Number.isNaN(Number(h[k]));
-  const avg = (k, w) => {
-    const rows = hs.filter(h => has(h, k) && w(h) > 0);
-    const den = rows.reduce((s, h) => s + w(h), 0);
-    return den ? rows.reduce((s, h) => s + h[k] * w(h), 0) / den : null;
+  const avg = k => {
+    const rows = hs.filter(h => has(h, k) && (h.keys || 0) > 0);
+    const den = rows.reduce((s, h) => s + h.keys, 0);
+    return den ? rows.reduce((s, h) => s + h[k] * h.keys, 0) / den : null;
   };
-  const rooms = h => h.keys || 0;
-  return {
-    occupancy:  avg('occupancy', rooms),
-    adr_mad:    avg('adr_mad', h => has(h, 'occupancy') ? rooms(h) * h.occupancy : 0),
-    revpar_mad: avg('revpar_mad', rooms),
-    gop_margin: avg('gop_margin', rooms),
-  };
+  return { bar: KodoBar.group(hs), occupancy: avg('occupancy'), revpar_mad: avg('revpar_mad') };
 }
 
 function cityAggs(hotelList) {
@@ -788,15 +773,9 @@ function cityAggs(hotelList) {
     if (!map.has(h.city)) map.set(h.city, []);
     map.get(h.city).push(h);
   });
-  return [...map.entries()].map(([city, hs]) => {
-    const tk = hs.reduce((s, h) => s + h.keys, 0);
-    return {
-      city,
-      hotel_count: hs.length,
-      total_keys:  tk,
-      ...perfAggs(hs),
-    };
-  });
+  return [...map.entries()].map(([city, hs]) => ({
+    city, hotel_count: hs.length, total_keys: hs.reduce((s, h) => s + (h.keys || 0), 0), ...perfAggs(hs),
+  }));
 }
 
 function brandAggs(hotelList) {
@@ -805,24 +784,9 @@ function brandAggs(hotelList) {
     if (!map.has(h.brand_group)) map.set(h.brand_group, []);
     map.get(h.brand_group).push(h);
   });
-  return [...map.entries()].map(([bg, hs]) => {
-    const tk = hs.reduce((s, h) => s + h.keys, 0);
-    return {
-      brand_group:  bg,
-      hotel_count:  hs.length,
-      total_keys:   tk,
-      ...perfAggs(hs),
-    };
-  }).sort((a, b) => b.total_keys - a.total_keys);
-}
-
-function nationalKPIs(hotelList) {
-  const tk = hotelList.reduce((s, h) => s + h.keys, 0);
-  return {
-    total_hotels: hotelList.length,
-    total_keys:   tk,
-    ...perfAggs(hotelList),
-  };
+  return [...map.entries()].map(([bg, hs]) => ({
+    brand_group: bg, hotel_count: hs.length, total_keys: hs.reduce((s, h) => s + (h.keys || 0), 0), ...perfAggs(hs),
+  })).sort((a, b) => b.total_keys - a.total_keys);
 }
 
 function filteredByCity() {
@@ -830,42 +794,29 @@ function filteredByCity() {
   return hotels.filter(h => h.city === state.city);
 }
 
+// Destinations ranked by BAR: figures first (high to low), then "limited
+// data" (high to low), then the ones with no BAR yet (A–Z)
+function rankedCities() {
+  const rank = c => (c.bar.val == null ? 2 : c.bar.limited ? 1 : 0);
+  return cityAggs(hotels || []).sort((a, b) => rank(a) - rank(b) || (b.bar.val || 0) - (a.bar.val || 0) || a.city.localeCompare(b.city));
+}
+
 // ─── KPIs ─────────────────────────────────────────────────────────
 
 function renderKPIs() {
-  const kpis = nationalKPIs(filteredByCity());
-
-  const set = (id, val, meta) => {
-    const el = document.getElementById(id);
-    el.querySelector('.kpi-value').textContent = val;
-    if (meta !== undefined) {
-      const m = document.getElementById(id + '-meta');
-      if (m) m.textContent = meta;
-    }
-    const d = KPI_DELTAS[id];
-    if (d) {
-      const deltaEl = document.getElementById(id + '-delta');
-      if (deltaEl) {
-        deltaEl.textContent = d.text;
-        deltaEl.className = 'kpi-delta ' + (d.up ? 'up pill--green' : 'down pill--red');
-      }
-    }
-    el.classList.remove('loading');
-  };
-
-  const hotelLabel = kpis.total_hotels + ' hotel' + (kpis.total_hotels !== 1 ? 's' : '');
-  set('kpi-keys',   fmt.num(kpis.total_keys), hotelLabel);
-  // Keys: a live count. Rate, occupancy, RevPAR: live, next 30 nights (KodoLive)
   const list = filteredByCity();
+  const keys = list.reduce((s, h) => s + (h.keys || 0), 0);
+  const hotelLabel = list.length + ' hotel' + (list.length !== 1 ? 's' : '');
+  const kc = document.getElementById('kpi-keys');
+  kc.querySelector('.kpi-value').textContent = fmt.num(keys);
+  document.getElementById('kpi-keys-meta').textContent = hotelLabel;
+  kc.classList.remove('loading');
   KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
+  // BAR: observed since 3 Nov 2026. Occupancy, RevPAR: Kodo estimates, next 30 nights (KodoLive)
   ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
   KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list);
-  labelPerfHistory();
-
   const sub = document.getElementById('dashboard-sub');
-  sub.innerHTML = state.city === 'all'
-    ? 'Morocco branded hotel market'
-    : fmt.esc(state.city) + ' · ' + fmt.esc(hotelLabel);
+  sub.textContent = state.city === 'all' ? 'Morocco hotel market' : `${state.city} · ${hotelLabel}`;
 }
 
 // ─── Charts ───────────────────────────────────────────────────────
@@ -959,17 +910,15 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
   };
 }
 
-function barColors(labels) {
-  const color = getChartColors().barColor;
-  return labels.map(() => color);
+// Destination charts: grey by default, the selected city blue (#0075DE);
+// a BAR resting on fewer than 3 hotels lighter grey, labelled "limited data"
+function destColors(labels, limited = []) {
+  const p = KodoPalette.get();
+  const grey = p.families.grey.dot, blue = p.families.blue.dot;
+  return labels.map((c, i) => c === state.city ? blue : limited[i] ? withAlpha(grey, 0.32) : grey);
 }
 
-// Lighten the y-axis city-name ticks and bar-end value labels on the
-// RevPAR/Occupancy-by-destination charts — chartConfig()'s defaults
-// (y ticks weight 500, datalabels weight 600) read too bold for these
-// two dense city-list charts specifically, so this is applied only to
-// their configs rather than changing the shared chartConfig() used by
-// every other bar chart on the platform.
+// Lighter type for the dense city-name charts (axis ticks and bar labels)
 function lightenCityChartLabels(cfg) {
   const color = KodoPalette.get().text2;
   const font = { family: 'Sweet Sans Pro', size: 11, weight: '200' };
@@ -980,48 +929,156 @@ function lightenCityChartLabels(cfg) {
   return cfg;
 }
 
+// A chart card's canvas or its "Collecting data" state
+function chartOrCollecting(canvasId, empty, detail) {
+  const wrap = document.getElementById(canvasId).closest('.chart-wrap');
+  let box = wrap.parentElement.querySelector('.collecting-state');
+  if (empty) {
+    wrap.style.display = 'none';
+    if (!box) { wrap.insertAdjacentHTML('afterend', KodoBar.collecting(detail)); }
+    return false;
+  }
+  if (box) box.remove();
+  wrap.style.display = '';
+  return true;
+}
+
+// Clicking a bar selects its destination
+function destChartClick(chart) {
+  return (evt, els) => {
+    if (!els.length) return;
+    selectCity(chart().data.labels[els[0].index]);
+  };
+}
+
 function renderCharts() {
-  const allCityData = cityAggs(hotels);
-
-  // Set chart container heights based on city count (30px per bar + padding)
-  const chartH = Math.max(400, allCityData.length * 30 + 60);
-  document.getElementById('chart-revpar').closest('.chart-wrap').style.height = chartH + 'px';
-  document.getElementById('chart-occ').closest('.chart-wrap').style.height = chartH + 'px';
-
-  // RevPAR chart — sorted high→low
-  const revSorted = allCityData.filter(c => c.revpar_mad != null).sort((a, b) => b.revpar_mad - a.revpar_mad);
-  const revLabels = revSorted.map(c => c.city);
-  const revVals   = revSorted.map(c => c.revpar_mad);
-
-  const revLabelFmt = v => Math.round(v).toLocaleString('en');
-  if (revChart) {
-    revChart.data.labels = revLabels;
-    revChart.data.datasets[0].data = revVals;
-    revChart.data.datasets[0].backgroundColor = barColors(revLabels);
-    revChart.update();
-  } else {
-    revChart = new Chart(
-      document.getElementById('chart-revpar'),
-      lightenCityChartLabels(chartConfig(revLabels, revVals, ' MAD', barColors(revLabels), revLabelFmt))
-    );
+  const rows = rankedCities();
+  // ── Average BAR per destination
+  const withBar = rows.filter(r => r.bar.val != null);
+  const missing = rows.length - withBar.length;
+  document.getElementById('bar-dest-since').textContent = KodoBar.caption();
+  const note = document.getElementById('bar-dest-note');
+  if (chartOrCollecting('chart-bar', !withBar.length, 'No destination has hotels with 7 priced nights yet.')) {
+    const labels = withBar.map(r => r.city);
+    const limited = withBar.map(r => r.bar.limited);
+    const values = withBar.map(r => Math.round(r.bar.val));
+    document.getElementById('chart-bar').closest('.chart-wrap').style.height = Math.max(240, labels.length * 30 + 60) + 'px';
+    const colors = destColors(labels, limited);
+    if (barChart) {
+      barChart.data.labels = labels;
+      barChart.data.datasets[0].data = values;
+      barChart.data.datasets[0].backgroundColor = colors;
+      barChart.$limited = limited; barChart.$rows = withBar;
+      barChart.update();
+    } else {
+      const cfg = lightenCityChartLabels(chartConfig(labels, values, ' MAD', colors,
+        (v, ctx) => (ctx.chart.$limited || [])[ctx.dataIndex] ? 'limited data' : Math.round(v).toLocaleString('en')));
+      cfg.options.plugins.tooltip.callbacks = {
+        label: ctx => {
+          const r = (ctx.chart.$rows || [])[ctx.dataIndex];
+          if (!r) return '';
+          const base = `${r.bar.n} hotel${r.bar.n === 1 ? '' : 's'} · ${r.bar.nights.toLocaleString('en')} nights`;
+          return r.bar.limited ? ['  Limited data: fewer than 3 hotels with 7 priced nights', '  ' + base]
+            : [`  BAR MAD ${Math.round(r.bar.val).toLocaleString('en')}`, '  ' + base];
+        },
+      };
+      cfg.options.onClick = destChartClick(() => barChart);
+      cfg.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
+      barChart = new Chart(document.getElementById('chart-bar'), cfg);
+      barChart.$limited = limited; barChart.$rows = withBar;
+      barChart.update('none');
+    }
   }
+  const lim = withBar.filter(r => r.bar.limited).length;
+  note.textContent = [lim ? `Light grey: limited data (fewer than ${KodoBar.meta().min_hotels} hotels with ${KodoBar.meta().min_nights} priced nights).` : '',
+    missing && withBar.length ? `${missing} destination${missing === 1 ? '' : 's'} without enough prices yet.` : ''].filter(Boolean).join(' ');
 
-  // Occupancy chart — sorted high→low
-  const occSorted  = allCityData.filter(c => c.occupancy != null).sort((a, b) => b.occupancy - a.occupancy);
-  const occLabels  = occSorted.map(c => c.city);
-  const occVals    = occSorted.map(c => parseFloat((c.occupancy * 100).toFixed(1)));
-  const occLabelFmt = v => v.toFixed(1) + '%';
-
-  if (occChart) {
-    occChart.data.labels = occLabels;
-    occChart.data.datasets[0].data = occVals;
-    occChart.data.datasets[0].backgroundColor = barColors(occLabels);
-    occChart.update();
-  } else {
-    const cfg = lightenCityChartLabels(chartConfig(occLabels, occVals, '%', barColors(occLabels), occLabelFmt));
-    cfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toFixed(1) + '%';
-    occChart = new Chart(document.getElementById('chart-occ'), cfg);
+  // ── Modelled occupancy per destination (Kodo estimate, next 30 nights)
+  const occRows = rows.filter(r => r.occupancy != null).sort((a, b) => b.occupancy - a.occupancy);
+  if (chartOrCollecting('chart-occ', !occRows.length, 'Occupancy estimates appear once the model has prices to work from.')) {
+    const labels = occRows.map(r => r.city);
+    const values = occRows.map(r => parseFloat((r.occupancy * 100).toFixed(1)));
+    document.getElementById('chart-occ').closest('.chart-wrap').style.height = Math.max(240, labels.length * 30 + 60) + 'px';
+    if (occChart) {
+      occChart.data.labels = labels;
+      occChart.data.datasets[0].data = values;
+      occChart.data.datasets[0].backgroundColor = destColors(labels);
+      occChart.update();
+    } else {
+      const cfg = lightenCityChartLabels(chartConfig(labels, values, '%', destColors(labels), v => v.toFixed(1) + '%'));
+      cfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toFixed(1) + '% · Kodo estimate';
+      cfg.options.onClick = destChartClick(() => occChart);
+      cfg.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
+      occChart = new Chart(document.getElementById('chart-occ'), cfg);
+    }
   }
+}
+
+// ─── Destination list (sidebar; chips under 768 px) ───────────────
+
+function destRowHtml(c, max) {
+  const sel = c.city === state.city;
+  const val = c.bar.val == null ? '<span class="dest-val dest-val--na">—</span>'
+    : c.bar.limited ? '<span class="dest-val dest-val--limited">limited</span>'
+    : `<span class="dest-val">${fmt.mad(c.bar.val)}</span>`;
+  const w = c.bar.val != null && max ? Math.max(2, Math.round(c.bar.val / max * 100)) : 0;
+  const what = c.bar.val == null ? 'no BAR yet' : c.bar.limited ? 'BAR limited data' : `BAR ${fmt.mad(c.bar.val)} MAD`;
+  return `<li class="dest-row${sel ? ' is-selected' : ''}" role="option" aria-selected="${sel}" tabindex="${sel ? 0 : -1}"
+      data-city="${fmt.esc(c.city)}" aria-label="${fmt.esc(c.city)}, ${c.hotel_count} hotels, ${what}">
+    <span class="dest-line"><span class="dest-name">${fmt.esc(c.city)}</span><span class="dest-count">${c.hotel_count}</span>${val}</span>
+    <span class="dest-meter${c.bar.limited ? ' dest-meter--limited' : ''}" aria-hidden="true"><span style="width:${w}%"></span></span>
+  </li>`;
+}
+
+function buildCityFilter() {
+  const list = document.getElementById('city-filter');
+  const rows = rankedCities();
+  const max = Math.max(0, ...rows.filter(r => r.bar.val != null).map(r => r.bar.val));
+  const all = state.city === 'all';
+  list.innerHTML = `<li class="dest-row dest-row--all${all ? ' is-selected' : ''}" role="option" aria-selected="${all}" tabindex="${all ? 0 : -1}"
+      data-city="all" aria-label="All Morocco, ${(hotels || []).length} hotels">
+      <span class="dest-line"><span class="dest-name">All Morocco</span><span class="dest-count">${(hotels || []).length} hotels</span></span></li>`
+    + rows.map(c => destRowHtml(c, max)).join('');
+  filterDestRows();
+  buildMobileCityPills(rows);
+}
+
+function filterDestRows() {
+  const q = (document.getElementById('dest-search')?.value || '').trim().toLowerCase();
+  document.querySelectorAll('#city-filter .dest-row:not(.dest-row--all)').forEach(li => {
+    li.hidden = !!q && !li.dataset.city.toLowerCase().includes(q);
+  });
+  document.querySelectorAll('#mobile-city-pills [data-mcity]:not([data-mcity="all"])').forEach(b => {
+    b.hidden = !!q && !b.dataset.mcity.toLowerCase().includes(q);
+  });
+  const empty = document.getElementById('dest-empty');
+  if (empty) empty.hidden = !q || [...document.querySelectorAll('#city-filter .dest-row:not(.dest-row--all)')].some(li => !li.hidden);
+}
+
+// Select a destination everywhere (list, chips, charts, the rest of the
+// dashboard): only classes change, so the list keeps its scroll position
+function selectCity(city) {
+  state.city = city || 'all';
+  document.querySelectorAll('#city-filter .dest-row').forEach(li => {
+    const on = li.dataset.city === state.city;
+    li.classList.toggle('is-selected', on);
+    li.setAttribute('aria-selected', on);
+    li.tabIndex = on ? 0 : -1;
+  });
+  document.querySelectorAll('#mobile-city-pills [data-mcity]').forEach(b => {
+    const on = b.dataset.mcity === state.city;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on);
+  });
+  // bring the row into view inside its own box only (the page does not move)
+  const box = document.getElementById('dest-box');
+  const row = document.querySelector(`#city-filter .dest-row[data-city="${CSS.escape(state.city)}"]`);
+  if (box && row && !row.hidden) {
+    const top = row.offsetTop - box.offsetTop, bottom = top + row.offsetHeight;
+    if (top < box.scrollTop) box.scrollTop = top;
+    else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight;
+  }
+  render();
 }
 
 // ─── Brand table ──────────────────────────────────────────────────
@@ -1036,16 +1093,15 @@ function renderBrandTable() {
       <td><button class="brand-link" data-brand="${fmt.esc(r.brand_group)}" onclick="showBrandDetail(this.dataset.brand)">${getBrandLogoImg(r.brand_group, 20)} ${fmt.esc(r.brand_group)}</button></td>
       <td>${r.hotel_count}</td>
       <td>${fmt.num(r.total_keys)}</td>
-      <td>${fmt.pct(r.occupancy)}</td>
-      <td>${fmt.mad(r.adr_mad)}</td>
-      <td>${fmt.mad(r.revpar_mad)}</td>
+      <td>${KodoBar.cell(r.bar)}</td>
+      <td title="${EST_TIP}">${fmt.pct(r.occupancy)}</td>
+      <td title="${EST_TIP}">${fmt.mad(r.revpar_mad)}</td>
     </tr>
   `).join('');
 
   const sub = document.getElementById('brand-table-sub');
   const dest = state.city === 'all' ? 'All destinations' : state.city;
-  const hist = KodoPeriod.history(perfPeriodOf(hotels));
-  sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''}` + (hist ? ` · ${hist}` : '');
+  sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''} · BAR: ${KodoBar.since()} · occupancy and RevPAR: Kodo estimates, next 30 nights`;
 }
 
 // ─── Brands screen ────────────────────────────────────────────────
@@ -1077,7 +1133,8 @@ function filteredBrands() {
     const q = brandsFilter.search.trim().toLowerCase();
     data = data.filter(b => b.brand_group.toLowerCase().includes(q));
   }
-  data.sort((a, b) => b[brandsFilter.sort] - a[brandsFilter.sort]);
+  const k = brandsFilter.sort;
+  data.sort((a, b) => (a[k] == null || b[k] == null) ? (a[k] == null) - (b[k] == null) : b[k] - a[k]);
   return data;
 }
 
@@ -1094,23 +1151,17 @@ function renderBrandsKPIs() {
   ['brnkpi-groups', 'brnkpi-keys', 'brnkpi-largest'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), COUNT_TIP));
 }
 
-// Highest indicative RevPAR among brand groups, next 30 nights (live): only
-// groups with prices for at least 2 hotels and half their hotels
-async function brnRenderChampion() {
+// Highest BAR among brand groups (observed since 3 Nov 2026): only groups
+// whose BAR rests on 3 hotels or more
+function brnRenderChampion() {
   const card = document.getElementById('brnkpi-champion');
-  card.querySelector('.kpi-label').textContent = 'Highest indicative RevPAR · next 30 nights';
-  const d = await KodoLive.load();
-  const groups = [...new Set((hotels || []).map(h => h.brand_group))].map(bg => {
-    const list = hotels.filter(h => h.brand_group === bg);
-    return { bg, list, a: KodoLive.agg(list) };
-  }).filter(g => g.a.revpar.val != null && g.a.revpar.n >= 2 && g.a.revpar.n >= g.list.length / 2);
-  const best = groups.sort((x, y) => y.a.revpar.val - x.a.revpar.val)[0];
+  card.querySelector('.kpi-label').textContent = 'Highest BAR (published rate)';
+  const best = [...(brandsData || [])].filter(b => b.bar_mad != null && !b.bar_limited).sort((x, y) => y.bar_mad - x.bar_mad)[0];
   const v = card.querySelector('.kpi-value');
   const sub = card.querySelector('.kpi-sub') || card.appendChild(Object.assign(document.createElement('span'), { className: 'kpi-sub' }));
-  if (!d || !best) { v.innerHTML = '<span class="pill--grey kpi-nodata-pill">No live rate data</span>'; sub.textContent = ''; }
-  else { v.textContent = best.bg; sub.textContent = `MAD ${fmt.mad(best.a.revpar.val)} · based on ${best.a.revpar.n} of ${best.list.length} hotels`; }
-  if (d) KodoPeriod.setText(card, `${KodoPeriod.label({ kind: 'range', start: d.window.start, end: d.window.end })}${d.rates_updated ? ' · updated ' + KodoLive.stamp(d.rates_updated) : ''}`,
-    KodoPeriod.tip({ source: 'published rate × modelled occupancy, rooms-weighted', note: 'not achieved RevPAR' }));
+  if (!best) { v.innerHTML = `<span class="pill--grey kpi-nodata-pill">${KodoBar.COLLECTING}</span>`; sub.textContent = ''; }
+  else { v.textContent = best.brand_group; sub.textContent = `MAD ${fmt.mad(best.bar_mad)} · average of ${best.bar_hotels} hotels`; }
+  KodoPeriod.setText(card, KodoBar.caption(), KodoPeriod.tip({ source: 'published hotel rates', note: 'groups with 3 hotels or more with 7 priced nights' }));
 }
 
 function brandLogoOrInitials(bg, size) {
@@ -1159,9 +1210,9 @@ function renderBrandsCards() {
       </div>
       ${descRow}
       <div class="brn-card-kpis">
-        <div class="brn-kpi" title="${PERF_LBL.tip}"><div class="brn-kpi-lbl">${PERF_LBL.occ}</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
-        <div class="brn-kpi" title="${PERF_LBL.tip}"><div class="brn-kpi-lbl">${PERF_LBL.adr}</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
-        <div class="brn-kpi" title="${PERF_LBL.tip}"><div class="brn-kpi-lbl">${PERF_LBL.revpar}</div><div class="brn-kpi-val">${fmt.mad(b.weighted_revpar)}</div></div>
+        <div class="brn-kpi"><div class="brn-kpi-lbl">BAR</div><div class="brn-kpi-val">${KodoBar.cell({ val: b.bar_mad, n: b.bar_hotels, nights: b.bar_nights, limited: b.bar_limited })}</div></div>
+        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Occ · est.</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
+        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">RevPAR · est.</div><div class="brn-kpi-val">${fmt.mad(b.avg_revpar)}</div></div>
       </div>
       <div class="brn-card-meta">
         <div class="brn-card-cities">${cityList}${cityMore}</div>
@@ -1212,6 +1263,7 @@ function renderBrandsCompTable() {
   const { col, dir } = brandsCompSort;
   const sorted = [...brandsData].sort((a, b) => {
     if (BRANDS_COMP_STR.has(col)) return dir * String(a[col]).localeCompare(String(b[col]));
+    if (a[col] == null || b[col] == null) return (a[col] == null) - (b[col] == null);
     return dir * (a[col] - b[col]);
   });
 
@@ -1240,9 +1292,9 @@ function renderBrandsCompTable() {
       <td>${b.hotels}</td>
       <td>${b.total_keys.toLocaleString('en')}</td>
       <td>${b.market_share_keys_pct.toFixed(1)}%</td>
-      <td>${fmt.pct(b.avg_occupancy)}</td>
-      <td>${fmt.mad(b.avg_adr)}</td>
-      <td>${fmt.mad(b.weighted_revpar)}</td>
+      <td>${KodoBar.cell({ val: b.bar_mad, n: b.bar_hotels, nights: b.bar_nights, limited: b.bar_limited })}</td>
+      <td title="${EST_TIP}">${fmt.pct(b.avg_occupancy)}</td>
+      <td title="${EST_TIP}">${fmt.mad(b.avg_revpar)}</td>
       <td>${b.pipeline_keys > 0 ? b.pipeline_keys.toLocaleString('en') : '—'}</td>
     </tr>`;
   }).join('');
@@ -1250,7 +1302,7 @@ function renderBrandsCompTable() {
 
 function renderBrandsInsights() {
   const byKeys   = [...brandsData].sort((a, b) => b.total_keys   - a.total_keys)[0];
-  const byRevpar = [...brandsData].sort((a, b) => b.weighted_revpar - a.weighted_revpar)[0];
+  const byRevpar = [...brandsData].filter(b => b.avg_revpar != null && !b.bar_limited).sort((a, b) => b.avg_revpar - a.avg_revpar)[0];
   const byPipe   = [...brandsData].filter(b => b.pipeline_projects > 0)
                                    .sort((a, b) => b.pipeline_keys - a.pipeline_keys)[0];
   const totalKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);
@@ -1263,7 +1315,10 @@ function renderBrandsInsights() {
   if (byRevpar) {
     document.getElementById('brni-revpar-val').textContent  = byRevpar.brand_group;
     document.getElementById('brni-revpar-desc').textContent =
-      `MAD ${fmt.mad(byRevpar.weighted_revpar)} weighted RevPAR · ${PERF_LBL.revDesc}`;
+      `MAD ${fmt.mad(byRevpar.avg_revpar)} RevPAR · Kodo estimate, next 30 nights (BAR × modelled occupancy)`;
+  } else {
+    document.getElementById('brni-revpar-val').textContent  = '—';
+    document.getElementById('brni-revpar-desc').textContent = KodoBar.COLLECTING;
   }
   if (byPipe) {
     document.getElementById('brni-pipeline-val').textContent  = byPipe.brand_group;
@@ -1286,7 +1341,6 @@ function showBrandDetail(brandGroup, prevScreen) {
     || (brandGroup === 'Independent Hotels' && (h.brand_group === 'Independent' || h.brand_group === 'Independent Luxury')));
 
   const tk    = brandHotelsData.reduce((s, h) => s + h.keys, 0);
-  const { occupancy: occ, adr_mad: adr, revpar_mad: revpar } = perfAggs(brandHotelsData);
   const cities      = [...new Set(brandHotelsData.map(h => h.city))].sort();
   const ownerValues = [...new Set(brandHotelsData.map(h => h.owner).filter(Boolean))];
   const distinctOwners = ownerValues.filter(o => o !== 'Undisclosed');
@@ -1349,34 +1403,31 @@ function showBrandDetail(brandGroup, prevScreen) {
       </div>`
     : '';
 
-  // City RevPAR chart
-  // Only cities with an estimate; hidden when none has one (a group just added)
-  const cityData = cityAggs(brandHotelsData).filter(c => c.revpar_mad != null).sort((a, b) => b.revpar_mad - a.revpar_mad);
-  document.getElementById('brand-chart-card').hidden = !cityData.length;
-  const chartH   = Math.max(240, cityData.length * 38 + 50);
-  document.getElementById('brand-chart-wrap').style.height = chartH + 'px';
-
-  const labels = cityData.map(c => c.city);
-  const values = cityData.map(c => c.revpar_mad);
-  const colors = labels.map(() => getChartColors().barColor);
-
-  if (brandChart) {
-    brandChart.data.labels                          = labels;
-    brandChart.data.datasets[0].data               = values;
-    brandChart.data.datasets[0].backgroundColor    = colors;
-    brandChart.update();
-  } else {
-    brandChart = new Chart(
-      document.getElementById('chart-brand-revpar'),
-      chartConfig(labels, values, ' MAD', colors, v => Math.round(v).toLocaleString('en'))
-    );
-  }
+  // BAR by hotel (observed since 3 Nov 2026); "Collecting data" when no hotel has one yet
+  renderBrandBarChart();
 
   // Hotel table
   brandState.col = 'name';
   brandState.dir = 1;
   renderBrandHotelsTable();
 
+}
+
+function renderBrandBarChart() {
+  const rows = brandHotelsData.filter(h => h.bar_mad != null).sort((a, b) => b.bar_mad - a.bar_mad);
+  document.getElementById('brand-chart-sub').textContent = `BAR (published rate) · MAD · ${KodoBar.caption()}`;
+  if (brandChart) { brandChart.destroy(); brandChart = null; }
+  if (!chartOrCollecting('chart-brand-revpar', !rows.length, `No hotel of this group has ${KodoBar.meta().min_nights} priced nights yet.`)) return;
+  document.getElementById('brand-chart-wrap').style.height = Math.max(200, rows.length * 30 + 50) + 'px';
+  const labels = rows.map(h => h.name);
+  const cfg = chartConfig(labels, rows.map(h => h.bar_mad), ' MAD', labels.map(() => getChartColors().barColor), v => Math.round(v).toLocaleString('en'));
+  cfg.options.plugins.tooltip.callbacks.label = ctx => `  BAR MAD ${Math.round(ctx.raw).toLocaleString('en')} · ${rows[ctx.dataIndex].bar_nights} nights · ${rows[ctx.dataIndex].city}`;
+  cfg.options.scales.y.ticks.callback = function (value) {
+    const label = this.getLabelForValue(value);
+    const max = this.chart.width < 520 ? 16 : 44;
+    return label.length > max ? label.slice(0, max - 1).trimEnd() + '…' : label;
+  };
+  brandChart = new Chart(document.getElementById('chart-brand-revpar'), cfg);
 }
 
 function renderBrandHotelsTable() {
@@ -1387,6 +1438,7 @@ function renderBrandHotelsTable() {
   const sorted = [...filtered].sort((a, b) => {
     const va = a[col], vb = b[col];
     if (BRAND_STR_COLS.has(col)) return dir * String(va).localeCompare(String(vb));
+    if (va == null || vb == null) return (va == null) - (vb == null);
     return dir * (va - vb);
   });
 
@@ -1401,9 +1453,9 @@ function renderBrandHotelsTable() {
       <td>${fmt.esc(h.city)}</td>
       <td>${getSegmentBadgeHtml(h.category)}</td>
       <td>${fmt.num(h.keys)}</td>
-      <td>${fmt.pct(h.occupancy)}</td>
-      <td>${fmt.mad(h.adr_mad)}</td>
-      <td>${fmt.mad(h.revpar_mad)}</td>
+      <td>${KodoBar.hotelCell(h)}</td>
+      <td title="${EST_TIP}">${fmt.pct(h.occupancy)}</td>
+      <td title="${EST_TIP}">${fmt.mad(h.revpar_mad)}</td>
       <td>${fmt.esc(ownerText(h) || '—')}</td>
     </tr>`;
   }).join('');
@@ -1509,9 +1561,6 @@ async function showHotelDetail(id) {
   KodoPeriod.set('hkpi-detail-keys', KodoPeriod.today(), COUNT_TIP);
   KodoLive.cards({ occ: 'hkpi-occ', rate: 'hkpi-adr', revpar: 'hkpi-revpar' }, [h]);
 
-  // ── 3. Estimated financials (range model) ──
-  renderHotelFinancials(h);
-
   // ── 4. Market context chart ──
   document.getElementById('hotel-ctx-city').textContent = h.city;
   renderHotelCityChart(h);
@@ -1540,98 +1589,70 @@ async function showHotelDetail(id) {
   renderOccCalendar(h.id);
 }
 
+// Market positioning: BAR of every hotel in the city (observed since
+// 3 Nov 2026), this hotel blue, the others grey
 function renderHotelCityChart(h) {
-  const cityHotels = hotels
-    .filter(x => x.city === h.city)
-    .sort((a, b) => b.revpar_mad - a.revpar_mad);
-
-  const labels = cityHotels.map(x =>
-    +x.id === +h.id ? `▶ ${x.name}` : x.name
-  );
-  const values = cityHotels.map(x => x.revpar_mad);
-  const colors = cityHotels.map(() => getChartColors().barColor);
-
-  const chartH = Math.max(200, cityHotels.length * 30 + 50);
-  document.getElementById('hotel-city-chart-wrap').style.height = chartH + 'px';
-
-  if (hotelCityChart) {
-    hotelCityChart.data.labels                       = labels;
-    hotelCityChart.data.datasets[0].data             = values;
-    hotelCityChart.data.datasets[0].backgroundColor  = colors;
-    hotelCityChart.update();
-  } else {
-    const cfg = chartConfig(labels, values, ' MAD', colors, v => Math.round(v).toLocaleString('en'));
-    cfg.options.scales.y.ticks.callback = function(value) {
-      const label = this.getLabelForValue(value);
-      const max = this.chart.width < 520 ? 14 : 48;
-      return label.length > max ? label.slice(0, max - 1).trimEnd() + '…' : label;
-    };
-    hotelCityChart = new Chart(document.getElementById('chart-hotel-city'), cfg);
-  }
+  const cityHotels = hotels.filter(x => x.city === h.city && x.bar_mad != null).sort((a, b) => b.bar_mad - a.bar_mad);
+  document.getElementById('hotel-ctx-sub').textContent = `BAR (published rate) · MAD · ${KodoBar.caption()}`;
+  if (hotelCityChart) { hotelCityChart.destroy(); hotelCityChart = null; }
+  if (!chartOrCollecting('chart-hotel-city', !cityHotels.length, `No hotel in ${h.city} has ${KodoBar.meta().min_nights} priced nights yet.`)) return;
+  const p = KodoPalette.get();
+  const labels = cityHotels.map(x => +x.id === +h.id ? `▶ ${x.name}` : x.name);
+  const colors = cityHotels.map(x => +x.id === +h.id ? p.families.blue.dot : p.families.grey.dot);
+  document.getElementById('hotel-city-chart-wrap').style.height = Math.max(200, cityHotels.length * 30 + 50) + 'px';
+  const cfg = chartConfig(labels, cityHotels.map(x => x.bar_mad), ' MAD', colors, v => Math.round(v).toLocaleString('en'));
+  cfg.options.plugins.tooltip.callbacks.label = ctx => `  BAR MAD ${Math.round(ctx.raw).toLocaleString('en')} · ${cityHotels[ctx.dataIndex].bar_nights} nights`;
+  cfg.options.scales.y.ticks.callback = function (value) {
+    const label = this.getLabelForValue(value);
+    const max = this.chart.width < 520 ? 14 : 48;
+    return label.length > max ? label.slice(0, max - 1).trimEnd() + '…' : label;
+  };
+  hotelCityChart = new Chart(document.getElementById('chart-hotel-city'), cfg);
 }
 
+// Segment benchmarks: this hotel against the other hotels of its segment in
+// its city. BAR observed; occupancy a Kodo estimate (next 30 nights).
 function renderHotelSegBench(h) {
   const peers = hotels.filter(x => x.city === h.city && x.category === h.category && +x.id !== +h.id);
   const bench  = document.getElementById('hotel-seg-bench');
   const ctxEl  = document.getElementById('hotel-bench-ctx');
-
   ctxEl.textContent = `${h.category} · ${h.city} average (${peers.length} peer${peers.length !== 1 ? 's' : ''})`;
-
   if (!peers.length) {
     bench.innerHTML = `<p class="hbench-no-peers">No comparable ${h.category} hotels in ${h.city}.</p>`;
     return;
   }
-
-  const tk     = peers.reduce((s, x) => s + x.keys, 0);
-  const ok     = peers.reduce((s, x) => s + x.keys * x.occupancy, 0);
-  const avgOcc = ok / tk;
-  const avgAdr = peers.reduce((s, x) => s + x.adr_mad * x.keys * x.occupancy, 0) / ok;
-  const avgRev = peers.reduce((s, x) => s + x.revpar_mad * x.keys, 0) / tk;
-
+  const g = KodoBar.group(peers);
+  const occPeers = peers.filter(x => x.occupancy != null && x.keys);
+  const tk = occPeers.reduce((t, x) => t + x.keys, 0);
+  const avgOcc = tk ? occPeers.reduce((t, x) => t + x.occupancy * x.keys, 0) / tk : null;
   const metrics = [
-    {
-      label: 'Occupancy',
-      mine: h.occupancy,     avg: avgOcc,
-      fmtVal: v => fmt.pct(v),
-      fmtDiff: d => (d >= 0 ? '+' : '') + (d * 100).toFixed(1) + ' pts',
-      isPos: h.occupancy >= avgOcc,
-    },
-    {
-      label: 'ADR (MAD)',
-      mine: h.adr_mad,       avg: avgAdr,
-      fmtVal: v => fmt.mad(v),
-      fmtDiff: d => (d >= 0 ? '+' : '−') + 'MAD ' + fmt.mad(Math.abs(d)),
-      isPos: h.adr_mad >= avgAdr,
-    },
-    {
-      label: 'RevPAR (MAD)',
-      mine: h.revpar_mad,    avg: avgRev,
-      fmtVal: v => fmt.mad(v),
-      fmtDiff: d => (d >= 0 ? '+' : '−') + 'MAD ' + fmt.mad(Math.abs(d)),
-      isPos: h.revpar_mad >= avgRev,
-    },
+    { label: 'BAR (MAD)', sub: KodoBar.since(), mine: h.bar_mad, avg: KodoBar.shown(g) ? g.val : null,
+      avgNote: g.val == null ? 'no peer priced yet' : g.limited ? `limited data (${g.n} peer${g.n === 1 ? '' : 's'})` : '',
+      fmtVal: v => fmt.mad(v), fmtDiff: d => (d >= 0 ? '+' : '−') + 'MAD ' + fmt.mad(Math.abs(d)) },
+    { label: 'Occupancy', sub: 'Kodo estimate · next 30 nights', mine: h.occupancy, avg: avgOcc, avgNote: '',
+      fmtVal: v => fmt.pct(v), fmtDiff: d => (d >= 0 ? '+' : '') + (d * 100).toFixed(1) + ' pts' },
   ];
-
   bench.innerHTML = metrics.map(m => {
-    const top      = Math.max(m.mine, m.avg) * 1.12 || 1;
-    const mineW    = Math.round((m.mine / top) * 100);
-    const avgW     = Math.round((m.avg  / top) * 100);
-    const diff     = m.mine - m.avg;
+    const both = m.mine != null && m.avg != null;
+    const top = Math.max(m.mine || 0, m.avg || 0) * 1.12 || 1;
+    const w = v => v == null ? 0 : Math.round(v / top * 100);
+    const diff = both ? m.mine - m.avg : null;
+    const pos = diff != null && diff >= 0;
     return `<div class="hbench-row">
-      <div class="hbench-label">${m.label}</div>
+      <div class="hbench-label">${m.label}<span class="hbench-label-sub">${m.sub}</span></div>
       <div class="hbench-bars">
         <div class="hbench-bar-row">
           <span class="hbench-bar-lbl">This hotel</span>
-          <div class="hbench-bar-track"><div class="hbench-bar-fill accent" style="width:${mineW}%"></div></div>
-          <span class="hbench-val">${m.fmtVal(m.mine)}</span>
+          <div class="hbench-bar-track"><div class="hbench-bar-fill accent" style="width:${w(m.mine)}%"></div></div>
+          <span class="hbench-val">${m.mine == null ? '—' : m.fmtVal(m.mine)}</span>
         </div>
         <div class="hbench-bar-row">
           <span class="hbench-bar-lbl">Peers avg</span>
-          <div class="hbench-bar-track"><div class="hbench-bar-fill muted" style="width:${avgW}%"></div></div>
-          <span class="hbench-val">${m.fmtVal(m.avg)}</span>
+          <div class="hbench-bar-track"><div class="hbench-bar-fill muted" style="width:${w(m.avg)}%"></div></div>
+          <span class="hbench-val">${m.avg == null ? (m.avgNote || '—') : m.fmtVal(m.avg)}</span>
         </div>
       </div>
-      <span class="hbench-diff ${m.isPos ? 'up' : 'down'}"><span class="pill--${m.isPos ? 'green' : 'red'}">${m.fmtDiff(diff)}</span></span>
+      <span class="hbench-diff ${pos ? 'up' : 'down'}">${diff == null ? '' : `<span class="pill--${pos ? 'green' : 'red'}">${m.fmtDiff(diff)}</span>`}</span>
     </div>`;
   }).join('');
 }
@@ -1886,7 +1907,7 @@ async function renderRatePast(hotelId, month) {
   document.getElementById('hrate-title').textContent = `Last Published Rate · ${hrMonthName(month)}`;
   document.getElementById('hrate-legend').innerHTML = HR_LEGEND_PAST;
   badgeEl.style.display = ''; badgeEl.className = 'rate-source-badge pill--grey'; badgeEl.textContent = 'Past nights';
-  document.getElementById('hrate-updated').textContent = 'Last published rate: the last price seen before each night. It is not ADR (what guests paid).';
+  document.getElementById('hrate-updated').textContent = 'Last published rate: the last price seen before each night. BAR is the public price, not what guests paid.';
   calEl.innerHTML = '<div class="bar-cal-loading">Loading past rates…</div>';
   let d;
   try { d = await (await fetch(`/api/rates/past?hotel_id=${encodeURIComponent(hotelId)}&month=${month}`)).json(); }
@@ -2074,9 +2095,9 @@ async function renderOccCalendar(hotelId) {
   const cc = data.price_coverage_counts || {};
   const nDays = (cc.full || 0) + (cc.partial || 0) + (cc.none || 0);
   const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
-  badgeEl.textContent = 'Kodo Estimates';
+  badgeEl.textContent = 'Kodo estimate';
   if (noteEl) {
-    noteEl.textContent = ['Kodo Estimates · modelled, not measured',
+    noteEl.textContent = ['Kodo estimate · modelled, not measured',
       data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
       covLabel && `Price coverage: ${covLabel}`].filter(Boolean).join(' · ');
   }
@@ -2084,8 +2105,8 @@ async function renderOccCalendar(hotelId) {
   // Averages bar
   if (data.avg_occupancy_30d != null) {
     const range = data.avg_low_30d != null && data.avg_high_30d != null ? ` (range ${data.avg_low_30d}–${data.avg_high_30d}%)` : '';
-    const revStr = data.avg_revpar_30d ? ` · Indicative RevPAR (published rate × modelled occupancy) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '';
-    avgText.textContent = `30-day averages: Modelled occupancy ${data.avg_occupancy_30d}%${range}${revStr}`;
+    const revStr = data.avg_revpar_30d ? ` · RevPAR (Kodo estimate: BAR × modelled occupancy) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '';
+    avgText.textContent = `30-day averages: occupancy (Kodo estimate) ${data.avg_occupancy_30d}%${range}${revStr}`;
     confEl.textContent  = `Price coverage: full ${cc.full ?? 0} days · partial ${cc.partial ?? 0} · none ${cc.none ?? 0}. `
       + 'It describes how many recent published prices we have for the hotel, not how accurate the estimate is.';
     avgBar.style.display = '';
@@ -2102,58 +2123,6 @@ function occCoverage(e) {
 function occRange(e) {
   const mid = e.mid ?? e.estimated_occupancy;
   return e.low != null && e.high != null ? `${Math.round(e.low)}–${Math.round(e.high)}%` : `${Math.round(+mid)}%`;
-}
-
-function renderHotelFinancials(h) {
-  const MULTIPLES = {
-    'Ultra Luxury':  { lo: 18, hi: 22 },
-    'Luxury':        { lo: 15, hi: 18 },
-    'Upper Upscale': { lo: 12, hi: 15 },
-    'Upscale':       { lo: 10, hi: 12 },
-    'Midscale':      { lo:  8, hi: 10 },
-    'Economy':       { lo:  6, hi:  8 },
-  };
-
-  const bar  = h.adr_mad;
-  const occ  = h.occupancy;
-  const keys = h.keys;
-
-  const occLo = Math.max(0.10, occ - 0.08);
-  const occHi = Math.min(0.98, occ + 0.08);
-
-  const revLoM = bar * occLo * keys * 365 / 1e6;
-  const revHiM = bar * occHi * keys * 365 / 1e6;
-
-  const mult = MULTIPLES[h.category] || { lo: 8, hi: 12 };
-
-  const assetLoM = revLoM * mult.lo;
-  const assetHiM = revHiM * mult.hi;
-
-  const vpkLoMad = (assetLoM * 1e6) / keys;
-  const vpkHiMad = (assetHiM * 1e6) / keys;
-
-  const fmM  = v => `MAD ${v.toFixed(1)}M`;
-  const fmLg = v => v >= 1000 ? `MAD ${(v / 1000).toFixed(1)}B` : `MAD ${v.toFixed(0)}M`;
-  const fmK  = v => v >= 1e6  ? `MAD ${(v / 1e6).toFixed(1)}M`  : `MAD ${(v / 1000).toFixed(0)}k`;
-  const fmEur = v => { const e = v / 10.8; return e >= 1e6 ? `EUR ${(e / 1e6).toFixed(1)}M` : `EUR ${Math.round(e / 1000)}k`; };
-
-  document.getElementById('hfin-rev-range').textContent =
-    `${fmM(revLoM)} — ${fmM(revHiM)}`;
-  document.getElementById('hfin-rev-sub').textContent =
-    `${PERF_LBL.fin} × ${keys} keys × 365 days`;
-
-  document.getElementById('hfin-asset-range').textContent =
-    `${fmLg(assetLoM)} — ${fmLg(assetHiM)}`;
-  document.getElementById('hfin-asset-sub').textContent =
-    `Based on ${mult.lo}×–${mult.hi}× rooms revenue multiple (${h.category} segment)`;
-
-  document.getElementById('hfin-vpk-range').textContent =
-    `${fmK(vpkLoMad)} — ${fmK(vpkHiMad)} / ${fmEur(vpkLoMad)} — ${fmEur(vpkHiMad)}`;
-  document.getElementById('hfin-vpk-sub').textContent =
-    `EUR at MAD/EUR 10.8 conversion`;
-
-  document.getElementById('hfin-confidence-badge').textContent =
-    "Medium · Based on Kodo's statistical model";
 }
 
 
@@ -2174,16 +2143,16 @@ function popupHTML(h) {
           <div class="hiq-popup-stat-lbl">Keys</div>
         </div>
         <div class="hiq-popup-stat">
+          <div class="hiq-popup-stat-val">${KodoBar.hotelCell(h)}</div>
+          <div class="hiq-popup-stat-lbl">BAR (MAD)</div>
+        </div>
+        <div class="hiq-popup-stat" title="${EST_TIP}">
           <div class="hiq-popup-stat-val">${fmt.pct(h.occupancy)}</div>
-          <div class="hiq-popup-stat-lbl">${PERF_LBL.occPop}</div>
+          <div class="hiq-popup-stat-lbl">Occ · Kodo est.</div>
         </div>
-        <div class="hiq-popup-stat">
-          <div class="hiq-popup-stat-val">${fmt.mad(h.adr_mad)}</div>
-          <div class="hiq-popup-stat-lbl">${PERF_LBL.adrPop}</div>
-        </div>
-        <div class="hiq-popup-stat">
+        <div class="hiq-popup-stat" title="${EST_TIP}">
           <div class="hiq-popup-stat-val">${fmt.mad(h.revpar_mad)}</div>
-          <div class="hiq-popup-stat-lbl">${PERF_LBL.revPop}</div>
+          <div class="hiq-popup-stat-lbl">RevPAR · Kodo est.</div>
         </div>
       </div>
       <button class="hiq-popup-profile-btn" onclick="showHotelDetail(${h.id})">View full profile →</button>
@@ -2372,7 +2341,7 @@ const hotelsState = {
   city:  'all',
   seg:   'all',
   owner: 'all',
-  col:   'revpar_mad',
+  col:   'bar_mad',
   dir:   -1,
 };
 
@@ -2395,6 +2364,7 @@ function sortHotels(list) {
   return [...list].sort((a, b) => {
     const va = a[col], vb = b[col];
     if (STRING_COLS.has(col)) return dir * String(va).localeCompare(String(vb));
+    if (va == null || vb == null) return (va == null) - (vb == null);   // no figure: always last
     return dir * (va - vb);
   });
 }
@@ -2467,11 +2437,8 @@ function renderHotelsTable() {
   if (hkpiCities) hkpiCities.textContent = totalCities;
   if (hkpiKeys)   hkpiKeys.textContent   = totalKeys.toLocaleString('en');
   [hkpiTotal, hkpiCities, hkpiKeys].forEach(el => el && KodoPeriod.set(el.closest('.kpi-card'), KodoPeriod.today(), COUNT_TIP));
-  // Describes the estimates behind the history figures, so its line says history
   const perfCard = document.getElementById('hkpi-perf-card');
-  if (perfCard) KodoPeriod.set(perfCard, perfPeriodOf(hotels), perfTipOf(hotels));
-  const perfLine = perfCard && perfCard.querySelector('.kpi-period');
-  if (perfLine && perfPeriodOf(hotels)) perfLine.textContent = KodoPeriod.history(perfPeriodOf(hotels));
+  if (perfCard) KodoPeriod.setText(perfCard, KodoBar.caption(), 'BAR: observed published rates. Occupancy and RevPAR: Kodo estimates, next 30 nights');
 
   const countEl = document.getElementById('hotels-results-count');
   if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
@@ -2491,9 +2458,9 @@ function renderHotelsTable() {
         <td class="col-hide-mobile">${getSegmentBadgeHtml(h.category)}</td>
         <td class="col-hide-mobile">${getBrandLogoImg(h.brand_group, 16)} ${fmt.esc(h.brand_group)}</td>
         <td class="col-hide-mobile">${fmt.num(h.keys)}</td>
-        <td class="col-hide-mobile">${fmt.pct(h.occupancy)}</td>
-        <td class="col-hide-mobile">${fmt.mad(h.adr_mad)}</td>
-        <td>${fmt.mad(h.revpar_mad)}</td>
+        <td>${KodoBar.hotelCell(h)}</td>
+        <td class="col-hide-mobile" title="${EST_TIP}">${fmt.pct(h.occupancy)}</td>
+        <td class="col-hide-mobile" title="${EST_TIP}">${fmt.mad(h.revpar_mad)}</td>
       </tr>`;
     }).join('');
   }
@@ -2521,7 +2488,7 @@ function render() {
 
 function redrawChartsForTheme() {
   // Dashboard bar charts
-  if (revChart) { revChart.destroy(); revChart = null; }
+  if (barChart) { barChart.destroy(); barChart = null; }
   if (occChart)  { occChart.destroy();  occChart = null; }
   if (hotels) renderCharts();
 
@@ -2542,25 +2509,10 @@ function redrawChartsForTheme() {
     }
   }
 
-  // Benchmarking trend + DOW charts
-  if (benchTrendRevpar) { benchTrendRevpar.destroy(); benchTrendRevpar = null; }
-  if (benchTrendOcc)    { benchTrendOcc.destroy();    benchTrendOcc    = null; }
-  if (benchDOWChart)    { benchDOWChart.destroy();     benchDOWChart    = null; }
-  if (benchmarkInited && benchmarkData) { renderBenchTrends(); renderBenchDOW(); }
-
   // Brand detail chart — recreate if screen is currently visible
   if (brandChart) { brandChart.destroy(); brandChart = null; }
   const brandScreen = document.getElementById('screen-brand');
-  if (brandScreen && brandScreen.classList.contains('active') && brandHotelsData.length) {
-    const cityData = cityAggs(brandHotelsData).sort((a, b) => b.revpar_mad - a.revpar_mad);
-    const labels = cityData.map(c => c.city);
-    const values = cityData.map(c => c.revpar_mad);
-    document.getElementById('brand-chart-wrap').style.height = Math.max(240, labels.length * 38 + 50) + 'px';
-    brandChart = new Chart(
-      document.getElementById('chart-brand-revpar'),
-      chartConfig(labels, values, ' MAD', labels.map(() => getChartColors().barColor), v => Math.round(v).toLocaleString('en'))
-    );
-  }
+  if (brandScreen && brandScreen.classList.contains('active') && brandHotelsData.length) renderBrandBarChart();
 
   // Hotel city chart — recreate if screen is currently visible
   if (hotelCityChart) { hotelCityChart.destroy(); hotelCityChart = null; }
@@ -3693,7 +3645,8 @@ function renderArticleGrid() {
   const shown    = articles.slice(0, newsPage * NEWS_PER_PAGE);
 
   if (!articles.length) {
-    grid.innerHTML = '<p class="news-loading">No articles in this category yet.</p>';
+    grid.innerHTML = (newsData.all || []).length ? '<p class="news-loading">No articles in this category yet.</p>'
+      : '<p class="news-loading">No articles yet. Kodo’s market notes will be published here.</p>';
     loadBtn.style.display = 'none';
     return;
   }
@@ -3895,12 +3848,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
     if (screen === 'tourism')  initTourismCharts();
     if (screen === 'pipeline') initPipeline();
     if (screen === 'news')         initNews();
-    if (screen === 'benchmarking') {
-      initBenchmarking().then(() => {
-        // The sample's Insights call the AI only when the sample is showing
-        if (benchmarkInited && benchmarkData && document.getElementById('bench-real').hidden) renderBenchAIInsights();
-      });
-    }
+    if (screen === 'benchmarking') initBenchmarking();
     if (screen === 'reports') initReports();
     if (screen === 'owners')  initOwners();
     if (screen === 'valuation') initValuation();
@@ -3912,14 +3860,40 @@ document.getElementById('navbar-logo').addEventListener('click', () => {
   document.querySelector('.nav-link[data-screen="dashboard"]').click();
 });
 
-// City filter (sidebar)
+// Destination list (sidebar): click, arrow keys and Enter, search
 document.getElementById('city-filter').addEventListener('click', e => {
-  const item = e.target.closest('.sidebar-item');
-  if (!item) return;
-  document.querySelectorAll('#city-filter .sidebar-item').forEach(el => el.classList.remove('active'));
-  item.classList.add('active');
-  state.city = item.dataset.city;
-  render();
+  const item = e.target.closest('.dest-row');
+  if (item) selectCity(item.dataset.city);
+});
+document.getElementById('city-filter').addEventListener('keydown', e => {
+  const rows = [...document.querySelectorAll('#city-filter .dest-row')].filter(li => !li.hidden);
+  const i = rows.indexOf(document.activeElement);
+  if (i < 0) return;
+  const go = j => { e.preventDefault(); const r = rows[Math.max(0, Math.min(rows.length - 1, j))]; rows.forEach(x => { x.tabIndex = -1; }); r.tabIndex = 0; r.focus({ preventScroll: false }); };
+  if (e.key === 'ArrowDown') go(i + 1);
+  else if (e.key === 'ArrowUp') { if (i === 0) { e.preventDefault(); document.getElementById('dest-search').focus(); } else go(i - 1); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(rows.length - 1);
+  else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCity(rows[i].dataset.city); rows[i].focus(); }
+});
+['dest-search', 'dest-search-m'].forEach(id => {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  inp.addEventListener('input', () => {
+    const other = document.getElementById(id === 'dest-search' ? 'dest-search-m' : 'dest-search');
+    if (other) other.value = inp.value;
+    filterDestRows();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' && id === 'dest-search') {
+      const first = [...document.querySelectorAll('#city-filter .dest-row')].find(li => !li.hidden);
+      if (first) { e.preventDefault(); first.tabIndex = 0; first.focus(); }
+    }
+    if (e.key === 'Enter') {
+      const hit = [...document.querySelectorAll(id === 'dest-search' ? '#city-filter .dest-row:not(.dest-row--all)' : '#mobile-city-pills [data-mcity]:not([data-mcity="all"])')].find(x => !x.hidden);
+      if (hit) { e.preventDefault(); selectCity(hit.dataset.city || hit.dataset.mcity); }
+    }
+  });
 });
 
 // Map segment filter buttons
@@ -4249,19 +4223,6 @@ document.getElementById('chat-chips').addEventListener('click', e => {
 
 // ─── Dynamic filters ──────────────────────────────────────────────
 
-function buildCityFilter() {
-  const cities = [...new Set(hotels.map(h => h.city))].sort();
-  const list = document.getElementById('city-filter');
-  list.querySelectorAll('[data-city]:not([data-city="all"])').forEach(el => el.remove());
-  cities.forEach(city => {
-    const li = document.createElement('li');
-    li.className = 'sidebar-item';
-    li.dataset.city = city;
-    li.textContent = city;
-    list.appendChild(li);
-  });
-}
-
 function buildCityPills() {
   const all    = hotels || [];
   const cities = [...new Set(all.map(h => h.city))].sort();
@@ -4290,31 +4251,20 @@ function buildSegPills() {
   });
 }
 
-function buildMobileCityPills() {
-  const cities = [...new Set(hotels.map(h => h.city))].sort();
+// Under 768 px the list is a row of chips (ranked like the list)
+function buildMobileCityPills(rows) {
   const bar = document.getElementById('mobile-city-pills');
-  bar.querySelectorAll('[data-mcity]:not([data-mcity="all"])').forEach(el => el.remove());
-  cities.forEach(city => {
-    const btn = document.createElement('button');
-    btn.className = 'pill';
-    btn.dataset.mcity = city;
-    btn.textContent = city;
-    bar.appendChild(btn);
-  });
+  const on = c => c === state.city;
+  bar.innerHTML = `<button type="button" class="dest-chip${on('all') ? ' active' : ''}" data-mcity="all" aria-pressed="${on('all')}">All Morocco</button>`
+    + (rows || rankedCities()).map(c => `<button type="button" class="dest-chip${on(c.city) ? ' active' : ''}" data-mcity="${fmt.esc(c.city)}" aria-pressed="${on(c.city)}">`
+      + `${fmt.esc(c.city)}<span class="dest-chip-val">${c.bar.val == null ? '' : c.bar.limited ? 'limited' : fmt.mad(c.bar.val)}</span></button>`).join('');
+  filterDestRows();
 }
 
 // Mobile city filter
 document.getElementById('mobile-city-pills').addEventListener('click', e => {
   const btn = e.target.closest('[data-mcity]');
-  if (!btn) return;
-  document.querySelectorAll('#mobile-city-pills .pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  // Sync sidebar
-  state.city = btn.dataset.mcity;
-  document.querySelectorAll('#city-filter .sidebar-item').forEach(el =>
-    el.classList.toggle('active', el.dataset.city === state.city)
-  );
-  render();
+  if (btn) selectCity(btn.dataset.mcity);
 });
 
 // Mobile segment filter
@@ -4333,393 +4283,19 @@ document.getElementById('mobile-seg-pills').addEventListener('click', e => {
   if (googleMap) updateMapMarkers();
 });
 
-// ─── Benchmarking screen ──────────────────────────────────────────
-
-// Segment adjacency for comp set filtering (ordered most-to-least luxury)
-const BENCH_SEGMENTS = ['Ultra Luxury', 'Luxury', 'Upper Upscale', 'Upscale', 'Midscale', 'Economy'];
-function benchAllowedSegments(seg) {
-  const idx = BENCH_SEGMENTS.indexOf(seg);
-  const allowed = new Set([seg]);
-  if (idx > 0) allowed.add(BENCH_SEGMENTS[idx - 1]);
-  if (idx < BENCH_SEGMENTS.length - 1) allowed.add(BENCH_SEGMENTS[idx + 1]);
-  return allowed;
-}
-
-const BENCH_MAX_COMP = 8;
-const BENCH_MIN_COMP = 3;
+// ─── Benchmarking ─────────────────────────────────────────────────
+// Benchmarker and Advisory plans: the rate benchmark of the organisation's
+// comp set (below). There is no sample or demo mode: without the plan, or
+// before a comp set is chosen, the page says what to do instead.
 
 let benchmarkInited = false;
-let benchmarkData   = null;
-let benchTrendRevpar = null;
-let benchTrendOcc    = null;
-let benchDOWChart    = null;
-
-// The calendars open on the current month (set again when the data loads)
-const benchState = {
-  myHotelId:  'sample_1',
-  compSet:    new Set(['sample_2', 'sample_3', 'sample_4']),
-  dateRange:  30,
-  adrCalYear: new Date().getFullYear(), adrCalMonth: new Date().getMonth() + 1, adrCalView: 'mine',
-  occCalYear: new Date().getFullYear(), occCalMonth: new Date().getMonth() + 1, occCalView: 'mine',
-};
-
-function benchCalendarsToThisMonth() {
-  const now = new Date();
-  benchState.adrCalYear = benchState.occCalYear = now.getFullYear();
-  benchState.adrCalMonth = benchState.occCalMonth = now.getMonth() + 1;
-}
-
 async function initBenchmarking() {
   if (benchmarkInited) return;
   benchmarkInited = true;
-  // Sample mode is open to every plan; the rate benchmark (real mode)
-  // needs Benchmarker or Advisory and a comp set (initRateBenchmark)
-  const res = await fetch('/api/benchmarking');
-  if (!res.ok) { benchmarkInited = false; return; }
-  benchmarkData = await res.json();
-  benchCalendarsToThisMonth();
-  renderBenchPropertySelector();
-  renderBenchCompSetBuilder();
-  renderBenchAll();
-  updateBenchFreshness();
   await initRateBenchmark();
 }
 
-// What the Benchmarking page's figures are. Sample mode (the API marks
-// it "sample") says so and never shows "Live data available": that pill
-// is only for real data (the rate benchmark mode).
-function updateBenchFreshness() {
-  const freshnessEl = document.getElementById('bench-freshness-text');
-  const modeEl      = document.getElementById('bench-mode-badge');
-  if (!freshnessEl || !benchmarkData) return;
-  freshnessEl.textContent = 'Sample data · fictional Marrakech luxury hotels · illustrative figures, not real performance';
-  if (modeEl) {
-    modeEl.textContent = 'Sample data';
-    modeEl.className = 'pill--sample bench-sample-pill bench-title-pill';
-  }
-}
-
-// ── Selectors ────────────────────────────────────────────────────
-
-function renderBenchPropertySelector() {
-  const sel = document.getElementById('bench-my-hotel');
-  sel.innerHTML = benchmarkData.hotels.map(h =>
-    `<option value="${h.id}"${h.id === benchState.myHotelId ? ' selected' : ''}>${fmt.esc(h.name)}</option>`
-  ).join('');
-  updateBenchPropInfo();
-  sel.addEventListener('change', () => {
-    benchState.myHotelId = sel.value;
-    updateBenchPropInfo();
-    renderBenchCompSetBuilder();
-    renderBenchSelection();
-  });
-}
-
-function updateBenchPropInfo() {
-  const h = benchmarkData.hotels.find(x => x.id === benchState.myHotelId);
-  if (!h) return;
-  document.getElementById('bench-prop-info').innerHTML =
-    `<div class="bench-prop-name">${fmt.esc(h.name)}</div>
-     <div class="bench-prop-meta">${fmt.esc(h.city)} · ${fmt.esc(h.category)} · ${h.keys} keys</div>`;
-}
-
-function renderBenchCompSetBuilder() {
-  const container = document.getElementById('bench-comp-checks');
-  const myHotel = benchmarkData.hotels.find(x => x.id === benchState.myHotelId);
-
-  // Always remove own property from comp set
-  benchState.compSet.delete(benchState.myHotelId);
-
-  // Eligible: same city + same/adjacent segment, not own property
-  const allowedSegs = myHotel ? benchAllowedSegments(myHotel.category) : new Set();
-  const eligible = benchmarkData.hotels.filter(h =>
-    h.id !== benchState.myHotelId &&
-    (!myHotel || h.city === myHotel.city) &&
-    (!myHotel || allowedSegs.has(h.category))
-  );
-
-  // Remove previously selected hotels that are no longer eligible
-  benchState.compSet.forEach(id => {
-    if (!eligible.find(h => h.id === id)) benchState.compSet.delete(id);
-  });
-
-  if (!eligible.length) {
-    container.innerHTML = getEmptyStateHtml('No comparable hotels in this city and segment');
-  } else {
-    container.innerHTML = eligible.map(h => {
-      const checked = benchState.compSet.has(h.id);
-      const maxReached = benchState.compSet.size >= BENCH_MAX_COMP && !checked;
-      return `<label class="bench-comp-check-label${checked ? ' active' : ''}${maxReached ? ' bench-comp-check-disabled' : ''}">
-        <input type="checkbox" class="bench-comp-cb" value="${h.id}"${checked ? ' checked' : ''}${maxReached ? ' disabled' : ''}>
-        ${fmt.esc(h.name)}<span class="bench-comp-keys">${h.keys} keys</span>
-      </label>`;
-    }).join('');
-
-    container.querySelectorAll('.bench-comp-cb').forEach(cb => {
-      cb.addEventListener('change', () => {
-        if (cb.checked) {
-          if (benchState.compSet.size >= BENCH_MAX_COMP) { cb.checked = false; return; }
-          benchState.compSet.add(cb.value);
-        } else {
-          benchState.compSet.delete(cb.value);
-        }
-        cb.closest('.bench-comp-check-label').classList.toggle('active', cb.checked);
-        // Refresh disabled state on other checkboxes after max changes
-        container.querySelectorAll('.bench-comp-cb').forEach(other => {
-          const otherChecked = benchState.compSet.has(other.value);
-          const shouldDisable = benchState.compSet.size >= BENCH_MAX_COMP && !otherChecked;
-          other.disabled = shouldDisable;
-          other.closest('.bench-comp-check-label').classList.toggle('bench-comp-check-disabled', shouldDisable);
-        });
-        updateBenchCompCounter();
-        renderCompPills();
-        renderBenchSelection();
-      });
-    });
-  }
-
-  updateBenchCompCounter();
-  renderCompPills();
-}
-
-function updateBenchCompCounter() {
-  const n = benchState.compSet.size;
-  const valid = isCompSetValid();
-  const counterEl = document.getElementById('bench-comp-counter');
-  const msgEl     = document.getElementById('bench-comp-min-msg');
-  if (counterEl) {
-    counterEl.textContent = `${n} hotel${n !== 1 ? 's' : ''} selected — minimum ${BENCH_MIN_COMP} required`;
-    counterEl.classList.toggle('bench-comp-counter--warn', !valid);
-    counterEl.classList.toggle('bench-comp-counter--ok',    valid);
-  }
-  if (msgEl) msgEl.style.display = valid ? 'none' : 'block';
-  // Update comp toggle buttons on both calendars
-  ['adr','occ'].forEach(calType => {
-    document.querySelectorAll(`[data-ctype="${calType}"][data-cview="comp"]`).forEach(btn => {
-      btn.disabled = !valid;
-      btn.title    = valid ? '' : 'Add at least 3 hotels to view comp set data';
-      btn.style.opacity = valid ? '' : '0.4';
-      btn.style.cursor  = valid ? '' : 'not-allowed';
-    });
-  });
-}
-
-function renderCompPills() {
-  const c = document.getElementById('bench-comp-pills');
-  c.innerHTML = [...benchState.compSet].map(id => {
-    const h = benchmarkData.hotels.find(x => x.id === id);
-    if (!h) return '';
-    return `<span class="bench-comp-pill">${fmt.esc(h.name)}
-      <button class="bench-comp-pill-rm" data-compid="${h.id}">×</button></span>`;
-  }).join('');
-  c.querySelectorAll('.bench-comp-pill-rm').forEach(btn => {
-    btn.addEventListener('click', () => {
-      benchState.compSet.delete(btn.dataset.compid);
-      const cb = document.querySelector(`.bench-comp-cb[value="${btn.dataset.compid}"]`);
-      if (cb) { cb.checked = false; cb.closest('.bench-comp-check-label').classList.remove('active'); }
-      updateBenchCompCounter();
-      renderCompPills();
-      renderBenchSelection();
-    });
-  });
-}
-
-// ── Date range ───────────────────────────────────────────────────
-
-// The window ends on the data's last day (the sample's is yesterday).
-// Local midnight, like dateInRange(): new Date('YYYY-MM-DD') is UTC
-// midnight, which west of UTC falls on the day before.
-function getBenchDateRange(range = benchState.dateRange) {
-  const dates = benchmarkData ? benchmarkData.daily.map(d => d.date) : [];
-  const last = benchmarkData?.end || (dates.length ? dates.reduce((a, b) => (b > a ? b : a)) : localIsoDate(new Date()));
-  const end = new Date(last + 'T00:00:00');
-  const start = new Date(end);
-  if (range === 7)        start.setDate(end.getDate() - 6);
-  else if (range === 30)  start.setDate(end.getDate() - 29);
-  else if (range === 90)  start.setDate(end.getDate() - 89);
-  else if (range === 'ytd') { start.setFullYear(end.getFullYear()); start.setMonth(0); start.setDate(1); }
-  return [start, end];
-}
-
-// The period a benchmarking figure really covers: the dates of the selected
-// property's daily records inside the window. Sample data has no real
-// period: "Sample data · illustrative figures", never a date or "updated".
-// Otherwise a full window reads "Last 30 days" only when the data runs up
-// to today or yesterday, an older one "30 days to 1 Jun 2026", and
-// anything else (YTD, which starts before the first record) is labelled by
-// the dates it covers.
-function benchPeriod(range = benchState.dateRange) {
-  if (!benchmarkData) return null;
-  if (benchmarkData.sample !== false) return { kind: 'sample' };
-  const [s, e] = getBenchDateRange(range);
-  const dates = [...new Set(benchmarkData.daily
-    .filter(d => d.hotel_id === benchState.myHotelId && dateInRange(d.date, s, e))
-    .map(d => d.date))].sort();
-  if (!dates.length) return null;
-  const last = dates[dates.length - 1];
-  if (typeof range === 'number' && dates.length === range && last === localIsoDate(e)) {
-    const ageDays = Math.round((new Date(localIsoDate(new Date()) + 'T00:00:00') - new Date(last + 'T00:00:00')) / 864e5);
-    return ageDays <= 1 ? { kind: 'days', days: range } : { kind: 'window', days: range, end: last };
-  }
-  return { kind: 'range', start: dates[0], end: last };
-}
-function benchPeriodTip() {
-  return KodoPeriod.tip({ source: 'sample data: fictional hotels, illustrative figures, not real performance' });
-}
-
-function dateInRange(dateStr, start, end) {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d >= start && d <= end;
-}
-
-// ── Data helpers ─────────────────────────────────────────────────
-
-function getMyDaily(range = benchState.dateRange) {
-  const [s, e] = getBenchDateRange(range);
-  return benchmarkData.daily.filter(d =>
-    d.hotel_id === benchState.myHotelId && dateInRange(d.date, s, e)
-  ).sort((a, b) => a.date.localeCompare(b.date));
-}
-
-function isCompSetValid() {
-  return benchState.compSet.size >= BENCH_MIN_COMP;
-}
-
-function benchCompPlaceholder() {
-  return `<div style="display:flex;align-items:center;justify-content:center;padding:32px 16px;color:var(--text-muted);font-family:'Sweet Sans Pro',sans-serif;font-size:11px;text-align:center;">
-    ⚠ Add at least ${BENCH_MIN_COMP} hotels to view comp set data
-  </div>`;
-}
-
-function getCompDaily(range = benchState.dateRange) {
-  if (!isCompSetValid()) return [];  // privacy: minimum 3 required
-  const [s, e] = getBenchDateRange(range);
-  const byDate = {};
-  benchmarkData.daily.forEach(d => {
-    if (!benchState.compSet.has(d.hotel_id)) return;
-    if (!dateInRange(d.date, s, e)) return;
-    if (!byDate[d.date]) byDate[d.date] = [];
-    byDate[d.date].push(d);
-  });
-  return Object.entries(byDate).map(([date, recs]) => ({
-    date,
-    occupancy:     recs.reduce((s, r) => s + r.occupancy, 0) / recs.length,
-    adr:           recs.reduce((s, r) => s + r.adr, 0) / recs.length,
-    revpar:        recs.reduce((s, r) => s + r.revpar, 0) / recs.length,
-    rooms_revenue: recs.reduce((s, r) => s + r.rooms_revenue, 0) / recs.length,
-  })).sort((a, b) => a.date.localeCompare(b.date));
-}
-
-// Each metric averages only the records that have it (missing values are
-// skipped, not counted as zero); a metric with no values at all gives 0.
-function aggDaily(records) {
-  const avg = key => {
-    const vals = records.map(r => r[key]).filter(v => typeof v === 'number' && Number.isFinite(v));
-    return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
-  };
-  return {
-    occupancy:     avg('occupancy'),
-    adr:           avg('adr'),
-    revpar:        avg('revpar'),
-    rooms_revenue: avg('rooms_revenue'),
-  };
-}
-
-// ── Master render ─────────────────────────────────────────────────
-
-// After the user changes the property, comp set or period: the charts and
-// cards, and the Insights box too (it said "Current selection" but kept the
-// previous selection's text). Its summary is cached per selection, so going
-// back to an earlier one doesn't call the API again.
-function renderBenchSelection() {
-  renderBenchAll();
-  renderBenchAIInsights();
-}
-
-function renderBenchAll() {
-  renderBenchKPIs();
-  renderBenchCalendar('adr');
-  renderBenchCalendar('occ');
-  renderBenchTrends();
-  renderBenchDOW();
-  renderBenchMonthlyTable();
-}
-
-// ── KPI cards ────────────────────────────────────────────────────
-
-function renderBenchKPIs() {
-  const my   = aggDaily(getMyDaily());
-  const comp = aggDaily(getCompDaily());
-
-  const noComp = benchState.compSet.size < 3;
-
-  function setCard(id, myVal, compVal, myFmt, compFmt) {
-    const card = document.getElementById(id);
-    card.querySelector('.bench-kpi-mine-val').textContent = myFmt(myVal);
-    card.querySelector('.bench-kpi-comp-val').textContent = noComp ? '—' : compFmt(compVal);
-    const idx = (!noComp && compVal > 0) ? Math.round(myVal / compVal * 100) : null;
-    const idxEl   = card.querySelector('.bench-kpi-index');
-    const idxVal  = card.querySelector('.bench-kpi-idx-val');
-    idxVal.textContent = idx !== null ? idx : '—';
-    idxEl.className = 'bench-kpi-index' + (idx === null ? ' bench-idx-neutral' : idx >= 100 ? ' bench-idx-green' : ' bench-idx-red');
-  }
-
-  setCard('bkpi-occ',    my.occupancy,     comp.occupancy,     v => (v*100).toFixed(1)+'%',         v => (v*100).toFixed(1)+'%');
-  setCard('bkpi-adr',    my.adr,           comp.adr,           v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
-  setCard('bkpi-revpar', my.revpar,        comp.revpar,        v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
-  setCard('bkpi-rev',    my.rooms_revenue, comp.rooms_revenue, v => 'MAD '+Math.round(v).toLocaleString('en'), v => 'MAD '+Math.round(v).toLocaleString('en'));
-
-  // Period line: the property's dates, compared with the comp set over the same dates
-  const per = benchPeriod(), tip = benchPeriodTip();
-  const sample = benchmarkData.sample !== false;
-  ['bkpi-occ', 'bkpi-adr', 'bkpi-revpar', 'bkpi-rev'].forEach(id =>
-    KodoPeriod.set(id, per, tip, (noComp || sample) ? '' : 'vs comp set, same dates'));
-}
-
-// ── Calendar ──────────────────────────────────────────────────────
-
-function benchCalDataMap(type, year, month) {
-  const prefix = `${year}-${String(month).padStart(2,'0')}`;
-  const map = {};
-
-  if (type === 'adr') {
-    // buildForHotel (mine) or comp average
-    const view = benchState.adrCalView;
-    buildCalMap(view, prefix, map);
-  } else {
-    const view = benchState.occCalView;
-    buildCalMap(view, prefix, map);
-  }
-  return map;
-}
-
-function buildCalMap(view, prefix, map) {
-  if (view === 'mine') {
-    benchmarkData.daily.forEach(d => {
-      if (d.hotel_id !== benchState.myHotelId) return;
-      if (!d.date.startsWith(prefix)) return;
-      map[d.date] = { adr: d.adr, occupancy: d.occupancy, revpar: d.revpar };
-    });
-  } else {
-    if (!isCompSetValid()) return;  // privacy: no data below minimum
-    const byDate = {};
-    benchmarkData.daily.forEach(d => {
-      if (!benchState.compSet.has(d.hotel_id)) return;
-      if (!d.date.startsWith(prefix)) return;
-      if (!byDate[d.date]) byDate[d.date] = [];
-      byDate[d.date].push(d);
-    });
-    Object.entries(byDate).forEach(([date, recs]) => {
-      map[date] = {
-        adr:       recs.reduce((s, r) => s + r.adr, 0) / recs.length,
-        occupancy: recs.reduce((s, r) => s + r.occupancy, 0) / recs.length,
-        revpar:    recs.reduce((s, r) => s + r.revpar, 0) / recs.length,
-      };
-    });
-  }
-}
-
-// ADR heat = blue, occupancy heat = green, comp-set average = grey
+// Calendar heat: published rate = blue, modelled occupancy = green
 function adrCellStyle(adr, isCompSet = false) {
   if (isCompSet) {
     if (adr >= 6000) return heatCell('grey', 3, '600');
@@ -4745,568 +4321,17 @@ function occCellStyle(occ, isCompSet = false) {
   return heatCell('green', 0);
 }
 
-function renderBenchCalendar(calType) {
-  const yr  = calType === 'adr' ? benchState.adrCalYear  : benchState.occCalYear;
-  const mo  = calType === 'adr' ? benchState.adrCalMonth : benchState.occCalMonth;
-  let   view = calType === 'adr' ? benchState.adrCalView : benchState.occCalView;
-
-  const valid = isCompSetValid();
-
-  // If comp view is active but comp set is invalid, force back to mine
-  if (!valid && view === 'comp') {
-    view = 'mine';
-    if (calType === 'adr') benchState.adrCalView = 'mine';
-    else benchState.occCalView = 'mine';
-  }
-
-  const MON_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById(`bench-${calType}-month-label`).textContent = `${MON_NAMES[mo-1]} ${yr}`;
-
-  // Update toggle button active state; disable comp button when invalid
-  document.querySelectorAll(`[data-ctype="${calType}"]`).forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.cview === view);
-    if (btn.dataset.cview === 'comp') {
-      btn.disabled = !valid;
-      btn.title = valid ? '' : 'Add at least 3 hotels to view comp set data';
-      btn.style.opacity = valid ? '' : '0.4';
-      btn.style.cursor  = valid ? '' : 'not-allowed';
-    }
-  });
-
-  const dataMap = benchCalDataMap(calType, yr, mo);
-  const firstDow = (new Date(yr, mo - 1, 1).getDay() + 6) % 7; // Mon=0
-  const totalDays = new Date(yr, mo, 0).getDate();
-
-  let html = '<div class="bench-cal-dow-row">';
-  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => { html += `<div class="bench-cal-dow">${d}</div>`; });
-  html += '</div><div class="bench-cal-days">';
-  for (let i = 0; i < firstDow; i++) html += '<div class="bench-cal-day bench-cal-empty"></div>';
-
-  for (let day = 1; day <= totalDays; day++) {
-    const dateStr = `${yr}-${String(mo).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const isWknd = [0,6].includes((new Date(yr, mo-1, day).getDay()));
-    const d = dataMap[dateStr];
-    if (d) {
-      const isComp = view === 'comp';
-      const sty = calType === 'adr' ? adrCellStyle(d.adr, isComp) : occCellStyle(d.occupancy, isComp);
-      const dispVal = calType === 'adr'
-        ? Math.round(d.adr).toLocaleString('en')
-        : (d.occupancy * 100).toFixed(0) + '%';
-      const tip = calTipAttrs(dateStr, [['ADR', `MAD ${Math.round(d.adr).toLocaleString('en')}`],
-        ['Occupancy', `${(d.occupancy * 100).toFixed(1)}%`], ['RevPAR', `MAD ${Math.round(d.revpar).toLocaleString('en')}`]]);
-      const dayNumCol = 'var(--text)';
-      const styAttr = `background:${sty.bg};color:${sty.col};${sty.fw ? `font-weight:${sty.fw};` : ''}${sty.border ? `border:${sty.border};` : ''}`;
-      html += `<div class="bench-cal-day${isWknd ? ' bench-cal-weekend' : ''}"
-        style="${styAttr}"${tip}>
-        <span class="bench-cal-daynum" style="color:${dayNumCol};opacity:1">${day}</span>
-        <span class="bench-cal-dayval">${dispVal}</span>
-      </div>`;
-    } else {
-      html += `<div class="bench-cal-day bench-cal-nodata${isWknd ? ' bench-cal-weekend' : ''}">
-        <span class="bench-cal-daynum">${day}</span>
-      </div>`;
-    }
-  }
-  html += '</div>';
-
-  // If comp is requested but invalid, replace entire grid with placeholder
-  if (!valid && view === 'comp') {
-    html = benchCompPlaceholder();
-  }
-
-  document.getElementById(`bench-${calType}-grid`).innerHTML = html;
-  KodoEvents.markCells(document.getElementById(`bench-${calType}-grid`),
-    ((benchmarkData && benchmarkData.hotels || []).find(x => x.id === benchState.myHotelId) || {}).city);
-}
-
-// Calendar nav + view toggle events
-document.getElementById('bench-adr-prev').addEventListener('click', () => {
-  benchState.adrCalMonth--; if (benchState.adrCalMonth < 1) { benchState.adrCalMonth = 12; benchState.adrCalYear--; }
-  renderBenchCalendar('adr');
-});
-document.getElementById('bench-adr-next').addEventListener('click', () => {
-  benchState.adrCalMonth++; if (benchState.adrCalMonth > 12) { benchState.adrCalMonth = 1; benchState.adrCalYear++; }
-  renderBenchCalendar('adr');
-});
-document.getElementById('bench-occ-prev').addEventListener('click', () => {
-  benchState.occCalMonth--; if (benchState.occCalMonth < 1) { benchState.occCalMonth = 12; benchState.occCalYear--; }
-  renderBenchCalendar('occ');
-});
-document.getElementById('bench-occ-next').addEventListener('click', () => {
-  benchState.occCalMonth++; if (benchState.occCalMonth > 12) { benchState.occCalMonth = 1; benchState.occCalYear++; }
-  renderBenchCalendar('occ');
-});
-
-document.getElementById('screen-benchmarking').addEventListener('click', e => {
-  const btn = e.target.closest('.bench-cal-view-btn');
-  if (!btn) return;
-  const ctype = btn.dataset.ctype;
-  const cview = btn.dataset.cview;
-  if (ctype === 'adr') benchState.adrCalView = cview;
-  else benchState.occCalView = cview;
-  renderBenchCalendar(ctype);
-});
-
-// ── Trend charts ──────────────────────────────────────────────────
-
-function renderBenchTrends() {
-  const myD   = getMyDaily();
-  const compD = getCompDaily();
-
-  const labels = myD.map(d => {
-    const dt = new Date(d.date + 'T00:00:00');
-    return dt.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
-  });
-
-  const compByDate = {};
-  compD.forEach(d => { compByDate[d.date] = d; });
-
-  const myRevpar  = myD.map(d => Math.round(d.revpar));
-  const myOcc     = myD.map(d => parseFloat((d.occupancy * 100).toFixed(1)));
-  const cRevpar   = myD.map(d => { const c = compByDate[d.date]; return c ? Math.round(c.revpar) : null; });
-  const cOcc      = myD.map(d => { const c = compByDate[d.date]; return c ? parseFloat((c.occupancy * 100).toFixed(1)) : null; });
-
-  const dense = labels.length > 50;
-
-  function mkTrend(myData, compData, suffix) {
-    const cc = getChartColors();
-    const datasets = [
-      // "My Property" is the one series this whole screen exists to read, so
-      // it keeps the orange highlight permanently rather than only on hover
-      // — the comp-set average stays a neutral gray dashed reference line.
-      { label: 'My Property', data: myData, borderColor: cc.barColor,
-        backgroundColor: getChartColors().fillColor, borderWidth: 2, fill: false,
-        tension: 0.3, pointRadius: dense ? 0 : 2.5, pointBackgroundColor: cc.barColor },
-    ];
-    if (isCompSetValid()) {
-      datasets.push({ label: 'Comp Set Avg', data: compData, borderColor: cc.compColor,
-        borderWidth: 2, borderDash: [5, 4], fill: false, tension: 0.3, pointRadius: 0 });
-    }
-    return {
-      type: 'line',
-      data: { labels, datasets },
-      options: {
-        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
-        layout: { padding: { top: 14 } },
-        plugins: {
-          legend: { display: true, labels: { color: cc.tick, font: { size: 11 }, boxWidth: 22, padding: 14 } },
-          datalabels: { display: false },
-          tooltip: {
-            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
-            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
-            mode: 'index', intersect: false,
-            callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}${suffix}` },
-          },
-        },
-        scales: {
-          x: { ticks: { color: cc.tick, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
-          y: { ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Sweet Sans Pro', sans-serif" } } },
-        },
-      },
-    };
-  }
-
-  const rWrap = document.getElementById('bench-trend-revpar-wrap');
-  rWrap.style.minHeight = '0'; rWrap.style.height = '230px';
-  if (benchTrendRevpar) { benchTrendRevpar.destroy(); benchTrendRevpar = null; }
-  benchTrendRevpar = new Chart(document.getElementById('bench-trend-revpar'), mkTrend(myRevpar, cRevpar, ' MAD'));
-
-  const oWrap = document.getElementById('bench-trend-occ-wrap');
-  oWrap.style.minHeight = '0'; oWrap.style.height = '230px';
-  if (benchTrendOcc) { benchTrendOcc.destroy(); benchTrendOcc = null; }
-  benchTrendOcc = new Chart(document.getElementById('bench-trend-occ'), mkTrend(myOcc, cOcc, '%'));
-}
-
-// ── DOW chart ─────────────────────────────────────────────────────
-
-function renderBenchDOW() {
-  const myD   = getMyDaily();
-  const compD = getCompDaily();
-
-  const myDOW   = Array(7).fill(null).map(() => []);
-  const compDOW = Array(7).fill(null).map(() => []);
-
-  myD.forEach(d => {
-    const dow = (new Date(d.date + 'T00:00:00').getDay() + 6) % 7;
-    myDOW[dow].push(d.occupancy * 100);
-  });
-  compD.forEach(d => {
-    const dow = (new Date(d.date + 'T00:00:00').getDay() + 6) % 7;
-    compDOW[dow].push(d.occupancy * 100);
-  });
-
-  const avg = arr => arr.length ? parseFloat((arr.reduce((s,v) => s+v, 0) / arr.length).toFixed(1)) : 0;
-
-  const dWrap = document.getElementById('bench-dow-wrap');
-  dWrap.style.minHeight = '0'; dWrap.style.height = '230px';
-  if (benchDOWChart) { benchDOWChart.destroy(); benchDOWChart = null; }
-
-  {
-    const cc = getChartColors();
-    const dowDatasets = [
-      { label: 'My Property', data: myDOW.map(avg), backgroundColor: cc.barColor, hoverBackgroundColor: cc.hoverColor, borderRadius: 4, borderSkipped: false },
-    ];
-    if (isCompSetValid()) {
-      dowDatasets.push({ label: 'Comp Set Avg', data: compDOW.map(avg), backgroundColor: getChartColors().compColor, borderRadius: 4, borderSkipped: false });
-    }
-    benchDOWChart = new Chart(document.getElementById('bench-dow-chart'), {
-      type: 'bar',
-      data: {
-        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-        datasets: dowDatasets,
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
-        layout: { padding: { top: 14 } },
-        plugins: {
-          legend: { display: false },
-          datalabels: { display: false },
-          tooltip: {
-            backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1,
-            titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
-            callbacks: { label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}%` },
-          },
-        },
-        scales: {
-          x: { ticks: { color: cc.tick, font: { size: 11 }, padding: 8 } },
-          y: { suggestedMin: 0, suggestedMax: 100, ticks: { color: cc.tick, font: { size: 11, weight: '400', family: "'Sweet Sans Pro', sans-serif" } } },
-        },
-      },
-    });
-  }
-}
-
-// ── Monthly summary table ─────────────────────────────────────────
-
-function renderBenchMonthlyTable() {
-  const months = {};
-  benchmarkData.daily.forEach(d => {
-    const mk = d.date.substring(0, 7);
-    if (!months[mk]) months[mk] = { my: [], compByDate: {} };
-    if (d.hotel_id === benchState.myHotelId) {
-      months[mk].my.push(d);
-    } else if (benchState.compSet.has(d.hotel_id)) {
-      if (!months[mk].compByDate[d.date]) months[mk].compByDate[d.date] = [];
-      months[mk].compByDate[d.date].push(d);
-    }
-  });
-
-  const MON_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const tbody = document.getElementById('bench-monthly-tbody');
-  tbody.innerHTML = Object.keys(months).sort().map(mk => {
-    const { my, compByDate } = months[mk];
-    const myAgg = aggDaily(my);
-    const compDailyAvg = Object.values(compByDate).map(recs => aggDaily(recs));
-    const compAgg = aggDaily(compDailyAvg);
-    const noComp = benchState.compSet.size < 3 || !compDailyAvg.length;
-    const revIdx = (!noComp && compAgg.revpar > 0) ? Math.round(myAgg.revpar / compAgg.revpar * 100) : null;
-    const [yr, mo] = mk.split('-');
-    const label = `${MON_NAMES[Number(mo)-1]} ${yr}`;
-    const idxCls = revIdx === null ? 'bench-idx-neutral pill--grey' : revIdx >= 100 ? 'bench-idx-green pill--green' : 'bench-idx-red pill--red';
-    return `<tr>
-      <td><strong>${label}</strong></td>
-      <td>${(myAgg.occupancy*100).toFixed(1)}%</td>
-      <td>${noComp ? '—' : (compAgg.occupancy*100).toFixed(1)+'%'}</td>
-      <td>${Math.round(myAgg.adr).toLocaleString('en')}</td>
-      <td>${noComp ? '—' : Math.round(compAgg.adr).toLocaleString('en')}</td>
-      <td>${Math.round(myAgg.revpar).toLocaleString('en')}</td>
-      <td>${noComp ? '—' : Math.round(compAgg.revpar).toLocaleString('en')}</td>
-      <td><span class="bench-idx-badge ${idxCls}">${revIdx !== null ? revIdx : '—'}</span></td>
-    </tr>`;
-  }).join('');
-}
-
-// ── AI Insights ───────────────────────────────────────────────────
-
-const DOW_NAMES_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-const DOW_NAMES_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-
-// Ledger row shape: { label, text, value, sign } — sign is 'pos'/'neg'/
-// null (neutral, default text color), decided from the underlying
-// number, never from which row it is.
-// Cache for the AI summary paragraph, keyed to the hotel/comp-set/date-
-// range combination it was generated for — so navigating away from and
-// back to this screen (which re-runs this whole function) reuses the
-// existing text instead of firing a new /api/chat call, and only a
-// selection not seen yet or an explicit Refresh click generates one. One
-// entry per selection, so switching back to an earlier one reuses its text.
-let benchCommentaryCache = new Map();   // selection key → summary html
-function benchSelectionKey() {
-  return `${benchState.myHotelId}|${[...benchState.compSet].sort().join(',')}|${benchState.dateRange}`;
-}
-
-function renderBenchInsightCards(forceRefresh = false) {
-  const box    = document.getElementById('bench-ai-insights');
-  const my     = aggDaily(getMyDaily());
-  const comp   = aggDaily(getCompDaily());
-  const noComp = benchState.compSet.size < 3;
-  const myDailyData = getMyDaily();
-
-  const myH       = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
-  const hotelName = myH?.name || 'This hotel';
-  const compNames = [...benchState.compSet].map(id => benchmarkData.hotels.find(h => h.id === id)?.name).filter(Boolean).join(', ');
-  const compLabel = compNames || 'the comp set';
-
-  const rows = [];
-
-  // ── Row 1: ADR vs comp set ───────────────────────────────────
-  const adrDiff = noComp ? 0 : (my.adr - comp.adr) / comp.adr * 100;
-  rows.push(noComp ? {
-    label: 'ADR',
-    text: `MAD ${Math.round(my.adr).toLocaleString('en')}. Select a comp set to benchmark against the market.`,
-    value: `MAD ${Math.round(my.adr).toLocaleString('en')}`,
-    sign: null,
-  } : {
-    label: 'ADR vs comp set',
-    text: `MAD ${Math.round(my.adr).toLocaleString('en')} against a comp average of MAD ${Math.round(comp.adr).toLocaleString('en')}.`,
-    value: (adrDiff >= 0 ? '+' : '') + adrDiff.toFixed(1) + '%',
-    sign: adrDiff > 0 ? 'pos' : adrDiff < 0 ? 'neg' : null,
-  });
-
-  // ── Row 2: Occupancy vs comp set ─────────────────────────────
-  const occDiff = noComp ? 0 : (my.occupancy - comp.occupancy) * 100;
-  rows.push(noComp ? {
-    label: 'Occupancy',
-    text: `Running at ${(my.occupancy * 100).toFixed(1)}% occupancy. Add a comp set to see relative performance.`,
-    value: `${(my.occupancy * 100).toFixed(1)}%`,
-    sign: null,
-  } : {
-    label: 'Occupancy vs comp set',
-    text: `${(my.occupancy*100).toFixed(1)}% against a comp average of ${(comp.occupancy*100).toFixed(1)}%.`,
-    value: (occDiff >= 0 ? '+' : '') + occDiff.toFixed(1) + ' pts',
-    sign: occDiff > 0 ? 'pos' : occDiff < 0 ? 'neg' : null,
-  });
-
-  // ── Row 3: Day-of-week pattern (neutral — informational, not a gap) ──
-  const dowBuckets = Array(7).fill(null).map(() => []);
-  myDailyData.forEach(d => {
-    const dow = (new Date(d.date + 'T00:00:00').getDay() + 6) % 7;
-    dowBuckets[dow].push(d.occupancy * 100);
-  });
-  const dowAvg    = dowBuckets.map(arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0);
-  const validDows = dowAvg.map((v, i) => ({ v, i })).filter(x => x.v > 0);
-  const bestDow   = validDows.reduce((a, b) => b.v > a.v ? b : a, { v: 0, i: 0 });
-  const worstDow  = validDows.reduce((a, b) => b.v < a.v ? b : a, { v: 100, i: 0 });
-  rows.push({
-    label: 'Day-of-week pattern',
-    text: `${DOW_NAMES_FULL[bestDow.i]} is the strongest day at ${bestDow.v.toFixed(1)}%, against ${DOW_NAMES_SHORT[worstDow.i]} at ${worstDow.v.toFixed(1)}%.`,
-    value: `${DOW_NAMES_SHORT[bestDow.i]} ${Math.round(bestDow.v)}%`,
-    sign: null,
-  });
-
-  // ── Row 4: RevPAR trend ──────────────────────────────────────
-  const sorted  = [...myDailyData].sort((a, b) => a.date.localeCompare(b.date));
-  const half    = Math.floor(sorted.length / 2);
-  const firstH  = sorted.slice(0, half);
-  const secondH = sorted.slice(half);
-  const rev1    = firstH.length  ? firstH.reduce((s,d)=>s+d.revpar,0)/firstH.length   : 0;
-  const rev2    = secondH.length ? secondH.reduce((s,d)=>s+d.revpar,0)/secondH.length  : 0;
-  const trendPct  = rev1 > 0 ? (rev2 - rev1) / rev1 * 100 : 0;
-  const improving = trendPct >= 0;
-  rows.push({
-    label: 'RevPAR trend',
-    text: `MAD ${Math.round(rev1).toLocaleString('en')} in the first half of the period against MAD ${Math.round(rev2).toLocaleString('en')} in the second half.`,
-    value: (trendPct >= 0 ? '+' : '') + trendPct.toFixed(1) + '%',
-    sign: trendPct > 0 ? 'pos' : trendPct < 0 ? 'neg' : null,
-  });
-
-  // Follow-up chips — built from the exact same adrDiff/occDiff/trendPct
-  // used for the rows above, not re-fetched or hardcoded. Only ask about
-  // a gap when there's a real comp set to compare against; the RevPAR
-  // trend chip stands alone (first half vs second half of the same
-  // hotel) and doesn't depend on one existing.
-  const followupChips = [];
-  if (!noComp) {
-    followupChips.push({
-      label: `Why is ADR ${Math.abs(adrDiff).toFixed(1)}% ${adrDiff >= 0 ? 'above' : 'below'} the comp set?`,
-      question: `Why is ${hotelName}'s ADR ${Math.abs(adrDiff).toFixed(1)}% ${adrDiff >= 0 ? 'above' : 'below'} the comp set (${compLabel})?`,
-    });
-    followupChips.push({
-      label: occDiff >= 0
-        ? `What's driving the ${occDiff.toFixed(1)} pt occupancy lead?`
-        : `How can we close the occupancy gap?`,
-      question: occDiff >= 0
-        ? `What is driving ${hotelName}'s ${occDiff.toFixed(1)} point occupancy lead over ${compLabel}?`
-        : `How can ${hotelName} close the ${Math.abs(occDiff).toFixed(1)} point occupancy gap vs ${compLabel}?`,
-    });
-  }
-  followupChips.push({
-    label: `What is driving the RevPAR ${improving ? 'improvement' : 'decline'}?`,
-    question: `What is driving ${hotelName}'s ${Math.abs(trendPct).toFixed(1)}% RevPAR ${improving ? 'improvement' : 'decline'} from the first to second half of the selected period?`,
-  });
-
-  // Full data context grounding each chip's /api/chat call — hotel,
-  // comp set, period, ADR/occupancy/RevPAR, and day-of-week spread.
-  const dataContext = `SAMPLE MODE: illustrative figures for fictional hotels (not real hotels, not real performance). Say so if asked; never present them as real results.
-${hotelName} vs comp set (${compLabel}) — sample period of ${benchState.dateRange} days.
-MY: Occ ${(my.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(my.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(my.revpar).toLocaleString('en')}
-COMP AVG: Occ ${(comp.occupancy*100).toFixed(1)}% | ADR MAD ${Math.round(comp.adr).toLocaleString('en')} | RevPAR MAD ${Math.round(comp.revpar).toLocaleString('en')}
-Best day: ${DOW_NAMES_FULL[bestDow.i]} (${bestDow.v.toFixed(1)}% occupancy), weakest day: ${DOW_NAMES_FULL[worstDow.i]} (${worstDow.v.toFixed(1)}% occupancy)
-RevPAR trend: ${improving ? 'improved' : 'declined'} ${Math.abs(trendPct).toFixed(1)}% from first to second half (MAD ${Math.round(rev1).toLocaleString('en')} -> MAD ${Math.round(rev2).toLocaleString('en')})`;
-
-  // If this exact selection already has a cached summary and this
-  // isn't an explicit Refresh, render it immediately with no network
-  // call; otherwise show a loading placeholder and fetch fresh below.
-  const summaryKey  = benchSelectionKey();
-  const cacheHit    = !forceRefresh && benchCommentaryCache.has(summaryKey);
-  const summaryHtml = cacheHit ? benchCommentaryCache.get(summaryKey) : 'Generating…';
-  const summaryCls  = cacheHit ? 'bench-ai-summary' : 'bench-ai-summary bench-loading';
-
-  box.innerHTML = `
-    <div class="${summaryCls}" id="bench-ai-summary">${summaryHtml}</div>
-    <div class="insight-rows">
-      ${rows.map(r => `
-        <div class="insight-row">
-          <span class="insight-label">${fmt.esc(r.label)}</span>
-          <span class="insight-text">${fmt.esc(r.text)}</span>
-          <span class="insight-value${r.sign ? ' is-' + r.sign + (r.sign === 'pos' ? ' pill--green' : r.sign === 'neg' ? ' pill--red' : '') : ''}">${fmt.esc(r.value)}</span>
-        </div>`).join('')}
-    </div>
-    <div class="ai-followup-wrap" id="benchFollowupWrap">
-      <div class="ai-followup-chips" id="benchFollowupChips">
-        ${followupChips.map(q => `<button class="ai-followup-chip" data-question="${fmt.esc(q.question)}">${fmt.esc(q.label)}</button>`).join('')}
-      </div>
-      <div id="benchFollowupResponse" class="ai-followup-response" style="display:none;"></div>
-    </div>`;
-
-  // Re-render safety: this whole box (summary + rows + chips) is
-  // rebuilt from scratch on every Refresh click and selection change,
-  // so handlers are re-attached fresh each time rather than assuming
-  // the DOM nodes from a previous render still exist.
-  initBenchmarkFollowup(dataContext);
-  if (!cacheHit) fetchBenchAISummary(summaryKey, dataContext);
-}
-
-// Generates the plain-text strategic summary shown above the ledger.
-// Only called when renderBenchInsightCards() didn't already have a
-// cached result for this exact selection (see benchCommentaryCache).
-async function fetchBenchAISummary(key, dataContext) {
-  const el = document.getElementById('bench-ai-summary');
-  if (!el) return;
-
-  const prompt = `Brief strategic commentary on ${dataContext}
-2-3 sentences of strategic commentary. Cite specific numbers. Be direct.`;
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
-    });
-    const data = await res.json();
-    // Bail if the selection moved on while this request was in flight —
-    // don't overwrite a newer summary (or a newer "Generating…") with a
-    // stale response for a selection the user has already left.
-    if (benchSelectionKey() !== key) return;
-    if (data.response) {
-      const html = mdRender(data.response);
-      benchCommentaryCache.set(key, html);
-      el.className = 'bench-ai-summary';
-      el.innerHTML = html;
-    } else {
-      el.className = 'bench-ai-summary';
-      el.textContent = '';
-    }
-  } catch {
-    if (benchSelectionKey() !== key) return;
-    el.className = 'bench-ai-summary';
-    el.textContent = '';
-  }
-}
-
-// Wires the follow-up chips built in renderBenchInsightCards() — called
-// there directly (not after the separate AI Commentary fetch above),
-// since the chips live under the 4 tiles and must survive/re-attach on
-// every Refresh or selection-change re-render regardless of whether the
-// commentary paragraph has loaded.
-function initBenchmarkFollowup(dataContext) {
-  const chips     = document.querySelectorAll('#benchFollowupChips .ai-followup-chip');
-  const responseEl = document.getElementById('benchFollowupResponse');
-  if (!chips.length || !responseEl) return;
-
-  chips.forEach(chip => {
-    // Guard against double-binding if this ever re-renders onto the
-    // same DOM nodes instead of fresh innerHTML.
-    if (chip.dataset.wired) return;
-    chip.dataset.wired = '1';
-
-    chip.addEventListener('click', async () => {
-      const question = chip.dataset.question;
-
-      chips.forEach(c => c.classList.add('loading'));
-      responseEl.style.display = 'block';
-      responseEl.classList.add('loading-text');
-      responseEl.textContent = 'Thinking…';
-
-      // Ground the follow-up in the same benchmarking numbers the main
-      // commentary used — without this the model has no idea which
-      // hotel or comp set a short question like "why is this
-      // underperforming?" even refers to.
-      const content = dataContext
-        ? `${dataContext}\n\nQuestion: ${question}\n\nAnswer in 2-3 sentences, direct, citing specific numbers where relevant.`
-        : `${question}\n\nAnswer in 2-3 sentences, direct.`;
-
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content }],
-          }),
-        });
-        const data = await res.json();
-        responseEl.classList.remove('loading-text');
-        if (data.response) {
-          responseEl.innerHTML = mdRender(data.response);
-        } else if (data.error === 'upgrade_required') {
-          responseEl.textContent = data.message || 'Upgrade required for more AI queries.';
-        } else {
-          responseEl.textContent = data.error || 'No response received.';
-        }
-      } catch (err) {
-        responseEl.classList.remove('loading-text');
-        responseEl.textContent = 'Something went wrong. Please try again.';
-      }
-
-      chips.forEach(c => c.classList.remove('loading'));
-    });
-  });
-}
-
-function renderBenchAIInsights(forceRefresh = false) {
-  renderBenchInsightCards(forceRefresh);
-}
-
-// Date range pill events
-document.getElementById('bench-date-bar').addEventListener('click', e => {
-  const btn = e.target.closest('.bench-date-pill');
-  if (!btn) return;
-  document.querySelectorAll('.bench-date-pill').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const v = btn.dataset.brange;
-  benchState.dateRange = isNaN(Number(v)) ? v : Number(v);
-  // Sync export period dropdown to match active date pill
-  const periodEl = document.getElementById('bench-export-period');
-  if (periodEl) periodEl.value = v;
-  renderBenchSelection();
-});
-
-// AI refresh button
-document.getElementById('bench-ai-refresh').addEventListener('click', () => renderBenchAIInsights(true));
-
 // ─── Benchmarking: rate benchmark (real mode) ─────────────────────
 // Benchmarker and Advisory plans with a comp set see the rate benchmark:
 // published rates (scraped_rates.csv) and modelled occupancy
-// (estimated_occupancy.csv) for the next 30 nights. No achieved ADR,
+// (estimated_occupancy.csv) for the next 30 nights. No achieved rate,
 // occupancy or RevPAR exists for these hotels, so none is shown. Everyone
-// else sees the sample mode, with a hint; signed-in users with a comp set
-// can switch to the sample ("View sample data") and back.
+// else sees what to do instead: the plans, or setting up the comp set.
 
 const rbState = {
   canReal: false,        // plan allows the rate benchmark
   compSet: null,         // { subject_id, comp_ids } of the organisation
   data: null,            // /api/benchmarking/rates
-  showSample: false,     // "View sample data" chosen
   editing: false,
   draftSubject: null, draftComps: [],
   rateCal: null, occCal: null,   // { y, m } shown by each calendar
@@ -5338,45 +4363,33 @@ async function loadRateBenchmark() {
 
 // Which view shows, the title pill, the subtitle and the mode bar
 function applyBenchMode() {
-  const real = rbState.canReal && !rbState.showSample && (rbState.compSet || rbState.editing);
+  const real = rbState.canReal && (rbState.compSet || rbState.editing);
   document.getElementById('bench-real').hidden = !real;
-  document.getElementById('bench-sample-view').hidden = real;
-  document.getElementById('bench-sub-tags').textContent = real ? 'Published rates · Modelled occupancy' : 'ADR · Occupancy · RevPAR';
+  document.getElementById('bench-empty').hidden = real;
+  document.getElementById('bench-sub-tags').textContent = 'BAR (published rates) · Occupancy (Kodo estimate)';
 
   const pill = document.getElementById('bench-mode-badge');
   const live = real && rbState.data && rbState.data.state === 'live';
-  pill.hidden = real && !live;
+  pill.hidden = !live;
   if (live) { pill.textContent = 'Live data available'; pill.className = 'pill--green bench-title-pill'; }
-  else { pill.textContent = 'Sample data'; pill.className = 'pill--sample bench-sample-pill bench-title-pill'; }
 
-  const bar = document.getElementById('bench-mode-bar');
-  const hint = document.getElementById('bench-mode-hint');
-  const plans = document.getElementById('bench-mode-plans');
-  const toggle = document.getElementById('bench-mode-toggle');
-  bar.hidden = false; plans.hidden = true; toggle.hidden = false;
+  const title = document.getElementById('bench-empty-title');
+  const sub = document.getElementById('bench-empty-sub');
+  const plans = document.getElementById('bench-empty-plans');
+  const setup = document.getElementById('bench-empty-setup');
   if (!rbState.canReal) {
-    hint.textContent = 'You are viewing sample data. Benchmarking your own hotel’s published rates against a comp set is part of the Benchmarker and Advisory plans.';
-    plans.hidden = false; toggle.hidden = true;
-  } else if (!rbState.compSet && !rbState.editing) {
-    hint.textContent = 'You are viewing sample data. Set up your comp set to benchmark your hotel’s published rates.';
-    toggle.textContent = 'Set up comp set';
-  } else if (real) {
-    hint.textContent = 'Your rate benchmark: published rates and modelled occupancy, not achieved performance.';
-    toggle.textContent = 'View sample data';
-    toggle.hidden = !rbState.compSet;
-  } else {
-    hint.textContent = 'You are viewing sample data: fictional hotels, illustrative figures.';
-    toggle.textContent = 'Back to my rate benchmark';
+    title.textContent = 'Benchmark your hotel against a comp set';
+    sub.textContent = 'Your BAR (published rates) and Kodo’s occupancy estimate, night by night, against up to 10 hotels you choose. Part of the Benchmarker and Advisory plans.';
+    plans.hidden = false; setup.hidden = true;
+  } else if (!real) {
+    title.textContent = 'Choose your hotel and comp set';
+    sub.textContent = 'Pick your hotel and 1 to 10 competitors. Kodo compares their BAR (published rates), collected every night, and the occupancy estimate for the next 30 nights.';
+    plans.hidden = true; setup.hidden = false;
   }
   if (real) renderRateBenchmark();
 }
 
-document.getElementById('bench-mode-toggle').addEventListener('click', () => {
-  if (!rbState.compSet) { rbState.showSample = false; rbOpenEditor(); return; }
-  rbState.showSample = !rbState.showSample;
-  applyBenchMode();
-  if (rbState.showSample && benchmarkData) renderBenchSelection();
-});
+document.getElementById('bench-empty-setup').addEventListener('click', () => rbOpenEditor());
 
 // ── Render ──
 function renderRateBenchmark() {
@@ -5432,14 +4445,14 @@ function rbRenderKPIs() {
     ok && k.rank != null ? 'By average published rate · 1 = highest' : '');
   rbCard('rbk-occ', ok && k.occ_subject != null ? `${k.occ_subject.toFixed(1)}%` : null,
     ok && k.occ_subject != null
-      ? `Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo Estimates · modelled, not measured · Price coverage: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
+      ? `Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo estimate · modelled, not measured · Price coverage: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
       : '');
   rbCard('rbk-cover', ok ? `${k.nights_with_rate} of ${d.window.nights}` : null,
     ok ? 'Nights with a live published rate for your hotel' : '');
   const note = document.getElementById('rb-occ-note');
   note.textContent = ok
-    ? `Kodo Estimates · modelled, not measured · your hotel, with the comp set average below · Price coverage: ${rbConf(k.occ_confidence)} (how many recent prices we have, not accuracy) · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
-    : 'Kodo Estimates · modelled, not measured';
+    ? `Kodo estimate · modelled, not measured · your hotel, with the comp set average below · Price coverage: ${rbConf(k.occ_confidence)} (how many recent prices we have, not accuracy) · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
+    : 'Kodo estimate · modelled, not measured';
 }
 
 function rbRenderCalendar(type) {
@@ -5457,7 +4470,7 @@ function rbRenderCalendar(type) {
   if (hasPast && !past) rbLoadPast(monthKey);
   if (type === 'rate') {
     document.getElementById('rb-rate-note').textContent = hasPast
-      ? 'Past nights: the last published rate seen before each night (yours, and below it the comp set median). It is not ADR. "No data": no price was collected for that night. Upcoming nights: your published rate and the comp set median.'
+      ? 'Past nights: the last published rate seen before each night (yours, and below it the comp set median). BAR is the public price, not what guests paid. "No data": no price was collected for that night. Upcoming nights: your published rate and the comp set median.'
       : 'Each night: your published rate, and below it the comp set median. "–": no live price. Only the next 30 nights are tracked.';
   }
   let html = '<div class="bench-cal-dow-row">' + ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x => `<div class="bench-cal-dow">${x}</div>`).join('')
@@ -5493,7 +4506,7 @@ function rbRenderCalendar(type) {
       val = n.subject_occ != null ? `${Math.round(n.subject_occ)}%` : '–';
       subTxt = n.comp_occ != null ? `avg ${Math.round(n.comp_occ)}%` : 'avg –';
       sty = n.subject_occ != null ? occCellStyle(n.subject_occ / 100) : null;
-      tip = [['Modelled occupancy', n.subject_occ != null ? occRange({ mid: n.subject_occ, low: n.subject_low, high: n.subject_high }) : '–', 'Kodo Estimates']];
+      tip = [['Modelled occupancy', n.subject_occ != null ? occRange({ mid: n.subject_occ, low: n.subject_low, high: n.subject_high }) : '–', 'Kodo estimate']];
       if (n.subject_conf) tip.push(['Price coverage', COVERAGE_LABEL[rbConf(n.subject_conf)] || rbConf(n.subject_conf)]);
       tip.push(['Comp set average', n.comp_occ != null ? Math.round(n.comp_occ) + '%' : '–']);
     }
@@ -5539,12 +4552,12 @@ function rbStepMonth(type, step) {
 
 // ── Insights (AI) ──
 // The analyst is told this is the rate benchmark: published rates and
-// modelled occupancy, never achieved ADR or occupancy.
+// modelled occupancy (Kodo estimate), never achieved figures.
 function rbDataContext() {
   const d = rbState.data, k = d && d.kpis;
   if (!d || !k || d.state === 'empty' || d.state === 'error') return '';
   const pct = v => v != null ? v.toFixed(1) + '%' : 'n/a';
-  return `RATE BENCHMARK MODE. These figures are PUBLISHED RATES (the nightly price shown for a one-night stay, 2 adults, no room count set, in MAD; collected every night) and MODELLED occupancy (Kodo Estimates, modelled, not measured). They are NOT achieved ADR, occupancy or RevPAR: never call them actuals, ADR or achieved occupancy.
+  return `RATE BENCHMARK MODE. These figures are BAR (PUBLISHED RATES: the nightly price shown for a one-night stay, 2 adults, no room count set, in MAD; collected every night) and OCCUPANCY (a Kodo estimate, modelled, not measured). They are not achieved figures: call them BAR or published rates and Kodo's occupancy estimate.
 Hotel: ${d.subject.name} (${d.subject.city}, ${d.subject.category}). Comp set: ${d.comps.map(c => c.name).join(', ')}.
 Next 30 nights (${d.window.start} to ${d.window.end}); rates last collected ${d.rates_updated}${d.state === 'stale' ? ' (not updated since)' : ''}.
 Live published rate on ${k.nights_with_rate} of 30 nights for the hotel; ${k.nights_compared} nights also have a comp set median.
@@ -5561,7 +4574,7 @@ function rbRenderInsights(force = false) {
   box.innerHTML = `<div class="bench-ai-summary${rbAiCache.has(key) && !force ? '' : ' bench-loading'}" id="rb-ai-summary">${rbAiCache.has(key) && !force ? rbAiCache.get(key) : 'Generating…'}</div>`;
   if (rbAiCache.has(key) && !force) return;
   fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages: [{ role: 'user', content: `Brief pricing commentary on this rate benchmark.\n${ctx}\n2-3 sentences. Cite specific numbers. Call them published rates and modelled occupancy.` }] }) })
+    body: JSON.stringify({ messages: [{ role: 'user', content: `Brief pricing commentary on this rate benchmark.\n${ctx}\n2-3 sentences. Cite specific numbers. Call them BAR (published rates) and Kodo's occupancy estimate.` }] }) })
     .then(r => r.json()).then(data => {
       if (rbDataContext() !== key) return;
       const el = document.getElementById('rb-ai-summary'); if (!el) return;
@@ -5650,7 +4663,7 @@ document.getElementById('rb-save').addEventListener('click', async () => {
     body: JSON.stringify({ subject_id: rbState.draftSubject, comp_ids: rbState.draftComps }) }).catch(() => null);
   const data = r ? await r.json().catch(() => ({})) : {};
   if (!r || !r.ok) { msg.textContent = data.error || 'Could not save the comp set.'; return; }
-  rbState.compSet = data.comp_set; rbState.editing = false; rbState.showSample = false;
+  rbState.compSet = data.comp_set; rbState.editing = false;
   await loadRateBenchmark();
   applyBenchMode();
 });
@@ -5666,9 +4679,9 @@ function exportRateBenchmark() {
   const method = [...document.querySelectorAll('#bench-method .bench-method-body p')].map(p => ({ 'Methodology': p.textContent.trim() }));
   const kpis = [
     { 'Metric': 'Rate index', 'Your hotel': na(k.rate_index), 'Comp set': 100, 'Period': period, 'Note': 'Your published rate ÷ comp set median × 100' },
-    { 'Metric': 'Average published rate (MAD)', 'Your hotel': na(k.avg_rate), 'Comp set': na(k.avg_comp_median), 'Period': period, 'Note': 'Comp set: median published rate. Published rates, not achieved ADR' },
+    { 'Metric': 'Average published rate (MAD)', 'Your hotel': na(k.avg_rate), 'Comp set': na(k.avg_comp_median), 'Period': period, 'Note': 'Comp set: median published rate. BAR (published rates), not what guests paid' },
     { 'Metric': 'Rate rank in comp set', 'Your hotel': k.rank != null ? `${k.rank} of ${k.ranked_of}` : 'Not available yet', 'Comp set': '', 'Period': period, 'Note': 'By average published rate, 1 = highest' },
-    { 'Metric': 'Modelled occupancy % (Kodo Estimates)', 'Your hotel': na(k.occ_subject), 'Comp set': na(k.occ_comp), 'Period': period, 'Note': `Modelled, not measured · price coverage ${rbConf(k.occ_confidence) || 'n/a'} (how many recent prices we have, not accuracy) · model run ${k.model_run_date || 'n/a'}` },
+    { 'Metric': 'Modelled occupancy % (Kodo estimate)', 'Your hotel': na(k.occ_subject), 'Comp set': na(k.occ_comp), 'Period': period, 'Note': `Modelled, not measured · price coverage ${rbConf(k.occ_confidence) || 'n/a'} (how many recent prices we have, not accuracy) · model run ${k.model_run_date || 'n/a'}` },
     { 'Metric': 'Rate coverage', 'Your hotel': `${k.nights_with_rate} of ${d.window.nights} nights`, 'Comp set': '', 'Period': period, 'Note': 'Nights with a live published rate for your hotel' },
   ];
   const nights = d.nights.map(n => ({
@@ -5680,7 +4693,7 @@ function exportRateBenchmark() {
     'Comp set hotels with a rate': n.comp_priced,
     'Rate index': n.rate_index ?? '–',
     'Rank': n.rank != null ? `${n.rank} of ${n.ranked_of}` : '–',
-    'Modelled occupancy % (Kodo Estimates)': n.subject_occ ?? '–',
+    'Modelled occupancy % (Kodo estimate)': n.subject_occ ?? '–',
     'Modelled occupancy range %': n.subject_low != null && n.subject_high != null ? `${n.subject_low}–${n.subject_high}` : '–',
     'Comp set modelled occupancy %': n.comp_occ ?? '–',
     'Price coverage': rbConf(n.subject_conf) || '–',
@@ -5925,8 +4938,7 @@ function _srchRender(query) {
       action() {
         closeSearch(); _srchSaveRecent(query);
         _srchNavigateToScreen('dashboard');
-        const sidebarItem = document.querySelector(`#city-filter .sidebar-item[data-city="${c.city}"]`);
-        if (sidebarItem) sidebarItem.click();
+        selectCity(c.city);
       },
     })),
   });
@@ -6036,12 +5048,11 @@ async function boot() {
     fetch('/api/data').then(r => r.json()),
     fetch('/api/hotels').then(r => r.json()),
   ]);
+  KodoBar.setMeta(apiData && apiData.bar);
   buildCityFilter();
   buildCityPills();
   buildSegPills();
-  buildMobileCityPills();
   buildOwnerSelect();
-  relabelPerfColumns();
   render();
   buildSearchIndex();
 }
@@ -6079,7 +5090,7 @@ fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
   // Hide export buttons and dropdowns for Observer tier
   if (me.tier === 'observer') {
     document.querySelectorAll(
-      '.export-btn, #bench-export-period, #tourism-export-year'
+      '.export-btn, #tourism-export-year'
     ).forEach(el => { el.style.display = 'none'; });
   }
 });
@@ -6107,18 +5118,23 @@ async function initReports() {
     if (!res.ok) return;
     const data = await res.json();
 
+    // Only the periods real data covers (report_periods() on the server):
+    // the first is "Q4 2026 (partial)", from 3 November 2026
     const periods = data.periods || [];
     const cities  = data.cities  || [];
 
     reportsAllRows = [];
-    cities.forEach(cityMeta => {
-      periods.forEach(period => {
+    periods.forEach(period => {
+      cities.forEach(cityMeta => {
         reportsAllRows.push({
           city:   cityMeta.city,
           hotels: cityMeta.hotels,
           keys:   cityMeta.keys,
-          period,
-          type:   'City',
+          period: period.id,
+          periodLabel: period.label,
+          since:  period.since,
+          partial: period.partial,
+          type:   cityMeta.city === 'Morocco' ? 'Market' : 'City',
         });
       });
     });
@@ -6138,17 +5154,15 @@ function buildReportFilters(periods) {
   const periodEl = document.getElementById('report-period-filters');
   if (!typeEl || !periodEl) return;
 
-  // Type: derived from the real data — every report here is a "City"
-  // report; no Brand/Owner/Pipeline/Tourism report type exists in this
-  // system, so those options are dropped rather than shown with 0 results.
-  const typeOptions = ['All', 'City'];
+  // Type: the city reports and the Morocco market report
+  const typeOptions = ['All', 'City', 'Market'];
   typeEl.innerHTML = typeOptions.map((t, i) =>
     `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="type" data-value="${i === 0 ? 'all' : fmt.esc(t)}">${fmt.esc(t)}</button>`
   ).join('');
 
-  const periodOptions = ['All', ...periods];
+  const periodOptions = [{ id: 'all', label: 'All' }, ...periods];
   periodEl.innerHTML = periodOptions.map((p, i) =>
-    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="period" data-value="${i === 0 ? 'all' : fmt.esc(p)}">${fmt.esc(p)}</button>`
+    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="period" data-value="${fmt.esc(p.id)}">${fmt.esc(p.label)}</button>`
   ).join('');
 
   [typeEl, periodEl].forEach(container => {
@@ -6200,6 +5214,10 @@ function renderReportList() {
 
   if (countEl) countEl.textContent = `${filtered.length} report${filtered.length !== 1 ? 's' : ''}`;
 
+  if (!reportsAllRows.length) {
+    listEl.innerHTML = KodoBar.collecting('The first report period opens once published rates have been collected.');
+    return;
+  }
   if (!filtered.length) {
     listEl.innerHTML = `<p class="list-empty">No reports match your filters.<button class="list-clear-btn" id="report-clear-filters">Clear filters</button></p>`;
     document.getElementById('report-clear-filters')?.addEventListener('click', resetReportFilters);
@@ -6213,10 +5231,10 @@ function renderReportList() {
     <div class="report-row">
       <div class="report-main">
         <span class="report-title">${fmt.esc(r.city)}</span>
-        <span class="report-desc">${r.hotels} hotels tracked · ${r.keys != null ? r.keys.toLocaleString('en') : '—'} keys</span>
+        <span class="report-desc">${r.hotels} hotels tracked · ${r.keys != null ? r.keys.toLocaleString('en') : '—'} keys${r.partial ? ` · ${KodoBar.since()}` : ''}</span>
       </div>
       <span class="report-type">${fmt.esc(r.type)}</span>
-      <span class="report-date">${fmt.esc(r.period)}</span>
+      <span class="report-date">${fmt.esc(r.periodLabel)}</span>
       <button class="report-action" data-city="${fmt.esc(r.city)}" data-period="${fmt.esc(r.period)}">Generate Report</button>
     </div>`).join('');
 
@@ -6390,10 +5408,12 @@ function exportHotels() {
     'Segment':          h.category || 'N/A',
     'Brand Group':      h.brand_group || 'N/A',
     'Keys':             h.keys ?? 'N/A',
-    [KODO_FLAG('LIVE_FIGURES') ? 'Modelled occupancy %' : 'Occupancy %']: h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
-    [KODO_FLAG('LIVE_FIGURES') ? 'Published rate (MAD)' : 'ADR (MAD)']: h.adr_mad || 'N/A',
-    [KODO_FLAG('LIVE_FIGURES') ? 'Indicative RevPAR (MAD)' : 'RevPAR (MAD)']: h.revpar_mad || 'N/A',
-    'Performance Period': KodoPeriod.history(KodoPeriod.fromData(h.period)) || 'N/A',
+    'BAR (MAD)':        h.bar_mad ?? 'Not enough prices yet',
+    'BAR nights':       h.bar_nights || 0,
+    'BAR period':       KodoBar.caption(),
+    'Occupancy % (Kodo estimate)': h.occupancy != null ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
+    'RevPAR (MAD, Kodo estimate)': h.revpar_mad ?? 'N/A',
+    'Estimate period':  'Next 30 nights',
     'Keys As Of':       asOf,
     'Year Established': h.year_opened_verified === 'verified' && h.year_opened != null ? h.year_opened : 'N/A',
     'Owner':            h.owner || 'Undisclosed',
@@ -6436,105 +5456,24 @@ function exportBrands() {
   if (!brandsData) return;
   const date = new Date().toISOString().split('T')[0];
   const asOf = KodoPeriod.label(KodoPeriod.today());
-  const perfLabel = bg => KodoPeriod.history(perfPeriodOf((hotels || []).filter(h => h.brand_group === bg))) || 'N/A';
   const data = filteredBrands().map((b, i) => ({
     'Rank':              i + 1,
     'Brand Group':       b.brand_group,
     'Hotels':            b.hotels,
     'Total Keys':        b.total_keys,
     'Market Share %':    b.market_share_keys_pct != null ? b.market_share_keys_pct.toFixed(1) + '%' : 'N/A',
-    'Avg Occupancy %':   b.avg_occupancy ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',
-    'Avg ADR (MAD)':     b.avg_adr ? Math.round(b.avg_adr) : 'N/A',
-    'Avg RevPAR (MAD)':  b.weighted_revpar ? Math.round(b.weighted_revpar) : 'N/A',
-    'Performance Period': perfLabel(b.brand_group),
+    'BAR (MAD)':         b.bar_mad == null ? 'Not enough prices yet' : b.bar_limited ? 'Limited data' : b.bar_mad,
+    'BAR hotels':        b.bar_hotels || 0,
+    'BAR period':        KodoBar.caption(),
+    'Occupancy % (Kodo estimate)': b.avg_occupancy != null ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',
+    'RevPAR (MAD, Kodo estimate)': b.avg_revpar != null ? Math.round(b.avg_revpar) : 'N/A',
+    'Estimate period':   'Next 30 nights',
     'Keys As Of':        asOf,
     'Cities Present':    Array.isArray(b.cities) ? b.cities.join(', ') : 'N/A',
     'Pipeline Projects': b.pipeline_projects || 0,
     'Pipeline Keys':     b.pipeline_keys || 0,
   }));
-  exportToExcel([{ data, name: 'Brand Performance' }], `Kodo_Brands_${date}`);
-}
-
-function exportBenchmarking() {
-  if (!canExport()) {
-    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download benchmarking data.');
-    return;
-  }
-  if (!benchmarkData) return;
-  const date     = new Date().toISOString().split('T')[0];
-  const myH      = benchmarkData.hotels.find(h => h.id === benchState.myHotelId);
-  const propName = myH ? myH.name.replace(/[^a-zA-Z0-9]/g, '_') : 'Property';
-  const valid    = isCompSetValid();
-
-  // Read selected export period from dropdown (default to active date pill)
-  const periodEl  = document.getElementById('bench-export-period');
-  const periodVal = periodEl ? periodEl.value : String(benchState.dateRange);
-  const periodMap = { '7': 'Last_7_Days', '30': 'Last_30_Days', '90': 'Last_90_Days', 'ytd': 'YTD' };
-  const periodLabel = periodMap[periodVal] || 'Period';
-  // The export's own period (it used to label the figures with this but
-  // compute them over the on-screen period)
-  const range = periodVal === 'ytd' ? 'ytd' : Number(periodVal);
-  const periodDisp = KodoPeriod.label(benchPeriod(range)) || 'N/A';
-  const sampleNote = 'Sample data: fictional hotels and illustrative figures, not real performance.';
-
-  // Sheet 1 — KPI Summary
-  const my   = aggDaily(getMyDaily(range));
-  const comp = aggDaily(getCompDaily(range));
-  const mkIdx = (myV, compV) => (valid && compV > 0) ? Math.round(myV / compV * 100) : 'N/A';
-  const kpiData = [
-    { 'Metric': 'Occupancy %',  'My Property': (my.occupancy * 100).toFixed(1) + '%',
-      'Comp Set Average': valid ? (comp.occupancy * 100).toFixed(1) + '%' : 'N/A',
-      'Index': mkIdx(my.occupancy, comp.occupancy), 'Period': periodDisp, 'Comparison': valid ? 'Comp set, same dates' : 'N/A' },
-    { 'Metric': 'ADR (MAD)',    'My Property': Math.round(my.adr),
-      'Comp Set Average': valid ? Math.round(comp.adr) : 'N/A',
-      'Index': mkIdx(my.adr, comp.adr), 'Period': periodDisp, 'Comparison': valid ? 'Comp set, same dates' : 'N/A' },
-    { 'Metric': 'RevPAR (MAD)', 'My Property': Math.round(my.revpar),
-      'Comp Set Average': valid ? Math.round(comp.revpar) : 'N/A',
-      'Index': mkIdx(my.revpar, comp.revpar), 'Period': periodDisp, 'Comparison': valid ? 'Comp set, same dates' : 'N/A' },
-  ];
-
-  // Sheet 2 — Monthly Detail (mirrors renderBenchMonthlyTable)
-  const months = {};
-  benchmarkData.daily.forEach(d => {
-    const mk = d.date.substring(0, 7);
-    if (!months[mk]) months[mk] = { my: [], compByDate: {} };
-    if (d.hotel_id === benchState.myHotelId) {
-      months[mk].my.push(d);
-    } else if (benchState.compSet.has(d.hotel_id)) {
-      if (!months[mk].compByDate[d.date]) months[mk].compByDate[d.date] = [];
-      months[mk].compByDate[d.date].push(d);
-    }
-  });
-  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthlyData = Object.keys(months).sort().map(mk => {
-    const { my: myRecs, compByDate } = months[mk];
-    const myAgg    = aggDaily(myRecs);
-    const compAvgs = Object.values(compByDate).map(recs => aggDaily(recs));
-    const compAgg  = aggDaily(compAvgs);
-    const noComp   = !valid || !compAvgs.length;
-    const revIdx   = (!noComp && compAgg.revpar > 0) ? Math.round(myAgg.revpar / compAgg.revpar * 100) : 'N/A';
-    const [yr, mo] = mk.split('-');
-    return {
-      'Month':                `${MON[Number(mo) - 1]} ${yr}`,
-      'My Occupancy %':       (myAgg.occupancy * 100).toFixed(1) + '%',
-      'Comp Set Occupancy %': noComp ? 'N/A' : (compAgg.occupancy * 100).toFixed(1) + '%',
-      'My ADR (MAD)':         Math.round(myAgg.adr),
-      'Comp Set ADR (MAD)':   noComp ? 'N/A' : Math.round(compAgg.adr),
-      'My RevPAR (MAD)':      Math.round(myAgg.revpar),
-      'Comp Set RevPAR (MAD)':noComp ? 'N/A' : Math.round(compAgg.revpar),
-      'RevPAR Index':         revIdx,
-      'Days of Data':         myRecs.length,
-    };
-  });
-
-  exportToExcel(
-    [
-      { data: [{ 'Data': 'Sample data', 'Note': sampleNote }], name: 'Sample Data' },
-      { data: kpiData, name: 'KPI Summary' },
-      { data: monthlyData.length ? monthlyData : [{ 'Note': 'No monthly data available' }], name: 'Monthly Detail' },
-    ],
-    `Kodo_Benchmarking_SAMPLE_${propName}_${periodLabel}_${date}`
-  );
+  exportToExcel([{ data, name: 'Brands' }], `Kodo_Brands_${date}`);
 }
 
 function exportTourism() {
@@ -6810,7 +5749,6 @@ function renderOwnerPortfolioTable(hotels) {
 document.getElementById('btn-export-hotels')  ?.addEventListener('click', exportHotels);
 document.getElementById('btn-export-pipeline') ?.addEventListener('click', exportPipeline);
 document.getElementById('btn-export-brands')   ?.addEventListener('click', exportBrands);
-document.getElementById('btn-export-bench')    ?.addEventListener('click', exportBenchmarking);
 document.getElementById('btn-export-tourism')  ?.addEventListener('click', exportTourism);
 
 boot();

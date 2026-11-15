@@ -52,7 +52,8 @@ class FlagsOff(unittest.TestCase):
 
     def test_all_off_by_default(self):
         self.assertEqual(flags.all_flags(CLEAN), {k: False for k in flags.FLAGS})
-        self.assertTrue(flags.on('LIVE_FIGURES', {'LIVE_FIGURES': 'on'}))
+        self.assertTrue(flags.on('CONFIDENCE_UI', {'CONFIDENCE_UI': 'on'}))
+        self.assertNotIn('LIVE_FIGURES', flags.FLAGS)        # retired: real data is the only mode
 
     def test_confidence_ui_hides_unpriced_occupancy_only_when_on(self):
         import live_kpis as LK
@@ -64,29 +65,9 @@ class FlagsOff(unittest.TestCase):
         self.assertIsNone(on['occ'])
         self.assertEqual(off['confidence'], 'insufficient')
 
-    def test_live_figures_swap_only_when_on(self):
-        import app as A
-        with mock.patch.object(A, 'DATA_DIR', self.dir), mock.patch.object(A, '_casablanca_today', return_value=self.fx['today']):
-            with mock.patch.dict(os.environ, CLEAN):
-                _, perf, _ = A.load_data()
-            self.assertTrue((perf['period'].astype(str) == '2025FY').all())
-            with mock.patch.dict(os.environ, {**CLEAN, 'LIVE_FIGURES': 'on'}):
-                _, perf, merged = A.load_data()
-            self.assertTrue((perf['period'] == 'NEXT30').all())
-            self.assertTrue(perf['gop_margin'].isna().all())
-            with mock.patch.dict(os.environ, CLEAN):
-                self.assertIn('FY 2025', A._ai_perf_note())
-            with mock.patch.dict(os.environ, {**CLEAN, 'LIVE_FIGURES': 'on'}):
-                self.assertIn('next 30 nights', A._ai_perf_note())
-
-    def test_page_uses_today_wording_and_v1_valuation_when_off(self):
+    def test_valuation_flag_wording(self):
         js = open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8').read()
-        # the off branch keeps the words shown today
-        for s in ("occ: 'OCC est.'", "adr: 'ADR est.'", "revpar: 'RevPAR est.'", "occPop: 'Occ. est. FY25'",
-                  "Based on Kodo's FY 2025 model estimates of BAR and occupancy (not reported data)"):
-            self.assertIn(s, js)
         self.assertIn("const valVersion = () => (window.KODO_FLAGS && window.KODO_FLAGS.VALUATION_V2) ? 'v2' : 'v1';", js)
-        self.assertIn('if (!KODO_FLAG(\'LIVE_FIGURES\')) return;', js)
 
     def test_flags_reach_the_page(self):
         html = open(os.path.join(ROOT, 'templates', 'index.html'), encoding='utf-8').read()

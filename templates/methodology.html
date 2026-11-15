@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Methodology — Kodo Hospitality</title>
+  {% set page_title = "Methodology | Kodo Hospitality" %}<title>{{ page_title }}</title>
   <meta name="description" content="How Kodo produces Morocco hotel market intelligence — data sources, estimation models, and data quality standards.">
   <link rel="canonical" href="{{ canonical_url }}">
 {% include "_favicon.html" %}
@@ -104,7 +104,7 @@
     <span class="method-section-label">01</span>
     <h2 class="method-section-title">Data Sources</h2>
     <div class="method-section-body">
-      <p>What we measure and where it comes from — Kodo combines a curated hotel directory, daily rate scraping, a statistical occupancy model, and direct operator data partnerships.</p>
+      <p>What we measure and where it comes from: a curated hotel directory, published rates collected every night, a statistical occupancy model, official tourism statistics, and direct operator data partnerships.</p>
     </div>
     <div class="method-source-list">
       <div class="method-source-item">
@@ -117,8 +117,9 @@
         <span class="method-source-confidence pill--orange">Medium Confidence</span>
         <p class="method-source-desc">Since 3 November 2026 (the first full run) Kodo has collected published rates (BAR) every night, from 03:00 Casablanca time, for the hotels in our database that an online travel search lists. Before that date there are no collected prices, so any average or trend over past dates covers only the nights since then.</p>
         <p class="method-source-desc"><strong>What is asked for.</strong> One request per hotel, for its listing: 2 adults, no children, a one-night stay (check-in tomorrow, check-out the day after), prices in Moroccan dirhams (MAD), results in English, located at the hotel's map position (Morocco as a whole when we have no position), with a price for each check-in date over the next 30 nights. The request does not set a number of rooms, a room type, a board basis or cancellation terms; the listing's own defaults apply. Each price is the nightly price returned for that check-in date. A price in another currency is not used, and every result is checked against the hotel's name and city before it is kept.</p>
-        <p class="method-source-desc">A published rate is not the hotel's Average Daily Rate (ADR): it excludes negotiated corporate rates, wholesale contracts and package inclusions, and whether taxes and fees are included depends on the booking site. Each price is observed directly, but the history is short, so the source is rated medium for now.</p>
-        <p class="method-source-desc"><strong>Headline cards.</strong> The rate, occupancy and RevPAR cards on hotel, city, brand group and owner pages cover the next 30 nights. <em>Avg published rate</em> averages the latest price collected for each night, at most 7 days old; it is a booking-site price, not ADR. <em>Modelled occupancy</em> comes from the nightly model run. <em>Indicative RevPAR</em> is the published rate times the modelled occupancy, night by night. A city, brand group or owner is the average over its hotels that have the figure, weighted by rooms, and the card shows how many hotels that covers. A change against 7 days earlier appears once 7 days of figures exist. The yearly occupancy, ADR and RevPAR still shown in some tables (FY 2025) are Kodo model estimates, not reported data, and are labelled that way.</p>
+        <p class="method-source-desc">BAR is the public price of a night, not the rate guests paid: it leaves out negotiated corporate rates, wholesale contracts and package inclusions, and whether taxes and fees are included depends on the booking site. Kodo has no hotel's achieved rate, revenue or past performance, and shows none. Each price is observed directly, but the history is short, so the source is rated medium for now.</p>
+        <p class="method-source-desc"><strong>BAR on the platform.</strong> A hotel's BAR is the average, over the nights since 3 November 2026, of the last published price seen before each night; it is shown once the hotel has at least 7 priced nights. A destination's, brand group's or owner's BAR is the plain average of its hotels' BAR; with fewer than 3 such hotels it reads "limited data" instead of a figure. The dashboard shows since when the prices run and how many days of data there are; the hotel calendars also show the price of each of the next 30 nights.</p>
+        <p class="method-source-desc"><strong>Kodo estimates.</strong> Occupancy comes from Kodo's occupancy model (below) and covers the next 30 nights. RevPAR is a Kodo estimate too: the night's BAR times the modelled occupancy, night by night, averaged over the next 30 nights. A group's occupancy and RevPAR are weighted by rooms. Both are always labelled "Kodo estimate".</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Occupancy Model</span>
@@ -140,7 +141,7 @@
       <div class="method-source-item">
         <span class="method-source-name">Verified Operator Data</span>
         <span class="method-source-confidence pill--green">Highest Confidence</span>
-        <p class="method-source-desc">Hotels participating in the Kodo Data Sharing Program share daily operational data (occupancy, ADR, RevPAR) directly from their Property Management System. It is the hotel's own reported data, so it is the most reliable source when a hotel shares it. This data is anonymised before inclusion in any benchmarking output and is never disclosed at the individual property level. It is compared with the model's estimates to measure the model's error, and will be used to fit the model's weights. (The "Verified" badge on a hotel profile means the hotel's directory entry has been checked, not that it shares data.)</p>
+        <p class="method-source-desc">Hotels participating in the Kodo Data Sharing Program share daily operational data (occupancy, rooms sold and rooms revenue) directly from their Property Management System. It is the hotel's own reported data, so it is the most reliable source when a hotel shares it. This data is anonymised before inclusion in any benchmarking output and is never disclosed at the individual property level. It is compared with the model's estimates to measure the model's error, and will be used to fit the model's weights. (The "Verified" badge on a hotel profile means the hotel's directory entry has been checked, not that it shares data.)</p>
       </div>
     </div>
   </div>
@@ -163,40 +164,28 @@
       </thead>
       <tbody>
         <tr>
-          <td>Occupancy %</td>
-          <td>Rooms sold ÷ Rooms available</td>
-          <td>Model estimate or operator data</td>
-          <td>Low (model) · Highest (operator data)</td>
-        </tr>
-        <tr>
-          <td>Best Available Rate (BAR)</td>
-          <td>Nightly published price for a one-night stay, 2 adults, in MAD; room type not controlled</td>
+          <td>BAR (published rate)</td>
+          <td>Nightly published price for a one-night stay, 2 adults, in MAD; room type not controlled. A hotel's BAR: its average over the nights since 3 Nov 2026 (7 priced nights or more); a group's: the average of its hotels (3 hotels or more, else "limited data")</td>
           <td>Published booking prices, observed every night since 3 Nov 2026</td>
           <td>Medium (short history)</td>
         </tr>
         <tr>
-          <td>ADR (Average Daily Rate)</td>
-          <td>Total rooms revenue ÷ Rooms sold</td>
-          <td>Operator data only</td>
-          <td>High (verified only)</td>
-        </tr>
-        <tr>
-          <td>Indicative RevPAR</td>
-          <td>Published rate (BAR) × modelled occupancy; not achieved RevPAR</td>
-          <td>Derived</td>
+          <td>Occupancy % (Kodo estimate)</td>
+          <td>Modelled share of rooms sold, next 30 nights</td>
+          <td>Kodo occupancy model</td>
           <td>Low</td>
         </tr>
         <tr>
-          <td>Rooms Revenue</td>
-          <td>BAR × Occupancy × Keys × 365</td>
-          <td>Derived</td>
+          <td>RevPAR (Kodo estimate)</td>
+          <td>BAR × modelled occupancy, night by night, next 30 nights</td>
+          <td>Derived from the two above</td>
           <td>Low</td>
         </tr>
         <tr>
-          <td>Est. Asset Value</td>
-          <td>Rooms Revenue × segment revenue multiple</td>
-          <td>Derived</td>
-          <td>Low</td>
+          <td>Tourism 2026E and 2027F</td>
+          <td>Kodo estimate and forecast of the official tourism series (section 03)</td>
+          <td>Kodo model on official statistics</td>
+          <td>Medium</td>
         </tr>
       </tbody>
     </table>
@@ -273,56 +262,12 @@
     </div>
   </div>
 
-  <!-- 04 — Asset Valuation -->
+  <!-- 04 — Valuation tool -->
   <div class="method-section">
     <span class="method-section-label">04</span>
-    <h2 class="method-section-title">Asset Value Estimation</h2>
+    <h2 class="method-section-title">The Valuation Tool</h2>
     <div class="method-section-body">
-      <p>Kodo estimates indicative asset values using revenue multiples by segment — a standard methodology in hotel real estate. These multiples represent the relationship between annual rooms revenue and total asset value, calibrated against available Morocco transaction data and regional benchmarks.</p>
-    </div>
-    <table class="method-table" style="margin-bottom:20px;">
-      <thead>
-        <tr>
-          <th>Segment</th>
-          <th>Revenue Multiple Range</th>
-          <th>Commentary</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Ultra Luxury</td>
-          <td>18 – 22×</td>
-          <td>Trophy assets, limited transactions</td>
-        </tr>
-        <tr>
-          <td>Luxury</td>
-          <td>15 – 18×</td>
-          <td>Strong institutional demand</td>
-        </tr>
-        <tr>
-          <td>Upper Upscale</td>
-          <td>12 – 15×</td>
-          <td>Most liquid segment</td>
-        </tr>
-        <tr>
-          <td>Upscale</td>
-          <td>10 – 12×</td>
-          <td>Growing investor interest</td>
-        </tr>
-        <tr>
-          <td>Midscale</td>
-          <td>8 – 10×</td>
-          <td>Value-add profile</td>
-        </tr>
-        <tr>
-          <td>Economy</td>
-          <td>6 – 8×</td>
-          <td>Operator-driven market</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="method-section-body">
-      <p><strong style="color:var(--text);">Disclaimer:</strong> These multiples are indicative only and should not be used as the sole basis for investment decisions. Hotel asset values are highly sensitive to operator quality, lease structure, capex requirements, and market conditions. Contact <a href="/contact" style="color:var(--action-text);text-decoration:none;">Kodo Advisory</a> for asset-specific valuation.</p>
+      <p>The valuation tool is a Kodo estimate: it runs a discounted cash flow and an income capitalisation on the assumptions you enter (occupancy, room rate, growth, costs, discount and cap rates). The starting values for each segment are editable defaults, not market data, and no hotel's real figures go into it. Its results are indicative only and are not an appraisal: hotel values depend on operator quality, lease structure, capital expenditure and market conditions. Contact <a href="/contact" style="color:var(--action-text);text-decoration:none;">Kodo Advisory</a> for an asset-specific valuation.</p>
     </div>
   </div>
 
@@ -339,7 +284,11 @@
     </div>
     <div class="method-quality-item">
       <span class="method-source-confidence pill--grey">Estimated</span>
-      <p>Performance metrics (occupancy, ADR, RevPAR) estimated using our statistical model. Suitable for market-level analysis and relative benchmarking. Not verified against operator PMS data. Always labelled clearly in platform displays and reports.</p>
+      <p>On a hotel profile: the directory entry (room count, opening year, brand, owner) has not been individually verified yet.</p>
+    </div>
+    <div class="method-quality-item">
+      <span class="method-source-confidence pill--blue">Kodo estimate</span>
+      <p>A figure from one of Kodo's models: occupancy and RevPAR for the next 30 nights, the tourism 2026E estimate and 2027F forecast, and the valuation tool. Never reported data; always labelled as an estimate on the platform, in exports and in reports.</p>
     </div>
     <div class="method-quality-item">
       <span class="method-source-confidence pill--orange">Key Count Uncertain</span>
@@ -355,9 +304,10 @@
       <p>Transparency about limitations is a core part of our methodology. The following points should be understood by all users of Kodo data.</p>
       <ul>
         <li>Kodo estimates are not a substitute for operator-verified PMS data. For investment underwriting, always seek actual operator performance data.</li>
-        <li>BAR (Best Available Rate) is not equivalent to ADR (Average Daily Rate). BAR excludes negotiated corporate rates, loyalty redemptions, wholesale contracts, and package inclusions, which can represent 30–60% of a hotel's actual revenue mix.</li>
+        <li>BAR (Best Available Rate) is the public price of a night, not the rate guests paid. It excludes negotiated corporate rates, loyalty redemptions, wholesale contracts, and package inclusions, which can represent 30–60% of a hotel's actual revenue mix.</li>
+        <li>Kodo collects published rates only since 3 November 2026. It has no hotel performance from before that date, and no achieved rates, revenue or asset values for any hotel.</li>
         <li>The error of the occupancy model has not been measured yet: no hotel has shared enough real figures to test it. Once they do, Kodo compares both versions of the model with those figures every month, by city and hotel type, and will publish the result. Until then, treat modelled occupancy as a direction, not a figure.</li>
-        <li>Financial estimates — asset values, revenue ranges, and RevPAR figures — are indicative only. They reflect current market conditions and available data, and may differ materially from actual performance or appraised values.</li>
+        <li>Kodo estimates (occupancy, RevPAR, the tourism outlook and the valuation tool's results) are indicative only and may differ materially from actual performance or appraised values.</li>
         <li>All data on the Kodo platform should be independently verified before forming the basis of investment decisions, operator negotiations, or financial reporting.</li>
         <li>Kodo Hospitality is a market intelligence provider, not a licensed financial advisor. Nothing on this platform constitutes investment advice.</li>
       </ul>
@@ -369,7 +319,7 @@
     <span class="method-section-label">07</span>
     <h2 class="method-section-title">Improving Accuracy Through Partnership</h2>
     <div class="method-section-body">
-      <p>The accuracy of Kodo's market intelligence improves with every hotel that contributes real operational data. Properties in our Data Sharing Program share daily occupancy, ADR, and RevPAR from their PMS. This data is anonymised and aggregated — individual hotel figures are never disclosed to other subscribers.</p>
+      <p>The accuracy of Kodo's market intelligence improves with every hotel that contributes real operational data. Properties in our Data Sharing Program share daily occupancy, rooms sold and rooms revenue from their PMS. This data is anonymised and aggregated — individual hotel figures are never disclosed to other subscribers.</p>
       <p>In return, participating hotels receive free Benchmarker access — our full competitive intelligence suite including anonymous comp set benchmarking, trend charts, and monthly summaries — at no cost, for as long as the data sharing agreement is active. Data contributors also benefit from improved model accuracy for their own market, better seasonal calibration, and early access to new platform features.</p>
       <p style="font-weight:600;color:var(--text);">What participants receive:</p>
       <ul>

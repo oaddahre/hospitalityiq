@@ -24,20 +24,19 @@ import html
 import subprocess
 import shutil
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from functools import wraps
 from urllib.parse import quote
 from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
-from bench_sample import sample_benchmarking, casablanca_today
 import rate_benchmark as RB
 import events_db as EV
 import tourism_data as TD
 import rates_store as RS
 import live_kpis as LK
-from utils import (NA, safe_float, safe_int, safe_text, fmt_num, period_label, period_of_codes,
-                   period_history, period_last_known, NOT_AVAILABLE)
+from utils import (day_label, NA, safe_float, safe_int, safe_text, fmt_num, period_label,
+                   NOT_AVAILABLE)
 
 load_dotenv()
 
@@ -176,7 +175,6 @@ DATA_DIR = os.environ.get("DATA_DIR", "").strip() or APP_DIR
 #
 # These four are pure read-only reference data (nothing in this file
 # ever writes to them), so "copy only if missing" is the whole rule.
-# (The Benchmarking sample is generated in code: bench_sample.py.)
 if os.path.abspath(DATA_DIR) != os.path.abspath(APP_DIR):
     os.makedirs(DATA_DIR, exist_ok=True)
     for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json"):
@@ -1071,7 +1069,17 @@ def _log_admin_action(action: str, target_email: str = "", detail: str = ""):
 
 
 _HOTEL_NUM_COLS = ("keys", "year_opened", "lat", "lng")
-_PERF_NUM_COLS  = ("occupancy", "adr_mad", "revpar_mad", "trevpar_mad", "gop_margin")
+
+# The figures a client may see next to each hotel (load_data, live_kpis.py):
+#   bar_mad     BAR (published rate): the hotel's average over the nights since
+#               3 November 2026, from the last price observed before each night;
+#               empty under 7 priced nights. Observed.
+#   bar_nights  how many nights that average covers
+#   occupancy   Kodo estimate (occupancy model), next 30 nights, a fraction
+#   revpar_mad  Kodo estimate: BAR x modelled occupancy, next 30 nights
+# performance.csv (Kodo's old FY 2025 model estimates) is never read for
+# clients: it only stays an internal input of the occupancy model.
+PERF_COLS = ["hotel_id", "period", "occupancy", "bar_mad", "bar_nights", "revpar_mad", "source"]
 
 
 def load_data():
@@ -1080,40 +1088,18 @@ def load_data():
     # count and KPI (coordinates_apply.HIDDEN)
     if "status" in hotels:
         hotels = hotels[hotels["status"].astype(str).str.strip() != "Hidden"].reset_index(drop=True)
-    perf   = pd.read_csv(os.path.join(DATA_DIR, "performance.csv"))
     # Blank or non-numeric cells (e.g. "TBC") become NaN instead of turning
     # the whole column into text; each calculation then skips what it lacks.
-    for df, cols in ((hotels, _HOTEL_NUM_COLS), (perf, _PERF_NUM_COLS)):
-        for col in cols:
-            if col in df:
-                df[col] = pd.to_numeric(df[col], errors="coerce")
-    import flags as _flags
-    if _flags.on('LIVE_FIGURES'):
-        perf = _live_performance()
+    for col in _HOTEL_NUM_COLS:
+        if col in hotels:
+            hotels[col] = pd.to_numeric(hotels[col], errors="coerce")
+    perf = _live_performance()
     merged = hotels.merge(perf, left_on="id", right_on="hotel_id", how="left")
     return hotels, perf, merged
 
 
-def _ai_perf_note():
-    """What the AI analyst must say about the performance figures it gets."""
-    import flags as _flags
-    if _flags.on('LIVE_FIGURES'):
-        return ("IMPORTANT: every occupancy, rate and RevPAR figure below is for the next 30 nights: occupancy is a\n"
-                "Kodo model estimate, the rate is the average published booking price (not ADR), RevPAR is the\n"
-                "published rate x modelled occupancy. None is reported or achieved data: say so when you use them.")
-    return ("IMPORTANT: every occupancy, ADR, RevPAR, TRevPAR and GOP figure below is a\n"
-            "Kodo MODEL ESTIMATE for FY 2025, not reported or achieved data. Whenever you\n"
-            "use one, say \"Kodo model estimate (FY 2025), not reported data\". Never call\n"
-            "them actual, reported, historical or current performance.")
-
-
 def _live_performance():
-    """LIVE_FIGURES (flags.py, off until approved): the performance.csv
-    columns filled with each hotel's live figures for the next 30 nights
-    (live_kpis.py) instead of the FY 2025 model estimates: occupancy =
-    modelled occupancy, adr_mad = average published rate (not ADR),
-    revpar_mad = indicative RevPAR; TRevPAR and GOP margin have no live
-    equivalent and are left empty."""
+    """One row per hotel with the figures of PERF_COLS, from live_kpis.py."""
     d = LK.get(DATA_DIR, _casablanca_today())
     rows = []
     for hid, v in (d.get('hotels') or {}).items():
@@ -1121,13 +1107,32 @@ def _live_performance():
             hid_num = int(hid)
         except ValueError:
             continue
-        rows.append({'hotel_id': hid_num, 'period': 'NEXT30',
-                     'occupancy': v['occ'] / 100 if v.get('occ') is not None else float('nan'),
-                     'adr_mad': v['rate'] if v.get('rate') is not None else float('nan'),
-                     'revpar_mad': v['revpar'] if v.get('revpar') is not None else float('nan'),
-                     'trevpar_mad': float('nan'), 'gop_margin': float('nan'), 'source': 'Kodo live'})
-    cols = ['hotel_id', 'period', 'occupancy', 'adr_mad', 'revpar_mad', 'trevpar_mad', 'gop_margin', 'source']
-    return pd.DataFrame(rows, columns=cols)
+        nan = float('nan')
+        rows.append({'hotel_id': hid_num, 'period': 'LIVE',
+                     'occupancy': v['occ'] / 100 if v.get('occ') is not None else nan,
+                     'bar_mad': v['bar'] if v.get('bar') is not None else nan,
+                     'bar_nights': v.get('bar_nights') or 0,
+                     'revpar_mad': v['revpar'] if v.get('revpar') is not None else nan,
+                     'source': 'Kodo'})
+    return pd.DataFrame(rows, columns=PERF_COLS)
+
+
+def bar_meta():
+    """Since when, and over how many days, the BAR figures are observed."""
+    d = LK.get(DATA_DIR, _casablanca_today())
+    return {"since": d.get("bar_since") or LK.DATA_START.isoformat(), "days": d.get("bar_days") or 0,
+            "min_nights": LK.MIN_BAR_NIGHTS, "min_hotels": LK.MIN_BAR_HOTELS}
+
+
+def group_bar(grp):
+    """A group's BAR: the plain average of its hotels' BAR (hotels with 7
+    priced nights or more). (value or None, hotels, nights, limited): limited
+    under MIN_BAR_HOTELS hotels, when the figure must not be shown as one."""
+    ok = grp[grp["bar_mad"].notna()] if "bar_mad" in grp else grp.iloc[0:0]
+    n = len(ok)
+    val = round(float(ok["bar_mad"].mean())) if n else None
+    nights = int(ok["bar_nights"].sum()) if n else 0
+    return val, n, nights, n < LK.MIN_BAR_HOTELS
 
 
 # ─── Auth routes ──────────────────────────────────────────────────────────────
@@ -1686,7 +1691,8 @@ def _count_stats(data_dir):
     groups = {r["brand_group"].strip() for r in hotels if r.get("brand_group", "").strip()
               and not r["brand_group"].strip().startswith("Independent")}
     return {"hotels_exact": len(hotels), "destinations": len({r["city"].strip() for r in hotels if r.get("city")}),
-            "brand_groups": len(groups), "pipeline": pipeline, "pipeline_keys": pipeline_keys,
+            "brand_groups": len(groups), "segments": len({r["category"].strip() for r in hotels if (r.get("category") or "").strip()}),
+            "pipeline": pipeline, "pipeline_keys": pipeline_keys,
             "pipeline_cities": pipeline_cities, "owners": owners, "owner_hotels": owner_hotels}
 
 
@@ -1723,7 +1729,15 @@ def inject_public_stats():
 
 @app.route("/")
 def landing():
-    return render_template("landing.html", hotel_count=public_hotel_count())
+    # The reports card names the current edition (report_periods: only
+    # periods real data covers) and how many reports it has
+    try:
+        periods = report_periods()
+    except Exception:
+        periods = []
+    edition = periods[0]["label"] if periods else None
+    return render_template("landing.html", hotel_count=public_hotel_count(), report_edition=edition,
+                           report_count=len(REPORT_CITIES) + 1, report_cities=len(REPORT_CITIES))
 
 
 @app.route("/dashboard")
@@ -1941,87 +1955,59 @@ def api_org_remove_member(uid):
 
 
 def _kpi_avg(grp, col, digits):
-    """Room-weighted average of a performance column over the hotels that have
-    it: a hotel with no performance row (one just added) is left out of the
-    average instead of counting as zero. ADR is weighted by occupied rooms.
-    None when no hotel in the group has the figure."""
-    if col == "adr_mad":
-        w = grp["keys"] * grp["occupancy"]
-        ok = grp[col].notna() & w.notna() & (w > 0)
-    else:
-        w = grp["keys"]
-        ok = grp[col].notna() & w.notna()
+    """Room-weighted average of a modelled column (occupancy, revpar_mad) over
+    the hotels that have it: a hotel without the figure is left out instead
+    of counting as zero. None when no hotel in the group has it."""
+    w = grp["keys"]
+    ok = grp[col].notna() & w.notna()
     den = float(w[ok].sum())
     return round(float((grp.loc[ok, col] * w[ok]).sum()) / den, digits) if den else None
+
+
+def _group_row(grp):
+    bar, n, nights, limited = group_bar(grp)
+    return {
+        "hotel_count": len(grp),
+        "total_keys":  int(grp["keys"].sum()),
+        "bar_mad":     bar,             # observed, since 3 Nov 2026
+        "bar_hotels":  n,
+        "bar_nights":  nights,
+        "bar_limited": limited,
+        "occupancy":   _kpi_avg(grp, "occupancy", 4),     # Kodo estimate, next 30 nights
+        "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),    # Kodo estimate, next 30 nights
+    }
 
 
 @app.route("/api/data")
 @login_required
 def api_data():
     hotels, perf, merged = load_data()
-
-    total_keys      = int(hotels["keys"].sum())
-
-    national_kpis = {
-        "total_hotels":  len(hotels),
-        "total_keys":    total_keys,
-        "occupancy":     _kpi_avg(merged, "occupancy", 4),
-        "adr_mad":       _kpi_avg(merged, "adr_mad", 1),
-        "revpar_mad":    _kpi_avg(merged, "revpar_mad", 1),
-        "trevpar_mad":   _kpi_avg(merged, "trevpar_mad", 1),
-        "gop_margin":    _kpi_avg(merged, "gop_margin", 4),
-    }
-
-    city_rows = []
-    for city, grp in merged.groupby("city"):
-        keys_sum = grp["keys"].sum()
-        city_rows.append({
-            "city":        city,
-            "hotel_count": len(grp),
-            "total_keys":  int(keys_sum),
-            "occupancy":   _kpi_avg(grp, "occupancy", 4),
-            "adr_mad":     _kpi_avg(grp, "adr_mad", 1),
-            "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),
-            "trevpar_mad": _kpi_avg(grp, "trevpar_mad", 1),
-            "gop_margin":  _kpi_avg(grp, "gop_margin", 4),
-        })
+    national_kpis = {"total_hotels": len(hotels), **_group_row(merged)}
+    city_rows = [{"city": c, **_group_row(g)} for c, g in merged.groupby("city")]
     city_rows.sort(key=lambda x: x["total_keys"], reverse=True)
-
-    segment_rows = []
-    for seg, grp in merged.groupby("category"):
-        keys_sum = grp["keys"].sum()
-        segment_rows.append({
-            "segment":     seg,
-            "hotel_count": len(grp),
-            "total_keys":  int(keys_sum),
-            "occupancy":   _kpi_avg(grp, "occupancy", 4),
-            "adr_mad":     _kpi_avg(grp, "adr_mad", 1),
-            "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),
-            "gop_margin":  _kpi_avg(grp, "gop_margin", 4),
-        })
-    seg_order = ["Luxury", "Upper Upscale", "Upscale", "Midscale"]
+    seg_order = ["Ultra Luxury", "Luxury", "Upper Upscale", "Upscale", "Midscale", "Economy"]
+    segment_rows = [{"segment": k, **_group_row(g)} for k, g in merged.groupby("category")]
     segment_rows.sort(key=lambda x: seg_order.index(x["segment"]) if x["segment"] in seg_order else 99)
-
-    brand_rows = []
-    for brand, grp in merged.groupby("brand_group"):
-        keys_sum = grp["keys"].sum()
-        brand_rows.append({
-            "brand_group": brand,
-            "hotel_count": len(grp),
-            "total_keys":  int(keys_sum),
-            "occupancy":   _kpi_avg(grp, "occupancy", 4),
-            "adr_mad":     _kpi_avg(grp, "adr_mad", 1),
-            "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),
-            "gop_margin":  _kpi_avg(grp, "gop_margin", 4),
-        })
+    brand_rows = [{"brand_group": k, **_group_row(g)} for k, g in merged.groupby("brand_group")]
     brand_rows.sort(key=lambda x: x["total_keys"], reverse=True)
-
-    return jsonify({
+    return jsonify(_nan_to_none({
+        "bar": bar_meta(),
         "national_kpis":    national_kpis,
         "city_aggregates":  city_rows,
         "segment_breakdown": segment_rows,
         "brand_breakdown":  brand_rows,
-    })
+    }))
+
+
+def _nan_to_none(o):
+    import math
+    if isinstance(o, float) and math.isnan(o):
+        return None
+    if isinstance(o, dict):
+        return {k: _nan_to_none(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [_nan_to_none(v) for v in o]
+    return o
 
 
 @app.route("/api/hotels")
@@ -2031,7 +2017,7 @@ def api_hotels():
     cols = [
         "id", "name", "city", "region", "category", "brand", "brand_group",
         "keys", "year_opened", "year_opened_verified", "status", "lat", "lng", "owner", "data_quality",
-        "period", "occupancy", "adr_mad", "revpar_mad", "trevpar_mad", "gop_margin", "source",
+        "occupancy", "bar_mad", "bar_nights", "revpar_mad",
     ]
     # For observer tier, hide financial detail columns (still return them but frontend handles display)
     records = merged[cols].to_dict(orient="records")
@@ -2121,19 +2107,11 @@ def api_brands():
         pipe_df = pd.DataFrame(columns=['_bg', 'keys', '_conv'])
 
     results = []
-    def _wavg(grp, col, weight):
-        """Weighted mean over rows that have both values; 0.0 when none do (shown as N/A)."""
-        v = pd.DataFrame({'x': grp[col], 'w': weight}).dropna()
-        v = v[v['w'] > 0]
-        return float((v['x'] * v['w']).sum() / v['w'].sum()) if len(v) else 0.0
-
     for bg, grp in merged.groupby('_bg'):
         tk = safe_int(grp['keys'].sum(), 0)
-        avg_occ      = _wavg(grp, 'occupancy', grp['keys'])
-        avg_adr      = _wavg(grp, 'adr_mad', grp['keys'] * grp['occupancy'])
-        w_revpar     = _wavg(grp, 'revpar_mad', grp['keys'])
-        avg_gop      = _wavg(grp, 'gop_margin', grp['keys'])
-        total_rev_m  = round(float((grp['revpar_mad'] * grp['keys']).sum()) * 365 / 1_000_000, 1)
+        bar, bar_n, bar_nights, bar_limited = group_bar(grp)
+        avg_occ = _kpi_avg(grp, 'occupancy', 4)
+        avg_revpar = _kpi_avg(grp, 'revpar_mad', 1)
 
         cities   = sorted(grp['city'].unique().tolist())
         segments = sorted(grp['category'].unique().tolist())
@@ -2173,12 +2151,12 @@ def api_brands():
             'total_keys':                tk,
             'cities':                    cities,
             'segments':                  segments,
-            'avg_occupancy':             round(avg_occ, 4),
-            'avg_adr':                   round(avg_adr, 1),
-            'avg_revpar':                round(w_revpar, 1),
-            'avg_gop_margin':            round(avg_gop, 4),
-            'weighted_revpar':           round(w_revpar, 1),
-            'total_rooms_revenue_mad_m': total_rev_m,
+            'bar_mad':                   bar,           # observed BAR since 3 Nov 2026
+            'bar_hotels':                bar_n,
+            'bar_nights':                bar_nights,
+            'bar_limited':               bar_limited,
+            'avg_occupancy':             avg_occ,       # Kodo estimate, next 30 nights
+            'avg_revpar':                avg_revpar,    # Kodo estimate, next 30 nights
             'pipeline_projects':         pipeline_projects,
             'pipeline_keys':             pipeline_keys,
             'pipeline_conversions':      pipeline_conversions,
@@ -2414,16 +2392,6 @@ def api_news_view(article_id):
     return jsonify({"error": "Not found"}), 404
 
 
-@app.route("/api/benchmarking")
-@login_required
-def api_benchmarking():
-    """The Benchmarking page's sample mode: fictional hotels, illustrative
-    figures for the 90 days to yesterday (bench_sample.py). Open to every
-    plan, since it is a demonstration, not data; the page labels it
-    "Sample data" and never treats it as live."""
-    return jsonify(sample_benchmarking())
-
-
 # ─── Rate benchmark (the real mode) ───────────────────────────────────────────
 # Benchmarker and Advisory plans, like the rest of Benchmarking's data
 # features. The comp set belongs to the user's organisation (or the user,
@@ -2467,7 +2435,7 @@ def api_bench_rates():
     if not cs:
         return jsonify({"mode": "rate_benchmark", "state": "no_comp_set"})
     try:
-        return jsonify(RB.rate_benchmark(DATA_DIR, cs, casablanca_today()))
+        return jsonify(RB.rate_benchmark(DATA_DIR, cs, _casablanca_today()))
     except Exception as e:
         app.logger.error(f"Rate benchmark error: {e}", exc_info=True)
         return jsonify({"error": "Rate benchmark could not be computed"}), 500
@@ -2484,7 +2452,7 @@ def api_bench_rates_past():
     cs = RB.get_comp_set(DATA_DIR, RB.owner_key(current_user))
     if not cs:
         return jsonify({'mode': 'past', 'state': 'no_comp_set'})
-    return jsonify(RB.past_rates(DATA_DIR, cs, month, casablanca_today()))
+    return jsonify(RB.past_rates(DATA_DIR, cs, month, _casablanca_today()))
 
 
 @app.route("/api/test-key")
@@ -2497,98 +2465,114 @@ def api_test_key():
 
 
 def build_system_prompt():
+    """The AI analyst's context: only what a client may see (observed BAR
+    since 3 November 2026, Kodo estimates labelled as such, database facts,
+    official tourism figures and Kodo's tourism outlook)."""
     hotels_df, _, merged = load_data()
+    meta = bar_meta()
+    since = day_label(meta["since"])
 
-    # Averages over the hotels that have an estimate (hotels just added have
-    # none yet and are not counted as zero)
-    tk = merged["keys"].sum()
-    nat_occ, nat_adr = _kpi_avg(merged, "occupancy", 4), _kpi_avg(merged, "adr_mad", 1)
-    nat_revpar, nat_trev = _kpi_avg(merged, "revpar_mad", 1), _kpi_avg(merged, "trevpar_mad", 1)
-    nat_gop = _kpi_avg(merged, "gop_margin", 4)
+    def bar_txt(val, n, nights, limited):
+        if val is None:
+            return "BAR: no data yet"
+        if limited:
+            return f"BAR: limited data ({n} hotel{'s' if n != 1 else ''})"
+        return f"BAR {val:,.0f} MAD ({n} hotels, {nights} nights)"
 
-    def group_rows(col):
-        return [(k, len(g), int(g["keys"].sum()), _kpi_avg(g, "occupancy", 4), _kpi_avg(g, "adr_mad", 1),
-                 _kpi_avg(g, "revpar_mad", 1), _kpi_avg(g, "gop_margin", 4)) for k, g in merged.groupby(col)]
+    def est(v, pct=False):
+        if v is None or pd.isna(v):
+            return "n/a"
+        return f"{v*100:.1f}%" if pct else f"{v:,.0f} MAD"
 
-    city_rows = sorted(group_rows("city"), key=lambda x: x[5] or 0, reverse=True)
-    seg_order = ["Luxury", "Upper Upscale", "Upscale", "Midscale"]
-    seg_rows = sorted(group_rows("category"), key=lambda x: seg_order.index(x[0]) if x[0] in seg_order else 99)
-    brand_rows = sorted(group_rows("brand_group"), key=lambda x: x[2], reverse=True)
+    def group_lines(col, order=None):
+        rows = []
+        for k, g in merged.groupby(col):
+            r = _group_row(g)
+            rows.append((k, r))
+        if order:
+            rows.sort(key=lambda x: order.index(x[0]) if x[0] in order else 99)
+        else:
+            rows.sort(key=lambda x: (x[1]["bar_mad"] is None or x[1]["bar_limited"], -(x[1]["bar_mad"] or 0)))
+        return "\n".join(
+            f"  {k} | {r['hotel_count']} hotels | {r['total_keys']:,} keys | "
+            f"{bar_txt(r['bar_mad'], r['bar_hotels'], r['bar_nights'], r['bar_limited'])} | "
+            f"occupancy (Kodo estimate) {est(r['occupancy'], True)} | RevPAR (Kodo estimate) {est(r['revpar_mad'])}"
+            for k, r in rows)
 
-    def pct(v):
-        return "  n/a" if v is None or pd.isna(v) else f"{v*100:>4.1f}%"
+    nat = _group_row(merged)
 
-    def mad(v):
-        return "   n/a" if v is None or pd.isna(v) else f"{v:>6,.0f}"
+    def hotel_line(row):
+        bar = (f"BAR {row['bar_mad']:,.0f} MAD over {int(row['bar_nights'])} nights" if pd.notna(row.get('bar_mad'))
+               else "BAR: not enough prices yet")
+        occ = f"occupancy (Kodo estimate) {row['occupancy']*100:.1f}%" if pd.notna(row.get('occupancy')) else "no occupancy estimate"
+        rev = f"RevPAR (Kodo estimate) {row['revpar_mad']:,.0f} MAD" if pd.notna(row.get('revpar_mad')) else ""
+        keys = f"{int(row['keys'])} keys" if pd.notna(row.get('keys')) else "keys n/a"
+        owner = f", owner {row['owner']}" if isinstance(row.get('owner'), str) and row['owner'] != 'Undisclosed' else ""
+        return f"  {row['name']} ({row['city']}, {row['category']}, {row['brand_group']}{owner}) | {keys} | {bar} | {occ}" + (f" | {rev}" if rev else "")
 
-    def fmt_row(r, width):
-        return (f"  {r[0]:<{width}} | {r[1]:>2} hotels | {r[2]:>5,} keys | "
-                f"Occ {pct(r[3])} | ADR {mad(r[4])} | RevPAR {mad(r[5])} | GOP {pct(r[6])}")
+    hotel_lines = "\n".join(hotel_line(r) for _, r in merged.iterrows())
+    try:
+        pipe = pd.read_csv(os.path.join(DATA_DIR, "pipeline.csv"))
+        pipe_lines = "\n".join(
+            f"  {safe_text(r.get('name'))} ({safe_text(r.get('city'))}, {safe_text(r.get('brand'))}) | "
+            f"{safe_int(r.get('keys')) or 'keys not announced'} keys | opening {safe_int(r.get('expected_opening')) or 'not announced'} | "
+            f"{safe_text(r.get('status'))}" for _, r in pipe.iterrows())
+    except Exception:
+        pipe_lines = "  (pipeline not available)"
 
-    def fmt_city(r):
-        return fmt_row(r, 14)
+    return f"""You are Kodo Analyst, a Morocco hospitality market intelligence assistant built by Kodo. You have access to Kodo's database of {len(hotels_df)} hotels across {hotels_df['city'].nunique()} Moroccan destinations.
 
-    def fmt_seg(r):
-        return fmt_row(r, 15)
-
-    def fmt_brand(r):
-        return fmt_row(r, 32)
-
-    hotel_lines = "\n".join(
-        f"  {row['name']} ({row['city']}, {row['category']}, {row['brand_group']}) — {int(row['keys'])} keys | "
-        + (f"Occ {row['occupancy']*100:.1f}% | ADR {row['adr_mad']:,.0f} MAD | RevPAR {row['revpar_mad']:,.0f} MAD | "
-           f"GOP {row['gop_margin']*100:.1f}%" if pd.notna(row['occupancy']) and pd.notna(row['adr_mad'])
-           and pd.notna(row['revpar_mad']) and pd.notna(row['gop_margin']) else
-           (f"Occ {row['occupancy']*100:.1f}% (modelled) | published rate {row['adr_mad']:,.0f} MAD"
-            if pd.notna(row['occupancy']) and pd.notna(row['adr_mad']) else "no figure yet"))
-        for _, row in merged.iterrows()
-    )
-
-    return f"""You are Kodo Analyst, a Morocco hospitality market intelligence assistant built by Kodo. You have exclusive access to Kodo's proprietary database of {len(hotels_df)} branded hotels across {hotels_df['city'].nunique()} Moroccan cities.
-
-You serve hospitality investors, operators, developers, and consultants. Provide precise, data-driven answers. Always cite specific metrics. Use MAD (Moroccan Dirhams) for all monetary values unless asked otherwise. Approximate USD/EUR conversions: 1 USD ≈ 10 MAD, 1 EUR ≈ 11 MAD. Be analytical, concise, and professional — not conversational.
+You serve hospitality investors, operators, developers and consultants. Be precise, analytical and concise. Use MAD for money.
 
 ══════════════════════════════════════════════════
-KODO PROPRIETARY DATA — MOROCCO BRANDED HOTELS — KODO ESTIMATES
+WHAT YOU MAY USE (nothing else exists)
 ══════════════════════════════════════════════════
-{_ai_perf_note()} Hotel, key and
-pipeline counts are real records. Current published rates and modelled
-occupancy for the next 30 nights are on the platform's hotel profiles.
-Kodo has collected published rates every night only since 3 November 2026:
-there is no rate history before that date. Don't name a data provider or quote
-the start date; if asked where the rates come from or how far back they go,
-say there is no rate history before Kodo began collecting and point to the
-Methodology page (/methodology).
+1. BAR (published rate), observed: the average published room rate, collected every night
+   since {since} ({meta['days']} days of data so far). A hotel's BAR is its average over the
+   nights since then (at least {meta['min_nights']} priced nights); a group's BAR is the plain
+   average of its hotels' BAR, and is "limited data" under {meta['min_hotels']} hotels. Always
+   call it "BAR" or "published rate". Never call it ADR: Kodo has no ADR (achieved revenue per
+   room sold), no reported occupancy, no reported RevPAR, no revenue and no GOP for any hotel.
+2. Kodo estimates, always labelled "Kodo estimate": modelled occupancy for the next 30 nights
+   (Kodo's occupancy model) and RevPAR = BAR x modelled occupancy for the same nights; the
+   tourism outlook 2026E and 2027F; the valuation tool's results.
+3. Database facts: hotels, keys, segments, brands, owners, opening years, pipeline, events.
+4. Official tourism statistics (arrivals, nights, receipts, airport traffic).
 
-NATIONAL MARKET SNAPSHOT
-  Total branded hotels in database : {len(hotels_df)}
-  Total keys (rooms)               : {int(tk):,}
-  National occupancy               : {nat_occ*100:.1f}%
-  National ADR                     : {nat_adr:,.0f} MAD
-  National RevPAR                  : {nat_revpar:,.0f} MAD
-  National TRevPAR                 : {nat_trev:,.0f} MAD
-  National GOP margin              : {nat_gop*100:.1f}%
+If a question needs anything else (past years' hotel performance, ADR, revenue, asset values,
+a period before {since}, or a hotel or market not listed), say plainly that Kodo does not have
+that data. Never estimate it yourself and never invent figures. Don't name a data provider; if
+asked where rates come from, say they are published rates Kodo collects every night, and point
+to the Methodology page (/methodology).
 
-CITY PERFORMANCE (ranked by RevPAR)
-{chr(10).join(fmt_city(r) for r in city_rows)}
+MARKET (all hotels)
+  Hotels: {len(hotels_df)} | Keys: {int(merged['keys'].sum()):,}
+  {bar_txt(nat['bar_mad'], nat['bar_hotels'], nat['bar_nights'], nat['bar_limited'])}
+  Occupancy (Kodo estimate, next 30 nights): {est(nat['occupancy'], True)} | RevPAR (Kodo estimate): {est(nat['revpar_mad'])}
 
-SEGMENT PERFORMANCE
-{chr(10).join(fmt_seg(r) for r in seg_rows)}
+DESTINATIONS (by BAR, high to low)
+{group_lines("city")}
 
-BRAND GROUP PERFORMANCE (ranked by total keys)
-{chr(10).join(fmt_brand(r) for r in brand_rows)}
+SEGMENTS
+{group_lines("category", ["Ultra Luxury", "Luxury", "Upper Upscale", "Upscale", "Midscale", "Economy"])}
 
-INDIVIDUAL HOTEL DETAIL
+BRAND GROUPS
+{group_lines("brand_group")}
+
+HOTELS
 {hotel_lines}
+
+PIPELINE (database)
+{pipe_lines}
 
 {TD.ai_context()}
 ══════════════════════════════════════════════════
 
-Answer only from the data above. If asked about hotels, cities, or markets not in the Kodo database, state clearly that the data is not available. When making comparisons, always show both sides with specific numbers.
+Answer only from the data above. When comparing, show both sides with their numbers and labels.
 
-BENCHMARKING PAGE DATA: a question from the Benchmarking page carries its own figures and says which mode is showing.
-  - "SAMPLE MODE": fictional hotels and illustrative figures, not real hotels or real performance. Say it is sample data; never present it as real results.
-  - "RATE BENCHMARK MODE": published hotel rates (collected every night) and Kodo's modelled occupancy (Kodo Estimates, modelled, not measured). These are not achieved ADR, occupancy or RevPAR: call them published rates and modelled occupancy, never actuals, ADR or achieved occupancy."""
+BENCHMARKING PAGE DATA: a question from the Benchmarking page carries its own figures: published
+rates (BAR) of the user's hotel and comp set, and Kodo's modelled occupancy (Kodo estimate). Call
+them BAR and modelled occupancy, never ADR or achieved occupancy."""
 
 
 @app.route("/api/chat", methods=["POST"])
@@ -3178,35 +3162,7 @@ REPORT_CITIES = [
     "Casablanca", "Rabat / Salé / Témara", "Marrakech",
     "Agadir / Taghazout", "Tanger", "Fes", "Tamuda Bay / Tétouan",
 ]
-REPORT_PERIODS = ["Q3 2026", "Q4 2026", "Annual 2026"]
-
-SEGMENT_ORDER = ["Ultra Luxury", "Luxury", "Upper Upscale", "Upscale", "Midscale", "Budget"]
-CAP_RATES = {
-    "Ultra Luxury": 0.060, "Luxury": 0.065, "Upper Upscale": 0.070,
-    "Upscale": 0.075, "Midscale": 0.085, "Budget": 0.095,
-}
-REVENUE_MULTIPLES = {
-    "Ultra Luxury":  {"lo": 18, "hi": 22},
-    "Luxury":        {"lo": 15, "hi": 18},
-    "Upper Upscale": {"lo": 12, "hi": 15},
-    "Upscale":       {"lo": 10, "hi": 12},
-    "Midscale":      {"lo":  8, "hi": 10},
-    "Economy":       {"lo":  6, "hi":  8},
-}
-
-CITY_SEASON_TYPE = {
-    "Casablanca": "business", "Rabat / Salé / Témara": "business",
-    "Marrakech": "cultural", "Agadir / Taghazout": "coastal",
-    "Tanger": "coastal", "Fes": "cultural",
-    "Tamuda Bay / Tétouan": "coastal", "Morocco": "default",
-}
-SEASONALITY_PROFILES = {
-    "default":  [65, 65, 70, 75, 73, 70, 68, 68, 74, 80, 74, 67],
-    "coastal":  [55, 58, 65, 72, 80, 88, 95, 95, 82, 72, 60, 55],
-    "cultural": [72, 75, 82, 88, 80, 68, 65, 65, 78, 88, 82, 75],
-    "business": [68, 70, 75, 78, 75, 72, 65, 62, 75, 82, 78, 68],
-}
-MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+SEGMENT_ORDER = ["Ultra Luxury", "Luxury", "Upper Upscale", "Upscale", "Midscale", "Economy", "Budget"]
 
 # ── PDF layout constants ──────────────────────────────────────────────────────
 _LM, _RM = 14, 14
@@ -3325,7 +3281,7 @@ if FPDF is not None:
                 self.cell(_PW * 0.40, 5, label, ln=0)
                 self.set_font("Helvetica", "", 6)
                 self.cell(_PW * 0.30, 5, _s(period), ln=0)
-                na = value == NOT_AVAILABLE
+                na = value in (NOT_AVAILABLE, LIMITED, "Collecting data")
                 self.set_font("Helvetica", "" if na else "B", 7)
                 self.set_text_color(*self.c['muted' if na else 'text'])
                 self.cell(_PW * 0.30, 5, value, align="R", ln=1)
@@ -3345,10 +3301,9 @@ if FPDF is not None:
             self.set_fill_color(*self.c['hdr_bg'])
             self.set_text_color(*self.c['hdr_text'])
             self.set_font("Helvetica", "B", 7)
-            for col, w in zip(cols, widths):
-                align = "R" if col not in ("Segment", "Hotel", "Name", "Brand", "Category",
-                                            "Owner", "Brand Group", "Status") else "L"
-                self.cell(w, 5, col, border=0, fill=True, align=align)
+            for i, (col, w) in enumerate(zip(cols, widths)):
+                # same alignment as table_row: first column left, the rest right
+                self.cell(w, 5, col, border=0, fill=True, align="L" if i == 0 else "R")
             self.ln()
 
         def table_row(self, vals: list, widths: list, fill: bool = False, bold: bool = False):
@@ -3402,15 +3357,6 @@ if FPDF is not None:
             self.set_font("Helvetica", "B", 9 if small else 10)
             self.cell(w, value_h, value, align="C", ln=1)
 
-        def rating_box(self, rating: str):
-            family = ('green' if rating == "OUTPERFORM"
-                      else 'red' if rating == "UNDERPERFORM"
-                      else 'grey')
-            bx = _LM + _PW - 55
-            by = self.get_y()
-            self.label_box(bx, by, 55, 10, family, "MARKET RATING", rating)
-            self.ln(2)
-
         def risk_item(self, num: int, text: str, family: str):
             dot, color, tint = self.c['fam'][family]
             x, y = self.get_x(), self.get_y()
@@ -3445,7 +3391,7 @@ if FPDF is not None:
                 self.set_draw_color(*self.c['border'])
                 self.rect(bx, by, bw - 1, bh, "FD")
                 self.set_xy(bx + 2, by + 2)
-                na = value == NOT_AVAILABLE       # muted, like the KPI cards
+                na = value in (NOT_AVAILABLE, LIMITED, "Collecting data")   # muted, like the KPI cards
                 self.set_font("Helvetica", "" if na else "B", 8 if na else val_fs)
                 self.set_text_color(*self.c['muted' if na else 'text'])
                 self.cell(bw - 4, val_h, str(value), align="C", ln=1)
@@ -3463,107 +3409,123 @@ else:
     KodoPDF = None
 
 
-def compute_city_report_data(city: str, period: str) -> dict:
-    _, _, merged = load_data()
+# ─── Reports: periods ─────────────────────────────────────────────────────────
+# A report covers a quarter or a year. Only periods that real data covers
+# are offered: a quarter once published rates exist inside it (the first
+# one, Q4 2026, starts on 3 November 2026: "partial"), a year only once
+# rates were collected from its first day. A period still running, or one
+# that began before the data, is "partial".
+
+def _quarter_bounds(y, q):
+    from calendar import monthrange
+    s = date(y, 3 * q - 2, 1)
+    return s, date(y, 3 * q, monthrange(y, 3 * q)[1])
+
+
+def report_periods(today=None):
+    """[{'id': 'Q4 2026', 'label': 'Q4 2026 (partial)', 'start', 'end' (dates
+    the data covers), 'partial'}], newest first."""
+    today = today or _casablanca_today()
+    start = LK.DATA_START
+    out = []
+    if today < start:
+        return out
+    y, q = start.year, (start.month - 1) // 3 + 1
+    while (y, q) <= (today.year, (today.month - 1) // 3 + 1):
+        qs, qe = _quarter_bounds(y, q)
+        partial = qs < start or today <= qe
+        out.append({"id": f"Q{q} {y}", "label": f"Q{q} {y}" + (" (partial)" if partial else ""), "kind": "quarter",
+                    "start": max(qs, start), "end": min(qe, today), "partial": partial})
+        y, q = (y + 1, 1) if q == 4 else (y, q + 1)
+    y = start.year if start == date(start.year, 1, 1) else start.year + 1
+    while y <= today.year:
+        partial = today <= date(y, 12, 31)
+        out.append({"id": f"Annual {y}", "label": f"Annual {y}" + (" (partial)" if partial else ""), "kind": "year",
+                    "start": date(y, 1, 1), "end": min(date(y, 12, 31), today), "partial": partial})
+        y += 1
+    out.sort(key=lambda p: (p["end"], p["kind"] == "year"), reverse=True)
+    return out
+
+
+# Official occupancy of classified accommodation (Tourism screen) for a report city
+_REPORT_OFFICIAL_CITY = {"Casablanca": "Casablanca", "Rabat / Salé / Témara": "Rabat", "Marrakech": "Marrakech",
+                         "Agadir / Taghazout": "Agadir", "Tanger": "Tanger", "Fes": "Fès", "Morocco": "Morocco"}
+
+LIMITED = "Limited data"
+
+
+def _official_occupancy(city):
+    name = _REPORT_OFFICIAL_CITY.get(city)
+    if not name:
+        return []
+    for s in TD.data().get("series", []):
+        if s.get("metric") == "occupancy" and s.get("display", True) and s.get("dim", {}).get("city") == name:
+            return [(p["period"], p["value"]) for p in s.get("points", [])[-2:]]
+    return []
+
+
+def compute_city_report_data(city: str, period: dict) -> dict:
+    """Everything a city (or Morocco) report shows, from real data only:
+    database facts (hotels, keys, brands, owners, pipeline, events), BAR
+    observed over the period's nights, Kodo estimates for the next 30
+    nights (labelled), and official tourism figures."""
+    hotels, _, merged = load_data()
     pipeline_df = pd.read_csv(os.path.join(DATA_DIR, "pipeline.csv"))
-
+    today = _casablanca_today()
     if city == "Morocco":
-        ch = merged.copy()
-        cp = pipeline_df.copy()
+        ch, cp = merged.copy(), pipeline_df.copy()
     else:
-        ch = merged[merged["city"] == city].copy()
-        cp = pipeline_df[pipeline_df["city"] == city].copy()
-
-    # Numeric columns hold NaN for blanks / text (load_data does the same for
-    # hotels), so each calculation below uses only the rows that have its value.
+        ch, cp = merged[merged["city"] == city].copy(), pipeline_df[pipeline_df["city"] == city].copy()
     for col in ("keys", "expected_opening", "investment_mad"):
         if col in cp:
             cp[col] = pd.to_numeric(cp[col], errors="coerce")
 
-    hotels_in_city = len(ch)
-    ch = ch.dropna(subset=["occupancy", "adr_mad", "revpar_mad"])
+    # BAR over the report period (the dashboard's rule: 7 priced nights per hotel)
+    ids = [str(int(i)) for i in ch["id"].dropna()]
+    bars, days = LK.observed_bar(DATA_DIR, ids, today, period["start"], period["end"])
+    ch["bar_mad"] = ch["id"].map(lambda i: bars.get(str(int(i)), (None, 0))[0] if pd.notna(i) else None).astype(float)
+    ch["bar_nights"] = ch["id"].map(lambda i: bars.get(str(int(i)), (None, 0))[1] if pd.notna(i) else 0)
 
-    # ── market overview ──
     total_hotels = len(ch)
-    total_keys   = safe_int(ch["keys"].sum(), 0)
+    total_keys = safe_int(ch["keys"].sum(), 0)
 
-    keys_by_seg = {}
-    for seg in SEGMENT_ORDER:
-        k = safe_int(ch[ch["category"] == seg]["keys"].sum(), 0)
-        if k > 0:
-            keys_by_seg[seg] = k
+    def share(k):
+        return round(k / total_keys * 100, 1) if total_keys else 0
 
-    brand_stats = []
-    for bg, g in ch.groupby("brand_group"):
-        g_keys = safe_int(g["keys"].sum(), 0)
-        brand_stats.append({
-            "name": bg, "hotels": len(g), "keys": g_keys,
-            "market_share": round(g_keys / total_keys * 100, 1) if total_keys else 0,
-        })
-    brand_stats.sort(key=lambda x: -x["keys"])
-
-    owner_stats = []
-    for ow, g in ch.groupby("owner"):
-        g_keys = safe_int(g["keys"].sum(), 0)
-        owner_stats.append({
-            "owner": ow, "hotels": len(g), "keys": g_keys,
-            "market_share": round(g_keys / total_keys * 100, 1) if total_keys else 0,
-        })
-    owner_stats.sort(key=lambda x: -x["keys"])
-
-    # Hotels without an opening year are left out of the age figures.
-    dated  = ch.dropna(subset=["year_opened"])
-    avg_yr = safe_int(round(dated["year_opened"].mean())) if not dated.empty else None
-    newest = dated.loc[dated["year_opened"].idxmax(), "name"] if not dated.empty else NA
-    oldest = dated.loc[dated["year_opened"].idxmin(), "name"] if not dated.empty else NA
-
-    # ── performance ──
-    def wavg_of(df, col, weight_col="keys"):
-        """Keys-weighted mean over the hotels that have both the value and keys; None if none do."""
-        v = df[[col, weight_col]].dropna()
-        v = v[v[weight_col] > 0]
-        if v.empty:
-            return None
-        return float((v[col] * v[weight_col]).sum() / v[weight_col].sum())
-
-    def wavg(col, weight_col="keys"):
-        return wavg_of(ch, col, weight_col)
-
-    overall_occ  = wavg("occupancy")
-    overall_adr  = wavg("adr_mad")
-    overall_rev  = wavg("revpar_mad")
-    overall_gop  = wavg("gop_margin")
-    overall_trev = wavg("trevpar_mad")
-
-    seg_perf = []
+    keys_by_seg, seg_rows = {}, []
     for seg in SEGMENT_ORDER:
         sg = ch[ch["category"] == seg]
         if sg.empty:
             continue
-        def swavg(col):
-            return wavg_of(sg, col)
-        s_rev = swavg("revpar_mad")
-        sg_dated = sg["year_opened"].dropna()
-        seg_perf.append({
-            "segment": seg, "hotels": len(sg), "keys": safe_int(sg["keys"].sum(), 0),
-            "occupancy": swavg("occupancy"), "adr": swavg("adr_mad"),
-            "revpar": s_rev, "gop_margin": swavg("gop_margin"),
-            "trevpar": swavg("trevpar_mad"),
-            "revpar_index": round(s_rev / overall_rev * 100, 1) if (s_rev is not None and overall_rev) else None,
-            "avg_year": safe_int(sg_dated.mean()) if not sg_dated.empty else None,
-        })
+        k = safe_int(sg["keys"].sum(), 0)
+        keys_by_seg[seg] = k
+        bar, n, nights, limited = group_bar(sg)
+        yrs = sg["year_opened"].dropna()
+        seg_rows.append({"segment": seg, "hotels": len(sg), "keys": k, "share": share(k),
+                         "avg_year": safe_int(yrs.mean()) if not yrs.empty else None,
+                         "bar": bar, "bar_hotels": n, "bar_nights": nights, "bar_limited": limited})
 
-    top10 = ch.nlargest(min(10, len(ch)), "revpar_mad")[
-        ["name", "category", "keys", "occupancy", "adr_mad", "revpar_mad"]
-    ].to_dict(orient="records")
+    brand_stats = sorted(({"name": bg, "hotels": len(g), "keys": safe_int(g["keys"].sum(), 0)}
+                          for bg, g in ch.groupby("brand_group")), key=lambda x: -x["keys"])
+    owner_stats = sorted(({"owner": ow, "hotels": len(g), "keys": safe_int(g["keys"].sum(), 0)}
+                          for ow, g in ch.groupby("owner")), key=lambda x: -x["keys"])
 
-    est_rooms_rev = total_keys * 365 * overall_rev / 1_000_000 if overall_rev is not None else None
-    est_total_rev = total_keys * 365 * overall_trev / 1_000_000 if overall_trev is not None else None
-    est_gop       = est_total_rev * overall_gop if (est_total_rev is not None and overall_gop is not None) else None
+    dest_rows = []
+    if city == "Morocco":
+        for c, g in ch.groupby("city"):
+            bar, n, nights, limited = group_bar(g)
+            dest_rows.append({"city": c, "hotels": len(g), "keys": safe_int(g["keys"].sum(), 0), "bar": bar,
+                              "bar_hotels": n, "bar_nights": nights, "bar_limited": limited})
+        dest_rows.sort(key=lambda r: (r["bar"] is None or r["bar_limited"], -(r["bar"] or 0), r["city"]))
 
-    # ── pipeline ──
-    # Missing keys / opening year / investment stay None (shown as n/a) and
-    # are left out of the totals; projects with no opening year sort last.
+    bar, bar_n, bar_nights, bar_limited = group_bar(ch)
+    priced = ch[ch["bar_mad"].notna()].sort_values("bar_mad", ascending=False)
+    top_bar = priced.head(10)[["name", "category", "keys", "bar_mad", "bar_nights"]].to_dict(orient="records")
+
+    # Kodo estimates, next 30 nights (the occupancy model; RevPAR = BAR x occupancy)
+    est_occ, est_revpar = _kpi_avg(ch, "occupancy", 4), _kpi_avg(ch, "revpar_mad", 1)
+    est_n = int(ch["occupancy"].notna().sum())
+
     pip_projects = []
     for _, r in cp.iterrows():
         pip_projects.append({
@@ -3574,205 +3536,142 @@ def compute_city_report_data(city: str, period: str) -> dict:
             "conversion": is_conversion(r),
         })
     pip_projects.sort(key=lambda x: (x["opening"] is None, x["opening"] or 0))
-
-    # A conversion's keys are already in the hotel count: not new supply
     pip_total_keys = sum(p["keys"] for p in pip_projects if p["keys"] is not None and not p["conversion"])
-    pip_total_inv  = sum(p["investment_mad"] for p in pip_projects if p["investment_mad"] is not None) / 1_000_000_000
-    pip_by_year: dict = {}
-    for p in pip_projects:
-        if p["keys"] is None or p["conversion"]:
-            continue
-        yr = str(p["opening"]) if p["opening"] is not None else "Date not announced"
-        pip_by_year[yr] = pip_by_year.get(yr, 0) + p["keys"]
-
     ratio = pip_total_keys / total_keys if total_keys else 0
     supply_risk = "High" if ratio > 0.20 else ("Medium" if ratio > 0.10 else "Low")
 
-    # ── asset value ranges (revenue-multiple model) ──
-    asset_rows = []
-    for sp in seg_perf:
-        if sp["adr"] is None or sp["occupancy"] is None:
-            continue  # no keys-weighted rate/occupancy for this segment
-        keys_seg = sp["keys"]
-        adr_seg  = sp["adr"]
-        occ_seg  = sp["occupancy"]
-        mult     = REVENUE_MULTIPLES.get(sp["segment"], {"lo": 8, "hi": 12})
-        cap      = CAP_RATES.get(sp["segment"], 0.075)
+    horizon = (today + timedelta(days=90)).isoformat()
+    events = sorted((e for e in EV.load_events(DATA_DIR)
+                     if (city == "Morocco" or e.get("city") in (city, "National"))
+                     and (e.get("end") or e.get("start") or "") >= today.isoformat() and (e.get("start") or "") <= horizon),
+                    key=lambda e: e.get("start") or "")
 
-        occ_lo = max(0.05, occ_seg - 0.08)
-        occ_hi = min(0.98, occ_seg + 0.08)
-
-        rev_lo = adr_seg * occ_lo * keys_seg * 365
-        rev_hi = adr_seg * occ_hi * keys_seg * 365
-        rev_lo_m = round(rev_lo / 1_000_000, 1)
-        rev_hi_m = round(rev_hi / 1_000_000, 1)
-
-        vpk_lo_m = round((rev_lo * mult["lo"]) / keys_seg / 1_000_000, 3) if keys_seg else 0
-        vpk_hi_m = round((rev_hi * mult["hi"]) / keys_seg / 1_000_000, 3) if keys_seg else 0
-
-        asset_rows.append({
-            "segment":   sp["segment"],
-            "keys":      keys_seg,
-            "avg_bar":   round(adr_seg, 0),
-            "avg_occ":   round(occ_seg, 4),
-            "rev_lo_m":  rev_lo_m,
-            "rev_hi_m":  rev_hi_m,
-            "mult_lo":   mult["lo"],
-            "mult_hi":   mult["hi"],
-            "vpk_lo_m":  vpk_lo_m,
-            "vpk_hi_m":  vpk_hi_m,
-            "cap_rate":  cap,
-        })
-
-    # ── seasonality ──
-    season_type = CITY_SEASON_TYPE.get(city, "default")
-    season_vals = SEASONALITY_PROFILES[season_type]
-
-    # ── hotel directory ──
-    dir_cols = ["name", "brand_group", "category", "keys", "year_opened",
-                "owner", "occupancy", "adr_mad", "revpar_mad"]
-    directory = ch[dir_cols].sort_values("revpar_mad", ascending=False).to_dict(orient="records")
+    directory = ch.assign(_has=ch["bar_mad"].notna()).sort_values(
+        ["_has", "bar_mad", "keys"], ascending=[False, False, False])[
+        ["name", "brand_group", "category", "keys", "year_opened", "bar_mad", "bar_nights"]].to_dict(orient="records")
 
     generated_at = datetime.utcnow()
     return {
-        "city": city, "period": period,
-        # What the figures actually cover (the report period above is the
-        # edition label; the performance data has its own period)
-        # Occupancy, ADR and RevPAR exist only for a past full year, so the
-        # report shows them as history, never as current headline figures.
-        "periods": {
-            "performance": period_label(period_of_codes(ch["period"])) or NA,
-            "history": period_history(period_of_codes(ch["period"])) or NA,
-            "last_known": period_last_known(period_of_codes(ch["period"])),
-            "as_of": period_label({"kind": "asof", "date": generated_at}),
-        },
-        "generated_at": generated_at,
-        "generated_date": datetime.utcnow().strftime("%d %B %Y"),
+        "city": city, "period": period, "today": today,
+        "as_of": period_label({"kind": "asof", "date": today}),
+        "bar_window": f"{day_label(period['start'], period['start'].year != period['end'].year)} – {day_label(period['end'])}",
+        "bar_days": days,
+        "generated_date": generated_at.strftime("%d %B %Y"),
         "market_overview": {
-            "total_hotels": total_hotels, "total_keys": total_keys,
-            "keys_by_segment": keys_by_seg, "brand_groups": brand_stats[:8],
-            "ownership": owner_stats[:6], "avg_year_opened": avg_yr,
-            "newest_hotel": newest, "oldest_hotel": oldest,
+            "total_hotels": total_hotels, "total_keys": total_keys, "keys_by_segment": keys_by_seg,
+            "brand_groups": brand_stats[:8], "ownership": owner_stats[:6], "segments": seg_rows,
         },
-        "excluded": {
-            # Hotels left out of a calculation because the value it needs is missing
-            "no_performance": hotels_in_city - total_hotels,
-            "no_opening_year": int(ch["year_opened"].isna().sum()),
-            "no_keys": int(ch["keys"].isna().sum()),
-        },
-        "performance": {
-            "overall": {
-                "occupancy": overall_occ, "adr": overall_adr,
-                "revpar": overall_rev, "gop_margin": overall_gop, "trevpar": overall_trev,
-            },
-            "by_segment": seg_perf,
-            "top_10_revpar": top10,
-            "est_rooms_revenue_mad_m": round(est_rooms_rev, 1) if est_rooms_rev is not None else None,
-            "est_total_revenue_mad_m": round(est_total_rev, 1) if est_total_rev is not None else None,
-            "est_gop_mad_m": round(est_gop, 1) if est_gop is not None else None,
-        },
-        "pipeline": {
-            "projects": pip_projects, "total_projects": len(pip_projects),
-            "total_keys": pip_total_keys, "total_investment_mad_b": round(pip_total_inv, 2),
-            "by_year": pip_by_year, "supply_risk": supply_risk,
-        },
-        "asset_values": asset_rows,
-        "seasonality": {"months": MONTHS, "values": season_vals},
+        "bar": {"value": bar, "hotels": bar_n, "nights": bar_nights, "limited": bar_limited,
+                "by_destination": dest_rows, "top": top_bar, "min_nights": LK.MIN_BAR_NIGHTS,
+                "min_hotels": LK.MIN_BAR_HOTELS},
+        "estimates": {"occupancy": est_occ, "revpar": est_revpar, "hotels": est_n},
+        "official_occupancy": _official_occupancy(city),
+        "events": events[:10],
+        "pipeline": {"projects": pip_projects, "total_projects": len(pip_projects),
+                     "total_keys": pip_total_keys, "supply_risk": supply_risk},
         "directory": directory,
     }
 
 
-def generate_ai_narrative(report_data: dict) -> dict:
-    placeholder = {
-        "executive_summary": "The market demonstrates resilient performance fundamentals, supported by continued demand from both leisure and corporate segments. Key indicators reflect stable occupancy trends and improving rate discipline across branded properties. The competitive landscape continues to evolve with measured supply additions that maintain market equilibrium.",
-        "market_commentary": "Supply dynamics remain disciplined, with limited new inventory entering the market over the near term. Demand drivers include growing inbound tourism, domestic corporate travel, and expanding MICE activity. Upper upscale and luxury segments outperform on a RevPAR index basis, reflecting the premium positioning of recently opened branded properties. Midscale and budget segments provide volume support to overall market occupancy.",
-        "investment_perspective": "The market presents compelling risk-adjusted returns for institutional investors, supported by stable cash flow generation and improving operational efficiency. Asset values benefit from a constrained development pipeline and growing brand presence. Cap rate compression is anticipated in the luxury segment as institutional capital targets quality branded assets.",
-        "key_demand_drivers": [
-            "Growing inbound leisure tourism from European and Gulf source markets, supported by improving air route connectivity",
-            "Expanding domestic corporate travel and MICE activity driven by ongoing business investment in the region",
-            "Government-backed infrastructure investment and national tourism promotion programmes supporting long-term demand growth",
-        ],
-        "key_risks": [
-            "Currency volatility and MAD exchange rate fluctuations may impact international visitor spending and operator profitability",
-            "New supply pipeline, while currently constrained, could create localised pockets of oversupply in specific segments",
-            "Global macroeconomic uncertainty and potential slowdown in European source markets may moderate leisure demand growth",
-        ],
-        "key_opportunities": [
-            "Premium leisure demand from European and Gulf markets creates significant upside for luxury and upper upscale positioning",
-            "Infrastructure investment and improving air connectivity support sustained demand growth across segments",
-            "Limited branded midscale supply relative to demand presents development opportunities with strong stabilised returns",
-        ],
-    }
+def _bar_text(b):
+    if b["value"] is None:
+        return "Collecting data"
+    if b["limited"]:
+        return LIMITED
+    return f"MAD {b['value']:,.0f}"
 
+
+def _factual_narrative(d):
+    """The report's text without the AI: facts from the data, nothing else."""
+    mo, b, pip, city = d["market_overview"], d["bar"], d["pipeline"], d["city"]
+    where = "Morocco" if city == "Morocco" else city
+    seg = max(mo["segments"], key=lambda s: s["keys"]) if mo["segments"] else None
+    s1 = (f"Kodo tracks {mo['total_hotels']} hotels and {mo['total_keys']:,} keys in {where}"
+          + (f"; {seg['segment']} is the largest segment with {seg['share']:.0f}% of keys" if seg else "") + ". ")
+    if b["value"] is not None and not b["limited"]:
+        s1 += (f"Across the {b['hotels']} hotels with at least {b['min_nights']} priced nights, the average BAR "
+               f"(published rate) over {d['bar_window']} is MAD {b['value']:,.0f}. ")
+    else:
+        s1 += f"Published rates are still being collected: too few hotels have enough priced nights for an average BAR. "
+    s1 += (f"The pipeline counts {pip['total_projects']} project{'s' if pip['total_projects'] != 1 else ''} "
+           f"and {pip['total_keys']:,} new keys.")
+    s2 = (f"Supply: {', '.join(f'{s} {k:,} keys' for s, k in mo['keys_by_segment'].items())}. "
+          + (f"The largest brand group is {mo['brand_groups'][0]['name']} with {mo['brand_groups'][0]['keys']:,} keys." if mo["brand_groups"] else ""))
+    return {"executive_summary": s1, "market_commentary": s2, "investment_perspective": "",
+            "key_risks": [], "key_opportunities": [], "key_demand_drivers": []}
+
+
+def generate_ai_narrative(d: dict) -> dict:
+    """AI text for the report, written only from the report's own figures;
+    without an API key (or on error) a factual text built from the data."""
+    fallback = _factual_narrative(d)
+    api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        return fallback
     try:
-        api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
-        if not api_key:
-            return placeholder
+        mo, b, pip, est = d["market_overview"], d["bar"], d["pipeline"], d["estimates"]
+        segs = "; ".join(f"{s['segment']}: {s['hotels']} hotels, {s['keys']:,} keys, BAR "
+                         + ("limited data" if s["bar"] is None or s["bar_limited"] else f"MAD {s['bar']:,.0f}")
+                         for s in mo["segments"])
+        off = ", ".join(f"{y}: {v}%" for y, v in d["official_occupancy"]) or "none for this market"
+        prompt = f"""You write the text of a Kodo hotel market report. Use ONLY the figures below; never invent or estimate any other number, and do not mention any figure that is not listed. Kodo has no ADR, no reported occupancy, no revenue and no asset values: never mention them. The rate figure is "BAR (published rate)"; never call it ADR. Occupancy and RevPAR below are Kodo estimates and must be called "Kodo estimate". Do not name data providers.
 
-        city    = report_data["city"]
-        period  = report_data["period"]
-        perf    = report_data["performance"]["overall"]
-        mo      = report_data["market_overview"]
-        pip     = report_data["pipeline"]
+Market: {d['city']} | Report period: {d['period']['label']}
+Hotels: {mo['total_hotels']} | Keys: {mo['total_keys']:,}
+Average BAR (published rate), {d['bar_window']}: {_bar_text(b)} ({b['hotels']} hotels with at least {b['min_nights']} priced nights)
+By segment: {segs}
+Kodo estimate, next 30 nights: occupancy {fmt_num(est['occupancy'], '.1f', 100, suffix='%')}, RevPAR {fmt_num(est['revpar'], prefix='MAD ')}
+Official occupancy of classified accommodation: {off}
+Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} new keys
+Upcoming events (next 90 days): {', '.join(e['name'] for e in d['events'][:6]) or 'none listed'}
 
-        prompt = f"""You are a senior hotel market analyst at Kodo, Morocco's leading hospitality intelligence firm. Write institutional-grade market analysis in the style of JLL Hotels & Hospitality or Deloitte Real Estate. Be precise, data-driven, and professional. Use MAD for currency.
-
-Market: {city} Hotel Market | Period: {period}
-Data period: occupancy, ADR and RevPAR are Kodo's own model estimates for {report_data['periods']['performance']}, not reported data (say so whenever you use them: "Kodo model estimate"; never call them actual, reported or historical performance); hotel, key and pipeline counts are {report_data['periods']['as_of'][:1].lower() + report_data['periods']['as_of'][1:]}
-Total Hotels: {mo['total_hotels']} | Total Keys: {mo['total_keys']:,}
-Avg Occupancy: {fmt_num(perf['occupancy'], '.1f', 100, suffix='%')} | Avg ADR: {fmt_num(perf['adr'], prefix='MAD ')} | Avg RevPAR: {fmt_num(perf['revpar'], prefix='MAD ')}
-Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} keys, Supply Risk: {pip['supply_risk']}
-Est. Total Revenue: {fmt_num(report_data['performance']['est_total_revenue_mad_m'], '.0f', prefix='MAD ', suffix='M')}
-
-Generate a JSON response with exactly these keys:
-- "executive_summary": 140-160 word paragraph, overall market health and key trends
-- "market_commentary": 190-210 word paragraph, supply dynamics and demand drivers
-- "investment_perspective": 140-160 word paragraph, asset values and investment attractiveness
-- "key_demand_drivers": array of exactly 3 strings, each a one-sentence specific demand driver for this market
-- "key_risks": array of exactly 3 strings, each a one-sentence specific risk
-- "key_opportunities": array of exactly 3 strings, each a one-sentence specific opportunity
-
+Return JSON with exactly these keys:
+- "executive_summary": 90-130 words
+- "market_commentary": 90-130 words on supply, pipeline and demand context
+- "investment_perspective": 60-100 words, qualitative, no figures beyond those above
+- "key_risks": 3 one-sentence strings
+- "key_opportunities": 3 one-sentence strings
 Return ONLY valid JSON, no markdown fences."""
-
         client = anthropic.Anthropic(api_key=api_key)
-        msg = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1500,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        import json as _json
-        text = msg.content[0].text.strip()
-        return _json.loads(text)
+        msg = client.messages.create(model="claude-sonnet-4-6", max_tokens=1500,
+                                     messages=[{"role": "user", "content": prompt}])
+        out = json.loads(msg.content[0].text.strip())
+        return {**fallback, **{k: v for k, v in out.items() if k in fallback}}
     except Exception as e:
         app.logger.warning(f"AI narrative generation failed: {e}")
-        return placeholder
+        return fallback
 
 
-def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') -> bytes:
-    """Build a professional A4 PDF report using fpdf2."""
-    mo     = data["market_overview"]
-    perf   = data["performance"]
-    pip    = data["pipeline"]
-    ai     = ai_narrative
-    city   = data["city"]
-    period = data["period"]
-    rating = data.get("market_rating", "NEUTRAL")
-    o      = perf["overall"]
-    per_perf = data["periods"]["performance"]
-    per_hist = data["periods"]["history"]
-    per_last = data["periods"]["last_known"]
-    per_asof = data["periods"]["as_of"]
+def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
+    """A4 market report: database facts, BAR observed over the period, Kodo
+    estimates (labelled) and official figures. Sections without data are
+    left out and the rest renumbered."""
+    mo, b, pip, est = data["market_overview"], data["bar"], data["pipeline"], data["estimates"]
+    city, per = data["city"], data["period"]
+    as_of, win = data["as_of"], data["bar_window"]
+    bar_note = f"BAR (published rate), {win} · {data['bar_days']} days of data"
+    est_note = "Kodo estimate · next 30 nights"
 
-    pdf = KodoPDF(city, period, theme=theme)
-    c   = pdf.c
+    pdf = KodoPDF(city, per["label"], theme=theme)
+    c = pdf.c
+    num = iter(f"{i:02d}" for i in range(1, 20))
 
-    # ─── COVER PAGE ───────────────────────────────────────────────────────────
+    def sub(txt):
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*c['text'])
+        pdf.cell(_PW, 4, _s(txt), ln=1)
+        pdf.ln(1)
+
+    def note(txt):
+        pdf.set_font("Helvetica", "", 7)
+        pdf.set_text_color(*c['muted'])
+        pdf.multi_cell(_PW, 4, _s(txt), ln=1)
+        pdf.ln(1)
+
+    # ─── COVER ────────────────────────────────────────────────────────────
     pdf.add_page()
-
-    # Wordmark in place of the old 28pt "Kodo" text (same 10 mm line)
     pdf.image(_PDF_LOGO, x=_LM, y=21.7, h=9.0)
     pdf.set_xy(_LM, 32)
-    pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*c['accent'])
     pdf.cell(0, 5, "HOSPITALITY INTELLIGENCE", ln=1)
@@ -3786,314 +3685,182 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 14)
     pdf.set_text_color(*c['muted'])
-    pdf.cell(0, 7, "Hotel Market Report  |  " + _s(period), ln=1)
+    pdf.cell(0, 7, "Hotel Market Report  |  " + _s(per["label"]), ln=1)
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 8)
-    pdf.multi_cell(_PW, 4.5, _s(f"Hotel and pipeline counts: {per_asof}. Occupancy, ADR and RevPAR: not available yet; "
-                                f"the yearly figures in sections 3, 6 and 7 are a Kodo model estimate, not reported data ({per_hist})."), ln=1)
+    pdf.multi_cell(_PW, 4.5, _s(f"Published rates (BAR) observed {win} ({data['bar_days']} days of data; Kodo collects them "
+                                f"every night since {day_label(LK.DATA_START)}). Hotel and pipeline counts: {as_of}. "
+                                f"Occupancy and RevPAR are Kodo estimates and are labelled as such."), ln=1)
     pdf.ln(4)
     pdf.kpi_boxes([
-        ("Total Hotels",  str(mo["total_hotels"]), per_asof),
-        ("Total Keys",    f"{mo['total_keys']:,}", per_asof),
-        ("Avg Occupancy", NOT_AVAILABLE, per_last),
-        ("Avg RevPAR",    NOT_AVAILABLE, per_last),
+        ("Total Hotels", str(mo["total_hotels"]), as_of),
+        ("Total Keys", f"{mo['total_keys']:,}", as_of),
+        ("Average BAR", _bar_text(b), win),
+        ("Pipeline keys", f"{pip['total_keys']:,}", as_of),
     ])
     pdf.set_xy(_LM, 272)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(*c['muted'])
     pdf.cell(_PW, 5, "Confidential - For Kodo Subscribers Only  -  kodohospitality.com", align="C")
 
-    # ─── S1: EXECUTIVE SUMMARY ───────────────────────────────────────────────
+    # ─── EXECUTIVE SUMMARY ────────────────────────────────────────────────
     pdf.add_content_page()
-    pdf.section_title("01", "EXECUTIVE SUMMARY")
+    pdf.section_title(next(num), "EXECUTIVE SUMMARY")
     pdf.body_text(ai.get("executive_summary", ""))
     pdf.ln(2)
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, "Market at a Glance", ln=1)
-    pdf.ln(1)
-    pdf.kpi_row("Total Hotels", str(mo["total_hotels"]), per_asof)
-    pdf.kpi_row("Total Keys", f"{mo['total_keys']:,}", per_asof)
-    pdf.kpi_row("Weighted Avg Occupancy", NOT_AVAILABLE, per_last)
-    pdf.kpi_row("Weighted Avg ADR", NOT_AVAILABLE, per_last)
-    pdf.kpi_row("Weighted Avg RevPAR", NOT_AVAILABLE, per_last)
-    pdf.ln(4)
-    pdf.rating_box(rating)
+    sub("Market at a Glance")
+    pdf.kpi_row("Total Hotels", str(mo["total_hotels"]), as_of)
+    pdf.kpi_row("Total Keys", f"{mo['total_keys']:,}", as_of)
+    pdf.kpi_row("Average BAR (published rate)", _bar_text(b), win)
+    pdf.kpi_row("Hotels with a BAR", f"{b['hotels']} of {mo['total_hotels']}", f"at least {b['min_nights']} priced nights")
+    pdf.kpi_row("Modelled occupancy", fmt_num(est['occupancy'], '.1f', 100, suffix='%') if est['occupancy'] is not None else NOT_AVAILABLE, est_note)
+    pdf.kpi_row("RevPAR (BAR x modelled occupancy)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note)
+    pdf.kpi_row("Pipeline", f"{pip['total_projects']} projects, {pip['total_keys']:,} new keys", as_of)
 
-    # ─── S2: MARKET OVERVIEW ─────────────────────────────────────────────────
+    # ─── MARKET OVERVIEW ──────────────────────────────────────────────────
     pdf.add_content_page()
-    pdf.section_title("02", "MARKET OVERVIEW")
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, _s(f"Supply Breakdown by Segment  |  {per_asof}"), ln=1)
-    pdf.ln(1)
-    cols = ["Segment", "Hotels", "Keys", "Mkt Share %", "Avg Year"]
-    cw   = [65, 27, 32, 36, 20]
-    pdf.table_header(cols, cw)
-    total_keys_mo = mo["total_keys"] or 1
-    for i, sp in enumerate(perf["by_segment"]):
-        seg_keys = sp["keys"]
-        # Average over the segment's hotels that have an opening year
-        seg_yr   = str(sp["avg_year"]) if sp.get("avg_year") is not None else NA
-        pdf.table_row([
-            sp["segment"], sp["hotels"], f"{seg_keys:,}",
-            f"{seg_keys/total_keys_mo*100:.1f}%", seg_yr,
-        ], cw, fill=(i % 2 == 1))
+    pdf.section_title(next(num), "MARKET OVERVIEW")
+    sub(f"Supply by Segment  |  {as_of}")
+    cw = [65, 27, 32, 36, 22]
+    pdf.table_header(["Segment", "Hotels", "Keys", "Share of keys", "Avg opened"], cw)
+    for i, s in enumerate(mo["segments"]):
+        pdf.table_row([s["segment"], s["hotels"], f"{s['keys']:,}", f"{s['share']:.1f}%",
+                       str(s["avg_year"]) if s.get("avg_year") else NA], cw, fill=(i % 2 == 1))
     pdf.ln(3)
-
-    brands = mo["brand_groups"]
-    if brands:
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, _s(f"Brand Group Distribution (by Keys)  |  {per_asof}"), ln=1)
-        pdf.ln(1)
-        pdf.bar_chart(brands, "name", "keys", brands[0]["keys"] or 1)
+    if mo["brand_groups"]:
+        sub(f"Brand Groups by Keys  |  {as_of}")
+        pdf.bar_chart(mo["brand_groups"], "name", "keys", mo["brand_groups"][0]["keys"] or 1)
         pdf.ln(3)
+    if mo["ownership"]:
+        sub(f"Ownership by Keys  |  {as_of}")
+        pdf.bar_chart(mo["ownership"], "owner", "keys", mo["ownership"][0]["keys"] or 1)
 
-    owners = mo["ownership"]
-    if owners:
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, _s(f"Ownership Structure (by Keys)  |  {per_asof}"), ln=1)
-        pdf.ln(1)
-        pdf.bar_chart(owners, "owner", "keys", owners[0]["keys"] or 1)
-
-    # ─── S3: PERFORMANCE ANALYSIS ────────────────────────────────────────────
+    # ─── PUBLISHED RATES (BAR) ───────────────────────────────────────────
     pdf.add_content_page()
-    pdf.section_title("03", "PERFORMANCE ANALYSIS")
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, _s(f"Performance by Segment  |  {per_hist}"), ln=1)
-    pdf.ln(1)
-    cols = ["Segment", "Hotels", "Occ %", "ADR (MAD)", "RevPAR", "Index"]
-    cw   = [60, 19, 19, 30, 30, 22]
-    pdf.table_header(cols, cw)
-    for i, sp in enumerate(perf["by_segment"]):
-        pdf.table_row([
-            sp["segment"], sp["hotels"],
-            fmt_num(sp['occupancy'], '.1f', 100, suffix='%'),
-            fmt_num(sp['adr']),
-            fmt_num(sp['revpar']),
-            fmt_num(sp['revpar_index'], '.0f'),
-        ], cw, fill=(i % 2 == 1))
+    pdf.section_title(next(num), "PUBLISHED RATES (BAR)")
+    note(f"{bar_note}. A hotel's BAR is the average of the last published rate seen before each night; it needs at "
+         f"least {b['min_nights']} priced nights. A group's BAR is the average of its hotels' BAR, shown as \"{LIMITED}\" "
+         f"under {b['min_hotels']} hotels. BAR is the public price, not what guests paid.")
+    if b["by_destination"]:
+        sub("BAR by Destination")
+        cw = [70, 25, 30, 32, 25]
+        pdf.table_header(["Destination", "Hotels", "With BAR", "BAR (MAD)", "Nights"], cw)
+        for i, r in enumerate(b["by_destination"]):
+            val = "Collecting data" if r["bar"] is None else (LIMITED if r["bar_limited"] else f"{r['bar']:,.0f}")
+            pdf.table_row([r["city"], r["hotels"], r["bar_hotels"], val, f"{r['bar_nights']:,}"], cw, fill=(i % 2 == 1))
+        pdf.ln(3)
+    sub("BAR by Segment")
+    cw = [70, 25, 30, 32, 25]
+    pdf.table_header(["Segment", "Hotels", "With BAR", "BAR (MAD)", "Nights"], cw)
+    for i, s in enumerate(mo["segments"]):
+        val = "Collecting data" if s["bar"] is None else (LIMITED if s["bar_limited"] else f"{s['bar']:,.0f}")
+        pdf.table_row([s["segment"], s["hotels"], s["bar_hotels"], val, f"{s['bar_nights']:,}"], cw, fill=(i % 2 == 1))
     pdf.ln(3)
-
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, _s(f"Top Hotels by RevPAR  |  {per_hist}"), ln=1)
-    pdf.ln(1)
-    cols = ["Name", "Category", "Keys", "Occ %", "ADR", "RevPAR"]
-    cw   = [63, 35, 17, 17, 24, 24]
-    pdf.table_header(cols, cw)
-    for i, h in enumerate(perf["top_10_revpar"]):
-        pdf.table_row([
-            safe_text(h.get("name"))[:38],
-            safe_text(h.get("category")),
-            fmt_num(h.get('keys')),
-            fmt_num(h.get('occupancy'), '.1f', 100, suffix='%'),
-            fmt_num(h.get('adr_mad')),
-            fmt_num(h.get('revpar_mad')),
-        ], cw, fill=(i % 2 == 1))
-    pdf.ln(3)
-
+    if b["top"]:
+        sub("Highest BAR")
+        cw = [80, 40, 20, 24, 18]
+        pdf.table_header(["Hotel", "Segment", "Keys", "BAR (MAD)", "Nights"], cw)
+        for i, h in enumerate(b["top"]):
+            pdf.table_row([safe_text(h.get("name"))[:46], safe_text(h.get("category")), fmt_num(h.get("keys")),
+                           fmt_num(h.get("bar_mad")), safe_int(h.get("bar_nights"), 0)], cw, fill=(i % 2 == 1))
+        pdf.ln(3)
+    else:
+        note("No hotel has enough priced nights in this period yet: collecting data.")
     pdf.kpi_boxes([
-        ("Estimated RevPAR", fmt_num(o['revpar'], prefix='MAD '), per_hist),
-        ("Market Avg Occ",   fmt_num(o['occupancy'], '.1f', 100, suffix='%'), per_hist),
-        ("Market Avg ADR",   fmt_num(o['adr'], prefix='MAD '), per_hist),
+        ("Modelled occupancy", fmt_num(est['occupancy'], '.1f', 100, suffix='%') if est['occupancy'] is not None else NOT_AVAILABLE, est_note),
+        ("RevPAR", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note),
+        ("Hotels modelled", f"{est['hotels']} of {mo['total_hotels']}", "Kodo occupancy model"),
     ])
 
-    # ─── S4: DEMAND DRIVERS ──────────────────────────────────────────────────
+    # ─── DEMAND CONTEXT ──────────────────────────────────────────────────
     pdf.add_content_page()
-    pdf.section_title("04", "DEMAND DRIVERS")
-    pdf.body_text(ai.get("market_commentary", ""))
-    pdf.ln(2)
-
-    demand_drivers = ai.get("key_demand_drivers", [])
-    if demand_drivers:
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Key Demand Drivers", ln=1)
-        pdf.ln(1)
-        for i, driver in enumerate(demand_drivers[:3]):
-            pdf.risk_item(i + 1, driver, 'blue')
+    pdf.section_title(next(num), "DEMAND CONTEXT")
+    if ai.get("market_commentary"):
+        pdf.body_text(ai["market_commentary"])
+    if data["official_occupancy"]:
+        sub("Occupancy of Classified Accommodation  |  Official figures")
+        cw = [40, 40]
+        pdf.table_header(["Year", "Occupancy"], cw)
+        for i, (y, v) in enumerate(data["official_occupancy"]):
+            pdf.table_row([str(y), f"{v}%"], cw, fill=(i % 2 == 1))
+        note("Official Moroccan statistics, all classified accommodation (not only the hotels Kodo tracks).")
+    if data["events"]:
+        sub("Events in the Next 90 Days")
+        cw = [110, 28, 44]
+        pdf.table_header(["Event", "Where", "Dates"], cw)
+        for i, e in enumerate(data["events"]):
+            when = day_label(e["start"]) + (f" – {day_label(e['end'])}" if e.get("end") and e["end"] != e["start"] else "")
+            name = safe_text(e.get("name"))
+            pdf.table_row([name if len(name) <= 62 else name[:61].rstrip() + "...", safe_text(e.get("city"))[:22], when],
+                          cw, fill=(i % 2 == 1))
         pdf.ln(2)
+    if not (ai.get("market_commentary") or data["official_occupancy"] or data["events"]):
+        note("No demand data for this market yet.")
 
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(_PW, 4, "Seasonality Index (Estimated Occupancy %)", ln=1)
-    pdf.ln(1)
-    months = data["seasonality"]["months"]
-    vals   = data["seasonality"]["values"]
-    cw_s   = [_PW / 12] * 12
-    pdf.table_header(months, cw_s)
-    pdf.set_fill_color(*c['row_alt'])
-    pdf.set_font("Helvetica", "B", 7)
-    pdf.set_text_color(*c['text'])
-    for v in vals:
-        pdf.cell(_PW / 12, 5, str(v), fill=True, align="C")
-    pdf.ln()
-
-    # ─── S5: PIPELINE ────────────────────────────────────────────────────────
+    # ─── PIPELINE ────────────────────────────────────────────────────────
     pdf.add_content_page()
-    pdf.section_title("05", "PIPELINE & SUPPLY OUTLOOK")
+    pdf.section_title(next(num), "PIPELINE & SUPPLY OUTLOOK")
     if pip["projects"]:
-        cols = ["Name", "Brand", "Category", "Keys", "Opening", "Status", "Inv (MMAD)"]
-        cw   = [51, 30, 30, 15, 17, 23, 14]
-        pdf.table_header(cols, cw)
+        cw = [51, 30, 30, 15, 17, 23, 16]
+        pdf.table_header(["Name", "Brand", "Category", "Keys", "Opening", "Status", "Inv (MMAD)"], cw)
         for i, p in enumerate(pip["projects"]):
-            inv_m = f"{p['investment_mad']//1_000_000:,}" if p.get("investment_mad") else NA
             pdf.table_row([
-                safe_text(p.get("name"))[:30],
-                safe_text(p.get("brand"))[:18],
-                safe_text(p.get("category")),
-                fmt_num(p.get("keys")),
-                str(p["opening"]) if p.get("opening") is not None else "Not announced",
-                safe_text(p.get("status")),
-                inv_m,
+                safe_text(p.get("name"))[:30], safe_text(p.get("brand"))[:18], safe_text(p.get("category")),
+                fmt_num(p.get("keys")), str(p["opening"]) if p.get("opening") is not None else "Not announced",
+                safe_text(p.get("status")), f"{p['investment_mad'] // 1_000_000:,}" if p.get("investment_mad") else NA,
             ], cw, fill=(i % 2 == 1))
         pdf.ln(3)
     else:
         pdf.body_text("No pipeline projects currently tracked for this market.")
-        pdf.ln(2)
-
-    risk_family = ('green' if pip["supply_risk"] == "Low"
-                   else ('red' if pip["supply_risk"] == "High" else 'orange'))
-    bx, by = _LM, pdf.get_y()
-    pdf.label_box(bx, by, _PW, 12, risk_family, "SUPPLY RISK ASSESSMENT", pip["supply_risk"].upper())
-    pdf.ln(3)
+    fam = 'green' if pip["supply_risk"] == "Low" else ('red' if pip["supply_risk"] == "High" else 'orange')
+    pdf.label_box(_LM, pdf.get_y(), _PW, 12, fam, "NEW KEYS VS EXISTING SUPPLY", pip["supply_risk"].upper())
+    pdf.set_y(pdf.get_y() + 3)
     pdf.set_font("Helvetica", "", 8)
     pdf.set_text_color(*c['muted'])
     ratio_pct = (pip["total_keys"] / mo["total_keys"] * 100) if mo["total_keys"] else 0
-    pdf.cell(_PW, 4,
-        f"{pip['total_projects']} projects  |  {pip['total_keys']:,} new keys in pipeline  "
-        f"|  {ratio_pct:.1f}% of existing supply  |  {per_asof}",
-        align="C", ln=1)
+    pdf.cell(_PW, 4, _s(f"{pip['total_projects']} projects  |  {pip['total_keys']:,} new keys  |  "
+                        f"{ratio_pct:.1f}% of existing keys  |  {as_of}"), align="C", ln=1)
 
-    # ─── S6: INVESTMENT PERSPECTIVE ──────────────────────────────────────────
+    # ─── OUTLOOK (only with the AI text) ─────────────────────────────────
+    risks, opps = ai.get("key_risks") or [], ai.get("key_opportunities") or []
+    if ai.get("investment_perspective") or risks or opps:
+        pdf.add_content_page()
+        pdf.section_title(next(num), "OUTLOOK")
+        if ai.get("investment_perspective"):
+            pdf.body_text(ai["investment_perspective"])
+        if risks:
+            sub("Key Risks")
+            for i, r in enumerate(risks[:3]):
+                pdf.risk_item(i + 1, r, 'red')
+            pdf.ln(2)
+        if opps:
+            sub("Key Opportunities")
+            for i, op in enumerate(opps[:3]):
+                pdf.risk_item(i + 1, op, 'green')
+
+    # ─── HOTEL DIRECTORY ─────────────────────────────────────────────────
     pdf.add_content_page()
-    pdf.section_title("06", "INVESTMENT PERSPECTIVE")
-    pdf.body_text(ai.get("investment_perspective", ""))
-    pdf.ln(2)
-
-    if data["asset_values"]:
-        # Table 1 — Rooms Revenue Range by Segment
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Rooms Revenue Range by Segment", ln=1)
-        pdf.ln(1)
-        pdf.set_font("Helvetica", "", 7)
-        pdf.set_text_color(*c['muted'])
-        pdf.cell(_PW, 4, _s(f"Avg BAR and occupancy: {per_hist}"), ln=1)
-        cols1 = ["Segment", "Keys", "Avg BAR (MAD)", "Avg Occ", "Rev Low (MAD M)", "Rev High (MAD M)"]
-        cw1   = [40, 16, 32, 22, 35, 35]
-        pdf.table_header(cols1, cw1)
-        for i, av in enumerate(data["asset_values"]):
-            pdf.table_row([
-                av["segment"],
-                f"{av['keys']:,}",
-                f"{av['avg_bar']:,.0f}",
-                f"{av['avg_occ']*100:.1f}%",
-                f"{av['rev_lo_m']:.1f}",
-                f"{av['rev_hi_m']:.1f}",
-            ], cw1, fill=(i % 2 == 1))
-        pdf.ln(4)
-
-        # Table 2 — Asset Value Reference by Segment
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Asset Value Reference by Segment", ln=1)
-        pdf.ln(1)
-        cols2 = ["Segment", "Revenue Multiple", "Est. Value/Key Low (MMAD)", "Est. Value/Key High (MMAD)"]
-        cw2   = [40, 42, 52, 46]
-        pdf.table_header(cols2, cw2)
-        for i, av in enumerate(data["asset_values"]):
-            pdf.table_row([
-                av["segment"],
-                f"{av['mult_lo']}×–{av['mult_hi']}×",
-                f"{av['vpk_lo_m']:.3f}",
-                f"{av['vpk_hi_m']:.3f}",
-            ], cw2, fill=(i % 2 == 1))
-        pdf.ln(4)
-
-        # Table 3 — Market Cap Rate Reference (static)
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Market Cap Rate Reference", ln=1)
-        pdf.ln(1)
-        cap_ref = [
-            ("Ultra Luxury",  "5.5–6.5%", "Limited transactions — trophy asset pricing"),
-            ("Luxury",        "6.0–7.0%", "Strong institutional demand"),
-            ("Upper Upscale", "6.5–7.5%", "Most liquid segment in Morocco"),
-            ("Upscale",       "7.0–8.0%", "Growing interest from regional funds"),
-            ("Midscale",      "8.0–9.5%", "Value-add opportunities"),
-        ]
-        cols3 = ["Segment", "Benchmark Cap Rate", "Market Commentary"]
-        cw3   = [40, 42, 98]
-        pdf.table_header(cols3, cw3)
-        for i, (seg, cap, comment) in enumerate(cap_ref):
-            pdf.table_row([seg, cap, comment], cw3, fill=(i % 2 == 1))
-        pdf.ln(4)
-
-        # Footer note
-        pdf.set_font("Helvetica", "", 7)
-        pdf.set_text_color(*c['muted'])
-        pdf.multi_cell(_PW, 4,
-            "Revenue multiples based on Kodo market analysis. "
-            "Contact Kodo Advisory for asset-specific valuation: advisory@kodohospitality.com. "
-            "Full methodology: kodohospitality.com/methodology",
-            ln=1)
-        pdf.ln(2)
-
-    risks = ai.get("key_risks", [])
-    opps  = ai.get("key_opportunities", [])
-    if risks:
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Key Risks", ln=1)
-        pdf.ln(1)
-        for i, r in enumerate(risks[:3]):
-            pdf.risk_item(i + 1, r, 'red')
-    pdf.ln(2)
-    if opps:
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*c['text'])
-        pdf.cell(_PW, 4, "Key Opportunities", ln=1)
-        pdf.ln(1)
-        for i, op in enumerate(opps[:3]):
-            pdf.risk_item(i + 1, op, 'green')
-
-    # ─── S7: HOTEL DIRECTORY ────────────────────────────────────────────────
-    pdf.add_content_page()
-    pdf.section_title("07", "HOTEL DIRECTORY")
-    pdf.set_font("Helvetica", "", 7)
-    pdf.set_text_color(*c['muted'])
-    pdf.cell(_PW, 4, _s(f"Keys {per_asof[:1].lower() + per_asof[1:]}  |  Occupancy, ADR and RevPAR: {per_hist}"), ln=1)
-    pdf.ln(1)
-    cols = ["Name", "Brand Group", "Category", "Keys", "Yr", "Occ %", "ADR", "RevPAR"]
-    cw   = [52, 32, 28, 14, 12, 14, 14, 14]
+    pdf.section_title(next(num), "HOTEL DIRECTORY")
+    note(f"Keys {as_of[:1].lower() + as_of[1:]}  |  {bar_note}; \"–\" under {b['min_nights']} priced nights")
+    cw = [58, 36, 28, 15, 13, 18, 14]
     pdf.set_auto_page_break(auto=True, margin=_BM + 8)
-    pdf.table_header(cols, cw)
+    pdf.table_header(["Name", "Brand Group", "Category", "Keys", "Opened", "BAR (MAD)", "Nights"], cw)
     for i, h in enumerate(data["directory"]):
         yr = safe_int(h.get("year_opened"))
         pdf.table_row([
-            safe_text(h.get("name"))[:33],
-            safe_text(h.get("brand_group"))[:20],
-            safe_text(h.get("category")),
-            fmt_num(h.get('keys')),
-            str(yr) if yr else NA,
-            fmt_num(h.get("occupancy"), '.0f', 100, suffix='%'),
-            fmt_num(h.get('adr_mad')),
-            fmt_num(h.get('revpar_mad')),
+            safe_text(h.get("name"))[:36], safe_text(h.get("brand_group"))[:22], safe_text(h.get("category")),
+            fmt_num(h.get('keys')), str(yr) if yr else NA,
+            fmt_num(h.get("bar_mad")) if safe_float(h.get("bar_mad")) is not None else "–",
+            safe_int(h.get("bar_nights"), 0),
         ], cw, fill=(i % 2 == 1))
 
-    # ─── BACK PAGE ───────────────────────────────────────────────────────────
+    # ─── BACK PAGE ───────────────────────────────────────────────────────
     pdf._back_page = True
     pdf.add_page()
-    # Wordmark in place of the old 48pt "Kodo" text (same 20 mm line, centred)
     _h = 15.0
     _w = _h * 800 / 260
     pdf.image(_PDF_LOGO, x=(210 - _w) / 2, y=110 + (20 - _h) / 2, h=_h)
-    pdf.set_xy(_LM, 130)   # where the old cell(ln=1) left the cursor
+    pdf.set_xy(_LM, 130)
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(*c['accent'])
     pdf.cell(210 - _LM - _RM, 8, "HOSPITALITY INTELLIGENCE", align="C", ln=1)
@@ -4102,9 +3869,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.set_text_color(*c['muted'])
     pdf.cell(210 - _LM - _RM, 6, "kodohospitality.com", align="C", ln=1)
     pdf.set_font("Helvetica", "", 7)
-    pdf.set_text_color(*c['muted'])
     pdf.cell(210 - _LM - _RM, 5, f"Generated {data['generated_date']}  |  Confidential", align="C", ln=1)
-
     return bytes(pdf.output())
 
 
@@ -4116,9 +3881,11 @@ def api_reports_available():
     for c in REPORT_CITIES:
         ch = merged[merged["city"] == c]
         city_meta.append({"city": c, "hotels": len(ch), "keys": int(ch["keys"].sum())})
-    # national
     city_meta.append({"city": "Morocco", "hotels": len(merged), "keys": int(merged["keys"].sum())})
-    return jsonify({"cities": city_meta, "periods": REPORT_PERIODS, "national": True})
+    periods = [{"id": p["id"], "label": p["label"], "partial": p["partial"],
+                "since": p["start"].isoformat(), "until": p["end"].isoformat()} for p in report_periods()]
+    return jsonify({"cities": city_meta, "periods": periods, "national": True,
+                    "data_since": LK.DATA_START.isoformat()})
 
 
 @app.route("/api/reports/generate", methods=["POST"])
@@ -4127,56 +3894,32 @@ def api_reports_available():
 def api_reports_generate():
     if not PDF_AVAILABLE:
         return jsonify({"error": "PDF generation temporarily unavailable", "fallback": True}), 503
-
-    body   = request.get_json(silent=True) or {}
-    city   = body.get("city", "").strip()
-    period = body.get("period", "").strip()
-    theme  = "light"  # Reports are light-mode only — ignore any theme sent by the client.
-
-    valid_cities = REPORT_CITIES + ["Morocco"]
-    if city not in valid_cities:
+    body = request.get_json(silent=True) or {}
+    city = body.get("city", "").strip()
+    period_id = body.get("period", "").strip()
+    theme = "light"  # Reports are light-mode only — ignore any theme sent by the client.
+    if city not in REPORT_CITIES + ["Morocco"]:
         return jsonify({"error": f"Unknown city: {city}"}), 400
-    if period not in REPORT_PERIODS:
-        return jsonify({"error": f"Unknown period: {period}"}), 400
+    period = next((p for p in report_periods() if p["id"] == period_id), None)
+    if not period:
+        return jsonify({"error": f"No data for this period yet: {period_id}"}), 400
 
-    safe_city   = city.replace(" / ", "-").replace(" ", "-")
-    safe_period = period.replace(" ", "-")
-    filename    = f"Kodo_{safe_city}_{safe_period}_{theme}.pdf"
-
-    cache_key = f"{city}|{period}|{theme}"
+    safe_city = city.replace(" / ", "-").replace(" ", "-")
+    filename = f"Kodo_{safe_city}_{period_id.replace(' ', '-')}_{theme}.pdf"
+    cache_key = f"{city}|{period_id}|{period['end']}|{theme}"
     now = datetime.utcnow().timestamp()
     if cache_key in _report_cache:
         cached_pdf, cached_at = _report_cache[cache_key]
         if now - cached_at < CACHE_TTL:
-            buf = io.BytesIO(cached_pdf)
-            buf.seek(0)
-            return send_file(buf, mimetype="application/pdf",
-                             as_attachment=True, download_name=filename)
-
+            return send_file(io.BytesIO(cached_pdf), mimetype="application/pdf", as_attachment=True,
+                             download_name=filename)
     try:
-        app.logger.info(f"Generating report: {city} | {period} | {theme}")
+        app.logger.info(f"Generating report: {city} | {period_id}")
         report_data = compute_city_report_data(city, period)
-        narrative   = generate_ai_narrative(report_data)
-
-        _, _, merged = load_data()
-        national_revpar = safe_float(merged["revpar_mad"].mean())
-        city_revpar     = report_data["performance"]["overall"]["revpar"]
-        if city_revpar is None or not national_revpar:
-            report_data["market_rating"] = "NEUTRAL"
-        elif city_revpar >= national_revpar * 1.10:
-            report_data["market_rating"] = "OUTPERFORM"
-        elif city_revpar <= national_revpar * 0.90:
-            report_data["market_rating"] = "UNDERPERFORM"
-        else:
-            report_data["market_rating"] = "NEUTRAL"
-
-        pdf_bytes = generate_pdf_report(report_data, narrative, theme=theme)
+        pdf_bytes = generate_pdf_report(report_data, generate_ai_narrative(report_data), theme=theme)
         _report_cache[cache_key] = (pdf_bytes, now)
-
-        buf = io.BytesIO(pdf_bytes)
-        buf.seek(0)
-        return send_file(buf, mimetype="application/pdf",
-                         as_attachment=True, download_name=filename)
+        return send_file(io.BytesIO(pdf_bytes), mimetype="application/pdf", as_attachment=True,
+                         download_name=filename)
     except Exception as e:
         app.logger.error(f"Report generation error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
@@ -4195,24 +3938,6 @@ def _fmt_mad(val: float) -> str:
 
 def _fmt_pct(val: float) -> str:
     return fmt_num(val, ".1f", suffix="%")
-
-
-def _valuation_market_rating(city: str) -> str:
-    try:
-        _, _, merged = load_data()
-        merged = merged.dropna(subset=["revpar_mad"])
-        national = float(merged["revpar_mad"].mean()) if not merged.empty else 0
-        city_df = merged[merged["city"] == city]
-        if city_df.empty or not national:
-            return "NEUTRAL"
-        city_revpar = float(city_df["revpar_mad"].mean())
-        if city_revpar >= national * 1.10:
-            return "OUTPERFORM"
-        if city_revpar <= national * 0.90:
-            return "UNDERPERFORM"
-        return "NEUTRAL"
-    except Exception:
-        return "NEUTRAL"
 
 
 def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
@@ -4285,16 +4010,11 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     ], large=True)
     pdf.ln(4)
 
-    rating = _valuation_market_rating(city)
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.set_text_color(*c['text'])
-    pdf.cell(0, 6, "Market Context", ln=1)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(*c['muted'])
-    import flags as _flags
-    pdf.cell(0, 4, "Market rating: from indicative RevPAR, next 30 nights (published rates x modelled occupancy), not reported data"
-             if _flags.on('LIVE_FIGURES') else "Market rating: from Kodo model estimates (FY 2025 RevPAR), not reported data", ln=1)
-    pdf.rating_box(rating)
+    pdf.multi_cell(_PW, 4, "Kodo estimate: every figure in this report comes from the assumptions entered in the valuation "
+                   "tool and Kodo's valuation model. It is not an appraisal and not reported hotel performance.", ln=1)
+    pdf.ln(2)
 
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(*c['text'])
@@ -4911,7 +4631,7 @@ def api_rates_past():
     month = request.args.get('month', '')
     if not hotel_id or not re.match(r'^\d{4}-\d{2}$', month):
         return jsonify({'error': 'hotel_id and month (YYYY-MM) are required'}), 400
-    nights = RB.month_nights(month, casablanca_today())
+    nights = RB.month_nights(month, _casablanca_today())
     last = {}
     if nights:
         rows = RS.read(DATA_DIR, hotel_ids=[hotel_id], stay_from=nights[0], stay_to=nights[-1], priced_only=True,
@@ -4923,7 +4643,7 @@ def api_rates_past():
         out.append({'night': n, 'rate_mad': float(r['rate_mad']) if r else None, 'source': r['source'] if r else None,
                     'collected_on': r['scrape_date'] if r else None,
                     'days_before': (datetime.strptime(n, '%Y-%m-%d') - datetime.strptime(r['scrape_date'], '%Y-%m-%d')).days if r else None})
-    return jsonify({'month': month, 'today': casablanca_today().isoformat(), 'nights': out,
+    return jsonify({'month': month, 'today': _casablanca_today().isoformat(), 'nights': out,
                     'first_month': RB.first_month(DATA_DIR, [hotel_id])})
 
 
@@ -5763,7 +5483,9 @@ def _occ_entry(r):
         'mid':                 _num(r.get('mid')) if r.get('mid') not in (None, '') else occ,
         'high':                _num(r.get('high')),
         'scraped_bar':         _num(r.get('scraped_bar')),
-        'estimated_revpar':    _num(r.get('estimated_revpar')),
+        # Kodo estimate: the night's published BAR x modelled occupancy, only
+        # where a published price exists (never from a reference price)
+        'estimated_revpar':    round(_num(r.get('scraped_bar')) * occ / 100) if _num(r.get('scraped_bar')) else None,
         'confidence':          r.get('confidence', 'low'),
         'price_coverage':      r.get('price_coverage') or price_coverage(r.get('confidence')),
         'signals_used':        _public_signals(r.get('signals_used', '')),
@@ -5798,7 +5520,7 @@ def _v2_entry(night, e, public=True):
     return {
         'date': night, 'model': 'v2', 'estimated_occupancy': e['mid'], 'low': e['low'], 'mid': e['mid'], 'high': e['high'],
         'scraped_bar': round(e['price'], 0) if e['price'] else None,
-        'estimated_revpar': round((e['price'] or e['normal_price']) * e['mid'] / 100, 0) if (e['price'] or e['normal_price']) else None,
+        'estimated_revpar': round(e['price'] * e['mid'] / 100, 0) if e['price'] else None,
         'confidence': e['confidence'], 'price_coverage': price_coverage(e['confidence']),
         'signals_used': _public_signals(e['signals']) if public else e['signals'],
         'breakdown': {'base': e['base'], 'rate_adjustment': round(e['market'] + e['own'], 1), 'dow_adjustment': e['dow'],
@@ -5853,8 +5575,14 @@ def api_occupancy_hotel(hotel_id):
                     # v1 needs only this hotel's prices; v2 compares it with its city's hotels
                     same_city = merged[merged['city'] == h.get('city')]['id'].astype(str).tolist()
                     model        = recent_model(same_city if active_model() == 'v2' else [str(hotel_id)])
-                    baseline_adr = float(h.get('adr_mad', 0) or 0)
-                    if baseline_adr != baseline_adr:      # NaN: no performance row (e.g. a hotel added later)
+                    # v1's reference price is the model's own input (as in the
+                    # stored run); it is never shown: RevPAR below uses only a
+                    # published price
+                    try:
+                        baseline_adr = float((model.performance.get(str(hotel_id)) or {}).get('adr_mad') or 0)
+                    except (TypeError, ValueError):
+                        baseline_adr = 0.0
+                    if baseline_adr != baseline_adr:
                         baseline_adr = 0.0
                     if active_model() == 'v2':
                         live = model.v2_estimates([datetime.strptime(d, '%Y-%m-%d').date() for d in missing],
@@ -5872,7 +5600,7 @@ def api_occupancy_hotel(hotel_id):
                             baseline_adr=baseline_adr,
                             recent_price_days=model.recent_price_days(str(hotel_id)),
                         )
-                        adr_used = scraped_bar or baseline_adr
+                        adr_used = scraped_bar
                         stored[stay_str] = {
                             'date':                stay_str,
                             'model':               'v1',

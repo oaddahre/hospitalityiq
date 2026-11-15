@@ -68,7 +68,7 @@
   --nav-bg:         var(--bg);
   --sidebar-bg:     var(--bg);
   --nav-h:         48px;
-  --sidebar-w:     192px;
+  --sidebar-w:     256px;
   --radius:        6px;
   --radius-sm:     4px;
   --font:          'Sweet Sans Pro', sans-serif;
@@ -554,6 +554,72 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 .sidebar-item:hover, .si:hover { background: transparent; border-left-color: var(--border); color: var(--text); }
 .sidebar-item.active, .si.on { background: transparent; border-left-color: var(--action); color: var(--text); font-weight: 600; }
+
+/* ─── Destination list (dashboard and map sidebar) ─────────────
+   Ranked by BAR: name, hotel count (small, grey), BAR at the right and a
+   thin bar under it, proportional to the BAR (grey; blue when selected).
+   The list scrolls in its own box; selecting changes colours only, never
+   sizes, so nothing moves. */
+.dest-section { display: flex; flex-direction: column; flex: 1 1 0; min-height: 180px; }
+.sidebar > .sidebar-section:not(.dest-section) { flex: none; }
+.dest-search-wrap { position: relative; margin: 4px 0 6px; }
+.dest-search-icon { position: absolute; left: 11px; top: 50%; width: 13px; height: 13px; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+.dest-search.list-search-input {
+  height: 34px; padding-left: 30px !important; padding-right: 10px;
+  font: 400 12.5px 'Sweet Sans Pro', sans-serif; color: var(--text); background: var(--bg);
+}
+.dest-search::placeholder { color: var(--text-3); }
+.dest-search:focus-visible { border-color: var(--action); box-shadow: 0 0 0 2px var(--action-tint); }
+.dest-box { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.dest-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.dest-row {
+  display: flex; flex-direction: column; gap: 5px; padding: 7px 8px 8px 9px; cursor: pointer;
+  border-left: 2px solid transparent; border-radius: 0 4px 4px 0; background: transparent;
+  transition: background 120ms, border-color 120ms; user-select: none;
+}
+.dest-row[hidden] { display: none; }
+.dest-row:hover { background: var(--bg-hover); }
+.dest-row:focus-visible { outline: 2px solid var(--action); outline-offset: -2px; }
+.dest-row.is-selected { background: var(--action-tint); border-left-color: #0075DE; }
+.dest-line { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.dest-name { font: 400 13px 'Sweet Sans Pro', sans-serif; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.dest-count { font: 400 10.5px 'Sweet Sans Pro', sans-serif; color: var(--text-3); flex: none; font-variant-numeric: tabular-nums; }
+.dest-val { margin-left: auto; flex: none; font: 500 12.5px 'Sweet Sans Pro', sans-serif; color: var(--text); font-variant-numeric: tabular-nums; }
+.dest-val--limited, .dest-val--na { font-weight: 400; font-size: 11px; color: var(--text-3); }
+.dest-row--all .dest-count { margin-left: auto; }
+.dest-meter { display: block; height: 3px; border-radius: 2px; background: transparent; overflow: hidden; }
+.dest-meter > span { display: block; height: 100%; border-radius: 2px; background: var(--text-3); opacity: .55; }
+.dest-meter--limited > span { opacity: .22; }
+.dest-row.is-selected .dest-meter > span { background: #0075DE; opacity: 1; }
+.dest-empty { font: 400 12px 'Sweet Sans Pro', sans-serif; color: var(--text-3); padding: 8px 9px; margin: 0; }
+
+/* Under 768 px: chips (selected solid blue) with the search above them */
+.dest-mobile { display: none; }
+.dest-chip {
+  flex-shrink: 0; display: inline-flex; align-items: baseline; gap: 6px; height: 32px; padding: 0 12px;
+  font: 400 12.5px 'Sweet Sans Pro', sans-serif; color: var(--text); white-space: nowrap; cursor: pointer;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 16px; line-height: 30px;
+}
+.dest-chip[hidden] { display: none; }
+.dest-chip-val { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.dest-chip-val:empty { display: none; }
+.dest-chip.active { background: #0075DE; border-color: #0075DE; color: #fff; }
+.dest-chip.active .dest-chip-val { color: rgba(255,255,255,.82); }
+.dest-chip:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+
+.chart-note { margin: 8px 0 0; font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.chart-note:empty { display: none; }
+
+/* No real data yet: one state for charts, cards and tables */
+.collecting-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center;
+  min-height: 180px; padding: 24px 16px; border-radius: 8px; color: var(--text-2);
+}
+.collecting-title { font: 500 13px 'Sweet Sans Pro', sans-serif; color: var(--text); display: inline-flex; align-items: center; gap: 8px; }
+.collecting-sub { font: 400 12px 'Sweet Sans Pro', sans-serif; color: var(--text-2); max-width: 420px; }
+.collecting-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--action); opacity: .8; }
+.collecting-state--inline { min-height: 0; padding: 14px 12px; flex-direction: row; gap: 10px; }
+.bar-limited, .bar-na { color: var(--text-3); font-size: 11.5px; }
 
 /* Sidebar count badge */
 .si-ct, .sidebar-count {
@@ -2639,9 +2705,10 @@ body.light .nav-logout  { color: var(--text-2); }
   font-size: 12px;
   font-weight: 500;
   color: var(--text-muted);
-  width: 82px;
+  width: 120px;
   flex-shrink: 0;
 }
+.hbench-label-sub { display: block; margin-top: 2px; font-size: 10px; font-weight: 400; color: var(--text-3); }
 .hbench-bars { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .hbench-bar-row { display: flex; align-items: center; gap: 8px; }
 .hbench-bar-lbl {
@@ -4547,6 +4614,8 @@ body.light .nav-logout  { color: var(--text-2); }
   .mobile-menu-btn { display: flex; }
   .sidebar { display: none !important; width: 0 !important; min-width: 0 !important; }
   .mobile-filter-bar { display: flex; }
+  .dest-mobile { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+  .dest-search.dest-search--m { padding-left: 16px !important; height: 40px; font-size: 16px; }
   .screen-header h1 { font-size: 17px; }
   .screen-header { margin-bottom: 12px; }
   .screen-sub { font-size: 12px; }
@@ -6084,6 +6153,14 @@ body .navbar-meta .tier-badge.pill--plan { padding-right: calc(8px - 0.12em); }
 /* hidden wins over the pill and card display rules on this screen */
 #screen-benchmarking [hidden] { display: none !important; }
 .bench-mode-link { color: var(--action-text); font-weight: 600; text-decoration: underline; }
+.bench-empty {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 640px;
+  padding: 24px; margin: 4px 0 20px; background: var(--surface); border: 1px solid var(--border);
+}
+.bench-empty-title { margin: 0; font: 600 15px 'Sweet Sans Pro', sans-serif; color: var(--text); }
+.bench-empty-sub { margin: 0; font-size: 13px; line-height: 1.55; color: var(--text-2); }
+.bench-empty-actions { display: flex; gap: 10px; margin-top: 6px; }
+.bench-empty-actions .pill--solid { padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
 .bench-mode-toggle, .rb-edit-btn, .rb-editor-actions .pill--outline, .rb-editor-actions .pill--solid {
   padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Sweet Sans Pro', sans-serif;
 }

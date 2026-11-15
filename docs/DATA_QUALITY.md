@@ -5,6 +5,15 @@ Client screens never name the data provider; confidence and quality words
 are generic ("observed", "modelled", "limited data"). Admin screens name
 providers.
 
+## Real data only (what clients may see)
+
+1. **BAR (published rate), observed:** each hotel's average over the nights since 3 November 2026 (the last price seen before each night), from 7 priced nights (`live_kpis.observed_bar`). A group's BAR is the plain average of its hotels' BAR, "limited data" under 3 hotels (`app.group_bar`, `KodoBar` in main.js). Never called ADR.
+2. **Official tourism figures.**
+3. **Database facts:** hotels, owners, brands, pipeline, events.
+4. **Kodo estimates, always labelled:** occupancy model (next 30 nights), RevPAR = BAR × modelled occupancy, tourism 2026E and 2027F, the valuation tool.
+
+`performance.csv` (the old FY 2025 estimates) is never read for clients; it stays an internal input of occupancy model v1. Where nothing real exists yet, pages say "Collecting data since 3 November". Reports exist only for periods real data covers (`app.report_periods`). `tests/test_real_data_only.py` enforces all of this. The LIVE_FIGURES flag is retired: its behaviour is the only mode.
+
 ## What runs, and when
 
 | When | What |
@@ -70,7 +79,6 @@ Proposed display (with the CONFIDENCE_UI flag):
 | Flag | Changes |
 | --- | --- |
 | `CONFIDENCE_UI` | confidence line on the KPI cards; low greyed, insufficient hidden; no occupancy without price history |
-| `LIVE_FIGURES` | FY 2025 estimates (`performance.csv`) replaced by the live next-30-nights figures everywhere: tables, charts, brand cards, map, exports, PDF, AI analyst. GOP and TRevPAR are hidden |
 | `QUALITY_RANGES` | v2 leaves out prices scoring under 0.5; range +2 pts under 14 days of history, +2 pts when price quality is under 0.7 |
 | `VALUATION_V2` | corrected valuation engine (`static/js/valuation_engine.js`, see its header), range from the sensitivity of occupancy ±5 pts and cap rate ±0.5 pt, assumptions listed |
 

@@ -1,7 +1,7 @@
 # Data migrations
 
 Changes to the data files on the production volume (hotels.csv, pipeline.csv,
-performance.csv, owners.json, the Google ID files), applied automatically on
+performance.csv, owners.json, the Google ID files, news.json), applied automatically on
 the next deploy: no admin upload needed. The runner is `migrate_data.py`.
 
 Name: `NNNN_what_it_does.<kind>`, numbered in the order they must run:
@@ -12,6 +12,7 @@ Name: `NNNN_what_it_does.<kind>`, numbered in the order they must run:
 | `.owners.json` | Owner profiles | `{"format": "kodo-owners-1", "owners": [...]}` |
 | `.coordinates.csv` | Coordinate corrections | coordinate_changes.csv, `approve = yes` |
 | `.ids.json` | Google IDs | `{"format": "kodo-google-ids-1", ...}` |
+| `.news.json` | Remove articles from news.json (id and slug must both match) | `{"format": "kodo-news-1", "remove": [{"id": 1, "slug": "..."}]}` |
 
 Rules:
 - Make the same change in the repo's own files too (the repo is the source

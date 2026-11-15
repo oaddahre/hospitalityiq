@@ -1,8 +1,10 @@
 {# Open Graph / Twitter card for the public pages: the share image carries the
-   current wordmark (static/images/brand/og-image.png, 1200 x 630). #}
+   current wordmark (static/images/brand/og-image.png, 1200 x 630). The
+   title is the page's own (page_title, set where its <title> is):
+   "Kodo | Morocco hotel intelligence" or "Page name | Kodo Hospitality". #}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Kodo Hospitality">
-  <meta property="og:title" content="Kodo Hospitality, Morocco Hotel Intelligence">
+  <meta property="og:title" content="{{ page_title|default('Kodo | Morocco hotel intelligence') }}">
   <meta property="og:description" content="Morocco hotel market intelligence: hotels, brands, owners, pipeline, published rates and tourism.">
   <meta property="og:url" content="https://www.kodohospitality.com{{ request.path }}">
   <meta property="og:image" content="https://www.kodohospitality.com/static/images/brand/og-image.png?v=2">
@@ -10,6 +12,6 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Kodo Hospitality">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kodo Hospitality, Morocco Hotel Intelligence">
+  <meta name="twitter:title" content="{{ page_title|default('Kodo | Morocco hotel intelligence') }}">
   <meta name="twitter:description" content="Morocco hotel market intelligence: hotels, brands, owners, pipeline, published rates and tourism.">
   <meta name="twitter:image" content="https://www.kodohospitality.com/static/images/brand/og-image.png?v=2">

@@ -7,9 +7,6 @@ admin's Data health page shows each flag and what it would change.
                     agreed level greyed ("limited data") or hidden
                     ("insufficient data"); no occupancy shown for a hotel
                     with no price history
-  LIVE_FIGURES      the FY 2025 model estimates (performance.csv) replaced
-                    by the live next-30-nights figures in every table, chart
-                    and export that still shows them; GOP margin hidden
   QUALITY_RANGES    the v2 occupancy model leaves out prices that failed the
                     data-quality checks and widens the range where history
                     is short or the night's price is doubtful
@@ -22,7 +19,6 @@ import os
 
 FLAGS = {
     'CONFIDENCE_UI': 'Confidence labels; low-confidence figures greyed or hidden',
-    'LIVE_FIGURES': 'FY 2025 estimates replaced by live next-30-nights figures',
     'QUALITY_RANGES': 'Occupancy model ignores failed prices and widens thin-data ranges',
     'VALUATION_V2': 'Corrected valuation engine, ranges from input sensitivity',
 }

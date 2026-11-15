@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kodo — Morocco Hospitality Intelligence</title>
+  {% set page_title = "Kodo | Morocco hotel intelligence" %}<title>{{ page_title }}</title>
   <meta name="description" content="Kodo is Morocco's first independent hospitality intelligence platform — market data, benchmarking, and AI-powered analytics for hotel owners, investors and developers." />
 {% include "_favicon.html" %}
   <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
@@ -97,11 +97,22 @@
   <div class="app-body">
 
     <aside class="sidebar">
-      <div class="sidebar-section">
-        <p class="sidebar-label">Destination</p>
-        <ul class="sidebar-list" id="city-filter">
-          <li class="sidebar-item active" data-city="all">All Morocco</li>
-        </ul>
+      <div class="sidebar-section dest-section">
+        <p class="sidebar-label" id="dest-label">Destination · BAR (MAD)</p>
+        <div class="dest-search-wrap">
+          <svg class="dest-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
+          </svg>
+          <input type="text" id="dest-search" class="list-search-input dest-search" placeholder="Search destinations" autocomplete="off"
+                 aria-label="Search destinations" aria-controls="city-filter">
+        </div>
+        <div class="dest-box" id="dest-box">
+          <ul class="dest-list" id="city-filter" role="listbox" aria-labelledby="dest-label">
+            <li class="dest-row dest-row--all is-selected" role="option" aria-selected="true" tabindex="0" data-city="all">
+              <span class="dest-line"><span class="dest-name">All Morocco</span></span></li>
+          </ul>
+          <p class="dest-empty" id="dest-empty" hidden>No destination matches.</p>
+        </div>
       </div>
       <div class="sidebar-section">
         <p class="sidebar-label">Segment</p>
@@ -132,9 +143,13 @@
           <p class="screen-sub" id="dashboard-sub">Morocco branded hotel market</p>
         </div>
 
-        <!-- Mobile-only city + segment filter pills (replaces sidebar) -->
-        <div class="mobile-filter-bar" id="mobile-city-pills">
-          <button class="pill active" data-mcity="all">All Morocco</button>
+        <!-- Under 768 px: the destination list as a row of chips, with its search -->
+        <div class="dest-mobile">
+          <input type="text" id="dest-search-m" class="list-search-input dest-search dest-search--m" placeholder="Search destinations"
+                 autocomplete="off" aria-label="Search destinations">
+          <div class="mobile-filter-bar dest-chips" id="mobile-city-pills" role="group" aria-label="Destination">
+            <button type="button" class="dest-chip active" data-mcity="all" aria-pressed="true">All Morocco</button>
+          </div>
         </div>
         <div class="mobile-filter-bar" id="mobile-seg-pills">
           <button class="pill active" data-mseg="all">All Segments</button>
@@ -151,20 +166,20 @@
             <span class="kpi-meta" id="kpi-keys-meta">&nbsp;</span>
             <span class="kpi-delta up" id="kpi-keys-delta"></span>
           </div>
-          <div class="kpi-card loading" id="kpi-occ">
-            <span class="kpi-label">Occupancy</span>
-            <span class="kpi-value">—</span>
-            <span class="kpi-meta" id="kpi-occ-meta">&nbsp;</span>
-            <span class="kpi-delta up" id="kpi-occ-delta"></span>
-          </div>
           <div class="kpi-card loading" id="kpi-adr">
-            <span class="kpi-label">Avg ADR</span>
+            <span class="kpi-label">BAR (published rate)</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
             <span class="kpi-delta up" id="kpi-adr-delta"></span>
           </div>
+          <div class="kpi-card loading" id="kpi-occ">
+            <span class="kpi-label">Occupancy · Kodo estimate</span>
+            <span class="kpi-value">—</span>
+            <span class="kpi-meta" id="kpi-occ-meta">&nbsp;</span>
+            <span class="kpi-delta up" id="kpi-occ-delta"></span>
+          </div>
           <div class="kpi-card loading" id="kpi-revpar">
-            <span class="kpi-label">RevPAR</span>
+            <span class="kpi-label">RevPAR · Kodo estimate</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
             <span class="kpi-delta up" id="kpi-revpar-delta"></span>
@@ -172,26 +187,27 @@
         </div>
 
         <div class="charts-row">
-          <div class="chart-card">
+          <div class="chart-card" id="bar-dest-card">
             <div class="chart-card-header">
-              <span class="chart-title">RevPAR by Destination</span>
-              <span class="chart-unit">MAD · keys-weighted<span class="perf-history"></span></span>
+              <span class="chart-title">Average BAR per destination</span>
+              <span class="chart-unit">BAR (published rate) · MAD · <span id="bar-dest-since">Since 3 November 2026</span></span>
             </div>
-            <div class="chart-wrap"><canvas id="chart-revpar"></canvas></div>
+            <div class="chart-wrap"><canvas id="chart-bar" role="img" aria-label="Average BAR per destination, high to low"></canvas></div>
+            <p class="chart-note" id="bar-dest-note"></p>
           </div>
           <div class="chart-card">
             <div class="chart-card-header">
-              <span class="chart-title">Occupancy by Destination</span>
-              <span class="chart-unit">% · keys-weighted<span class="perf-history"></span></span>
+              <span class="chart-title">Occupancy per destination</span>
+              <span class="chart-unit">% · Kodo estimate · next 30 nights · rooms-weighted</span>
             </div>
-            <div class="chart-wrap"><canvas id="chart-occ"></canvas></div>
+            <div class="chart-wrap"><canvas id="chart-occ" role="img" aria-label="Occupancy per destination, Kodo estimate"></canvas></div>
           </div>
         </div>
 
         <div class="table-card">
           <div class="table-card-header">
-            <span class="table-title">Brand Group Performance</span>
-            <span class="table-subtitle" id="brand-table-sub">All destinations · 14 groups</span>
+            <span class="table-title">Brand groups</span>
+            <span class="table-subtitle" id="brand-table-sub">All destinations</span>
           </div>
           <table class="data-table" id="brand-table">
             <thead>
@@ -200,9 +216,9 @@
                 <th>Brand Group</th>
                 <th>Hotels</th>
                 <th>Keys</th>
-                <th title="Kodo model estimate, FY 2025: not reported data">Occ % est.</th>
-                <th title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD)</th>
-                <th title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD)</th>
+                <th title="BAR (published rate), since 3 November 2026: average of the group's hotels">BAR (MAD)</th>
+                <th title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est.</th>
+                <th title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est.</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -410,9 +426,9 @@
             <span class="kpi-value" id="hkpi-keys">—</span>
           </div>
           <div class="kpi-card" id="hkpi-perf-card">
-            <span class="kpi-label">Occ, ADR, RevPAR columns</span>
-            <span class="kpi-value" style="font-size:15px;"><span class="kodo-estimate-badge">Model estimate</span></span>
-            <span class="kpi-sub">Kodo model estimate · FY 2025 · not reported data. Live figures: each hotel's profile</span>
+            <span class="kpi-label">BAR, occupancy, RevPAR columns</span>
+            <span class="kpi-value" style="font-size:15px;"><span class="kodo-estimate-badge">BAR observed</span></span>
+            <span class="kpi-sub">BAR: published rates, 7 priced nights or more. Occupancy and RevPAR: Kodo estimates, next 30 nights</span>
           </div>
         </div>
 
@@ -449,9 +465,9 @@
           <div class="hotels-sort-row">
             <div class="hotels-sort-left">
               <select class="hotels-sort-select" id="hotels-sort-select">
-                <option value="revpar_mad">Sort: RevPAR ↓</option>
-                <option value="adr_mad">Sort: ADR ↓</option>
-                <option value="occupancy">Sort: Occupancy ↓</option>
+                <option value="bar_mad">Sort: BAR ↓</option>
+                <option value="occupancy">Sort: Occupancy (Kodo est.) ↓</option>
+                <option value="revpar_mad">Sort: RevPAR (Kodo est.) ↓</option>
                 <option value="keys">Sort: Keys ↓</option>
                 <option value="year_opened">Sort: Year Opened ↓</option>
                 <option value="name">Sort: Name A–Z</option>
@@ -481,9 +497,9 @@
                   <th class="sortable-col col-hide-mobile" data-col="category">Segment <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col col-hide-mobile" data-col="brand_group">Brand Group <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col col-hide-mobile" data-col="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="occupancy" title="Kodo model estimate, FY 2025: not reported data">Occ % est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="adr_mad" title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-col="revpar_mad" title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-col="bar_mad" title="BAR (published rate) since 3 November 2026: the hotel's average over its priced nights (7 or more)">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
                 </tr>
               </thead>
               <tbody id="hotels-tbody"></tbody>
@@ -497,15 +513,18 @@
       <section class="screen" id="screen-benchmarking">
         <div class="screen-header">
           <h1>Benchmarking</h1>
-          <p class="screen-sub-tags accent" id="bench-sub-tags">ADR · Occupancy · RevPAR</p>
-          <span class="pill--sample bench-sample-pill bench-title-pill" id="bench-mode-badge">Sample data</span>
+          <p class="screen-sub-tags accent" id="bench-sub-tags">BAR (published rates) · Occupancy (Kodo estimate)</p>
+          <span class="pill--green bench-title-pill" id="bench-mode-badge" hidden>Live data available</span>
         </div>
 
-        <!-- Which mode is showing, and how to reach the other one -->
-        <div class="bench-mode-bar" id="bench-mode-bar" hidden>
-          <span class="bench-mode-hint" id="bench-mode-hint"></span>
-          <a class="bench-mode-link" id="bench-mode-plans" href="/pricing" hidden>See plans</a>
-          <button type="button" class="pill--outline bench-mode-toggle" id="bench-mode-toggle" hidden></button>
+        <!-- No plan, or no comp set yet: what to do (there is no sample mode) -->
+        <div class="bench-empty" id="bench-empty" hidden>
+          <p class="bench-empty-title" id="bench-empty-title">Benchmark your hotel against a comp set</p>
+          <p class="bench-empty-sub" id="bench-empty-sub"></p>
+          <div class="bench-empty-actions">
+            <a class="pill--solid" id="bench-empty-plans" href="/#pricing" hidden>See plans</a>
+            <button type="button" class="pill--solid" id="bench-empty-setup" hidden>Set up comp set</button>
+          </div>
         </div>
 
         <!-- ── Real mode: rate benchmark (published rates + modelled occupancy) ── -->
@@ -513,12 +532,12 @@
           <details class="bench-method" id="bench-method">
             <summary>Methodology · published rates and modelled estimates, not achieved performance</summary>
             <div class="bench-method-body">
-              <p><strong>What this is.</strong> Published rates (the prices hotels show for sale) and Kodo's modelled occupancy. These are not achieved ADR, occupancy or RevPAR: Kodo has no hotel's actual sales data here, so none is shown.</p>
-              <p><strong>Published rates.</strong> Every night from 03:00 Casablanca time Kodo collects each hotel's published prices: a one-night stay for 2 adults, no children, in MAD, for each of the next 30 nights where a price is shown. The request sets no number of rooms; the default room count applies. Each price is the nightly price returned for that night: a published rate, not the hotel's achieved ADR. Room type, board basis and cancellation terms are not controlled, and whether taxes and fees are included depends on the booking site. Where the rates come from and since when: see the <a href="/methodology">Methodology page</a>.</p>
+              <p><strong>What this is.</strong> BAR (published rates: the prices hotels show for sale) and Kodo's occupancy estimate. Kodo has no hotel's actual sales, achieved rates or revenue, so none is shown.</p>
+              <p><strong>Published rates.</strong> Every night from 03:00 Casablanca time Kodo collects each hotel's published prices: a one-night stay for 2 adults, no children, in MAD, for each of the next 30 nights where a price is shown. The request sets no number of rooms; the default room count applies. Each price is the nightly price returned for that night: a published rate (BAR), not what guests paid. Room type, board basis and cancellation terms are not controlled, and whether taxes and fees are included depends on the booking site. Where the rates come from and since when: see the <a href="/methodology">Methodology page</a>.</p>
               <p><strong>How a night's price is chosen.</strong> The most recently collected price for that night, at most 7 days old. A price is used only if the result passed Kodo's name and city check for that hotel.</p>
               <p><strong>What is excluded.</strong> Results for a different hotel or city, prices older than 7 days, prices entered by hand, prices outside 200 to 60,000 MAD, and nights with no price. A night without a live price shows "–" and is left out of every average.</p>
               <p><strong>Rate index and rank.</strong> Rate index = your published rate ÷ the comp set's median published rate × 100, over the nights where both exist (100 = priced like the median). Rank orders your hotel among the comp set by average published rate over the next 30 nights (1 = highest).</p>
-              <p><strong>Modelled occupancy (Kodo Estimates).</strong> Modelled, not measured: a base occupancy for the hotel's type and segment, adjusted for day of week, month, holidays and local events, and for published prices (see the Methodology page for how). Where the model gives a range it is shown as low–high. Kodo does not use "rooms left" messages. Price coverage describes how many recent published prices we have for the hotel, not how accurate the estimate is: none with no price for the night, partial with one, full with one and prices collected for the hotel on at least 4 of the last 7 days.</p>
+              <p><strong>Modelled occupancy (Kodo estimate).</strong> Modelled, not measured: a base occupancy for the hotel's type and segment, adjusted for day of week, month, holidays and local events, and for published prices (see the Methodology page for how). Where the model gives a range it is shown as low–high. Kodo does not use "rooms left" messages. Price coverage describes how many recent published prices we have for the hotel, not how accurate the estimate is: none with no price for the night, partial with one, full with one and prices collected for the hotel on at least 4 of the last 7 days.</p>
             </div>
           </details>
           <div class="bench-freshness-bar"><span id="rb-status">Loading…</span></div>
@@ -561,9 +580,9 @@
 
           <div class="bench-kpi-grid rb-kpi-grid">
             <div class="bench-kpi-card" id="rbk-index"><div class="bench-kpi-title">Rate index</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
-            <div class="bench-kpi-card" id="rbk-rate"><div class="bench-kpi-title">Average published rate (next 30 days)</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
+            <div class="bench-kpi-card" id="rbk-rate"><div class="bench-kpi-title">BAR · average, next 30 days</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
             <div class="bench-kpi-card" id="rbk-rank"><div class="bench-kpi-title">Rate rank in comp set</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
-            <div class="bench-kpi-card" id="rbk-occ"><div class="bench-kpi-title">Modelled occupancy (next 30 days)</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
+            <div class="bench-kpi-card" id="rbk-occ"><div class="bench-kpi-title">Occupancy · Kodo estimate, next 30 days</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
             <div class="bench-kpi-card" id="rbk-cover"><div class="bench-kpi-title">Rate coverage</div><div class="rb-kpi-val">—</div><div class="rb-kpi-sub"></div></div>
           </div>
 
@@ -586,7 +605,7 @@
           <div class="chart-card" style="margin-bottom:20px">
             <div class="chart-card-header">
               <span class="chart-title">Modelled Occupancy Calendar</span>
-              <span class="pill--grey rb-est-pill">Kodo Estimates</span>
+              <span class="pill--grey rb-est-pill">Kodo estimate</span>
             </div>
             <div class="bench-cal-topbar">
               <div class="bench-cal-nav-row">
@@ -596,260 +615,19 @@
               </div>
             </div>
             <div class="bench-cal-wrap" id="rb-occ-grid"></div>
-            <p class="rate-updated-note rb-cal-note" id="rb-occ-note">Kodo Estimates · modelled, not measured</p>
+            <p class="rate-updated-note rb-cal-note" id="rb-occ-note">Kodo estimate · modelled, not measured</p>
           </div>
 
           <div class="chart-card" style="margin-bottom:20px">
             <div class="chart-card-header">
               <span class="chart-title insight-header-title">INSIGHTS</span>
-              <span class="chart-unit insight-header-meta">Published rates and modelled occupancy</span>
+              <span class="chart-unit insight-header-meta">BAR (published rates) and Kodo's occupancy estimate</span>
               <button class="bench-refresh-btn" id="rb-ai-refresh">Refresh</button>
             </div>
             <div class="bench-ai-box" id="rb-ai"><p class="bench-loading">Insights will appear here after data loads…</p></div>
           </div>
         </div>
 
-        <!-- ── Sample mode ── -->
-        <div id="bench-sample-view">
-        <div class="bench-freshness-bar" id="bench-freshness-bar">
-          <span id="bench-freshness-text">Sample data · fictional Marrakech luxury hotels · illustrative figures, not real performance</span>
-        </div>
-
-        <!-- Controls row: property selector + comp set builder -->
-        <div class="bench-controls-row">
-          <!-- My Property -->
-          <div class="bench-card bench-property-card">
-            <div class="bench-card-label">MY PROPERTY</div>
-            <select class="bench-select" id="bench-my-hotel"></select>
-            <div class="bench-prop-info" id="bench-prop-info"></div>
-          </div>
-          <!-- Comp Set Builder -->
-          <div class="bench-card bench-comp-card">
-            <div class="bench-card-label">COMPETITIVE SET</div>
-            <div class="bench-comp-checks" id="bench-comp-checks"></div>
-            <div class="bench-comp-pills" id="bench-comp-pills"></div>
-            <div id="bench-comp-counter" class="bench-comp-counter"></div>
-            <div id="bench-comp-min-msg" class="bench-comp-min-msg" style="display:none">Select at least 3 hotels to protect data confidentiality · STR standard</div>
-          </div>
-        </div>
-        <p class="bench-privacy-disclaimer">Comp set data is shown as an anonymous aggregate average. Individual hotel performance is never disclosed. Minimum 3 hotels required per STR confidentiality standards.</p>
-
-        <!-- Date range pills -->
-        <div class="bench-date-bar" id="bench-date-bar">
-          <span class="bench-date-label">Period</span>
-          <button class="bench-date-pill" data-brange="7">Last 7 days</button>
-          <button class="bench-date-pill active" data-brange="30">Last 30 days</button>
-          <button class="bench-date-pill" data-brange="90">Last 90 days</button>
-          <button class="bench-date-pill" data-brange="ytd">YTD</button>
-          <select id="bench-export-period" class="export-select" style="margin-left:auto" title="Export period">
-            <option value="7">Last 7 Days</option>
-            <option value="30" selected>Last 30 Days</option>
-            <option value="90">Last 90 Days</option>
-            <option value="ytd">YTD</option>
-          </select>
-          <button class="export-btn" id="btn-export-bench">↓ Export</button>
-        </div>
-
-        <!-- KPI comparison cards -->
-        <div class="bench-kpi-grid" id="bench-kpi-grid">
-          <div class="bench-kpi-card" id="bkpi-occ">
-            <div class="bench-kpi-title">Occupancy <span class="pill--sample bench-sample-pill">Sample data</span></div>
-            <div class="bench-kpi-body">
-              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
-              <div class="bench-kpi-sep">vs</div>
-              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
-              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
-            </div>
-          </div>
-          <div class="bench-kpi-card" id="bkpi-adr">
-            <div class="bench-kpi-title">ADR <span class="pill--sample bench-sample-pill">Sample data</span></div>
-            <div class="bench-kpi-body">
-              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
-              <div class="bench-kpi-sep">vs</div>
-              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
-              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
-            </div>
-          </div>
-          <div class="bench-kpi-card" id="bkpi-revpar">
-            <div class="bench-kpi-title">RevPAR <span class="pill--sample bench-sample-pill">Sample data</span></div>
-            <div class="bench-kpi-body">
-              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
-              <div class="bench-kpi-sep">vs</div>
-              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
-              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
-            </div>
-          </div>
-          <div class="bench-kpi-card" id="bkpi-rev">
-            <div class="bench-kpi-title">Rooms Revenue / Night <span class="pill--sample bench-sample-pill">Sample data</span></div>
-            <div class="bench-kpi-body">
-              <div class="bench-kpi-mine"><div class="bench-kpi-mine-val">—</div><div class="bench-kpi-mine-lbl"><span class="pill--blue">My Property</span></div></div>
-              <div class="bench-kpi-sep">vs</div>
-              <div class="bench-kpi-comp-blk"><div class="bench-kpi-comp-val">—</div><div class="bench-kpi-comp-lbl">Comp Avg</div></div>
-              <div class="bench-kpi-index"><div class="bench-kpi-idx-val">—</div><div class="bench-kpi-idx-lbl">Index</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ADR Calendar -->
-        <div class="chart-card" style="margin-bottom:20px">
-          <div class="chart-card-header">
-            <span class="chart-title">ADR Calendar</span>
-            <span class="pill--sample bench-sample-pill">Sample data</span>
-            <span class="chart-unit">MAD per night · warm = higher rate</span>
-          </div>
-          <div class="bench-cal-topbar">
-            <div class="bench-cal-nav-row">
-              <button class="bench-cal-nav-btn" id="bench-adr-prev">&#8592;</button>
-              <span class="bench-cal-month-label" id="bench-adr-month-label"></span>
-              <button class="bench-cal-nav-btn" id="bench-adr-next">&#8594;</button>
-            </div>
-            <div class="bench-cal-view-toggle">
-              <button class="bench-cal-view-btn active" data-ctype="adr" data-cview="mine">My Property</button>
-              <button class="bench-cal-view-btn" data-ctype="adr" data-cview="comp">Comp Set Avg</button>
-            </div>
-          </div>
-          <div class="bench-cal-wrap" id="bench-adr-grid"></div>
-          <div class="cal-legend">
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 8%, var(--bg))"></span>
-              <span class="cal-legend-label">Low</span>
-            </span>
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 20%, var(--bg))"></span>
-              <span class="cal-legend-label">Mid</span>
-            </span>
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 35%, var(--bg))"></span>
-              <span class="cal-legend-label">High</span>
-            </span>
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-1-dot) 55%, var(--bg))"></span>
-              <span class="cal-legend-label">Peak</span>
-            </span>
-            <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:var(--cat-1-dot)"></span>
-              <span class="cal-legend-label">My Property</span>
-            </span>
-            <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:var(--cat-6-dot)"></span>
-              <span class="cal-legend-label">Comp Set</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Occupancy Calendar -->
-        <div class="chart-card" style="margin-bottom:20px">
-          <div class="chart-card-header">
-            <span class="chart-title">Occupancy Calendar</span>
-            <span class="pill--sample bench-sample-pill">Sample data</span>
-          </div>
-          <div class="bench-cal-topbar">
-            <div class="bench-cal-nav-row">
-              <button class="bench-cal-nav-btn" id="bench-occ-prev">&#8592;</button>
-              <span class="bench-cal-month-label" id="bench-occ-month-label"></span>
-              <button class="bench-cal-nav-btn" id="bench-occ-next">&#8594;</button>
-            </div>
-            <div class="bench-cal-view-toggle">
-              <button class="bench-cal-view-btn active" data-ctype="occ" data-cview="mine">My Property</button>
-              <button class="bench-cal-view-btn" data-ctype="occ" data-cview="comp">Comp Set Avg</button>
-            </div>
-          </div>
-          <div class="bench-cal-wrap" id="bench-occ-grid"></div>
-          <div class="cal-legend">
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 8%, var(--bg))"></span>
-              <span class="cal-legend-label">Low</span>
-            </span>
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 20%, var(--bg))"></span>
-              <span class="cal-legend-label">Mid</span>
-            </span>
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 35%, var(--bg))"></span>
-              <span class="cal-legend-label">High</span>
-            </span>
-            <span class="cal-legend-item">
-              <span class="cal-legend-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 55%, var(--bg))"></span>
-              <span class="cal-legend-label">Full</span>
-            </span>
-            <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:var(--cat-2-dot)"></span>
-              <span class="cal-legend-label">My Property</span>
-            </span>
-            <span class="cal-legend-item cal-legend-source">
-              <span class="cal-legend-dot" style="background:var(--cat-6-dot)"></span>
-              <span class="cal-legend-label">Comp Set</span>
-            </span>
-          </div>
-        </div>
-
-
-        <!-- Trend charts -->
-        <div class="charts-row tour-2col" style="margin-bottom:20px">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">RevPAR Trend</span>
-            <span class="pill--sample bench-sample-pill">Sample data</span>
-              <span class="chart-unit">daily · My Property vs Comp Set Avg</span>
-            </div>
-            <div class="chart-wrap" id="bench-trend-revpar-wrap"><canvas id="bench-trend-revpar"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Occupancy Trend</span>
-            <span class="pill--sample bench-sample-pill">Sample data</span>
-              <span class="chart-unit">daily % · My Property vs Comp Set Avg</span>
-            </div>
-            <div class="chart-wrap" id="bench-trend-occ-wrap"><canvas id="bench-trend-occ"></canvas></div>
-          </div>
-        </div>
-
-        <!-- DOW + Monthly summary row -->
-        <div class="charts-row tour-2col" style="margin-bottom:20px">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Day of Week Analysis</span>
-            <span class="pill--sample bench-sample-pill">Sample data</span>
-              <span class="chart-unit">avg occupancy % · My Property vs Comp</span>
-            </div>
-            <div class="chart-wrap" id="bench-dow-wrap"><canvas id="bench-dow-chart"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Monthly Summary</span>
-            <span class="pill--sample bench-sample-pill">Sample data</span>
-              <span class="chart-unit">RevPAR Index = My RevPAR ÷ Comp RevPAR × 100</span>
-            </div>
-            <div class="bench-monthly-table-wrap">
-              <table class="data-table" id="bench-monthly-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>My Occ</th><th>Comp Occ</th>
-                    <th>My ADR</th><th>Comp ADR</th>
-                    <th>My RevPAR</th><th>Comp RevPAR</th>
-                    <th>Index</th>
-                  </tr>
-                </thead>
-                <tbody id="bench-monthly-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- AI Insights -->
-        <div class="chart-card" style="margin-bottom:20px">
-          <div class="chart-card-header">
-            <span class="chart-title insight-header-title">INSIGHTS</span>
-            <span class="pill--sample bench-sample-pill">Sample data</span>
-            <span class="chart-unit insight-header-meta">Current selection</span>
-            <button class="bench-refresh-btn" id="bench-ai-refresh">Refresh</button>
-          </div>
-          <div class="bench-ai-box" id="bench-ai-insights">
-            <p class="bench-loading">Insights will appear here after data loads…</p>
-          </div>
-        </div>
-      </div>
       </section>
 
       <!-- ── Tourism ── -->
@@ -1118,7 +896,7 @@
             <span class="kpi-value">—</span>
           </div>
           <div class="kpi-card" id="brnkpi-champion">
-            <span class="kpi-label">RevPAR Champion</span>
+            <span class="kpi-label">Highest BAR (published rate)</span>
             <span class="kpi-value">—</span>
           </div>
           <div class="kpi-card" id="brnkpi-largest">
@@ -1141,10 +919,10 @@
             <input type="text" id="brands-search" class="brands-search-input" placeholder="Search brands…">
             <select id="brands-sort" class="pipe-select">
               <option value="total_keys">Sort by: Keys</option>
-              <option value="weighted_revpar">Sort by: RevPAR</option>
+              <option value="bar_mad">Sort by: BAR</option>
               <option value="hotels">Sort by: Hotels</option>
-              <option value="avg_occupancy">Sort by: Occupancy</option>
-              <option value="avg_adr">Sort by: ADR</option>
+              <option value="avg_occupancy">Sort by: Occupancy (Kodo est.)</option>
+              <option value="avg_revpar">Sort by: RevPAR (Kodo est.)</option>
             </select>
             <button class="export-btn" id="btn-export-brands">↓ Export</button>
           </div>
@@ -1167,7 +945,7 @@
         <!-- Comparison table -->
         <div class="table-card" style="margin-bottom:20px">
           <div class="table-card-header">
-            <span class="table-title">Brand Performance Ranking</span>
+            <span class="table-title">Brand ranking</span>
           </div>
           <div style="overflow-x:auto">
             <table class="data-table" id="brands-comp-table">
@@ -1178,9 +956,9 @@
                   <th class="sortable-col" data-bccol="hotels">Hotels <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col sort-desc" data-bccol="total_keys">Keys <span class="sort-icon">↓&#xFE0E;</span></th>
                   <th class="sortable-col" data-bccol="market_share_keys_pct">Mkt Share <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="avg_occupancy" title="Kodo model estimate, FY 2025: not reported data">Occ % est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="avg_adr" title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col sort-desc" data-bccol="weighted_revpar" title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-bccol="bar_mad" title="BAR (published rate) since 3 November 2026: average of the group's hotels">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-bccol="avg_occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-bccol="avg_revpar" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col" data-bccol="pipeline_keys">Pipeline Keys <span class="sort-icon">↕&#xFE0E;</span></th>
                 </tr>
               </thead>
@@ -1197,7 +975,7 @@
             <div class="brni-desc" id="brni-leader-desc">—</div>
           </div>
           <div class="brands-insight-card" id="brni-revpar">
-            <div class="brni-title">RevPAR leader (model estimate)</div>
+            <div class="brni-title">Highest RevPAR (Kodo estimate)</div>
             <div class="brni-value" id="brni-revpar-val">—</div>
             <div class="brni-desc" id="brni-revpar-desc">—</div>
           </div>
@@ -1233,9 +1011,9 @@
             <div class="kpi-card"><span class="kpi-label">Total Keys</span><span class="kpi-value" id="odkpi-keys">—</span></div>
             <div class="kpi-card"><span class="kpi-label">Cities Present</span><span class="kpi-value" id="odkpi-cities">—</span></div>
             <div class="kpi-card"><span class="kpi-label">Brands Operated</span><span class="kpi-value" id="odkpi-brands">—</span></div>
-            <div class="kpi-card" id="odkpi-rate"><span class="kpi-label">Avg published rate · next 30 nights</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
-            <div class="kpi-card" id="odkpi-occ"><span class="kpi-label">Modelled occupancy · next 30 nights</span><span class="kpi-value">—</span><span class="kpi-meta"></span></div>
-            <div class="kpi-card" id="odkpi-revpar"><span class="kpi-label">Indicative RevPAR</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
+            <div class="kpi-card" id="odkpi-rate"><span class="kpi-label">BAR (published rate)</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
+            <div class="kpi-card" id="odkpi-occ"><span class="kpi-label">Occupancy · Kodo estimate</span><span class="kpi-value">—</span><span class="kpi-meta"></span></div>
+            <div class="kpi-card" id="odkpi-revpar"><span class="kpi-label">RevPAR · Kodo estimate</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
           </div>
           <div class="brand-meta-row" id="owner-destinations-row" style="margin-bottom:8px"></div>
           <div class="brand-meta-row" id="owner-operators-row" style="margin-bottom:20px"></div>
@@ -1266,7 +1044,7 @@
           <div class="val-title">Hotel Valuation</div>
           <div class="val-subtitle">DCF · Income Capitalization · Sensitivity</div>
           <div class="val-disclaimer-row">
-            <span class="kodo-estimate-badge">Indicative estimates · Not for investment decisions</span>
+            <span class="kodo-estimate-badge">Kodo estimate · Not for investment decisions</span>
           </div>
 
           <div class="val-mode-toggle">
@@ -1618,17 +1396,17 @@
         </div>
 
         <div class="brand-kpi-row">
-          <div class="kpi-card" id="brand-bkpi-occ">
-            <span class="kpi-label">Occupancy</span>
-            <span class="kpi-value">—</span>
-          </div>
           <div class="kpi-card" id="brand-bkpi-adr">
-            <span class="kpi-label">Avg ADR</span>
+            <span class="kpi-label">BAR (published rate)</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
+          <div class="kpi-card" id="brand-bkpi-occ">
+            <span class="kpi-label">Occupancy · Kodo estimate</span>
+            <span class="kpi-value">—</span>
+          </div>
           <div class="kpi-card" id="brand-bkpi-revpar">
-            <span class="kpi-label">RevPAR</span>
+            <span class="kpi-label">RevPAR · Kodo estimate</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
@@ -1642,8 +1420,8 @@
 
         <div class="chart-card" id="brand-chart-card" style="margin-bottom:20px">
           <div class="chart-card-header">
-            <span class="chart-title">RevPAR by City</span>
-            <span class="chart-unit">MAD · keys-weighted<span class="perf-history"></span></span>
+            <span class="chart-title">BAR by hotel</span>
+            <span class="chart-unit" id="brand-chart-sub">BAR (published rate) · MAD</span>
           </div>
           <div class="chart-wrap" id="brand-chart-wrap">
             <canvas id="chart-brand-revpar"></canvas>
@@ -1661,9 +1439,9 @@
                 <th class="sortable-col" data-bcol="city">City <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="category">Segment <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="occupancy" title="Kodo model estimate, FY 2025: not reported data">Occ % est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="adr_mad" title="Kodo model estimate, FY 2025: not reported data">ADR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="revpar_mad" title="Kodo model estimate, FY 2025: not reported data">RevPAR est. (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th class="sortable-col" data-bcol="bar_mad" title="BAR (published rate) since 3 November 2026: the hotel's average over its priced nights (7 or more)">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th class="sortable-col" data-bcol="occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th class="sortable-col" data-bcol="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="owner">Owner <span class="sort-icon">↕&#xFE0E;</span></th>
               </tr>
             </thead>
@@ -1698,17 +1476,17 @@
             <span class="kpi-label">Total Keys</span>
             <span class="kpi-value">—</span>
           </div>
-          <div class="kpi-card" id="hkpi-occ">
-            <span class="kpi-label">Occupancy</span>
-            <span class="kpi-value">—</span>
-          </div>
           <div class="kpi-card" id="hkpi-adr">
-            <span class="kpi-label">ADR</span>
+            <span class="kpi-label">BAR (published rate)</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
+          <div class="kpi-card" id="hkpi-occ">
+            <span class="kpi-label">Occupancy · Kodo estimate</span>
+            <span class="kpi-value">—</span>
+          </div>
           <div class="kpi-card" id="hkpi-revpar">
-            <span class="kpi-label">RevPAR</span>
+            <span class="kpi-label">RevPAR · Kodo estimate</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
@@ -1740,8 +1518,8 @@
           <!-- Occupancy Calendar -->
           <div class="table-card dual-cal-card">
             <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
-              <span class="table-title">Modelled Occupancy · Next 30 Days</span>
-              <span class="rate-source-badge pill--blue" id="hocc-model-badge">Kodo Estimates</span>
+              <span class="table-title">Occupancy · Next 30 Days</span>
+              <span class="rate-source-badge pill--blue" id="hocc-model-badge">Kodo estimate</span>
             </div>
             <div id="hocc-calendar" class="bar-calendar">
               <div class="bar-cal-loading">Loading occupancy data…</div>
@@ -1769,43 +1547,11 @@
           <div class="evc-chips" data-ev-list><p class="evc-empty">Loading events…</p></div>
         </div>
 
-        <!-- Estimated Financials · Kodo Model -->
-        <div class="table-card" style="margin-bottom:20px">
-          <div class="table-card-header">
-            <span class="table-title">Estimated Financials · Kodo Model</span>
-            <span class="rate-source-badge pill--blue" id="hfin-confidence-badge">—</span>
-          </div>
-          <div class="fin-ranges-wrap">
-            <div class="fin-range-row">
-              <div class="fin-range-meta">
-                <div class="fin-range-label">Estimated Rooms Revenue</div>
-                <div class="fin-range-sub" id="hfin-rev-sub">—</div>
-              </div>
-              <div class="fin-range-value" id="hfin-rev-range">—</div>
-            </div>
-            <div class="fin-range-row">
-              <div class="fin-range-meta">
-                <div class="fin-range-label">Estimated Asset Value</div>
-                <div class="fin-range-sub" id="hfin-asset-sub">—</div>
-              </div>
-              <div class="fin-range-value" id="hfin-asset-range">—</div>
-            </div>
-            <div class="fin-range-row">
-              <div class="fin-range-meta">
-                <div class="fin-range-label">Est. Value per Key</div>
-                <div class="fin-range-sub" id="hfin-vpk-sub">—</div>
-              </div>
-              <div class="fin-range-value" id="hfin-vpk-range">—</div>
-            </div>
-          </div>
-          <div class="fin-disclaimer">Indicative ranges only — based on Kodo BAR scrape and occupancy model. Not for investment decisions. Contact Kodo Advisory for asset-specific valuation. <a href="/methodology" target="_blank" style="color:inherit;text-decoration:underline;opacity:0.7;">Learn more about our methodology →</a></div>
-        </div>
-
         <!-- Market context chart -->
         <div class="chart-card" style="margin-bottom:20px">
           <div class="chart-card-header">
             <span class="chart-title">Market positioning — <span id="hotel-ctx-city">—</span></span>
-            <span class="chart-unit">RevPAR MAD · all hotels in city · sorted high to low<span class="perf-history"></span></span>
+            <span class="chart-unit" id="hotel-ctx-sub">BAR (published rate) · MAD</span>
           </div>
           <div class="chart-wrap" id="hotel-city-chart-wrap"><canvas id="chart-hotel-city"></canvas></div>
         </div>
@@ -1814,7 +1560,7 @@
         <div class="chart-card" style="margin-bottom:20px">
           <div class="chart-card-header">
             <span class="chart-title">Segment benchmarks</span>
-            <span class="chart-unit"><span id="hotel-bench-ctx">vs city average in same segment</span><span class="perf-history"></span></span>
+            <span class="chart-unit"><span id="hotel-bench-ctx">vs city average in same segment</span></span>
           </div>
           <div id="hotel-seg-bench"></div>
         </div>
@@ -1915,8 +1661,8 @@
       <section class="screen" id="screen-reports">
         <div class="screen-header">
           <h1>Market Intelligence Reports</h1>
-          <p class="screen-sub-tags">City Intelligence · PDF Export · AI Narrative</p>
-          <p style="font-size:0.75rem;color:var(--text-faint);margin-top:4px;">Reports generated live from current database · Data reflects latest available estimates</p>
+          <p class="screen-sub-tags">City and market reports · PDF</p>
+          <p style="font-size:0.75rem;color:var(--text-faint);margin-top:4px;">Built from real data only: the hotel database, BAR (published rates) collected every night since 3 November 2026, Kodo estimates (labelled) and official tourism figures</p>
         </div>
 
         <div class="report-list-header">
@@ -1957,9 +1703,9 @@
               <div class="chat-welcome-title">Kodo Market Intelligence</div>
               <div class="chat-welcome-sub">Ask any question about Morocco's branded hotel market</div>
               <div class="chat-chips" id="chat-chips">
-                <button class="chat-chip" data-q="Which city has the highest RevPAR?">Which city has the highest RevPAR?</button>
-                <button class="chat-chip" data-q="How does Accor perform vs Marriott International in Morocco?">How does Accor perform vs Marriott?</button>
-                <button class="chat-chip" data-q="What is the occupancy gap between the Luxury and Upscale segments?">Luxury vs Upscale occupancy gap?</button>
+                <button class="chat-chip" data-q="Which destination has the highest average BAR since 3 November?">Which destination has the highest BAR?</button>
+                <button class="chat-chip" data-q="Compare Accor and Marriott International in Morocco: hotels, keys and BAR.">Accor vs Marriott: hotels, keys, BAR?</button>
+                <button class="chat-chip" data-q="What is in the Marrakech hotel pipeline?">What is in the Marrakech pipeline?</button>
               </div>
             </div>
           </div>
@@ -2014,13 +1760,13 @@
       <button onclick="closeUpgradeModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-2);line-height:1">×</button>
       <p style="margin-bottom:10px"><span class="pill--blue" style="font-family:'Sweet Sans Pro', sans-serif;font-size:0.6875rem;letter-spacing:0.1em;text-transform:uppercase">Upgrade Required</span></p>
       <h2 id="upgrade-title" style="font-family:'Sweet Sans Pro',sans-serif;font-size:1.5rem;font-weight:400;letter-spacing:0;margin-bottom:10px;color:var(--text)">This feature requires Benchmarker</h2>
-      <p id="upgrade-body" style="font-size:0.875rem;color:var(--text-2);line-height:1.6;margin-bottom:20px">Upgrade to unlock pipeline data, benchmarking comparisons, and hotel financial details.</p>
+      <p id="upgrade-body" style="font-size:0.875rem;color:var(--text-2);line-height:1.6;margin-bottom:20px">Upgrade to unlock pipeline data, the rate benchmark, reports and exports.</p>
       <div style="background:var(--bg);border:1px solid var(--border);padding:16px;margin-bottom:20px">
         <p style="font-family:'Sweet Sans Pro', sans-serif;font-size:0.6875rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2);margin-bottom:8px">Benchmarker includes</p>
         <ul style="list-style:none;font-size:0.8125rem;color:var(--text-2);line-height:1.9">
           <li>✓ &nbsp;Development pipeline — {{ public_stats().pipeline }} projects</li>
-          <li>✓ &nbsp;Benchmarking comparisons and trend data</li>
-          <li>✓ &nbsp;Hotel-level financial details (ADR, TRevPAR)</li>
+          <li>✓ &nbsp;Rate benchmark against your comp set</li>
+          <li>✓ &nbsp;City and market reports (PDF) and Excel exports</li>
           <li>✓ &nbsp;Unlimited AI Analyst queries</li>
         </ul>
       </div>
