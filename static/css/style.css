@@ -294,9 +294,9 @@ textarea::placeholder,
   display: block;
 }
 
-/* No CSS invert/brightness hacks needed — kodo-logo-dark / kodo-logo-light
-   (static/img/brand) are dedicated dark/light assets, swapped via .logo-dark/.logo-light
-   below, not a single file tinted with a filter. */
+/* No CSS invert/brightness hacks needed — kodo-logo-white / kodo-logo-black
+   (static/images/brand, SVG) are dedicated dark/light assets, swapped via
+   .logo-dark/.logo-light, not a single file tinted with a filter. */
 .nav-logo-img,
 .navbar-logo-img,
 .mk-nav-logo-img,

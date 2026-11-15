@@ -532,11 +532,11 @@ def _issue_verification_email(email: str, name: str) -> bool:
 
 # ─── Email layout ─────────────────────────────────────────────────────────────
 # Emails can't use CSS variables, so the palette (static/css/tokens.css,
-# light mode) is inlined here. The only image is the light wordmark; its
-# alt text ("Kodo") stands in when images are blocked.
-# 600px copy of static/img/brand/kodo-logo-light.png: the full-size original
-# (22186x4862) is too large for mail clients to download and decode.
-EMAIL_LOGO_URL = "https://www.kodohospitality.com/static/img/brand/kodo-logo-light-600.png"
+# light mode) is inlined here. The only image is the black wordmark (for
+# light backgrounds), as an 800px PNG at an absolute URL so mail clients load
+# it; its alt text stands in when images are blocked. PDF reports use the
+# same file (_PDF_LOGO).
+EMAIL_LOGO_URL = "https://www.kodohospitality.com/static/images/brand/kodo-logo-black-800.png"
 
 EMAIL_COLORS = {
     "page":      "#F4F4F2",   # --bg-alt (the email's outer band; the message card is white)
@@ -574,7 +574,7 @@ def _email_layout(heading: str, paragraphs: list, button_label: str, button_url:
         <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:{c["card"]};border:1px solid {c["border"]};border-radius:12px;">
           <tr>
             <td style="padding:32px 40px 24px;border-bottom:1px solid {c["border"]};">
-              <img src="{EMAIL_LOGO_URL}" width="101" height="22" alt="Kodo" style="display:block;width:101px;height:22px;border:0;outline:none;text-decoration:none;font-family:{_EMAIL_FONT};font-size:14px;font-weight:700;color:{c["text"]};">
+              <img src="{EMAIL_LOGO_URL}" width="80" height="26" alt="Kodo Hospitality" style="display:block;width:80px;height:26px;border:0;outline:none;text-decoration:none;font-family:{_EMAIL_FONT};font-size:14px;font-weight:700;color:{c["text"]};">
             </td>
           </tr>
           <tr>
@@ -1588,8 +1588,8 @@ def api_verify_email():
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(
-        os.path.join(app.root_path, 'static', 'img', 'brand'),
-        'favicon-light.ico',
+        os.path.join(app.root_path, 'static', 'images', 'brand'),
+        'favicon.ico',
         mimetype='image/x-icon'
     )
 
@@ -3251,7 +3251,7 @@ def _s(text: str) -> str:
 
 
 # Light wordmark for report headers (white pages)
-_PDF_LOGO = os.path.join(app.static_folder, "img", "brand", "kodo-logo-light-1200.png")
+_PDF_LOGO = os.path.join(app.static_folder, "images", "brand", "kodo-logo-black-800.png")
 
 if FPDF is not None:
     class KodoPDF(FPDF):
@@ -3273,7 +3273,7 @@ if FPDF is not None:
                 return
             self.set_y(3)
             # Wordmark in place of the old 8pt "Kodo" text (same 25 x 5 mm cell)
-            self.image(_PDF_LOGO, x=_LM, y=4.2, h=2.6)
+            self.image(_PDF_LOGO, x=_LM, y=3.4, h=3.4)
             self.cell(25, 5, "", ln=0)
             self.set_font("Helvetica", "", 6)
             self.set_text_color(*self.c['muted'])
@@ -3770,7 +3770,7 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf.add_page()
 
     # Wordmark in place of the old 28pt "Kodo" text (same 10 mm line)
-    pdf.image(_PDF_LOGO, x=_LM, y=23.3, h=7.4)
+    pdf.image(_PDF_LOGO, x=_LM, y=21.7, h=9.0)
     pdf.set_xy(_LM, 32)
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 9)
@@ -4090,20 +4090,20 @@ def generate_pdf_report(data: dict, ai_narrative: dict, theme: str = 'light') ->
     pdf._back_page = True
     pdf.add_page()
     # Wordmark in place of the old 48pt "Kodo" text (same 20 mm line, centred)
-    _h = 12.6
-    _w = _h * 600 / 131
+    _h = 15.0
+    _w = _h * 800 / 260
     pdf.image(_PDF_LOGO, x=(210 - _w) / 2, y=110 + (20 - _h) / 2, h=_h)
     pdf.set_xy(_LM, 130)   # where the old cell(ln=1) left the cursor
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(*c['accent'])
-    pdf.cell(210, 8, "HOSPITALITY INTELLIGENCE", align="C", ln=1)
+    pdf.cell(210 - _LM - _RM, 8, "HOSPITALITY INTELLIGENCE", align="C", ln=1)
     pdf.ln(5)
     pdf.set_font("Helvetica", "", 8)
     pdf.set_text_color(*c['muted'])
-    pdf.cell(210, 6, "kodohospitality.com", align="C", ln=1)
+    pdf.cell(210 - _LM - _RM, 6, "kodohospitality.com", align="C", ln=1)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(*c['muted'])
-    pdf.cell(210, 5, f"Generated {data['generated_date']}  |  Confidential", align="C", ln=1)
+    pdf.cell(210 - _LM - _RM, 5, f"Generated {data['generated_date']}  |  Confidential", align="C", ln=1)
 
     return bytes(pdf.output())
 
@@ -4235,7 +4235,7 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     # ─── PAGE 1 — COVER ─────────────────────────────────────────────────
     pdf.add_page()
     # Wordmark in place of the old 28pt "Kodo" text (same 10 mm line)
-    pdf.image(_PDF_LOGO, x=_LM, y=21.3, h=7.4)
+    pdf.image(_PDF_LOGO, x=_LM, y=19.7, h=9.0)
     pdf.set_xy(_LM, 30)
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 9)
@@ -4459,7 +4459,7 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf._back_page = True
     pdf.add_page()
     # Wordmark in place of the old 20pt "Kodo" text (same 10 mm line)
-    pdf.image(_PDF_LOGO, x=_LM, y=32.3, h=5.3)
+    pdf.image(_PDF_LOGO, x=_LM, y=31.0, h=6.6)
     pdf.set_xy(_LM, 40)
     pdf.set_x(_LM)
     pdf.set_font("Helvetica", "", 9)
@@ -5516,6 +5516,14 @@ def api_scraper_download_rates():
     return send_file(path, mimetype='text/csv', as_attachment=True, download_name='kodo_scraped_rates.csv')
 
 
+def _alert_html(body_html):
+    """A short admin alert: the wordmark, then the message (no button)."""
+    return (f'<div style="font-family:{_EMAIL_FONT};color:{EMAIL_COLORS["text"]};font-size:14px;line-height:1.6;">'
+            f'<img src="{EMAIL_LOGO_URL}" width="80" height="26" alt="Kodo Hospitality" '
+            'style="display:block;width:80px;height:26px;border:0;margin:0 0 20px;">'
+            f'{body_html}</div>')
+
+
 def _send_alert(subject, body_html):
     to = _alert_recipient()
     resend.api_key = os.environ.get('RESEND_API_KEY', '').strip()
@@ -5524,7 +5532,7 @@ def _send_alert(subject, body_html):
         return False
     try:
         resend.Emails.send({'from': 'Kodo Hospitality <contact@kodohospitality.com>', 'to': to,
-                            'subject': subject, 'html': body_html})
+                            'subject': subject, 'html': _alert_html(body_html)})
         return True
     except Exception as e:
         app.logger.error(f'Alert email error: {e}')
@@ -6063,7 +6071,7 @@ def _migration_failed_email(mid, reason):
         'from':    'Kodo Hospitality <contact@kodohospitality.com>',
         'to':      to,
         'subject': f'Kodo alert: data migration {mid} failed',
-        'html':    (f'<p>The data migration <strong>{esc(mid)}</strong> did not apply on this deploy.</p>'
+        'html':    _alert_html(f'<p>The data migration <strong>{esc(mid)}</strong> did not apply on this deploy.</p>'
                     f'<p><strong>Reason:</strong> {esc(reason)}</p>'
                     '<p>The files it touches were put back as they were, so the site keeps running on the '
                     'previous data. The migrations after it wait until it is fixed. The details are in the '

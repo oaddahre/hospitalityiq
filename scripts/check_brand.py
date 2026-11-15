@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Fail if the brand name is spelled with a macron anywhere in the repo.
+"""Fail if the brand name is spelled with a macron anywhere in the repo, or
+if the logo is not the current one (Nov 2026, slanted-dot "kodo."):
+  - the files in static/images/brand (LOGO_FILES) must exist
+  - nothing may point to the old logo or favicons (OLD_LOGO: static/img/brand,
+    kodo-logo-dark/-light, favicon-light/-dark)
+  - every page template (one with <head>) must include _favicon.html
 
 Usage: python3 scripts/check_brand.py
 Exits 1 and prints file:line for every match; exits 0 when clean.
@@ -52,9 +57,36 @@ def load_allowlist():
     return allowed
 
 
+LOGO_DIR = os.path.join("static", "images", "brand")
+LOGO_FILES = ("kodo-logo-black.svg", "kodo-logo-white.svg", "kodo-logo-black-800.png", "kodo-logo-white-800.png",
+              "favicon.svg", "favicon.ico", "favicon-16.png", "favicon-32.png", "favicon-192.png", "favicon-512.png",
+              "apple-touch-icon.png", "site.webmanifest", "og-image.png")
+OLD_LOGO = re.compile(r"img/brand/|kodo-logo-(?:dark|light)\b|favicon-(?:light|dark)\b")
+SELF = os.path.join("scripts", "check_brand.py")
+
+
+def logo_problems(files, allowed):
+    out = [f"{os.path.join(LOGO_DIR, f)}: missing" for f in LOGO_FILES if not os.path.exists(os.path.join(ROOT, LOGO_DIR, f))]
+    for rel in files:
+        if rel.lower().endswith(BINARY_EXT) or rel in allowed or rel == SELF or rel.startswith("_handoff/"):
+            continue
+        try:
+            with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
+                text = f.read()
+        except (UnicodeDecodeError, OSError):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            if OLD_LOGO.search(line) and f"{rel}:{n}" not in allowed:
+                out.append(f"{rel}:{n}: old logo or favicon: {line.strip()[:100]}")
+        if rel.startswith("templates/") and rel.endswith(".html") and "<head>" in text and '{% include "_favicon.html" %}' not in text:
+            out.append(f"{rel}: no {{% include \"_favicon.html\" %}} in its <head>")
+    return out
+
+
 def main():
     allowed = load_allowlist()
     hits = []
+    logo = logo_problems(repo_files(), allowed)
     for rel in repo_files():
         if rel.lower().endswith(BINARY_EXT) or rel in allowed:
             continue
@@ -70,8 +102,12 @@ def main():
     if hits:
         print(f"Brand check failed: {len(hits)} line(s) spell the brand with a macron (use 'Kodo'):")
         print("\n".join(hits))
+    if logo:
+        print(f"Brand check failed: {len(logo)} logo problem(s):")
+        print("\n".join(logo))
+    if hits or logo:
         return 1
-    print("Brand check passed: no macron spellings of the brand name.")
+    print("Brand check passed: no macron spellings of the brand name; the current logo and favicon everywhere.")
     return 0
 
 

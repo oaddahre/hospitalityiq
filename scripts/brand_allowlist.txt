@@ -1,2 +1,4 @@
 # Files or file:line entries allowed to keep a macron spelling of the brand.
 # One per line, e.g.  docs/history.md   or   docs/history.md:12
+# docs/BRAND.md names the old logo files on purpose (it describes this check)
+docs/BRAND.md:18

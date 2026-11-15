@@ -220,13 +220,16 @@
    --nav-logo-h: wordmark height in every top nav (landing and marketing
    pages, platform, admin), the mobile menu panels and the marketing
    footer (.lp-footer-logo-img). Width follows from the image's aspect
-   ratio. Auth-page logos keep their own sizes.
+   ratio (320 x 104). Auth pages use 28px. Never under 20px (the logo's
+   minimum, _handoff/kodo_logo/README.txt).
 
-   Every page renders both wordmarks (.logo-light: blue + black, for light
-   backgrounds; .logo-dark: blue + white). Only the one for the current
-   <html data-theme> shows, so the swap is instant and never flashes.
+   The wordmark is the slanted-dot "kodo." (static/images/brand, SVG:
+   outlined paths, the dot always #0075DE). Every page renders both
+   (.logo-light: kodo-logo-black.svg, for light backgrounds; .logo-dark:
+   kodo-logo-white.svg). Only the one for the current <html data-theme>
+   shows, so the swap is instant and never flashes.
    ═══════════════════════════════════════════════════════════════════ */
 :root[data-theme="dark"] .logo-light,
 :root:not([data-theme="dark"]) .logo-dark { display: none !important; }
-:root { --nav-logo-h: 20px; }
-@media (max-width: 767px) { :root { --nav-logo-h: 18px; } }
+:root { --nav-logo-h: 26px; }
+@media (max-width: 767px) { :root { --nav-logo-h: 22px; } }
