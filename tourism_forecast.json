@@ -368,6 +368,15 @@
    "Germany": 965643,
    "United States": 506195
   },
+  "regions": {
+   "Marrakech-Safi": 17174590,
+   "Souss-Massa": 9497254,
+   "Casablanca-Settat": 4681897,
+   "Tanger-Tétouan-Al Hoceima": 4317928,
+   "Fès-Meknès": 3302666,
+   "Rabat-Salé-Kénitra": 1836684,
+   "Drâa-Tafilalt": 2671590
+  },
   "cities_occupancy": {
    "Marrakech": 73.3,
    "Agadir": 75.1,
@@ -409,6 +418,19 @@
     "month": "2026-12",
     "value": 12053
    }
+  ]
+ },
+ "not_forecast": {
+  "markets": [
+   "United Kingdom"
+  ],
+  "cities": [
+   "Ouarzazate"
+  ],
+  "regions": [],
+  "items": [
+   "foreign tourists vs MRE",
+   "monthly arrivals, nights, occupancy and airport traffic"
   ]
  },
  "backtest": {

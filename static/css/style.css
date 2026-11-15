@@ -1923,6 +1923,16 @@ body.light .nav-logout  { color: var(--text-2); }
   .tour-table .tour-col-flash { animation: none; outline: 2px solid var(--cat-5-dot); outline-offset: -2px; }
 }
 
+/* Year selector on a Kodo year (2026E / 2027F): the cards say so */
+.kpi-label .tour-tag { vertical-align: 2px; }
+.kpi-value.tour-kpi-value--kodo { color: var(--cat-5-text); }
+.kpi-value.tour-kpi-value--na { color: var(--text-faint); font-size: 18px; }
+.tour-kpi-range { display: block; font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; color: var(--text-2); margin-top: 2px; }
+/* The selected year's column in the Outlook tables; rows with no Kodo figure */
+.tour-table .tour-col-sel { background: color-mix(in srgb, var(--cat-5-dot) 13%, transparent); }
+.tour-table th.tour-col-sel { color: var(--text); }
+.tour-table td.tour-nf { color: var(--text-faint); font-style: normal; font-weight: 400; }
+
 /* How to read the figures, and the one source line */
 .tour-notes-wrap { margin: -4px 0 20px; }
 .tour-notes-wrap .tour-disclaimer { padding: 0 0 4px; }

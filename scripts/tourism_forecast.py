@@ -368,6 +368,7 @@ s26 = (NOW26['arrivals']['base'] - mk_other_25 * NOW26['arrivals']['base'] / ARR
 EST26['markets'] = {m: round(mk26[m] * s26) for m in markets}
 rg26 = {r: first_step('nights_region_', r, LR['nights']) for r in REG}
 s26 = (NOW26['nights']['base'] - reg_hist_other * NOW26['nights']['base'] / NIGHTS[2025]) / sum(rg26.values())
+EST26['regions'] = {r: round(rg26[r] * s26) for r in REG}          # nights in classified accommodation
 EST26['cities_occupancy'] = {c: round(min(90.0, occ[c][2025] * (rg26[r] * s26 / annual(f'nights_region_{r}')[2025]) / (1 + CAP[1])), 1)
                              for c, r in CITY_REGION.items() if c in cities}
 rest_air = NOW26['air_passengers']['base'] - a_aug['value']
@@ -415,6 +416,12 @@ withheld += [
 # 2026E only for the rows still published for 2027
 EST26['markets'] = {m: v for m, v in EST26['markets'].items() if m in markets}
 EST26['cities_occupancy'] = {c: v for c, v in EST26['cities_occupancy'].items() if c in cities}
+EST26['regions'] = {r: v for r, v in EST26['regions'].items() if r in regions}
+# What is not forecast, for pages to say so ("Not forecast") instead of a blank
+NOT_FORECAST = dict(markets=[m for m in MKT if m not in markets],
+                    cities=[c for c in CITY_REGION if c not in cities],
+                    regions=[r for r in REG if r not in regions],
+                    items=['foreign tourists vs MRE', 'monthly arrivals, nights, occupancy and airport traffic'])
 
 pipe_keys = {}
 import csv
@@ -447,7 +454,7 @@ out = dict(format='kodo-tourism-forecast-1', label='Kodo forecast', generated=T[
            capacity_growth_pct=dict(base=round(CAP[1] * 100, 1), low=CAP[0] * 100, high=CAP[2] * 100),
            ramadan_month_factor=round(RAM_FACTOR, 3), afcon_january_uplift=round(AFCON_JAN),
            nowcast_2026=NOW26, forecast_2027=F27, regions_2027=regions, cities_occupancy_2027=cities,
-           markets_2027=markets, airports_2027=airports, estimate_2026=EST26, backtest=BT, check_2026=CHECK26,
+           markets_2027=markets, airports_2027=airports, estimate_2026=EST26, not_forecast=NOT_FORECAST, backtest=BT, check_2026=CHECK26,
            assumptions=ASSUMPTIONS, withheld=withheld)
 json.dump(out, open(os.path.join(ROOT, 'tourism_forecast.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 if __name__ == '__main__':
