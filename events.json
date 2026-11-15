@@ -22,8 +22,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial calendar 2025-26.",
+   "official_url": "",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-2025-2026-ecoles-maroc-420533",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "1-54-contemporary-african-art-fair-2026-02-marrakech",
@@ -45,8 +47,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/01/15/marrakech-la-foire-dart-contemporain-africain-1-54-revient-du-5-au-8-fevrier_1970418/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "ramadan-2026-02",
@@ -68,8 +72,10 @@
    "model": true,
    "model_kind": "ramadan",
    "description": "Observed in 2026.",
+   "official_url": "",
    "source": "https://wafir.ma/en/guide/calendrier-jours-feries-maroc-2026-2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-school-holidays-intermediate-break-2026-03",
@@ -91,8 +97,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial calendar 2025-26.",
+   "official_url": "",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-2025-2026-ecoles-maroc-420533",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "eid-al-fitr-2026-03",
@@ -114,8 +122,10 @@
    "model": true,
    "model_kind": "eid_fitr",
    "description": "",
+   "official_url": "",
    "source": "https://wafir.ma/en/guide/calendrier-jours-feries-maroc-2026-2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "gitex-africa-2026-04-marrakech",
@@ -137,8 +147,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.tradefairdates.com/GITEX-Africa-M8765/Marrakech.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-agriculture-show-siam-2026-04-meknes",
@@ -160,8 +172,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/466998-le-18e-siam-du-20-au-28-avril-a-meknes-sous-un-format-elargi-sur-9-jours.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "printemps-musical-des-alizes-2026-04-essaouira",
@@ -183,8 +197,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/470785-470785.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-publishing-and-book-fair-siel-2026-05-rabat-sale-temara",
@@ -206,8 +222,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://siel.ma/en/journal-isic-cp/siel-2026-welcomes-france-as-guest-of-honor/",
    "source": "https://siel.ma/en/journal-isic-cp/siel-2026-welcomes-france-as-guest-of-honor/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-school-holidays-intermediate-break-2026-05",
@@ -229,8 +247,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial calendar 2025-26.",
+   "official_url": "",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-2025-2026-ecoles-maroc-420533",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "rose-festival-2026-05-kelaat-m-gouna",
@@ -252,8 +272,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/472884-kelaat-mgouna-le-carnaval-des-roses-celebre-traditions-et-patrimoine.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "morocco-gaming-expo-2026-05-rabat-sale-temara",
@@ -275,8 +297,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.wearetech.africa/en/fils-uk/brief/brief-one/rabat-to-host-morocco-gaming-expo-in-may-2026",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "trophee-hassan-ii-and-lalla-meryem-cup-golf-2026-05-rabat-sale-temara",
@@ -298,8 +322,10 @@
    "model": true,
    "model_kind": "",
    "description": "50th edition (2026). 2027 dates not announced: the event moved from February (2025) to May (2026).",
+   "official_url": "https://www.pgatour.com/pgatour-champions/article/news/latest/2026/05/19/pga-tour-champions-trophy-hassan-ii-royal-golf-dar-es-salam-how-to-watch-pre-tournament-notes-storylines-rabat",
    "source": "https://www.pgatour.com/pgatour-champions/article/news/latest/2026/05/19/pga-tour-champions-trophy-hassan-ii-royal-golf-dar-es-salam-how-to-watch-pre-tournament-notes-storylines-rabat",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "eid-al-adha-2026-05",
@@ -321,8 +347,10 @@
    "model": true,
    "model_kind": "eid_adha",
    "description": "",
+   "official_url": "",
    "source": "https://wafir.ma/en/guide/calendrier-jours-feries-maroc-2026-2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "khouribga-african-film-festival-2026-05-khouribga",
@@ -344,8 +372,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/117820-117820.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-comedy-festival-2026-06-marrakech",
@@ -367,8 +397,10 @@
    "model": true,
    "model_kind": "",
    "description": "Successor of the Marrakech du Rire (first edition 2026).",
+   "official_url": "",
    "source": "https://fr.hespress.com/467030-467030.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fes-festival-of-world-sacred-music-2026-06-fes",
@@ -390,8 +422,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/05/21/festival-de-fes-des-musiques-sacrees-du-monde-plus-de-160-artistes-venus-des-quatre-continents-du-4-au-7-juin_1990708/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "operation-marhaba-diaspora-summer-return-2026-06",
@@ -413,8 +447,10 @@
    "model": false,
    "model_kind": "",
    "description": "2026 edition (25th). Display only: summer is already in the seasonality.",
+   "official_url": "",
    "source": "https://fr.le360.ma/societe/marhaba-2026-plus-de-41-millions-de-mre-accueillis_PHLNCNXZWFG3DMJEWYOQBNIMNA/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "dakhla-international-film-festival-2026-06-dakhla",
@@ -436,8 +472,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://aujourdhui.ma/?p=520664",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fidadoc-international-documentary-film-festival-2026-06-agadir-taghazout",
@@ -459,8 +497,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
    "source": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "mawazine-rhythms-of-the-world-2026-06-rabat-sale-temara",
@@ -482,8 +522,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://medias24.com/2026/07/03/mawazine-2026-revendique-pres-de-36-millions-de-festivaliers-a-rabat-et-sale-1715281/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "gnaoua-and-world-music-festival-2026-06-essaouira",
@@ -505,8 +547,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.festival-gnaoua.net/wp-content/uploads/2026/04/CP-GNAOUA-VF-TEMPS-FORTS-2026.pdf",
    "source": "https://www.festival-gnaoua.net/wp-content/uploads/2026/04/CP-GNAOUA-VF-TEMPS-FORTS-2026.pdf",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "national-festival-of-popular-arts-2026-07-marrakech",
@@ -528,8 +572,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://visitmarrakech.com/en/listing/national-festival-of-popular-arts/",
    "source": "https://visitmarrakech.com/en/listing/national-festival-of-popular-arts/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "jazzablanca-2026-07-casablanca",
@@ -551,8 +597,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.7news.ma/?p=14308",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "festival-des-plages-maroc-telecom-2026-07",
@@ -574,8 +622,10 @@
    "model": false,
    "model_kind": "",
    "description": "Display only (summer peak).",
+   "official_url": "",
    "source": "https://fr.hespress.com/481858-481858.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "oriental-rai-festival-2026-07-oujda",
@@ -597,8 +647,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/07/07/le-festival-du-rai-de-loriental-du-22-au-25-juillet-a-oujda_1997844/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "timitar-amazigh-and-world-music-2026-07-agadir-taghazout",
@@ -620,8 +672,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/07/16/agadir-la-21e-edition-du-festival-timitar-du-23-au-25-juillet_1999328/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "women-s-africa-cup-of-nations-wafcon-2026-07",
@@ -643,8 +697,10 @@
    "model": false,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/133165-caf-reschedules-2026-womens-africa-cup-of-nations-in-morocco.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "saidia-music-festival-2026-08-saidia",
@@ -666,8 +722,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/08/03/la-premiere-edition-du-saidia-music-festival-du-5-au-9-aout_2001865/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moussem-of-moulay-abdellah-amghar-2026-08-el-jadida",
@@ -689,8 +747,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://snrtnews.com/fr/article/el-jadida-ouverture-du-moussem-de-moulay-abdellah-amghar-156605",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "voix-de-femmes-2026-08-tamuda-bay-tetouan",
@@ -712,8 +772,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/08/07/le-festival-voix-de-femmes-revient-a-tetouan-du-12-au-15-aout_2002701/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "l-boulevard-2026-09-casablanca",
@@ -735,8 +797,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/?p=138184",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "tanjazz-2026-09-tanger",
@@ -758,8 +822,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/?p=138184",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moga-festival-2026-09-essaouira",
@@ -781,8 +847,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/?p=138184",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "assilah-international-cultural-moussem-2026-10-asilah",
@@ -804,8 +872,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "tetouan-mediterranean-film-festival-2026-10-tamuda-bay-tetouan",
@@ -827,8 +897,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "gwa-wingfoil-world-cup-dakhla-2026-10-dakhla",
@@ -850,8 +922,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://flysurfer.com/?p=4345",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-air-show-2026-10-marrakech",
@@ -873,8 +947,10 @@
    "model": true,
    "model_kind": "",
    "description": "Biennial: next edition in 2028.",
+   "official_url": "",
    "source": "https://lematin.ma/nation/marrakech-airshow-2026-pres-de-200-exposants-attendus-pour-la-8e-edition/367698/amp",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fes-international-film-festival-2026-10-fes",
@@ -896,8 +972,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "el-jadida-horse-show-salon-du-cheval-2026-10-el-jadida",
@@ -919,8 +997,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/467030-467030.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "national-theatre-festival-2026-10-tamuda-bay-tetouan",
@@ -942,8 +1022,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://lepetitjournal.com/maroc/agenda/spectacles/26e-festival-national-du-theatre-a-tetouan",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fes-festival-of-sufi-culture-2026-10-fes",
@@ -965,8 +1047,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fifa-u-17-womens-world-cup-2026-10-rabat-sale-temara",
@@ -988,8 +1072,10 @@
    "model": true,
    "model_kind": "",
    "description": "Morocco hosts the tournament every year from 2025 to 2029.",
+   "official_url": "",
    "source": "https://www.moroccoworldnews.com/2026/03/283591/fifa-confirms-dates-for-u-17-womens-world-cup-in-morocco/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-school-holidays-intermediate-break-2026-10",
@@ -1011,8 +1097,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial decision 047.26 (2026-27).",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "casablanca-international-marathon-2026-10-casablanca",
@@ -1034,8 +1122,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://visitcasablanca.ma/en/?p=10742",
    "source": "https://visitcasablanca.ma/en/?p=10742",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "ironman-70-3-agadir-2026-10-agadir-taghazout",
@@ -1057,8 +1147,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.hdsports.org/running/morocco-races-running-calendar",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "festival-des-andalousies-atlantiques-2026-10-essaouira",
@@ -1080,8 +1172,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/10/20/essaouira-le-festival-des-andalousies-atlantiques-de-retour-du-29-au-31-octobre_2013905/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-jazz-experience-2026-10-marrakech",
@@ -1103,8 +1197,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moussem-of-tan-tan-2026-10-tan-tan",
@@ -1126,8 +1222,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://lematin.ma/culture/moussem-de-tan-tan-la-19e-edition-se-tiendra-du-30-octobre-au-3-novembre/366795",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-cinema-and-common-memory-festival-2026-10-nador",
@@ -1149,8 +1247,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-choral-meeting-2026-11-marrakech",
@@ -1172,8 +1272,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "green-march-day-2026-11",
@@ -1195,8 +1297,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "ficar-rabat-international-author-film-festival-2026-11-rabat-sale-temara",
@@ -1218,8 +1322,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
    "source": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "preventica-maroc-2026-11-casablanca",
@@ -1241,8 +1347,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://vivre-marrakech.com/actualites-news/art-culture-exposition-marrakech/agenda-art-culture-marrakech-dernier-trimestre-2026/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "tanger-film-festival-2026-11-tanger",
@@ -1264,8 +1372,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "kasbah-short-film-festival-2026-11-ouarzazate",
@@ -1287,8 +1397,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-cinema-and-immigration-festival-2026-11-oujda",
@@ -1310,8 +1422,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-coffee-tea-festival-2026-11-marrakech",
@@ -1333,8 +1447,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "independence-day-2026-11",
@@ -1356,8 +1472,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "visa-for-music-2026-11-rabat-sale-temara",
@@ -1379,8 +1497,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/492398-visa-for-music-2026-rabat-devoile-la-programmation-de-sa-13e-edition.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "saffron-festival-2026-11-taliouine",
@@ -1402,8 +1522,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-international-film-festival-fifm-2026-11-marrakech",
@@ -1425,8 +1547,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.unifrance.org/festivals-et-marches/1232/festival-international-du-film-de-marrakech/2026",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "elec-expo-2026-11-casablanca",
@@ -1448,8 +1572,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.foiresinfo.fr/Casablanca-X101-S1-Foires-Casablanca.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "medays-2026-11-tanger",
@@ -1471,8 +1597,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://modeldiplomat.com/conferences/professional/medays-2026-18th-edition-2026",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-building-show-sib-2026-11-el-jadida",
@@ -1494,8 +1622,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.foiresinfo.fr/Foires-Maroc-Z135-S1.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-caftan-festival-2026-11-marrakech",
@@ -1517,8 +1647,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "festival-de-fes-cine-ville-2026-12-fes",
@@ -1540,8 +1672,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "samaa-marrakech-sufi-music-2026-12-marrakech",
@@ -1563,8 +1697,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/que-faire-marrakech-novembre/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "zamane-festival-2026-12-m-hamid-el-ghizlane",
@@ -1586,8 +1722,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "trans-saharan-international-film-festival-2026-12-zagora",
@@ -1609,8 +1747,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-school-holidays-intermediate-break-2026-12",
@@ -1632,8 +1772,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial decision 047.26 (2026-27).",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-cinema-and-migration-festival-2026-12-agadir-taghazout",
@@ -1655,8 +1797,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-film-schools-festival-2026-12-tamuda-bay-tetouan",
@@ -1678,8 +1822,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "atlantic-dialogues-2026-12-rabat-sale-temara",
@@ -1701,8 +1847,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.policycenter.ma/events/atlantic-dialogues-2026",
    "source": "https://www.policycenter.ma/events/atlantic-dialogues-2026",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "french-curriculum-schools-in-morocco-aefe-christmas-holidays-2026-12",
@@ -1724,8 +1872,10 @@
    "model": true,
    "model_kind": "aefe_school",
    "description": "",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-documentary-film-festival-2026-12-khouribga",
@@ -1747,8 +1897,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "sonara-land-of-sound-winter-edition-2026-12-marrakech",
@@ -1770,8 +1922,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "new-year-s-day-2027-01",
@@ -1793,8 +1947,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "independence-manifesto-day-2027-01",
@@ -1816,8 +1972,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "amazigh-new-year-yennayer-2027-01",
@@ -1839,8 +1997,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-english-book-festival-2027-01-marrakech",
@@ -1862,8 +2022,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "africa-eco-race-start-in-tanger-2027-01-tanger",
@@ -1885,8 +2047,10 @@
    "model": true,
    "model_kind": "",
    "description": "Race 24 January – 6 February 2027 to Lac Rose (Senegal).",
+   "official_url": "",
    "source": "https://www.racecar.com/news/103270/motorsport/africa-eco-race-confirms-18th-edition-january-24-2027-february-6-2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-mid-year-school-holidays-2027-01",
@@ -1908,8 +2072,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial decision 047.26 (2026-27).",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "africa-eco-race-moroccan-stages-2027-01",
@@ -1931,8 +2097,10 @@
    "model": false,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.moroccoworldnews.com/2026/10/343203/tangier-to-launch-2027-africa-eco-race-across-three-countries/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "on-marche-international-contemporary-dance-festival-2027-01-marrakech",
@@ -1954,8 +2122,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://culturama.ma/agenda/festival-on-marche-marrakech-2027-0023cf9e-0167-4634-a1ba-196bec26c54e",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-international-marathon-2027-01-marrakech",
@@ -1977,8 +2147,10 @@
    "model": true,
    "model_kind": "",
    "description": "Marathon and half marathon on Sunday 31 January; fun run on Saturday 30.",
+   "official_url": "https://marathonmarrakech.ma/?lang=en",
    "source": "https://marathonmarrakech.ma/?lang=en",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "ramadan-2027-02",
@@ -2000,8 +2172,10 @@
    "model": true,
    "model_kind": "ramadan",
    "description": "",
+   "official_url": "",
    "source": "https://www.khaleejtimes.com/uae/ramadan-eid-al-fitr-eid-al-adha-2027-likely-dates",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "french-curriculum-schools-in-morocco-aefe-winter-holidays-2027-02",
@@ -2023,8 +2197,10 @@
    "model": true,
    "model_kind": "aefe_school",
    "description": "",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "national-film-festival-2027-03-tanger",
@@ -2046,8 +2222,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "eid-al-fitr-2027-03",
@@ -2065,12 +2243,14 @@
    "effect": "mixed",
    "attendance": "",
    "date_status": "moon",
-   "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. expected 9–10 March (OfficeHolidays) or 10–11 March (Wafir); the range covers both.",
+   "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. Expected 9–10 or 10–11 March; the range covers both.",
    "model": true,
    "model_kind": "eid_fitr",
    "description": "",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": "Expected 9–10 March (OfficeHolidays) or 10–11 March (Wafir)."
   },
   {
    "id": "menatox-2027-congress-2027-03-rabat-sale-temara",
@@ -2092,8 +2272,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://meetingspremium.com/congres",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "solaire-expo-maroc-2027-03-casablanca",
@@ -2115,8 +2297,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.foiresinfo.fr/Solaire-Expo-Maroc-M9623/Casablanca.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fifa-congress-77th-elective-2027-03-rabat-sale-temara",
@@ -2138,8 +2322,10 @@
    "model": true,
    "model_kind": "",
    "description": "Congress on 18 March 2027; delegations arrive from the 16th.",
+   "official_url": "",
    "source": "https://en.7news.ma/official-morocco-to-host-fifa-elective-congress-in-2027/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "1-54-contemporary-african-art-fair-2027-03-marrakech",
@@ -2161,8 +2347,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://cantonfair.net/event/56219-1-54-contemporary-african-art-fair-marrakech-2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "rallye-aicha-des-gazelles-2027-03",
@@ -2184,8 +2372,10 @@
    "model": false,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.rallyeaichadesgazelles.com/en/2027-edition/dates-2027/",
    "source": "https://www.rallyeaichadesgazelles.com/en/2027-edition/dates-2027/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-school-holidays-intermediate-break-2027-03",
@@ -2207,8 +2397,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial decision 047.26 (2026-27).",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "franchise-exhibition-morocco-2027-03-casablanca",
@@ -2230,8 +2422,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://moroccofranchiseexhibition.com/",
    "source": "https://moroccofranchiseexhibition.com/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "grand-prix-hassan-ii-atp-250-2027-03-marrakech",
@@ -2253,8 +2447,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.atptour.com/-/media/files/calendar-pdfs/2026/2027-atp-tour-calendar-14-january-2026.pdf",
    "source": "https://www.atptour.com/-/media/files/calendar-pdfs/2026/2027-atp-tour-calendar-14-january-2026.pdf",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "forsk-national-congress-2027-04-rabat-sale-temara",
@@ -2276,8 +2472,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://meetingspremium.com/congres",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "halieutis-international-fisheries-show-2027-04-agadir-taghazout",
@@ -2299,8 +2497,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.expomaroc.ma/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "titan-desert-morocco-2027-04-errachidia",
@@ -2322,8 +2522,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.finishers.com/en/event/titan-desert",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marathon-des-sables-2027-04-ouarzazate",
@@ -2345,8 +2547,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://halfmds.zendesk.com/hc/en-us/articles/28553082224530-When-will-registration-for-the-MDS-LEGENDARY-2027-open",
    "source": "https://halfmds.zendesk.com/hc/en-us/articles/28553082224530-When-will-registration-for-the-MDS-LEGENDARY-2027-open",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "piarc-world-bridge-conference-beam-2027-2027-04-marrakech",
@@ -2368,8 +2572,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.conferencelists.org/marrakech/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-agriculture-show-siam-2027-04-meknes",
@@ -2391,8 +2597,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://salon-agriculture.ma/en",
    "source": "https://salon-agriculture.ma/en",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "french-curriculum-schools-in-morocco-aefe-spring-holidays-2027-04",
@@ -2414,8 +2622,10 @@
    "model": true,
    "model_kind": "aefe_school",
    "description": "",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "gitex-africa-2027-04-marrakech",
@@ -2437,8 +2647,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.financialafrik.com/en/event/marrakech-5th-edition-of-gitex-africa/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "printemps-musical-des-alizes-2027-04-essaouira",
@@ -2460,8 +2672,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/470785-470785.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "labour-day-2027-05",
@@ -2483,8 +2697,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "international-publishing-and-book-fair-siel-2027-05-rabat-sale-temara",
@@ -2506,8 +2722,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://siel.ma/",
    "source": "https://siel.ma/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "rose-festival-2027-05-kelaat-m-gouna",
@@ -2529,8 +2747,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.exoticca.com/us/blog/rose-festival-morocco-dates-events-and-travel-guide-to-kelaat-mgouna/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "rabat-international-marathon-2027-05-rabat-sale-temara",
@@ -2552,8 +2772,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.watchathletics.com/schedule/watchlive/11507",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-school-holidays-intermediate-break-2027-05",
@@ -2575,8 +2797,10 @@
    "model": true,
    "model_kind": "ma_school",
    "description": "Ministerial decision 047.26 (2026-27).",
+   "official_url": "",
    "source": "https://consonews.ma/news/service_public/vacances-scolaires-2026-2027-au-maroc-toutes-les-dates-du-public-et-des-principaux-reseaux-etrangers",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "eid-al-adha-2027-05",
@@ -2594,12 +2818,14 @@
    "effect": "mixed",
    "attendance": "",
    "date_status": "moon",
-   "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. expected 16–17 May (OfficeHolidays) or 17–18 May (Wafir).",
+   "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. Expected 16–17 or 17–18 May.",
    "model": true,
    "model_kind": "eid_adha",
    "description": "",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": "Expected 16–17 May (OfficeHolidays) or 17–18 May (Wafir)."
   },
   {
    "id": "wta-rabat-grand-prix-lalla-meryem-2027-05-rabat-sale-temara",
@@ -2621,8 +2847,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.wtatennis.com/tournaments/1005/rabat/2026",
    "source": "https://www.wtatennis.com/tournaments/1005/rabat/2026",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "khouribga-african-film-festival-2027-05-khouribga",
@@ -2644,8 +2872,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/117820-117820.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-comedy-festival-2027-06-marrakech",
@@ -2667,8 +2897,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/467030-467030.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fes-festival-of-world-sacred-music-2027-06-fes",
@@ -2690,8 +2922,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/05/21/festival-de-fes-des-musiques-sacrees-du-monde-plus-de-160-artistes-venus-des-quatre-continents-du-4-au-7-juin_1990708/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "dakhla-international-film-festival-2027-06-dakhla",
@@ -2713,8 +2947,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://aujourdhui.ma/?p=520664",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "operation-marhaba-diaspora-summer-return-2027-06",
@@ -2736,8 +2972,10 @@
    "model": false,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.lesmre.com/fr/actualites/marhaba-2026-dates-ports-officiels-algesiras-sete-genes",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "islamic-new-year-1-moharram-1449-2027-06",
@@ -2759,8 +2997,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fidadoc-international-documentary-film-festival-2027-06-agadir-taghazout",
@@ -2782,8 +3022,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
    "source": "https://www.ccm.ma/en/festivals-manifestations-cinematographiques",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "mawazine-rhythms-of-the-world-2027-06-rabat-sale-temara",
@@ -2805,8 +3047,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://medias24.com/2026/07/03/mawazine-2026-revendique-pres-de-36-millions-de-festivaliers-a-rabat-et-sale-1715281/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "gnaoua-and-world-music-festival-2027-06-essaouira",
@@ -2828,8 +3072,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.festival-gnaoua.net/wp-content/uploads/2026/04/CP-GNAOUA-VF-TEMPS-FORTS-2026.pdf",
    "source": "https://www.festival-gnaoua.net/wp-content/uploads/2026/04/CP-GNAOUA-VF-TEMPS-FORTS-2026.pdf",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "national-festival-of-popular-arts-2027-07-marrakech",
@@ -2851,8 +3097,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://visitmarrakech.com/en/listing/national-festival-of-popular-arts/",
    "source": "https://visitmarrakech.com/en/listing/national-festival-of-popular-arts/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "jazzablanca-2027-07-casablanca",
@@ -2874,8 +3122,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.7news.ma/?p=14308",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moroccan-public-schools-summer-holidays-2027-07",
@@ -2897,8 +3147,10 @@
    "model": false,
    "model_kind": "",
    "description": "Display only: summer is already in the monthly seasonality of the occupancy model.",
+   "official_url": "",
    "source": "https://lepetitjournal.com/maroc/education/calendrier-scolaire-ecoles-maroc-420533",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "wedding-season-pattern-2027-07",
@@ -2920,8 +3172,10 @@
    "model": false,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.moroccoworldnews.com/2019/06/79324/guide-summer-festivals-morocco/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "oriental-rai-festival-2027-07-oujda",
@@ -2943,8 +3197,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/07/07/le-festival-du-rai-de-loriental-du-22-au-25-juillet-a-oujda_1997844/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "timitar-amazigh-and-world-music-2027-07-agadir-taghazout",
@@ -2966,8 +3222,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/07/16/agadir-la-21e-edition-du-festival-timitar-du-23-au-25-juillet_1999328/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "throne-day-2027-07",
@@ -2989,8 +3247,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moussem-of-moulay-abdellah-amghar-2027-08-el-jadida",
@@ -3012,8 +3272,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://visitcasablanca.ma/en/?p=10754",
    "source": "https://visitcasablanca.ma/en/?p=10754",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "voix-de-femmes-2027-08-tamuda-bay-tetouan",
@@ -3035,8 +3297,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/08/07/le-festival-voix-de-femmes-revient-a-tetouan-du-12-au-15-aout_2002701/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "oued-ed-dahab-day-2027-08",
@@ -3058,8 +3322,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "eid-al-mawlid-prophets-birthday-2027-08",
@@ -3077,12 +3343,14 @@
    "effect": "up",
    "attendance": "",
    "date_status": "moon",
-   "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. expected 14 or 15 August, two days off (Wafir, OfficeHolidays).",
+   "date_basis": "Moon-dependent: the Ministry of Habous confirms the evening before. Expected 14 or 15 August, two days off.",
    "model": true,
    "model_kind": "holiday",
    "description": "",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": "Expected 14 or 15 August (Wafir, OfficeHolidays)."
   },
   {
    "id": "revolution-of-the-king-and-the-people-and-youth-day-2027-08",
@@ -3104,8 +3372,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marhaba-return-peak-tanger-med-2027-08-tanger",
@@ -3127,8 +3397,10 @@
    "model": false,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.le360.ma/society/traveling-through-tanger-med-marhaba-traffic-to-peak-aug-25-30_YXS5XWMJHJADZGNL2XKQCS2BCE/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "l-boulevard-2027-09-casablanca",
@@ -3150,8 +3422,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/?p=138184",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "tanjazz-2027-09-tanger",
@@ -3173,8 +3447,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/?p=138184",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "moga-festival-2027-09-essaouira",
@@ -3196,8 +3472,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://en.hespress.com/?p=138184",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "tetouan-mediterranean-film-festival-2027-10-tamuda-bay-tetouan",
@@ -3219,8 +3497,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.ccm.ma/en/festival.php?id=10",
    "source": "https://www.ccm.ma/en/festival.php?id=10",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "gka-kite-surf-world-cup-dakhla-2027-10-dakhla",
@@ -3242,8 +3522,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.gkakiteworldtour.com/event/gka-kite-surf-world-cup-dakhla-2025/",
    "source": "https://www.gkakiteworldtour.com/event/gka-kite-surf-world-cup-dakhla-2025/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fes-international-film-festival-2027-10-fes",
@@ -3265,8 +3547,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "el-jadida-horse-show-salon-du-cheval-2027-10-el-jadida",
@@ -3288,8 +3572,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://fr.hespress.com/467030-467030.html",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "cosmetista-expo-north-west-africa-2027-10-casablanca",
@@ -3311,8 +3597,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://www.cosmetistaexpo.com/",
    "source": "https://www.cosmetistaexpo.com/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "fes-festival-of-sufi-culture-2027-10-fes",
@@ -3334,8 +3622,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://latribunedemarrakech.com/festivals-maroc/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "casablanca-international-marathon-2027-10-casablanca",
@@ -3357,8 +3647,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "https://visitcasablanca.ma/en/?p=10742",
    "source": "https://visitcasablanca.ma/en/?p=10742",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "ironman-70-3-agadir-2027-10-agadir-taghazout",
@@ -3380,8 +3672,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.hdsports.org/running/morocco-races-running-calendar",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "festival-des-andalousies-atlantiques-2027-10-essaouira",
@@ -3403,8 +3697,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://telquel.ma/instant-t/2026/10/20/essaouira-le-festival-des-andalousies-atlantiques-de-retour-du-29-au-31-octobre_2013905/",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "unity-day-aid-al-wahda-2027-10",
@@ -3426,8 +3722,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "https://www.maroc.ma/fr/actualites/sa-majeste-le-roi-decrete-le-31-octobre-fete-de-lunite-communique-du-cabinet-royal",
    "source": "https://www.maroc.ma/fr/actualites/sa-majeste-le-roi-decrete-le-31-octobre-fete-de-lunite-communique-du-cabinet-royal",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "green-march-day-2027-11",
@@ -3449,8 +3747,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "visa-for-music-2027-11-rabat-sale-temara",
@@ -3472,8 +3772,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.musicinafrica.net/magazine/open-call-visa-music-2026",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "independence-day-2027-11",
@@ -3495,8 +3797,10 @@
    "model": true,
    "model_kind": "holiday",
    "description": "Public holiday (fixed date).",
+   "official_url": "",
    "source": "https://www.officeholidays.com/countries/morocco/2027",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   },
   {
    "id": "marrakech-international-film-festival-fifm-2027-11-marrakech",
@@ -3518,8 +3822,10 @@
    "model": true,
    "model_kind": "",
    "description": "",
+   "official_url": "",
    "source": "https://www.unifrance.org/festivals-et-marches/1232/festival-international-du-film-de-marrakech/2026",
-   "checked": "2026-11-03"
+   "checked": "2026-11-03",
+   "source_note": ""
   }
  ]
 }

@@ -10,6 +10,12 @@ the repo) is an internal list the occupancy model reads on top of it
 (load_model_events): school holidays in the visitors' home countries,
 never shown to users. The displayed list holds only what matters in
 Morocco: Moroccan holidays and school breaks, and events held in Morocco.
+
+Sources: "source" (the link the dates were checked against, often a press
+article), "checked" and "source_note" are internal records, for verifying
+dates; admins see them, clients never do (public_event()). Clients see
+"official_url" only: the event's own official page (organiser, venue,
+ministry or official tourism body), shown as "Official page", or nothing.
 See docs/EVENTS.md.
 """
 import json
@@ -27,7 +33,42 @@ OVERRIDES_FORMAT = 'kodo-event-overrides-1'
 
 FIELDS = ('id', 'name', 'type', 'city', 'market', 'venue', 'start', 'end', 'precision', 'recurrence', 'impact',
           'impact_reason', 'effect', 'attendance', 'date_status', 'date_basis', 'model', 'model_kind', 'markets',
-          'description', 'source', 'checked')
+          'description', 'official_url', 'source', 'checked', 'source_note')
+# Internal source records: in events.json and the admin, never sent to clients
+INTERNAL_FIELDS = ('source', 'checked', 'source_note')
+
+# Press outlets and listing sites used to check dates. They may be an
+# internal "source", never an "official_url", and their names must not
+# appear in anything a client sees (scripts/check_events.py, tests).
+PRESS_DOMAINS = (
+    'hespress.com', 'telquel.ma', 'latribunedemarrakech.com', 'le360.ma', 'medias24.com', 'lematin.ma', '7news.ma',
+    'moroccoworldnews.com', 'aujourdhui.ma', 'consonews.ma', 'lepetitjournal.com', 'snrtnews.com', 'khaleejtimes.com',
+    'financialafrik.com', 'wearetech.africa', 'hdsports.org', 'lesmre.com', 'culturama.ma', 'vivre-marrakech.com',
+    'musicinafrica.net', 'officeholidays.com', 'wafir.ma', 'tradefairdates.com', 'conferencelists.org', 'foiresinfo.fr',
+    'meetingspremium.com', 'modeldiplomat.com', 'finishers.com', 'exoticca.com', 'watchathletics.com', 'racecar.com',
+    'flysurfer.com', 'unifrance.org', 'cantonfair.net', 'expomaroc.ma', 'hespress', 'barlamane.com', 'leseco.ma',
+    'lavieeco.com', 'bladi.net', 'ecoactu.ma', 'yabiladi.com', 'h24info.ma', 'lesiteinfo.com', 'hibapress.com',
+)
+PRESS_NAMES = (
+    'Hespress', 'TelQuel', 'Tribune de Marrakech', 'Le360', 'Médias24', 'Medias24', 'Le Matin', '7news', 'Morocco World News',
+    "Aujourd'hui le Maroc", 'Consonews', 'Petit Journal', 'SNRT', 'Khaleej Times', 'Financial Afrik', 'We Are Tech',
+    'Music In Africa', 'OfficeHolidays', 'Office Holidays', 'Wafir', 'Bladi', 'Yabiladi', 'EcoActu', 'La Vie éco',
+    'Barlamane', 'H24info', 'Le Site Info', 'Hibapress', 'Les Eco',
+)
+
+
+def domain(url):
+    return re.sub(r'^https?://(www\.)?', '', str(url or '')).split('/')[0].lower()
+
+
+def is_press(url):
+    d = domain(url)
+    return any(d == p or d.endswith('.' + p) or (p.find('.') < 0 and p in d) for p in PRESS_DOMAINS)
+
+
+def public_event(e):
+    """An event as clients see it: no internal source records."""
+    return {k: v for k, v in e.items() if k not in INTERNAL_FIELDS}
 # Display labels: the one place stored values become what users read
 # (served as "labels" by /api/events and /api/admin/events)
 TYPES = {
@@ -174,6 +215,11 @@ def validate(e, types=TYPES):
         return 'an event can last at most 120 days'
     if not re.match(r'^https?://', e['source']):
         return 'source must be a link (https://…)'
+    if e.get('official_url'):
+        if not re.match(r'^https://', e['official_url']):
+            return 'official page must be a link (https://…)'
+        if is_press(e['official_url']):
+            return 'official page must be the organiser, venue, a ministry or an official tourism body, not a press or listing site'
     if e['date_status'] in ('estimated', 'moon') and not e.get('date_basis'):
         return 'say what an estimated date is based on (date_basis)'
     return None

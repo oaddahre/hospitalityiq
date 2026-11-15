@@ -127,8 +127,7 @@ const KodoEvents = (() => {
         ${row('About', esc(e.description))}
         ${row('Recurrence', esc(label('recurrence', e.recurrence)))}
         ${row('Occupancy model', e.model && e.precision !== 'month' ? 'Counted (Kodo Estimates)' : 'Shown only, not counted' + (e.precision === 'month' ? ' (month only)' : ''))}
-        ${row('Source', `<a href="${attr(e.source)}" target="_blank" rel="noopener">${esc(e.source.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])} ↗</a>`)}
-        ${row('Date last checked', esc(e.checked))}
+        ${row('Source', e.official_url ? `<a href="${attr(e.official_url)}" target="_blank" rel="noopener">Official page ↗</a>` : '')}
       </dl>`;
   }
   // ids: one event (detail) or several (a list; picking one shows its detail with a way back)
@@ -186,17 +185,17 @@ const KodoEvents = (() => {
         `DTSTART;VALUE=DATE:${e.start.replace(/-/g, '')}`, `DTEND;VALUE=DATE:${iso(addDays(parse(e.end), 1)).replace(/-/g, '')}`,
         fold(`SUMMARY:${icsEsc(e.name + (e.date_status === 'confirmed' ? '' : ` (${statusLabel(e.date_status)})`))}`),
         fold(`LOCATION:${icsEsc([e.venue, cityLabel(e)].filter(Boolean).join(', '))}`),
-        fold(`DESCRIPTION:${icsEsc(`${impactText(e.impact)}: ${e.impact_reason}\n${statusLabel(e.date_status)}${e.date_basis ? ': ' + e.date_basis : ''}\nSource: ${e.source} (checked ${e.checked})`)}`),
-        fold(`URL:${e.source}`), 'END:VEVENT');
+        fold(`DESCRIPTION:${icsEsc(`${impactText(e.impact)}: ${e.impact_reason}\n${statusLabel(e.date_status)}${e.date_basis ? ': ' + e.date_basis : ''}${e.official_url ? '\nOfficial page: ' + e.official_url : ''}`)}`),
+        ...(e.official_url ? [fold(`URL:${e.official_url}`)] : []), 'END:VEVENT');
     });
     lines.push('END:VCALENDAR');
     download(`kodo-events-${viewName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, lines.join('\r\n') + '\r\n', 'text/calendar');
   }
   function exportCsv(events, viewName) {
-    const cols = ['name', 'type', 'city', 'venue', 'start', 'end', 'impact', 'impact_reason', 'date_status', 'date_basis', 'attendance', 'recurrence', 'source', 'checked'];
+    const cols = ['name', 'type', 'city', 'venue', 'start', 'end', 'impact', 'impact_reason', 'date_status', 'date_basis', 'attendance', 'recurrence', 'official_url'];
     const shown = { type: 1, impact: 1, date_status: 1, recurrence: 1 };   // stored value → display label
     const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
-    const head = ['Name', 'Type', 'City', 'Venue', 'Start', 'End', 'Impact', 'Why it matters', 'Date status', 'Date basis', 'Attendance', 'Recurrence', 'Source', 'Date last checked'];
+    const head = ['Name', 'Type', 'City', 'Venue', 'Start', 'End', 'Impact', 'Why it matters', 'Date status', 'Date basis', 'Attendance', 'Recurrence', 'Official page'];
     const rows = [head.map(q).join(',')].concat(events.map(e => cols.map(c => q(c === 'city' ? cityLabel(e) : shown[c] ? label(c, e[c]) : e[c])).join(',')));
     download(`kodo-events-${viewName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.csv`, '\ufeff' + rows.join('\r\n'), 'text/csv;charset=utf-8');
   }

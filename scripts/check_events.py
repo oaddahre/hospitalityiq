@@ -2,11 +2,14 @@
 python3 scripts/check_events.py
 
 Every event must pass events_db.validate(); ids must be unique across both
-files; the internal list holds only model-only types. Prints the counts by
-type and date status. Exit code 1 on any problem."""
+files; the internal list holds only model-only types; no press outlet or
+listing site may reach a client (official_url, or a name in a visible
+field). Prints the counts by type and date status. Exit code 1 on any
+problem."""
 import collections
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,6 +38,18 @@ for e in internal:
         problems.append(f"model_holidays.json {e.get('id')}: {err}")
 problems += [f"{e['id']}: type {e['type']} belongs in model_holidays.json (never displayed)"
              for e in events if e.get('type') in events_db.MODEL_ONLY_TYPES and e['type'] not in events_db.TYPES]
+# Press outlets and listing sites stay internal (source, source_note)
+VISIBLE = ('name', 'description', 'date_basis', 'impact_reason', 'venue', 'attendance', 'official_url')
+press_re = re.compile('|'.join(re.escape(n) for n in events_db.PRESS_NAMES + events_db.PRESS_DOMAINS), re.I)
+for e in events:
+    if e.get('official_url') and events_db.is_press(e['official_url']):
+        problems.append(f"{e['id']}: official_url is a press or listing site ({events_db.domain(e['official_url'])})")
+    for k in VISIBLE:
+        m = press_re.search(str(e.get(k) or ''))
+        if m:
+            problems.append(f"{e['id']}: {k} names a press outlet or listing site ({m.group(0)}); move it to source_note")
+    if 'official_url' not in e:
+        problems.append(f"{e['id']}: official_url missing (empty if the event has no official page)")
 print(f'{len(events)} events ·', dict(collections.Counter(e['type'] for e in events)))
 print('date status:', dict(collections.Counter(e['date_status'] for e in events)))
 print(f'{len(internal)} internal (model only) ·', dict(collections.Counter(e['type'] for e in internal)))

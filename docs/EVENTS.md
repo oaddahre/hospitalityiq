@@ -64,8 +64,16 @@ editor all use it.
 | `model_kind` | optional pattern with its own point table: `ramadan`, `eid_fitr`, `eid_adha`, `ma_school`, `aefe_school` |
 | `markets` | `model_holidays.json` only: the visitors' countries a school holiday belongs to (`FR`, `UK`, `ES`, `DE`, `NL`, `BE`, `AE`, `SA`) |
 | `description` | short note |
-| `source` | link to the source used |
-| `checked` | date the source was last checked |
+| `official_url` | the event's own official page (organiser, venue, ministry or official tourism body), shown to clients as "Official page"; empty when there is none. Never a press or listing site |
+| `source` | internal: link to the source the dates were checked against (a press article is fine). Admins see it; clients never do |
+| `checked` | internal: date the source was last checked |
+| `source_note` | internal: anything else about the sources, e.g. which outlet gave which date |
+
+Clients see `official_url` only (`events_db.public_event()` drops the
+internal fields from `/api/events`). Press outlet and listing-site names
+must not appear in any client-visible field (name, description,
+`date_basis`, `impact_reason`, venue, attendance): put them in
+`source_note`. `scripts/check_events.py` refuses both.
 
 ## Adding or updating events
 
@@ -91,7 +99,8 @@ which checks every field, the ids and the date bases in both files. Rules:
   edition's pattern with `date_status: "estimated"` and say so in
   `date_basis`, or leave the event out.
 - Once an organiser publishes the dates, update `start`/`end`, set
-  `date_status` to `confirmed`, update `source` and `checked`.
+  `date_status` to `confirmed`, update `source` and `checked`, and set
+  `official_url` if the organiser's page has the dates.
 - A recurring event gets one entry per edition (2026 and 2027 are separate
   rows), so past editions keep their real dates.
 - Admin overrides win over `events.json` for the same id. To fold an admin

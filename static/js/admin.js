@@ -1780,7 +1780,7 @@ function renderEventsTable() {
       || (show === 'edited' && (e.edited || e.added)) || (show === 'estimated' && ['estimated', 'moon'].includes(e.date_status)))
     && (!q || [e.name, e.city, evLabel('type', e.type), e.venue].join(' ').toLowerCase().includes(q)));
   const t = document.getElementById('ev-table');
-  t.innerHTML = '<thead><tr><th>Dates</th><th>Event</th><th>City</th><th>Type</th><th>Impact</th><th>Date status</th><th></th></tr></thead>';
+  t.innerHTML = '<thead><tr><th>Dates</th><th>Event</th><th>City</th><th>Type</th><th>Impact</th><th>Date status</th><th>Source (internal)</th><th>Checked</th><th>Clients see</th><th></th></tr></thead>';
   const tb = document.createElement('tbody');
   rows.slice(0, 300).forEach(e => {
     const tr = document.createElement('tr');
@@ -1788,6 +1788,18 @@ function renderEventsTable() {
     const cells = [e.start === e.end ? e.start : `${e.start} → ${e.end}`, e.name + (e.added ? ' (added here)' : e.edited ? ' (edited here)' : ''),
       e.city, evLabel('type', e.type), evLabel('impact', e.impact), evLabel('date_status', e.date_status)];
     cells.forEach(c => { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });
+    // Internal source record (admins only) and what clients see instead
+    const srcTd = document.createElement('td');
+    if (e.source) {
+      const a = document.createElement('a');
+      a.href = e.source; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = e.source.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
+      srcTd.appendChild(a);
+      if (e.source_note) srcTd.appendChild(Object.assign(document.createElement('div'), { textContent: e.source_note, className: 'adm-hint' }));
+    }
+    const chkTd = document.createElement('td'); chkTd.textContent = e.checked || '';
+    const seeTd = document.createElement('td'); seeTd.textContent = e.official_url ? 'Official page' : 'No source';
+    tr.append(srcTd, chkTd, seeTd);
     const td = document.createElement('td');
     td.style.whiteSpace = 'nowrap';
     const edit = document.createElement('button');
@@ -1806,7 +1818,7 @@ function renderEventsTable() {
     td.append(edit, hide); tr.appendChild(td); tb.appendChild(tr);
   });
   t.appendChild(tb);
-  if (!rows.length) t.insertAdjacentHTML('beforeend', '<tbody><tr><td colspan="7">No events match.</td></tr></tbody>');
+  if (!rows.length) t.insertAdjacentHTML('beforeend', '<tbody><tr><td colspan="10">No events match.</td></tr></tbody>');
 }
 function eventMsg(text, ok) {
   const m = document.getElementById('ev-msg');

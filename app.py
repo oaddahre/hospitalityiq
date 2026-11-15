@@ -5336,7 +5336,7 @@ def _home_city():
 @app.route('/api/events')
 @login_required
 def api_events():
-    events = EV.load_events(DATA_DIR)
+    events = [EV.public_event(e) for e in EV.load_events(DATA_DIR)]
     for e in events:
         for k in ('hidden', 'edited', 'added'):
             e.pop(k, None)
