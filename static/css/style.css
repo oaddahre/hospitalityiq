@@ -5699,6 +5699,23 @@ body.light .nav-logout  { color: var(--text-2); }
   color: var(--text);
   line-height: 1.2;
 }
+/* CONFIDENCE_UI (flags.py): the confidence line on modelled KPI cards, and a greyed value under medium */
+.kpi-conf { display: block; font-family: 'Sweet Sans Pro', sans-serif; font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.kpi-conf:empty { display: none; }
+.kpi-value.kpi-value--limited { color: var(--text-faint); }
+
+.val-assumptions {
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: 'Sweet Sans Pro', sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.val-assumptions-title { font-size: 11px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.val-assumptions ul { margin: 0; padding-left: 18px; }
 .val-kpi-sub {
   font-family: 'Sweet Sans Pro', sans-serif;
   font-size: 10px;

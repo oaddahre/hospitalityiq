@@ -425,7 +425,20 @@ V2 = {
     'range_closed':             5,     # closed or unknown (5+ nights without a price in a row)
     'clamp_low':                5,
     'clamp_high':              98,
+
+    # With QUALITY_RANGES on (flags.py; off until approved): prices that fail
+    # the data-quality checks (data_quality.py, score under USABLE_SCORE) are
+    # left out, and the range widens where the data are thin
+    'range_thin_history':       2,     # under thin_history_days of prices, on top of range_short_history
+    'thin_history_days':       14,
+    'range_low_quality':        2,     # the hotel's prices average a quality score under low_quality
+    'low_quality':            0.7,
 }
+
+
+def quality_ranges_on():
+    import flags
+    return flags.on('QUALITY_RANGES')
 
 def _median(xs):
     xs = sorted(xs)
@@ -478,10 +491,24 @@ class V2Inputs:
     """Everything v2 needs, built once from the loaded rates and coverage,
     as it stood on as_of (only prices collected up to that day)."""
 
-    def __init__(self, hotels, performance, rate_rows, coverage_rows, as_of):
+    def __init__(self, hotels, performance, rate_rows, coverage_rows, as_of, quality=False):
         c = V2
-        self.hotels, self.as_of = hotels, as_of
+        self.hotels, self.as_of, self.quality = hotels, as_of, quality
         start = (as_of - timedelta(days=c['normal_window_days'])).isoformat()
+        self.price_quality = {}
+        if quality:                     # QUALITY_RANGES: leave out prices that failed the checks
+            import data_quality as DQ
+            fl = DQ.price_flags([r for r in rate_rows if r.get('scrape_date', '') <= as_of.isoformat()], hotels, as_of)
+            scores = {}
+            kept = []
+            for r in rate_rows:
+                k = (str(r['hotel_id']), r.get('stay_date', ''), r.get('scrape_date', ''))
+                sc = DQ.score(fl.get(k, []))
+                scores.setdefault(k[0], []).append(sc)
+                if sc >= DQ.USABLE_SCORE:
+                    kept.append(r)
+            rate_rows = kept
+            self.price_quality = {h: sum(v) / len(v) for h, v in scores.items() if v}
         self.latest = {}        # hid -> {night: (scrape_date, rate)}
         self.scraped = {}       # hid -> {scrape_date: set(nights priced)}
         for r in rate_rows:
@@ -699,6 +726,11 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
         half += c['range_no_history']
     elif inp.history_days.get(hid, 0) < c['long_history_days']:
         half += c['range_short_history']
+    if inp.quality:
+        if src == 'history' and inp.history_days.get(hid, 0) < c['thin_history_days']:
+            half += c['range_thin_history']
+        if inp.price_quality.get(hid, 1.0) < c['low_quality']:
+            half += c['range_low_quality']
     if price is None and gap != 'confirmed':
         half += c['range_no_price_tonight']
     if gap == 'candidate':
@@ -786,11 +818,13 @@ class OccupancyModel:
     def open_hotels(self):
         return {h: r for h, r in self.hotels.items() if r.get('status', '').lower() in ('open', 'operating')}
 
-    def v2_estimates(self, nights, as_of=None, hotel_ids=None):
+    def v2_estimates(self, nights, as_of=None, hotel_ids=None, quality=None):
         """{(hotel_id, night iso): v2 result} for these nights (dates), with
-        only the prices collected up to as_of (default: today)."""
+        only the prices collected up to as_of (default: today). quality: the
+        QUALITY_RANGES rules (default: the flag)."""
         as_of = as_of or datetime.now(MOROCCO_TZ).date()
-        inp = V2Inputs(self.open_hotels(), self.performance, self.rate_rows, self.coverage, as_of)
+        quality = quality_ranges_on() if quality is None else quality
+        inp = V2Inputs(self.open_hotels(), self.performance, self.rate_rows, self.coverage, as_of, quality=quality)
         gaps = v2_gaps(inp, nights)
         out = {}
         for hid in (hotel_ids or inp.hotels):
@@ -974,21 +1008,33 @@ def run_occupancy_model():
             maybe_calibrate()
         except Exception as e:
             print(f'Calibration failed: {e}')
+        try:                            # data-quality checks on the new prices (data_quality.py)
+            import data_quality
+            rep = data_quality.run(str(DATA_DIR))
+            print(f"Data quality: {len(rep['problems'])} problem(s)")
+        except Exception as e:
+            print(f'Data quality checks failed: {e}')
         return results
     finally:
         lock.close()
 
 
 # ─── CALIBRATION ─────────────────────────────────────────────────────────────
-# Compares v1 and v2 with real figures from daily_performance.csv (what
-# hotels upload in the admin: hotel_id, date, occupancy as a fraction or
-# a %). For each real night, both models are run as they would have run
-# the day before (only prices collected up to then). Reports the average
-# error in points by city and hotel type. With no real figures it does
-# nothing and says so. Run monthly after the nightly model run, or by hand
-# (python3 occupancy_model.py calibrate).
+# Compares v1 and v2 with real figures hotels report (hotel_figures.py: the
+# admin's Upload, confidential, never shown to clients):
+#   daily_performance.csv    one night (occupancy as a fraction or a %)
+#   monthly_performance.csv  one month (occupancy %)
+# Each night is estimated as the model would have run the day before (only
+# prices collected up to then); a month is the average of its nights. The
+# error is reported overall and by hotel, city, month and hotel type, for
+# nights and months separately. With no real figures it does nothing and
+# says so. Run monthly after the nightly model run, from the admin, or by
+# hand (python3 occupancy_model.py calibrate). Report only: no weight is
+# changed automatically.
 
 CALIBRATION_MIN_NIGHTS = 30   # below this the errors are reported but flagged as too few to judge
+CALIBRATION_MIN_MONTHS = 6
+MONTHLY_PERF_CSV = str(DATA_DIR / 'monthly_performance.csv')
 
 
 def _real_figures(path):
@@ -1007,20 +1053,29 @@ def _real_figures(path):
     return out
 
 
-def calibrate_model(calibration_csv_path=DAILY_PERF_CSV, today=None):
-    today = today or datetime.now(MOROCCO_TZ).date()
-    real = {k: v for k, v in _real_figures(calibration_csv_path).items() if k[1] < today}
-    model = OccupancyModel()
-    real = {k: v for k, v in real.items() if k[0] in model.open_hotels()}
-    result = {'run_at': datetime.now(MOROCCO_TZ).isoformat(timespec='seconds'), 'month': today.strftime('%Y-%m'),
-              'source': os.path.basename(calibration_csv_path)}
-    if not real:
-        result.update(status='no_data', message='No real figures in daily_performance.csv for open hotels: '
-                      'calibration not run.')
-        return result
-    errors = []
-    for night in sorted({d for _, d in real}):
-        hids = [h for h, d in real if d == night]
+def _real_months(path):
+    out = {}
+    try:
+        with open(path, encoding='utf-8') as f:
+            for r in csv.DictReader(f):
+                try:
+                    occ = float(r['occupancy'])
+                    m = r['month'][:7]
+                    date_of(m + '-01')
+                except (KeyError, TypeError, ValueError):
+                    continue
+                out[(str(r.get('hotel_id', '')), m)] = occ * 100 if occ <= 1.5 else occ
+    except OSError:
+        pass
+    return out
+
+
+def _night_estimates(model, wanted):
+    """{(hid, night): (v1, v2, v2_low, v2_high)} for {night: [hids]}, each
+    as the model would have run the day before."""
+    out = {}
+    for night in sorted(wanted):
+        hids = sorted(set(wanted[night]))
         v2 = model.v2_estimates([night], as_of=night - timedelta(days=1), hotel_ids=hids)
         for hid in hids:
             hotel = model.hotels[hid]
@@ -1032,37 +1087,98 @@ def calibrate_model(calibration_csv_path=DAILY_PERF_CSV, today=None):
             p1, _ = estimate_occupancy(hotel, datetime.combine(night, datetime.min.time()), scraped_bar=bar,
                                        baseline_adr=adr, recent_price_days=model.recent_price_days(hid, night))
             e2 = v2.get((hid, night.isoformat()))
-            errors.append({'hotel_id': hid, 'date': night.isoformat(), 'city': hotel.get('city', ''),
-                           'hotel_type': classify_hotel_type(hotel), 'actual': round(real[(hid, night)], 1),
-                           'v1': round(p1 * 100, 1), 'v2': e2['mid'] if e2 else None,
-                           'v2_low': e2['low'] if e2 else None, 'v2_high': e2['high'] if e2 else None})
+            out[(hid, night)] = (round(p1 * 100, 1), e2['mid'] if e2 else None,
+                                 e2['low'] if e2 else None, e2['high'] if e2 else None)
+    return out
 
-    def summary(rows):
-        out = {'n': len(rows)}
-        for m in ('v1', 'v2'):
-            d = [r[m] - r['actual'] for r in rows if r[m] is not None]
-            out[f'{m}_mae_pts'] = round(sum(abs(x) for x in d) / len(d), 1) if d else None
-            out[f'{m}_bias_pts'] = round(sum(d) / len(d), 1) if d else None
-        inside = [r for r in rows if r['v2_low'] is not None]
-        out['v2_inside_range_pct'] = round(100 * sum(r['v2_low'] <= r['actual'] <= r['v2_high'] for r in inside) / len(inside)) if inside else None
-        return out
-    group = lambda k: {g: summary([r for r in errors if r[k] == g]) for g in sorted({r[k] for r in errors})}
-    result.update(status='ok', hotels=len({r['hotel_id'] for r in errors}), overall=summary(errors),
-                  by_city=group('city'), by_hotel_type=group('hotel_type'), details=errors[:50],
-                  abroad_holidays=abroad_holidays_test(errors, model),
-                  message=f'{len(errors)} real nights from {len({r["hotel_id"] for r in errors})} hotels compared.'
-                  + (f' Too few to judge either model (under {CALIBRATION_MIN_NIGHTS} nights).' if len(errors) < CALIBRATION_MIN_NIGHTS else ''))
+
+def _summary(rows):
+    out = {'n': len(rows)}
+    for m in ('v1', 'v2'):
+        d = [r[m] - r['actual'] for r in rows if r[m] is not None]
+        out[f'{m}_mae_pts'] = round(sum(abs(x) for x in d) / len(d), 1) if d else None
+        out[f'{m}_bias_pts'] = round(sum(d) / len(d), 1) if d else None
+    inside = [r for r in rows if r['v2_low'] is not None]
+    out['v2_inside_range_pct'] = round(100 * sum(r['v2_low'] <= r['actual'] <= r['v2_high'] for r in inside) / len(inside)) if inside else None
+    return out
+
+
+def _groups(rows, key):
+    return {g: _summary([r for r in rows if r[key] == g]) for g in sorted({r[key] for r in rows})}
+
+
+def calibrate_model(calibration_csv_path=DAILY_PERF_CSV, today=None, monthly_csv_path=MONTHLY_PERF_CSV):
+    today = today or datetime.now(MOROCCO_TZ).date()
+    model = OccupancyModel()
+    open_ids = model.open_hotels()
+    real = {k: v for k, v in _real_figures(calibration_csv_path).items() if k[1] < today and k[0] in open_ids}
+    months = {k: v for k, v in _real_months(monthly_csv_path).items()
+              if k[1] < today.strftime('%Y-%m') and k[0] in open_ids}
+    result = {'run_at': datetime.now(MOROCCO_TZ).isoformat(timespec='seconds'), 'month': today.strftime('%Y-%m'),
+              'source': ', '.join(os.path.basename(p) for p in (calibration_csv_path, monthly_csv_path))}
+    if not real and not months:
+        result.update(status='no_data', message='No real figures from hotels yet (daily or monthly) for open hotels: '
+                      'calibration not run.')
+        return result
+    wanted = {}
+    for hid, d in real:
+        wanted.setdefault(d, []).append(hid)
+    month_nights = {}
+    for hid, m in months:
+        y, mo = int(m[:4]), int(m[5:])
+        first = date(y, mo, 1)
+        nn = [first + timedelta(days=i) for i in range(((date(y + (mo == 12), mo % 12 + 1, 1)) - first).days)]
+        month_nights[(hid, m)] = nn
+        for n in nn:
+            wanted.setdefault(n, []).append(hid)
+    est = _night_estimates(model, wanted)
+
+    def unit(hid, actual, nights, **extra):
+        hotel = model.hotels[hid]
+        vals = [est[(hid, n)] for n in nights]
+        mean = lambda i: (round(sum(v[i] for v in vals) / len(vals), 1) if vals and all(v[i] is not None for v in vals) else None)
+        return {'hotel_id': hid, 'hotel': hotel.get('name', ''), 'city': hotel.get('city', ''),
+                'hotel_type': classify_hotel_type(hotel), 'actual': round(actual, 1),
+                'v1': mean(0), 'v2': mean(1), 'v2_low': mean(2), 'v2_high': mean(3),
+                'nights': [(n.isoformat(), est[(hid, n)][0], est[(hid, n)][1]) for n in nights], **extra}
+
+    errors = [unit(hid, real[(hid, d)], [d], date=d.isoformat(), month=d.strftime('%Y-%m')) for hid, d in sorted(real)]
+    monthly = [unit(hid, months[(hid, m)], month_nights[(hid, m)], month=m, date=m + '-01') for hid, m in sorted(months)]
+
+    def block(rows, min_n, what):
+        if not rows:
+            return None
+        return {'overall': _summary(rows), 'by_hotel': _groups(rows, 'hotel_id'), 'by_city': _groups(rows, 'city'),
+                'by_month': _groups(rows, 'month'), 'by_hotel_type': _groups(rows, 'hotel_type'),
+                'too_few': len(rows) < min_n,
+                'details': [{k: v for k, v in r.items() if k != 'nights'} for r in rows[:100]],
+                'note': f'{len(rows)} {what}' + (f' (under {min_n}: too few to judge either model)' if len(rows) < min_n else '')}
+    daily_block, monthly_block = block(errors, CALIBRATION_MIN_NIGHTS, 'nights'), block(monthly, CALIBRATION_MIN_MONTHS, 'hotel-months')
+    main = daily_block or monthly_block
+    hotel_names = {r['hotel_id']: r['hotel'] for r in errors + monthly}
+    by_hotel = {}
+    for b in (daily_block, monthly_block):            # monthly figures win where both exist
+        for h, v in ((b or {}).get('by_hotel') or {}).items():
+            by_hotel[h] = {**v, 'hotel': hotel_names.get(h, h)}
+    result.update(status='ok', hotels=len({r['hotel_id'] for r in errors + monthly}),
+                  overall=main['overall'], by_city=main['by_city'], by_hotel_type=main['by_hotel_type'],
+                  by_month=main['by_month'], by_hotel=by_hotel, details=main['details'][:50],
+                  daily=daily_block, monthly=monthly_block,
+                  abroad_holidays=abroad_holidays_test(errors + monthly, model),
+                  message=' '.join(x['note'] + '.' for x in (daily_block, monthly_block) if x)
+                  + f' From {len(hotel_names)} hotel(s).')
     return result
 
 
 # The school holidays of visitors' home countries (model_holidays.json, never
 # displayed) stay in the model only if they make it more accurate. For every
-# real night, each model's estimate is recomputed without them, and without
-# each country's periods: the calendar points enter the estimate additively,
-# so the variant is the estimate minus the difference in points (clamped as
-# the model clamps). A variant is judged only on nights inside the periods,
-# and only with at least CALIBRATION_MIN_NIGHTS of them. Report only: the
-# model is not changed automatically.
+# real night (or month: the average of its nights), each model's estimate is
+# recomputed without them, and without each country's periods: the calendar
+# points enter the estimate additively, so the variant is the estimate minus
+# the difference in points (clamped as the model clamps). A variant is
+# judged only on the figures that include nights inside the periods, and only
+# with at least CALIBRATION_MIN_NIGHTS such nights. Report only: the model is
+# not changed automatically.
 
 def _internal_ids():
     import events_db
@@ -1070,41 +1186,49 @@ def _internal_ids():
 
 
 def abroad_holidays_test(errors, model):
+    """errors: daily rows {hotel_id, date, city, actual, v1, v2} or monthly
+    ones with 'nights': [(night iso, v1, v2)] and 'month'."""
     internal = _internal_ids()
     countries = sorted({m for e in internal.values() for m in e.get('markets') or []})
     variants = {'without_all': lambda e: e.get('id') in internal}
     for c in countries:
         variants[f'without_{c}'] = (lambda c: lambda e: e.get('id') in internal and c in (e.get('markets') or []))(c)
     lo, hi = V2['clamp_low'], V2['clamp_high']
-    rows = []
+    cap = lambda x: _clamp(x, -V2['calendar_max_pts'], V2['calendar_max_pts'])
+    rows, total_nights = [], 0
     for r in errors:
         hotel = model.hotels[r['hotel_id']]
-        night = date.fromisoformat(r['date'])
         t = classify_hotel_type(hotel)
-        cal_all, _, names = event_points(hotel.get('city', ''), t, night)
-        cal_all = _clamp(cal_all, -V2['calendar_max_pts'], V2['calendar_max_pts'])
-        in_period = any(e.get('id') in internal for e in _event_nights().get(r['date'], []))
-        row = {'city': r['city'], 'month': r['date'][:7], 'actual': r['actual'], 'in_period': in_period,
-               'with': {'v1': r['v1'], 'v2': r['v2']}}
+        city = hotel.get('city', '')
+        nights = r.get('nights') or [(r['date'], r['v1'], r['v2'])]
+        total_nights += len(nights)
+        in_n = sum(1 for iso, _, _ in nights if any(e.get('id') in internal for e in _event_nights().get(iso, [])))
+        row = {'city': r['city'], 'month': r.get('month') or r['date'][:7], 'actual': r['actual'], 'in_period': in_n > 0,
+               'in_nights': in_n, 'with': {'v1': r['v1'], 'v2': r['v2']}}
         for name, skip in variants.items():
-            cal = _clamp(event_points(hotel.get('city', ''), t, night, skip)[0],
-                         -V2['calendar_max_pts'], V2['calendar_max_pts'])
-            d = cal_all - cal
-            row[name] = {m: (None if r[m] is None else round(_clamp(r[m] - d, lo, hi), 1)) for m in ('v1', 'v2')}
+            vals = {'v1': [], 'v2': []}
+            for iso, a1, a2 in nights:
+                night = date.fromisoformat(iso)
+                d = cap(event_points(city, t, night)[0]) - cap(event_points(city, t, night, skip)[0])
+                for m, a in (('v1', a1), ('v2', a2)):
+                    if a is not None:
+                        vals[m].append(_clamp(a - d, lo, hi))
+            row[name] = {m: (round(sum(v) / len(v), 1) if v else None) for m, v in vals.items()}
         rows.append(row)
     judged = [r for r in rows if r['in_period']]
+    in_nights = sum(r['in_nights'] for r in judged)
 
     def mae(rs, variant, m):
         d = [abs(r[variant][m] - r['actual']) for r in rs if r[variant][m] is not None]
         return round(sum(d) / len(d), 2) if d else None
     names = ['with'] + list(variants)
     table = lambda rs: {v: {m: mae(rs, v, m) for m in ('v1', 'v2')} for v in names}
-    out = {'nights_compared': len(rows), 'nights_in_periods': len(judged), 'countries': countries,
-           'overall': table(judged),
+    out = {'nights_compared': total_nights, 'nights_in_periods': in_nights, 'figures_judged': len(judged),
+           'countries': countries, 'overall': table(judged),
            'by_city': {c: table([r for r in judged if r['city'] == c]) for c in sorted({r['city'] for r in judged})},
            'by_month': {m: table([r for r in judged if r['month'] == m]) for m in sorted({r['month'] for r in judged})}}
-    if len(judged) < CALIBRATION_MIN_NIGHTS:
-        out['verdict'] = (f'Not enough real nights inside these periods yet ({len(judged)}, need '
+    if in_nights < CALIBRATION_MIN_NIGHTS:
+        out['verdict'] = (f'Not enough real nights inside these periods yet ({in_nights}, need '
                           f'{CALIBRATION_MIN_NIGHTS}): no conclusion.')
         return out
     base = out['overall']['with']['v2']
@@ -1126,7 +1250,7 @@ def maybe_calibrate(today=None, force=False):
         last = {}
     if not force and last.get('month') == today.strftime('%Y-%m'):
         return last
-    result = calibrate_model(DAILY_PERF_CSV, today)
+    result = calibrate_model(DAILY_PERF_CSV, today, MONTHLY_PERF_CSV)
     with open(CALIBRATION_JSON, 'w', encoding='utf-8') as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
     print(f'Calibration: {result["message"]}')

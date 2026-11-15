@@ -120,7 +120,10 @@ def period_caption(p, compare=None, updated=None):
 def period_history(p):
     """'Kodo model estimate · FY 2025 · not reported data': the yearly
     occupancy, ADR and RevPAR in performance.csv are Kodo's own model
-    estimates, never reported figures."""
+    estimates, never reported figures. With LIVE_FIGURES the same columns
+    hold the live figures of the next 30 nights."""
+    if p and p.get("kind") == "next":
+        return "Published rates and modelled occupancy · next 30 nights · not reported data"
     return f"Kodo model estimate · {period_label(p)} · not reported data" if p else ""
 
 
@@ -133,6 +136,8 @@ def period_from_data(code):
     """Period code as stored in the data files ('2025FY', '2025', '2026E', '2026-09') → period dict."""
     import re
     s = str(code or "").strip()
+    if s.upper() == "NEXT30":                 # LIVE_FIGURES: live figures, next 30 nights
+        return {"kind": "next", "days": 30}
     m = re.match(r"^(\d{4})\s*FY$", s, re.I) or re.match(r"^FY\s*(\d{4})$", s, re.I)
     if m:
         return {"kind": "fy", "year": int(m.group(1))}

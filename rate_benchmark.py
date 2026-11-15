@@ -29,8 +29,10 @@ MIN_COMP, MAX_COMP = 1, 10
 # DataForSEO, then (only with SCRAPER_BROWSER_STEPS=on) brand websites and
 # Booking.com. Rows from earlier sources stay in the file but are not used.
 SOURCE_ORDER = ['live_dataforseo', 'live_brand', 'live_booking']
-SOURCE_LABEL = {'live_dataforseo': 'Google Hotels (DataForSEO)', 'live_brand': 'Brand website',
-                'live_booking': 'Booking.com'}
+# Shown to clients: generic, never the provider or the site (the admin's
+# Rates panel names them)
+SOURCE_LABEL = {'live_dataforseo': 'Published rate (observed)', 'live_brand': 'Published rate (observed)',
+                'live_booking': 'Published rate (observed)'}
 # scraper.py marks rows whose result passed its hotel name and city check
 MATCHED = 'name_matched'
 

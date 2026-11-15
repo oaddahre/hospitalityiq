@@ -94,6 +94,14 @@ print(
 )
 
 @app.context_processor
+def inject_kodo_flags():
+    """Feature flags for changes to client figures (flags.py), for the page:
+    window.KODO_FLAGS. All off unless set to on in Railway."""
+    import flags as _flags
+    return {'kodo_flags': _flags.all_flags}
+
+
+@app.context_processor
 def inject_asset_version():
     """Cache-busting query string for static CSS/JS — tied to each
     file's own mtime, so it updates automatically on every future edit
@@ -250,6 +258,10 @@ try:
             LK.get(DATA_DIR, _casablanca_today())
         except Exception as e:
             app.logger.error(f'Live KPI snapshot failed: {e}', exc_info=True)
+        try:                                   # data-quality checks; an email only when something is wrong
+            _run_sanity_check()
+        except Exception as e:
+            app.logger.error(f'Data sanity check failed: {e}', exc_info=True)
 
     def _scheduled_health_check():
         try:
@@ -299,7 +311,7 @@ try:
         )
         _scheduler.start()
         app.logger.info(f'Scheduler started in pid {os.getpid()}: scraper 03:00, occupancy model 04:00, '
-                        'rates database check 05:00, health check 09:00 (Africa/Casablanca)')
+                        'rates database check and data sanity check 05:00, health check 09:00 (Africa/Casablanca)')
 
         import atexit
         atexit.register(lambda: _scheduler.shutdown(wait=False))
@@ -1075,8 +1087,47 @@ def load_data():
         for col in cols:
             if col in df:
                 df[col] = pd.to_numeric(df[col], errors="coerce")
+    import flags as _flags
+    if _flags.on('LIVE_FIGURES'):
+        perf = _live_performance()
     merged = hotels.merge(perf, left_on="id", right_on="hotel_id", how="left")
     return hotels, perf, merged
+
+
+def _ai_perf_note():
+    """What the AI analyst must say about the performance figures it gets."""
+    import flags as _flags
+    if _flags.on('LIVE_FIGURES'):
+        return ("IMPORTANT: every occupancy, rate and RevPAR figure below is for the next 30 nights: occupancy is a\n"
+                "Kodo model estimate, the rate is the average published booking price (not ADR), RevPAR is the\n"
+                "published rate x modelled occupancy. None is reported or achieved data: say so when you use them.")
+    return ("IMPORTANT: every occupancy, ADR, RevPAR, TRevPAR and GOP figure below is a\n"
+            "Kodo MODEL ESTIMATE for FY 2025, not reported or achieved data. Whenever you\n"
+            "use one, say \"Kodo model estimate (FY 2025), not reported data\". Never call\n"
+            "them actual, reported, historical or current performance.")
+
+
+def _live_performance():
+    """LIVE_FIGURES (flags.py, off until approved): the performance.csv
+    columns filled with each hotel's live figures for the next 30 nights
+    (live_kpis.py) instead of the FY 2025 model estimates: occupancy =
+    modelled occupancy, adr_mad = average published rate (not ADR),
+    revpar_mad = indicative RevPAR; TRevPAR and GOP margin have no live
+    equivalent and are left empty."""
+    d = LK.get(DATA_DIR, _casablanca_today())
+    rows = []
+    for hid, v in (d.get('hotels') or {}).items():
+        try:
+            hid_num = int(hid)
+        except ValueError:
+            continue
+        rows.append({'hotel_id': hid_num, 'period': 'NEXT30',
+                     'occupancy': v['occ'] / 100 if v.get('occ') is not None else float('nan'),
+                     'adr_mad': v['rate'] if v.get('rate') is not None else float('nan'),
+                     'revpar_mad': v['revpar'] if v.get('revpar') is not None else float('nan'),
+                     'trevpar_mad': float('nan'), 'gop_margin': float('nan'), 'source': 'Kodo live'})
+    cols = ['hotel_id', 'period', 'occupancy', 'adr_mad', 'revpar_mad', 'trevpar_mad', 'gop_margin', 'source']
+    return pd.DataFrame(rows, columns=cols)
 
 
 # ─── Auth routes ──────────────────────────────────────────────────────────────
@@ -2487,7 +2538,9 @@ def build_system_prompt():
         f"  {row['name']} ({row['city']}, {row['category']}, {row['brand_group']}) — {int(row['keys'])} keys | "
         + (f"Occ {row['occupancy']*100:.1f}% | ADR {row['adr_mad']:,.0f} MAD | RevPAR {row['revpar_mad']:,.0f} MAD | "
            f"GOP {row['gop_margin']*100:.1f}%" if pd.notna(row['occupancy']) and pd.notna(row['adr_mad'])
-           and pd.notna(row['revpar_mad']) and pd.notna(row['gop_margin']) else "no FY 2025 estimate yet (recently added)")
+           and pd.notna(row['revpar_mad']) and pd.notna(row['gop_margin']) else
+           (f"Occ {row['occupancy']*100:.1f}% (modelled) | published rate {row['adr_mad']:,.0f} MAD"
+            if pd.notna(row['occupancy']) and pd.notna(row['adr_mad']) else "no figure yet"))
         for _, row in merged.iterrows()
     )
 
@@ -2498,10 +2551,7 @@ You serve hospitality investors, operators, developers, and consultants. Provide
 ══════════════════════════════════════════════════
 KODO PROPRIETARY DATA — MOROCCO BRANDED HOTELS — KODO ESTIMATES
 ══════════════════════════════════════════════════
-IMPORTANT: every occupancy, ADR, RevPAR, TRevPAR and GOP figure below is a
-Kodo MODEL ESTIMATE for FY 2025, not reported or achieved data. Whenever you
-use one, say "Kodo model estimate (FY 2025), not reported data". Never call
-them actual, reported, historical or current performance. Hotel, key and
+{_ai_perf_note()} Hotel, key and
 pipeline counts are real records. Current published rates and modelled
 occupancy for the next 30 nights are on the platform's hotel profiles.
 Kodo has collected published rates every night only since 3 November 2026:
@@ -2939,69 +2989,61 @@ def save_upload_log(log):
         json.dump(log, f, indent=2)
 
 
+def _all_hotels_by_id():
+    try:
+        with open(os.path.join(DATA_DIR, 'hotels.csv'), encoding='utf-8') as f:
+            return {str(r['id']): r for r in csv.DictReader(f)}
+    except OSError:
+        return {}
+
+
+def _ingest_figures(rows, hotel_id='', hotel_name=''):
+    """Validate and store hotel-reported figures (hotel_figures.py); returns
+    (response dict, HTTP status)."""
+    import hotel_figures as HF
+    hotels = _all_hotels_by_id()
+    monthly, daily, errors, notes = HF.validate(rows, hotels, _casablanca_today(), hotel_id=hotel_id or None)
+    if not monthly and not daily:
+        return {'error': 'No valid rows' if rows else 'No rows provided', 'details': errors, 'notes': notes}, 400
+    stored = HF.store(DATA_DIR, monthly, daily)
+    periods = sorted([r['month'] for r in monthly] + [r['date'] for r in daily])
+    names = sorted({(hotels.get(r['hotel_id']) or {}).get('name', r['hotel_id']) for r in monthly + daily})
+    log = load_upload_log()
+    log.insert(0, {
+        'id': len(log) + 1, 'hotel_id': hotel_id or ', '.join(sorted({r['hotel_id'] for r in monthly + daily})),
+        'hotel_name': hotel_name or ', '.join(names), 'date_from': periods[0], 'date_to': periods[-1],
+        'rows': len(monthly) + len(daily), 'kind': 'monthly' if monthly and not daily else 'daily' if daily and not monthly else 'mixed',
+        'uploaded_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'), 'errors': errors,
+    })
+    save_upload_log(log[:50])
+    _log_admin_action('figures_upload', '', f"{len(monthly)} months, {len(daily)} nights")
+    return {'ok': True, 'rows_ingested': len(monthly) + len(daily), 'months': len(monthly), 'nights': len(daily),
+            'replaced': sum(v[1] for v in stored.values()), 'date_range': f'{periods[0]} – {periods[-1]}',
+            'errors': errors, 'notes': notes}, 200
+
+
+@app.route("/admin/upload-figures", methods=["POST"])
+@admin_required
+def admin_upload_figures():
+    """Hotel-reported monthly or daily figures (the template in
+    static/downloads/), as rows read from the CSV or Excel file in the
+    browser. The figures are confidential: they feed the calibration only."""
+    data = request.get_json(silent=True) or {}
+    out, code = _ingest_figures(data.get('rows') or [], str(data.get('hotel_id', '')).strip(), data.get('hotel_name', ''))
+    return jsonify(out), code
+
+
 @app.route("/admin/upload-performance", methods=["POST"])
 @admin_required
 def admin_upload_performance():
-    data       = request.get_json(silent=True) or {}
-    hotel_id   = data.get("hotel_id", "").strip()
-    hotel_name = data.get("hotel_name", hotel_id)
-    rows_raw   = data.get("rows", [])
-
+    """Older daily upload (date, occupancy, adr, rooms_sold, rooms_revenue),
+    now checked like the template uploads."""
+    data = request.get_json(silent=True) or {}
+    hotel_id = str(data.get("hotel_id", "")).strip()
     if not hotel_id:
         return jsonify({"error": "hotel_id required"}), 400
-    if not rows_raw:
-        return jsonify({"error": "No rows provided"}), 400
-
-    required  = {"date", "occupancy", "adr", "rooms_sold", "rooms_revenue"}
-    validated = []
-    errors    = []
-    for i, row in enumerate(rows_raw):
-        missing = required - set(row.keys())
-        if missing:
-            errors.append(f"Row {i+1}: missing {', '.join(missing)}")
-            continue
-        try:
-            validated.append({
-                "hotel_id":      hotel_id,
-                "date":          row["date"],
-                "occupancy":     float(row["occupancy"]),
-                "adr":           float(row["adr"]),
-                "rooms_sold":    int(row["rooms_sold"]),
-                "rooms_revenue": float(row["rooms_revenue"]),
-            })
-        except (ValueError, TypeError) as e:
-            errors.append(f"Row {i+1}: {e}")
-
-    if not validated:
-        return jsonify({"error": "No valid rows", "details": errors}), 400
-
-    file_exists = os.path.exists(DAILY_PERF_FILE)
-    with open(DAILY_PERF_FILE, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["hotel_id","date","occupancy","adr","rooms_sold","rooms_revenue"])
-        if not file_exists:
-            writer.writeheader()
-        writer.writerows(validated)
-
-    dates = sorted(r["date"] for r in validated)
-    log   = load_upload_log()
-    log.insert(0, {
-        "id":          len(log) + 1,
-        "hotel_id":    hotel_id,
-        "hotel_name":  hotel_name,
-        "date_from":   dates[0],
-        "date_to":     dates[-1],
-        "rows":        len(validated),
-        "uploaded_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
-        "errors":      errors,
-    })
-    save_upload_log(log[:50])
-
-    return jsonify({
-        "ok":           True,
-        "rows_ingested": len(validated),
-        "errors":       errors,
-        "date_range":   f"{dates[0]} → {dates[-1]}",
-    }), 201
+    out, code = _ingest_figures(data.get("rows") or [], hotel_id, data.get("hotel_name", hotel_id))
+    return jsonify(out), code
 
 
 @app.route("/admin/recent-uploads")
@@ -4249,7 +4291,9 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.cell(0, 6, "Market Context", ln=1)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(*c['muted'])
-    pdf.cell(0, 4, "Market rating: from Kodo model estimates (FY 2025 RevPAR), not reported data", ln=1)
+    import flags as _flags
+    pdf.cell(0, 4, "Market rating: from indicative RevPAR, next 30 nights (published rates x modelled occupancy), not reported data"
+             if _flags.on('LIVE_FIGURES') else "Market rating: from Kodo model estimates (FY 2025 RevPAR), not reported data", ln=1)
     pdf.rating_box(rating)
 
     pdf.set_font("Helvetica", "B", 10)
@@ -5513,6 +5557,123 @@ def _run_rates_check():
         CA._log(COORD_LOG_PATH, {'at': rec['at'], 'action': 'rates_read_switch', 'by': 'nightly check',
                                  'to': rec['switched'], 'result': rec['result']})
     return rec
+
+
+# ─── Data health (data_quality.py) ───────────────────────────────────────────
+# The admin's Data health page, and the nightly sanity check (05:00, after
+# the scraper and the model): one short email to SANITY_EMAIL (default
+# admin@kodohospitality.com; "off" stops it) only when a check finds
+# something wrong, at most one a day.
+
+SANITY_STATE_PATH = os.path.join(DATA_DIR, 'sanity_check_state.json')
+
+
+def _sanity_recipient():
+    to = os.environ.get('SANITY_EMAIL', '').strip() or 'admin@kodohospitality.com'
+    return None if to.lower() in ('off', 'none') else to
+
+
+def _data_health_report(force=False):
+    import data_quality as DQ
+    rep = DQ.load(DATA_DIR)
+    if force or not rep or rep.get('today') != _casablanca_today().isoformat():
+        rep = DQ.run(DATA_DIR, _casablanca_today())
+    return rep
+
+
+def _run_sanity_check(send=True):
+    """Fresh checks; returns (problems, sent). Sends nothing when all is well."""
+    rep = _data_health_report(force=True)
+    scraper = _data_health(live_account=False)
+    problems = list(scraper['problems']) + list(rep.get('problems') or [])
+    today = _casablanca_today().isoformat()
+    st = _read_json_dict(SANITY_STATE_PATH)
+    sent = False
+    if problems and send and st.get('last_alert_date') != today:
+        to = _sanity_recipient()
+        resend.api_key = os.environ.get('RESEND_API_KEY', '').strip()
+        if to and resend.api_key:
+            try:
+                resend.Emails.send({
+                    'from': 'Kodo Hospitality <contact@kodohospitality.com>', 'to': to,
+                    'subject': f'Kodo data check: {len(problems)} problem{"s" if len(problems) != 1 else ""}',
+                    'html': _email_layout(heading='The nightly data check found problems.',
+                                          paragraphs=[html.escape(p) for p in problems],
+                                          button_label='Open Data health →',
+                                          button_url='https://www.kodohospitality.com/admin#data-health',
+                                          footnote='Sent only when a check fails, at most once a day. '
+                                                   'Set SANITY_EMAIL to off in Railway to stop these emails.'),
+                })
+                sent = True
+                st['last_alert_date'] = today
+            except Exception as e:
+                app.logger.error(f'Sanity check email error: {e}')
+        elif not to:
+            app.logger.info('Sanity check email off (SANITY_EMAIL=off).')
+        else:
+            app.logger.error('Sanity check email not sent: RESEND_API_KEY is not set.')
+    st.update(last_check=datetime.now().isoformat(timespec='seconds'), problems=problems)
+    try:
+        with open(SANITY_STATE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(st, f, indent=1)
+    except OSError:
+        pass
+    app.logger.info(f'Data sanity check: {len(problems)} problem(s)' + ('; email sent' if sent else ''))
+    return problems, sent
+
+
+@app.route('/api/admin/data-health')
+@admin_required
+def api_admin_data_health():
+    import data_quality as DQ
+    import flags as _flags
+    import hotel_figures as HF
+    rep = _data_health_report()
+    try:
+        with open(os.path.join(DATA_DIR, 'calibration_results.json'), encoding='utf-8') as f:
+            calib = json.load(f)
+    except (OSError, ValueError):
+        calib = {'status': 'not_run'}
+    hotels = {str(k): v for k, v in RB.load_hotels(DATA_DIR).items()}
+    return jsonify({
+        'report': rep, 'scraper': _data_health(live_account=False), 'models': DQ.MODELS,
+        'flags': [{'name': k, 'on': v, 'what': _flags.FLAGS[k]} for k, v in _flags.all_flags().items()],
+        'calibration': calib, 'figures_received': HF.summary(DATA_DIR, hotels),
+        'sanity': _read_json_dict(SANITY_STATE_PATH), 'sanity_email': _sanity_recipient(),
+        'labels': DQ.CLIENT_LABEL,
+    })
+
+
+@app.route('/api/admin/data-health/run', methods=['POST'])
+@admin_required
+def api_admin_data_health_run():
+    _log_admin_action('data_health_run', '', '')
+    _data_health_report(force=True)
+    return api_admin_data_health()
+
+
+@app.route('/api/admin/data-health/preview')
+@admin_required
+def api_admin_data_health_preview():
+    import data_quality as DQ
+    return jsonify(DQ.preview(DATA_DIR, _casablanca_today(), _data_health_report()))
+
+
+@app.route('/api/admin/data-health/rate-quality.csv')
+@admin_required
+def api_admin_rate_quality_csv():
+    path = os.path.join(DATA_DIR, 'rate_quality.csv')
+    if not os.path.exists(path):
+        _data_health_report(force=True)
+    return send_file(path, mimetype='text/csv', as_attachment=True, download_name='rate_quality.csv')
+
+
+@app.route('/api/admin/occupancy/calibrate', methods=['POST'])
+@admin_required
+def api_admin_occupancy_calibrate():
+    import occupancy_model as OM
+    _log_admin_action('calibration_run', '', '')
+    return jsonify(OM.maybe_calibrate(force=True))
 
 
 @app.route('/api/admin/rates-store/read', methods=['POST'])

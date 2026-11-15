@@ -107,6 +107,7 @@
     <button class="list-pill" data-section="rates">Rates</button>
     <button class="list-pill" data-section="occupancy">Occupancy</button>
     <button class="list-pill" data-section="events">Events</button>
+    <button class="list-pill" data-section="health">Data health</button>
     <button class="list-pill" data-section="system">Data &amp; System</button>
   </div>
 
@@ -221,31 +222,23 @@
   <!-- ══════════════════ UPLOADS ══════════════════ -->
   <section class="adm-section" id="section-uploads" style="display:none">
     <h1 class="adm-section-title">Uploads</h1>
-    <p class="adm-section-desc">Upload daily hotel performance data (CSV).</p>
+    <p class="adm-section-desc">Figures reported by hotels: monthly (or daily) occupancy, ADR and optionally RevPAR, as CSV or Excel. They are confidential: they feed the occupancy model's calibration only and are never shown to clients.</p>
+    <p class="adm-hint">Templates for hotels: <a href="/static/downloads/kodo_hotel_figures_en.xlsx" download>English (Excel)</a> · <a href="/static/downloads/kodo_hotel_figures_en.csv" download>English (CSV)</a> · <a href="/static/downloads/kodo_hotel_figures_fr.xlsx" download>Français (Excel)</a> · <a href="/static/downloads/kodo_hotel_figures_fr.csv" download>Français (CSV)</a> · <a href="/static/downloads/README_hotel_figures.txt" download>README</a></p>
 
     <div class="adm-two-col">
       <div>
         <div class="adm-field-group">
-          <label class="adm-label">Hotel</label>
+          <label class="adm-label">Hotel (not needed when the file has a hotel_id column)</label>
           <select id="di-hotel" class="adm-select"><option value="">Loading hotels…</option></select>
-        </div>
-        <div class="adm-two-col" style="margin-top:12px">
-          <div class="adm-field-group">
-            <label class="adm-label">Date from</label>
-            <input type="date" id="di-from" class="adm-input" />
-          </div>
-          <div class="adm-field-group">
-            <label class="adm-label">Date to</label>
-            <input type="date" id="di-to" class="adm-input" />
-          </div>
         </div>
 
         <div id="di-dropzone" class="adm-dropzone">
-          <div class="adm-dropzone-main">Drag &amp; drop CSV file here</div>
+          <div class="adm-dropzone-main">Drag &amp; drop a CSV or Excel file here</div>
           <div class="adm-dropzone-sub">or click to browse</div>
-          <input type="file" id="di-file" accept=".csv,.txt" style="display:none" />
+          <input type="file" id="di-file" accept=".csv,.txt,.xlsx,.xls" style="display:none" />
         </div>
-        <p class="adm-hint">Required columns: <code>date, occupancy, adr, rooms_sold, rooms_revenue</code></p>
+        <p class="adm-hint">Columns (English or French names): <code>month</code> or <code>date</code>, <code>occupancy</code> (%), <code>adr</code> (MAD); optional <code>revpar</code>, <code>rooms_available</code>, <code>hotel_id</code>. Commas or semicolons; decimal points or commas. A month sent again replaces the earlier one.</p>
+        <div id="di-errors" class="adm-hint" style="display:none;margin-top:8px"></div>
 
         <div id="di-preview" style="display:none;margin-top:14px">
           <p class="adm-list-filter-label">Preview (first 5 rows)</p>
@@ -263,6 +256,59 @@
         <div id="di-recent"><p class="adm-loading">Loading…</p></div>
       </div>
     </div>
+  </section>
+
+  <!-- ══════════════════ DATA HEALTH (data_quality.py) ══════════════════ -->
+  <section class="adm-section" id="section-health" style="display:none">
+    <h1 class="adm-section-title">Data health</h1>
+    <p class="adm-section-desc">Price data quality, coverage, hotel records, model confidence, calibration and the flags for changes clients would see. Checks run after every model run (after each scraper run) and at 05:00; the nightly sanity email goes out only when something is wrong.</p>
+    <div class="adm-toolbar">
+      <button class="adm-btn adm-btn-primary" id="dh-run">Run checks now</button>
+      <a class="adm-btn adm-btn-secondary" href="/api/admin/data-health/rate-quality.csv">Download rate_quality.csv</a>
+      <button class="adm-btn adm-btn-secondary" id="dh-calibrate">Run calibration now</button>
+      <span id="dh-msg" class="adm-inline-msg"></span>
+    </div>
+    <div class="adm-stat-row dh-stats" id="dh-stats"><p class="adm-loading">Loading…</p></div>
+    <div id="dh-problems"></div>
+
+    <h2 class="dh-h">Flags: changes clients would see <span class="dh-sub">all off until approved</span></h2>
+    <div class="dh-scroll"><table class="adm-table" id="dh-flags"></table></div>
+    <div id="dh-preview"><p class="adm-hint">Before and after: <button class="adm-btn adm-btn-secondary adm-btn-sm" id="dh-preview-btn">Compute on this server's data</button></p></div>
+
+    <h2 class="dh-h">Hotels with problems</h2>
+    <div class="adm-toolbar dh-filters">
+      <select class="adm-select" id="dh-filter" aria-label="Problem">
+        <option value="any">Any problem</option><option value="noprice">No price</option><option value="google">Google ID</option>
+        <option value="outlier">Outliers or currency</option><option value="rooms">Room count</option><option value="lowcov">Coverage under 50%</option>
+        <option value="dup">Possible duplicates</option><option value="all">All hotels</option>
+      </select>
+      <input class="adm-input" id="dh-search" placeholder="Search hotels" aria-label="Search hotels" />
+      <span class="adm-hint" id="dh-count"></span>
+    </div>
+    <div class="dh-scroll"><table class="adm-table" id="dh-hotels"></table></div>
+
+    <h2 class="dh-h">Cities</h2>
+    <div class="dh-scroll"><table class="adm-table" id="dh-cities"></table></div>
+
+    <h2 class="dh-h">Plausibility of the occupancy model <span class="dh-sub" id="dh-plaus-sub"></span></h2>
+    <p class="adm-hint" id="dh-plaus-note"></p>
+    <div class="dh-scroll"><table class="adm-table" id="dh-plaus"></table></div>
+    <div id="dh-plaus-causes"></div>
+
+    <h2 class="dh-h">Real figures and calibration</h2>
+    <div id="dh-calib"></div>
+
+    <h2 class="dh-h">School holidays abroad: with and without</h2>
+    <div id="dh-abroad"></div>
+
+    <h2 class="dh-h">Effect of the hotels added in November 2026</h2>
+    <div id="dh-newhotels"></div>
+
+    <h2 class="dh-h">Models and derived figures</h2>
+    <div class="dh-scroll"><table class="adm-table" id="dh-models"></table></div>
+
+    <h2 class="dh-h">Thresholds</h2>
+    <div id="dh-thresholds" class="adm-hint"></div>
   </section>
 
   <!-- ══════════════════ RATES ══════════════════ -->
@@ -545,6 +591,8 @@
      "undefined" as its token. -->
 <script>window.__ADMIN_CSRF__ = {{ csrf_token|tojson }};</script>
 <script src="/static/js/palette.js?v={{ asset_version('js/palette.js') }}"></script>
+<script src="/static/js/valuation_engine.js?v={{ asset_version('js/valuation_engine.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" defer></script>
 <script src="/static/js/admin.js?v={{ asset_version('js/admin.js') }}"></script>
 </body>
 </html>

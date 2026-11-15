@@ -66,7 +66,7 @@ document.getElementById('admMobileClose').addEventListener('click', () => mobile
 mobileOverlay.addEventListener('click', e => { if (e.target === mobileOverlay) mobileOverlay.classList.remove('open'); });
 
 // ─── Section navigation (last section remembered in localStorage) ────────
-const SECTIONS = ['overview', 'users', 'orgs', 'news', 'uploads', 'rates', 'occupancy', 'events', 'system'];
+const SECTIONS = ['overview', 'users', 'orgs', 'news', 'uploads', 'rates', 'occupancy', 'events', 'health', 'system'];
 const SECTION_LOADERS = {
   overview: loadOverview,
   users: loadUsers,
@@ -76,6 +76,7 @@ const SECTION_LOADERS = {
   rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); loadRatesStore(false); },
   occupancy: loadOccupancyStatus,
   events: loadEvents,
+  health: () => loadDataHealth(false),
   system: loadSystemInfo,
 };
 const loadedSections = new Set();
@@ -981,10 +982,64 @@ dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 finp.addEventListener('change', () => { if (finp.files[0]) handleFile(finp.files[0]); });
 
+// A CSV (commas or semicolons, quoted fields) or the first sheet of an Excel
+// file -> rows keyed by their header. The server checks every value
+// (hotel_figures.py) and answers with one line per problem.
 function handleFile(file) {
   const reader = new FileReader();
-  reader.onload = ev => parseCSV(ev.target.result, file.name);
-  reader.readAsText(file);
+  if (/\.xlsx?$/i.test(file.name)) {
+    reader.onload = ev => {
+      if (!window.XLSX) { diMsg('The Excel reader did not load: save the file as CSV and try again.', true); return; }
+      try {
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array', cellDates: false });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+        showParsed(rows, file.name);
+      } catch (e) { diMsg('Could not read this Excel file: ' + e.message, true); }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.onload = ev => showParsed(parseDelimited(ev.target.result), file.name);
+    reader.readAsText(file);
+  }
+}
+
+function parseDelimited(text) {
+  text = String(text).replace(/^﻿/, '');
+  const first = text.split(/\r?\n/, 1)[0] || '';
+  const delim = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cell = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === delim) { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim()));
+}
+
+function showParsed(grid, filename) {
+  const errBox = document.getElementById('di-errors');
+  errBox.style.display = 'none';
+  if (!grid.length) { diMsg('Empty file.', true); return; }
+  const header = grid[0].map(h => String(h).trim());
+  diParsed = grid.slice(1).map(r => Object.fromEntries(header.map((h, j) => [h, r[j] ?? ''])));
+  const cols = header.slice(0, 6);
+  document.getElementById('di-preview-table').innerHTML =
+    `<div class="adm-row" style="grid-template-columns:repeat(${cols.length},1fr);border-top:none">${cols.map(c => `<span class="adm-row-meta" style="text-transform:uppercase;font-size:10px">${escHtml(c)}</span>`).join('')}</div>` +
+    diParsed.slice(0, 5).map(r => `<div class="adm-row" style="grid-template-columns:repeat(${cols.length},1fr)">${cols.map(c => `<span class="adm-row-meta">${escHtml(r[c] || '')}</span>`).join('')}</div>`).join('');
+  document.getElementById('di-preview').style.display = 'block';
+  dz.querySelector('.adm-dropzone-main').textContent = `${filename} · ${diParsed.length} rows`;
+  document.getElementById('di-submit').disabled = !diParsed.length;
+  diMsg(`${diParsed.length} rows read from ${filename}. Nothing is saved until you upload.`, false);
 }
 
 function diMsg(text, isError) {
@@ -993,60 +1048,28 @@ function diMsg(text, isError) {
   el.style.color = isError ? 'var(--negative)' : 'var(--positive)';
 }
 
-function parseCSV(text, filename) {
-  const lines = text.trim().split(/\r?\n/).filter(Boolean);
-  if (!lines.length) { diMsg('Empty file.', true); return; }
-  const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-  const required = ['date', 'occupancy', 'adr', 'rooms_sold', 'rooms_revenue'];
-  const missing = required.filter(c => !header.includes(c));
-  if (missing.length) { diMsg('Missing columns: ' + missing.join(', '), true); return; }
-
-  diParsed = [];
-  for (let i = 1; i < lines.length; i++) {
-    const vals = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-    const row = {};
-    header.forEach((h, j) => { row[h] = vals[j] ?? ''; });
-    if (row.date) diParsed.push(row);
-  }
-
-  const cols = ['date', 'occupancy', 'adr', 'rooms_sold', 'rooms_revenue'];
-  document.getElementById('di-preview-table').innerHTML =
-    `<div class="adm-row" style="grid-template-columns:repeat(5,1fr);border-top:none">${cols.map(c => `<span class="adm-row-meta" style="text-transform:uppercase;font-size:10px">${c}</span>`).join('')}</div>` +
-    diParsed.slice(0, 5).map(r => `<div class="adm-row" style="grid-template-columns:repeat(5,1fr)">${cols.map(c => `<span class="adm-row-meta">${escHtml(r[c] || '')}</span>`).join('')}</div>`).join('');
-  document.getElementById('di-preview').style.display = 'block';
-
-  const dates = diParsed.map(r => r.date).sort();
-  if (dates.length) {
-    document.getElementById('di-from').value = dates[0];
-    document.getElementById('di-to').value = dates[dates.length - 1];
-  }
-
-  dz.querySelector('.adm-dropzone-main').textContent = `${filename} · ${diParsed.length} rows`;
-  document.getElementById('di-submit').disabled = false;
-  diMsg(`${diParsed.length} rows parsed from ${filename}`, false);
-}
-
 document.getElementById('di-submit').addEventListener('click', async () => {
   const sel = document.getElementById('di-hotel');
   const hotelId = sel.value;
-  const hotelName = sel.options[sel.selectedIndex]?.dataset?.name || hotelId;
-  if (!hotelId) { diMsg('Select a hotel.', true); return; }
+  const hotelName = sel.options[sel.selectedIndex]?.dataset?.name || '';
   if (!diParsed.length) { diMsg('No data to upload.', true); return; }
-
   document.getElementById('di-submit').disabled = true;
-  diMsg('Uploading…', false);
-
-  const res = await fetch('/admin/upload-performance', {
+  diMsg('Checking and saving…', false);
+  const res = await fetch('/admin/upload-figures', {
     method: 'POST', headers: authHeaders(true),
     body: JSON.stringify({ hotel_id: hotelId, hotel_name: hotelName, rows: diParsed }),
   });
-  const data = await res.json();
-  if (!res.ok) { diMsg(data.error || 'Upload failed.', true); document.getElementById('di-submit').disabled = false; return; }
-  diMsg(`${data.rows_ingested} rows ingested · ${data.date_range}`, false);
+  const data = await res.json().catch(() => ({}));
+  const errBox = document.getElementById('di-errors');
+  const lines = [...(data.details || data.errors || []), ...(data.notes || [])];
+  errBox.style.display = lines.length ? '' : 'none';
+  errBox.innerHTML = lines.length ? `<strong>${(data.details || data.errors || []).length} row(s) not saved, ${(data.notes || []).length} note(s):</strong><br>` + lines.map(escHtml).join('<br>') : '';
   document.getElementById('di-submit').disabled = false;
+  if (!res.ok) { diMsg(data.error || 'Upload failed.', true); return; }
+  diMsg(`${data.rows_ingested} saved (${data.months} months, ${data.nights} nights${data.replaced ? `, ${data.replaced} replaced` : ''}) · ${data.date_range}`, false);
   diParsed = [];
   document.getElementById('di-preview').style.display = 'none';
-  dz.querySelector('.adm-dropzone-main').textContent = 'Drag & drop CSV file here';
+  dz.querySelector('.adm-dropzone-main').textContent = 'Drag & drop a CSV or Excel file here';
   loadRecentUploads();
 });
 
@@ -1849,4 +1872,194 @@ document.getElementById('ev-form').addEventListener('submit', async ev => {
   const [ok, d] = await coordPost('/api/admin/events/save', body);
   eventMsg(ok ? `Saved: ${d.event.name}` : (d.error || 'Save failed'), ok);
   if (ok) { ev.target.hidden = true; loadEvents(); }
+});
+
+// ════════════════════════ DATA HEALTH (data_quality.py) ═════════════════════
+// One page for the nightly agent and for us: last scraper run and coverage,
+// hotels with problems, models and their confidence, calibration, the
+// school-holiday test, the flags for changes clients would see and what each
+// would change (computed on this server's data on request).
+let dhData = null;
+const dhPct = v => v == null ? '—' : `${Math.round(v * 100)}%`;
+const dhNum = (v, d = 0) => v == null ? '—' : Number(v).toLocaleString('en', { maximumFractionDigits: d, minimumFractionDigits: d });
+const dhTable = (id, head, rows) => {
+  const t = document.getElementById(id);
+  t.innerHTML = `<thead><tr>${head.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead><tbody>`
+    + (rows.length ? rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')
+      : `<tr><td colspan="${head.length}">Nothing to show.</td></tr>`) + '</tbody>';
+};
+const DH_STATUS = ['priced', 'sold_out', 'sold_out_candidate', 'no_price', 'closed_or_unknown', 'failed', 'not_checked'];
+
+async function loadDataHealth(run) {
+  const msg = document.getElementById('dh-msg');
+  msg.textContent = run ? 'Running the checks…' : 'Loading…';
+  try {
+    const res = run ? await fetch('/api/admin/data-health/run', { method: 'POST', headers: authHeaders(true) })
+                    : await fetch('/api/admin/data-health', { headers: authHeaders() });
+    dhData = await res.json();
+    if (!res.ok) throw new Error(dhData.error || res.status);
+  } catch (e) { msg.textContent = 'Could not load: ' + e.message; return; }
+  msg.textContent = `Checked ${dhData.report.checked_at.replace('T', ' ')}`;
+  renderDataHealth();
+}
+
+function renderDataHealth() {
+  const R = dhData.report, S = R.stats, sc = dhData.scraper || {};
+  const stat = (v, l) => `<div class="adm-stat"><span class="adm-stat-val">${v}</span><span class="adm-stat-label">${escHtml(l)}</span></div>`;
+  document.getElementById('dh-stats').innerHTML = [
+    stat(escHtml(sc.last_run_finished ? sc.last_run_finished.slice(0, 16).replace('T', ' ') : '—'), 'Last scraper run'),
+    stat(sc.nights_found_pct == null ? '—' : sc.nights_found_pct + '%', 'Nights priced, last run'),
+    stat(`${S.hotels_with_prices} / ${S.open_hotels}`, 'Hotels with prices'),
+    stat(dhPct(S.coverage_30), 'Next 30 nights usable'),
+    stat(S.history_days_max, 'Days of price history'),
+    stat(`${S.confidence.medium + S.confidence.high} / ${S.open_hotels}`, 'Hotels at medium confidence or above'),
+    stat(S.room_status.sourced, 'Room counts with a source'),
+    stat(S.google_issues, 'Google ID problems'),
+  ].join('');
+  const probs = [...(dhData.scraper.problems || []), ...(R.problems || [])];
+  document.getElementById('dh-problems').innerHTML = probs.length
+    ? `<div class="dh-alert"><strong>${probs.length} problem${probs.length === 1 ? '' : 's'}</strong> (what tonight's email would say${dhData.sanity_email ? ' to ' + escHtml(dhData.sanity_email) : ', email off'}):<ul>${probs.map(p => `<li>${escHtml(p)}</li>`).join('')}</ul></div>`
+    : '<p class="adm-hint">No problem found: no email tonight.</p>';
+  const st = S.statuses_30;
+  document.getElementById('dh-problems').insertAdjacentHTML('beforeend',
+    `<p class="adm-hint">Next 30 nights, all open hotels: ${DH_STATUS.map(k => `${k.replace(/_/g, ' ')} ${dhNum(st[k])}`).join(' · ')}. `
+    + `Price flags: ${Object.entries(S.flags).map(([k, v]) => `${k.replace('_', ' ')} ${v}`).join(' · ')}. First price ${escHtml(S.first_price || '—')}.</p>`);
+
+  dhTable('dh-flags', ['Flag', 'State', 'What it changes'], dhData.flags.map(f =>
+    [`<code>${escHtml(f.name)}</code>`, f.on ? '<strong>on</strong>' : 'off', escHtml(f.what)]));
+
+  renderDhHotels();
+  dhTable('dh-cities', ['City', 'Hotels', 'Rooms', 'With prices', 'Next 30 usable', 'Median history (days)', 'Confidence'],
+    Object.entries(R.cities).sort((a, b) => b[1].rooms - a[1].rooms).map(([c, v]) =>
+      [escHtml(c), v.hotels, dhNum(v.rooms), v.hotels_with_prices, dhPct(v.coverage_30), v.median_history_days, escHtml(v.confidence)]));
+
+  const P = R.plausibility;
+  document.getElementById('dh-plaus-sub').textContent = `gap over ${P.gap_threshold_pts} pts flagged · ${P.year}`;
+  document.getElementById('dh-plaus-note').textContent = P.note;
+  dhTable('dh-plaus', ['City', 'Hotels', `Model ${P.year} (prior)`, 'Model, next 30 nights', 'Official 2025', 'Kodo 2026E', 'Kodo 2027F', 'Gap vs official', 'Riads', 'Upper upscale+'],
+    P.rows.map(r => [escHtml(r.city), r.hotels, dhNum(r.model_year, 1) + '%', r.window_model == null ? '—' : dhNum(r.window_model, 1) + '%',
+      r.official_2025 == null ? '—' : r.official_2025 + '%', r.kodo_2026e == null ? '—' : r.kodo_2026e + '%',
+      r.kodo_2027f == null ? '—' : r.kodo_2027f + '%',
+      r.gap_vs_official == null ? '—' : `<span class="${r.flag ? 'dh-bad' : ''}">${r.gap_vs_official > 0 ? '+' : ''}${r.gap_vs_official} pts</span>`,
+      r.riad_share + '%', r.upper_share + '%']));
+  document.getElementById('dh-plaus-causes').innerHTML = P.rows.filter(r => r.flag).map(r =>
+    `<p class="adm-hint"><strong>${escHtml(r.city)}</strong> (${r.gap_vs_official > 0 ? '+' : ''}${r.gap_vs_official} pts): ${r.likely_causes.map(escHtml).join('; ')}. <em>${escHtml(r.proposal)}</em></p>`).join('');
+
+  renderDhCalibration();
+  const eff = R.new_hotels_effect || [];
+  document.getElementById('dh-newhotels').innerHTML = eff.map(e => `<p class="adm-hint"><strong>${escHtml(e.figure)}</strong>: `
+    + (e.rows.length ? e.rows.slice(0, 8).map(r => `${escHtml(r.group)} ${r.with_new} with, ${r.without_new} without (${r.change > 0 ? '+' : ''}${r.change}; ${r.new_hotels} of ${r.hotels} hotels new)`).join(' · ')
+       : 'no figure to compare yet') + '</p>').join('');
+
+  dhTable('dh-models', ['Model or figure', 'Data used', 'Assumes', 'Label clients see', 'Confidence today'],
+    dhData.models.map(m => [`<strong>${escHtml(m.name)}</strong><div class="adm-hint">${escHtml(m.where)}</div>`, escHtml(m.data), escHtml(m.assumes), escHtml(m.label), escHtml(m.confidence)]));
+  const T = R.thresholds;
+  document.getElementById('dh-thresholds').innerHTML =
+    `Confidence: medium from ${dhPct(T.confidence.medium.coverage)} of the next 30 nights priced, ${T.confidence.medium.history_days} days of history and price quality ${T.confidence.medium.quality}; `
+    + `high also needs ${T.confidence.high.history_days} days, ${dhPct(T.confidence.high.coverage)} coverage and a calibration error within ${T.confidence.high.calibration_mae_pts} pts; `
+    + `low from ${dhPct(T.confidence.low.coverage)} coverage or ${T.confidence.low.history_days} days. Proposed: shown from ${T.show_from}, greyed when low, hidden when insufficient (with CONFIDENCE_UI). `
+    + `Labels clients would see: ${Object.entries(dhData.labels).map(([k, v]) => `${k} "${escHtml(v)}"`).join(', ')}. `
+    + `Price checks: own outlier ×${T.price_checks.outlier_self}, peer outlier ×${T.price_checks.outlier_peer}, jump ×${T.price_checks.jump}, flat from ${T.price_checks.flat_min_nights} nights, stale after ${T.price_checks.stale_days} days, `
+    + `${T.price_checks.min_rate}–${dhNum(T.price_checks.max_rate)} MAD; a night counts as covered from a quality score of ${T.usable_score}. Google listing drift over ${T.google_drift_km} km.`;
+}
+
+function renderDhHotels() {
+  const R = dhData.report, f = document.getElementById('dh-filter').value, q = document.getElementById('dh-search').value.trim().toLowerCase();
+  const test = {
+    any: v => v.issues.length || !v.history_days || v.price_quality != null && v.price_quality < 0.85,
+    noprice: v => !v.history_days, google: v => v.google.issues.length,
+    outlier: v => v.flags.outlier_self || v.flags.outlier_peer || v.flags.currency,
+    rooms: v => v.room_status !== 'sourced', lowcov: v => v.coverage_30 < 0.5,
+    dup: v => v.issues.some(i => i.includes('duplicate') || i.includes('same Google')), all: () => true,
+  }[f];
+  const rows = Object.entries(R.hotels).filter(([, v]) => test(v) && (!q || `${v.name} ${v.city}`.toLowerCase().includes(q)))
+    .sort((a, b) => b[1].keys - a[1].keys);
+  document.getElementById('dh-count').textContent = `${rows.length} hotel${rows.length === 1 ? '' : 's'}`;
+  dhTable('dh-hotels', ['Hotel', 'City', 'Rooms', 'Room count', 'History (days)', 'Next 30 usable', 'Statuses, next 30', 'Price quality', 'Flags', 'Confidence', 'Issues', 'Model rules'],
+    rows.slice(0, 400).map(([id, v]) => [
+      `${escHtml(v.name)} <span class="adm-hint">${escHtml(id)}</span>`, escHtml(v.city), dhNum(v.keys),
+      escHtml(v.room_status.replace(/_/g, ' ')), v.history_days, dhPct(v.coverage_30),
+      escHtml(Object.entries(v.statuses_30).map(([k, n]) => `${k.replace(/_/g, ' ')} ${n}`).join(', ')),
+      v.price_quality == null ? '—' : v.price_quality, escHtml(Object.entries(v.flags).map(([k, n]) => `${k} ${n}`).join(', ') || '—'),
+      `${escHtml(v.confidence)}${v.confidence_reasons.length ? `<div class="adm-hint">${escHtml(v.confidence_reasons.join('; '))}</div>` : ''}`,
+      escHtml(v.issues.join('; ') || '—'), escHtml(v.model_rules.join('; ') || '—')]));
+}
+
+function renderDhCalibration() {
+  const C = dhData.calibration || {}, got = dhData.figures_received || [];
+  const recv = got.length ? `<p class="adm-hint">Figures received from ${got.length} hotel${got.length === 1 ? '' : 's'}: `
+    + got.map(g => `${escHtml(g.name)} (${g.months.length} months${g.nights ? `, ${g.nights} nights` : ''})`).join(' · ') + '. Confidential: admin only.</p>'
+    : '<p class="adm-hint">No figures received from hotels yet. Send them the template (Uploads), then upload what comes back.</p>';
+  let body = `<p class="adm-hint">${escHtml(C.message || 'Calibration has not run yet.')} ${C.run_at ? 'Last run ' + escHtml(C.run_at.slice(0, 16).replace('T', ' ')) + '.' : ''}</p>`;
+  const block = (b, what) => {
+    if (!b) return '';
+    const line = s => `v1 ${s.v1_mae_pts ?? '—'} pts (bias ${s.v1_bias_pts ?? '—'}) · v2 ${s.v2_mae_pts ?? '—'} pts (bias ${s.v2_bias_pts ?? '—'}), inside the v2 range ${s.v2_inside_range_pct ?? '—'}%`;
+    const grp = (title, g, name = k => k) => `<tr><td colspan="3"><strong>${title}</strong></td></tr>` + Object.entries(g || {}).map(([k, s]) =>
+      `<tr><td>${escHtml(name(k))}</td><td>${s.n}</td><td>${escHtml(line(s))}</td></tr>`).join('');
+    const names = Object.fromEntries((b.details || []).map(d => [d.hotel_id, d.hotel]));
+    return `<p class="adm-hint"><strong>${what}</strong>: ${escHtml(b.note)}. Overall: ${escHtml(line(b.overall))}</p>`
+      + `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Group</th><th>n</th><th>Average error (absolute) and bias, pts</th></tr></thead><tbody>`
+      + grp('By hotel', b.by_hotel, k => names[k] || k) + grp('By city', b.by_city) + grp('By month', b.by_month) + '</tbody></table></div>';
+  };
+  body += block(C.daily, 'Nights') + block(C.monthly, 'Months');
+  document.getElementById('dh-calib').innerHTML = recv + body;
+  const A = C.abroad_holidays;
+  document.getElementById('dh-abroad').innerHTML = A
+    ? `<p class="adm-hint">${escHtml(A.verdict)} Nights compared ${A.nights_compared}, inside the periods ${A.nights_in_periods}. `
+      + (A.overall && A.overall.with && A.overall.with.v2 != null ? `v2 error with ${A.overall.with.v2}, without all ${A.overall.without_all.v2} pts.` : '') + '</p>'
+    : '<p class="adm-hint">Runs with the calibration, once real figures cover the 39 periods (from 20 Nov 2026).</p>';
+}
+
+async function loadDhPreview() {
+  const box = document.getElementById('dh-preview');
+  box.innerHTML = '<p class="adm-loading">Computing…</p>';
+  let P;
+  try { const r = await fetch('/api/admin/data-health/preview', { headers: authHeaders() }); P = await r.json(); if (!r.ok) throw new Error(P.error || r.status); }
+  catch (e) { box.innerHTML = `<p class="adm-hint">Could not compute: ${escHtml(e.message)}</p>`; return; }
+  const n = (v, d = 1) => v == null ? '—' : dhNum(v, d);
+  const C = P.CONFIDENCE_UI, L = P.LIVE_FIGURES, Q = P.QUALITY_RANGES;
+  let h = `<h3 class="dh-h3">CONFIDENCE_UI · modelled occupancy, next 30 nights</h3><div class="dh-scroll"><table class="adm-table"><thead><tr><th>City or hotel</th><th>Before</th><th>After</th><th>Shown as</th></tr></thead><tbody>`
+    + C.cities.map(r => `<tr><td>${escHtml(r.city)}</td><td>${n(r.before)}%</td><td>${r.after_shown === 'hidden' ? 'hidden' : n(r.after) + '%'}</td><td>${escHtml(r.after_label)} (${r.after_shown})</td></tr>`).join('')
+    + C.hotels.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${n(r.before)}%</td><td>${r.after == null ? 'hidden' : n(r.after) + '%'}</td><td>${escHtml(r.after_label)}<div class="adm-hint">${escHtml(r.reasons.join('; '))}</div></td></tr>`).join('')
+    + '</tbody></table></div>';
+  h += `<h3 class="dh-h3">LIVE_FIGURES · FY 2025 estimate (before) vs live next 30 nights (after)</h3><div class="dh-scroll"><table class="adm-table"><thead><tr><th>City or hotel</th><th>Occ before</th><th>ADR before</th><th>RevPAR before</th><th>Occ after</th><th>Published rate after</th><th>RevPAR after</th></tr></thead><tbody>`
+    + [...L.cities.map(r => [escHtml(r.city), r]), ...L.hotels.map(r => [`${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span>`, r])].map(([name, r]) =>
+      `<tr><td>${name}</td><td>${n(r.before.occ)}%</td><td>${n(r.before.adr, 0)}</td><td>${n(r.before.revpar, 0)}</td><td>${n(r.after.occ)}%</td><td>${n(r.after.rate, 0)}</td><td>${n(r.after.revpar, 0)}</td></tr>`).join('')
+    + '</tbody></table></div>';
+  h += `<h3 class="dh-h3">QUALITY_RANGES · v2 occupancy over the next 30 nights, low / mid / high</h3>`
+    + (Q.error ? `<p class="adm-hint">${escHtml(Q.error)}</p>` : `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Hotel</th><th>Before</th><th>After</th></tr></thead><tbody>`
+      + Q.hotels.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${n(r.before.low)} / ${n(r.before.mid)} / ${n(r.before.high)}</td><td>${n(r.after.low)} / ${n(r.after.mid)} / ${n(r.after.high)}</td></tr>`).join('') + '</tbody></table></div>');
+  h += `<h3 class="dh-h3">VALUATION_V2 · segment defaults, 150 keys, no purchase price</h3>` + dhValuationTable();
+  box.innerHTML = h;
+}
+
+// The valuation engine runs in the page (static/js/valuation_engine.js):
+// each segment's defaults, today's engine (v1) against the corrected one (v2)
+function dhValuationTable() {
+  if (!window.KodoValuation) return '<p class="adm-hint">Valuation engine not loaded.</p>';
+  const SEG = { 'Luxury': [65, 4500, 60, 28, 30, 24, 3.5, 4.5, 7.0, 6.0], 'Upper Upscale': [63, 2800, 65, 22, 32, 26, 3, 4, 7.0, 6.5],
+                'Upscale': [60, 1800, 70, 18, 34, 28, 3, 4, 7.5, 7.0], 'Midscale': [58, 1000, 78, 12, 36, 30, 2.5, 3.5, 8.0, 7.5] };
+  const m = v => `${(v / 1e6).toFixed(0)}M`;
+  const rows = Object.entries(SEG).map(([seg, d]) => {
+    const inp = { keys: 150, stabilized_occ: d[0], adr: d[1], growth_rate: 3.5, rampup: 0, rooms_rev_pct: d[2], fb_rev_pct: d[3], dept_exp_pct: d[4],
+                  undist_exp_pct: d[5], mgmt_fee_pct: d[6], ffe_pct: d[7], discount_rate: d[8], terminal_cap_rate: d[9], hold_period: 10,
+                  capex_yr1: 0, purchase_price: 0, equity_pct: 35, txn_pct: 3, loan_rate: 6.5 };
+    const a = KodoValuation.run(inp, 'v1'), b = KodoValuation.run(inp, 'v2');
+    return `<tr><td>${seg}</td><td>MAD ${m(a.range_low)}–${m(a.range_high)} · ${(a.value_per_key / 1e6).toFixed(2)}M/key · GOP ${a.cashFlows[2].gop_margin.toFixed(0)}% · IRR ${a.irr.toFixed(1)}% · EM ${a.equity_multiple.toFixed(2)}x</td>`
+      + `<td>MAD ${m(b.range_low)}–${m(b.range_high)} · ${(b.value_per_key / 1e6).toFixed(2)}M/key · GOP ${b.cashFlows[2].gop_margin.toFixed(0)}% · IRR ${b.irr.toFixed(1)}% · EM ${b.equity_multiple.toFixed(2)}x</td></tr>`;
+  });
+  return `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Segment</th><th>Before (v1)</th><th>After (v2)</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+}
+
+document.getElementById('dh-run').addEventListener('click', () => loadDataHealth(true));
+document.getElementById('dh-filter').addEventListener('change', () => dhData && renderDhHotels());
+document.getElementById('dh-search').addEventListener('input', () => dhData && renderDhHotels());
+document.getElementById('dh-preview').addEventListener('click', e => { if (e.target.id === 'dh-preview-btn') loadDhPreview(); });
+document.getElementById('dh-calibrate').addEventListener('click', async () => {
+  const msg = document.getElementById('dh-msg');
+  msg.textContent = 'Running the calibration…';
+  const r = await fetch('/api/admin/occupancy/calibrate', { method: 'POST', headers: authHeaders(true) });
+  const d = await r.json().catch(() => ({}));
+  msg.textContent = r.ok ? (d.message || 'Done.') : (d.error || 'Calibration failed.');
+  if (r.ok) loadDataHealth(false);
 });

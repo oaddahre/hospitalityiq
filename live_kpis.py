@@ -17,6 +17,12 @@ from these per-hotel figures, weighted by rooms (static/js/main.js,
 KodoLive), so a hotel, its owner, its brand and the benchmark show the same
 numbers. The benchmark's KPIs read them too.
 
+Confidence: each hotel carries the level the data-quality checks gave it
+(data_quality.py: price coverage, history, price quality, calibration) and
+its days of price history. With CONFIDENCE_UI on (flags.py, off until
+approved) a hotel with no price history gets no occupancy or RevPAR: the
+model would only show its prior there.
+
 7-day change: a daily snapshot of every hotel's three figures
 (DATA_DIR/live_kpi_history.csv, written by the 05:00 job and on the first
 request of the day); the change is shown only when the snapshot from 7 days
@@ -96,6 +102,10 @@ def per_hotel(data_dir, today: date):
                    sources=RB.SOURCE_ORDER, data_quality=RB.MATCHED)
     prices = RB.best_prices(rows, ids, nights, today)
     occ, model_run = _stored_occupancy(data_dir, ids, nights)
+    import data_quality as DQ
+    import flags
+    dq = (DQ.load(data_dir) or {}).get('hotels') or {}
+    hide_unpriced = flags.on('CONFIDENCE_UI')
     out = {}
     for h in ids:
         p = {n: float(r['rate_mad']) for n, r in prices[h].items()}
@@ -112,7 +122,11 @@ def per_hotel(data_dir, today: date):
             'occ_high': round(statistics.mean(highs), 1) if highs and len(highs) == len(o) else None,
             'occ_nights': len(o),
             'revpar': round(statistics.mean(p[n] * o[n][0] / 100 for n in both)) if both else None,
+            'confidence': (dq.get(h) or {}).get('confidence'),
+            'history_days': (dq.get(h) or {}).get('history_days'),
         }
+        if hide_unpriced and dq and not (dq.get(h) or {}).get('history_days'):
+            out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, occ_hidden='no price history')
     return {'window': {'start': nights[0], 'end': nights[-1], 'nights': len(nights)}, 'today': today.isoformat(),
             'model': active_model(), 'model_run': model_run, 'rates_updated': _rates_updated(data_dir), 'hotels': out}
 
@@ -174,7 +188,8 @@ def get(data_dir, today: date):
     """Cached per day and per data version (rates store, model run)."""
     key = (data_dir, today.isoformat(), RS.read_from(data_dir), _mtime(RS.csv_path(data_dir)), _mtime(RS.db_path(data_dir)),
            _mtime(os.path.join(data_dir, 'estimated_occupancy.csv')), _mtime(os.path.join(data_dir, 'scraper_log.json')),
-           _mtime(history_path(data_dir)), active_model())
+           _mtime(history_path(data_dir)), active_model(), _mtime(os.path.join(data_dir, 'data_health.json')),
+           os.environ.get('CONFIDENCE_UI', ''))
     with _lock:
         if _cache.get('key') == key:
             return _cache['data']
@@ -184,7 +199,7 @@ def get(data_dir, today: date):
     except OSError:
         pass
     with_change(data_dir, data)
-    key = key[:7] + (_mtime(history_path(data_dir)), key[8])
+    key = key[:7] + (_mtime(history_path(data_dir)),) + key[8:]
     with _lock:
         _cache.update(key=key, data=data)
     return data

@@ -482,6 +482,7 @@ const KodoPeriod = (() => {
   function fromData(code) {
     const s = String(code || '').trim();
     let m;
+    if (s.toUpperCase() === 'NEXT30') return { kind: 'next', days: 30 };     // LIVE_FIGURES
     if ((m = s.match(/^(\d{4})\s*FY$/i)) || (m = s.match(/^FY\s*(\d{4})$/i))) return { kind: 'fy', year: +m[1] };
     if ((m = s.match(/^(\d{4})E$/i))) return { kind: 'forecast', year: +m[1] };
     if ((m = s.match(/^(\d{4})$/))) return { kind: 'year', year: +m[1] };
@@ -500,7 +501,9 @@ const KodoPeriod = (() => {
   }
   // The yearly occupancy, ADR and RevPAR (performance.csv) are Kodo's own
   // model estimates, never reported figures: every place showing them says so
-  const history   = p => p ? `Kodo model estimate · ${label(p)} · not reported data` : '';
+  const history   = p => !p ? '' : p.kind === 'next'
+    ? 'Published rates and modelled occupancy · next 30 nights · not reported data'
+    : `Kodo model estimate · ${label(p)} · not reported data`;
 
   function periodEl(card) {
     let el = card.querySelector('.kpi-period');
@@ -548,6 +551,38 @@ const KodoPeriod = (() => {
 // weighted average over its hotels that have the figure, with the
 // coverage shown. Published booking-site prices, not ADR; modelled, not
 // measured occupancy. The 7-day change only once that snapshot exists.
+// Flags for changes to figures clients see (flags.py; window.KODO_FLAGS from
+// the page). All off until approved: with a flag off, nothing changes.
+const KODO_FLAG = name => !!(window.KODO_FLAGS && window.KODO_FLAGS[name]);
+// LIVE_FIGURES: the yearly FY 2025 model estimates give way to each hotel's
+// live figures for the next 30 nights (load_data() on the server); the words
+// that go with each.
+const PERF_LBL = KODO_FLAG('LIVE_FIGURES')
+  ? { occ: 'Occ % model', adr: 'Pub. rate', revpar: 'RevPAR indic.', tip: 'Next 30 nights: published rate and modelled occupancy, not reported data',
+      occPop: 'Occ. model', adrPop: 'Pub. rate', revPop: 'RevPAR indic.', revDesc: 'indicative RevPAR, next 30 nights, not reported data',
+      fin: 'Based on the published rate and modelled occupancy for the next 30 nights (not reported data)' }
+  : { occ: 'OCC est.', adr: 'ADR est.', revpar: 'RevPAR est.', tip: 'Kodo model estimate, FY 2025: not reported data',
+      occPop: 'Occ. est. FY25', adrPop: 'ADR est. FY25', revPop: 'RevPAR est. FY25', revDesc: 'Kodo model estimate, FY 2025, not reported data',
+      fin: "Based on Kodo's FY 2025 model estimates of BAR and occupancy (not reported data)" };
+
+// Table headers written in the page for the FY 2025 columns, relabelled once
+function relabelPerfColumns() {
+  if (!KODO_FLAG('LIVE_FIGURES')) return;
+  const words = { 'Occ % est.': 'Occ % model', 'ADR est. (MAD)': 'Pub. rate (MAD)', 'RevPAR est. (MAD)': 'RevPAR indic. (MAD)' };
+  document.querySelectorAll('th[title*="FY 2025"]').forEach(th => {
+    th.title = PERF_LBL.tip;
+    const t = [...th.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+    if (t && words[t.textContent.trim()]) t.textContent = words[t.textContent.trim()] + ' ';
+  });
+  const card = document.getElementById('hkpi-perf-card');
+  if (card) {
+    card.querySelector('.kpi-label').textContent = 'Occ, rate, RevPAR columns';
+    const badge = card.querySelector('.kodo-estimate-badge');
+    if (badge) badge.textContent = 'Next 30 nights';
+    card.querySelector('.kpi-sub').textContent = 'Occupancy modelled, rate published (not ADR), RevPAR indicative';
+  }
+}
+
 const KodoLive = (() => {
   let data = null, loading = null;
   function load() {
@@ -557,6 +592,26 @@ const KodoLive = (() => {
     return loading;
   }
   // list: hotels ({id, keys}); returns the rooms-weighted figures and coverage
+  // Confidence of a group of hotels (data_quality.group_level): medium or
+  // better on 60% of the rooms -> medium (high if 60% are high), else low
+  // when 30% are at least low, else insufficient. null before the checks ran.
+  const LEVELS = ['insufficient', 'low', 'medium', 'high'];
+  function groupLevel(rows) {
+    let tot = 0, known = 0, good = 0, some = 0, high = 0;
+    rows.forEach(v => {
+      if (!v.keys) return;
+      tot += v.keys;
+      const i = LEVELS.indexOf(v.confidence);
+      if (i < 0) return;
+      known += v.keys;
+      if (i >= 2) good += v.keys;
+      if (i >= 1) some += v.keys;
+      if (i === 3) high += v.keys;
+    });
+    if (!tot || !known) return null;
+    if (good / tot >= 0.6) return high / tot >= 0.6 ? 'high' : 'medium';
+    return (some / tot >= 0.3 || good / tot >= 0.3) ? 'low' : 'insufficient';
+  }
   function agg(list) {
     const H = (data && data.hotels) || {};
     const rows = (list || []).map(h => H[String(h.id)]).filter(Boolean);
@@ -572,7 +627,7 @@ const KodoLive = (() => {
       return den ? { now: a / den, then: b / den } : null;
     };
     return {
-      total: (list || []).length, single: (list || []).length === 1 ? rows[0] || null : null,
+      total: (list || []).length, single: (list || []).length === 1 ? rows[0] || null : null, level: groupLevel(rows),
       rate: w(v => v.rate), occ: w(v => v.occ), low: w(v => v.occ_low), high: w(v => v.occ_high), revpar: w(v => v.revpar),
       change: { rate: change(v => v.rate), occ: change(v => v.occ), revpar: change(v => v.revpar) },
     };
@@ -634,27 +689,50 @@ const KodoLive = (() => {
       c.querySelector('.kpi-label').textContent = 'Avg published rate · next 30 nights';
       KodoPeriod.setText(c, ratesLine, tipRate);
       if (a.rate.val == null) { noData(c, 'No live rate data'); part(c, 'kpi-sub').textContent = one ? 'No published price collected for these nights' : `0 of ${a.total} hotels priced`; delta(c, null); }
-      else { show(c, fmt.mad(a.rate.val), 'MAD · not ADR'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('rate'); delta(c, a.change.rate, '%'); }
+      else {
+        show(c, fmt.mad(a.rate.val), 'MAD · not ADR'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('rate'); delta(c, a.change.rate, '%');
+        if (KODO_FLAG('CONFIDENCE_UI')) {
+          const share = one ? (one.rate_nights || 0) / n : a.rate.n / Math.max(1, a.total);
+          part(c, 'kpi-conf').textContent = share >= 0.5 ? 'Observed prices' : 'Observed prices · limited data';
+          c.querySelector('.kpi-value').classList.toggle('kpi-value--limited', share < 0.3);
+        }
+      }
     }
+    // CONFIDENCE_UI (flags.py, off until approved): a plain label on the
+    // modelled cards; greyed under medium, hidden when insufficient
+    const conf = KODO_FLAG('CONFIDENCE_UI') && a.level;
+    const CONF_TEXT = { high: 'Modelled · calibrated against real figures', medium: 'Modelled · medium confidence',
+                        low: 'Limited data · low confidence', insufficient: 'Insufficient data' };
+    const confLine = (c, level) => {
+      const el = part(c, 'kpi-conf');
+      el.textContent = level ? CONF_TEXT[level] : '';
+      c.querySelector('.kpi-value').classList.toggle('kpi-value--limited', level === 'low');
+    };
     if (els.occ) {
       const c = els.occ;
       c.querySelector('.kpi-label').textContent = 'Modelled occupancy · next 30 nights';
       KodoPeriod.setText(c, occLine, tipOcc);
-      if (a.occ.val == null) { noData(c, 'No model estimate yet'); part(c, 'kpi-sub').textContent = ''; delta(c, null); }
+      if (conf === 'insufficient') {
+        noData(c, 'Insufficient data');
+        part(c, 'kpi-sub').textContent = 'Not enough price history yet to model occupancy';
+        confLine(c, null); delta(c, null);
+      } else if (a.occ.val == null) { noData(c, 'No model estimate yet'); part(c, 'kpi-sub').textContent = ''; delta(c, null); }
       else {
         const range = d.model === 'v2' && a.low.val != null && a.high.val != null && a.low.n === a.occ.n
           ? `range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%` : '';
         show(c, `${a.occ.val.toFixed(1)}%`, range ? range : 'Kodo Estimates');
         part(c, 'kpi-sub').textContent = one ? cover('occ', 'estimated') : cover('occ');
         delta(c, a.change.occ, 'pts');
+        if (conf) confLine(c, conf);
       }
     }
     if (els.revpar) {
       const c = els.revpar;
       c.querySelector('.kpi-label').textContent = 'Indicative RevPAR';
       KodoPeriod.setText(c, ratesLine, KodoPeriod.tip({ source: 'published rate × modelled occupancy, night by night', note: 'not achieved RevPAR' }));
-      if (a.revpar.val == null) { noData(c, 'No live rate data'); part(c, 'kpi-sub').textContent = 'published rate × modelled occupancy'; delta(c, null); }
-      else { show(c, fmt.mad(a.revpar.val), 'MAD · published rate × modelled occupancy'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('revpar'); delta(c, a.change.revpar, '%'); }
+      if (conf === 'insufficient') { noData(c, 'Insufficient data'); part(c, 'kpi-sub').textContent = 'Not enough price history yet'; delta(c, null); }
+      else if (a.revpar.val == null) { noData(c, 'No live rate data'); part(c, 'kpi-sub').textContent = 'published rate × modelled occupancy'; delta(c, null); }
+      else { show(c, fmt.mad(a.revpar.val), 'MAD · published rate × modelled occupancy'); part(c, 'kpi-sub').textContent = one ? cover('rate', 'prices') : cover('revpar'); delta(c, a.change.revpar, '%'); if (conf) confLine(c, conf); }
     }
   }
   return { load, agg, cards, stamp };
@@ -1081,9 +1159,9 @@ function renderBrandsCards() {
       </div>
       ${descRow}
       <div class="brn-card-kpis">
-        <div class="brn-kpi" title="Kodo model estimate, FY 2025: not reported data"><div class="brn-kpi-lbl">OCC est.</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
-        <div class="brn-kpi" title="Kodo model estimate, FY 2025: not reported data"><div class="brn-kpi-lbl">ADR est.</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
-        <div class="brn-kpi" title="Kodo model estimate, FY 2025: not reported data"><div class="brn-kpi-lbl">RevPAR est.</div><div class="brn-kpi-val">${fmt.mad(b.weighted_revpar)}</div></div>
+        <div class="brn-kpi" title="${PERF_LBL.tip}"><div class="brn-kpi-lbl">${PERF_LBL.occ}</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
+        <div class="brn-kpi" title="${PERF_LBL.tip}"><div class="brn-kpi-lbl">${PERF_LBL.adr}</div><div class="brn-kpi-val">${fmt.mad(b.avg_adr)}</div></div>
+        <div class="brn-kpi" title="${PERF_LBL.tip}"><div class="brn-kpi-lbl">${PERF_LBL.revpar}</div><div class="brn-kpi-val">${fmt.mad(b.weighted_revpar)}</div></div>
       </div>
       <div class="brn-card-meta">
         <div class="brn-card-cities">${cityList}${cityMore}</div>
@@ -1185,7 +1263,7 @@ function renderBrandsInsights() {
   if (byRevpar) {
     document.getElementById('brni-revpar-val').textContent  = byRevpar.brand_group;
     document.getElementById('brni-revpar-desc').textContent =
-      `MAD ${fmt.mad(byRevpar.weighted_revpar)} weighted RevPAR · Kodo model estimate, FY 2025, not reported data`;
+      `MAD ${fmt.mad(byRevpar.weighted_revpar)} weighted RevPAR · ${PERF_LBL.revDesc}`;
   }
   if (byPipe) {
     document.getElementById('brni-pipeline-val').textContent  = byPipe.brand_group;
@@ -2062,7 +2140,7 @@ function renderHotelFinancials(h) {
   document.getElementById('hfin-rev-range').textContent =
     `${fmM(revLoM)} — ${fmM(revHiM)}`;
   document.getElementById('hfin-rev-sub').textContent =
-    `Based on Kodo's FY 2025 model estimates of BAR and occupancy (not reported data) × ${keys} keys × 365 days`;
+    `${PERF_LBL.fin} × ${keys} keys × 365 days`;
 
   document.getElementById('hfin-asset-range').textContent =
     `${fmLg(assetLoM)} — ${fmLg(assetHiM)}`;
@@ -2097,15 +2175,15 @@ function popupHTML(h) {
         </div>
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.pct(h.occupancy)}</div>
-          <div class="hiq-popup-stat-lbl">Occ. est. FY25</div>
+          <div class="hiq-popup-stat-lbl">${PERF_LBL.occPop}</div>
         </div>
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.mad(h.adr_mad)}</div>
-          <div class="hiq-popup-stat-lbl">ADR est. FY25</div>
+          <div class="hiq-popup-stat-lbl">${PERF_LBL.adrPop}</div>
         </div>
         <div class="hiq-popup-stat">
           <div class="hiq-popup-stat-val">${fmt.mad(h.revpar_mad)}</div>
-          <div class="hiq-popup-stat-lbl">RevPAR est. FY25</div>
+          <div class="hiq-popup-stat-lbl">${PERF_LBL.revPop}</div>
         </div>
       </div>
       <button class="hiq-popup-profile-btn" onclick="showHotelDetail(${h.id})">View full profile →</button>
@@ -5802,6 +5880,7 @@ async function boot() {
   buildSegPills();
   buildMobileCityPills();
   buildOwnerSelect();
+  relabelPerfColumns();
   render();
   buildSearchIndex();
 }
@@ -6150,9 +6229,9 @@ function exportHotels() {
     'Segment':          h.category || 'N/A',
     'Brand Group':      h.brand_group || 'N/A',
     'Keys':             h.keys ?? 'N/A',
-    'Occupancy %':      h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
-    'ADR (MAD)':        h.adr_mad || 'N/A',
-    'RevPAR (MAD)':     h.revpar_mad || 'N/A',
+    [KODO_FLAG('LIVE_FIGURES') ? 'Modelled occupancy %' : 'Occupancy %']: h.occupancy ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
+    [KODO_FLAG('LIVE_FIGURES') ? 'Published rate (MAD)' : 'ADR (MAD)']: h.adr_mad || 'N/A',
+    [KODO_FLAG('LIVE_FIGURES') ? 'Indicative RevPAR (MAD)' : 'RevPAR (MAD)']: h.revpar_mad || 'N/A',
     'Performance Period': KodoPeriod.history(KodoPeriod.fromData(h.period)) || 'N/A',
     'Keys As Of':       asOf,
     'Year Established': h.year_opened_verified === 'verified' && h.year_opened != null ? h.year_opened : 'N/A',
@@ -6613,113 +6692,11 @@ function fmtMultiple(val) { return val.toFixed(2) + 'x'; }
 function fmtEUR(madVal) { return '€' + (madVal/10.8/1000).toFixed(0) + 'K'; }
 
 // ─── Calculation engine ──────────────────────────────────────────────
-function generateCashFlows(inputs) {
-  const { keys, stabilized_occ, adr, growth_rate, rampup,
-          rooms_rev_pct, fb_rev_pct, dept_exp_pct, undist_exp_pct,
-          mgmt_fee_pct, ffe_pct, discount_rate, terminal_cap_rate,
-          hold_period, capex_yr1, purchase_price, equity_pct } = inputs;
-
-  const cashFlows = [];
-
-  for (let yr = 1; yr <= hold_period; yr++) {
-    // Occupancy with ramp-up
-    let occ = stabilized_occ / 100;
-    if (rampup >= 1 && yr === 1) occ *= 0.70;
-    else if (rampup >= 2 && yr === 2) occ *= 0.85;
-    else if (rampup >= 3 && yr === 3) occ *= 0.92;
-
-    // Revenue
-    const adr_yr = adr * Math.pow(1 + growth_rate / 100, yr - 1);
-    const revpar = adr_yr * occ;
-    const rooms_rev = revpar * keys * 365;
-    const total_rev = rooms_rev / (rooms_rev_pct / 100);
-    const fb_rev = total_rev * (fb_rev_pct / 100);
-
-    // Expenses
-    const dept_exp = rooms_rev * (dept_exp_pct / 100);
-    const undist_exp = total_rev * (undist_exp_pct / 100);
-    const mgmt_fee = total_rev * (mgmt_fee_pct / 100);
-    const ffe = total_rev * (ffe_pct / 100);
-
-    // Profit
-    const gop = total_rev - dept_exp - undist_exp - mgmt_fee;
-    const gop_margin = gop / total_rev;
-    const noi = gop - ffe;
-    const fcf = noi - (yr === 1 ? capex_yr1 : 0);
-    const pv_fcf = fcf / Math.pow(1 + discount_rate / 100, yr);
-
-    cashFlows.push({
-      yr, occ: occ * 100, adr: adr_yr, revpar,
-      total_rev, rooms_rev, fb_rev,
-      gop, gop_margin: gop_margin * 100,
-      noi, fcf, pv_fcf
-    });
-  }
-
-  // Terminal Value
-  const last = cashFlows[cashFlows.length - 1];
-  const terminal_noi = last.noi * (1 + growth_rate / 100);
-  const terminal_value = terminal_noi / (terminal_cap_rate / 100);
-  const pv_terminal = terminal_value / Math.pow(1 + discount_rate / 100, hold_period);
-
-  // NPV
-  const total_pv_fcf = cashFlows.reduce((s, cf) => s + cf.pv_fcf, 0);
-  const dcf_value = total_pv_fcf + pv_terminal;
-
-  // Income Cap Value (stabilized year NOI / cap rate)
-  const stab_yr = cashFlows[Math.min(2, hold_period - 1)];
-  const income_cap_value = stab_yr.noi / (terminal_cap_rate / 100);
-
-  // Reconciled (60% DCF + 40% Income Cap)
-  const reconciled = dcf_value * 0.60 + income_cap_value * 0.40;
-  const value_per_key = reconciled / keys;
-
-  // IRR
-  const entry = purchase_price > 0 ? purchase_price * 1e6 : dcf_value;
-  const cf_series = [-entry, ...cashFlows.map(cf => cf.fcf), terminal_value];
-  const irr = calculateIRR(cf_series);
-
-  // Equity Multiple
-  const equity_invested = entry * ((equity_pct || 35) / 100);
-  const total_return = cashFlows.reduce((s, cf) => s + cf.fcf, 0) + terminal_value;
-  const equity_multiple = total_return / equity_invested;
-
-  // Payback period
-  let cumulative = -entry;
-  let payback = hold_period;
-  for (let i = 0; i < cashFlows.length; i++) {
-    cumulative += cashFlows[i].fcf;
-    if (cumulative >= 0) { payback = i + 1; break; }
-  }
-
-  return {
-    cashFlows, terminal_value, pv_terminal,
-    total_pv_fcf, dcf_value,
-    income_cap_value, reconciled,
-    value_per_key,
-    irr: irr * 100,
-    equity_multiple,
-    payback,
-    range_low: reconciled * 0.92,
-    range_high: reconciled * 1.08
-  };
-}
-
-function calculateIRR(cfs) {
-  let r = 0.10;
-  for (let i = 0; i < 200; i++) {
-    let npv = 0, dnpv = 0;
-    for (let t = 0; t < cfs.length; t++) {
-      const d = Math.pow(1 + r, t);
-      npv += cfs[t] / d;
-      dnpv -= t * cfs[t] / (d * (1 + r));
-    }
-    const r2 = r - npv / dnpv;
-    if (Math.abs(r2 - r) < 1e-6) return r2;
-    r = r2;
-  }
-  return r;
-}
+// static/js/valuation_engine.js: v1 as shown today, v2 corrected behind the
+// VALUATION_V2 flag (flags.py), off until approved.
+const valVersion = () => (window.KODO_FLAGS && window.KODO_FLAGS.VALUATION_V2) ? 'v2' : 'v1';
+function generateCashFlows(inputs) { return KodoValuation.run(inputs, valVersion()); }
+function calculateIRR(cfs) { return KodoValuation.irr(cfs); }
 
 function generateSensitivityTables(inputs, baseResults) {
   const occs = [55, 60, 65, 70, 75];
@@ -6963,6 +6940,8 @@ function valGatherInputs() {
     capex_yr1: valNum('val-capex'),
     purchase_price: valNum('val-price'),
     equity_pct,
+    txn_pct: valNum('val-txn-pct'),
+    loan_rate: valNum('val-loanrate'),
   };
 }
 
@@ -6996,46 +6975,7 @@ function valRunValuation() {
 
 // Recompute NPV/IRR/etc. from a (possibly hand-edited) cash flow array
 function valComputeFromCustomCashFlows(inputs, cashFlows) {
-  const last = cashFlows[cashFlows.length - 1];
-  const terminal_noi = last.noi * (1 + inputs.growth_rate / 100);
-  const terminal_value = terminal_noi / (inputs.terminal_cap_rate / 100);
-  const pv_terminal = terminal_value / Math.pow(1 + inputs.discount_rate / 100, inputs.hold_period);
-
-  const total_pv_fcf = cashFlows.reduce((s, cf) => s + cf.pv_fcf, 0);
-  const dcf_value = total_pv_fcf + pv_terminal;
-
-  const stab_yr = cashFlows[Math.min(2, cashFlows.length - 1)];
-  const income_cap_value = stab_yr.noi / (inputs.terminal_cap_rate / 100);
-
-  const reconciled = dcf_value * 0.60 + income_cap_value * 0.40;
-  const value_per_key = reconciled / inputs.keys;
-
-  const entry = inputs.purchase_price > 0 ? inputs.purchase_price * 1e6 : dcf_value;
-  const cf_series = [-entry, ...cashFlows.map(cf => cf.fcf), terminal_value];
-  const irr = calculateIRR(cf_series);
-
-  const equity_invested = entry * ((inputs.equity_pct || 35) / 100);
-  const total_return = cashFlows.reduce((s, cf) => s + cf.fcf, 0) + terminal_value;
-  const equity_multiple = total_return / equity_invested;
-
-  let cumulative = -entry;
-  let payback = inputs.hold_period;
-  for (let i = 0; i < cashFlows.length; i++) {
-    cumulative += cashFlows[i].fcf;
-    if (cumulative >= 0) { payback = i + 1; break; }
-  }
-
-  return {
-    cashFlows, terminal_value, pv_terminal,
-    total_pv_fcf, dcf_value,
-    income_cap_value, reconciled,
-    value_per_key,
-    irr: irr * 100,
-    equity_multiple,
-    payback,
-    range_low: reconciled * 0.92,
-    range_high: reconciled * 1.08,
-  };
+  return KodoValuation.fromCashFlows(inputs, cashFlows, valVersion());
 }
 
 // ─── Render: KPI cards ────────────────────────────────────────────────
@@ -7046,6 +6986,17 @@ function valRenderKPICards(inputs, results) {
   valEl('val-kpi-irr').textContent = fmtPct(results.irr);
   valEl('val-kpi-irr-sub').textContent = `${inputs.hold_period}-year hold period`;
   valEl('val-kpi-multiple').textContent = fmtMultiple(results.equity_multiple);
+  // VALUATION_V2: the range comes from the inputs' sensitivity, and every assumption is listed
+  const box = valEl('val-assumptions');
+  if (box) {
+    box.hidden = results.version !== 'v2';
+    if (results.version === 'v2') {
+      valEl('val-kpi-irr-sub').textContent = `${inputs.hold_period}-year hold · unlevered, before tax`;
+      valEl('val-kpi-multiple-sub').textContent = `levered: ${inputs.equity_pct}% equity, debt at ${inputs.loan_rate}%`;
+      box.innerHTML = '<div class="val-assumptions-title">Assumptions</div><ul>'
+        + KodoValuation.assumptions(inputs).map(a => `<li>${fmt.esc(a)}</li>`).join('') + '</ul>';
+    }
+  }
 }
 
 // ─── Render: Cash flow table ──────────────────────────────────────────
