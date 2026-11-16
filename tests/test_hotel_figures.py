@@ -101,3 +101,36 @@ class Validate(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class DataType(unittest.TestCase):
+    """data_type: actual, prior_year or reforecast; reforecast is stored but
+    never used to score the model."""
+
+    def test_types_year_month_and_scoring(self):
+        import tempfile
+        import shutil
+        import hotel_figures as HF
+        import occupancy_model as OM
+        hotels = {'1': {'id': '1', 'keys': '100'}}
+        rows = [{'hotel_id': '1', 'year': '2025', 'month': '3', 'occupancy': '61', 'adr': '1500', 'data_type': 'actual'},
+                {'hotel_id': '1', 'year': '2024', 'month': '3', 'occupancy': '58', 'adr': '1400', 'data_type': 'prior_year'},
+                {'hotel_id': '1', 'month': '2026-03', 'occupancy': '70', 'adr': '1600', 'data_type': 'reforecast'},
+                {'hotel_id': '1', 'month': '2025-04', 'occupancy': '62', 'adr': '1500'}]
+        monthly, daily, errors, notes = HF.validate(rows, hotels, date(2026, 11, 16))
+        self.assertEqual(errors, [])
+        self.assertEqual([(r['month'], r['data_type']) for r in monthly],
+                         [('2025-03', 'actual'), ('2024-03', 'prior_year'), ('2026-03', 'reforecast'), ('2025-04', 'actual')])
+        bad = HF.validate([dict(rows[0], data_type='budget')], hotels, date(2026, 11, 16))[2]
+        self.assertTrue(bad and 'not understood' in bad[0])
+        d = tempfile.mkdtemp()
+        try:
+            HF.store(d, monthly, [])
+            self.assertEqual(set(HF.load_monthly(d)), {('1', '2025-03'), ('1', '2024-03'), ('1', '2026-03'), ('1', '2025-04')})
+            self.assertNotIn(('1', '2026-03'), HF.load_monthly(d, scored_only=True))
+            scored = OM._real_months(os.path.join(d, HF.MONTHLY_FILE))           # what the calibration reads
+            self.assertNotIn(('1', '2026-03'), scored)
+            self.assertEqual(scored[('1', '2024-03')], 58.0)
+            self.assertEqual({r['data_type'] for r in HF.loaded(d, hotels)['months']}, {'actual', 'prior_year', 'reforecast'})
+        finally:
+            shutil.rmtree(d, ignore_errors=True)

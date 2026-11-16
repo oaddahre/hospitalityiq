@@ -1057,8 +1057,8 @@ async function diCheck(filename) {
   diShowResult(data);
   const rows = data.rows || [];
   document.getElementById('di-preview-table').innerHTML = rows.length
-    ? `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Hotel</th><th>Month or night</th><th>Occupancy</th><th>ADR (MAD)</th><th>RevPAR</th><th>Rooms available</th><th></th></tr></thead><tbody>`
-      + rows.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${escHtml(r.period)}</td><td>${r.occupancy}%</td>`
+    ? `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Hotel</th><th>Month or night</th><th>Type</th><th>Occupancy</th><th>ADR (MAD)</th><th>RevPAR</th><th>Rooms available</th><th></th></tr></thead><tbody>`
+      + rows.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${escHtml(r.period)}</td><td>${escHtml(DI_TYPE[r.data_type] || r.data_type)}</td><td>${r.occupancy}%</td>`
         + `<td>${Number(r.adr).toLocaleString('en')}</td><td>${r.revpar === '' ? '—' : Number(r.revpar).toLocaleString('en')}</td>`
         + `<td>${r.rooms_available === '' ? '—' : Number(r.rooms_available).toLocaleString('en')}</td><td>${r.replaces ? 'replaces the stored figure' : 'new'}</td></tr>`).join('')
       + '</tbody></table></div>'
@@ -1110,6 +1110,7 @@ document.getElementById('di-submit').addEventListener('click', async () => {
   loadFiguresLoaded();
 });
 
+const DI_TYPE = { actual: 'Actual', prior_year: 'Prior year (actual)', reforecast: 'Reforecast: not used to score the model' };
 async function loadFiguresLoaded() {
   const t = document.getElementById('di-loaded');
   try {
@@ -1117,10 +1118,10 @@ async function loadFiguresLoaded() {
     const d = await res.json();
     if (!res.ok) throw new Error();
     t.innerHTML = d.months.length
-      ? '<thead><tr><th>Hotel</th><th>Month</th><th>Occupancy</th><th>ADR (MAD)</th><th>Rooms available</th><th>Loaded</th></tr></thead><tbody>'
-        + d.months.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${escHtml(r.month)}</td><td>${escHtml(r.occupancy)}%</td>`
+      ? '<thead><tr><th>Hotel</th><th>Month</th><th>Type</th><th>Occupancy</th><th>ADR (MAD)</th><th>Rooms available</th><th>Loaded</th></tr></thead><tbody>'
+        + d.months.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${escHtml(r.month)}</td><td>${escHtml(DI_TYPE[r.data_type] || r.data_type)}</td><td>${escHtml(r.occupancy)}%</td>`
           + `<td>${Number(r.adr).toLocaleString('en')}</td><td>${r.rooms_available ? Number(r.rooms_available).toLocaleString('en') : '—'}</td><td>${escHtml((r.uploaded_at || '').slice(0, 10))}</td></tr>`).join('') + '</tbody>'
-        + (d.hotels.some(h => h.nights) ? `<tfoot><tr><td colspan="6" class="adm-hint">Daily figures: ${d.hotels.filter(h => h.nights).map(h => `${escHtml(h.name)} ${h.nights} nights`).join(' · ')}</td></tr></tfoot>` : '')
+        + (d.hotels.some(h => h.nights) ? `<tfoot><tr><td colspan="7" class="adm-hint">Daily figures: ${d.hotels.filter(h => h.nights).map(h => `${escHtml(h.name)} ${h.nights} nights`).join(' · ')}</td></tr></tfoot>` : '')
       : '<tbody><tr><td class="adm-hint">No data: no hotel figures have been loaded.</td></tr></tbody>';
   } catch { t.innerHTML = '<tbody><tr><td class="adm-hint">Could not load.</td></tr></tbody>'; }
 }

@@ -1225,6 +1225,8 @@ def _real_months(path):
     try:
         with open(path, encoding='utf-8') as f:
             for r in csv.DictReader(f):
+                if (r.get('data_type') or 'actual') == 'reforecast':
+                    continue                    # a forecast, not a result: never used to score the model
                 try:
                     occ = float(r['occupancy'])
                     m = r['month'][:7]

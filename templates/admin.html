@@ -218,7 +218,7 @@
           <div class="adm-dropzone-sub">or click to browse</div>
           <input type="file" id="di-file" accept=".csv,.txt,.xlsx,.xls" style="display:none" />
         </div>
-        <p class="adm-hint">Columns (English or French names): <code>month</code> or <code>date</code>, <code>occupancy</code> (%), <code>adr</code> (MAD); optional <code>revpar</code>, <code>rooms_available</code>, <code>hotel_id</code>. Commas or semicolons; decimal points or commas. A month sent again replaces the earlier one.</p>
+        <p class="adm-hint">Columns (English or French names): <code>month</code> or <code>date</code>, <code>occupancy</code> (%), <code>adr</code> (MAD); optional <code>revpar</code>, <code>rooms_available</code>, <code>hotel_id</code>, <code>data_type</code> (actual, prior_year or reforecast: reforecast rows are kept but never used to score the model); a month can also be given as <code>year</code> and <code>month</code> columns. Commas or semicolons; decimal points or commas. A month sent again replaces the earlier one.</p>
         <div id="di-errors" class="adm-hint" style="display:none;margin-top:8px"></div>
 
         <div id="di-preview" style="display:none;margin-top:14px">

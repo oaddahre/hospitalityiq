@@ -6,7 +6,12 @@ static/downloads/ (English or French headers). The admin uploads them
 confidential: never shown to clients, by name or otherwise.
 
   monthly_performance.csv  hotel_id, month, occupancy (%), adr (MAD),
-                           revpar (MAD), rooms_available, uploaded_at
+                           revpar (MAD), rooms_available, data_type, uploaded_at
+
+data_type (optional column, default actual): actual | prior_year (the
+hotel's actual figures of an earlier year) | reforecast (a forecast, not a
+result). Reforecast rows are stored and shown marked in the admin, but the
+calibration and any model scoring skip them (SCORED_TYPES).
   daily_performance.csv    hotel_id, date, occupancy, adr, rooms_sold,
                            rooms_revenue (the existing file)
 
@@ -20,7 +25,9 @@ from datetime import date, datetime
 
 MONTHLY_FILE = 'monthly_performance.csv'
 DAILY_FILE = 'daily_performance.csv'
-MONTHLY_FIELDS = ['hotel_id', 'month', 'occupancy', 'adr', 'revpar', 'rooms_available', 'uploaded_at']
+MONTHLY_FIELDS = ['hotel_id', 'month', 'occupancy', 'adr', 'revpar', 'rooms_available', 'data_type', 'uploaded_at']
+DATA_TYPES = ('actual', 'prior_year', 'reforecast')
+SCORED_TYPES = ('actual', 'prior_year')            # real results: used by calibration and scoring
 DAILY_FIELDS = ['hotel_id', 'date', 'occupancy', 'adr', 'rooms_sold', 'rooms_revenue']
 
 # Column names accepted (lower case, accents and spaces folded to "_")
@@ -34,6 +41,8 @@ ALIASES = {
     'revpar': ('revpar', 'revpar_mad'),
     'rooms_available': ('rooms_available', 'chambres_disponibles', 'room_nights_available', 'nuitees_disponibles'),
     'rooms_sold': ('rooms_sold', 'chambres_vendues', 'room_nights_sold', 'nuitees_vendues'),
+    'data_type': ('data_type', 'type', 'type_donnees', 'nature'),
+    'year': ('year', 'annee', 'an'),
     'rooms_revenue': ('rooms_revenue', 'ca_hebergement', 'chiffre_affaires_hebergement', 'revenue_rooms'),
 }
 MIN_ADR, MAX_ADR = 100, 100000
@@ -155,6 +164,12 @@ def validate(rows, hotels, today, hotel_id=None):
             errors.append(f'{where}: RevPAR {revpar:g} does not match occupancy × ADR '
                           f'({occ / 100 * adr:,.0f} MAD). Check the three figures.')
             continue
+        dtype = _fold(r.get('data_type') or 'actual')
+        if dtype not in DATA_TYPES:
+            errors.append(f'{where}: data_type "{r.get("data_type")}" not understood (use actual, prior_year or reforecast).')
+            continue
+        if 'year' in r and 'month' in r and re.fullmatch(r'\d{1,2}', str(r['month']).strip()):
+            r['month'] = f"{str(r['year']).strip()[:4]}-{int(str(r['month']).strip()):02d}"     # year and month in two columns
         if 'month' in r and 'date' not in r:
             m = _month(r['month'])
             if not m:
@@ -177,7 +192,7 @@ def validate(rows, hotels, today, hotel_id=None):
             seen.add((hid, m))
             monthly.append({'hotel_id': hid, 'month': m, 'occupancy': round(occ, 2), 'adr': round(adr, 2),
                             'revpar': round(revpar if revpar is not None else occ / 100 * adr, 2),
-                            'rooms_available': '' if avail is None else int(round(avail))})
+                            'rooms_available': '' if avail is None else int(round(avail)), 'data_type': dtype})
         elif 'date' in r:
             d = _day(r['date'])
             if not d:
@@ -251,6 +266,7 @@ def preview_rows(data_dir, monthly, daily, hotels):
         period = r.get('month') or r.get('date')
         h = hotels.get(str(r['hotel_id'])) or {}
         out.append({'hotel_id': r['hotel_id'], 'hotel': h.get('name', ''), 'city': h.get('city', ''), 'period': period,
+                    'data_type': r.get('data_type', 'actual'),
                     'occupancy': r['occupancy'], 'adr': r['adr'], 'revpar': r.get('revpar', ''),
                     'rooms_available': r.get('rooms_available', ''), 'replaces': (str(r['hotel_id']), period) in have})
     return out
@@ -267,17 +283,19 @@ def loaded(data_dir, hotels):
     months = [{'hotel_id': r['hotel_id'], 'hotel': (hotels.get(str(r['hotel_id'])) or {}).get('name', r['hotel_id']),
                'city': (hotels.get(str(r['hotel_id'])) or {}).get('city', ''), 'month': r.get('month'),
                'occupancy': r.get('occupancy'), 'adr': r.get('adr'), 'rooms_available': r.get('rooms_available'),
-               'uploaded_at': r.get('uploaded_at')} for r in rows]
+               'data_type': r.get('data_type') or 'actual', 'uploaded_at': r.get('uploaded_at')} for r in rows]
     months.sort(key=lambda r: (r['hotel'], r['month']))
     return {'months': months, 'hotels': summary(data_dir, hotels)}
 
 
-def load_monthly(data_dir):
-    """{(hotel_id, 'YYYY-MM'): occupancy %}"""
+def load_monthly(data_dir, scored_only=False):
+    """{(hotel_id, 'YYYY-MM'): occupancy %}; scored_only: without reforecast rows."""
     out = {}
     try:
         with open(os.path.join(data_dir, MONTHLY_FILE), encoding='utf-8') as f:
             for r in csv.DictReader(f):
+                if scored_only and (r.get('data_type') or 'actual') not in SCORED_TYPES:
+                    continue
                 try:
                     out[(str(r['hotel_id']), r['month'])] = float(r['occupancy'])
                 except (KeyError, ValueError):
