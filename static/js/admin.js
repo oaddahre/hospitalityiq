@@ -72,7 +72,7 @@ const SECTION_LOADERS = {
   users: loadUsers,
   orgs: loadOrgs,
   news: loadArticles,
-  uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
+  uploads: () => { loadHotelsForDI(); loadRecentUploads(); loadFiguresLoaded(); },
   rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); loadRatesStore(false); },
   occupancy: () => { loadOccupancyStatus(); loadSideBySide(); loadSwitch(); },
   events: loadEvents,
@@ -1036,14 +1036,48 @@ function showParsed(grid, filename) {
   if (!grid.length) { diMsg('Empty file.', true); return; }
   const header = grid[0].map(h => String(h).trim());
   diParsed = grid.slice(1).map(r => Object.fromEntries(header.map((h, j) => [h, r[j] ?? ''])));
-  const cols = header.slice(0, 6);
-  document.getElementById('di-preview-table').innerHTML =
-    `<div class="adm-row" style="grid-template-columns:repeat(${cols.length},1fr);border-top:none">${cols.map(c => `<span class="adm-row-meta" style="text-transform:uppercase;font-size:10px">${escHtml(c)}</span>`).join('')}</div>` +
-    diParsed.slice(0, 5).map(r => `<div class="adm-row" style="grid-template-columns:repeat(${cols.length},1fr)">${cols.map(c => `<span class="adm-row-meta">${escHtml(r[c] || '')}</span>`).join('')}</div>`).join('');
-  document.getElementById('di-preview').style.display = 'block';
   dz.querySelector('.adm-dropzone-main').textContent = `${filename} · ${diParsed.length} rows`;
-  document.getElementById('di-submit').disabled = !diParsed.length;
-  diMsg(`${diParsed.length} rows read from ${filename}. Nothing is saved until you upload.`, false);
+  diCheck(filename);
+}
+
+// The server checks every row (hotel_figures.py) and sends back the rows as
+// they would be saved; nothing is saved until "Save these figures", and a
+// file with any row in error can't be saved at all.
+async function diCheck(filename) {
+  const sel = document.getElementById('di-hotel');
+  const submit = document.getElementById('di-submit');
+  submit.disabled = true;
+  diMsg(`Checking ${diParsed.length} rows…`, false);
+  let res, data;
+  try {
+    res = await fetch('/admin/upload-figures', { method: 'POST', headers: authHeaders(true),
+      body: JSON.stringify({ hotel_id: sel.value, rows: diParsed, preview: true }) });
+    data = await res.json();
+  } catch { diMsg('Could not check the file.', true); return; }
+  diShowResult(data);
+  const rows = data.rows || [];
+  document.getElementById('di-preview-table').innerHTML = rows.length
+    ? `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Hotel</th><th>Month or night</th><th>Occupancy</th><th>ADR (MAD)</th><th>RevPAR</th><th>Rooms available</th><th></th></tr></thead><tbody>`
+      + rows.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${escHtml(r.period)}</td><td>${r.occupancy}%</td>`
+        + `<td>${Number(r.adr).toLocaleString('en')}</td><td>${r.revpar === '' ? '—' : Number(r.revpar).toLocaleString('en')}</td>`
+        + `<td>${r.rooms_available === '' ? '—' : Number(r.rooms_available).toLocaleString('en')}</td><td>${r.replaces ? 'replaces the stored figure' : 'new'}</td></tr>`).join('')
+      + '</tbody></table></div>'
+    : '<p class="adm-hint">No row passed the checks.</p>';
+  document.getElementById('di-preview').style.display = 'block';
+  if (res.ok) {
+    submit.disabled = false;
+    diMsg(`All ${rows.length} rows pass the checks (${data.months} months, ${data.nights} nights${data.replaces ? `, ${data.replaces} replace stored figures` : ''}). Nothing is saved until you press Save.`, false);
+  } else {
+    diMsg(data.error || 'The file has problems: nothing can be saved.', true);
+  }
+}
+
+function diShowResult(data) {
+  const errBox = document.getElementById('di-errors');
+  const errs = data.details || [], notes = data.notes || [];
+  errBox.style.display = errs.length || notes.length ? '' : 'none';
+  errBox.innerHTML = (errs.length ? `<strong>${errs.length} problem${errs.length === 1 ? '' : 's'}: fix ${errs.length === 1 ? 'it' : 'them'} in the file, then load it again.</strong><br>` + errs.map(escHtml).join('<br>') : '')
+    + (notes.length ? `${errs.length ? '<br>' : ''}<strong>${notes.length} note${notes.length === 1 ? '' : 's'} (kept):</strong><br>` + notes.map(escHtml).join('<br>') : '');
 }
 
 function diMsg(text, isError) {
@@ -1052,30 +1086,44 @@ function diMsg(text, isError) {
   el.style.color = isError ? 'var(--negative)' : 'var(--positive)';
 }
 
+document.getElementById('di-hotel').addEventListener('change', () => { if (diParsed.length) diCheck(''); });
+
 document.getElementById('di-submit').addEventListener('click', async () => {
   const sel = document.getElementById('di-hotel');
   const hotelId = sel.value;
   const hotelName = sel.options[sel.selectedIndex]?.dataset?.name || '';
   if (!diParsed.length) { diMsg('No data to upload.', true); return; }
   document.getElementById('di-submit').disabled = true;
-  diMsg('Checking and saving…', false);
+  diMsg('Saving…', false);
   const res = await fetch('/admin/upload-figures', {
     method: 'POST', headers: authHeaders(true),
     body: JSON.stringify({ hotel_id: hotelId, hotel_name: hotelName, rows: diParsed }),
   });
   const data = await res.json().catch(() => ({}));
-  const errBox = document.getElementById('di-errors');
-  const lines = [...(data.details || data.errors || []), ...(data.notes || [])];
-  errBox.style.display = lines.length ? '' : 'none';
-  errBox.innerHTML = lines.length ? `<strong>${(data.details || data.errors || []).length} row(s) not saved, ${(data.notes || []).length} note(s):</strong><br>` + lines.map(escHtml).join('<br>') : '';
-  document.getElementById('di-submit').disabled = false;
+  diShowResult(data);
   if (!res.ok) { diMsg(data.error || 'Upload failed.', true); return; }
   diMsg(`${data.rows_ingested} saved (${data.months} months, ${data.nights} nights${data.replaced ? `, ${data.replaced} replaced` : ''}) · ${data.date_range}`, false);
   diParsed = [];
   document.getElementById('di-preview').style.display = 'none';
   dz.querySelector('.adm-dropzone-main').textContent = 'Drag & drop a CSV or Excel file here';
   loadRecentUploads();
+  loadFiguresLoaded();
 });
+
+async function loadFiguresLoaded() {
+  const t = document.getElementById('di-loaded');
+  try {
+    const res = await fetch('/admin/figures-loaded', { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) throw new Error();
+    t.innerHTML = d.months.length
+      ? '<thead><tr><th>Hotel</th><th>Month</th><th>Occupancy</th><th>ADR (MAD)</th><th>Rooms available</th><th>Loaded</th></tr></thead><tbody>'
+        + d.months.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${escHtml(r.month)}</td><td>${escHtml(r.occupancy)}%</td>`
+          + `<td>${Number(r.adr).toLocaleString('en')}</td><td>${r.rooms_available ? Number(r.rooms_available).toLocaleString('en') : '—'}</td><td>${escHtml((r.uploaded_at || '').slice(0, 10))}</td></tr>`).join('') + '</tbody>'
+        + (d.hotels.some(h => h.nights) ? `<tfoot><tr><td colspan="6" class="adm-hint">Daily figures: ${d.hotels.filter(h => h.nights).map(h => `${escHtml(h.name)} ${h.nights} nights`).join(' · ')}</td></tr></tfoot>` : '')
+      : '<tbody><tr><td class="adm-hint">No data: no hotel figures have been loaded.</td></tr></tbody>';
+  } catch { t.innerHTML = '<tbody><tr><td class="adm-hint">Could not load.</td></tr></tbody>'; }
+}
 
 async function loadRecentUploads() {
   const container = document.getElementById('di-recent');
@@ -2101,6 +2149,43 @@ const dhTable = (id, head, rows) => {
 };
 const DH_STATUS = ['priced', 'sold_out', 'sold_out_candidate', 'no_price', 'closed_or_unknown', 'failed', 'not_checked'];
 
+// The nightly checks (health_checks.py): the platform light, each check, 14 days
+const HC_LABEL = { ok: 'OK', warning: 'Warning', problem: 'Problem', no_data: 'No data' };
+const HC_PILL = { ok: 'pill--green', warning: 'pill--orange', problem: 'pill--red', no_data: 'pill--grey' };
+function renderHealthChecks() {
+  const R = dhData.checks, H = dhData.history || [];
+  const light = document.getElementById('hc-light');
+  if (!R) { light.innerHTML = '<p class="adm-hint">No check has run yet.</p>'; return; }
+  const n = R.counts || {};
+  const head = R.overall === 'problem' ? `${n.problem} problem${n.problem === 1 ? '' : 's'}` : R.overall === 'warning'
+    ? `${n.warning} warning${n.warning === 1 ? '' : 's'}, no problem` : R.overall === 'ok' ? 'All checks OK' : 'No data yet';
+  light.innerHTML = `<span class="hc-dot hc-dot--${R.overall}" aria-hidden="true"></span>
+    <div><div class="hc-light-title">Platform: ${escHtml(head)}</div>
+    <div class="adm-hint">Checked ${escHtml(R.checked_at.replace('T', ' ').slice(0, 16))} · ${n.ok || 0} OK · ${n.warning || 0} warning · ${n.problem || 0} problem · ${n.no_data || 0} no data · `
+    + (R.overall === 'problem' ? (dhData.sanity_email ? `tonight's email goes to ${escHtml(dhData.sanity_email)}` : 'alert email off') : 'no email: nothing in "problem"') + '</div></div>';
+  const groups = [...new Set(R.checks.map(c => c.group))];
+  const rank = { problem: 0, warning: 1, no_data: 2, ok: 3 };
+  document.getElementById('hc-checks').innerHTML = groups.map(g => {
+    const cs = R.checks.filter(c => c.group === g).sort((a, b) => rank[a.status] - rank[b.status]);
+    return `<h2 class="dh-h">${escHtml(g)}</h2><ul class="hc-list">` + cs.map(c => {
+      const hotels = (c.hotels || []).map(h => `<li><a href="/dashboard#hotel=${encodeURIComponent(h.id)}" target="_blank" rel="noopener">${escHtml(h.name)}</a> <span class="adm-hint">${escHtml(h.city)}</span></li>`).join('');
+      const items = (c.items || []).map(x => `<li>${escHtml(x)}</li>`).join('');
+      const more = hotels || items ? `<details class="hc-more"><summary>${hotels ? `${c.hotels.length} hotel${c.hotels.length === 1 ? '' : 's'}` : 'Details'}</summary><ul>${hotels}${items}</ul></details>` : '';
+      return `<li class="hc-item"><span class="hc-pill ${HC_PILL[c.status]}">${HC_LABEL[c.status]}</span>
+        <div class="hc-body"><div class="hc-title">${escHtml(c.title)}${c.count != null && c.status !== 'ok' ? ` <span class="hc-count">${c.count}</span>` : ''}</div>
+        <div class="hc-explain">${escHtml(c.explain)}</div>${more}</div></li>`;
+    }).join('') + '</ul>';
+  }).join('');
+  const days = H.slice(-14);
+  const t = document.getElementById('hc-history');
+  if (!days.length) { t.innerHTML = '<tbody><tr><td>No history yet: one entry is kept per night.</td></tr></tbody>'; return; }
+  const cell = s => `<td class="hc-hcell"><span class="hc-sq hc-dot--${s || 'no_data'}" title="${HC_LABEL[s || 'no_data']}"></span></td>`;
+  const day = d => { const x = new Date(d + 'T12:00:00'); return `${x.getDate()}/${x.getMonth() + 1}`; };
+  t.innerHTML = `<thead><tr><th>Check</th>${days.map(d => `<th class="hc-hcell">${day(d.date)}</th>`).join('')}</tr></thead><tbody>`
+    + `<tr><td><strong>Platform</strong></td>${days.map(d => cell(d.overall)).join('')}</tr>`
+    + R.checks.map(c => `<tr><td>${escHtml(c.title)}</td>${days.map(d => cell((d.checks[c.id] || {}).status)).join('')}</tr>`).join('') + '</tbody>';
+}
+
 async function loadDataHealth(run) {
   const msg = document.getElementById('dh-msg');
   msg.textContent = run ? 'Running the checks…' : 'Loading…';
@@ -2127,10 +2212,8 @@ function renderDataHealth() {
     stat(S.room_status.sourced, 'Room counts with a source'),
     stat(S.google_issues, 'Google ID problems'),
   ].join('');
-  const probs = [...(dhData.scraper.problems || []), ...(R.problems || [])];
-  document.getElementById('dh-problems').innerHTML = probs.length
-    ? `<div class="dh-alert"><strong>${probs.length} problem${probs.length === 1 ? '' : 's'}</strong> (what tonight's email would say${dhData.sanity_email ? ' to ' + escHtml(dhData.sanity_email) : ', email off'}):<ul>${probs.map(p => `<li>${escHtml(p)}</li>`).join('')}</ul></div>`
-    : '<p class="adm-hint">No problem found: no email tonight.</p>';
+  renderHealthChecks();
+  document.getElementById('dh-problems').innerHTML = '';
   const st = S.statuses_30;
   document.getElementById('dh-problems').insertAdjacentHTML('beforeend',
     `<p class="adm-hint">Next 30 nights, all open hotels: ${DH_STATUS.map(k => `${k.replace(/_/g, ' ')} ${dhNum(st[k])}`).join(' · ')}. `

@@ -222,12 +222,12 @@
         <div id="di-errors" class="adm-hint" style="display:none;margin-top:8px"></div>
 
         <div id="di-preview" style="display:none;margin-top:14px">
-          <p class="adm-list-filter-label">Preview (first 5 rows)</p>
+          <p class="adm-list-filter-label">Preview: every row as it would be saved (checked, nothing saved yet)</p>
           <div id="di-preview-table"></div>
         </div>
 
         <div class="adm-toolbar" style="margin-top:16px">
-          <button class="adm-btn adm-btn-primary" id="di-submit" disabled>Upload Data</button>
+          <button class="adm-btn adm-btn-primary" id="di-submit" disabled>Save these figures</button>
           <span id="di-msg" class="adm-inline-msg"></span>
         </div>
       </div>
@@ -235,6 +235,8 @@
       <div>
         <p class="adm-list-filter-label">Recent uploads</p>
         <div id="di-recent"><p class="adm-loading">Loading…</p></div>
+        <p class="adm-list-filter-label" style="margin-top:20px">Figures loaded (internal model testing only, never shown to clients)</p>
+        <div class="dh-scroll"><table class="adm-table" id="di-loaded"></table></div>
       </div>
     </div>
   </section>
@@ -265,13 +267,19 @@
 
   <section class="adm-section" id="section-health" style="display:none">
     <h1 class="adm-section-title">Data health</h1>
-    <p class="adm-section-desc">Price data quality, coverage, hotel records, model confidence, calibration and the flags for changes clients would see. Checks run after every model run (after each scraper run) and at 05:00; the nightly sanity email goes out only when something is wrong.</p>
+    <p class="adm-section-desc">One light for the platform, then every nightly check: scraper, rates, occupancy, database, pages. The checks run at 05:00, after the 03:00 scraper and the 04:00 occupancy model, and when you press Run checks now. One email a day goes to the alert address when a check is in "problem", none otherwise (SANITY_EMAIL=off in Railway stops it). Below: price data quality, coverage, hotel records, model confidence, calibration and the flags for changes clients would see.</p>
     <div class="adm-toolbar">
       <button class="adm-btn adm-btn-primary" id="dh-run">Run checks now</button>
       <a class="adm-btn adm-btn-secondary" href="/api/admin/data-health/rate-quality.csv">Download rate_quality.csv</a>
       <button class="adm-btn adm-btn-secondary" id="dh-calibrate">Run calibration now</button>
       <span id="dh-msg" class="adm-inline-msg"></span>
     </div>
+    <div id="hc-light" class="hc-light" role="status"><p class="adm-loading">Loading…</p></div>
+    <div id="hc-checks"></div>
+    <h2 class="dh-h">Last 14 days</h2>
+    <div class="dh-scroll"><table class="adm-table hc-history" id="hc-history"></table></div>
+
+    <h2 class="dh-h">Prices and coverage in detail</h2>
     <div class="adm-stat-row dh-stats" id="dh-stats"><p class="adm-loading">Loading…</p></div>
     <div id="dh-problems"></div>
 

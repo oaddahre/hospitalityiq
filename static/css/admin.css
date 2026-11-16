@@ -813,3 +813,30 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .pc-day-bar { width: 100%; background: var(--action); min-height: 1px; }
 .pc-day-lab { font-size: 9px; color: var(--text-2); margin-top: 3px; font-variant-numeric: tabular-nums; }
 @media (max-width: 600px) { .pc-day-lab { font-size: 7px; } .pc-day:nth-child(odd) .pc-day-lab { visibility: hidden; } }
+
+/* Data health: the platform light and the nightly checks */
+.hc-light { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border: 1px solid var(--border); margin: 16px 0 4px; font-family: 'Sweet Sans Pro', sans-serif; }
+.hc-light-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.hc-dot { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
+.hc-dot--ok { background: var(--cat-2-dot); }
+.hc-dot--warning { background: var(--cat-3-dot); }
+.hc-dot--problem { background: var(--cat-7-dot); }
+.hc-dot--no_data { background: transparent; border: 2px solid var(--cat-6-dot); box-sizing: border-box; }
+.hc-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.hc-item { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-family: 'Sweet Sans Pro', sans-serif; }
+.hc-pill { align-self: start; justify-self: start; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; background: var(--pill-tint); color: var(--pill-text); white-space: nowrap; }
+.hc-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.hc-count { font-size: 11px; font-weight: 600; color: var(--text-2); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.hc-explain { font-size: 12px; color: var(--text-2); line-height: 1.45; margin-top: 2px; overflow-wrap: anywhere; }
+.hc-more { margin-top: 6px; font-size: 12px; }
+.hc-more summary { cursor: pointer; color: var(--action-text, var(--action)); }
+.hc-more ul { margin: 6px 0 0; padding-left: 18px; max-height: 260px; overflow-y: auto; }
+.hc-more li { margin: 2px 0; overflow-wrap: anywhere; }
+.hc-more a { color: var(--text); }
+.hc-history .hc-hcell { text-align: center; min-width: 30px !important; padding-left: 4px; padding-right: 4px; }
+.hc-sq { display: inline-block; width: 12px; height: 12px; border-radius: 0; }
+.hc-sq.hc-dot--no_data { border-width: 1.5px; }
+@media (max-width: 600px) {
+  .hc-item { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .hc-light { align-items: flex-start; }
+}

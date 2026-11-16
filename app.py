@@ -3003,14 +3003,23 @@ def _all_hotels_by_id():
         return {}
 
 
-def _ingest_figures(rows, hotel_id='', hotel_name=''):
+def _ingest_figures(rows, hotel_id='', hotel_name='', preview=False):
     """Validate and store hotel-reported figures (hotel_figures.py); returns
-    (response dict, HTTP status)."""
+    (response dict, HTTP status). Strict: a file with any row in error saves
+    nothing. preview: check only, and send back every row as it would be
+    saved (with the hotel's name, and whether it replaces a stored month)."""
     import hotel_figures as HF
     hotels = _all_hotels_by_id()
     monthly, daily, errors, notes = HF.validate(rows, hotels, _casablanca_today(), hotel_id=hotel_id or None)
+    checked = HF.preview_rows(DATA_DIR, monthly, daily, hotels)
     if not monthly and not daily:
-        return {'error': 'No valid rows' if rows else 'No rows provided', 'details': errors, 'notes': notes}, 400
+        return {'error': 'No valid rows' if rows else 'No rows provided', 'details': errors, 'notes': notes, 'rows': checked}, 400
+    if errors:
+        return {'error': f'{len(errors)} row{"s" if len(errors) != 1 else ""} with a problem: nothing saved. Fix the file and upload it again.',
+                'details': errors, 'notes': notes, 'rows': checked}, 400
+    if preview:
+        return {'ok': True, 'preview': True, 'rows': checked, 'notes': notes, 'months': len(monthly), 'nights': len(daily),
+                'replaces': sum(1 for r in checked if r['replaces'])}, 200
     stored = HF.store(DATA_DIR, monthly, daily)
     periods = sorted([r['month'] for r in monthly] + [r['date'] for r in daily])
     names = sorted({(hotels.get(r['hotel_id']) or {}).get('name', r['hotel_id']) for r in monthly + daily})
@@ -3035,8 +3044,17 @@ def admin_upload_figures():
     static/downloads/), as rows read from the CSV or Excel file in the
     browser. The figures are confidential: they feed the calibration only."""
     data = request.get_json(silent=True) or {}
-    out, code = _ingest_figures(data.get('rows') or [], str(data.get('hotel_id', '')).strip(), data.get('hotel_name', ''))
+    out, code = _ingest_figures(data.get('rows') or [], str(data.get('hotel_id', '')).strip(), data.get('hotel_name', ''),
+                                preview=bool(data.get('preview')))
     return jsonify(out), code
+
+
+@app.route("/admin/figures-loaded")
+@admin_required
+def admin_figures_loaded():
+    """What has been loaded, per hotel (admin only; never shown to clients)."""
+    import hotel_figures as HF
+    return jsonify(HF.loaded(DATA_DIR, _all_hotels_by_id()))
 
 
 @app.route("/admin/upload-performance", methods=["POST"])
@@ -5340,11 +5358,78 @@ def _data_health_report(force=False):
     return rep
 
 
+HEALTH_PAGES = ('/', '/methodology', '/about', '/contact', '/terms', '/privacy', '/login', '/status')
+HEALTH_APIS = ('/api/data', '/api/hotels', '/api/brands', '/api/owners', '/api/live-kpis', '/api/events',
+               '/api/pipeline', '/api/tourism', '/api/news')
+
+
+def _health_page_probe():
+    """[(path, kind, status, seconds)] for the public pages and the key API
+    endpoints, requested in-process (no network), the APIs as the first
+    active Advisory user (nothing is changed). Runs in its own thread: inside
+    an admin request the outer context's user would be reused."""
+    import threading
+    box = {}
+
+    def go():
+        try:
+            box['out'] = _health_page_requests()
+        except Exception as e:                  # reported by the check itself
+            box['err'] = e
+    th = threading.Thread(target=go, daemon=True)
+    th.start()
+    th.join(120)
+    if 'err' in box:
+        raise box['err']
+    return box.get('out', [])
+
+
+def _health_page_requests():
+    import time as _t
+    c = app.test_client()
+    out = []
+    for p in HEALTH_PAGES:
+        t0 = _t.perf_counter()
+        r = c.get(p)
+        out.append((p, 'page', r.status_code, round(_t.perf_counter() - t0, 3)))
+    user = next((u for u in load_users_db().get('users', []) if u.get('status') == 'active' and is_admin_tier(u.get('tier'))), None)
+    if user:
+        with c.session_transaction() as sess:
+            sess['_user_id'] = user['id']
+            sess['_fresh'] = True
+        for p in HEALTH_APIS:
+            t0 = _t.perf_counter()
+            r = c.get(p)
+            out.append((p, 'api', r.status_code, round(_t.perf_counter() - t0, 3)))
+    return out
+
+
+def _health_checks(rep=None, pages=True):
+    """The nightly check list (health_checks.py), with the scraper
+    freshness, account and price-quality findings of the older checks."""
+    import health_checks as HC
+    import data_quality as DQ
+    rep = rep or _data_health_report()
+    sc = _data_health(live_account=False)
+    extra = [HC.check('freshness', 'Scraper', 'Price data freshness', 'problem' if sc.get('problems') else 'ok',
+                      ' '.join(sc.get('problems') or []) or 'Prices were collected by the last run and the run is recent.',
+                      len(sc.get('problems') or []), items=sc.get('problems') or []),
+             HC.check('account', 'Scraper', 'Data store and DataForSEO account', 'warning' if sc.get('account_problems') else 'ok',
+                      ' '.join(sc.get('account_problems') or []) or 'Balance, login and data volume are fine.',
+                      len(sc.get('account_problems') or []), items=sc.get('account_problems') or []),
+             HC.check('price_quality', 'Rates', 'Price quality and coverage', 'warning' if rep.get('problems') else 'ok' if rep else 'no_data',
+                      ' '.join(rep.get('problems') or []) or 'Coverage, outliers, failed lookups and Google IDs within limits.',
+                      len(rep.get('problems') or []), items=rep.get('problems') or [])]
+    return HC.run(DATA_DIR, _casablanca_today(), pages=_health_page_probe if pages else None, dq_report=rep, extra_checks=extra)
+
+
 def _run_sanity_check(send=True):
-    """Fresh checks; returns (problems, sent). Sends nothing when all is well."""
+    """Fresh checks; returns (problem lines, sent). One email a day at most,
+    listing the checks in "problem"; none when nothing is in "problem"."""
+    import health_checks as HC
     rep = _data_health_report(force=True)
-    scraper = _data_health(live_account=False)
-    problems = list(scraper['problems']) + list(rep.get('problems') or [])
+    report = _health_checks(rep)
+    problems = HC.alert_lines(report)
     today = _casablanca_today().isoformat()
     st = _read_json_dict(SANITY_STATE_PATH)
     sent = False
@@ -5359,8 +5444,8 @@ def _run_sanity_check(send=True):
                     'html': _email_layout(heading='The nightly data check found problems.',
                                           paragraphs=[html.escape(p) for p in problems],
                                           button_label='Open Data health →',
-                                          button_url='https://www.kodohospitality.com/admin#data-health',
-                                          footnote='Sent only when a check fails, at most once a day. '
+                                          button_url='https://www.kodohospitality.com/admin#health',
+                                          footnote='Sent only when a check is in "problem", at most once a day. '
                                                    'Set SANITY_EMAIL to off in Railway to stop these emails.'),
                 })
                 sent = True
@@ -5371,13 +5456,13 @@ def _run_sanity_check(send=True):
             app.logger.info('Sanity check email off (SANITY_EMAIL=off).')
         else:
             app.logger.error('Sanity check email not sent: RESEND_API_KEY is not set.')
-    st.update(last_check=datetime.now().isoformat(timespec='seconds'), problems=problems)
+    st.update(last_check=datetime.now().isoformat(timespec='seconds'), problems=problems, overall=report['overall'])
     try:
         with open(SANITY_STATE_PATH, 'w', encoding='utf-8') as f:
             json.dump(st, f, indent=1)
     except OSError:
         pass
-    app.logger.info(f'Data sanity check: {len(problems)} problem(s)' + ('; email sent' if sent else ''))
+    app.logger.info(f'Data sanity check: {report["overall"]}, {len(problems)} problem(s)' + ('; email sent' if sent else ''))
     return problems, sent
 
 
@@ -5385,6 +5470,7 @@ def _run_sanity_check(send=True):
 @admin_required
 def api_admin_data_health():
     import data_quality as DQ
+    import health_checks as HC
     import flags as _flags
     import hotel_figures as HF
     rep = _data_health_report()
@@ -5399,15 +5485,23 @@ def api_admin_data_health():
         'flags': [{'name': k, 'on': v, 'what': _flags.FLAGS[k]} for k, v in _flags.all_flags().items()],
         'calibration': calib, 'figures_received': HF.summary(DATA_DIR, hotels),
         'sanity': _read_json_dict(SANITY_STATE_PATH), 'sanity_email': _sanity_recipient(),
-        'labels': DQ.CLIENT_LABEL,
+        'labels': DQ.CLIENT_LABEL, 'checks': _health_report_today(), 'history': HC.load_history(DATA_DIR),
     })
+
+
+def _health_report_today():
+    import health_checks as HC
+    r = HC.load(DATA_DIR)
+    if not r or r.get('date') != _casablanca_today().isoformat():
+        r = _health_checks()
+    return r
 
 
 @app.route('/api/admin/data-health/run', methods=['POST'])
 @admin_required
 def api_admin_data_health_run():
     _log_admin_action('data_health_run', '', '')
-    _data_health_report(force=True)
+    _health_checks(_data_health_report(force=True))
     return api_admin_data_health()
 
 

@@ -5105,6 +5105,9 @@ async function boot() {
   buildOwnerSelect();
   render();
   buildSearchIndex();
+  // /dashboard#hotel=ID opens that hotel's profile (links from the admin's Data health page)
+  const deep = location.hash.match(/^#hotel=(\d+)$/);
+  if (deep && hotels.some(h => +h.id === +deep[1])) showHotelDetail(+deep[1]);
 }
 
 // Hotels screen owner filter: every owner in the hotel list (most hotels

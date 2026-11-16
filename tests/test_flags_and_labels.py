@@ -110,16 +110,19 @@ class SanityEmail(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def check(self, problems):
-        rep = {'problems': problems}
-        scraper = {'problems': []}
-        with mock.patch.object(self.A, '_data_health_report', return_value=rep), \
-                mock.patch.object(self.A, '_data_health', return_value=scraper), \
+        """problems: the explanations of the checks in "problem" (health_checks.py)."""
+        import health_checks as HC
+        report = {'overall': 'problem' if problems else 'ok',
+                  'checks': [HC.check(f'c{i}', 'Rates', f'Check {i}', 'problem', p) for i, p in enumerate(problems)]
+                  + [HC.check('w', 'Rates', 'A warning', 'warning', 'only a warning: no email')]}
+        with mock.patch.object(self.A, '_data_health_report', return_value={'problems': []}), \
+                mock.patch.object(self.A, '_health_checks', return_value=report), \
                 mock.patch.object(self.A.resend.Emails, 'send') as send:
             out = self.A._run_sanity_check()
         return out, send
 
     def test_no_email_when_all_is_well(self):
-        (problems, sent), send = self.check([])
+        (problems, sent), send = self.check([])            # a warning alone sends nothing
         self.assertFalse(sent)
         send.assert_not_called()
 
@@ -127,6 +130,8 @@ class SanityEmail(unittest.TestCase):
         (problems, sent), send = self.check(['12 prices look like a currency problem.'])
         self.assertTrue(sent)
         self.assertEqual(send.call_args[0][0]['to'], 'admin@kodohospitality.com')
+        self.assertIn('12 prices look like a currency problem.', send.call_args[0][0]['html'])
+        self.assertNotIn('only a warning', send.call_args[0][0]['html'])
         (_, sent2), send2 = self.check(['12 prices look like a currency problem.'])
         self.assertFalse(sent2)
         send2.assert_not_called()

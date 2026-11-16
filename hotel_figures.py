@@ -235,6 +235,43 @@ def store(data_dir, monthly, daily):
     return out
 
 
+def preview_rows(data_dir, monthly, daily, hotels):
+    """The checked rows as they would be saved, for the admin preview: the
+    hotel's name and city, and whether each replaces a stored month or night."""
+    have = set()
+    for name, kf in ((MONTHLY_FILE, lambda r: (str(r.get('hotel_id')), r.get('month'))),
+                     (DAILY_FILE, lambda r: (str(r.get('hotel_id')), r.get('date')))):
+        try:
+            with open(os.path.join(data_dir, name), encoding='utf-8') as f:
+                have |= {kf(r) for r in csv.DictReader(f)}
+        except OSError:
+            pass
+    out = []
+    for r in monthly + daily:
+        period = r.get('month') or r.get('date')
+        h = hotels.get(str(r['hotel_id'])) or {}
+        out.append({'hotel_id': r['hotel_id'], 'hotel': h.get('name', ''), 'city': h.get('city', ''), 'period': period,
+                    'occupancy': r['occupancy'], 'adr': r['adr'], 'revpar': r.get('revpar', ''),
+                    'rooms_available': r.get('rooms_available', ''), 'replaces': (str(r['hotel_id']), period) in have})
+    return out
+
+
+def loaded(data_dir, hotels):
+    """Every stored month (and the nights per hotel), for the admin's list."""
+    rows = []
+    try:
+        with open(os.path.join(data_dir, MONTHLY_FILE), encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+    except OSError:
+        pass
+    months = [{'hotel_id': r['hotel_id'], 'hotel': (hotels.get(str(r['hotel_id'])) or {}).get('name', r['hotel_id']),
+               'city': (hotels.get(str(r['hotel_id'])) or {}).get('city', ''), 'month': r.get('month'),
+               'occupancy': r.get('occupancy'), 'adr': r.get('adr'), 'rooms_available': r.get('rooms_available'),
+               'uploaded_at': r.get('uploaded_at')} for r in rows]
+    months.sort(key=lambda r: (r['hotel'], r['month']))
+    return {'months': months, 'hotels': summary(data_dir, hotels)}
+
+
 def load_monthly(data_dir):
     """{(hotel_id, 'YYYY-MM'): occupancy %}"""
     out = {}
