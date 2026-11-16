@@ -801,3 +801,15 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   .dh-stats { gap: 16px; }
   .dh-filters .adm-input { max-width: none; width: 100%; }
 }
+
+/* Price coverage */
+.pc-results { position: absolute; left: 0; right: 0; top: 100%; z-index: 20; display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border); border-top: none; max-height: 320px; overflow-y: auto; }
+.pc-results:empty { display: none; }
+.pc-result { text-align: left; padding: 10px 12px; border: none; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 13px; cursor: pointer; }
+.pc-result:hover, .pc-result:focus-visible { background: var(--action-tint); outline: none; }
+.pc-result[disabled] { color: var(--text-2); cursor: default; }
+.pc-days { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 3px; height: 120px; align-items: end; max-width: 900px; }
+.pc-day { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
+.pc-day-bar { width: 100%; background: var(--action); min-height: 1px; }
+.pc-day-lab { font-size: 9px; color: var(--text-2); margin-top: 3px; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .pc-day-lab { font-size: 7px; } .pc-day:nth-child(odd) .pc-day-lab { visibility: hidden; } }

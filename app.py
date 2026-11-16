@@ -5786,6 +5786,26 @@ def api_admin_occupancy_switch():
                     'stand_in_removed': st.get('stand_in_removed')})
 
 
+@app.route('/api/admin/price-coverage')
+@admin_required
+def api_admin_price_coverage():
+    """Price coverage (price_coverage.py), read only: the summary for every
+    hotel; ?q= finds hotels by name; ?hotel_id= gives one hotel's 30 nights.
+    Never starts the scraper or a DataForSEO request."""
+    import price_coverage as PC
+    d = PC.get(DATA_DIR, _casablanca_today())
+    head = {'today': d['today'], 'latest_run': d['latest_run'], 'window': d['window'], 'calendar_days': d['calendar_days']}
+    if request.args.get('q') is not None:
+        return jsonify({**head, 'matches': PC.search(d, request.args.get('q'))})
+    hid = str(request.args.get('hotel_id', '')).strip()
+    if hid:
+        h = d['hotels'].get(hid)
+        if not h:
+            return jsonify({'error': 'No open hotel with this id'}), 404
+        return jsonify({**head, 'hotel': h})
+    return jsonify({**head, 'summary': d['summary']})
+
+
 @app.route('/api/admin/occupancy/calibration')
 @admin_required
 def api_admin_occupancy_calibration():

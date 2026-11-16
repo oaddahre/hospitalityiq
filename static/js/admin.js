@@ -66,7 +66,7 @@ document.getElementById('admMobileClose').addEventListener('click', () => mobile
 mobileOverlay.addEventListener('click', e => { if (e.target === mobileOverlay) mobileOverlay.classList.remove('open'); });
 
 // ─── Section navigation (last section remembered in localStorage) ────────
-const SECTIONS = ['overview', 'users', 'orgs', 'news', 'uploads', 'rates', 'occupancy', 'events', 'health', 'system'];
+const SECTIONS = ['overview', 'users', 'orgs', 'news', 'uploads', 'rates', 'occupancy', 'events', 'coverage', 'health', 'system'];
 const SECTION_LOADERS = {
   overview: loadOverview,
   users: loadUsers,
@@ -76,6 +76,7 @@ const SECTION_LOADERS = {
   rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); loadRatesStore(false); },
   occupancy: () => { loadOccupancyStatus(); loadSideBySide(); loadSwitch(); },
   events: loadEvents,
+  coverage: loadPriceCoverage,
   health: () => loadDataHealth(false),
   system: loadSystemInfo,
 };
@@ -90,6 +91,7 @@ function showSection(name) {
     p.classList.toggle('active', p.dataset.section === name);
   });
   try { localStorage.setItem('kodo-admin-section', name); } catch {}
+  if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
   if (!loadedSections.has(name)) {
     loadedSections.add(name);
     SECTION_LOADERS[name]();
@@ -105,8 +107,10 @@ document.getElementById('admSectionNav').addEventListener('click', e => {
 (function initSection() {
   let last = 'overview';
   try { last = localStorage.getItem('kodo-admin-section') || 'overview'; } catch {}
-  showSection(last);
+  const fromHash = location.hash.slice(1);          // /admin#coverage opens that section
+  showSection(SECTIONS.includes(fromHash) ? fromHash : last);
 })();
+window.addEventListener('hashchange', () => { const s = location.hash.slice(1); if (SECTIONS.includes(s)) showSection(s); });
 
 // Who's signed in — read from /api/me (already exists, used by the rest of
 // the platform) rather than guessing a new field shape here.
@@ -1839,6 +1843,106 @@ document.getElementById('occ-sw-resume').addEventListener('click', () => loadSwi
 document.getElementById('occ-sbs-view').addEventListener('change', renderSideBySide);
 document.getElementById('occ-sbs-city').addEventListener('change', renderSideBySide);
 document.getElementById('occ-sbs-refresh').addEventListener('click', () => loadSideBySide(true));
+
+// ════════════════════════ PRICE COVERAGE (read only) ═══════════════════
+const PC_YES = b => (b ? 'yes' : 'no');
+const pcMad = v => (v == null ? '—' : `MAD ${Math.round(v).toLocaleString('en')}`);
+const pcDay = iso => { const d = new Date(iso + 'T12:00:00'); return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); };
+async function pcFetch(qs) {
+  const res = await fetch('/api/admin/price-coverage' + (qs ? '?' + qs : ''), { headers: authHeaders() });
+  const d = await res.json();
+  if (!res.ok) throw new Error(d.error || 'Failed');
+  return d;
+}
+async function loadPriceCoverage() {
+  const meta = document.getElementById('pc-meta');
+  meta.textContent = 'Loading…';
+  try {
+    const d = await pcFetch('');
+    const s = d.summary;
+    meta.textContent = `Latest nightly run: ${d.latest_run || 'none yet'} · next 30 nights ${pcDay(d.window.start)} – ${pcDay(d.window.end)}.`;
+    document.getElementById('pc-cal-days').textContent = d.calendar_days;
+    const stat = (v, l) => `<div class="adm-stat"><span class="adm-stat-val">${v}</span><span class="adm-stat-label">${l}</span></div>`;
+    document.getElementById('pc-stats').innerHTML =
+      stat(`${s.with_price_pct ?? '–'}%`, `Hotel-nights with a price (${s.with_price.toLocaleString('en')} of ${s.hotel_nights.toLocaleString('en')})`)
+      + stat(`${s.from_last_run_pct ?? '–'}%`, 'Priced by the latest run')
+      + stat(s.empty.toLocaleString('en'), 'Empty hotel-nights')
+      + stat(s.hotels, 'Open hotels');
+    sbsTable('pc-causes', ['Cause of the empty hotel-nights', 'Hotel-nights', 'Share of empty'],
+      s.causes.map(c => [c.label, c.hotel_nights.toLocaleString('en'), `${c.pct_of_empty}%`])
+        .concat([['Hotels by lookup in the latest run: ' + Object.entries(s.lookups).map(([k, v]) => `${k} ${v}`).join(' · '), '', '']]));
+    const max = Math.max(1, ...s.gaps_by_day.map(g => g.empty));
+    const days = document.getElementById('pc-days');
+    days.replaceChildren(...s.gaps_by_day.map(g => {
+      const col = document.createElement('div');
+      col.className = 'pc-day';
+      col.title = `${pcDay(g.night)} (day ${g.day}): ${g.empty} empty`;
+      const bar = document.createElement('span');
+      bar.className = 'pc-day-bar';
+      bar.style.height = `${Math.round(100 * g.empty / max)}%`;
+      const lab = document.createElement('span');
+      lab.className = 'pc-day-lab';
+      lab.textContent = g.day;
+      col.append(bar, lab);
+      return col;
+    }));
+    sbsTable('pc-sparse', ['Hotel', 'City', 'Nights priced (of 30)', 'Google lookup'],
+      s.sparse.map(h => [h.name, h.city, h.priced, h.lookup]));
+    document.querySelectorAll('#pc-sparse tbody tr').forEach((tr, i) => {
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', () => pcShowHotel(s.sparse[i].id));
+    });
+  } catch (e) { meta.textContent = e.message; }
+}
+async function pcShowHotel(id) {
+  const head = document.getElementById('pc-hotel-head');
+  head.textContent = 'Loading…';
+  try {
+    const { hotel: h } = await pcFetch('hotel_id=' + encodeURIComponent(id));
+    document.getElementById('pc-search').value = h.name;
+    head.textContent = `${h.name} · ${h.city} · Google lookup in the latest run: ${h.lookup}`
+      + (h.google_title ? ` (Google calls it “${h.google_title}”)` : '') + ` · ${h.nights_returned} nights returned · ${h.priced} of 30 nights on the calendar`;
+    sbsTable('pc-hotel-table', ['Night', 'Asked in latest run', 'Rate returned', 'Calendar shows', 'From run', 'Runs asked / returned a rate'],
+      h.nights.map(n => [pcDay(n.night), PC_YES(n.asked), n.returned ? pcMad(n.rate) : 'no', pcMad(n.shown), n.shown_run || '—',
+        `${n.runs_asked} / ${n.runs_returned}`]));
+    head.scrollIntoView({ block: 'nearest' });
+  } catch (e) { head.textContent = e.message; }
+}
+(function pcSearch() {
+  const input = document.getElementById('pc-search'), list = document.getElementById('pc-results');
+  let t = null, seq = 0;
+  const close = () => { list.replaceChildren(); input.setAttribute('aria-expanded', 'false'); };
+  input.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      const q = input.value.trim(), my = ++seq;
+      if (q.length < 2) { close(); return; }
+      try {
+        const { matches } = await pcFetch('q=' + encodeURIComponent(q));
+        if (my !== seq) return;
+        list.replaceChildren(...(matches.length ? matches : [null]).map(m => {
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'pc-result'; b.setAttribute('role', 'option');
+          if (!m) { b.textContent = 'No open hotel with this name'; b.disabled = true; return b; }
+          b.textContent = `${m.name} · ${m.city}`;
+          b.addEventListener('click', () => { close(); pcShowHotel(m.id); });
+          return b;
+        }));
+        input.setAttribute('aria-expanded', 'true');
+      } catch { close(); }
+    }, 200);
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    if (e.key === 'Enter') { const f = list.querySelector('.pc-result:not([disabled])'); if (f) f.click(); }
+    if (e.key === 'ArrowDown') { const f = list.querySelector('.pc-result'); if (f) { e.preventDefault(); f.focus(); } }
+  });
+  list.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); document.activeElement.nextElementSibling?.focus(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); (document.activeElement.previousElementSibling || input).focus(); }
+    if (e.key === 'Escape') { close(); input.focus(); }
+  });
+})();
 
 // ════════════════════════ DATA & SYSTEM ════════════════════════════════
 async function loadSystemInfo() {

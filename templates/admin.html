@@ -87,6 +87,7 @@
     <button class="list-pill" data-section="rates">Rates</button>
     <button class="list-pill" data-section="occupancy">Occupancy</button>
     <button class="list-pill" data-section="events">Events</button>
+    <button class="list-pill" data-section="coverage">Price coverage</button>
     <button class="list-pill" data-section="health">Data health</button>
     <button class="list-pill" data-section="system">Data &amp; System</button>
   </div>
@@ -239,6 +240,29 @@
   </section>
 
   <!-- ══════════════════ DATA HEALTH (data_quality.py) ══════════════════ -->
+  <section class="adm-section" id="section-coverage" style="display:none">
+    <h1 class="adm-section-title">Price coverage</h1>
+    <p class="adm-section-desc">Why hotels show a BAR on only some of the next 30 nights. Read only: built from the stored data (the nightly runs' lookup results and the rates store); it never starts the scraper or a DataForSEO request. <span id="pc-meta"></span></p>
+
+    <h2 class="adm-list-filter-label">One hotel</h2>
+    <div class="adm-field-group" style="max-width:420px;position:relative">
+      <label class="adm-label" for="pc-search">Hotel name</label>
+      <input type="text" id="pc-search" class="adm-input" autocomplete="off" placeholder="Search a hotel" role="combobox" aria-expanded="false" aria-controls="pc-results">
+      <div id="pc-results" class="pc-results" role="listbox"></div>
+    </div>
+    <div id="pc-hotel-head" class="adm-hint"></div>
+    <div class="dh-scroll"><table class="adm-table" id="pc-hotel-table"></table></div>
+    <p class="adm-hint">When a matched hotel has no rate for a night, the reason (sold out, no offer, minimum stay) is not stored: the scraper keeps only the nights that come back with a price. The calendar shows the latest price from any run in the last <span id="pc-cal-days">35</span> days.</p>
+
+    <h2 class="adm-list-filter-label" style="margin-top:28px">All hotels, next 30 nights</h2>
+    <div class="adm-stat-row" id="pc-stats"></div>
+    <div class="dh-scroll"><table class="adm-table" id="pc-causes"></table></div>
+    <p class="adm-list-filter-label" style="margin-top:20px">Where the gaps fall (matched hotels, empty nights by days ahead)</p>
+    <div id="pc-days" class="pc-days" aria-label="Empty nights of matched hotels by days ahead"></div>
+    <p class="adm-list-filter-label" style="margin-top:20px">The 30 most sparsely priced hotels</p>
+    <div class="dh-scroll"><table class="adm-table" id="pc-sparse"></table></div>
+  </section>
+
   <section class="adm-section" id="section-health" style="display:none">
     <h1 class="adm-section-title">Data health</h1>
     <p class="adm-section-desc">Price data quality, coverage, hotel records, model confidence, calibration and the flags for changes clients would see. Checks run after every model run (after each scraper run) and at 05:00; the nightly sanity email goes out only when something is wrong.</p>
