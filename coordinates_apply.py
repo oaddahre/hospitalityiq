@@ -722,6 +722,14 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
     pipe_ids = [str(r.get('id', '')).strip() for r in pipe]
     acts = [(str(a.get('hotel_id', '')).strip(), str(a.get('action', '')).strip().lower(), a) for a in actions]
     per_hotel, renamed = {}, {}
+    # earlier names of each hotel, from the change log (a rebrand): a row may
+    # still call a hotel by the name it had when that row was written
+    former, done_projects = {}, set()
+    for x in _logged(log_path):
+        if x.get('action') == 'rename' and x.get('old_name'):
+            former.setdefault(str(x.get('hotel_id')), set()).add(_norm_name(x['old_name']))
+        if x.get('action') == 'pipeline_remove':          # a project removed since (e.g. it opened)
+            done_projects.add((str(x.get('pipeline_id')), _norm_name(x.get('hotel'))))
     for hid, act, a in acts:
         per_hotel[hid] = per_hotel.get(hid, 0) + 1
         if act == 'rename':
@@ -752,6 +760,7 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
             r = renamed.get(hid)
             if r and _norm_name(cur['cells'][col['name']]) == _norm_name(r.get('new_name')):
                 names.add(_norm_name(r.get('hotel')))          # already renamed: the old name is fine too
+            names |= former.get(hid, set())
         if act not in HOTEL_ACTIONS:
             e['status'] = 'bad action'
         elif act == 'pipeline_add':
@@ -775,6 +784,8 @@ def hotels_plan(hotels_path, actions, log_path=None, pipeline_path=None, perform
                 e['status'], e['note'] = 'bad row', 'missing ' + ', '.join('hotel' if c == 'name' else 'new_' + c for c in missing)
             elif bad_pos:
                 e['status'], e['note'] = 'bad row', 'new_lat / new_lng are not a position'
+            elif same_id is None and (pid, _norm_name(cells['name'])) in done_projects:
+                e['status'], e['note'] = 'already', 'added earlier and removed since (change log)'
             elif same_id is not None:
                 same = _norm_name(same_id.get('name')) == _norm_name(cells['name'])
                 e['status'] = 'already' if same else 'conflict'

@@ -47,7 +47,7 @@ hotel_id,keys,status,source
 111,90,no_source_on_file,
 121,500,sourced,https://madaef.ma/assets/mazagan-beach-golf-resort-2/
 122,103,sourced,https://risma.com/wp-content/uploads/2026/01/Resume-Anglais-AK-RISMA.pdf
-123,180,no_source_on_file,
+123,122,sourced,https://www.hyatt.com/hyatt-regency/en-US/cmn01-hyatt-regency-mazagan/rooms
 125,12,no_source_on_file,
 126,104,sourced,https://risma.com/wp-content/uploads/2026/01/Resume-Anglais-AK-RISMA.pdf
 128,488,sourced,https://festourism.org/ficheitem.php?id=71

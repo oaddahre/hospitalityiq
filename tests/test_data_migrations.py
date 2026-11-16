@@ -64,7 +64,8 @@ class DataMigrations(unittest.TestCase):
                                         '0010_be_live_risma_names', '0011_new_hotels', '0012_new_hotels_google_ids',
                                         '0013_pipeline_projects', '0014_owner_decisions', '0015_owner_profiles',
                                         '0016_pipeline_decisions', '0017_remove_placeholder_news', '0018_brand_owner_descriptions',
-                                        '0019_performance_reference_only'])
+                                        '0019_performance_reference_only', '0020_hyatt_regency_mazagan',
+                                        '0021_hyatt_regency_mazagan_owner'])
         self.assertIsNone(r['failed'])
         for hid in ('58', '320', '266', '467'):
             self.assertEqual(self.hotel(hid)['owner'], 'OCP Group')
@@ -170,13 +171,15 @@ class DataMigrations(unittest.TestCase):
         # the volume ends up with the repo's own pipeline.csv
         repo = {p['id']: p for p in csv.DictReader(open(os.path.join(ROOT, 'pipeline.csv'), encoding='utf-8'))}
         self.assertEqual(pipe, repo)
-        self.assertEqual(len(pipe), 28)
+        self.assertEqual(len(pipe), 27)
         self.assertNotIn('6', pipe)                                   # Hilton Tanger City: open as hotel 394
         self.assertEqual(self.hotel('394')['status'], 'Open')
-        self.assertEqual((pipe['25']['name'], pipe['25']['converts_hotel_id'], pipe['25']['keys']),
-                         ('Hyatt Regency Mazagan', '123', '122'))
-        self.assertEqual(self.hotel('123')['status'], 'Operating')    # still the operating hotel
-        self.assertEqual(sum(1 for p in pipe.values() if p['converts_hotel_id']), 1)
+        # Hyatt Regency Mazagan: the conversion of hotel 123 is done (0020): the project is gone and
+        # hotel 123 itself carries the new name, brand and 122 rooms (never counted twice)
+        self.assertNotIn('25', pipe)
+        self.assertEqual((self.hotel('123')['name'], self.hotel('123')['brand'], self.hotel('123')['keys'], self.hotel('123')['status']),
+                         ('Hyatt Regency Mazagan', 'Hyatt Regency', '122', 'Operating'))
+        self.assertEqual(sum(1 for p in pipe.values() if p['converts_hotel_id']), 0)
         self.assertEqual(pipe['19']['expected_opening'], '')          # Four Seasons: no date announced
         self.assertEqual({k: pipe[k]['keys'] for k in ('4', '10', '11', '17')},
                          {'4': '141', '10': '178', '11': '162', '17': '127'})
@@ -185,7 +188,7 @@ class DataMigrations(unittest.TestCase):
         # running the rows again changes nothing
         acts = CA.read_hotel_actions(open(os.path.join(DM.MIGRATIONS_DIR, '0016_pipeline_decisions.hotels.csv'),
                                           encoding='utf-8').read())
-        plan = CA.hotels_plan(os.path.join(self.d, 'hotels.csv'), acts, None, pipe_path)
+        plan = CA.hotels_plan(os.path.join(self.d, 'hotels.csv'), acts, os.path.join(self.d, 'coordinate_changes_applied.log'), pipe_path)
         self.assertEqual({e['status'] for e in plan}, {'already'})
         # removed projects can't be added back
         plan = CA.hotels_plan(os.path.join(self.d, 'hotels.csv'), [{'hotel_id': '', 'action': 'pipeline_add',

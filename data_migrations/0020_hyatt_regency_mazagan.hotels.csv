@@ -1,0 +1,6 @@
+hotel_id,action,pipeline_id,hotel,reason,into_hotel_id,new_name,new_brand,new_brand_group,new_rooms,new_notes
+123,rename,,Pullman El Jadida Beach Resort,rebranded Hyatt Regency; owner confirmed Nov 2026; official name: https://www.hyatt.com/hyatt-regency/en-US/cmn01-hyatt-regency-mazagan,,Hyatt Regency Mazagan,,,,
+123,brand,,Pullman El Jadida Beach Resort,was Pullman (Accor); owner confirmed Nov 2026; official name: https://www.hyatt.com/hyatt-regency/en-US/cmn01-hyatt-regency-mazagan,,,Hyatt Regency,Hyatt Hotels Corporation,,
+123,rooms,,Pullman El Jadida Beach Resort,was 180; 122 rooms after the conversion (owner confirmed Nov 2026; hyatt.com),,,,,122,
+123,notes,,Pullman El Jadida Beach Resort,rebrand note,,,,,,"Owner (Nov 2026): Madaëf. Rebranded Hyatt Regency Mazagan (Hyatt Regency, Hyatt Hotels Corporation), 122 rooms, owner confirmed Nov 2026; formerly Pullman El Jadida Beach Resort (Accor), internal note. Google still lists it as ""Pullman Mazagan Royal Golf & Spa"" (Nov 2026). Sources: https://www.hyatt.com/hyatt-regency/en-US/cmn01-hyatt-regency-mazagan ; https://ledesk.ma/enoff/pullman-el-jadida-madaef-opte-pour-lenseigne-hyatt-regency/ ; https://madaef.ma/assets/"
+,pipeline_remove,25,Hyatt Regency Mazagan,the conversion is done: the hotel is open as Hyatt Regency Mazagan (hotel 123),123,,,,,

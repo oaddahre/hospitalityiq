@@ -303,6 +303,26 @@ def loose_match(hotel, cand_name, cand_gps, known_cities=()):
     return round(metres)
 
 
+SAME_LISTING_MAX_M = 300
+
+
+def same_listing(entry, cand_title, cand_gps):
+    """The Google result is the listing this hotel's ID was matched to before:
+    the same name as stored then (google_title) and, when both positions are
+    known, within SAME_LISTING_MAX_M of the stored position. Lets a hotel we
+    renamed keep its prices while Google still shows the former name."""
+    if not isinstance(entry, dict) or not entry.get('identifier') or not entry.get('google_title') or not cand_title:
+        return False
+    if norm_text(entry['google_title']) != norm_text(cand_title):
+        return False
+    try:
+        metres = km_between(float(entry['google_lat']), float(entry['google_lng']),
+                            float(cand_gps['latitude']), float(cand_gps['longitude'])) * 1000
+        return metres <= SAME_LISTING_MAX_M
+    except (TypeError, ValueError, KeyError):
+        return True                     # no stored position: the same name on the same ID
+
+
 def same_name(hotel, cand_name, known_cities=()):
     """Google's name is ours: the same distinctive words both ways (accents,
     case, "&"/"and", generic words and city names ignored), our brand
@@ -848,6 +868,13 @@ class KodoScraper:
                 res = (task.get('result') or [{}])[0] or {}
                 gps = self._dfs_gps(res.get('location'))
                 ok, why = match_hotel(hotel, res.get('title', ''), res.get('address', '') or '', gps, self.known_cities)
+                if not ok and same_listing(ids.get(hid), res.get('title', ''), gps):
+                    # The listing this hotel was matched to before, unchanged (same
+                    # name and position): a hotel we renamed (a rebrand) that Google
+                    # still lists under its former name
+                    ok = True
+                    logger.info(f'DataForSEO: "{hotel["name"]}" is still listed by Google as "{res.get("title", "")}" '
+                                '(the same listing as before): prices used')
                 if not ok and (ids.get(hid) or {}).get('source') == 'approved':
                     # A candidate a person checked and approved in the Rates
                     # panel (Google may name it in Arabic or with extra words)
