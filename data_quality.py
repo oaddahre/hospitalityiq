@@ -81,7 +81,7 @@ GOOGLE_NAME_MIN = 0.5
 NEAR_DUPLICATE_M = 60
 
 # Confidence: a level per hotel for modelled figures (occupancy, its range,
-# RevPAR, valuation inputs). Published rates are observed: their own level
+# Rooms RevPAR, valuation inputs). Published rates are observed: their own level
 # comes from coverage only. Thresholds proposed for approval (Data health
 # page); below SHOW_FROM a figure is greyed ("limited data"), at
 # 'insufficient' it is hidden (both only with the CONFIDENCE_UI flag).
@@ -806,8 +806,8 @@ MODELS = [
      'label': 'inside the occupancy figure', 'confidence': 'untested: the with/without test needs real nights'},
     {'name': 'Live KPI cards', 'where': 'live_kpis.py, KodoLive', 'data': 'latest published price per night (max 7 days old), the stored model run',
      'assumes': 'room-weighted over hotels with the figure; hotels with no room count weigh 0',
-     'label': 'Avg published rate (not ADR) · Modelled occupancy · Indicative RevPAR, next 30 nights',
-     'confidence': 'rate: observed; occupancy and RevPAR: modelled, low'},
+     'label': 'Avg published rate (not ADR) · Modelled occupancy · Indicative Rooms RevPAR, next 30 nights',
+     'confidence': 'rate: observed; occupancy and Rooms RevPAR: modelled, low'},
     {'name': 'Rate benchmark (comp set)', 'where': 'rate_benchmark.py', 'data': 'published prices of the hotel and its comp set, by night',
      'assumes': 'rate index = own price / comp-set average; its own coverage level', 'label': 'published rates, coverage level shown',
      'confidence': 'observed prices; short history'},
@@ -817,7 +817,7 @@ MODELS = [
      'data': 'the last published price seen before each night, from 3 Nov 2026', 'assumes': 'a hotel needs 7 priced nights; a group 3 such hotels',
      'label': 'BAR (published rate), "limited data" under 3 hotels', 'confidence': 'observed'},
     {'name': 'Owner, brand and city roll-ups', 'where': 'main.js, app /api/data and /api/brands', 'data': 'per-hotel BAR (observed) and Kodo estimates',
-     'assumes': 'BAR: plain average of hotels; occupancy and RevPAR: room-weighted', 'label': 'BAR; Kodo estimate',
+     'assumes': 'BAR: plain average of hotels; occupancy and Rooms RevPAR: room-weighted', 'label': 'BAR; Kodo estimate',
      'confidence': 'as the figures they average'},
     {'name': 'Old annual reference price', 'where': 'performance.csv (adr_mad only)',
      'data': 'an old Kodo model estimate per hotel; no longer shown anywhere, and no longer used by v1',

@@ -171,7 +171,7 @@ and writes `static/img/product/video/product-tour-{light,dark}.mp4`, `.webm`,
 a free port with the sample data above, a local-only demo account, no API keys
 and no data migrations, then captures the tour frame by frame (about 50 s):
 
-1. Dashboard: the market KPI cards, then RevPAR by destination.
+1. Dashboard: the market KPI cards, then Rooms RevPAR by destination.
 2. Hotels: the Marrakech filter, then Palais Ocre.
 3. Hotel profile: the published rate and modelled occupancy calendars, with a
    night's tooltip on each.

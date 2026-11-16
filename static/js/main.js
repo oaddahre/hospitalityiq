@@ -545,7 +545,7 @@ const KodoPeriod = (() => {
 
 // ─── Live KPI cards (/api/live-kpis, live_kpis.py) ────────────────────
 // One set of figures for every page: each hotel's average published rate
-// (latest price per night), modelled occupancy and indicative RevPAR over
+// (latest price per night), modelled occupancy and indicative Rooms RevPAR over
 // the next 30 nights; a group (city, brand, owner, market) is the rooms-
 // weighted average over its hotels that have the figure, with the
 // coverage shown. Published booking-site prices (BAR); modelled, not
@@ -561,7 +561,7 @@ const KODO_FLAG = name => !!(window.KODO_FLAGS && window.KODO_FLAGS[name]);
 // /api/live-kpis). A group's BAR (destination, brand, owner, segment) is the
 // plain average of its hotels' BAR; under 3 such hotels it reads "Limited
 // data", never a precise-looking number. Kodo has no achieved rate, so
-// this is always called BAR or published rate. Occupancy and RevPAR are Kodo estimates (next 30 nights).
+// this is always called BAR or published rate. Occupancy and Rooms RevPAR are Kodo estimates (next 30 nights).
 const KodoBar = (() => {
   const COLLECTING = 'Collecting data since 3 November';
   const LIMITED = 'Limited data';
@@ -615,7 +615,8 @@ const KodoBar = (() => {
   return { COLLECTING, LIMITED, setMeta, since, days, caption, group, shown, cell, hotelCell, card, collecting,
            meta: () => meta };
 })();
-const EST_TIP = 'Kodo estimate: occupancy model, next 30 nights; RevPAR = BAR × modelled occupancy';
+const ROOMS_REVPAR_TIP = 'Rooms RevPAR is room revenue per available room. It excludes food and beverage and other revenue. On Kodo it is estimated from modelled occupancy and the published rate (BAR).';
+const EST_TIP = 'Kodo estimate: occupancy model, next 30 nights; Rooms RevPAR = BAR × modelled occupancy. ' + ROOMS_REVPAR_TIP;
 const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
 
 const KodoLive = (() => {
@@ -665,6 +666,7 @@ const KodoLive = (() => {
       total: (list || []).length, single: (list || []).length === 1 ? rows[0] || null : null, level: groupLevel(rows),
       bar: KodoBar.group(rows.map(v => ({ bar_mad: v.bar, bar_nights: v.bar_nights }))),
       rate: w(v => v.rate), occ: w(v => v.occ), low: w(v => v.occ_low), high: w(v => v.occ_high), revpar: w(v => v.revpar),
+      rlow: w(v => v.revpar_low), rhigh: w(v => v.revpar_high),
       change: { occ: change(v => v.occ), revpar: change(v => v.revpar) },
     };
   }
@@ -711,7 +713,7 @@ const KodoLive = (() => {
   // Kodo estimates for the next 30 nights.
   async function cards(ids, list) {
     const els = Object.fromEntries(Object.entries(ids).map(([k, id]) => [k, document.getElementById(id)]).filter(([, e]) => e));
-    const LABELS = { rate: 'BAR (published rate)', occ: 'Occupancy · Kodo estimate', revpar: 'RevPAR · Kodo estimate' };
+    const LABELS = { rate: 'BAR (published rate)', occ: 'Occupancy · Kodo estimate', revpar: 'Rooms RevPAR (est.)' };
     Object.entries(els).forEach(([k, c]) => { c.querySelector('.kpi-label').textContent = LABELS[k]; c.querySelector('.kpi-value').textContent = '…'; });
     const d = await load();
     if (!d) { Object.values(els).forEach(c => { noData(c, KodoBar.COLLECTING); part(c, 'kpi-sub').textContent = ''; }); return; }
@@ -751,10 +753,10 @@ const KodoLive = (() => {
     }
     if (els.revpar) {
       const c = els.revpar;
-      KodoPeriod.setText(c, `Next 30 nights · ${period}`, KodoPeriod.tip({ source: 'published BAR × Kodo occupancy estimate, night by night', note: 'Kodo estimate' }));
+      KodoPeriod.setText(c, `Next 30 nights · ${period}`, KodoPeriod.tip({ source: 'published BAR × Kodo occupancy estimate, night by night', note: 'Kodo estimate. ' + ROOMS_REVPAR_TIP }));
       if (conf === 'insufficient') { noData(c, 'Insufficient data'); part(c, 'kpi-sub').textContent = 'Not enough price history yet'; delta(c, null); }
       else if (a.revpar.val == null) { noData(c, KodoBar.COLLECTING); part(c, 'kpi-sub').textContent = 'BAR × Kodo occupancy estimate'; delta(c, null); }
-      else { show(c, fmt.mad(a.revpar.val), 'MAD · BAR × occupancy estimate'); part(c, 'kpi-sub').textContent = one ? `on ${one.occ_nights ?? 0} of ${n} nights` : cover('revpar'); delta(c, a.change.revpar, '%'); if (conf) confLine(c, conf); }
+      else { const rr = a.rlow.val != null && a.rhigh.val != null && a.rlow.n === a.revpar.n ? ` · range ${fmt.mad(a.rlow.val)}–${fmt.mad(a.rhigh.val)}` : ''; show(c, fmt.mad(a.revpar.val), rr ? 'MAD' + rr : 'MAD · BAR × occupancy estimate'); part(c, 'kpi-sub').textContent = one ? `on ${one.occ_nights ?? 0} of ${n} nights` : cover('revpar'); delta(c, a.change.revpar, '%'); if (conf) confLine(c, conf); }
     }
   }
   return { load, agg, cards, stamp, part, noData, show };
@@ -763,7 +765,7 @@ const KodoLive = (() => {
 // ─── Aggregation ──────────────────────────────────────────────────
 
 // A group of hotels: BAR (observed, plain average of its hotels' BAR, see
-// KodoBar) and the Kodo estimates (occupancy and RevPAR, next 30 nights,
+// KodoBar) and the Kodo estimates (occupancy and Rooms RevPAR, next 30 nights,
 // room-weighted over the hotels that have them; null when none has).
 function perfAggs(hs) {
   const has = (h, k) => h[k] != null && !Number.isNaN(Number(h[k]));
@@ -820,7 +822,7 @@ function renderKPIs() {
   document.getElementById('kpi-keys-meta').textContent = hotelLabel;
   kc.classList.remove('loading');
   KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
-  // BAR: observed since 3 Nov 2026. Occupancy, RevPAR: Kodo estimates, next 30 nights (KodoLive)
+  // BAR: observed since 3 Nov 2026. Occupancy, Rooms RevPAR: Kodo estimates, next 30 nights (KodoLive)
   ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
   KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list);
   const sub = document.getElementById('dashboard-sub');
@@ -1114,7 +1116,7 @@ function renderBrandTable() {
 
   const sub = document.getElementById('brand-table-sub');
   const dest = state.city === 'all' ? 'All destinations' : state.city;
-  sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''} · BAR: ${KodoBar.since()} · occupancy and RevPAR: Kodo estimates, next 30 nights`;
+  sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''} · BAR: ${KodoBar.since()} · occupancy and Rooms RevPAR: Kodo estimates, next 30 nights`;
 }
 
 // ─── Brands screen ────────────────────────────────────────────────
@@ -1225,7 +1227,7 @@ function renderBrandsCards() {
       <div class="brn-card-kpis">
         <div class="brn-kpi"><div class="brn-kpi-lbl">BAR</div><div class="brn-kpi-val">${KodoBar.cell({ val: b.bar_mad, n: b.bar_hotels, nights: b.bar_nights, limited: b.bar_limited })}</div></div>
         <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Occ · est.</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
-        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">RevPAR · est.</div><div class="brn-kpi-val">${fmt.mad(b.avg_revpar)}</div></div>
+        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Rooms RevPAR (est.)</div><div class="brn-kpi-val">${fmt.mad(b.avg_revpar)}</div></div>
       </div>
       <div class="brn-card-meta">
         <div class="brn-card-cities">${cityList}${cityMore}</div>
@@ -1328,7 +1330,7 @@ function renderBrandsInsights() {
   if (byRevpar) {
     document.getElementById('brni-revpar-val').textContent  = byRevpar.brand_group;
     document.getElementById('brni-revpar-desc').textContent =
-      `MAD ${fmt.mad(byRevpar.avg_revpar)} RevPAR · Kodo estimate, next 30 nights (BAR × modelled occupancy)`;
+      `MAD ${fmt.mad(byRevpar.avg_revpar)} Rooms RevPAR (est.), next 30 nights (BAR × modelled occupancy)`;
   } else {
     document.getElementById('brni-revpar-val').textContent  = '—';
     document.getElementById('brni-revpar-desc').textContent = KodoBar.COLLECTING;
@@ -2151,7 +2153,8 @@ async function renderOccCalendar(hotelId) {
   // Averages bar
   if (data.avg_occupancy_30d != null) {
     const range = data.avg_low_30d != null && data.avg_high_30d != null ? ` (range ${data.avg_low_30d}–${data.avg_high_30d}%)` : '';
-    const revStr = data.avg_revpar_30d ? ` · RevPAR (Kodo estimate: BAR × modelled occupancy) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '';
+    const rRange = data.avg_revpar_low_30d != null && data.avg_revpar_high_30d != null ? ` (range ${Math.round(+data.avg_revpar_low_30d).toLocaleString()}–${Math.round(+data.avg_revpar_high_30d).toLocaleString()})` : '';
+    const revStr = data.avg_revpar_30d ? ` · Rooms RevPAR (est.: BAR × modelled occupancy) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}${rRange}` : '';
     avgText.textContent = `30-day averages: occupancy (Kodo estimate) ${data.avg_occupancy_30d}%${range}${revStr}`;
     confEl.textContent  = `Price coverage: full ${cc.full ?? 0} days · partial ${cc.partial ?? 0} · none ${cc.none ?? 0}. `
       + 'It describes how many recent published prices we have for the hotel, not how accurate the estimate is.';
@@ -2198,7 +2201,7 @@ function popupHTML(h) {
         </div>
         <div class="hiq-popup-stat" title="${EST_TIP}">
           <div class="hiq-popup-stat-val">${fmt.mad(h.revpar_mad)}</div>
-          <div class="hiq-popup-stat-lbl">RevPAR · Kodo est.</div>
+          <div class="hiq-popup-stat-lbl">Rooms RevPAR (est.)</div>
         </div>
       </div>
       <button class="hiq-popup-profile-btn" onclick="showHotelDetail(${h.id})">View full profile →</button>
@@ -2484,7 +2487,7 @@ function renderHotelsTable() {
   if (hkpiKeys)   hkpiKeys.textContent   = totalKeys.toLocaleString('en');
   [hkpiTotal, hkpiCities, hkpiKeys].forEach(el => el && KodoPeriod.set(el.closest('.kpi-card'), KodoPeriod.today(), COUNT_TIP));
   const perfCard = document.getElementById('hkpi-perf-card');
-  if (perfCard) KodoPeriod.setText(perfCard, KodoBar.caption(), 'BAR: observed published rates. Occupancy and RevPAR: Kodo estimates, next 30 nights');
+  if (perfCard) KodoPeriod.setText(perfCard, KodoBar.caption(), 'BAR: observed published rates. Occupancy and Rooms RevPAR: Kodo estimates, next 30 nights');
 
   const countEl = document.getElementById('hotels-results-count');
   if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
@@ -4371,7 +4374,7 @@ function occCellStyle(occ, isCompSet = false) {
 // Benchmarker and Advisory plans with a comp set see the rate benchmark:
 // published rates (scraped_rates.csv) and modelled occupancy
 // (estimated_occupancy.csv) for the next 30 nights. No achieved rate,
-// occupancy or RevPAR exists for these hotels, so none is shown. Everyone
+// occupancy or Rooms RevPAR exists for these hotels, so none is shown. Everyone
 // else sees what to do instead: the plans, or setting up the comp set.
 
 const rbState = {
@@ -5465,7 +5468,7 @@ function exportHotels() {
     'BAR nights':       h.bar_nights || 0,
     'BAR period':       KodoBar.caption(),
     'Occupancy % (Kodo estimate)': h.occupancy != null ? (h.occupancy * 100).toFixed(1) + '%' : 'N/A',
-    'RevPAR (MAD, Kodo estimate)': h.revpar_mad ?? 'N/A',
+    'Rooms RevPAR (MAD, est.)': h.revpar_mad ?? 'N/A',
     'Estimate period':  'Next 30 nights',
     'Keys As Of':       asOf,
     'Year Established': h.year_opened_verified === 'verified' && h.year_opened != null ? h.year_opened : 'N/A',
@@ -5519,7 +5522,7 @@ function exportBrands() {
     'BAR hotels':        b.bar_hotels || 0,
     'BAR period':        KodoBar.caption(),
     'Occupancy % (Kodo estimate)': b.avg_occupancy != null ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',
-    'RevPAR (MAD, Kodo estimate)': b.avg_revpar != null ? Math.round(b.avg_revpar) : 'N/A',
+    'Rooms RevPAR (MAD, est.)': b.avg_revpar != null ? Math.round(b.avg_revpar) : 'N/A',
     'Estimate period':   'Next 30 nights',
     'Keys As Of':        asOf,
     'Cities Present':    Array.isArray(b.cities) ? b.cities.join(', ') : 'N/A',

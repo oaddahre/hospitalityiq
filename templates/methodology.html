@@ -119,7 +119,7 @@
         <p class="method-source-desc"><strong>What is asked for.</strong> One request per hotel, for its listing: 2 adults, no children, a one-night stay (check-in tomorrow, check-out the day after), prices in Moroccan dirhams (MAD), results in English, located at the hotel's map position (Morocco as a whole when we have no position), with a price for each check-in date over the next 30 nights. The request does not set a number of rooms, a room type, a board basis or cancellation terms; the listing's own defaults apply. Each price is the nightly price returned for that check-in date. A price in another currency is not used, and every result is checked against the hotel's name and city before it is kept.</p>
         <p class="method-source-desc">BAR is the public price of a night, not the rate guests paid: it leaves out negotiated corporate rates, wholesale contracts and package inclusions, and whether taxes and fees are included depends on the booking site. Kodo has no hotel's achieved rate, revenue or past performance, and shows none. Each price is observed directly, but the history is short, so the source is rated medium for now.</p>
         <p class="method-source-desc"><strong>BAR on the platform.</strong> A hotel's BAR is the average, over the nights since 3 November 2026, of the last published price seen before each night; it is shown once the hotel has at least 7 priced nights. A destination's, brand group's or owner's BAR is the plain average of its hotels' BAR; with fewer than 3 such hotels it reads "limited data" instead of a figure. The dashboard shows since when the prices run and how many days of data there are; the hotel calendars also show the price of each of the next 30 nights.</p>
-        <p class="method-source-desc"><strong>Kodo estimates.</strong> Occupancy comes from Kodo's occupancy model (below) and covers the next 30 nights. RevPAR is a Kodo estimate too: the night's BAR times the modelled occupancy, night by night, averaged over the next 30 nights. A group's occupancy and RevPAR are weighted by rooms. Both are always labelled "Kodo estimate".</p>
+        <p class="method-source-desc"><strong>Kodo estimates.</strong> Occupancy comes from Kodo's occupancy model (below) and covers the next 30 nights. Rooms RevPAR is room revenue per available room. It excludes food and beverage and other revenue. On Kodo it is estimated from modelled occupancy and the published rate (BAR). Rooms RevPAR is a Kodo estimate too: the night's BAR times the modelled occupancy, night by night, averaged over the next 30 nights. A group's occupancy and Rooms RevPAR are weighted by rooms. Both are always labelled "Kodo estimate".</p>
       </div>
       <div class="method-source-item">
         <span class="method-source-name">Occupancy Model</span>
@@ -176,8 +176,8 @@
           <td>Low</td>
         </tr>
         <tr>
-          <td>RevPAR (Kodo estimate)</td>
-          <td>BAR × modelled occupancy, night by night, next 30 nights</td>
+          <td>Rooms RevPAR (est.)</td>
+          <td>BAR × modelled occupancy, night by night, next 30 nights; shown as a range wherever occupancy is a range (BAR × the low and the high occupancy)</td>
           <td>Derived from the two above</td>
           <td>Low</td>
         </tr>
@@ -288,7 +288,7 @@
     </div>
     <div class="method-quality-item">
       <span class="method-source-confidence pill--blue">Kodo estimate</span>
-      <p>A figure from one of Kodo's models: occupancy and RevPAR for the next 30 nights, the tourism 2026E estimate and 2027F forecast, and the valuation tool. Never reported data; always labelled as an estimate on the platform, in exports and in reports.</p>
+      <p>A figure from one of Kodo's models: occupancy and Rooms RevPAR for the next 30 nights, the tourism 2026E estimate and 2027F forecast, and the valuation tool. Never reported data; always labelled as an estimate on the platform, in exports and in reports.</p>
     </div>
     <div class="method-quality-item">
       <span class="method-source-confidence pill--orange">Key Count Uncertain</span>
@@ -307,7 +307,7 @@
         <li>BAR (Best Available Rate) is the public price of a night, not the rate guests paid. It excludes negotiated corporate rates, loyalty redemptions, wholesale contracts, and package inclusions, which can represent 30–60% of a hotel's actual revenue mix.</li>
         <li>Kodo collects published rates only since 3 November 2026. It has no hotel performance from before that date, and no achieved rates, revenue or asset values for any hotel.</li>
         <li>The error of the occupancy model has not been measured yet: no hotel has shared enough real figures to test it. Once they do, Kodo compares both versions of the model with those figures every month, by city and hotel type, and will publish the result. Until then, treat modelled occupancy as a direction, not a figure.</li>
-        <li>Kodo estimates (occupancy, RevPAR, the tourism outlook and the valuation tool's results) are indicative only and may differ materially from actual performance or appraised values.</li>
+        <li>Kodo estimates (occupancy, Rooms RevPAR, the tourism outlook and the valuation tool's results) are indicative only and may differ materially from actual performance or appraised values.</li>
         <li>All data on the Kodo platform should be independently verified before forming the basis of investment decisions, operator negotiations, or financial reporting.</li>
         <li>Kodo Hospitality is a market intelligence provider, not a licensed financial advisor. Nothing on this platform constitutes investment advice.</li>
       </ul>

@@ -30,7 +30,7 @@ an eased path, with a ripple on every click.
 
 The tour (about 50 s):
 
-    0 s   Dashboard: market KPI cards, then the RevPAR by destination chart
+    0 s   Dashboard: market KPI cards, then the average BAR by destination chart
     5 s   Hotels: the Marrakech filter, then Palais Ocre
     9 s   Hotel profile: published rate calendar and modelled occupancy
           calendar, with a night's tooltip on each
@@ -318,9 +318,9 @@ CITY = "Marrakech"
 def tour(t):
     """The scripted product tour (times are approximate starts)."""
     p = t.page
-    # 0 s: Dashboard, the market KPI cards, then RevPAR by destination
+    # 0 s: Dashboard, the market KPI cards, then average BAR by destination
     t.hold(2.2)
-    t.scroll(t.top_of("#chart-revpar", 150), 0.7)
+    t.scroll(t.top_of("#chart-bar", 150), 0.7)
     t.hold(1.3)
     # 4 s: Hotels, filtered to Marrakech, then Palais Ocre
     t.go(tab("hotels"), 0.7, 0.5)

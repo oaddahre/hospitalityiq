@@ -179,7 +179,7 @@
             <span class="kpi-delta up" id="kpi-occ-delta"></span>
           </div>
           <div class="kpi-card loading" id="kpi-revpar">
-            <span class="kpi-label">RevPAR · Kodo estimate</span>
+            <span class="kpi-label">Rooms RevPAR (est.)</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
             <span class="kpi-delta up" id="kpi-revpar-delta"></span>
@@ -218,7 +218,7 @@
                 <th>Keys</th>
                 <th title="BAR (published rate), since 3 November 2026: average of the group's hotels">BAR (MAD)</th>
                 <th title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est.</th>
-                <th title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est.</th>
+                <th title="Kodo estimate: BAR × modelled occupancy, next 30 nights">Rooms RevPAR (est.)</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -426,9 +426,9 @@
             <span class="kpi-value" id="hkpi-keys">—</span>
           </div>
           <div class="kpi-card" id="hkpi-perf-card">
-            <span class="kpi-label">BAR, occupancy, RevPAR columns</span>
+            <span class="kpi-label">BAR, occupancy, Rooms RevPAR (est.) columns</span>
             <span class="kpi-value" style="font-size:15px;"><span class="kodo-estimate-badge">BAR observed</span></span>
-            <span class="kpi-sub">BAR: published rates, 7 priced nights or more. Occupancy and RevPAR: Kodo estimates, next 30 nights</span>
+            <span class="kpi-sub">BAR: published rates, 7 priced nights or more. Occupancy and Rooms RevPAR: Kodo estimates, next 30 nights</span>
           </div>
         </div>
 
@@ -467,7 +467,7 @@
               <select class="hotels-sort-select" id="hotels-sort-select">
                 <option value="bar_mad">Sort: BAR ↓</option>
                 <option value="occupancy">Sort: Occupancy (Kodo est.) ↓</option>
-                <option value="revpar_mad">Sort: RevPAR (Kodo est.) ↓</option>
+                <option value="revpar_mad">Sort: Rooms RevPAR (est.) ↓</option>
                 <option value="keys">Sort: Keys ↓</option>
                 <option value="year_opened">Sort: Year Opened ↓</option>
                 <option value="name">Sort: Name A–Z</option>
@@ -499,7 +499,7 @@
                   <th class="sortable-col col-hide-mobile" data-col="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col" data-col="bar_mad" title="BAR (published rate) since 3 November 2026: the hotel's average over its priced nights (7 or more)">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col col-hide-mobile" data-col="occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col col-hide-mobile" data-col="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">Rooms RevPAR (est.) <span class="sort-icon">↕&#xFE0E;</span></th>
                 </tr>
               </thead>
               <tbody id="hotels-tbody"></tbody>
@@ -922,7 +922,7 @@
               <option value="bar_mad">Sort by: BAR</option>
               <option value="hotels">Sort by: Hotels</option>
               <option value="avg_occupancy">Sort by: Occupancy (Kodo est.)</option>
-              <option value="avg_revpar">Sort by: RevPAR (Kodo est.)</option>
+              <option value="avg_revpar">Sort by: Rooms RevPAR (est.)</option>
             </select>
             <button class="export-btn" id="btn-export-brands">↓ Export</button>
           </div>
@@ -958,7 +958,7 @@
                   <th class="sortable-col" data-bccol="market_share_keys_pct">Mkt Share <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col" data-bccol="bar_mad" title="BAR (published rate) since 3 November 2026: average of the group's hotels">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col" data-bccol="avg_occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="avg_revpar" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                  <th class="sortable-col" data-bccol="avg_revpar" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">Rooms RevPAR (est.) <span class="sort-icon">↕&#xFE0E;</span></th>
                   <th class="sortable-col" data-bccol="pipeline_keys">Pipeline Keys <span class="sort-icon">↕&#xFE0E;</span></th>
                 </tr>
               </thead>
@@ -975,7 +975,7 @@
             <div class="brni-desc" id="brni-leader-desc">—</div>
           </div>
           <div class="brands-insight-card" id="brni-revpar">
-            <div class="brni-title">Highest RevPAR (Kodo estimate)</div>
+            <div class="brni-title">Highest Rooms RevPAR (est.)</div>
             <div class="brni-value" id="brni-revpar-val">—</div>
             <div class="brni-desc" id="brni-revpar-desc">—</div>
           </div>
@@ -1013,7 +1013,7 @@
             <div class="kpi-card"><span class="kpi-label">Brands Operated</span><span class="kpi-value" id="odkpi-brands">—</span></div>
             <div class="kpi-card" id="odkpi-rate"><span class="kpi-label">BAR (published rate)</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
             <div class="kpi-card" id="odkpi-occ"><span class="kpi-label">Occupancy · Kodo estimate</span><span class="kpi-value">—</span><span class="kpi-meta"></span></div>
-            <div class="kpi-card" id="odkpi-revpar"><span class="kpi-label">RevPAR · Kodo estimate</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
+            <div class="kpi-card" id="odkpi-revpar"><span class="kpi-label">Rooms RevPAR (est.)</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
           </div>
           <div class="brand-meta-row" id="owner-destinations-row" style="margin-bottom:8px"></div>
           <div class="brand-meta-row" id="owner-operators-row" style="margin-bottom:20px"></div>
@@ -1109,7 +1109,7 @@
                   <input type="number" class="val-input" id="val-q-adr" title="Your own assumption for the hotel being valued, not market data" min="0" step="50" value="4500">
                 </div>
                 <div class="val-field">
-                  <label class="val-field-label">RevPAR</label>
+                  <label class="val-field-label" title="Projected occupancy × projected ADR: rooms only, from your assumptions">Rooms RevPAR (from your assumptions)</label>
                   <input type="text" class="val-input-readonly" id="val-q-revpar" readonly>
                 </div>
               </div>
@@ -1315,7 +1315,7 @@
                 <table class="val-cf-table" id="val-cf-table">
                   <thead>
                     <tr>
-                      <th>Year</th><th>Occ%</th><th title="Projected ADR (your assumption)">Projected ADR</th><th>RevPAR</th><th>Total Rev</th>
+                      <th>Year</th><th>Occ%</th><th title="Projected ADR (your assumption)">Projected ADR</th><th title="Projected occupancy × projected ADR: rooms only">Rooms RevPAR</th><th title="Rooms, food and beverage and other revenue">Total revenue</th>
                       <th>Rooms Rev</th><th>F&amp;B Rev</th><th>GOP</th><th>GOP%</th>
                       <th>NOI</th><th>FCF</th><th>PV(FCF)</th>
                     </tr>
@@ -1406,7 +1406,7 @@
             <span class="kpi-value">—</span>
           </div>
           <div class="kpi-card" id="brand-bkpi-revpar">
-            <span class="kpi-label">RevPAR · Kodo estimate</span>
+            <span class="kpi-label">Rooms RevPAR (est.)</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
@@ -1441,7 +1441,7 @@
                 <th class="sortable-col" data-bcol="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="bar_mad" title="BAR (published rate) since 3 November 2026: the hotel's average over its priced nights (7 or more)">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">RevPAR · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th class="sortable-col" data-bcol="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">Rooms RevPAR (est.) <span class="sort-icon">↕&#xFE0E;</span></th>
                 <th class="sortable-col" data-bcol="owner">Owner <span class="sort-icon">↕&#xFE0E;</span></th>
               </tr>
             </thead>
@@ -1486,7 +1486,7 @@
             <span class="kpi-value">—</span>
           </div>
           <div class="kpi-card" id="hkpi-revpar">
-            <span class="kpi-label">RevPAR · Kodo estimate</span>
+            <span class="kpi-label">Rooms RevPAR (est.)</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>

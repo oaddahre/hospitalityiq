@@ -10,7 +10,7 @@ providers.
 1. **BAR (published rate), observed:** each hotel's average over the nights since 3 November 2026 (the last price seen before each night), from 7 priced nights (`live_kpis.observed_bar`). A group's BAR is the plain average of its hotels' BAR, "limited data" under 3 hotels (`app.group_bar`, `KodoBar` in main.js). Never called ADR.
 2. **Official tourism figures.**
 3. **Database facts:** hotels, owners, brands, pipeline, events.
-4. **Kodo estimates, always labelled:** occupancy model (next 30 nights), RevPAR = BAR × modelled occupancy, tourism 2026E and 2027F, the valuation tool.
+4. **Kodo estimates, always labelled:** occupancy model (next 30 nights), Rooms RevPAR = BAR × modelled occupancy, tourism 2026E and 2027F, the valuation tool.
 
 `performance.csv` (the old FY 2025 estimates) is never read for clients; it stays an internal input of occupancy model v1. Where nothing real exists yet, pages say "Collecting data since 3 November". Reports exist only for periods real data covers (`app.report_periods`). `tests/test_real_data_only.py` enforces all of this. The LIVE_FIGURES flag is retired: its behaviour is the only mode.
 

@@ -1057,7 +1057,7 @@ async function diCheck(filename) {
   diShowResult(data);
   const rows = data.rows || [];
   document.getElementById('di-preview-table').innerHTML = rows.length
-    ? `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Hotel</th><th>Month or night</th><th>Type</th><th>Occupancy</th><th>ADR (MAD)</th><th>RevPAR</th><th>Rooms available</th><th></th></tr></thead><tbody>`
+    ? `<div class="dh-scroll"><table class="adm-table"><thead><tr><th>Hotel</th><th>Month or night</th><th>Type</th><th>Occupancy</th><th>ADR (MAD)</th><th>Rooms RevPAR</th><th>Rooms available</th><th></th></tr></thead><tbody>`
       + rows.map(r => `<tr><td>${escHtml(r.hotel)} <span class="adm-hint">${escHtml(r.city)}</span></td><td>${escHtml(r.period)}</td><td>${escHtml(DI_TYPE[r.data_type] || r.data_type)}</td><td>${r.occupancy}%</td>`
         + `<td>${Number(r.adr).toLocaleString('en')}</td><td>${r.revpar === '' ? '—' : Number(r.revpar).toLocaleString('en')}</td>`
         + `<td>${r.rooms_available === '' ? '—' : Number(r.rooms_available).toLocaleString('en')}</td><td>${r.replaces ? 'replaces the stored figure' : 'new'}</td></tr>`).join('')

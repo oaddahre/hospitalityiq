@@ -2518,7 +2518,7 @@ def build_system_prompt():
         return "\n".join(
             f"  {k} | {r['hotel_count']} hotels | {r['total_keys']:,} keys | "
             f"{bar_txt(r['bar_mad'], r['bar_hotels'], r['bar_nights'], r['bar_limited'])} | "
-            f"occupancy (Kodo estimate) {est(r['occupancy'], True)} | RevPAR (Kodo estimate) {est(r['revpar_mad'])}"
+            f"occupancy (Kodo estimate) {est(r['occupancy'], True)} | Rooms RevPAR (est.) {est(r['revpar_mad'])}"
             for k, r in rows)
 
     nat = _group_row(merged)
@@ -2527,7 +2527,7 @@ def build_system_prompt():
         bar = (f"BAR {row['bar_mad']:,.0f} MAD over {int(row['bar_nights'])} nights" if pd.notna(row.get('bar_mad'))
                else "BAR: not enough prices yet")
         occ = f"occupancy (Kodo estimate) {row['occupancy']*100:.1f}%" if pd.notna(row.get('occupancy')) else "no occupancy estimate"
-        rev = f"RevPAR (Kodo estimate) {row['revpar_mad']:,.0f} MAD" if pd.notna(row.get('revpar_mad')) else ""
+        rev = f"Rooms RevPAR (est.) {row['revpar_mad']:,.0f} MAD" if pd.notna(row.get('revpar_mad')) else ""
         keys = f"{int(row['keys'])} keys" if pd.notna(row.get('keys')) else "keys n/a"
         owner = f", owner {row['owner']}" if isinstance(row.get('owner'), str) and row['owner'] != 'Undisclosed' else ""
         return f"  {row['name']} ({row['city']}, {row['category']}, {row['brand_group']}{owner}) | {keys} | {bar} | {occ}" + (f" | {rev}" if rev else "")
@@ -2554,9 +2554,9 @@ WHAT YOU MAY USE (nothing else exists)
    nights since then (at least {meta['min_nights']} priced nights); a group's BAR is the plain
    average of its hotels' BAR, and is "limited data" under {meta['min_hotels']} hotels. Always
    call it "BAR" or "published rate". Never call it ADR: Kodo has no ADR (achieved revenue per
-   room sold), no reported occupancy, no reported RevPAR, no revenue and no GOP for any hotel.
+   room sold), no reported occupancy, no reported Rooms RevPAR, no revenue and no GOP for any hotel.
 2. Kodo estimates, always labelled "Kodo estimate": modelled occupancy for the next 30 nights
-   (Kodo's occupancy model) and RevPAR = BAR x modelled occupancy for the same nights; the
+   (Kodo's occupancy model) and Rooms RevPAR = BAR x modelled occupancy for the same nights; the
    tourism outlook 2026E and 2027F; the valuation tool's results.
 3. Database facts: hotels, keys, segments, brands, owners, opening years, pipeline, events.
 4. Official tourism statistics (arrivals, nights, receipts, airport traffic).
@@ -2570,7 +2570,7 @@ to the Methodology page (/methodology).
 MARKET (all hotels)
   Hotels: {len(hotels_df)} | Keys: {int(merged['keys'].sum()):,}
   {bar_txt(nat['bar_mad'], nat['bar_hotels'], nat['bar_nights'], nat['bar_limited'])}
-  Occupancy (Kodo estimate, next 30 nights): {est(nat['occupancy'], True)} | RevPAR (Kodo estimate): {est(nat['revpar_mad'])}
+  Occupancy (Kodo estimate, next 30 nights): {est(nat['occupancy'], True)} | Rooms RevPAR (est.): {est(nat['revpar_mad'])}
 
 DESTINATIONS (by BAR, high to low)
 {group_lines("city")}
@@ -3562,7 +3562,7 @@ def compute_city_report_data(city: str, period: dict) -> dict:
     priced = ch[ch["bar_mad"].notna()].sort_values("bar_mad", ascending=False)
     top_bar = priced.head(10)[["name", "category", "keys", "bar_mad", "bar_nights"]].to_dict(orient="records")
 
-    # Kodo estimates, next 30 nights (the occupancy model; RevPAR = BAR x occupancy)
+    # Kodo estimates, next 30 nights (the occupancy model; Rooms RevPAR = BAR x occupancy)
     est_occ, est_revpar = _kpi_avg(ch, "occupancy", 4), _kpi_avg(ch, "revpar_mad", 1)
     est_n = int(ch["occupancy"].notna().sum())
 
@@ -3654,13 +3654,13 @@ def generate_ai_narrative(d: dict) -> dict:
                          + ("limited data" if s["bar"] is None or s["bar_limited"] else f"MAD {s['bar']:,.0f}")
                          for s in mo["segments"])
         off = ", ".join(f"{y}: {v}%" for y, v in d["official_occupancy"]) or "none for this market"
-        prompt = f"""You write the text of a Kodo hotel market report. Use ONLY the figures below; never invent or estimate any other number, and do not mention any figure that is not listed. Kodo has no ADR, no reported occupancy, no revenue and no asset values: never mention them. The rate figure is "BAR (published rate)"; never call it ADR. Occupancy and RevPAR below are Kodo estimates and must be called "Kodo estimate". Do not name data providers.
+        prompt = f"""You write the text of a Kodo hotel market report. Use ONLY the figures below; never invent or estimate any other number, and do not mention any figure that is not listed. Kodo has no ADR, no reported occupancy, no revenue and no asset values: never mention them. The rate figure is "BAR (published rate)"; never call it ADR. Occupancy and Rooms RevPAR below are Kodo estimates and must be called "Kodo estimate"; always write "Rooms RevPAR (est.)", never the bare abbreviation and never a total-revenue version of it: it covers rooms only, not food and beverage or other revenue. Do not name data providers.
 
 Market: {d['city']} | Report period: {d['period']['label']}
 Hotels: {mo['total_hotels']} | Keys: {mo['total_keys']:,}
 Average BAR (published rate), {d['bar_window']}: {_bar_text(b)} ({b['hotels']} hotels with at least {b['min_nights']} priced nights)
 By segment: {segs}
-Kodo estimate, next 30 nights: occupancy {fmt_num(est['occupancy'], '.1f', 100, suffix='%')}, RevPAR {fmt_num(est['revpar'], prefix='MAD ')}
+Kodo estimate, next 30 nights: occupancy {fmt_num(est['occupancy'], '.1f', 100, suffix='%')}, Rooms RevPAR (est.) {fmt_num(est['revpar'], prefix='MAD ')}
 Official occupancy of classified accommodation: {off}
 Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} new keys
 Upcoming events (next 90 days): {', '.join(e['name'] for e in d['events'][:6]) or 'none listed'}
@@ -3730,7 +3730,7 @@ def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
     pdf.set_font("Helvetica", "", 8)
     pdf.multi_cell(_PW, 4.5, _s(f"Published rates (BAR) observed {win} ({data['bar_days']} days of data; Kodo collects them "
                                 f"every night since {day_label(LK.DATA_START)}). Hotel and pipeline counts: {as_of}. "
-                                f"Occupancy and RevPAR are Kodo estimates and are labelled as such."), ln=1)
+                                f"Occupancy and Rooms RevPAR are Kodo estimates and are labelled as such. Rooms RevPAR is room revenue per available room. It excludes food and beverage and other revenue. On Kodo it is estimated from modelled occupancy and the published rate (BAR)."), ln=1)
     pdf.ln(4)
     pdf.kpi_boxes([
         ("Total Hotels", str(mo["total_hotels"]), as_of),
@@ -3754,7 +3754,7 @@ def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
     pdf.kpi_row("Average BAR (published rate)", _bar_text(b), win)
     pdf.kpi_row("Hotels with a BAR", f"{b['hotels']} of {mo['total_hotels']}", f"at least {b['min_nights']} priced nights")
     pdf.kpi_row("Modelled occupancy", fmt_num(est['occupancy'], '.1f', 100, suffix='%') if est['occupancy'] is not None else NOT_AVAILABLE, est_note)
-    pdf.kpi_row("RevPAR (BAR x modelled occupancy)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note)
+    pdf.kpi_row("Rooms RevPAR (est.: BAR x modelled occupancy)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note)
     pdf.kpi_row("Pipeline", f"{pip['total_projects']} projects, {pip['total_keys']:,} new keys", as_of)
 
     # ─── MARKET OVERVIEW ──────────────────────────────────────────────────
@@ -3808,7 +3808,7 @@ def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
         note("No hotel has enough priced nights in this period yet: collecting data.")
     pdf.kpi_boxes([
         ("Modelled occupancy", fmt_num(est['occupancy'], '.1f', 100, suffix='%') if est['occupancy'] is not None else NOT_AVAILABLE, est_note),
-        ("RevPAR", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note),
+        ("Rooms RevPAR (est.)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note),
         ("Hotels modelled", f"{est['hotels']} of {mo['total_hotels']}", "Kodo occupancy model"),
     ])
 
@@ -4077,8 +4077,8 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.add_page()
     pdf.section_title("02", f"{hold_period}-Year Projected Cash Flows (MAD)")
 
-    cf_cols   = ["Year","Occ%","Proj. ADR","RevPAR","Total Rev","Rooms Rev","F&B Rev","GOP","GOP%","NOI","FCF","PV(FCF)"]
-    cf_widths = [12, 11, 15, 15, 18, 17, 15, 17, 12, 17, 17, 17]
+    cf_cols   = ["Year","Occ%","Proj. ADR","Rooms RevPAR","Total Rev","Rooms Rev","F&B Rev","GOP","GOP%","NOI","FCF","PV(FCF)"]
+    cf_widths = [11, 10, 16, 20, 18, 17, 15, 17, 10, 17, 17, 15]
     pdf.set_font("Helvetica", "", 6)
     pdf.table_header(cf_cols, cf_widths)
     for i, cf in enumerate(cash_flows):
@@ -4664,7 +4664,7 @@ def api_rates():
 @login_required
 def api_live_kpis():
     """Every open hotel's live figures over the next 30 nights (live_kpis.py):
-    published rate, modelled occupancy, indicative RevPAR, and the figures
+    published rate, modelled occupancy, indicative Rooms RevPAR, and the figures
     from 7 days earlier when they exist. Pages aggregate them by rooms."""
     resp = jsonify(LK.get(DATA_DIR, _casablanca_today()))
     resp.headers['Cache-Control'] = 'private, max-age=120'
@@ -5744,6 +5744,11 @@ def api_occupancy_hotel(hotel_id):
 
         occs   = [e['estimated_occupancy'] for e in averaged]
         revs   = [e['estimated_revpar'] for e in averaged if e.get('estimated_revpar')]
+        # Rooms RevPAR as a range when the occupancy has one: the night's BAR x low and x high
+        priced = [e for e in averaged if e.get('scraped_bar') and e.get('estimated_revpar')]
+        r_lo = [e['scraped_bar'] * e['low'] / 100 for e in priced if e.get('low') is not None]
+        r_hi = [e['scraped_bar'] * e['high'] / 100 for e in priced if e.get('high') is not None]
+        full = priced and len(r_lo) == len(priced) and len(r_hi) == len(priced)
         avg_occ   = round(sum(occs) / len(occs), 1) if occs else None
         avg_revpar = round(sum(revs) / len(revs), 0) if revs else None
         conf_counts = {'high': 0, 'medium': 0, 'low': 0}
@@ -5763,6 +5768,8 @@ def api_occupancy_hotel(hotel_id):
             'estimates':         estimates,
             'avg_occupancy_30d': avg_occ,
             'avg_revpar_30d':    avg_revpar,
+            'avg_revpar_low_30d':  round(sum(r_lo) / len(r_lo)) if full else None,
+            'avg_revpar_high_30d': round(sum(r_hi) / len(r_hi)) if full else None,
             'confidence_counts': conf_counts,
             'model_run_date':    model_run,
         })

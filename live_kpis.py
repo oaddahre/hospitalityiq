@@ -1,4 +1,4 @@
-"""Live KPI figures: the one source of the Occupancy / rate / RevPAR cards.
+"""Live KPI figures: the one source of the Occupancy / rate / Rooms RevPAR cards.
 
 For every open hotel, over the next 30 nights (from tomorrow, Casablanca):
   rate     average published rate: the latest matched live price of each
@@ -7,7 +7,7 @@ For every open hotel, over the next 30 nights (from tomorrow, Casablanca):
   occ      modelled occupancy: the stored model run (estimated_occupancy.csv,
            the displayed model), average over the nights it covers; with v2
            also the average low and high of its range
-  revpar   indicative RevPAR: published rate x modelled occupancy, night by
+  revpar   indicative Rooms RevPAR: published rate x modelled occupancy, night by
            night, averaged over the nights that have both
 These are published booking-site prices and modelled occupancy, never
 achieved figures.
@@ -31,7 +31,7 @@ numbers. The benchmark's KPIs read them too.
 Confidence: each hotel carries the level the data-quality checks gave it
 (data_quality.py: price coverage, history, price quality, calibration) and
 its days of price history. With CONFIDENCE_UI on (flags.py, off until
-approved) a hotel with no price history gets no occupancy or RevPAR: the
+approved) a hotel with no price history gets no occupancy or Rooms RevPAR: the
 model would only show its prior there.
 
 7-day change: a daily snapshot of every hotel's three figures
@@ -162,13 +162,19 @@ def per_hotel(data_dir, today: date):
             'occ_high': round(statistics.mean(highs), 1) if highs and len(highs) == len(o) else None,
             'occ_nights': len(o),
             'revpar': round(statistics.mean(p[n] * o[n][0] / 100 for n in both)) if both else None,
+            # the same nights with the occupancy range: Rooms RevPAR as a range too
+            'revpar_low': round(statistics.mean(p[n] * o[n][1] / 100 for n in both))
+                          if both and all(o[n][1] is not None for n in both) else None,
+            'revpar_high': round(statistics.mean(p[n] * o[n][2] / 100 for n in both))
+                           if both and all(o[n][2] is not None for n in both) else None,
             'bar': bars[h][0],
             'bar_nights': bars[h][1],
             'confidence': (dq.get(h) or {}).get('confidence'),
             'history_days': (dq.get(h) or {}).get('history_days'),
         }
         if hide_unpriced and dq and not (dq.get(h) or {}).get('history_days'):
-            out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, occ_hidden='no price history')
+            out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
+                          occ_hidden='no price history')
     return {'window': {'start': nights[0], 'end': nights[-1], 'nights': len(nights)}, 'today': today.isoformat(),
             'model': active_model(), 'model_run': model_run, 'rates_updated': _rates_updated(data_dir),
             'bar_since': DATA_START.isoformat(), 'bar_days': bar_days, 'min_bar_nights': MIN_BAR_NIGHTS,

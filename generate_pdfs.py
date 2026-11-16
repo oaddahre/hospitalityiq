@@ -141,7 +141,7 @@ def build_english():
 
     sec(2, "SCOPE OF DATA")
     body("The Data shared under this Agreement may include, but is not limited to:")
-    bullet("Hotel performance metrics: occupancy rates, Average Daily Rate (ADR), Revenue per Available Room (RevPAR), Total Revenue per Available Room (TRevPAR), and Gross Operating Profit (GOP) margins.")
+    bullet("Hotel performance metrics: occupancy rates, Average Daily Rate (ADR), Rooms RevPAR (room revenue per available room, rooms only: it excludes food and beverage and other revenue), and Gross Operating Profit (GOP) margins.")
     bullet("Hotel inventory data: property names, locations, categories, brand affiliations, room counts, and opening dates across the Kingdom of Morocco.")
     bullet("Pipeline intelligence: development projects, investment volumes, expected opening timelines, and market entry intelligence.")
     bullet("Tourism statistics: international arrivals, overnight stays by origin market, and airport traffic data.")
@@ -239,7 +239,7 @@ def build_french():
 
     sec(2, "PÉRIMÈTRE DES DONNÉES")
     body("Les Données communiquées dans le cadre de la présente Convention peuvent comprendre, sans s'y limiter :")
-    bullet("Indicateurs de performance hôtelière : taux d'occupation, tarif journalier moyen (ADR), revenu par chambre disponible (RevPAR), revenu total par chambre disponible (TRevPAR) et marges de résultat brut d'exploitation (GOP).")
+    bullet("Indicateurs de performance hôtelière : taux d'occupation, tarif journalier moyen (ADR), Rooms RevPAR (revenu hébergement par chambre disponible, hors restauration et autres revenus) et marges de résultat brut d'exploitation (GOP).")
     bullet("Inventaire hôtelier : dénomination des établissements, localisations, catégories, affiliations de marques, capacités en chambres et dates d'ouverture dans l'ensemble du Royaume du Maroc.")
     bullet("Intelligence du pipeline : projets de développement, volumes d'investissement, calendriers d'ouverture prévisionnels et renseignements sur les nouvelles entrées de marché.")
     bullet("Statistiques touristiques : arrivées internationales, nuitées par marché émetteur et trafic aéroportuaire.")

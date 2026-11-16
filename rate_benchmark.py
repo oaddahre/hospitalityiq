@@ -3,7 +3,7 @@
 Built only from what Kodo actually collects:
   - published rates (scraped_rates.csv, written by scraper.py), and
   - modelled occupancy (estimated_occupancy.csv, from occupancy_model.py).
-No hotel's achieved ADR, occupancy or RevPAR exists here, so none is
+No hotel's achieved ADR, occupancy or Rooms RevPAR exists here, so none is
 computed: the page shows published rates, a rate index against the comp
 set's median published rate, and modelled occupancy labelled as such.
 

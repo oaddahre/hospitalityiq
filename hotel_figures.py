@@ -38,7 +38,7 @@ ALIASES = {
     'occupancy': ('occupancy', 'occupancy_pct', 'occupancy_rate', 'occupancy_%', 'taux_occupation',
                   'taux_occupation_pct', 'taux_d_occupation', 'occupation', 'to', 'occ'),
     'adr': ('adr', 'adr_mad', 'prix_moyen', 'prix_moyen_adr', 'prix_moyen_mad', 'pmc', 'average_daily_rate'),
-    'revpar': ('revpar', 'revpar_mad'),
+    'revpar': ('rooms_revpar', 'rooms_revpar_mad', 'revpar', 'revpar_mad'),     # Rooms RevPAR (rooms only)
     'rooms_available': ('rooms_available', 'chambres_disponibles', 'room_nights_available', 'nuitees_disponibles'),
     'rooms_sold': ('rooms_sold', 'chambres_vendues', 'room_nights_sold', 'nuitees_vendues'),
     'data_type': ('data_type', 'type', 'type_donnees', 'nature'),
@@ -161,7 +161,7 @@ def validate(rows, hotels, today, hotel_id=None):
             errors.append(f'{where}: ADR {adr:g} MAD is outside {MIN_ADR}–{MAX_ADR:,} MAD. Is it in dirhams, per room and night?')
             continue
         if revpar is not None and occ and abs(revpar / (occ / 100 * adr) - 1) > REVPAR_TOL:
-            errors.append(f'{where}: RevPAR {revpar:g} does not match occupancy × ADR '
+            errors.append(f'{where}: Rooms RevPAR {revpar:g} does not match occupancy × ADR '
                           f'({occ / 100 * adr:,.0f} MAD). Check the three figures.')
             continue
         dtype = _fold(r.get('data_type') or 'actual')

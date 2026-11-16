@@ -206,7 +206,7 @@ def build(data_dir, today=None):
         occ = round(min(0.88, max(0.42, CITY_OCC[city] + 0.05 * _noise(hid, "occ"))), 2)
         adr = int(round(base * 0.9 / 50) * 50)
         perf.append({"hotel_id": hid, "period": "2025FY", "occupancy": occ, "adr_mad": adr,
-                     "revpar_mad": int(round(occ * adr)), "trevpar_mad": int(round(occ * adr * 1.45)),
+                     "revpar_mad": int(round(occ * adr)),
                      "gop_margin": round(0.36 + 0.04 * _noise(hid, "gop"), 2), "source": "HIQ Estimate"})
     _write_csv(os.path.join(data_dir, "performance.csv"), fields, [{k: r[k] for k in fields} for r in perf])
     with open(os.path.join(ROOT, "daily_performance.csv"), encoding="utf-8", newline="") as f:
