@@ -43,13 +43,45 @@ class Resorts(unittest.TestCase):
         self.assertTrue(OM.SEASIDE_RESORTS <= set(HOTELS))
 
     def test_swing_wider_and_year_on_anchor(self):
-        resort, city = HOTELS['22'], HOTELS['404']                              # both Agadir
+        resort, city = HOTELS['353'], HOTELS['357']                             # both Tamuda Bay / Tétouan
         r, c = monthly(year_v1(resort)), monthly(year_v1(city))
         self.assertGreater(max(r.values()) - min(r.values()), 2.5 * (max(c.values()) - min(c.values())))   # only the season is amplified
         self.assertGreater(max(r.values()) - min(r.values()), 20)
-        anchor = OM.official_anchor('Agadir / Taghazout')[0]
-        self.assertAlmostEqual(statistics.mean(o * 100 for o, _ in year_v1(resort).values()), anchor, delta=2)
+        anchor = OM.official_anchor('Tamuda Bay / Tétouan')[0]
+        self.assertAlmostEqual(statistics.mean(o * 100 for o, _ in year_v1(resort).values()), anchor, delta=1)
         self.assertEqual(OM.RESORT_SEASON_X, 8.25)
+
+    def test_destinations(self):
+        on = OM.resort_season_destinations({})
+        self.assertEqual(on, {'Tamuda Bay / Tétouan': 'measured', 'El Jadida': 'measured', 'Saidia': 'lower confidence',
+                              'Al Hoceima': 'lower confidence'})
+        for hid in ('22', '189', '311', '316'):                                  # Agadir, Dakhla, Essaouira: city pattern
+            self.assertTrue(OM.is_seaside_resort(HOTELS[hid]))
+            self.assertFalse(OM.resort_swing(HOTELS[hid]), HOTELS[hid]['name'])
+        for hid in ('353', '121', '137', '292'):
+            self.assertTrue(OM.resort_swing(HOTELS[hid]), HOTELS[hid]['name'])
+        with mock.patch.dict(os.environ, {'RESORT_SEASON_ON': 'Agadir / Taghazout', 'RESORT_SEASON_OFF': 'Saidia'}):
+            self.assertTrue(OM.resort_swing(HOTELS['22']))
+            self.assertFalse(OM.resort_swing(HOTELS['137']))
+        # Agadir resorts are back on the city pattern: same swing as an Agadir city hotel
+        r, c = monthly(year_v1(HOTELS['22'])), monthly(year_v1(HOTELS['404']))
+        self.assertLess(abs((max(r.values()) - min(r.values())) - (max(c.values()) - min(c.values()))), 5)
+
+    def test_every_city_year_on_official(self):
+        """Every city's 12-month average stays within 1 pt of its official figure (bounds included)."""
+        by_city = {}
+        for h in HOTELS.values():
+            if h.get('status', '').lower() in ('open', 'operating'):
+                by_city.setdefault(h['city'], []).append(h)
+        nights = [date(2027, 1, 1) + timedelta(days=i) for i in range(0, 365, 3)]
+        for city, hs in by_city.items():
+            anchor = OM.official_anchor(city)
+            types = {}
+            for h in hs:                                                         # one hotel per type and resort state
+                types.setdefault((OM.classify_hotel_type(h), OM.resort_swing(h)), h)
+            for h in types.values():
+                v = statistics.mean(OM.estimate_occupancy(h, n, position=POS)[0] * 100 for n in nights)
+                self.assertAlmostEqual(v, anchor[0], delta=1.2, msg=(city, h['name']))
 
     def test_v2_has_the_same_swing(self):
         h = HOTELS['353']
@@ -64,19 +96,27 @@ class Resorts(unittest.TestCase):
 
     def test_ranges(self):
         n = date(2027, 3, 10)
-        _, r = OM.estimate_occupancy(HOTELS['22'], n, scraped_bar=1500, position=POS)
+        _, r = OM.estimate_occupancy(HOTELS['353'], n, scraped_bar=1500, position=POS)
         _, c = OM.estimate_occupancy(HOTELS['53'], n, scraped_bar=1500, position={'pts': None, 'history_days': 60})
-        self.assertEqual(OM.V1['range_resort'], 27)
+        self.assertEqual(OM.V1['range_resort'], 25)
         self.assertEqual(OM.V1['range_base'], 13)
-        self.assertGreaterEqual(r['high'] - r['low'], 2 * 27 - 2)
+        self.assertGreaterEqual(r['high'] - r['low'], 2 * 25 - 2)
+        _, ag = OM.estimate_occupancy(HOTELS['22'], n, scraped_bar=1500, position=POS)    # Agadir resort: the wider city range
+        self.assertLess(ag['high'] - ag['low'], 2 * 25 - 2)
         self.assertGreaterEqual(c['high'] - c['low'], 2 * 13)
         inp = OM.V2Inputs({'53': HOTELS['53']}, {}, [], [], date(2026, 11, 16))
         e = OM.estimate_v2(inp, '53', n, {})
         self.assertGreaterEqual(e['high'] - e['low'], 2 * (OM.V2['range_base'] + OM.V2['range_widen']))
 
-    def test_price_position_off_by_default(self):
-        with mock.patch.dict(os.environ, {'PRICE_POSITION': ''}):
-            self.assertFalse(OM.price_position_on())
+    def test_price_position_modes(self):
+        self.assertEqual(OM.PRICE_POSITION_DEFAULT, 'nonresort')
+        n = date(2027, 3, 10)
+        pos = {'pts': 6.0, 'history_days': 30}
+        for env, city_on, resort_on in (({'PRICE_POSITION': ''}, True, False), ({'PRICE_POSITION': 'nonresort'}, True, False),
+                                        ({'PRICE_POSITION': 'off'}, False, False), ({'PRICE_POSITION': 'on'}, True, True)):
+            with mock.patch.dict(os.environ, env):
+                self.assertEqual(OM.estimate_occupancy(HOTELS['53'], n, position=pos)[1]['rate_adjustment'], 6.0 if city_on else 0.0, env)
+                self.assertEqual(OM.estimate_occupancy(HOTELS['353'], n, position=pos)[1]['rate_adjustment'], 6.0 if resort_on else 0.0, env)
 
 
 def row(h, n, sd, v):

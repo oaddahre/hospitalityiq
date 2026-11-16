@@ -102,7 +102,7 @@ class Checks(unittest.TestCase):
         self.assertEqual(self.c['dataforseo']['count'], 2)
 
     def test_rates(self):
-        self.assertEqual(self.st('rate_errors'), 'problem')                 # rule (a): same stay date 5x, and under half
+        self.assertEqual(self.st('rate_errors'), 'warning')                 # rule (a): 2 hotels: listed, no email (alert from 10)
         self.assertEqual([h['id'] for h in self.c['rate_errors']['hotels']], ['1', '2'])
         self.assertTrue(any('1,000' in x and '5,000' in x for x in self.c['rate_errors']['items']))
         self.assertEqual(self.st('peer_far'), 'ok')                         # rule (b): fewer than 3 peers here
@@ -264,3 +264,41 @@ class Intake(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class RateErrorAlert(unittest.TestCase):
+    """The rate-error check emails only from 10 hotels (or 3% of the run), or
+    one hotel flagged in 3 runs in a row."""
+
+    def run_with(self, n_hotels, persistent=False):
+        d = tempfile.mkdtemp(prefix='kodo-hc-')
+        try:
+            hotels = [{'id': str(i), 'name': f'H{i}', 'city': 'Casablanca', 'category': 'Upscale', 'keys': '100', 'status': 'Open'}
+                      for i in range(1, 41)]
+            write_csv(os.path.join(d, 'hotels.csv'), ['id', 'name', 'city', 'category', 'keys', 'status'], hotels)
+            rows = []
+            for back in range(3, -1, -1):
+                sd = (TODAY - timedelta(days=back)).isoformat()
+                for h in hotels:
+                    hid = int(h['id'])
+                    v = 1000
+                    if back == 0 and hid <= n_hotels:
+                        v = 3000                                    # tonight: tripled
+                    if persistent and hid == 40:
+                        v = 1000 * (3 ** (3 - back))                # tripled at every run
+                    rows.append({'hotel_id': h['id'], 'scrape_date': sd, 'stay_date': (TODAY + timedelta(days=5)).isoformat(),
+                                 'rate_mad': str(v), 'source': 'live_dataforseo', 'data_quality': 'name_matched', 'scrape_status': 'success'})
+            write_csv(os.path.join(d, 'scraped_rates.csv'), RATE_FIELDS, rows)
+            r = HC.run(d, TODAY, write=False)
+            return {c['id']: c for c in r['checks']}['rate_errors']
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+
+    def test_thresholds(self):
+        self.assertEqual(self.run_with(9)['status'], 'warning')
+        self.assertIn('No email', self.run_with(9)['explain'])
+        self.assertEqual(self.run_with(10)['status'], 'problem')
+        c = self.run_with(1, persistent=True)
+        self.assertEqual(c['status'], 'problem')
+        self.assertIn('3 runs in a row', c['explain'])
+        self.assertEqual((HC.ALERT_MIN_HOTELS, HC.ALERT_SHARE, HC.ALERT_RUNS_IN_A_ROW), (10, 0.03, 3))

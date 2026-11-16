@@ -19,6 +19,7 @@ public pages and key API endpoints (app.py makes the requests in-process).
 """
 import csv
 import json
+import math
 import os
 import statistics
 from datetime import date, datetime, timedelta
@@ -27,6 +28,7 @@ HISTORY_FILE = 'data_health_history.json'
 HISTORY_DAYS = 14
 MIN_RATE, MAX_RATE = 200, 60000          # plausible published rate (MAD)
 EUR_TO_MAD = 10.8
+ALERT_MIN_HOTELS, ALERT_SHARE, ALERT_RUNS_IN_A_ROW = 10, 0.03, 3     # rate errors: when they are worth an email
 PEER_FAR_X = 4.0                         # rule (b): over 4x (or under 1/4 of) same city and category peers, a warning
 HOTELS_DROP_PROBLEM, HOTELS_DROP_WARNING = 0.20, 0.10
 CITY_MOVE_PTS = 8.0
@@ -182,16 +184,31 @@ def rate_checks(today, hotels, rows, cov):
         return out
     import rate_flags as RF
     priced_hotels = {str(r['hotel_id']) for r in run}
-    fl = {k: v for k, v in RF.compute(priced, hotels).items() if k[2] == t}
+    all_fl = RF.compute(priced, hotels)
+    fl = {k: v for k, v in all_fl.items() if k[2] == t}
+    # Email only when it is widespread or persistent: at least ALERT_MIN_HOTELS hotels (or ALERT_SHARE of the
+    # hotels in the run, whichever is higher), or one hotel flagged in ALERT_RUNS_IN_A_ROW runs in a row
+    runs_sorted = sorted({r['scrape_date'] for r in priced if r['scrape_date'] <= t})[-ALERT_RUNS_IN_A_ROW:]
+    flagged_runs = {}
+    for (h, n, sd) in all_fl:
+        flagged_runs.setdefault(h, set()).add(sd)
+    persistent = {h for h, sds in flagged_runs.items()
+                  if len(runs_sorted) == ALERT_RUNS_IN_A_ROW and set(runs_sorted) <= sds}
     err_h = {}
     for (h, n, sd), (why, detail) in sorted(fl.items()):
         err_h.setdefault(h, []).append(f'{n}: {detail}')
     names = lambda h: (hotels.get(h) or {}).get('name', h)
-    out.append(check('rate_errors', 'Rates', 'Rate errors (left out of client figures)', 'problem' if fl else 'ok',
+    need = max(ALERT_MIN_HOTELS, math.ceil(ALERT_SHARE * len(priced_hotels)))
+    alarm = len(err_h) >= need or bool(persistent)
+    out.append(check('rate_errors', 'Rates', 'Rate errors (left out of client figures)',
+                     'problem' if alarm else 'warning' if fl else 'ok',
                      f"{len(fl)} price{'s' if len(fl) != 1 else ''} from tonight's run at {len(err_h)} hotel{'s' if len(err_h) != 1 else ''}: "
                      f"the same stay date changed more than {RF.CHANGE_X:g}x (or halved) since the previous run, or a new price is "
                      f"over {RF.NEW_PEER_X:g}x its city and category peers. They stay stored and flagged here, and are left out of BAR, "
-                     "medians and occupancy inputs until a later run confirms the new level.",
+                     "medians and occupancy inputs until a later run confirms the new level. "
+                     + (f"Email: {len(err_h)} hotels flagged (alert from {need}). " if len(err_h) >= need else
+                        f"No email: {len(err_h)} hotels flagged, the alert starts at {need} (10, or 3% of the hotels in the run). ")
+                     + (f"Flagged in {ALERT_RUNS_IN_A_ROW} runs in a row: {', '.join(names(h) for h in sorted(persistent))}." if persistent else ''),
                      len(fl), _hotel_refs(err_h, hotels), items=[f'{names(h)}, {x}' for h, xs in err_h.items() for x in xs]))
     groups = {}
     for r in run:

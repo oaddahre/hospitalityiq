@@ -335,7 +335,7 @@ V1 = {
     # Range: half-width in pts, added up
     'range_base':              13,    # the whole city shares one official starting point (8, +5 after
                                       # the Nov 2026 backtest against hotel-reported figures)
-    'range_resort':            27,    # resorts: 80% of their measured monthly errors after the seasonal fix
+    'range_resort':            25,    # resorts: 80% of their measured monthly errors after the seasonal fix
     'range_national':           5,    # no official figure for the city: the national one
     'range_no_price_position':  3,    # under 7 priced nights (no BAR), or fewer than 3 peers
     'range_short_history':      2,    # under 28 days of price collection for the hotel
@@ -427,6 +427,61 @@ RESORT_SEASON_X = 8.25            # fitted on the four resorts (leave one out: 7
 
 def is_seaside_resort(hotel):
     return str(hotel.get('id', '')).split('.')[0] in SEASIDE_RESORTS
+
+
+# Where the resort swing is used. It was fitted on resorts of Tamuda Bay and
+# El Jadida (summer-peak markets): it is used there ("measured"), and on the
+# same coast and summer market of Saidia and Al Hoceima ("lower confidence":
+# no reported figures from there yet). Elsewhere (Agadir / Taghazout, Dakhla,
+# Essaouira and the rest) resorts keep their city's seasonal pattern until a
+# resort there shares real figures. Railway settings, comma-separated
+# destination names as on the platform: RESORT_SEASON_ON adds destinations,
+# RESORT_SEASON_OFF removes them.
+RESORT_SEASON_DESTINATIONS = {
+    'Tamuda Bay / Tétouan': 'measured',
+    'El Jadida': 'measured',
+    'Saidia': 'lower confidence',
+    'Al Hoceima': 'lower confidence',
+}
+
+
+def resort_season_destinations(env=os.environ):
+    """{destination: confidence} where the resort swing is on."""
+    names = lambda v: {x.strip() for x in str(env.get(v, '') or '').split(',') if x.strip()}
+    out = dict(RESORT_SEASON_DESTINATIONS)
+    for c in names('RESORT_SEASON_ON'):
+        out.setdefault(c, 'switched on by setting')
+    for c in names('RESORT_SEASON_OFF'):
+        out.pop(c, None)
+    return out
+
+
+def resort_swing(hotel):
+    """A classified resort in a destination where the resort swing is on."""
+    return is_seaside_resort(hotel) and hotel.get('city', '') in resort_season_destinations()
+
+
+def anchor_base(anchor_pct, city, hotel_type, year, resort=False, lo=5, hi=98):
+    """The starting level that makes the year's average, after every night is
+    held within lo..hi %, equal the official figure: occupancy cut off at the
+    ceiling (or the floor) is spread over the other nights instead of lost."""
+    key = ('base', anchor_pct, city, hotel_type, year, resort, RESORT_SEASON_X, lo, hi, _EVENT_NIGHTS.get('key'))
+    if key not in _V1_CACHE:
+        first = date(year, 1, 1)
+        adj = []
+        for i in range((date(year + 1, 1, 1) - first).days):
+            dow, season, ev, _, _ = _calendar_pts(city, hotel_type, first + timedelta(days=i), resort)
+            adj.append(dow + season + ev)
+        a, b = anchor_pct - 300.0, anchor_pct + 300.0
+        for _ in range(60):
+            mid = (a + b) / 2
+            if sum(min(hi, max(lo, mid + x)) for x in adj) / len(adj) < anchor_pct:
+                a = mid
+            else:
+                b = mid
+        key = ('base', anchor_pct, city, hotel_type, year, resort, RESORT_SEASON_X, lo, hi, _EVENT_NIGHTS.get('key'))
+        _V1_CACHE[key] = (a + b) / 2
+    return _V1_CACHE[key]
 
 
 def season_pts(city, month, resort=False):
@@ -530,11 +585,10 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
                       'low': None, 'high': None, 'final': None}
     if position is None:
         position = price_positions(today=today).get(str(hotel.get('id', '')).split('.')[0]) or {}
-    resort = is_seaside_resort(hotel)
+    resort = resort_swing(hotel)
     dow, season, ev, ev_range, names = _calendar_pts(city, hotel_type, date, resort)
-    centre = calendar_centre(city, hotel_type, date.year, resort)
-    price_pts = position.get('pts') if price_position_on() else None
-    base = anchor[0] - centre
+    price_pts = position.get('pts') if price_position_for(hotel) else None
+    base = anchor_base(anchor[0], city, hotel_type, date.year, resort, V1['clamp_low'], V1['clamp_high'])
     c = V1
     mid = _clamp(base + dow + season + ev + (price_pts or 0), c['clamp_low'], c['clamp_high'])
     if resort:                          # measured error of resorts after the seasonal fix
@@ -571,12 +625,31 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     return mid / 100, breakdown
 
 
+# The price-position adjustment: PRICE_POSITION (Railway) = off | nonresort
+# (every hotel but the classified resorts) | on or all (every hotel); unset:
+# PRICE_POSITION_DEFAULT, set from the backtest against hotel-reported figures.
+PRICE_POSITION_DEFAULT = 'nonresort'   # Nov 2026 backtest: non-resort error 14.65 -> 13.05 pts with it
+
+
+def price_position_mode(env=os.environ):
+    v = str(env.get('PRICE_POSITION', '') or '').strip().lower()
+    if v in ('off', '0', 'false', 'no'):
+        return 'off'
+    if v in ('on', '1', 'true', 'yes', 'all'):
+        return 'all'
+    if v in ('nonresort', 'non-resort', 'non_resort'):
+        return 'nonresort'
+    return PRICE_POSITION_DEFAULT
+
+
 def price_position_on():
-    """The price-position adjustment (PRICE_POSITION, flags.py): off by
-    default since the Nov 2026 backtest, where it did not point the right
-    way reliably. The code stays; the flag turns it back on."""
-    import flags
-    return flags.on('PRICE_POSITION')
+    """Whether the adjustment is used for any hotel."""
+    return price_position_mode() != 'off'
+
+
+def price_position_for(hotel):
+    m = price_position_mode()
+    return m == 'all' or (m == 'nonresort' and not is_seaside_resort(hotel))
 
 
 # ─── MODEL v2 (phase 1) ──────────────────────────────────────────────────────
@@ -914,8 +987,8 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if anchor is None:                   # no official figure: "limited data", no estimate
         return None
     signals = []
-    resort = is_seaside_resort(hotel)    # the same resort seasonal swing as v1
-    base = anchor[0] - calendar_centre(hotel.get('city', ''), htype, night.year, resort)
+    resort = resort_swing(hotel)         # the same resort seasonal swing and base as v1
+    base = anchor_base(anchor[0], hotel.get('city', ''), htype, night.year, resort, c['clamp_low'], c['clamp_high'])
     dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
     season = season_pts(hotel.get('city', ''), night.month, resort)
     signals += [f'official_{anchor[2]}({anchor[0]:.0f}% {anchor[1]})', 'day_of_week', 'season']

@@ -136,7 +136,14 @@ def compute(today, model=None):
         per_city.append(row)
     for r in per_hotel.values():
         r.pop('keys')
+    on = OM.resort_season_destinations()
+    resort_dest = []
+    for c in sorted({h.get('city', '') for h in hotels.values() if OM.is_seaside_resort(h)}):
+        n = sum(1 for h in hotels.values() if OM.is_seaside_resort(h) and h.get('city', '') == c)
+        resort_dest.append({'city': c, 'resorts': n, 'swing_on': c in on, 'confidence': on.get(c, 'off: city pattern')})
     return {'today': today.isoformat(), 'shown_model': OM.active_model(), 'months': list(months),
+            'resort_destinations': resort_dest, 'resort_season_x': OM.RESORT_SEASON_X,
+            'price_position': OM.price_position_mode(),
             'hotels': list(per_hotel.values()), 'cities': per_city,
             'readiness': readiness(today, model)}
 

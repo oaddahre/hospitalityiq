@@ -1850,6 +1850,10 @@ async function loadSideBySide(refresh) {
     sel.value = keep;
     msg.textContent = `Computed for ${d.today}`;
     renderSideBySide(); renderReadiness();
+    document.getElementById('occ-res-x').textContent = d.resort_season_x ?? '—';
+    document.getElementById('occ-pp').textContent = { off: 'off', nonresort: 'on for non-resort hotels', all: 'on for every hotel' }[d.price_position] || '—';
+    sbsTable('occ-res-table', ['Destination', 'Classified resorts', 'Resort swing', 'Confidence'],
+      (d.resort_destinations || []).map(x => [x.city, x.resorts, x.swing_on ? 'on' : 'off', x.confidence]));
   } catch { msg.textContent = 'Failed'; }
 }
 // The automatic switch to v2 (model_switch.py): status, kill switch, snapshots

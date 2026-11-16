@@ -377,8 +377,8 @@ def structural_year(hotels, year):
         anchor = OM.official_anchor(h.get('city', ''))
         if anchor is None:
             continue
-        resort = OM.is_seaside_resort(h)
-        base = anchor[0] - OM.calendar_centre(h.get('city', ''), t, year, resort)
+        resort = OM.resort_swing(h)
+        base = OM.anchor_base(anchor[0], h.get('city', ''), t, year, resort)
         tot = 0.0
         for n in nights:
             k = (h.get('city', ''), t, n, resort)
@@ -777,10 +777,11 @@ def preview(data_dir, today=None, report=None):
 MODELS = [
     {'name': 'Occupancy model v1', 'where': 'occupancy_model.estimate_occupancy',
      'data': 'official occupancy of classified accommodation in the city, latest full year (national figure where the '
-             'city has none); weekday, month (beach and seaside resorts: the seasonal swing x8.25, fitted on hotel-reported '
-             'figures), events calendar; price position vs city and category only with PRICE_POSITION on (off)',
-     'assumes': 'the calendar adjustments are centred over the year so a city averages its official figure; '
-                'ranges: resorts +/-27 pts (80% of their measured errors), others 13 pts plus data-thinness additions',
+             'city has none); weekday, month (beach and seaside resorts in Tamuda Bay and El Jadida, measured, and Saidia '
+             'and Al Hoceima, lower confidence: the seasonal swing x8.25, fitted on hotel-reported figures), events '
+             'calendar; price position vs city and category for non-resort hotels (PRICE_POSITION)',
+     'assumes': 'the starting level is solved so that each year averages the official figure after the 5-98% bounds; '
+                'ranges: resorts with the swing +/-25 pts (80% of their measured errors), others 13 pts plus data-thinness additions',
      'label': 'Kodo estimate with a range, modelled, not measured',
      'confidence': 'low: anchored on official city figures, hotel level not yet checked against real figures'},
     {'name': 'Occupancy model v2', 'where': 'occupancy_model.estimate_v2',
