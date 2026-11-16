@@ -177,7 +177,7 @@ DATA_DIR = os.environ.get("DATA_DIR", "").strip() or APP_DIR
 # ever writes to them), so "copy only if missing" is the whole rule.
 if os.path.abspath(DATA_DIR) != os.path.abspath(APP_DIR):
     os.makedirs(DATA_DIR, exist_ok=True)
-    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json"):
+    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json", "brand_profiles.json"):
         _src, _dst = os.path.join(APP_DIR, _seed_name), os.path.join(DATA_DIR, _seed_name)
         if os.path.exists(_src) and not os.path.exists(_dst):
             shutil.copy2(_src, _dst)
@@ -2106,6 +2106,7 @@ def api_brands():
     except Exception:
         pipe_df = pd.DataFrame(columns=['_bg', 'keys', '_conv'])
 
+    profiles = load_brand_profiles()
     results = []
     for bg, grp in merged.groupby('_bg'):
         tk = safe_int(grp['keys'].sum(), 0)
@@ -2146,7 +2147,7 @@ def api_brands():
         results.append({
             'brand_group':               bg,
             'domain':                    _BRAND_DOMAINS.get(bg),
-            'description':               _BRAND_DESCRIPTIONS.get(bg),
+            'description':               _BRAND_DESCRIPTIONS.get(bg) or (profiles.get(bg) or {}).get('description') or None,
             'hotels':                    len(grp),
             'total_keys':                tk,
             'cities':                    cities,
@@ -2202,6 +2203,26 @@ def api_pipeline():
 
 
 OWNERS_FILE = os.path.join(DATA_DIR, "owners.json")
+BRAND_PROFILES_FILE = os.path.join(DATA_DIR, "brand_profiles.json")
+
+
+def load_brand_profiles():
+    """{brand group: {"description": ...}} from DATA_DIR/brand_profiles.json
+    (written by data migrations; the repo's copy seeds a new volume). Only
+    client-safe fields: sources stay in data_migrations/ and _handoff/."""
+    for path in (BRAND_PROFILES_FILE, os.path.join(APP_DIR, "brand_profiles.json")):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return {k: {"description": (v or {}).get("description") or ""} for k, v in json.load(f).items()}
+        except (OSError, ValueError, AttributeError):
+            continue
+    return {}
+
+
+@app.route("/api/brand-profiles")
+@login_required
+def api_brand_profiles():
+    return jsonify(load_brand_profiles())
 
 
 def _owner_vias():

@@ -221,6 +221,7 @@
     "name": "ABS Holding",
     "full_name": "ABS Holding (Emirati)",
     "type": "Undisclosed",
+    "description": "ABS Holding is an Emirati investment company that owns the Sofitel Agadir Royal Bay Resort in Agadir. After the previous operator's lease ended in 2020, it signed a management contract directly with Accor, and the resort reopened under the Sofitel brand in 2024 after renovation.",
     "hotels": [
       {"name": "Sofitel Agadir Royal Bay Resort", "brand_group": "Accor", "city": "Agadir / Taghazout"}
     ]
@@ -230,6 +231,7 @@
     "name": "Delma d'investissements touristiques",
     "full_name": "Delma d'investissements touristiques (Actis, Westmont Hospitality)",
     "type": "Private",
+    "description": "Delma d'investissements touristiques is the Moroccan company that owns the former Sheraton Casablanca, now the Casablanca Marriott Hotel. It is held by the joint venture that the investment firm Actis and Westmont Hospitality Group formed in 2018 to acquire hotels in major African cities, which announced the purchase of the hotel in 2020 together with a plan for its full refurbishment.",
     "hotels": [
       {"name": "Marriott Casablanca", "brand_group": "Marriott International", "city": "Casablanca"}
     ]
@@ -239,6 +241,7 @@
     "name": "Inveravante",
     "full_name": "Inveravante",
     "type": "Private",
+    "description": "Inveravante is a Spanish family investment group based in A Coruña, founded in 2007 by Manuel Jove, with interests in real estate, hotels and leisure, renewable energy and wine. In Morocco it developed the Anfa Place project on the Casablanca seafront, home to the Four Seasons Hotel Casablanca, which Four Seasons has managed since it opened in 2015.",
     "hotels": [
       {"name": "Four Seasons Hotel Casablanca", "brand_group": "Four Seasons Hotels & Resorts", "city": "Casablanca"}
     ]
@@ -248,6 +251,7 @@
     "name": "Barceló Hotel Group",
     "full_name": "Barceló Hotel Group",
     "type": "Private",
+    "description": "Barceló Hotel Group is the hotel division of the Barceló Group, a Spanish family-owned company founded in Mallorca in 1931. Its brands are Royal Hideaway, Barceló Hotels & Resorts, Occidental Hotels & Resorts and Allegro Hotels; its hotels in Morocco include the Royal Hideaway Casablanca.",
     "hotels": [
       {"name": "Royal Hideaway Casablanca", "brand_group": "Barceló Hotel Group", "city": "Casablanca"},
       {"name": "Hotel Borj Rabat", "brand_group": "Barceló Hotel Group", "city": "Rabat / Salé / Témara"}
@@ -258,6 +262,7 @@
     "name": "Ynna Holding",
     "full_name": "Ynna Holding (Chaabi family)",
     "type": "Family-Owned",
+    "description": "Ynna Holding is a Moroccan family-owned group belonging to the Chaâbi family, active since 1948 in industry, construction, real estate, mass retail and hospitality. It entered hospitality in 1999 with the Mogador hotel in Essaouira and has since grown Mogador into a Moroccan hotel chain present in several cities.",
     "hotels": [
       {"name": "Mogador Al Madina Agadir", "brand_group": "Mogador Hotels Group", "city": "Agadir / Taghazout"},
       {"name": "Hôtel Mogador Marina Casablanca", "brand_group": "Mogador Hotels Group", "city": "Casablanca"},
@@ -273,6 +278,7 @@
     "name": "Beachcomber",
     "full_name": "Beachcomber (New Mauritius Hotels)",
     "type": "Undisclosed",
+    "description": "Beachcomber Resorts & Hotels is the trading name of New Mauritius Hotels, a Mauritian hotel group whose history goes back to the Park Hotel in 1952, with resorts in Mauritius and the Seychelles. In Morocco it developed the Royal Palm Marrakech, opened in 2013 and managed by Fairmont since May 2017 as the Fairmont Royal Palm Marrakech.",
     "hotels": [
       {"name": "Fairmont Royal Palm Marrakech", "brand_group": "Accor", "city": "Marrakech"}
     ]
@@ -282,6 +288,7 @@
     "name": "O Tower",
     "full_name": "O Tower (Bank of Africa, RMA, O Capital Group)",
     "type": "Private",
+    "description": "O Tower is the company that develops and runs the Mohammed VI Tower in Salé, near Rabat; it is owned by Bank of Africa, Royale Marocaine d'Assurance (RMA) and O Capital Group. In 2024 it signed a management agreement with Hilton for a Waldorf Astoria hotel on the upper floors of the tower.",
     "hotels": [
       {"name": "Waldorf Astoria Rabat Salé", "brand_group": "Hilton Hotels & Resorts", "city": "Rabat / Salé / Témara"}
     ]
@@ -291,6 +298,7 @@
     "name": "Ajial Holding SA",
     "full_name": "Ajial Holding SA",
     "type": "Undisclosed",
+    "description": "Al Ajial Holding, formerly the Consortium Maroco-Koweïtien de Développement (CMKD), is an investment company controlled by the Kuwait Investment Authority, with the Moroccan state among its shareholders. It has owned hotels operated under the Farah brand in several Moroccan cities, including Hotel Farah Tanger, which opened in 2013.",
     "hotels": [
       {"name": "Hotel Farah Tanger", "brand_group": "Farah Hotels", "city": "Tanger"}
     ]

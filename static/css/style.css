@@ -5090,7 +5090,6 @@ body.light .nav-logout  { color: var(--text-2); }
   justify-content: center;
 }
 .brn-initials {
-  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6340,3 +6339,13 @@ body .owner-pipe-pill { font-size: 9.5px; padding: 2px 7px; margin-left: 6px; ve
 body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; white-space: nowrap; }
 .kpi-card .kpi-value .kpi-nodata-pill { display: inline-flex; }
 .kpi-card > .kpi-sub { font-size: 11px; line-height: 1.35; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── Logo tile: one square tile for every brand and owner logo ─── */
+.logo-tile {
+  display: inline-block; box-sizing: border-box; flex-shrink: 0; vertical-align: middle;
+  object-fit: contain; background: #fff; outline: 1px solid rgba(0, 0, 0, 0.08); outline-offset: -1px;
+}
+.logo-tile--initials {
+  display: inline-flex; align-items: center; justify-content: center; outline: 1px solid var(--border);
+  font-family: 'Sweet Sans Pro', sans-serif; font-weight: 400; letter-spacing: 0.02em; line-height: 1;
+}

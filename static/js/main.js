@@ -46,67 +46,67 @@ const BRAND_DOMAINS = {
 };
 
 const LOCAL_BRAND_LOGOS = {
-  'Mia Hotels': '/static/images/brands/mia_logo.jpeg',
-  'Zephyr': '/static/images/brands/zephyr_logo.jpg',
-  'Story Hospitality': '/static/images/brands/story_logo.png',
-  'Globalia Hotels': '/static/images/brands/globalia_logo.png',
-  'Lancaster Hotels': '/static/images/brands/lancaster_logo.png',
-  'Banyan Tree': '/static/images/brands/banyantree_logo.png',
-  'Vichy Thermalia': '/static/images/brands/vichy_logo.png',
-  'Valeria Hotels': '/static/images/brands/valeria_logo.png',
-  'Pickalbatros': '/static/images/brands/pickalbatros_logo.png',
+  'Mia Hotels': '/static/images/brands/mia_logo.png?v=2',
+  'Zephyr': '/static/images/brands/zephyr_logo.png?v=2',
+  'Story Hospitality': '/static/images/brands/story_logo.png?v=2',
+  'Globalia Hotels': '/static/images/brands/globalia_logo.png?v=2',
+  'Lancaster Hotels': '/static/images/brands/lancaster_logo.png?v=2',
+  'Banyan Tree': '/static/images/brands/banyantree_logo.png?v=2',
+  'Vichy Thermalia': '/static/images/brands/vichy_logo.png?v=2',
+  'Valeria Hotels': '/static/images/brands/valeria_logo.png?v=2',
+  'Pickalbatros': '/static/images/brands/pickalbatros_logo.png?v=2',
   // Official logos from each company's own website (Nov 2026; sources in
   // _handoff/logos/sources.json): trimmed, 200 px high, transparent
-  "Accor": '/static/images/brands/accor_logo.png',
-  "Aman Resorts": '/static/images/brands/aman_logo.png',
-  "Barceló Hotel Group": '/static/images/brands/barcelo_logo.png',
-  "Decameron Hotels & Resorts": '/static/images/brands/decameron_logo.png',
-  "Hilton Hotels & Resorts": '/static/images/brands/hilton_logo.png',
-  "Hotusa (Eurostars Hotel Company)": '/static/images/brands/eurostars_logo.png',
-  "Hyatt Hotels Corporation": '/static/images/brands/hyatt_logo.png',
-  "IHG Hotels & Resorts": '/static/images/brands/ihg_logo.png',
-  "Kenzi Hotels Group": '/static/images/brands/kenzi_logo.png',
-  "Mandarin Oriental Hotel Group": '/static/images/brands/mandarin_logo.png',
-  "Mogador Hotels Group": '/static/images/brands/mogador_logo.png',
-  "Nobu Hospitality": '/static/images/brands/nobu_logo.png',
-  "Oberoi Hotels & Resorts": '/static/images/brands/oberoi_logo.png',
-  "Pestana Hotel Group": '/static/images/brands/pestana_logo.png',
-  "Relais & Châteaux": '/static/images/brands/relais_logo.png',
-  "Royal Mansour Collection": '/static/images/brands/royalmansour_logo.png',
-  "Soho Boutique Hotels": '/static/images/brands/soho_logo.png',
-  "TUI Hotels & Resorts": '/static/images/brands/tui_logo.png',
-  "Virgin Limited Edition": '/static/images/brands/virgin_logo.png',
-  "Wyndham Hotels & Resorts": '/static/images/brands/wyndham_logo.png',
-  "Xaluca Hotels": '/static/images/brands/xaluca_logo.png',
+  "Accor": '/static/images/brands/accor_logo.png?v=2',
+  "Aman Resorts": '/static/images/brands/aman_logo.png?v=2',
+  "Barceló Hotel Group": '/static/images/brands/barcelo_logo.png?v=2',
+  "Decameron Hotels & Resorts": '/static/images/brands/decameron_logo.png?v=2',
+  "Hilton Hotels & Resorts": '/static/images/brands/hilton_logo.png?v=2',
+  "Hotusa (Eurostars Hotel Company)": '/static/images/brands/eurostars_logo.png?v=2',
+  "Hyatt Hotels Corporation": '/static/images/brands/hyatt_logo.png?v=2',
+  "IHG Hotels & Resorts": '/static/images/brands/ihg_logo.png?v=2',
+  "Kenzi Hotels Group": '/static/images/brands/kenzi_logo.png?v=2',
+  "Mandarin Oriental Hotel Group": '/static/images/brands/mandarin_logo.png?v=2',
+  "Mogador Hotels Group": '/static/images/brands/mogador_logo.png?v=2',
+  "Nobu Hospitality": '/static/images/brands/nobu_logo.png?v=2',
+  "Oberoi Hotels & Resorts": '/static/images/brands/oberoi_logo.png?v=2',
+  "Pestana Hotel Group": '/static/images/brands/pestana_logo.png?v=2',
+  "Relais & Châteaux": '/static/images/brands/relais_logo.png?v=2',
+  "Royal Mansour Collection": '/static/images/brands/royalmansour_logo.png?v=2',
+  "Soho Boutique Hotels": '/static/images/brands/soho_logo.png?v=2',
+  "TUI Hotels & Resorts": '/static/images/brands/tui_logo.png?v=2',
+  "Virgin Limited Edition": '/static/images/brands/virgin_logo.png?v=2',
+  "Wyndham Hotels & Resorts": '/static/images/brands/wyndham_logo.png?v=2',
+  "Xaluca Hotels": '/static/images/brands/xaluca_logo.png?v=2',
 };
 
 const BRAND_CUSTOM_LOGOS = {
-  'Zalagh Hotels Group':         { letter: 'Z',  bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
-  'Farah Hotels':                { letter: 'F',  bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
-  'Independent Ultra Luxury':    { letter: 'UL', bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
-  'Independent Luxury':          { letter: 'IL', bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
-  'Independent Upper Upscale':   { letter: 'UU', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
-  'Independent Upscale':         { letter: 'IU', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
-  'Independent Midscale':        { letter: 'IM', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
-  'Independent Economy':         { letter: 'IE', bg: 'var(--bg-alt)', color: 'var(--text-2)' },
+  'Zalagh Hotels Group':         { letter: 'Z',  bg: 'var(--bg)', color: 'var(--cat-1-text)' },
+  'Farah Hotels':                { letter: 'F',  bg: 'var(--bg)', color: 'var(--cat-1-text)' },
+  'Independent Ultra Luxury':    { letter: 'UL', bg: 'var(--bg)', color: 'var(--cat-1-text)' },
+  'Independent Luxury':          { letter: 'IL', bg: 'var(--bg)', color: 'var(--cat-1-text)' },
+  'Independent Upper Upscale':   { letter: 'UU', bg: 'var(--bg)', color: 'var(--text-2)' },
+  'Independent Upscale':         { letter: 'IU', bg: 'var(--bg)', color: 'var(--text-2)' },
+  'Independent Midscale':        { letter: 'IM', bg: 'var(--bg)', color: 'var(--text-2)' },
+  'Independent Economy':         { letter: 'IE', bg: 'var(--bg)', color: 'var(--text-2)' },
 
-  'Zephyr':                      { letter: 'Z',  bg: 'var(--bg-alt)', color: 'var(--cat-1-text)' },
+  'Zephyr':                      { letter: 'Z',  bg: 'var(--bg)', color: 'var(--cat-1-text)' },
 };
 
 const OWNER_LOGOS = {
-  'Madaëf': '/static/images/brands/madaef_logo.png',
-  'Risma': '/static/images/brands/risma_logo.png',
-  'Valeria Hotels': '/static/images/brands/valeria_logo.png',
-  'Tikida Group': '/static/images/brands/tikida_logo.png',
-  'Pickalbatros': '/static/images/brands/pickalbatros_logo.png',
-  'OCP Group': '/static/images/brands/ocp_logo.png',
-  "Barceló Hotel Group": '/static/images/brands/barcelo_logo.png',
-  "Kenzi Hotels Group": '/static/images/brands/kenzi_logo.png',
-  "Al Mada": '/static/images/brands/almada_logo.png',
-  "Babylon Invest": '/static/images/brands/babylon_logo.png',
-  "Inveravante": '/static/images/brands/inveravante_logo.png',
-  "Ynna Holding": '/static/images/brands/ynna_logo.png',
-  "Beachcomber": '/static/images/brands/beachcomber_logo.png',
+  'Madaëf': '/static/images/brands/madaef_logo.png?v=2',
+  'Risma': '/static/images/brands/risma_logo.png?v=2',
+  'Valeria Hotels': '/static/images/brands/valeria_logo.png?v=2',
+  'Tikida Group': '/static/images/brands/tikida_logo.png?v=2',
+  'Pickalbatros': '/static/images/brands/pickalbatros_logo.png?v=2',
+  'OCP Group': '/static/images/brands/ocp_logo.png?v=2',
+  "Barceló Hotel Group": '/static/images/brands/barcelo_logo.png?v=2',
+  "Kenzi Hotels Group": '/static/images/brands/kenzi_logo.png?v=2',
+  "Al Mada": '/static/images/brands/almada_logo.png?v=2',
+  "Babylon Invest": '/static/images/brands/babylon_logo.png?v=2',
+  "Inveravante": '/static/images/brands/inveravante_logo.png?v=2',
+  "Ynna Holding": '/static/images/brands/ynna_logo.png?v=2',
+  "Beachcomber": '/static/images/brands/beachcomber_logo.png?v=2',
 };
 
 const OWNER_LOGO_DOMAINS = {
@@ -115,22 +115,30 @@ const OWNER_LOGO_DOMAINS = {
   'Kenzi Hotels Group': 'kenzi-hotels.com',
 };
 
-// A logo sits on a white chip in both themes (readable on the pure black
-// dark-mode page as well as on white). The chip is as high as `size` and as
-// wide as the logo needs, up to 2.6 × size, so wordmarks stay legible. If
-// the image fails to load, its initials take its place.
+// Every logo sits in the same square tile, in every list, card, page and
+// search result: `size` square, white in both themes (readable on the pure
+// black dark-mode page too), corner radius from the size. The logo files
+// are square already (512 px, the mark centred with 12% padding), so wide
+// wordmarks and square marks line up. A brand or owner without a logo, or
+// one whose image fails to load, shows its initials in the same tile.
+const tileRadius = size => Math.max(3, Math.round(size * 0.2));
 function logoChipImg(src, alt, size, gap, fallbackHtml) {
-  const pad = Math.max(2, Math.round(size * 0.08));
   const fb = fallbackHtml ? ` data-fallback="${encodeURIComponent(fallbackHtml)}"` : '';
-  return `<img class="logo-chip" src="${src}" alt="${fmt.esc(alt)}"${fb} style="height:${size}px;width:auto;min-width:${size}px;max-width:${Math.round(size * 2.6)}px;object-fit:contain;vertical-align:middle;border-radius:${size >= 32 ? 4 : 3}px;background:#fff;padding:${pad}px;margin-right:${gap}px;box-sizing:border-box;flex-shrink:0" onerror="logoFallback(this)">`;
+  return `<img class="logo-tile" src="${src}" alt="${fmt.esc(alt)}"${fb} width="${size}" height="${size}" loading="lazy"`
+    + ` style="width:${size}px;height:${size}px;padding:${Math.max(1, Math.round(size * 0.04))}px;border-radius:${tileRadius(size)}px;margin-right:${gap || 0}px" onerror="logoFallback(this)">`;
 }
 function logoFallback(img) {
   const fb = img.dataset.fallback;
   if (fb) img.outerHTML = decodeURIComponent(fb); else img.style.display = 'none';
 }
-function ownerInitials(ownerName, size) {
-  var initials = ownerName.split(' ').map(function(w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
-  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:var(--cat-1-tint);color:var(--cat-1-text);border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size * 0.35) + 'px;flex-shrink:0;vertical-align:middle;margin-right:10px;">' + fmt.esc(initials) + '</span>';
+// Initials in the logo tile: tinted, same size and radius as a logo
+function initialsTile(text, size, gap, bg, color) {
+  return `<span class="logo-tile logo-tile--initials brn-initials" style="width:${size}px;height:${size}px;border-radius:${tileRadius(size)}px;`
+    + `background:${bg || 'var(--cat-1-tint)'};color:${color || 'var(--cat-1-text)'};font-size:${Math.max(7, Math.round(size * (text.length > 1 ? 0.36 : 0.5)))}px;margin-right:${gap || 0}px">${fmt.esc(text)}</span>`;
+}
+function ownerInitials(ownerName, size, gap = 10) {
+  const initials = ownerName.split(/\s+/).filter(w => /[A-Za-zÀ-ÿ]/.test(w[0] || '')).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+  return initialsTile(initials, size, gap);
 }
 
 function getOwnerLogoImg(ownerName, size) {
@@ -161,7 +169,7 @@ function heatCell(family, level, fw) {
     col: 'var(--text)', fw: fw || '', border: '',
   };
 }
-const HEAT_EMPTY = { bg: 'var(--bg-alt)', col: 'var(--text-2)', fw: '', border: '1px dashed var(--border)' };
+const HEAT_EMPTY = { bg: 'var(--bg)', col: 'var(--text-2)', fw: '', border: '1px dashed var(--border)' };
 
 function pillHtml(family, text, cls) {
   return `<span class="${cls ? cls + ' ' : ''}pill--${family}">${fmt.esc(text)}</span>`;
@@ -243,15 +251,14 @@ function getBrandLogoUrl(brandGroup) {
 }
 
 function getBrandLogoImg(brandGroup, size=24, fallbackHtml='') {
+  const fallback = fallbackHtml || brandInitials(brandGroup, size, 6);
   const localLogo = LOCAL_BRAND_LOGOS[brandGroup];
-  if (localLogo) return logoChipImg(localLogo, brandGroup, size, 6, fallbackHtml);
+  if (localLogo) return logoChipImg(localLogo, brandGroup, size, 6, fallback);
   const custom = BRAND_CUSTOM_LOGOS[brandGroup];
-  if (custom) {
-    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;background:' + custom.bg + ';color:' + custom.color + ';border-radius:4px;font-family:Sweet Sans Pro,sans-serif;font-weight:400;font-size:' + Math.round(size*0.55) + 'px;flex-shrink:0;vertical-align:middle;margin-right:6px;">' + custom.letter + '</span>';
-  }
+  if (custom) return initialsTile(custom.letter, size, 6, custom.bg, custom.color);
   const domain = BRAND_DOMAINS[brandGroup];
-  if (!domain) return '';
-  return logoChipImg('https://cdn.brandfetch.io/domain/' + domain + '?c=1idptYpdMe9b8BdTIPC', brandGroup, size, 6, fallbackHtml);
+  if (!domain) return brandGroup ? fallback : '';
+  return logoChipImg('https://cdn.brandfetch.io/domain/' + domain + '?c=1idptYpdMe9b8BdTIPC', brandGroup, size, 6, fallback);
 }
 
 // Segment colours for charts/dots follow the segment label families (see SEGMENT_FAMILY)
@@ -866,6 +873,7 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
         hoverBackgroundColor: cc.hoverColor,
         borderRadius: 4,
         borderSkipped: false,
+        maxBarThickness: 28,
       }]
     },
     options: {
@@ -1171,12 +1179,12 @@ function brandLogoOrInitials(bg, size) {
   return brandInitials(bg, size);
 }
 
-function brandInitials(bg, size) {
-  const initials = bg.replace('Hotels', '').replace('Hotel', '').replace('Resorts', '').replace('International', '')
+function brandInitials(bg, size, gap = 0) {
+  const initials = String(bg || '?').replace('Hotels', '').replace('Hotel', '').replace('Resorts', '').replace('International', '')
     .trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   // Tinted tile in one of the six chart families (tokens.css), picked by name
-  const fam = (Math.abs(bg.split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % 6) + 1;
-  return `<div class="brn-initials" style="width:${size}px;height:${size}px;background:var(--cat-${fam}-tint);color:var(--cat-${fam}-text)">${initials}</div>`;
+  const fam = (Math.abs(String(bg).split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % 6) + 1;
+  return initialsTile(initials, size, gap, `var(--cat-${fam}-tint)`, `var(--cat-${fam}-text)`);
 }
 
 function renderBrandsCards() {
@@ -1710,7 +1718,7 @@ function renderOwnerSection(h) {
   }
   section.style.display = '';
   const ownerName = document.getElementById('hotel-owner-name');
-  ownerName.innerHTML = (OWNER_LOGOS[h.owner] ? getOwnerLogoImg(h.owner, 32) : '') + fmt.esc(h.owner);
+  ownerName.innerHTML = getOwnerLogoImg(h.owner, 32) + fmt.esc(h.owner);
 
   let ctx = h.owner_via ? `via ${h.owner_via}` : '';
   for (const [key, val] of Object.entries(OWNER_CONTEXT)) {
@@ -5044,10 +5052,14 @@ else initSearchEvents();
 // ─── Boot ─────────────────────────────────────────────────────────
 
 async function boot() {
-  [apiData, hotels] = await Promise.all([
+  let profiles;
+  [apiData, hotels, profiles] = await Promise.all([
     fetch('/api/data').then(r => r.json()),
     fetch('/api/hotels').then(r => r.json()),
+    fetch('/api/brand-profiles').then(r => r.ok ? r.json() : {}).catch(() => ({})),
   ]);
+  // Descriptions kept in the data (brand_profiles.json) fill the brands the code has none for
+  Object.entries(profiles || {}).forEach(([bg, p]) => { if (p.description && !BRAND_DESCRIPTIONS[bg]) BRAND_DESCRIPTIONS[bg] = p.description; });
   KodoBar.setMeta(apiData && apiData.bar);
   buildCityFilter();
   buildCityPills();

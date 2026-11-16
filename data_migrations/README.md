@@ -12,6 +12,7 @@ Name: `NNNN_what_it_does.<kind>`, numbered in the order they must run:
 | `.owners.json` | Owner profiles | `{"format": "kodo-owners-1", "owners": [...]}` |
 | `.coordinates.csv` | Coordinate corrections | coordinate_changes.csv, `approve = yes` |
 | `.ids.json` | Google IDs | `{"format": "kodo-google-ids-1", ...}` |
+| `.profiles.json` | Set description (or logo) on owner profiles and brand profiles (brand_profiles.json); a field already holding another value is never overwritten | `{"format": "kodo-profiles-1", "owners": [{"name", "set": {...}, "sources": [...]}], "brands": [...]}` |
 | `.news.json` | Remove articles from news.json (id and slug must both match) | `{"format": "kodo-news-1", "remove": [{"id": 1, "slug": "..."}]}` |
 
 Rules:

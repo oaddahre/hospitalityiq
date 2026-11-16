@@ -19,6 +19,10 @@ admin upload panel in the Rates panel:
     .owners.json       Owner profiles (kodo-owners-1): owners_apply
     .coordinates.csv   Coordinate corrections (approve = yes): apply
     .ids.json          Google IDs (kodo-google-ids-1): import_ids
+    .profiles.json     Set fields (description, logo) on owner profiles
+                       (owners.json) and brand profiles (brand_profiles.json):
+                       kodo-profiles-1; a field already set to another
+                       value is never overwritten (the migration stops)
     .news.json         Remove articles from news.json (kodo-news-1:
                        {"remove": [{"id", "slug"}]}): an article is removed
                        only when both its id and slug match
@@ -54,7 +58,7 @@ from run_lock import acquire_lock
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 MIGRATIONS_DIR = os.path.join(APP_DIR, 'data_migrations')
-NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json)$')
+NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json)$')
 OFF = {'off', '0', 'false', 'no'}
 
 
@@ -78,6 +82,7 @@ def paths(data_dir):
         'backups': os.path.join(data_dir, 'backups'),
         'log': os.path.join(data_dir, 'coordinate_changes_applied.log'),
         'news': os.path.join(data_dir, 'news.json'),
+        'brand_profiles': os.path.join(data_dir, 'brand_profiles.json'),
         'state': os.path.join(data_dir, 'data_migrations_state.json'),
         'lock': os.path.join(data_dir, 'data_migrations.lock'),
     }
@@ -85,7 +90,7 @@ def paths(data_dir):
 
 # Files each kind can write (copied first, put back on failure)
 TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance', 'comp_sets'), 'owners.json': ('owners',),
-           'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',)}
+           'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',), 'profiles.json': ('owners', 'brand_profiles')}
 
 
 def available(migrations_dir=MIGRATIONS_DIR):
@@ -97,7 +102,7 @@ def available(migrations_dir=MIGRATIONS_DIR):
             continue
         m = NAME_RE.match(name)
         if not m:
-            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json>')
+            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json>')
         if m.group(1) in seen:
             raise MigrationError(f'data_migrations: number {m.group(1)} used twice ({seen[m.group(1)]}, {name})')
         seen[m.group(1)] = name
@@ -172,6 +177,8 @@ def _apply(kind, path, P, actor):
         return r['applied'], counts.get('already', 0), [b for b in [r.get('backup')] if b], counts
     if kind == 'news.json':
         return _apply_news(text, P)
+    if kind == 'profiles.json':
+        return _apply_profiles(text, P)
     ids, ovs, rej = CA.read_ids_bundle(text)
     plan = CA.ids_plan(P['hotels'], P['ids'], P['overrides'], ids, ovs, rej)
     _problems(plan, {'import', 'reject', 'already'}, 'Google ID')
@@ -211,6 +218,63 @@ def _apply_news(text, P):
             json.dump(keep, f, indent=2, ensure_ascii=False)
         os.replace(tmp, P['news'])
     return len(gone), already, [], {'remove': len(gone), 'already': already}
+
+
+PROFILE_FIELDS = ('description', 'logo_local')
+
+
+def _apply_profiles(text, P):
+    """Set description / logo fields on owner and brand profiles. A field
+    that is empty is set; one already equal is "already"; one holding
+    another value is someone's edit: nothing is written and the migration
+    stops. Owners must exist in owners.json; brand profiles are created."""
+    spec = json.loads(text)
+    if spec.get('format') != 'kodo-profiles-1':
+        raise MigrationError('profiles migration: format must be kodo-profiles-1')
+    try:
+        with open(P['owners'], encoding='utf-8') as f:
+            owners = json.load(f)
+    except (OSError, ValueError):
+        owners = []
+    try:
+        with open(P['brand_profiles'], encoding='utf-8') as f:
+            brands = json.load(f)
+    except (OSError, ValueError):
+        brands = {}
+    by_name = {o.get('name'): o for o in owners}
+    changed = already = 0
+    problems = []
+
+    def put(target, label, fields):
+        nonlocal changed, already
+        for k, v in fields.items():
+            if k not in PROFILE_FIELDS:
+                problems.append(f'{label}: field {k} not allowed')
+            elif (target.get(k) or '') == v:
+                already += 1
+            elif target.get(k):
+                problems.append(f'{label}: {k} already set to something else (kept)')
+            else:
+                target[k] = v
+                changed += 1
+
+    for e in spec.get('owners') or []:
+        o = by_name.get(e.get('name'))
+        if o is None:
+            problems.append(f"owner {e.get('name')}: no such profile")
+            continue
+        put(o, f"owner {e['name']}", e.get('set') or {})
+    for e in spec.get('brands') or []:
+        put(brands.setdefault(e['name'], {}), f"brand {e['name']}", e.get('set') or {})
+    if problems:
+        raise MigrationError('profiles migration: ' + '; '.join(problems[:10]))
+    if changed:
+        for path, data in ((P['owners'], owners), (P['brand_profiles'], brands)):
+            tmp = path + '.tmp'
+            with open(tmp, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            os.replace(tmp, path)
+    return changed, already, [], {'set': changed, 'already': already}
 
 
 def run_pending(data_dir, notify=None, log=print, migrations_dir=MIGRATIONS_DIR):

@@ -1,0 +1,168 @@
+{
+ "format": "kodo-profiles-1",
+ "checked": "2026-11-16",
+ "note": "Descriptions of brand groups and owners. Sources are kept here and in _handoff/descriptions_sources.md, never shown to clients.",
+ "owners": [
+  {
+   "name": "ABS Holding",
+   "set": {
+    "description": "ABS Holding is an Emirati investment company that owns the Sofitel Agadir Royal Bay Resort in Agadir. After the previous operator's lease ended in 2020, it signed a management contract directly with Accor, and the resort reopened under the Sofitel brand in 2024 after renovation."
+   },
+   "sources": [
+    "https://challenge.ma/reouverture-du-sofitel-agadir-royal-bay-resort-lemirati-abs-holding-conclut-un-contrat-de-gestion-avec-accor-278666/",
+    "https://northafricapost.com/40928-sofitel-agadir-to-close-business-end-of-june.html"
+   ]
+  },
+  {
+   "name": "Delma d'investissements touristiques",
+   "set": {
+    "description": "Delma d'investissements touristiques is the Moroccan company that owns the former Sheraton Casablanca, now the Casablanca Marriott Hotel. It is held by the joint venture that the investment firm Actis and Westmont Hospitality Group formed in 2018 to acquire hotels in major African cities, which announced the purchase of the hotel in 2020 together with a plan for its full refurbishment."
+   },
+   "sources": [
+    "https://www.act.is/?p=534",
+    "https://challenge.ma/160-millions-de-dh-dargent-frais-pour-mieux-positionner-le-nouveau-casablanca-marriott-hotel-273642/"
+   ]
+  },
+  {
+   "name": "Inveravante",
+   "set": {
+    "description": "Inveravante is a Spanish family investment group based in A Coruña, founded in 2007 by Manuel Jove, with interests in real estate, hotels and leisure, renewable energy and wine. In Morocco it developed the Anfa Place project on the Casablanca seafront, home to the Four Seasons Hotel Casablanca, which Four Seasons has managed since it opened in 2015."
+   },
+   "sources": [
+    "https://brainsre.news/?p=69444",
+    "https://www.alimarket.es/hoteles/noticia_amp/63210/four-seasons-abrira-un-hotel-de-lujo-en-la-promocion-de-inveravante-en-casablanca",
+    "https://aujourdhui.ma/?p=106111",
+    "https://press.fourseasons.com/casablanca/hotel-facts/"
+   ]
+  },
+  {
+   "name": "Barceló Hotel Group",
+   "set": {
+    "description": "Barceló Hotel Group is the hotel division of the Barceló Group, a Spanish family-owned company founded in Mallorca in 1931. Its brands are Royal Hideaway, Barceló Hotels & Resorts, Occidental Hotels & Resorts and Allegro Hotels; its hotels in Morocco include the Royal Hideaway Casablanca."
+   },
+   "sources": [
+    "https://www.barcelogrupo.com/en/about-us/history/",
+    "https://www.barcelogrupo.com/content/dam/barcelo-group/comunicación/dosier-de-prensa/BarcelóHG_Dossier_de_Prensa_ENG.pdf"
+   ]
+  },
+  {
+   "name": "Ynna Holding",
+   "set": {
+    "description": "Ynna Holding is a Moroccan family-owned group belonging to the Chaâbi family, active since 1948 in industry, construction, real estate, mass retail and hospitality. It entered hospitality in 1999 with the Mogador hotel in Essaouira and has since grown Mogador into a Moroccan hotel chain present in several cities."
+   },
+   "sources": [
+    "https://www.ynna.ma/fr",
+    "https://telquel.ma/2019/01/07/un-fils-chaabi-succede-a-mama-tajmouati-a-la-tete-dynna-holding_1624725"
+   ]
+  },
+  {
+   "name": "Beachcomber",
+   "set": {
+    "description": "Beachcomber Resorts & Hotels is the trading name of New Mauritius Hotels, a Mauritian hotel group whose history goes back to the Park Hotel in 1952, with resorts in Mauritius and the Seychelles. In Morocco it developed the Royal Palm Marrakech, opened in 2013 and managed by Fairmont since May 2017 as the Fairmont Royal Palm Marrakech."
+   },
+   "sources": [
+    "https://cdn.beachcomber-hotels.com/v8.beachcomber-hotels/img/content/download/Press%20releases/mu_bc/NMH-announces-hotel-management-agreement-with-AccorHotels-Group-en.pdf"
+   ]
+  },
+  {
+   "name": "O Tower",
+   "set": {
+    "description": "O Tower is the company that develops and runs the Mohammed VI Tower in Salé, near Rabat; it is owned by Bank of Africa, Royale Marocaine d'Assurance (RMA) and O Capital Group. In 2024 it signed a management agreement with Hilton for a Waldorf Astoria hotel on the upper floors of the tower."
+   },
+   "sources": [
+    "https://www.moroccoworldnews.com/2024/11/167859/waldorf-astoria-o-tower-hilton-announce-signing-contract-deal-for-mohammed-vi-tower-hotel/",
+    "https://telquel.ma/instant-t/2024/11/28/rabat-lhotel-de-la-tour-mohammed-vi-ouvrira-sous-la-marque-waldorf-astoria-du-groupe-hilton_1906294/",
+    "https://www.dezeen.com/2026/05/06/mohammed-vi-tower-morocco-tallest-building-rafael-de-la%e2%80%91hoz-hakim-benjelloun/"
+   ]
+  },
+  {
+   "name": "Ajial Holding SA",
+   "set": {
+    "description": "Al Ajial Holding, formerly the Consortium Maroco-Koweïtien de Développement (CMKD), is an investment company controlled by the Kuwait Investment Authority, with the Moroccan state among its shareholders. It has owned hotels operated under the Farah brand in several Moroccan cities, including Hotel Farah Tanger, which opened in 2013."
+   },
+   "sources": [
+    "https://www.infomediaire.net/?p=65726",
+    "https://medias24.com/2013/09/02/lhotel-de-luxe-tanger-farah-ouvre-ses-portes/"
+   ]
+  }
+ ],
+ "brands": [
+  {
+   "name": "Best Western Hotels & Resorts",
+   "set": {
+    "description": "Best Western Hotels & Resorts is an American hotel company founded in 1946 and based in Phoenix, Arizona, whose hotels operate under brands including Best Western, Best Western Plus, Best Western Premier and BW Signature Collection. In Morocco it is present under the Best Western Plus brand."
+   },
+   "sources": [
+    "https://en.wikipedia.org/wiki/Best_Western",
+    "https://archive.hotelbusiness.com/exclusive-best-western-does-reset-with-new-name-logos-brand/"
+   ]
+  },
+  {
+   "name": "Decameron Hotels & Resorts",
+   "set": {
+    "description": "Decameron Hotels & Resorts is an all-inclusive resort company founded in 1987 in Cartagena, Colombia, with resorts in Latin America and the Caribbean. In Morocco it operates the Decameron Tafoukt Beach in Agadir."
+   },
+   "sources": [
+    "https://www.lavca.org/?p=18398"
+   ]
+  },
+  {
+   "name": "Hotusa (Eurostars Hotel Company)",
+   "set": {
+    "description": "Eurostars Hotel Company is the hotel division of Grupo Hotusa, a Spanish hospitality group from Barcelona, which created the Eurostars Hotels brand in 2005. Its brands include Eurostars Hotels, Exe Hotels and Ikonik Hotels; in Morocco it operates the Eurostars Casa Anfa in Casablanca."
+   },
+   "sources": [
+    "https://www.eurostarshotels.co.uk/about-eurostars.html",
+    "https://www.grupohotusa.com/CLIENTES/www.grupohotusa.com/pdf/2021/salaPrensa/Presentacion-Grupo-HotusaDossierdePrensa-es.pdf"
+   ]
+  },
+  {
+   "name": "Idou Hotels",
+   "set": {
+    "description": "Idou Hotels is a Moroccan family hotel group founded by M'hamed Idoulahiane, an entrepreneur from the Tiznit region. Its hotels include the Idou Anfa in Casablanca, opened in 1984, the Idou Tiznit, opened in 2001, and the Idou Malabata Beach & Spa in Tangier."
+   },
+   "sources": [
+    "https://www.challenge.ma/?p=288022"
+   ]
+  },
+  {
+   "name": "Meliá Hotels International",
+   "set": {
+    "description": "Meliá Hotels International, formerly Sol Meliá, is a Spanish hotel company founded in Palma de Mallorca in 1956 by Gabriel Escarrer Juliá. Its brands include Gran Meliá, ME by Meliá, Paradisus, Meliá, INNSiDE and Sol; in Morocco it operates the Sol Oasis Marrakech."
+   },
+   "sources": [
+    "https://en.wikipedia.org/wiki/Meli%C3%A1_Hotels_International",
+    "https://www.hospitalitynet.org/news/4130538/melia-hotels-international-celebrates-its-70th-anniversary-at-fitur-ushering-in-a-new-phase-of-solid-and-sustained-growth"
+   ]
+  },
+  {
+   "name": "Soho Boutique Hotels",
+   "set": {
+    "description": "Soho Boutique Hotels is a Spanish boutique hotel chain founded in Málaga in 2014, with hotels in cities across Spain. In Morocco it has hotels in Casablanca and Tétouan."
+   },
+   "sources": [
+    "https://www.sohohoteles.com/en/",
+    "https://www.hospitalitynet.org/organization/17024001/soho-boutique-hotels"
+   ]
+  },
+  {
+   "name": "The Ascott Limited",
+   "set": {
+    "description": "The Ascott Limited is a Singapore-based lodging company, the wholly owned lodging business of CapitaLand Investment. Its brands include Ascott, Citadines, lyf, Oakwood and Somerset; in Morocco it operates the Citadines Almaz Casablanca."
+   },
+   "sources": [
+    "https://www.capitaland.com/en/about-capitaland/newsroom/news-releases/international/2022/sep/Ascott-unveils-Citadines-brand-refresh-to-prepare-for-next-phase-of-growth-for-its-aparthotel-brand.html",
+    "https://www.hospitalitynet.org/news/4129073.html"
+   ]
+  },
+  {
+   "name": "Xaluca Hotels",
+   "set": {
+    "description": "Grup Xaluca is a family business offering hotels, desert camps, events and services in the south of Morocco, with more than 30 years in hospitality. Its hotels and camps are around Erfoud, at Erg Chebbi near Merzouga, in the Dades valley and in the Middle Atlas."
+   },
+   "sources": [
+    "https://www.xaluca.com/en"
+   ]
+  }
+ ]
+}
