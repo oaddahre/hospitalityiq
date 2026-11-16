@@ -180,6 +180,28 @@ def get(data_dir, today):
     return data
 
 
+_lookup_cache = {}
+
+
+def latest_lookup(data_dir, hotel_id):
+    """The hotel's Google lookup in the latest nightly run, for the hotel
+    calendar's empty nights: {'status', 'run', 'window_start', 'window_end'}
+    or None when it was not in the run. Read only, cached per file version."""
+    path = os.path.join(data_dir, 'scrape_coverage.csv')
+    key = (path, _mtime(path))
+    with _lock:
+        hit = _lookup_cache.get('key') == key and _lookup_cache.get('data')
+    if not hit:
+        cov = _rows(path)
+        last = max((r.get('scrape_date', '') for r in cov), default='')
+        hit = {str(r.get('hotel_id', '')): {'status': r.get('status') or None, 'run': last,
+                                            'window_start': r.get('window_start'), 'window_end': r.get('window_end')}
+               for r in cov if last and r.get('scrape_date') == last}
+        with _lock:
+            _lookup_cache.update(key=key, data=hit)
+    return hit.get(str(hotel_id))
+
+
 def search(data, q, limit=12):
     q = (q or '').strip().lower()
     if not q:

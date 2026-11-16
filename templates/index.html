@@ -1509,10 +1509,7 @@
             <div id="hrate-calendar" class="bar-calendar">
               <div class="bar-cal-loading">Loading rate data…</div>
             </div>
-            <div class="bar-cal-legend" id="hrate-legend">
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-google"></span>Live</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>N/A</span>
-            </div>
+            <div class="bar-cal-legend" id="hrate-legend"></div>
             <p id="hrate-updated" class="rate-updated-note"></p>
           </div>
           <!-- Occupancy Calendar -->
@@ -1525,10 +1522,12 @@
               <div class="bar-cal-loading">Loading occupancy data…</div>
             </div>
             <div class="bar-cal-legend">
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 55%, var(--bg))"></span>&gt;80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 35%, var(--bg))"></span>60–80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 20%, var(--bg))"></span>40–60%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-dot" style="background:color-mix(in srgb, var(--cat-2-dot) 8%, var(--bg))"></span>&lt;40%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 55%, var(--bg))"></span>&gt;80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 35%, var(--bg))"></span>60–80%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 20%, var(--bg))"></span>40–60%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 8%, var(--bg))"></span>&lt;40%</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-sw src-unavailable" aria-hidden="true"></span>No estimate</span>
+              <span class="bar-cal-leg-item"><span class="bar-cal-leg-ev" aria-hidden="true"></span>Event</span>
             </div>
             <p id="hocc-note" class="rate-updated-note"></p>
           </div>

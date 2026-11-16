@@ -2487,9 +2487,20 @@ body.light .nav-logout  { color: var(--text-2); }
 .rb-cal-nodata-txt { font-size: 10px; color: var(--text-faint); }
 .bar-cal-day.src-past              { background: var(--cat-6-tint); color: var(--cat-6-text); }
 .bar-cal-day.src-upcoming          { background: transparent; color: var(--text-faint); border: 1px solid var(--border); opacity: 0.6; }
-.bar-cal-day.src-unavailable .bar-cal-rate { font-size: 10px; font-weight: 500; }
-.dot-past     { background: var(--cat-6-dot); }
-.dot-upcoming { background: transparent; border: 1px solid var(--border); }
+.bar-cal-day.src-unavailable .bar-cal-rate { font-size: 9px; font-weight: 500; line-height: 1.15; overflow-wrap: anywhere; hyphens: none; }
+/* A price seen more than 7 days ago: lighter, it may have changed */
+.bar-cal-day.bar-cal-stale .bar-cal-rate { opacity: 0.5; font-weight: 500; }
+/* Legend swatches: the cells' own colours (same classes as the cells) */
+.bar-cal-sw { display: inline-block; width: 12px; height: 12px; flex-shrink: 0; box-sizing: border-box; border: 1px solid transparent; }
+.bar-cal-sw.src-live-google, .bar-cal-sw.src-live-brand, .bar-cal-sw.src-manual-override { background: var(--cat-4-tint); border-color: color-mix(in srgb, var(--cat-4-dot) 35%, transparent); }
+.bar-cal-sw.src-live-booking  { background: var(--cat-1-tint); border-color: color-mix(in srgb, var(--cat-1-dot) 35%, transparent); }
+.bar-cal-sw.src-estimated     { background: var(--bg-alt); border-color: var(--border); }
+.bar-cal-sw.src-unavailable   { background: transparent; border: 1px dashed var(--border); }
+.bar-cal-sw.src-past          { background: var(--cat-6-tint); border-color: color-mix(in srgb, var(--cat-6-dot) 35%, transparent); }
+.bar-cal-sw.src-upcoming      { background: transparent; border: 1px solid var(--border); opacity: 0.6; }
+.bar-cal-sw.bar-cal-stale     { opacity: 0.45; }
+/* Event marker legend: the same orange corner flag as on the cells */
+.bar-cal-leg-ev { display: inline-block; width: 12px; height: 12px; flex-shrink: 0; background: var(--cat-3-dot); clip-path: polygon(0 0, 100% 0, 100% 100%); }
 /* Period navigation above the hotel rate calendar */
 .bar-cal-nav { display: flex; align-items: center; gap: 10px; padding: 10px 20px 0; }
 .bar-cal-nav-label { font-family: 'Sweet Sans Pro', sans-serif; font-size: 13px; color: var(--text); min-width: 120px; text-align: center; }
@@ -2517,15 +2528,6 @@ body.light .nav-logout  { color: var(--text-2); }
   font-size: 10px;
   color: var(--text-muted);
 }
-.bar-cal-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-.dot-live-google, .dot-live-brand { background: var(--cat-1-dot); }
-.dot-live-booking                  { background: var(--cat-1-dot); }
-.dot-estimated                     { background: var(--bg-alt); border: 1px solid var(--border); }
-.dot-unavailable                   { background: transparent; border: 1px dashed var(--border); }
 
 /* ── Dual calendar (BAR + Occupancy) layout ── */
 .dual-cal-wrap {
@@ -6297,10 +6299,13 @@ body .evcal-leg-type { font-family: inherit; font-size: 10px; cursor: pointer; t
 :root[data-theme="dark"] .evc-panel { box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5); }
 
 /* Markers on the hotel and benchmarking calendars */
-.evc-mark { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1.5px solid var(--bg); background: var(--cat-4-dot); cursor: pointer; z-index: 2; }
-.evc-mark--medium { background: var(--cat-1-dot); }
-.evc-mark--low { background: var(--text-2); }
-.evc-mark::after { content: ''; position: absolute; inset: -8px; }     /* larger tap target */
+/* Event marker: an orange corner flag (top right), a shape and colour used
+   for nothing else on the calendars; the size follows the impact */
+.evc-mark { position: absolute; top: 0; right: 0; width: 14px; height: 14px; padding: 0; border: none; border-radius: 0; background: transparent; cursor: pointer; z-index: 2; }
+.evc-mark::before { content: ''; position: absolute; top: 0; right: 0; width: 12px; height: 12px; background: var(--cat-3-dot); clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.evc-mark--medium::before { width: 10px; height: 10px; }
+.evc-mark--low::before { width: 8px; height: 8px; }
+.evc-mark::after { content: ''; position: absolute; inset: -6px -6px -6px -6px; }     /* larger tap target */
 .evc-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 20px 16px; }
 .evc-chip { display: grid; grid-template-columns: auto; gap: 3px; text-align: left; padding: 8px 12px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; color: var(--text); font-family: 'Sweet Sans Pro', sans-serif; min-width: 160px; max-width: 260px; }
 .evc-chip:hover { border-color: var(--action); background: var(--action-tint); }

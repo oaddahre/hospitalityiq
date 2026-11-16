@@ -4623,9 +4623,18 @@ def api_rates():
             pass
     last_scraped = last_live
 
+    # The hotel's lookup in the latest nightly run: the calendar says why a
+    # night is empty (no rate published, not tracked yet, lookup failed)
+    lookup = None
+    if hotel_id:
+        import price_coverage as PC
+        lookup = PC.latest_lookup(DATA_DIR, hotel_id)
+
     return jsonify({
         'rates': filtered,
         'count': len(filtered),
+        'today': _casablanca_today().isoformat(),
+        'lookup': lookup,
         'last_scraped': last_scraped,
         'last_live': last_live,
         'live_stale': live_stale,

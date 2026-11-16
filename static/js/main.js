@@ -1907,11 +1907,30 @@ document.getElementById('hrate-next')?.addEventListener('click', () => {
   hrState.view = n > hrMonthKey(new Date()) ? 'next' : n; hrRender();
 });
 
-const HR_LEGEND_NEXT = '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-live-google"></span>Live</span>'
-  + '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>N/A</span>';
-const HR_LEGEND_PAST = '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-past"></span>Last published rate</span>'
-  + '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-unavailable"></span>No price collected</span>'
-  + '<span class="bar-cal-leg-item"><span class="bar-cal-dot dot-upcoming"></span>Upcoming night</span>';
+// Calendar legends: a swatch drawn with the cell's own class (same colours as
+// the cells, light and dark), and the event marker (an orange corner flag,
+// used for nothing else on the calendars)
+const calLegSw = (cls, label) => `<span class="bar-cal-leg-item"><span class="bar-cal-sw ${cls}" aria-hidden="true"></span>${label}</span>`;
+const CAL_LEG_EVENT = '<span class="bar-cal-leg-item"><span class="bar-cal-leg-ev" aria-hidden="true"></span>Event</span>';
+const HR_LEGEND_PAST = calLegSw('src-past', 'Last published rate') + calLegSw('src-unavailable', 'No price collected')
+  + calLegSw('src-upcoming', 'Upcoming night') + CAL_LEG_EVENT;
+const RATE_STALE_DAYS = 7;          // a price seen longer ago than this looks less certain
+// Why a night of the next 30 has no price, from the hotel's lookup in the
+// latest nightly run: [cell label, tooltip text]. Never "sold out": a
+// missing price does not say why.
+function emptyNightLabel(lookup, iso) {
+  const st = lookup && lookup.status;
+  if (!st || st === 'no_id') return ['Not tracked yet', 'This hotel\u2019s published rates are not collected yet'];
+  if (st === 'ok') {
+    return lookup.window_start && (iso < lookup.window_start || iso > lookup.window_end)
+      ? ['Not checked yet', 'This night is asked for in the next nightly run']
+      : ['No rate published', 'Asked for in the latest nightly run: no published rate for this night'];
+  }
+  return ['Lookup failed', 'The latest nightly lookup for this hotel did not return its rates'];
+}
+function seenAgo(days) {
+  return days <= 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`;
+}
 
 async function renderRatePast(hotelId, month) {
   const calEl = document.getElementById('hrate-calendar');
@@ -1956,7 +1975,6 @@ async function renderRateNext(hotelId) {
   const updEl    = document.getElementById('hrate-updated');
   const req = ++hrState.req;
   document.getElementById('hrate-title').textContent = 'Best Available Rate · Next 30 Days';
-  document.getElementById('hrate-legend').innerHTML = HR_LEGEND_NEXT;
   badgeEl.className = 'rate-source-badge pill--blue';
 
   calEl.innerHTML = '<div class="bar-cal-loading">Loading rate data…</div>';
@@ -1981,13 +1999,7 @@ async function renderRateNext(hotelId) {
         ? `Last live rates: ${KodoPeriod.day(data.last_live)} · not updated since`
         : `Last updated: ${KodoPeriod.day(data.last_live)} · Updates daily at 3:00 AM`)
     : '';
-  if (!rates.length) {
-    calEl.innerHTML = '<div class="bar-cal-loading">Not available yet</div>';
-    badgeEl.style.display = 'none';
-    updEl.textContent = lastLive;
-    return;
-  }
-  badgeEl.style.display = '';
+  badgeEl.style.display = rates.length ? '' : 'none';
 
   // stay_date → rate row: the latest price observed for each night (the
   // server already sends one per night; on the same scrape day the more
@@ -2018,23 +2030,44 @@ async function renderRateNext(hotelId) {
   }
   badgeEl.textContent = `Source: ${SOURCE_LABEL[dominantSrc] || dominantSrc}`;
 
-  updEl.textContent = lastLive || 'Manual prices only · no live rates collected yet';
+  updEl.textContent = lastLive || (rates.length ? 'Manual prices only · no live rates collected yet' : '');
 
   // Build grid
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const todayIso = data.today || localIsoDate(today);
+  const ageDays = sd => Math.round((Date.parse(todayIso) - Date.parse(String(sd).slice(0, 10))) / 86400000);
+  const seen = new Set();               // the classes shown, for the legend
+  let stale = false;
   let html = '';
   for (const { iso, d, r } of cells) {
-    const src      = r ? r.source : 'unavailable';
-    const cls      = SOURCE_CLASS[src] || 'src-estimated';
-    const rateMAD  = r && r.rate_mad ? +r.rate_mad : null;
-    const rateDisp = rateMAD ? fmtMadShort(rateMAD) : '—';
-    const tip = calTipAttrs(iso, [['Rate', rateMAD ? fmtMadLong(rateMAD) : 'Unavailable'], ['Source', SOURCE_LABEL[src] || src]]);
+    const rateMAD = r && r.rate_mad ? +r.rate_mad : null;
+    let cls, label, tip;
+    if (rateMAD) {
+      cls = SOURCE_CLASS[r.source] || 'src-estimated';
+      const age = ageDays(r.scrape_date);
+      const old = age > RATE_STALE_DAYS;
+      if (old) { cls += ' bar-cal-stale'; stale = true; }
+      label = fmtMadShort(rateMAD);
+      tip = calTipAttrs(iso, [['Rate', fmtMadLong(rateMAD)], ['Seen', `${seenAgo(age)} (${KodoPeriod.day(r.scrape_date)})`],
+        ['Source', SOURCE_LABEL[r.source] || r.source]].concat(old ? [['', 'Seen over a week ago: it may have changed']] : []));
+    } else {
+      const [txt, why] = emptyNightLabel(data.lookup, iso);
+      cls = 'src-unavailable';
+      label = txt;
+      tip = calTipAttrs(iso, [[txt, why]]);
+    }
+    seen.add(cls.split(' ')[0]);
     html += `<div class="bar-cal-day ${cls}"${tip}>
       <div class="bar-cal-dn">${DAYS[d.getDay()]} ${d.getDate()}</div>
-      <div class="bar-cal-rate">${rateDisp}</div>
+      <div class="bar-cal-rate">${label}</div>
     </div>`;
   }
   calEl.innerHTML = html;
+  const LEG = { 'src-live-google': 'Published rate', 'src-live-brand': 'Brand site rate', 'src-live-booking': 'Published rate (second site)',
+                'src-manual-override': 'Manual price', 'src-estimated': 'Other' };
+  document.getElementById('hrate-legend').innerHTML = Object.keys(LEG).filter(c => seen.has(c)).map(c => calLegSw(c, LEG[c])).join('')
+    + (stale ? calLegSw('src-live-google bar-cal-stale', 'Seen over a week ago') : '')
+    + (seen.has('src-unavailable') ? calLegSw('src-unavailable', 'No price: reason in the cell') : '') + CAL_LEG_EVENT;
   KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
 }
 
