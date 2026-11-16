@@ -176,7 +176,7 @@
 
   function assumptions(inputs) {
     return [
-      `Revenue: occupancy × ADR × ${inputs.keys} keys × 365 nights; rooms are ${inputs.rooms_rev_pct}% of total revenue, F&B ${inputs.fb_rev_pct}%.`,
+      `Revenue: occupancy × projected ADR (your assumption) × ${inputs.keys} keys × 365 nights; rooms are ${inputs.rooms_rev_pct}% of total revenue, F&B ${inputs.fb_rev_pct}%.`,
       `Departmental costs: rooms ${inputs.dept_exp_pct}% of rooms revenue, F&B ${Math.round(FB_COST * 100)}% of F&B revenue, other departments ${Math.round(OTHER_COST * 100)}%.`,
       `Undistributed costs ${inputs.undist_exp_pct}% of total revenue; then a base management fee of ${inputs.mgmt_fee_pct}% and an FF&E reserve of ${inputs.ffe_pct}%, both after GOP.`,
       `Growth ${inputs.growth_rate}% a year; discount rate ${inputs.discount_rate}%; exit cap rate ${inputs.terminal_cap_rate}% on the year after the hold.`,

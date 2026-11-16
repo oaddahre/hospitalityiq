@@ -1,0 +1,6 @@
+{
+  "format": "kodo-columns-1",
+  "file": "performance.csv",
+  "keep": ["hotel_id", "adr_mad"],
+  "why": "Occupancy model v1 no longer uses the old annual estimates. Only adr_mad stays: model v2 uses it as a stand-in for hotels under 14 priced nights, until v2 is switched on real data only."
+}

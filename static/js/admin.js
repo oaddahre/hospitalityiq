@@ -74,7 +74,7 @@ const SECTION_LOADERS = {
   news: loadArticles,
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
   rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); loadRatesStore(false); },
-  occupancy: loadOccupancyStatus,
+  occupancy: () => { loadOccupancyStatus(); loadSideBySide(); },
   events: loadEvents,
   health: () => loadDataHealth(false),
   system: loadSystemInfo,
@@ -1186,11 +1186,11 @@ document.getElementById('ri-occ-compare').addEventListener('click', async () => 
       + (d.model_run_date ? ` · model run ${d.model_run_date}` : '') + (d.v2_computed_live ? ' · v2 computed now (not in the last run)' : '');
     const t = document.createElement('table');
     t.className = 'adm-table';
-    t.innerHTML = '<thead><tr><th>Night</th><th>v1</th><th>v2 low–mid–high</th><th>Published rate</th><th>Price coverage</th><th>v2 signals</th></tr></thead>';
+    t.innerHTML = '<thead><tr><th>Night</th><th>v1 low–mid–high</th><th>v2 low–mid–high</th><th>Published rate</th><th>Price coverage</th><th>v2 signals</th></tr></thead>';
     const tb = document.createElement('tbody');
     (d.nights || []).forEach(n => {
       const tr = document.createElement('tr');
-      [n.night, n.v1 != null ? `${Math.round(n.v1)}%` : '–',
+      [n.night, n.v1 != null ? (n.v1_low != null ? `${n.v1_low}–${Math.round(n.v1)}–${n.v1_high}%` : `${Math.round(n.v1)}%`) : '–',
        n.v2_mid != null ? `${n.v2_low}–${n.v2_mid}–${n.v2_high}%` : '–',
        n.price != null ? `MAD ${Math.round(n.price).toLocaleString('en')}` : '–', n.price_coverage || '–',
        (n.signals || '').split(';').join(' · ')].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
@@ -1732,6 +1732,76 @@ document.getElementById('run-occ-btn').addEventListener('click', async () => {
   } catch { toast('Network error.', 'error'); }
   setTimeout(() => { btn.disabled = false; btn.textContent = 'Run Model Now'; loadOccupancyStatus(); }, 2500);
 });
+
+// v1 and v2 side by side, and v2 readiness (occupancy_compare.py)
+let occSbs = null;
+const sbsPct = v => (v == null ? '–' : `${Math.round(v)}%`);
+const sbsRange = (lo, mid, hi) => (mid == null ? '–' : lo != null && hi != null ? `${Math.round(lo)}–${Math.round(mid)}–${Math.round(hi)}%` : sbsPct(mid));
+const sbsDiff = (a, b) => (a == null || b == null ? '–' : `${b - a >= 0 ? '+' : '−'}${Math.abs(b - a).toFixed(1)}`);
+function sbsTable(id, head, rows) {
+  const t = document.getElementById(id);
+  t.replaceChildren();
+  const th = document.createElement('thead'), tr = document.createElement('tr');
+  head.forEach(h => { const c = document.createElement('th'); c.textContent = h; tr.appendChild(c); });
+  th.appendChild(tr); t.appendChild(th);
+  const tb = document.createElement('tbody');
+  rows.forEach(r => { const row = document.createElement('tr'); r.forEach(v => { const c = document.createElement('td'); c.textContent = v; row.appendChild(c); }); tb.appendChild(row); });
+  t.appendChild(tb);
+}
+const MON3 = m => { const [y, mo] = m.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo - 1] + ' ' + y.slice(2); };
+function renderSideBySide() {
+  const d = occSbs; if (!d) return;
+  const view = document.getElementById('occ-sbs-view').value, city = document.getElementById('occ-sbs-city').value;
+  const cities = d.cities.filter(c => !city || c.city === city);
+  if (view === 'city') {
+    sbsTable('occ-sbs-table', ['City', 'Hotels', 'Official', 'v1 next 30 (range)', 'v2 next 30 (range)', 'v2 − v1', 'v1 12 months', 'v2 12 months', 'v2 − v1'],
+      cities.map(c => [c.city, c.hotels, c.official == null ? 'none' : `${c.official}% ${c.official_year}${c.official_scope === 'national' ? ' (national)' : ''}`,
+        sbsRange(c.v1_low, c.v1, c.v1_high), sbsRange(c.v2_low, c.v2, c.v2_high), sbsDiff(c.v1, c.v2), sbsPct(c.v1_year), sbsPct(c.v2_year), sbsDiff(c.v1_year, c.v2_year)]));
+  } else if (view === 'month') {
+    sbsTable('occ-sbs-table', ['City', 'Model', ...d.months.map(MON3)],
+      cities.flatMap(c => [[c.city, 'v1', ...d.months.map(m => sbsPct(c.months[m].v1))], ['', 'v2', ...d.months.map(m => sbsPct(c.months[m].v2))]]));
+  } else {
+    sbsTable('occ-sbs-table', ['Hotel', 'City', 'Category', 'v1 next 30', 'v2 next 30', 'v2 − v1', 'v2 normal price'],
+      d.hotels.filter(h => !city || h.city === city).map(h => [h.name, h.city, h.category, sbsRange(h.v1_low, h.v1, h.v1_high),
+        sbsRange(h.v2_low, h.v2, h.v2_high), sbsDiff(h.v1, h.v2), h.v2_normal === 'history' ? 'own prices' : h.v2_normal === 'adr_fallback' ? 'stand-in' : 'none']));
+  }
+}
+function renderReadiness() {
+  const r = occSbs && occSbs.readiness; if (!r) return;
+  const c = r.criteria, set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('occ-rd-crit-nights', c.own_price_nights); set('occ-rd-crit-days', c.history_days); set('occ-rd-crit-recent', c.recent_days);
+  set('occ-rd-crit-cmin', c.city_min_hotels); set('occ-rd-crit-cshare', Math.round(c.city_share * 100));
+  set('occ-rd-crit-heat', Math.round(c.city_heat_nights * 100)); set('occ-rd-crit-switch', Math.round(c.switch_hotel_share * 100));
+  set('occ-rd-hotels', `${r.hotels_ready} of ${r.hotels}`); set('occ-rd-rooms', `${r.rooms_share_ready}%`);
+  set('occ-rd-cities', `${r.cities_ready} of ${r.cities_total}`);
+  set('occ-rd-half', r.date_half || 'no date yet'); set('occ-rd-switch', r.date_switch || 'no date yet');
+  set('occ-rd-note', `${r.days_of_data} days of data since ${r.data_start}. ${r.on_stand_in} hotel${r.on_stand_in === 1 ? '' : 's'} would still need the stand-in reference price; ${r.no_prices} have no prices yet (no date can be projected for them).`);
+  const yes = b => (b ? 'yes' : 'no');
+  sbsTable('occ-rd-cities-table', ['City', 'Hotels', 'Ready', '3+ ready', 'Share ready', 'Market signal nights', 'City ready', 'Projected'],
+    r.city_rows.map(x => [x.city, x.hotels, x.ready_hotels, yes(x.checks.min_hotels), yes(x.checks.share), `${x.heat_nights_pct}%`, yes(x.ready), x.ready ? 'now' : (x.ready_on || 'no date')]));
+  set('occ-rd-hotel-count', r.hotel_rows.length);
+  sbsTable('occ-rd-hotels-table', ['Hotel', 'City', 'Priced nights', 'Days of prices', 'Last 7 days', 'Own price', 'Ready', 'Projected'],
+    r.hotel_rows.map(x => [x.name, x.city, x.priced_nights, x.history_days, x.recent_days, yes(x.checks.own_price), yes(x.ready), x.ready ? 'now' : (x.ready_on || 'no date')]));
+}
+async function loadSideBySide(refresh) {
+  const msg = document.getElementById('occ-sbs-msg');
+  msg.textContent = 'Loading… (up to a minute the first time each day)';
+  try {
+    const res = await fetch('/api/admin/occupancy/side-by-side' + (refresh ? '?refresh=1' : ''), { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) { msg.textContent = d.error || 'Failed'; return; }
+    occSbs = d;
+    document.getElementById('occ-sbs-shown').textContent = (d.shown_model || 'v1').toUpperCase();
+    const sel = document.getElementById('occ-sbs-city'), keep = sel.value;
+    sel.replaceChildren(new Option('All cities', ''), ...d.cities.map(c => new Option(c.city, c.city)));
+    sel.value = keep;
+    msg.textContent = `Computed for ${d.today}`;
+    renderSideBySide(); renderReadiness();
+  } catch { msg.textContent = 'Failed'; }
+}
+document.getElementById('occ-sbs-view').addEventListener('change', renderSideBySide);
+document.getElementById('occ-sbs-city').addEventListener('change', renderSideBySide);
+document.getElementById('occ-sbs-refresh').addEventListener('click', () => loadSideBySide(true));
 
 // ════════════════════════ DATA & SYSTEM ════════════════════════════════
 async function loadSystemInfo() {

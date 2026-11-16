@@ -1077,8 +1077,8 @@ _HOTEL_NUM_COLS = ("keys", "year_opened", "lat", "lng")
 #   bar_nights  how many nights that average covers
 #   occupancy   Kodo estimate (occupancy model), next 30 nights, a fraction
 #   revpar_mad  Kodo estimate: BAR x modelled occupancy, next 30 nights
-# performance.csv (Kodo's old FY 2025 model estimates) is never read for
-# clients: it only stays an internal input of the occupancy model.
+# performance.csv (an old Kodo reference price per hotel) is never read for
+# clients: only occupancy model v2 reads it, as a stand-in under 14 priced nights.
 PERF_COLS = ["hotel_id", "period", "occupancy", "bar_mad", "bar_nights", "revpar_mad", "source"]
 
 
@@ -4045,7 +4045,7 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
         ("Mode",                    "Custom Cash Flows" if mode == "custom" else "Quick Valuation"),
         ("Hold Period",             f"{hold_period} years"),
         ("Stabilized Occupancy",    _fmt_pct(inputs.get("stabilized_occ", 0))),
-        ("ADR",                     _fmt_mad(inputs.get("adr", 0))),
+        ("Projected ADR (your assumption)", _fmt_mad(inputs.get("adr", 0))),
         ("Revenue Growth",          _fmt_pct(inputs.get("growth_rate", 0)) + "/yr"),
         ("Discount Rate (WACC)",    _fmt_pct(inputs.get("discount_rate", 0))),
         ("Terminal Cap Rate",       _fmt_pct(inputs.get("terminal_cap_rate", 0))),
@@ -4058,7 +4058,7 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
     pdf.add_page()
     pdf.section_title("02", f"{hold_period}-Year Projected Cash Flows (MAD)")
 
-    cf_cols   = ["Year","Occ%","ADR","RevPAR","Total Rev","Rooms Rev","F&B Rev","GOP","GOP%","NOI","FCF","PV(FCF)"]
+    cf_cols   = ["Year","Occ%","Proj. ADR","RevPAR","Total Rev","Rooms Rev","F&B Rev","GOP","GOP%","NOI","FCF","PV(FCF)"]
     cf_widths = [12, 11, 15, 15, 18, 17, 15, 17, 12, 17, 17, 17]
     pdf.set_font("Helvetica", "", 6)
     pdf.table_header(cf_cols, cf_widths)
@@ -4597,7 +4597,7 @@ def api_rates():
 
     filtered.sort(key=lambda r: r.get('stay_date', ''))
 
-    # Only real prices go to the calendar: no stand-in from the FY ADR, and
+    # Only real prices go to the calendar: no stand-in reference price, and
     # only current sources (older rows from earlier sources stay in the file)
     filtered = [r for r in filtered if r.get('scrape_status') == 'success' and r.get('rate_mad')
                 and r.get('source') in LIVE_SOURCES | {'manual_override'}]
@@ -5596,15 +5596,6 @@ def api_occupancy_hotel(hotel_id):
                     # v1 needs only this hotel's prices; v2 compares it with its city's hotels
                     same_city = merged[merged['city'] == h.get('city')]['id'].astype(str).tolist()
                     model        = recent_model(same_city if active_model() == 'v2' else [str(hotel_id)])
-                    # v1's reference price is the model's own input (as in the
-                    # stored run); it is never shown: RevPAR below uses only a
-                    # published price
-                    try:
-                        baseline_adr = float((model.performance.get(str(hotel_id)) or {}).get('adr_mad') or 0)
-                    except (TypeError, ValueError):
-                        baseline_adr = 0.0
-                    if baseline_adr != baseline_adr:
-                        baseline_adr = 0.0
                     if active_model() == 'v2':
                         live = model.v2_estimates([datetime.strptime(d, '%Y-%m-%d').date() for d in missing],
                                                   hotel_ids=[str(hotel_id)])
@@ -5618,15 +5609,16 @@ def api_occupancy_hotel(hotel_id):
                         occ, breakdown = estimate_occupancy(
                             h, stay_dt,
                             scraped_bar=scraped_bar,
-                            baseline_adr=baseline_adr,
                             recent_price_days=model.recent_price_days(str(hotel_id)),
                         )
+                        if occ is None:             # no official figure: "limited data"
+                            continue
                         adr_used = scraped_bar
                         stored[stay_str] = {
                             'date':                stay_str,
                             'model':               'v1',
                             'estimated_occupancy': round(occ * 100, 1),
-                            'low': None, 'mid': round(occ * 100, 1), 'high': None,
+                            'low': breakdown['low'], 'mid': round(occ * 100, 1), 'high': breakdown['high'],
                             'scraped_bar':         round(scraped_bar, 0) if scraped_bar else None,
                             'estimated_revpar':    round(adr_used * occ, 0) if adr_used else None,
                             'confidence':          breakdown['confidence'],
@@ -5748,7 +5740,7 @@ def api_admin_occupancy_compare():
     out = []
     for n in nights:
         a, b = by.get(('v1', n)), by.get(('v2', n))
-        out.append({'night': n, 'v1': a and a['estimated_occupancy'], 'v2_low': b and b['low'], 'v2_mid': b and b['mid'],
+        out.append({'night': n, 'v1': a and a['estimated_occupancy'], 'v1_low': a and a['low'], 'v1_high': a and a['high'], 'v2_low': b and b['low'], 'v2_mid': b and b['mid'],
                     'v2_high': b and b['high'], 'price': (b or a or {}).get('scraped_bar'),
                     'price_coverage': (b or a or {}).get('price_coverage'), 'signals': b and b['signals_used']})
     v1s = [x['v1'] for x in out if x['v1'] is not None]
@@ -5757,6 +5749,18 @@ def api_admin_occupancy_compare():
                     'avg_v1': round(sum(v1s) / len(v1s), 1) if v1s else None,
                     'avg_v2': round(sum(v2s) / len(v2s), 1) if v2s else None,
                     'model_run_date': max((r.get('model_run_date', '') for r in rows), default='') or None})
+
+
+@app.route('/api/admin/occupancy/side-by-side')
+@admin_required
+def api_admin_occupancy_side_by_side():
+    """v1 and v2 per hotel, city and month, and v2 readiness (occupancy_compare.py)."""
+    try:
+        import occupancy_compare as OC
+        return jsonify(OC.get(DATA_DIR, _casablanca_today(), refresh=request.args.get('refresh') == '1'))
+    except Exception as e:
+        app.logger.error(f'Occupancy side by side failed: {e}', exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/admin/occupancy/calibration')

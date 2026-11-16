@@ -47,6 +47,7 @@ run when DATA_DIR is a separate volume: the repo's own files already carry
 every change.
 """
 import hashlib
+import csv
 import json
 import os
 import re
@@ -58,7 +59,7 @@ from run_lock import acquire_lock
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 MIGRATIONS_DIR = os.path.join(APP_DIR, 'data_migrations')
-NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json)$')
+NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json|columns\.json)$')
 OFF = {'off', '0', 'false', 'no'}
 
 
@@ -90,7 +91,8 @@ def paths(data_dir):
 
 # Files each kind can write (copied first, put back on failure)
 TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance', 'comp_sets'), 'owners.json': ('owners',),
-           'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',), 'profiles.json': ('owners', 'brand_profiles')}
+           'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',), 'profiles.json': ('owners', 'brand_profiles'),
+           'columns.json': ('performance',)}
 
 
 def available(migrations_dir=MIGRATIONS_DIR):
@@ -102,7 +104,7 @@ def available(migrations_dir=MIGRATIONS_DIR):
             continue
         m = NAME_RE.match(name)
         if not m:
-            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json>')
+            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json>')
         if m.group(1) in seen:
             raise MigrationError(f'data_migrations: number {m.group(1)} used twice ({seen[m.group(1)]}, {name})')
         seen[m.group(1)] = name
@@ -179,6 +181,8 @@ def _apply(kind, path, P, actor):
         return _apply_news(text, P)
     if kind == 'profiles.json':
         return _apply_profiles(text, P)
+    if kind == 'columns.json':
+        return _apply_columns(text, P)
     ids, ovs, rej = CA.read_ids_bundle(text)
     plan = CA.ids_plan(P['hotels'], P['ids'], P['overrides'], ids, ovs, rej)
     _problems(plan, {'import', 'reject', 'already'}, 'Google ID')
@@ -275,6 +279,38 @@ def _apply_profiles(text, P):
                 json.dump(data, f, indent=2, ensure_ascii=False)
             os.replace(tmp, path)
     return changed, already, [], {'set': changed, 'already': already}
+
+
+COLUMN_FILES = {'performance.csv': 'performance'}
+
+
+def _apply_columns(text, P):
+    """Keep only the listed columns of a CSV (performance.csv), every row
+    kept. A file already holding just those columns is "already"; a kept
+    column the file lacks stops the migration."""
+    spec = json.loads(text)
+    if spec.get('format') != 'kodo-columns-1' or spec.get('file') not in COLUMN_FILES or not spec.get('keep'):
+        raise MigrationError('columns migration: format must be kodo-columns-1 with "file" (performance.csv) and "keep"')
+    path = P[COLUMN_FILES[spec['file']]]
+    if not os.path.exists(path):
+        return 0, 1, [], {'already': 1, 'note': 'no such file'}
+    with open(path, encoding='utf-8', newline='') as f:
+        rows = list(csv.DictReader(f))
+        f.seek(0)
+        header = next(csv.reader(f), [])
+    keep = list(spec['keep'])
+    missing = [c for c in keep if c not in header]
+    if missing:
+        raise MigrationError(f"columns migration: {spec['file']} has no column {', '.join(missing)}: nothing changed")
+    if header == keep:
+        return 0, 1, [], {'already': 1}
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=keep, extrasaction='ignore', lineterminator='\n')
+        w.writeheader()
+        w.writerows(rows)
+    os.replace(tmp, path)
+    return 1, 0, [], {'columns removed': len(header) - len(keep), 'rows': len(rows)}
 
 
 def run_pending(data_dir, notify=None, log=print, migrations_dir=MIGRATIONS_DIR):

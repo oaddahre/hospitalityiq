@@ -469,6 +469,33 @@
       <div class="adm-stat"><span class="adm-stat-val" id="occ-low">—</span><span class="adm-stat-label">Price coverage: none</span></div>
     </div>
     <p class="adm-hint" style="margin-top:16px">Calibration runs once a month, after the first model run of the month, against the real figures in daily_performance.csv (Upload performance). It reports the average error of v1 and v2 by city and hotel type in the Rates panel; with no real figures it does nothing and says so.</p>
+
+    <h2 class="adm-list-filter-label" style="margin-top:28px">v2 readiness</h2>
+    <p class="adm-hint">What v2 needs to run on real data only. A hotel: its own normal price (<span id="occ-rd-crit-nights">14</span>+ priced nights, no stand-in reference price), <span id="occ-rd-crit-days">28</span>+ days of price collection, prices on <span id="occ-rd-crit-recent">4</span> of the last 7 days. A city: <span id="occ-rd-crit-cmin">3</span>+ ready hotels, <span id="occ-rd-crit-cshare">60</span>% of its open hotels ready, a market signal (3+ priced hotels) on <span id="occ-rd-crit-heat">80</span>% of the next 30 nights. Suggested switch: <span id="occ-rd-crit-switch">80</span>% of rooms in ready hotels. Dates are projected from the pace of price collection so far.</p>
+    <div class="adm-stat-row" id="occ-rd-stats">
+      <div class="adm-stat"><span class="adm-stat-val" id="occ-rd-hotels">—</span><span class="adm-stat-label">Hotels ready</span></div>
+      <div class="adm-stat"><span class="adm-stat-val" id="occ-rd-rooms">—</span><span class="adm-stat-label">Rooms in ready hotels</span></div>
+      <div class="adm-stat"><span class="adm-stat-val" id="occ-rd-cities">—</span><span class="adm-stat-label">Cities ready</span></div>
+      <div class="adm-stat"><span class="adm-stat-val" style="font-size:16px" id="occ-rd-half">—</span><span class="adm-stat-label">Half the rooms ready</span></div>
+      <div class="adm-stat"><span class="adm-stat-val" style="font-size:16px" id="occ-rd-switch">—</span><span class="adm-stat-label">Switch level reached</span></div>
+    </div>
+    <div id="occ-rd-note" class="adm-hint"></div>
+    <div class="dh-scroll"><table class="adm-table" id="occ-rd-cities-table"></table></div>
+    <details style="margin-top:8px"><summary class="adm-hint" style="cursor:pointer">Hotels (<span id="occ-rd-hotel-count">0</span>)</summary>
+      <div class="dh-scroll"><table class="adm-table" id="occ-rd-hotels-table"></table></div>
+    </details>
+
+    <h2 class="adm-list-filter-label" style="margin-top:28px">v1 and v2 side by side</h2>
+    <p class="adm-hint">Both models on the same day's data. Nothing here changes what clients see (shown: <strong id="occ-sbs-shown">—</strong>). Next 30 nights with ranges, and the average of every night of each of the next 12 months; city figures are weighted by rooms, next to the official occupancy of classified accommodation that v1 is anchored on.</p>
+    <div class="adm-toolbar" style="gap:8px;flex-wrap:wrap">
+      <select id="occ-sbs-view" class="adm-input" style="max-width:180px">
+        <option value="city">By city</option><option value="month">By city and month</option><option value="hotel">By hotel</option>
+      </select>
+      <select id="occ-sbs-city" class="adm-input" style="max-width:240px"><option value="">All cities</option></select>
+      <button class="adm-btn adm-btn-secondary" id="occ-sbs-refresh">Recompute</button>
+      <span id="occ-sbs-msg" class="adm-inline-msg"></span>
+    </div>
+    <div class="dh-scroll"><table class="adm-table" id="occ-sbs-table"></table></div>
   </section>
 
   <!-- ══════════════════ EVENTS ══════════════════ -->

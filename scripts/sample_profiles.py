@@ -208,7 +208,7 @@ def build(data_dir, today=None):
         perf.append({"hotel_id": hid, "period": "2025FY", "occupancy": occ, "adr_mad": adr,
                      "revpar_mad": int(round(occ * adr)), "trevpar_mad": int(round(occ * adr * 1.45)),
                      "gop_margin": round(0.36 + 0.04 * _noise(hid, "gop"), 2), "source": "HIQ Estimate"})
-    _write_csv(os.path.join(data_dir, "performance.csv"), fields, perf)
+    _write_csv(os.path.join(data_dir, "performance.csv"), fields, [{k: r[k] for k in fields} for r in perf])
     with open(os.path.join(ROOT, "daily_performance.csv"), encoding="utf-8", newline="") as f:
         fields = next(csv.reader(f))
     _write_csv(os.path.join(data_dir, "daily_performance.csv"), fields, [])

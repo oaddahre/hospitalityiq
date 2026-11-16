@@ -772,10 +772,14 @@ def preview(data_dir, today=None, report=None):
 # and its confidence today. Keep in step with the code it describes.
 MODELS = [
     {'name': 'Occupancy model v1', 'where': 'occupancy_model.estimate_occupancy',
-     'data': 'segment and hotel type, weekday, month, events calendar, the night\'s published price vs the FY 2025 ADR',
-     'assumes': 'base occupancy by segment x type, weekday and seasonal adjustments, event points: all hand-set, not fitted',
-     'label': 'Kodo Estimates (v1 model), modelled, not measured',
-     'confidence': 'low: no real figures to fit or test it'},
+     'data': 'official occupancy of classified accommodation in the city, latest full year (national figure where the '
+             'city has none); weekday, month, events calendar; the hotel\'s BAR since 3 Nov 2026 vs the median of its '
+             'city and category',
+     'assumes': 'the calendar adjustments (hand-set) are centred over the year so a city averages its official figure; '
+                'price position 15 pts x ln(BAR / usual BAR), centred on the city, capped at 10 pts; ranges from fixed '
+                'point widths (8 pts, wider for the national figure, no price position or short history)',
+     'label': 'Kodo estimate with a range, modelled, not measured',
+     'confidence': 'low: anchored on official city figures, hotel level not yet checked against real figures'},
     {'name': 'Occupancy model v2', 'where': 'occupancy_model.estimate_v2',
      'data': 'each hotel\'s published prices (normal price per weekday over 60 days), city market heat, sold-out gaps, '
              'events, the same prior as v1',
@@ -785,8 +789,8 @@ MODELS = [
     {'name': 'Market heat', 'where': 'V2Inputs.market', 'data': 'median price / normal price across a city (or city+segment) that night',
      'assumes': '3+ priced hotels (5 for a segment group); weights by price variability',
      'label': 'inside the occupancy figure', 'confidence': 'low until 28+ days of history'},
-    {'name': 'Normal price', 'where': 'V2Inputs', 'data': 'the hotel\'s median price per weekday, last 60 days; FY 2025 ADR when under 14 priced nights',
-     'assumes': 'the FY 2025 ADR is a fair stand-in (it is itself a model estimate)', 'label': 'not shown',
+    {'name': 'Normal price', 'where': 'V2Inputs', 'data': 'the hotel\'s median price per weekday, last 60 days; the old annual reference price when under 14 priced nights',
+     'assumes': 'the old reference price is a fair stand-in (it is itself a model estimate); v2 readiness requires it is no longer needed', 'label': 'not shown',
      'confidence': 'low: 60-day window not yet filled'},
     {'name': 'Sold-out detection', 'where': 'V2Inputs.gap', 'data': 'nights missing from successful lookups while the nights around them are priced',
      'assumes': 'a missing night in 2 lookups in a row = sold out (95%); 5+ missing nights = closed or unknown',
@@ -812,9 +816,10 @@ MODELS = [
     {'name': 'Owner, brand and city roll-ups', 'where': 'main.js, app /api/data and /api/brands', 'data': 'per-hotel BAR (observed) and Kodo estimates',
      'assumes': 'BAR: plain average of hotels; occupancy and RevPAR: room-weighted', 'label': 'BAR; Kodo estimate',
      'confidence': 'as the figures they average'},
-    {'name': 'FY 2025 estimates (removed for clients)', 'where': 'performance.csv', 'data': 'Kodo model estimates for 2025; no longer shown anywhere',
+    {'name': 'Old annual reference price', 'where': 'performance.csv (adr_mad only)',
+     'data': 'an old Kodo model estimate per hotel; no longer shown anywhere, and no longer used by v1',
      'assumes': 'segment and city norms', 'label': 'never shown to clients (tests/test_real_data_only.py)',
-     'confidence': 'internal input of occupancy model v1 only (reference price)'},
+     'confidence': 'used only by v2 for hotels under 14 priced nights; v2 readiness requires that no hotel needs it'},
     {'name': 'Valuation tool', 'where': 'static/js/valuation_engine.js', 'data': 'user inputs, segment defaults (no hotel data)',
      'assumes': 'see the tool; v1 deducts rooms costs only, capex unit error, IRR terminal a year late, unlevered equity multiple, fixed ±8% range',
      'label': 'Indicative ranges only', 'confidence': 'v1 overstates value (about 1.9x on the Upscale example); VALUATION_V2 corrects'},

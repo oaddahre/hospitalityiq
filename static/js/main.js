@@ -483,7 +483,7 @@ const KodoPeriod = (() => {
     }
     return '';
   }
-  // Period codes as stored in the data files: '2025FY', '2025', '2026-09'
+  // Period codes as stored in the data files: a fiscal year, '2026', '2026-09'
   function fromData(code) {
     const s = String(code || '').trim();
     let m;
@@ -702,7 +702,8 @@ const KodoLive = (() => {
     const v = card.querySelector('.kpi-value');
     v.classList.remove('kpi-value--na');
     v.textContent = text;
-    const m = card.querySelector('.kpi-meta');
+    let m = card.querySelector('.kpi-meta');
+    if (!m && unit) { m = document.createElement('span'); m.className = 'kpi-meta'; v.after(m); }   // hotel cards: the range too
     if (m) { m.style.display = unit ? '' : 'none'; if (unit != null) m.textContent = unit; }
   }
   // ids: {occ, rate, revpar} card ids; list: the hotels behind them.
@@ -740,7 +741,7 @@ const KodoLive = (() => {
         confLine(c, null); delta(c, null);
       } else if (a.occ.val == null) { noData(c, KodoBar.COLLECTING); part(c, 'kpi-sub').textContent = ''; delta(c, null); }
       else {
-        const range = d.model === 'v2' && a.low.val != null && a.high.val != null && a.low.n === a.occ.n
+        const range = a.low.val != null && a.high.val != null && a.low.n === a.occ.n
           ? `range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%` : '';
         show(c, `${a.occ.val.toFixed(1)}%`, range ? range : 'Kodo estimate');
         part(c, 'kpi-sub').textContent = cover('occ');
@@ -1014,7 +1015,11 @@ function renderCharts() {
       occChart.update();
     } else {
       const cfg = lightenCityChartLabels(chartConfig(labels, values, '%', destColors(labels), v => v.toFixed(1) + '%'));
-      cfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toFixed(1) + '% · Kodo estimate';
+      cfg.options.plugins.tooltip.callbacks.label = ctx => {
+        const a = KodoLive.agg((hotels || []).filter(h => h.city === ctx.label));
+        const range = a.low.val != null && a.high.val != null && a.low.n === a.occ.n ? ` (range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%)` : '';
+        return '  ' + ctx.raw.toFixed(1) + '%' + range + ' · Kodo estimate';
+      };
       cfg.options.onClick = destChartClick(() => occChart);
       cfg.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
       occChart = new Chart(document.getElementById('chart-occ'), cfg);
@@ -2088,7 +2093,7 @@ async function renderOccCalendar(hotelId) {
     const confBadge = cov === 'full' ? '●' : cov === 'partial' ? '◑' : '○';
     const tip = calTipAttrs(iso, e
       ? [['Modelled occupancy', occRange(e)], ['Price coverage', COVERAGE_LABEL[cov] || cov]]
-      : [['No estimate']]);
+      : [['Limited data', 'no estimate for this night']]);
     html += `<div class="bar-cal-day" style="${styAttr}"${tip}>
       <div class="bar-cal-dn" style="color:${dayNumCol};opacity:1">${d.getDate()}<span style="font-size:7px;margin-left:2px;opacity:0.6">${confBadge}</span></div>
       <div class="bar-cal-rate">${dispVal}</div>
@@ -4453,7 +4458,7 @@ function rbRenderKPIs() {
     ok && k.rank != null ? 'By average published rate · 1 = highest' : '');
   rbCard('rbk-occ', ok && k.occ_subject != null ? `${k.occ_subject.toFixed(1)}%` : null,
     ok && k.occ_subject != null
-      ? `Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo estimate · modelled, not measured · Price coverage: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
+      ? `${k.occ_subject_low != null && k.occ_subject_high != null ? `Range ${k.occ_subject_low}–${k.occ_subject_high}% · ` : ''}Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo estimate · modelled, not measured · Price coverage: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
       : '');
   rbCard('rbk-cover', ok ? `${k.nights_with_rate} of ${d.window.nights}` : null,
     ok ? 'Nights with a live published rate for your hotel' : '');

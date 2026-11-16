@@ -300,19 +300,6 @@ def get_event_adjustment(city, date, hotel_type='city_business'):
     return event_points(city, hotel_type, date)[0] / 100
 
 
-def get_rate_adjustment(scraped_bar, baseline_adr):
-    if not scraped_bar or not baseline_adr or baseline_adr == 0:
-        return 0.0
-    ri = scraped_bar / baseline_adr
-    if ri > 1.25:   return  0.12
-    if ri > 1.15:   return  0.08
-    if ri > 1.05:   return  0.04
-    if ri > 0.95:   return  0.0
-    if ri > 0.85:   return -0.04
-    if ri > 0.75:   return -0.08
-    return -0.12
-
-
 def get_seasonality_adjustment(city, month):
     city_data = CITY_SEASONALITY.get(city, SEASONALITY_INDEX)
     index = city_data.get(month, 90) if isinstance(city_data, dict) else SEASONALITY_INDEX.get(month, 90)
@@ -340,35 +327,208 @@ def confidence_for(scraped_bar, recent_price_days):
     return 'high' if recent_price_days >= HIGH_CONFIDENCE_DAYS else 'medium'
 
 
-def estimate_occupancy(hotel, date, scraped_bar=None, baseline_adr=None, recent_price_days=0):
+# ─── MODEL v1: anchored on official city occupancy ───────────────────────────
+# Each hotel starts from the official occupancy of classified accommodation
+# in its city for the latest full year (tourism.json); a city without an
+# official figure starts from the national one, with a wider range. On top:
+# the day of the week, the month, events and holidays (as before), centred
+# so that over a whole year they add up to zero and a city's hotels average
+# the official figure; and the hotel's price position: its BAR since 3 Nov
+# 2026 against the usual (median) BAR of its city and category, capped.
+# Every hotel of a city shares the same starting point, so the range is
+# wide. Always a Kodo estimate with its range, never an observed figure.
+# No official figure at all: no estimate ("limited data").
+#
+# The official series by city, for the platform's cities (only where the
+# official area is the same place)
+OFFICIAL_OCC_CITY = {
+    'Marrakech': 'Marrakech', 'Agadir / Taghazout': 'Agadir', 'Casablanca': 'Casablanca', 'Tanger': 'Tanger',
+    'Fes': 'Fès', 'Essaouira': 'Essaouira', 'Rabat / Salé / Témara': 'Rabat', 'Ouarzazate': 'Ouarzazate',
+    'Errachidia': 'Errachidia',
+}
+V1 = {
+    # Price position: pts = price_pts_per_log x ln(hotel BAR / usual BAR), centred
+    # on the city (rooms-weighted) and capped. 10% above: +1.4 pts; 50%: +6.
+    # Judgement, not fitted: a hotel priced above its peers is taken to sell well.
+    'price_pts_per_log':     15.0,
+    'price_max_pts':         10.0,
+    'min_peer_hotels':          3,    # hotels of the city and category with a BAR (the hotel included)
+    # Range: half-width in pts, added up
+    'range_base':               8,    # the whole city shares one official starting point
+    'range_national':           5,    # no official figure for the city: the national one
+    'range_no_price_position':  3,    # under 7 priced nights (no BAR), or fewer than 3 peers
+    'range_short_history':      2,    # under 28 days of price collection for the hotel
+    'long_history_days':       28,
+    'range_no_price_tonight':   2,
+    'clamp_low':                5,
+    'clamp_high':              98,
+}
+
+_V1_CACHE = {}
+
+
+def official_anchor(city):
+    """(occupancy %, year, 'city' | 'national') from the latest full official
+    year, or None when there is no usable figure."""
+    import tourism_data as TD
+    key = ('anchor', city, _mtime(TD.DATA_PATH))
+    if key not in _V1_CACHE:
+        found = None
+        for scope, name in (('city', OFFICIAL_OCC_CITY.get(city)), ('national', 'Morocco')):
+            if not name:
+                continue
+            try:
+                pts = [p for p in TD.series(f'occupancy_{name}')['points']
+                       if p['period'].isdigit() and p.get('status') == 'final' and p.get('value')]
+            except StopIteration:
+                continue
+            if pts:
+                last = max(pts, key=lambda p: p['period'])
+                found = (float(last['value']), int(last['period']), scope)
+                break
+        _V1_CACHE[key] = found
+    return _V1_CACHE[key]
+
+
+def _mtime(path):
+    try:
+        return os.path.getmtime(path)
+    except OSError:
+        return None
+
+
+def _calendar_pts(city, hotel_type, night):
+    """Day of week + month + events, in pts (before centring)."""
+    dow = DOW_ADJUSTMENTS.get(hotel_type, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
+    season = get_seasonality_adjustment(city, night.month) * 100
+    ev, ev_range, names = event_points(city, hotel_type, night)
+    return dow, season, ev, ev_range, names
+
+
+def calendar_centre(city, hotel_type, year):
+    """The average of day of week + month + events over every night of the
+    year: taken off so that they move a hotel around its anchor, not away
+    from it."""
+    key = ('centre', city, hotel_type, year, _EVENT_NIGHTS.get('key'))
+    if key not in _V1_CACHE:
+        n, tot = date(year, 1, 1), 0.0
+        days = (date(year + 1, 1, 1) - n).days
+        for i in range(days):
+            dow, season, ev, _, _ = _calendar_pts(city, hotel_type, n + timedelta(days=i))
+            tot += dow + season + ev
+        key = ('centre', city, hotel_type, year, _EVENT_NIGHTS.get('key'))
+        _V1_CACHE[key] = tot / days
+    return _V1_CACHE[key]
+
+
+def price_positions(data_dir=None, today=None):
+    """{hotel_id: {'bar', 'bar_nights', 'usual_bar', 'peers', 'pts', 'history_days'}}
+    for every open hotel: its BAR since 3 Nov 2026 (live_kpis.observed_bar)
+    against the median BAR of the open hotels of its city and category.
+    pts is None under 7 priced nights or fewer than 3 peers."""
+    import live_kpis as LK
+    import rates_store as RS
+    import rate_benchmark as RB
+    data_dir = str(data_dir or DATA_DIR)
+    today = today or datetime.now(MOROCCO_TZ).date()
+    key = ('pos', data_dir, today, _mtime(RS.csv_path(data_dir)), _mtime(RS.db_path(data_dir)), _mtime(HOTELS_CSV))
+    if _V1_CACHE.get('pos_key') == key:
+        return _V1_CACHE['pos']
+    hotels = {}
+    try:
+        with open(os.path.join(data_dir, 'hotels.csv'), encoding='utf-8') as f:
+            hotels = {str(r['id']): r for r in csv.DictReader(f)
+                      if r.get('status', '').lower() in ('open', 'operating')}
+    except (OSError, KeyError):
+        pass
+    ids = sorted(hotels)
+    bars, _ = LK.observed_bar(data_dir, ids, today) if ids else ({}, 0)
+    days = {}
+    for r in RS.read(data_dir, hotel_ids=ids, scrape_from=LK.DATA_START.isoformat(), scrape_to=today.isoformat(),
+                     priced_only=True, sources=RB.SOURCE_ORDER, data_quality=RB.MATCHED) if ids else []:
+        days.setdefault(str(r['hotel_id']), set()).add(r.get('scrape_date'))
+    groups = {}
+    for h in ids:
+        if (bars.get(h) or (None,))[0]:
+            groups.setdefault((hotels[h].get('city', ''), hotels[h].get('category', '')), []).append(bars[h][0])
+    out, by_city = {}, {}
+    for h in ids:
+        bar, nights = bars.get(h) or (None, 0)
+        peers = groups.get((hotels[h].get('city', ''), hotels[h].get('category', '')), [])
+        usual = _median(peers) if bar and len(peers) >= V1['min_peer_hotels'] else None
+        raw = V1['price_pts_per_log'] * math.log(bar / usual) if usual else None
+        out[h] = {'bar': bar, 'bar_nights': nights, 'usual_bar': round(usual) if usual else None,
+                  'peers': len(peers), 'raw_pts': raw, 'pts': None, 'history_days': len(days.get(h, ()))}
+        if raw is not None:
+            try:
+                k = float(hotels[h].get('keys') or 0) or 1.0
+            except ValueError:
+                k = 1.0
+            by_city.setdefault(hotels[h].get('city', ''), []).append((raw, k))
+    # centred on each city (rooms-weighted), so the city keeps its official average
+    centre = {c: sum(r * k for r, k in v) / sum(k for _, k in v) for c, v in by_city.items()}
+    for h, p in out.items():
+        if p['raw_pts'] is not None:
+            p['pts'] = round(_clamp(p['raw_pts'] - centre[hotels[h].get('city', '')],
+                                    -V1['price_max_pts'], V1['price_max_pts']), 1)
+    _V1_CACHE.update(pos_key=key, pos=out)
+    return out
+
+
+def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, position=None, today=None):
+    """v1, one hotel, one night: (occupancy as a fraction, or None for
+    "limited data"; breakdown with low and high in %). position: the hotel's
+    entry of price_positions() (default: looked up)."""
+    if isinstance(date, datetime):
+        date = date.date()
     segment    = hotel.get('category', 'Upscale')
     hotel_type = classify_hotel_type(hotel)
-
-    base     = BASE_OCCUPANCY.get(hotel_type, BASE_OCCUPANCY['city_business']).get(segment, 0.60)
-    rate_adj = get_rate_adjustment(scraped_bar, baseline_adr)
-    dow_adj  = DOW_ADJUSTMENTS.get(hotel_type, DOW_ADJUSTMENTS['city_business']).get(date.weekday(), 0)
-    season_adj = get_seasonality_adjustment(hotel.get('city', ''), date.month)
-    event_adj  = get_event_adjustment(hotel.get('city', ''), date, hotel_type)
-
-    raw       = base + rate_adj + dow_adj + season_adj + event_adj
-    estimated = max(0.05, min(0.98, raw))
+    city       = hotel.get('city', '')
     confidence = confidence_for(scraped_bar, recent_price_days)
-
+    anchor     = official_anchor(city)
+    if anchor is None:
+        return None, {'limited': True, 'confidence': confidence, 'price_days_7d': recent_price_days,
+                      'low': None, 'high': None, 'final': None}
+    if position is None:
+        position = price_positions(today=today).get(str(hotel.get('id', '')).split('.')[0]) or {}
+    dow, season, ev, ev_range, names = _calendar_pts(city, hotel_type, date)
+    centre = calendar_centre(city, hotel_type, date.year)
+    price_pts = position.get('pts')
+    base = anchor[0] - centre
+    c = V1
+    mid = _clamp(base + dow + season + ev + (price_pts or 0), c['clamp_low'], c['clamp_high'])
+    half = c['range_base'] + ev_range
+    if anchor[2] == 'national':
+        half += c['range_national']
+    if price_pts is None:
+        half += c['range_no_price_position']
+    if (position.get('history_days') or 0) < c['long_history_days']:
+        half += c['range_short_history']
+    if not scraped_bar:
+        half += c['range_no_price_tonight']
+    low, high = (int(round(_clamp(x, c['clamp_low'], c['clamp_high']))) for x in (mid - half, mid + half))
     breakdown = {
-        'base':                    round(base * 100, 1),
-        'rate_adjustment':         round(rate_adj * 100, 1),
-        'dow_adjustment':          round(dow_adj * 100, 1),
-        'seasonality_adjustment':  round(season_adj * 100, 1),
+        'anchor':                  anchor[0],
+        'anchor_year':             anchor[1],
+        'anchor_scope':            anchor[2],
+        'base':                    round(base, 1),
+        'rate_adjustment':         price_pts or 0.0,
+        'dow_adjustment':          round(dow, 1),
+        'seasonality_adjustment':  round(season, 1),
         'price_days_7d':           recent_price_days,
-        'event_adjustment':        round(event_adj * 100, 1),
-        'final':                   round(estimated * 100, 1),
+        'event_adjustment':        round(ev, 1),
+        'event_names':             names,
+        'final':                   round(mid, 1),
+        'low':                     low,
+        'high':                    high,
         'confidence':              confidence,
+        'segment':                 segment,
     }
-    return estimated, breakdown
+    return mid / 100, breakdown
 
 
 # ─── MODEL v2 (phase 1) ──────────────────────────────────────────────────────
-# v1 (estimate_occupancy above) is kept as it is; both run every night and
+# v1 (estimate_occupancy above) runs next to it; both run every night and
 # OCC_MODEL (v1 | v2, default v1) picks the one the platform shows.
 #
 # v2 reads only data the platform already collects (no extra DataForSEO
@@ -860,14 +1020,8 @@ class OccupancyModel:
             if hotel.get('status', '').lower() not in ['open', 'operating']:
                 continue
 
-            perf         = self.performance.get(hotel_id, {})
-            baseline_adr = None
-            try:
-                baseline_adr = float(perf.get('adr_mad', 0)) or None
-            except Exception:
-                pass
-
             price_days = self.recent_price_days(hotel_id, today.date())
+            position = price_positions(today=today.date()).get(hotel_id) or {}
             for day_offset in range(1, days_forward + 1):
                 stay_dt  = today + timedelta(days=day_offset)
                 stay_str = stay_dt.strftime('%Y-%m-%d')
@@ -876,12 +1030,12 @@ class OccupancyModel:
                 occupancy, breakdown = estimate_occupancy(
                     hotel, stay_dt,
                     scraped_bar=scraped_bar,
-                    baseline_adr=baseline_adr,
                     recent_price_days=price_days,
+                    position=position,
                 )
-
-                adr_to_use      = scraped_bar if scraped_bar else baseline_adr
-                estimated_revpar = adr_to_use * occupancy if adr_to_use else 0
+                if occupancy is None:           # no official figure: "limited data", no row
+                    continue
+                estimated_revpar = scraped_bar * occupancy if scraped_bar else 0
 
                 results.append({
                     'hotel_id':            hotel_id,
@@ -892,8 +1046,7 @@ class OccupancyModel:
                     'date':                stay_str,
                     'estimated_occupancy': round(occupancy * 100, 1),
                     'scraped_bar':         round(scraped_bar, 0) if scraped_bar else '',
-                    'baseline_adr':        round(baseline_adr, 0) if baseline_adr else '',
-                    'adr_used':            round(adr_to_use, 0) if adr_to_use else '',
+                    'adr_used':            round(scraped_bar, 0) if scraped_bar else '',
                     'estimated_revpar':    round(estimated_revpar, 0) if estimated_revpar else '',
                     'confidence':          breakdown['confidence'],
                     'base_occ':            breakdown['base'],
@@ -904,12 +1057,15 @@ class OccupancyModel:
                     'event_adj':           breakdown['event_adjustment'],
                     'model_run_date':      today.strftime('%Y-%m-%d'),
                     'model':               'v1',
-                    'low':                 '',
+                    'low':                 breakdown['low'],
                     'mid':                 round(occupancy * 100, 1),
-                    'high':                '',
+                    'high':                breakdown['high'],
                     'price_coverage':      price_coverage(breakdown['confidence']),
-                    'signals_used':        'base;day_of_week;season' + (';price_vs_adr' if scraped_bar and baseline_adr else '')
-                                           + (';event' if breakdown['event_adjustment'] else ''),
+                    'signals_used':        ';'.join(filter(None, [
+                        f"official_{breakdown['anchor_scope']}({breakdown['anchor']:.0f}% {breakdown['anchor_year']})",
+                        'day_of_week', 'season',
+                        position.get('pts') is not None and f"price_position({position['pts']:+.1f})",
+                        breakdown['event_names'] and 'calendar:' + ','.join(dict.fromkeys(breakdown['event_names']))])),
                 })
 
         # v2 for the same hotels and nights
@@ -1004,6 +1160,11 @@ def run_occupancy_model():
     try:
         model = recent_model()          # the next 30 nights as of today: the last 61 days of prices
         results = model.run()
+        try:                            # admin: v1 next to v2, v2 readiness (occupancy_compare.py)
+            import occupancy_compare
+            occupancy_compare.get(str(DATA_DIR), datetime.now(MOROCCO_TZ).date(), refresh=True)
+        except Exception as e:
+            print(f'Model comparison failed: {e}')
         try:
             maybe_calibrate()
         except Exception as e:
@@ -1079,15 +1240,11 @@ def _night_estimates(model, wanted):
         v2 = model.v2_estimates([night], as_of=night - timedelta(days=1), hotel_ids=hids)
         for hid in hids:
             hotel = model.hotels[hid]
-            try:
-                adr = float((model.performance.get(hid) or {}).get('adr_mad') or 0) or None
-            except (TypeError, ValueError):
-                adr = None
             bar = model.get_scraped_data_for_date(hid, night.isoformat())
             p1, _ = estimate_occupancy(hotel, datetime.combine(night, datetime.min.time()), scraped_bar=bar,
-                                       baseline_adr=adr, recent_price_days=model.recent_price_days(hid, night))
+                                       recent_price_days=model.recent_price_days(hid, night))
             e2 = v2.get((hid, night.isoformat()))
-            out[(hid, night)] = (round(p1 * 100, 1), e2['mid'] if e2 else None,
+            out[(hid, night)] = (round(p1 * 100, 1) if p1 is not None else None, e2['mid'] if e2 else None,
                                  e2['low'] if e2 else None, e2['high'] if e2 else None)
     return out
 

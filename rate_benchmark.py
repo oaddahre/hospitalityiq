@@ -262,16 +262,13 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
                 hotel = model.hotels.get(hid)
                 if not hotel:
                     continue
-                perf = model.performance.get(hid, {})
-                try:
-                    baseline = float(perf.get('adr_mad', 0)) or None
-                except (TypeError, ValueError):
-                    baseline = None
                 bar = model.get_scraped_data_for_date(hid, night)
                 occ, bd = estimate_occupancy(hotel, datetime.strptime(night, '%Y-%m-%d'),
-                                             scraped_bar=bar, baseline_adr=baseline,
-                                             recent_price_days=model.recent_price_days(hid, today))
-                out[hid][night] = {'occ': round(occ * 100, 1), 'confidence': bd['confidence']}
+                                             scraped_bar=bar, recent_price_days=model.recent_price_days(hid, today))
+                if occ is None:                 # no official figure: "limited data"
+                    continue
+                out[hid][night] = {'occ': round(occ * 100, 1), 'low': bd['low'], 'high': bd['high'],
+                                   'confidence': bd['confidence']}
                 runs.add(today.isoformat())
         except Exception:
             pass
@@ -358,6 +355,9 @@ def rate_benchmark(data_dir, comp_set, today: date):
             conf_counts[t['subject_conf']] = conf_counts.get(t['subject_conf'], 0) + 1
     subj_occ = [t['subject_occ'] for t in table if t['subject_occ'] is not None]
     comp_occ = [t['comp_occ'] for t in table if t['comp_occ'] is not None]
+    subj_rng = [(t['subject_low'], t['subject_high']) for t in table if t['subject_occ'] is not None
+                and t['subject_low'] is not None and t['subject_high'] is not None]
+    full_rng = subj_rng and len(subj_rng) == len(subj_occ)
 
     def brief(h):
         r = hotels.get(h, {})
@@ -380,6 +380,8 @@ def rate_benchmark(data_dir, comp_set, today: date):
             'ranked_of':         len(ranked) if rank else None,
             'occ_subject':       round(avg(subj_occ), 1) if subj_occ else None,
             'occ_comp':          round(avg(comp_occ), 1) if comp_occ else None,
+            'occ_subject_low':   round(avg([x[0] for x in subj_rng])) if full_rng else None,
+            'occ_subject_high':  round(avg([x[1] for x in subj_rng])) if full_rng else None,
             'occ_confidence':    _confidence_level(conf_counts),
             'occ_price_coverage': {'high': 'full', 'medium': 'partial', 'low': 'none', 'mixed': 'mixed'}.get(_confidence_level(conf_counts)),
             'occ_model':         active_model(),

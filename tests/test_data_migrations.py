@@ -63,7 +63,8 @@ class DataMigrations(unittest.TestCase):
                                         '0007_room_corrections', '0008_merge_duplicates', '0009_be_live',
                                         '0010_be_live_risma_names', '0011_new_hotels', '0012_new_hotels_google_ids',
                                         '0013_pipeline_projects', '0014_owner_decisions', '0015_owner_profiles',
-                                        '0016_pipeline_decisions', '0017_remove_placeholder_news', '0018_brand_owner_descriptions'])
+                                        '0016_pipeline_decisions', '0017_remove_placeholder_news', '0018_brand_owner_descriptions',
+                                        '0019_performance_reference_only'])
         self.assertIsNone(r['failed'])
         for hid in ('58', '320', '266', '467'):
             self.assertEqual(self.hotel(hid)['owner'], 'OCP Group')
