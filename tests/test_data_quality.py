@@ -102,7 +102,7 @@ class Checks(unittest.TestCase):
                 self.assertTrue(r['likely_causes'])
                 self.assertIn('do not recalibrate', r['proposal'])
         import occupancy_model as OM
-        self.assertEqual(OM.BASE_OCCUPANCY['city_business']['Upscale'], 0.60)   # untouched
+        self.assertFalse(hasattr(OM, 'BASE_OCCUPANCY'))           # both models start from the official city figure
 
     def test_repeatable(self):
         again = DQ.run(self.dir, self.today, write=False)

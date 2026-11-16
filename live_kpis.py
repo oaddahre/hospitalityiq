@@ -47,7 +47,7 @@ from datetime import date, datetime, timedelta
 
 import rates_store as RS
 import rate_benchmark as RB
-from occupancy_model import active_model, row_model
+from occupancy_model import active_model, model_for, row_model
 
 HISTORY_DAYS = 400
 DATA_START = date(2026, 11, 3)     # Kodo collects published rates every night from this day
@@ -67,13 +67,13 @@ def _mtime(path):
 def _stored_occupancy(data_dir, ids, nights):
     """{hid: {night: (occ, low, high)}} and the model run date, from the
     stored run of the displayed model."""
-    want, nights, model = set(ids), set(nights), active_model()
+    want, nights = set(ids), set(nights)
     out, runs = {}, set()
     try:
         with open(os.path.join(data_dir, 'estimated_occupancy.csv'), encoding='utf-8') as f:
             for r in csv.DictReader(f):
                 hid = str(r.get('hotel_id', ''))
-                if hid in want and r.get('date') in nights and row_model(r) == model:
+                if hid in want and r.get('date') in nights and row_model(r) == model_for(hid):
                     try:
                         occ = float(r.get('mid') or r['estimated_occupancy'])
                     except (KeyError, ValueError):
@@ -233,7 +233,8 @@ def get(data_dir, today: date):
     key = (data_dir, today.isoformat(), RS.read_from(data_dir), _mtime(RS.csv_path(data_dir)), _mtime(RS.db_path(data_dir)),
            _mtime(os.path.join(data_dir, 'estimated_occupancy.csv')), _mtime(os.path.join(data_dir, 'scraper_log.json')),
            _mtime(history_path(data_dir)), active_model(), _mtime(os.path.join(data_dir, 'data_health.json')),
-           os.environ.get('CONFIDENCE_UI', ''))
+           os.environ.get('CONFIDENCE_UI', ''), _mtime(os.path.join(data_dir, 'model_switch.json')),
+           os.environ.get('OCC_V2_OFF', ''))
     with _lock:
         if _cache.get('key') == key:
             return _cache['data']

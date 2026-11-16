@@ -53,9 +53,10 @@ except Exception:
     recent_model = None
     def estimate_occupancy(*a, **kw): return 0.60, {}
 try:
-    from occupancy_model import active_model, row_model, price_coverage, PRICE_COVERAGE_NOTE
+    from occupancy_model import active_model, model_for, row_model, price_coverage, PRICE_COVERAGE_NOTE
 except Exception:
     def active_model(): return 'v1'
+    def model_for(hid): return 'v1'
     def row_model(r): return (r.get('model') or 'v1').lower()
     def price_coverage(c): return {'high': 'full', 'medium': 'partial'}.get(c or 'low', 'none')
     PRICE_COVERAGE_NOTE = 'Price coverage describes how many recent published prices we have, not how accurate the estimate is.'
@@ -5479,8 +5480,10 @@ def _read_occupancy_csv(model=None):
         pass
     # Only hotels still listed: a hotel hidden or removed since the last
     # occupancy model run drops out at once, not the next night
-    want = model or active_model()
-    if want != 'all':
+    want = model or 'shown'                 # shown: each hotel's own model (model_switch.py)
+    if want == 'shown':
+        rows = [r for r in rows if row_model(r) == model_for(r.get('hotel_id', ''))]
+    elif want != 'all':
         rows = [r for r in rows if row_model(r) == want]
     visible = _visible_hotel_ids()
     return [r for r in rows if str(r.get('hotel_id', '')) in visible] if visible else rows
@@ -5595,8 +5598,9 @@ def api_occupancy_hotel(hotel_id):
                     h            = h_row.iloc[0].to_dict()
                     # v1 needs only this hotel's prices; v2 compares it with its city's hotels
                     same_city = merged[merged['city'] == h.get('city')]['id'].astype(str).tolist()
-                    model        = recent_model(same_city if active_model() == 'v2' else [str(hotel_id)])
-                    if active_model() == 'v2':
+                    on_v2        = model_for(hotel_id) == 'v2'
+                    model        = recent_model(same_city if on_v2 else [str(hotel_id)])
+                    if on_v2:
                         live = model.v2_estimates([datetime.strptime(d, '%Y-%m-%d').date() for d in missing],
                                                   hotel_ids=[str(hotel_id)])
                         for stay_str in missing:
@@ -5761,6 +5765,25 @@ def api_admin_occupancy_side_by_side():
     except Exception as e:
         app.logger.error(f'Occupancy side by side failed: {e}', exc_info=True)
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/admin/occupancy/switch', methods=['GET', 'POST'])
+@admin_required
+def api_admin_occupancy_switch():
+    """The automatic v1 -> v2 switch (model_switch.py): its state and
+    snapshots; POST {"killed": true|false} is the kill switch."""
+    import model_switch as MS
+    if request.method == 'POST':
+        body = request.get_json(silent=True) or {}
+        if not isinstance(body.get('killed'), bool):
+            return jsonify({'error': 'killed must be true or false'}), 400
+        MS.set_killed(DATA_DIR, body['killed'], by=getattr(current_user, 'email', 'admin'))
+        LK._cache.clear()
+    st = MS.load(DATA_DIR)
+    return jsonify({'cities': st['cities'], 'history': st['history'][-50:], 'killed': bool(st.get('killed')),
+                    'env_killed': MS.env_killed(), 'forced_v2': MS.forced_v2(), 'shown': MS.summary_model(DATA_DIR),
+                    'hotels_on_v2': len(MS.hotels_on_v2(DATA_DIR)), 'last_check': st.get('last_check'),
+                    'stand_in_removed': st.get('stand_in_removed')})
 
 
 @app.route('/api/admin/occupancy/calibration')

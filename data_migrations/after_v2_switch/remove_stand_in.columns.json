@@ -1,0 +1,6 @@
+{
+  "format": "kodo-columns-1",
+  "file": "performance.csv",
+  "keep": ["hotel_id"],
+  "why": "Run by model_switch.py, not at deploy: once every city with 3 or more open hotels shows v2, the old annual reference price (adr_mad, v2's stand-in under 14 priced nights) is no longer needed and is removed. The runner backs up performance.csv first (backups/migrations/)."
+}

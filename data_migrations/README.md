@@ -42,5 +42,8 @@ Rules:
   `pipeline_add` refuse them; research scripts should skip them with
   `coordinates_apply.blocked(name, city)`; tests/test_do_not_add.py checks
   the repo's files.
+- `after_v2_switch/` is not run at deploy: model_switch.py runs it (same backup,
+  restore and change log) once every city with 3 or more hotels shows
+  occupancy model v2; it removes the old reference price (adr_mad).
 - `DATA_MIGRATIONS=off` in Railway turns them off.
 - Test: `python3 -m unittest tests.test_data_migrations -v`.

@@ -720,7 +720,7 @@ const KodoLive = (() => {
     const occLine = `Next 30 nights · ${period}`;
     const cover = fig => one ? `estimated on ${one[fig + '_nights'] ?? 0} of ${n} nights`
       : `based on ${a[fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
-    const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: 'Kodo estimate, not measured' });
+    const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'mixed' ? 'v2 where enough prices are collected, v1 elsewhere' : d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: 'Kodo estimate, not measured' });
     if (els.rate) KodoBar.card(els.rate, one ? { single: true, val: one.bar, nights: one.bar_nights || 0 } : a.bar, d);
     // CONFIDENCE_UI (flags.py, off until approved): a plain label on the
     // modelled cards; greyed under medium, hidden when insufficient

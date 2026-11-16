@@ -127,27 +127,6 @@ def classify_hotel_type(hotel):
         return 'cultural_leisure'
     return 'city_business'
 
-# ─── BASE OCCUPANCY by segment × hotel_type ───────────────────────────────────
-
-BASE_OCCUPANCY = {
-    'city_business': {
-        'Ultra Luxury': 0.68, 'Luxury': 0.65, 'Upper Upscale': 0.63,
-        'Upscale': 0.60, 'Midscale': 0.58, 'Economy': 0.55,
-    },
-    'beach_resort': {
-        'Ultra Luxury': 0.72, 'Luxury': 0.70, 'Upper Upscale': 0.67,
-        'Upscale': 0.65, 'Midscale': 0.62, 'Economy': 0.58,
-    },
-    'cultural_leisure': {
-        'Ultra Luxury': 0.75, 'Luxury': 0.72, 'Upper Upscale': 0.65,
-        'Upscale': 0.62, 'Midscale': 0.58, 'Economy': 0.55,
-    },
-    'riad_boutique': {
-        'Ultra Luxury': 0.70, 'Luxury': 0.68, 'Upper Upscale': 0.65,
-        'Upscale': 0.62, 'Midscale': 0.58, 'Economy': 0.55,
-    },
-}
-
 # ─── DAY OF WEEK ADJUSTMENTS ──────────────────────────────────────────────────
 
 DOW_ADJUSTMENTS = {
@@ -583,6 +562,7 @@ V2 = {
     'range_no_price_tonight':   3,
     'range_candidate':          3,
     'range_closed':             5,     # closed or unknown (5+ nights without a price in a row)
+    'range_national':           5,     # no official figure for the city: the national one (as v1)
     'clamp_low':                5,
     'clamp_high':              98,
 
@@ -625,9 +605,16 @@ def _clamp(x, lo, hi):
 
 
 def active_model():
-    """The model the platform shows: OCC_MODEL=v1 (default) or v2."""
-    m = os.environ.get('OCC_MODEL', 'v1').strip().lower()
-    return m if m in ('v1', 'v2') else 'v1'
+    """The model the platform shows, as a label: v1, v2 or mixed (some
+    hotels switched to v2 by model_switch, the others still on v1)."""
+    import model_switch
+    return model_switch.summary_model(str(DATA_DIR))
+
+
+def model_for(hotel_id):
+    """The model shown for one hotel: v1 or v2 (model_switch.py)."""
+    import model_switch
+    return model_switch.model_for(str(DATA_DIR), hotel_id)
 
 
 def row_model(row):
@@ -651,8 +638,12 @@ class V2Inputs:
     """Everything v2 needs, built once from the loaded rates and coverage,
     as it stood on as_of (only prices collected up to that day)."""
 
-    def __init__(self, hotels, performance, rate_rows, coverage_rows, as_of, quality=False):
+    def __init__(self, hotels, performance, rate_rows, coverage_rows, as_of, quality=False, no_stand_in=()):
+        """no_stand_in: hotels never given the old reference price as their
+        normal price (the hotels shown on v2: model_switch), so it cannot reach
+        a figure clients see."""
         c = V2
+        no_stand_in = {str(h) for h in no_stand_in}
         self.hotels, self.as_of, self.quality = hotels, as_of, quality
         start = (as_of - timedelta(days=c['normal_window_days'])).isoformat()
         self.price_quality = {}
@@ -712,7 +703,7 @@ class V2Inputs:
                 self.weight[hid] = _clamp(spread / c['spread_full_weight'], c['min_weight'], 1.0)
             else:
                 try:
-                    adr = float((performance.get(hid) or {}).get('adr_mad') or 0) or None
+                    adr = None if hid in no_stand_in else float((performance.get(hid) or {}).get('adr_mad') or 0) or None
                 except (TypeError, ValueError):
                     adr = None
                 if adr:
@@ -841,12 +832,18 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     parts in pts and the signals used."""
     c = V2
     hotel = inp.hotels[hid]
-    segment, htype = hotel.get('category', 'Upscale'), classify_hotel_type(hotel)
+    htype = classify_hotel_type(hotel)
+    # Same starting point as v1: the official occupancy of the city (latest
+    # full year; national where the city has none), less the year's average of
+    # the calendar adjustments, so a city's hotels average the official figure
+    anchor = official_anchor(hotel.get('city', ''))
+    if anchor is None:                   # no official figure: "limited data", no estimate
+        return None
     signals = []
-    base = BASE_OCCUPANCY.get(htype, BASE_OCCUPANCY['city_business']).get(segment, 0.60) * 100
+    base = anchor[0] - calendar_centre(hotel.get('city', ''), htype, night.year)
     dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
     season = get_seasonality_adjustment(hotel.get('city', ''), night.month) * 100
-    signals += ['base', 'day_of_week', 'season']
+    signals += [f'official_{anchor[2]}({anchor[0]:.0f}% {anchor[1]})', 'day_of_week', 'season']
 
     src = inp.source.get(hid, 'none')
     signals.append(f'normal_price:{src}' + (f'({inp.points[hid]} nights)' if src == 'history' else ''))
@@ -898,6 +895,8 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if gap == 'closed':
         half += c['range_closed']
     half += ev_range                     # estimated or moon-dependent event dates
+    if anchor[2] == 'national':
+        half += c['range_national']
     low, high = mid - half, mid + half
     if gap == 'confirmed':
         mid, low, high = max(mid, c['soldout_mid']), max(low, c['soldout_low']), c['clamp_high']
@@ -984,7 +983,9 @@ class OccupancyModel:
         QUALITY_RANGES rules (default: the flag)."""
         as_of = as_of or datetime.now(MOROCCO_TZ).date()
         quality = quality_ranges_on() if quality is None else quality
-        inp = V2Inputs(self.open_hotels(), self.performance, self.rate_rows, self.coverage, as_of, quality=quality)
+        import model_switch
+        inp = V2Inputs(self.open_hotels(), self.performance, self.rate_rows, self.coverage, as_of, quality=quality,
+                       no_stand_in=model_switch.hotels_on_v2(str(DATA_DIR), ignore_kill=True))
         gaps = v2_gaps(inp, nights)
         out = {}
         for hid in (hotel_ids or inp.hotels):
@@ -992,7 +993,9 @@ class OccupancyModel:
                 continue
             days = self.recent_price_days(hid, as_of)
             for n in nights:
-                out[(hid, n.isoformat())] = estimate_v2(inp, hid, n, gaps, days)
+                e = estimate_v2(inp, hid, n, gaps, days)
+                if e is not None:
+                    out[(hid, n.isoformat())] = e
         return out
 
     def get_scraped_data_for_date(self, hotel_id, stay_date):
@@ -1124,7 +1127,7 @@ class OccupancyModel:
         try:
             with open(OCCUPANCY_CSV, 'r', encoding='utf-8') as f:
                 for row in csv.DictReader(f):
-                    if row['hotel_id'] == str(hotel_id) and row['date'] == date_str and row_model(row) == active_model():
+                    if row['hotel_id'] == str(hotel_id) and row['date'] == date_str and row_model(row) == model_for(hotel_id):
                         return row
         except Exception:
             pass
@@ -1137,7 +1140,7 @@ class OccupancyModel:
         try:
             with open(OCCUPANCY_CSV, 'r', encoding='utf-8') as f:
                 for row in csv.DictReader(f):
-                    if row['city'] == city and row['date'] == date_str and row_model(row) == active_model():
+                    if row['city'] == city and row['date'] == date_str and row_model(row) == model_for(row['hotel_id']):
                         rows.append(row)
         except Exception:
             pass
@@ -1160,11 +1163,14 @@ def run_occupancy_model():
     try:
         model = recent_model()          # the next 30 nights as of today: the last 61 days of prices
         results = model.run()
-        try:                            # admin: v1 next to v2, v2 readiness (occupancy_compare.py)
-            import occupancy_compare
-            occupancy_compare.get(str(DATA_DIR), datetime.now(MOROCCO_TZ).date(), refresh=True)
+        try:                            # admin: v1 next to v2, v2 readiness (occupancy_compare.py),
+            import occupancy_compare    # then the automatic switch to v2 (model_switch.py)
+            import model_switch
+            today = datetime.now(MOROCCO_TZ).date()
+            cmp = occupancy_compare.get(str(DATA_DIR), today, refresh=True)
+            model_switch.evaluate(str(DATA_DIR), today, cmp)
         except Exception as e:
-            print(f'Model comparison failed: {e}')
+            print(f'Model comparison or switch failed: {e}')
         try:
             maybe_calibrate()
         except Exception as e:

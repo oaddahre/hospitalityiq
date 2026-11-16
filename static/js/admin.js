@@ -74,7 +74,7 @@ const SECTION_LOADERS = {
   news: loadArticles,
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); },
   rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); loadRatesStore(false); },
-  occupancy: () => { loadOccupancyStatus(); loadSideBySide(); },
+  occupancy: () => { loadOccupancyStatus(); loadSideBySide(); loadSwitch(); },
   events: loadEvents,
   health: () => loadDataHealth(false),
   system: loadSystemInfo,
@@ -1799,6 +1799,43 @@ async function loadSideBySide(refresh) {
     renderSideBySide(); renderReadiness();
   } catch { msg.textContent = 'Failed'; }
 }
+// The automatic switch to v2 (model_switch.py): status, kill switch, snapshots
+function renderSwitch(d) {
+  const cities = Object.keys(d.cities || {});
+  const off = d.killed || d.env_killed;
+  document.getElementById('occ-sw-status').textContent = off
+    ? `All hotels on v1 (kill switch${d.env_killed ? ': OCC_V2_OFF in the environment' : ''})`
+    : d.forced_v2 ? 'All hotels on v2 (OCC_MODEL=v2)'
+    : cities.length ? `v2 for ${d.hotels_on_v2} hotels in ${cities.length} cit${cities.length === 1 ? 'y' : 'ies'}: ${cities.join(', ')}` : 'All hotels on v1: no city switched yet';
+  document.getElementById('occ-sw-kill').style.display = d.killed ? 'none' : '';
+  document.getElementById('occ-sw-resume').style.display = d.killed ? '' : 'none';
+  const lc = d.last_check;
+  document.getElementById('occ-sw-note').textContent = [lc ? `Last check ${lc.at}: ${lc.rooms_share_ready}% of rooms in ready hotels (switching starts at 80%), ${lc.hotels_ready} hotels and ${lc.cities_ready} cities ready.` : 'Not checked yet: the check runs after the nightly model run.',
+    d.stand_in_removed ? `Stand-in reference price removed ${d.stand_in_removed}.` : 'Stand-in reference price: kept until every city with 3 or more hotels is on v2 (it never reaches a figure clients see).'].join(' ');
+  const f = x => (x && x.next30 != null ? `${Math.round(x.next30)}%${x.low != null ? ` (${Math.round(x.low)}–${Math.round(x.high)})` : ''} · 12 mo ${x.year != null ? Math.round(x.year) + '%' : '–'}` : '–');
+  const rows = [];
+  (d.history || []).slice().reverse().forEach(e => {
+    if (e.kind === 'switch') {
+      (e.cities || []).forEach(c => rows.push([e.at, `switched: ${c.city}`, `${c.hotels_switched} of ${c.hotels}`, c.official != null ? `${c.official}%` : '–', f(c.before), f(c.after)]));
+      Object.entries(e.hotels_joined || {}).forEach(([c, n]) => rows.push([e.at, `joined: ${c}`, `+${n}`, '', '', '']));
+    } else rows.push([e.at, e.kind === 'kill' ? 'kill switch on (all v1)' : e.kind === 'resume' ? 'resumed' : 'stand-in removed', e.by || '', '', '', '']);
+  });
+  sbsTable('occ-sw-table', ['When', 'Change', 'Hotels on v2', 'Official', 'Before (v1)', 'After (v2)'], rows.length ? rows : [['—', 'No switch yet', '', '', '', '']]);
+}
+async function loadSwitch(body) {
+  const msg = document.getElementById('occ-sw-msg');
+  try {
+    const res = await fetch('/api/admin/occupancy/switch', body ? { method: 'POST', headers: authHeaders(true), body: JSON.stringify(body) } : { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) { msg.textContent = d.error || 'Failed'; return; }
+    msg.textContent = body ? (body.killed ? 'Every hotel shows v1 now.' : 'Switching resumed.') : '';
+    renderSwitch(d);
+  } catch { msg.textContent = 'Failed'; }
+}
+document.getElementById('occ-sw-kill').addEventListener('click', () => {
+  if (confirm('Return every hotel to v1 now? The switched cities stay recorded; Resume shows them on v2 again.')) loadSwitch({ killed: true });
+});
+document.getElementById('occ-sw-resume').addEventListener('click', () => loadSwitch({ killed: false }));
 document.getElementById('occ-sbs-view').addEventListener('change', renderSideBySide);
 document.getElementById('occ-sbs-city').addEventListener('change', renderSideBySide);
 document.getElementById('occ-sbs-refresh').addEventListener('click', () => loadSideBySide(true));

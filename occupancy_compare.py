@@ -34,6 +34,25 @@ READY = {
     'switch_hotel_share': 0.8,                      # of all open hotels (rooms-weighted)
 }
 MONTHS_AHEAD = 12
+
+
+def hotel_checks(own_price, history_days, recent_days):
+    """A hotel's readiness checks: its own normal price (not the stand-in),
+    days of price collection, days with prices in the last 7."""
+    return {'own_price': bool(own_price), 'history': history_days >= READY['history_days'],
+            'recent': recent_days >= READY['recent_days']}
+
+
+def city_checks(n_hotels, n_ready, heat_share):
+    """A city's readiness checks: ready hotels, their share of the city's
+    open hotels, share of the next 30 nights with 3+ priced hotels."""
+    return {'min_hotels': n_ready >= READY['city_min_hotels'],
+            'share': bool(n_hotels) and n_ready / n_hotels >= READY['city_share'],
+            'heat_nights': heat_share >= READY['city_heat_nights']}
+
+
+def global_ready(rooms_share_pct):
+    return rooms_share_pct >= READY['switch_hotel_share'] * 100
 CACHE = 'occupancy_compare.json'
 
 
@@ -135,7 +154,7 @@ def readiness(today, model=None):
         hist = (pos.get(hid) or {}).get('history_days') or 0
         own = inp.source.get(hid) == 'history'
         recent = model.recent_price_days(hid, today)
-        ok = {'own_price': own, 'history': hist >= READY['history_days'], 'recent': recent >= READY['recent_days']}
+        ok = hotel_checks(own, hist, recent)
         when = None
         if all(ok.values()):
             when = today
@@ -154,8 +173,7 @@ def readiness(today, model=None):
         ready = [r for r in rs if r['ready']]
         anyh = rs[0]['id']
         heat = sum(1 for n in nights30 if inp.city_priced(anyh, n) >= OM.V2['heat_min_hotels']) / len(nights30)
-        checks = {'min_hotels': len(ready) >= READY['city_min_hotels'], 'share': len(ready) / len(rs) >= READY['city_share'],
-                  'heat_nights': heat >= READY['city_heat_nights']}
+        checks = city_checks(len(rs), len(ready), heat)
         dates = sorted(r['ready_on'] for r in rs if r['ready_on'])
         need = max(READY['city_min_hotels'], math.ceil(READY['city_share'] * len(rs)))
         city_rows.append({'city': c, 'hotels': len(rs), 'ready_hotels': len(ready), 'heat_nights_pct': round(heat * 100),

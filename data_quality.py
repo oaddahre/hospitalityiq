@@ -367,14 +367,17 @@ def group_level(members):
 
 def structural_year(hotels, year):
     """{hotel_id: average modelled occupancy over every night of `year`}
-    with no price signal: the model's own prior (base, weekday, season,
-    calendar), as v2 computes it before market heat and sold-out nights."""
+    with no price signal: the models' own prior (the official city anchor,
+    weekday, season, calendar), as v1 and v2 compute it before prices."""
     import occupancy_model as OM
     out, cache = {}, {}
     nights = [date(year, 1, 1) + timedelta(days=i) for i in range((date(year + 1, 1, 1) - date(year, 1, 1)).days)]
     for hid, h in hotels.items():
         t = OM.classify_hotel_type(h)
-        base = OM.BASE_OCCUPANCY.get(t, OM.BASE_OCCUPANCY['city_business']).get(h.get('category', 'Upscale'), 0.60) * 100
+        anchor = OM.official_anchor(h.get('city', ''))
+        if anchor is None:
+            continue
+        base = anchor[0] - OM.calendar_centre(h.get('city', ''), t, year)
         tot = 0.0
         for n in nights:
             k = (h.get('city', ''), t, n)
@@ -575,7 +578,7 @@ def run(data_dir, today=None, write=True):
 
     stored = {}
     for r in _read_csv(os.path.join(data_dir, 'estimated_occupancy.csv')):
-        if OM.row_model(r) == OM.active_model() and r.get('hotel_id') in hotels:
+        if r.get('hotel_id') in hotels and OM.row_model(r) == OM.model_for(r['hotel_id']):
             v = _f(r.get('mid') or r.get('estimated_occupancy'))
             if v is not None:
                 stored.setdefault(r['hotel_id'], []).append(v)
@@ -782,7 +785,7 @@ MODELS = [
      'confidence': 'low: anchored on official city figures, hotel level not yet checked against real figures'},
     {'name': 'Occupancy model v2', 'where': 'occupancy_model.estimate_v2',
      'data': 'each hotel\'s published prices (normal price per weekday over 60 days), city market heat, sold-out gaps, '
-             'events, the same prior as v1',
+             'events; the same official city anchor as v1',
      'assumes': 'market heat +4 pts per 10% above normal, own price x weight, sold-out 95%, ranges built from fixed '
                 'point widths; hand-set',
      'label': 'Kodo Estimates (v2 model), a range', 'confidence': 'low: 12 days of prices, no calibration'},

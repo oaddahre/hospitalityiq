@@ -18,7 +18,7 @@ import statistics
 from datetime import date, datetime, timedelta
 
 import rates_store as RS
-from occupancy_model import OccupancyModel, estimate_occupancy, active_model, row_model, price_coverage, recent_model
+from occupancy_model import OccupancyModel, estimate_occupancy, active_model, model_for, row_model, price_coverage, recent_model
 
 WINDOW_NIGHTS   = 30   # the next 30 nights, from tomorrow
 MAX_PRICE_AGE   = 7    # a price collected more than 7 days ago is not used
@@ -229,7 +229,7 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
         with open(_path(data_dir, 'estimated_occupancy.csv'), encoding='utf-8') as f:
             for r in csv.DictReader(f):
                 hid = str(r.get('hotel_id', ''))
-                if hid in want and r.get('date') in nights and row_model(r) == active_model():
+                if hid in want and r.get('date') in nights and row_model(r) == model_for(hid):
                     try:
                         out[hid][r['date']] = {'occ': float(r['estimated_occupancy']),
                                                'low': float(r['low']) if r.get('low') else None,
@@ -241,20 +241,21 @@ def modelled_occupancy(data_dir, hotel_ids, nights, today):
     except OSError:
         pass
     missing = [(h, n) for h in hotel_ids for n in nights if n not in out[h]]
-    if missing and active_model() == 'v2':
+    on_v2 = [(h, n) for h, n in missing if model_for(h) == 'v2']
+    missing = [(h, n) for h, n in missing if model_for(h) != 'v2']
+    if on_v2:
         try:
             hotels = load_hotels(data_dir)        # v2 compares each hotel with its city's hotels
             cities = {hotels[h].get('city') for h in hotel_ids if h in hotels}
-            est = recent_model([x for x, r in hotels.items() if r.get('city') in cities]).v2_estimates(sorted({datetime.strptime(n, '%Y-%m-%d').date() for _, n in missing}),
-                                                as_of=today, hotel_ids=sorted({h for h, _ in missing}))
-            for hid, night in missing:
+            est = recent_model([x for x, r in hotels.items() if r.get('city') in cities]).v2_estimates(sorted({datetime.strptime(n, '%Y-%m-%d').date() for _, n in on_v2}),
+                                                as_of=today, hotel_ids=sorted({h for h, _ in on_v2}))
+            for hid, night in on_v2:
                 e = est.get((hid, night))
                 if e:
                     out[hid][night] = {'occ': e['mid'], 'low': e['low'], 'high': e['high'], 'confidence': e['confidence']}
                     runs.add(today.isoformat())
         except Exception:
             pass
-        missing = []
     if missing:
         try:
             model = recent_model(list(hotel_ids))     # v1: each hotel's own prices

@@ -100,8 +100,8 @@ def available(migrations_dir=MIGRATIONS_DIR):
     (better than skipping it silently)."""
     out, seen = [], {}
     for name in sorted(os.listdir(migrations_dir)) if os.path.isdir(migrations_dir) else []:
-        if name.startswith('.') or name.lower() in ('readme.md',):
-            continue
+        if name.startswith('.') or name.lower() in ('readme.md',) or os.path.isdir(os.path.join(migrations_dir, name)):
+            continue                    # after_v2_switch/: run by model_switch.py when the switch is complete
         m = NAME_RE.match(name)
         if not m:
             raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json>')
@@ -324,8 +324,6 @@ def run_pending(data_dir, notify=None, log=print, migrations_dir=MIGRATIONS_DIR)
         return out
     try:
         state = _read_state(P['state'])
-        done = state.setdefault('applied', {})
-        failed = state.setdefault('failed', {})
         try:
             todo = available(migrations_dir)
         except MigrationError as e:
@@ -333,55 +331,82 @@ def run_pending(data_dir, notify=None, log=print, migrations_dir=MIGRATIONS_DIR)
             log(f'[DATA MIGRATIONS] {e}')
             return out
         for mid, kind, path in todo:
-            sha = _sha(path)
-            if mid in done:
-                if done[mid].get('sha256') != sha:
-                    log(f'[DATA MIGRATIONS] {mid} was changed after it ran: not run again (add a new migration instead)')
+            res = _run(P, state, mid, kind, path, notify, log)
+            if res is None:
                 continue
-            stamp = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
-            snap_dir = os.path.join(P['backups'], 'migrations', f'{mid}.{stamp}')
-            os.makedirs(snap_dir, exist_ok=True)
-            snaps = {}
-            for k in TOUCHES[kind]:
-                if os.path.exists(P[k]):
-                    dest = os.path.join(snap_dir, os.path.basename(P[k]))
-                    shutil.copy2(P[k], dest)
-                    snaps[P[k]] = dest
-            existed = {P[k] for k in TOUCHES[kind] if os.path.exists(P[k])}
-            actor = f'migration {mid}'
-            now = lambda: datetime.now().isoformat(timespec='seconds')
-            try:
-                changed, already, backups, counts = _apply(kind, path, P, actor)
-            except Exception as e:
-                for live, copy in snaps.items():
-                    shutil.copy2(copy, live)
-                for k in TOUCHES[kind]:          # a file the migration created: removed again
-                    if P[k] not in existed and os.path.exists(P[k]):
-                        os.remove(P[k])
-                reason = f'{e.__class__.__name__}: {e}' if not isinstance(e, MigrationError) else str(e)
-                CA._log(P['log'], {'at': now(), 'action': 'migration_failed', 'by': 'migration', 'migration': mid,
-                                   'kind': kind, 'error': reason, 'restored_from': snap_dir})
-                first = failed.get(mid, {}).get('sha256') != sha or failed.get(mid, {}).get('error') != reason
-                failed[mid] = {'at': now(), 'sha256': sha, 'error': reason}
-                _write_state(P['state'], state)
-                log(f'[DATA MIGRATIONS] {mid} failed, files restored: {reason}')
-                if notify and first:
-                    try:
-                        notify(mid, reason)
-                    except Exception as ne:
-                        log(f'[DATA MIGRATIONS] failure email not sent: {ne}')
-                out.update(failed=mid, error=reason)
+            if not res['ok']:
+                out.update(failed=mid, error=res['error'])
                 return out
-            summary = ', '.join(f'{k} {v}' for k, v in sorted(counts.items()))
-            CA._log(P['log'], {'at': now(), 'action': 'migration', 'by': 'migration', 'migration': mid, 'kind': kind,
-                               'changed': changed, 'already': already, 'summary': summary,
-                               'backups': [os.path.basename(b) for b in backups]})
-            done[mid] = {'at': now(), 'sha256': sha, 'changed': changed, 'summary': summary}
-            failed.pop(mid, None)
-            _write_state(P['state'], state)
             out['applied'].append(mid)
-            log(f'[DATA MIGRATIONS] {mid}: {summary}')
         return out
+    finally:
+        lock.close()
+
+
+def _run(P, state, mid, kind, path, notify=None, log=print):
+    """One migration: back up the files it touches, apply, log; put the
+    files back on failure. None when it already ran, else {'ok', 'error'}."""
+    done = state.setdefault('applied', {})
+    failed = state.setdefault('failed', {})
+    sha = _sha(path)
+    if mid in done:
+        if done[mid].get('sha256') != sha:
+            log(f'[DATA MIGRATIONS] {mid} was changed after it ran: not run again (add a new migration instead)')
+        return None
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
+    snap_dir = os.path.join(P['backups'], 'migrations', f'{mid}.{stamp}')
+    os.makedirs(snap_dir, exist_ok=True)
+    snaps = {}
+    for k in TOUCHES[kind]:
+        if os.path.exists(P[k]):
+            dest = os.path.join(snap_dir, os.path.basename(P[k]))
+            shutil.copy2(P[k], dest)
+            snaps[P[k]] = dest
+    existed = {P[k] for k in TOUCHES[kind] if os.path.exists(P[k])}
+    actor = f'migration {mid}'
+    now = lambda: datetime.now().isoformat(timespec='seconds')
+    try:
+        changed, already, backups, counts = _apply(kind, path, P, actor)
+    except Exception as e:
+        for live, copy in snaps.items():
+            shutil.copy2(copy, live)
+        for k in TOUCHES[kind]:          # a file the migration created: removed again
+            if P[k] not in existed and os.path.exists(P[k]):
+                os.remove(P[k])
+        reason = f'{e.__class__.__name__}: {e}' if not isinstance(e, MigrationError) else str(e)
+        CA._log(P['log'], {'at': now(), 'action': 'migration_failed', 'by': 'migration', 'migration': mid,
+                           'kind': kind, 'error': reason, 'restored_from': snap_dir})
+        first = failed.get(mid, {}).get('sha256') != sha or failed.get(mid, {}).get('error') != reason
+        failed[mid] = {'at': now(), 'sha256': sha, 'error': reason}
+        _write_state(P['state'], state)
+        log(f'[DATA MIGRATIONS] {mid} failed, files restored: {reason}')
+        if notify and first:
+            try:
+                notify(mid, reason)
+            except Exception as ne:
+                log(f'[DATA MIGRATIONS] failure email not sent: {ne}')
+        return {'ok': False, 'error': reason}
+    summary = ', '.join(f'{k} {v}' for k, v in sorted(counts.items()))
+    CA._log(P['log'], {'at': now(), 'action': 'migration', 'by': 'migration', 'migration': mid, 'kind': kind,
+                       'changed': changed, 'already': already, 'summary': summary,
+                       'backups': [os.path.basename(b) for b in backups], 'backup_dir': snap_dir})
+    done[mid] = {'at': now(), 'sha256': sha, 'changed': changed, 'summary': summary}
+    failed.pop(mid, None)
+    _write_state(P['state'], state)
+    log(f'[DATA MIGRATIONS] {mid}: {summary}')
+    return {'ok': True, 'error': None, 'backup_dir': snap_dir}
+
+
+def run_one(data_dir, mid, kind, path, notify=None, log=print):
+    """Run one migration outside the numbered list (data_migrations/after_v2_switch/),
+    with the same backup, restore and log. {'ok', 'error'}; already run: ok."""
+    P = paths(data_dir)
+    lock = acquire_lock(P['lock'])
+    if lock is None:
+        return {'ok': False, 'error': 'another process is running migrations'}
+    try:
+        state = _read_state(P['state'])
+        return _run(P, state, mid, kind, path, notify, log) or {'ok': True, 'error': None, 'already': True}
     finally:
         lock.close()
 
