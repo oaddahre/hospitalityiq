@@ -102,8 +102,10 @@ class Checks(unittest.TestCase):
         self.assertEqual(self.c['dataforseo']['count'], 2)
 
     def test_rates(self):
-        self.assertEqual(self.st('jump'), 'warning')
-        self.assertEqual([h['id'] for h in self.c['jump']['hotels']], ['1', '2'])   # 5x, and under a third
+        self.assertEqual(self.st('rate_errors'), 'problem')                 # rule (a): same stay date 5x, and under half
+        self.assertEqual([h['id'] for h in self.c['rate_errors']['hotels']], ['1', '2'])
+        self.assertTrue(any('1,000' in x and '5,000' in x for x in self.c['rate_errors']['items']))
+        self.assertEqual(self.st('peer_far'), 'ok')                         # rule (b): fewer than 3 peers here
         self.assertEqual(self.st('range'), 'problem')
         self.assertEqual([h['id'] for h in self.c['range']['hotels']], ['2'])
         self.assertEqual(self.st('duplicates'), 'problem')
@@ -157,7 +159,7 @@ class NoData(unittest.TestCase):
         try:
             r = HC.run(d, TODAY, write=False)
             c = {x['id']: x for x in r['checks']}
-            for cid in ('hotels_with_rate', 'run', 'dataforseo', 'jump', 'range', 'currency', 'duplicates', 'city_no_prices',
+            for cid in ('hotels_with_rate', 'run', 'dataforseo', 'rate_errors', 'peer_far', 'range', 'currency', 'duplicates', 'city_no_prices',
                         'occ_range', 'occ_city_move', 'occ_missing', 'pages'):
                 self.assertEqual(c[cid]['status'], 'no_data', cid)
             self.assertEqual(os.listdir(d), [])                             # nothing written, nothing invented

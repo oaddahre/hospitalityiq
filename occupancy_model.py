@@ -333,7 +333,9 @@ V1 = {
     'price_max_pts':         10.0,
     'min_peer_hotels':          3,    # hotels of the city and category with a BAR (the hotel included)
     # Range: half-width in pts, added up
-    'range_base':               8,    # the whole city shares one official starting point
+    'range_base':              13,    # the whole city shares one official starting point (8, +5 after
+                                      # the Nov 2026 backtest against hotel-reported figures)
+    'range_resort':            27,    # resorts: 80% of their measured monthly errors after the seasonal fix
     'range_national':           5,    # no official figure for the city: the national one
     'range_no_price_position':  3,    # under 7 priced nights (no BAR), or fewer than 3 peers
     'range_short_history':      2,    # under 28 days of price collection for the hotel
@@ -376,26 +378,84 @@ def _mtime(path):
         return None
 
 
-def _calendar_pts(city, hotel_type, night):
+# ─── Beach and seaside resorts ───────────────────────────────────────────────
+# Hotel-reported figures (Nov 2026: four beach resorts in two places, checked
+# leaving one resort out at a time) show resort occupancy swinging through
+# the year about RESORT_SEASON_X times as much as the city seasonal index
+# gives: summers near full, winters far below the annual level. Only these
+# hotels get the wider swing; city, business, spa and desert hotels keep the
+# city pattern (too few reported figures to fit a profile for them yet).
+# A resort: on the coast of a beach destination, sold as a holiday resort
+# (resort, club, beach, thalasso, golf); city-centre and business hotels,
+# riads and boutiques under 30 rooms, and unclear cases (SEASIDE_REVIEW) are
+# left out. Checked by hand, Nov 2026.
+SEASIDE_RESORTS = {
+    # Agadir / Taghazout
+    '21', '22', '23', '24', '27', '75', '171', '188', '189', '277', '278', '279', '280', '281', '412', '417', '423',
+    '432', '438', '444', '451', '457', '458', '468', '470', '471', '476',
+    # Tamuda Bay
+    '260', '352', '353', '354', '355', '356', '431', '433', '452',
+    # Saidia
+    '137', '143', '295', '296', '297',
+    # El Jadida / Mazagan
+    '121', '123',
+    # Essaouira (seafront and golf resorts, not the medina)
+    '315', '316', '317',
+    # Dakhla (lagoon resorts)
+    '111', '212', '311', '407',
+    # Al Hoceima
+    '197', '292', '477', '478',
+    # Nador (Marchica), Tanger (Al Houara), Bouznika
+    '266', '527', '403',
+}
+# Coastal hotels not counted as resorts until checked (they keep the city pattern)
+SEASIDE_REVIEW = {
+    '174': 'Anezi Tower Hotel Agadir: seafront tower, city and leisure mix',
+    '472': 'Mogador Al Madina Agadir: near the beach, city-style hotel',
+    '473': 'Odyssee Park Hotel Agadir: unclear',
+    '475': 'Royal Mirage Agadir: unclear',
+    '408': 'MIA Mazagan Bay Signature (El Jadida): unclear',
+    '427': 'Zephyr Mazagan El Jadida: unclear',
+    '466': "La Tour d'Eole Dakhla: unclear",
+    '313': 'Westpoint Dakhla: unclear',
+    '371': 'Idou Malabata Beach and Spa Tanger: city seafront',
+    '482': 'Avanti Beach Hôtel Casablanca: city seafront',
+    '225': 'Zelis Hotel Asilah: unclear',
+}
+RESORT_SEASON_X = 8.25            # fitted on the four resorts (leave one out: 7.0 to 9.0)
+
+
+def is_seaside_resort(hotel):
+    return str(hotel.get('id', '')).split('.')[0] in SEASIDE_RESORTS
+
+
+def season_pts(city, month, resort=False):
+    """The month's seasonal adjustment in pts (before centring); resorts
+    swing RESORT_SEASON_X times as much. v1 and v2 both use it."""
+    s = get_seasonality_adjustment(city, month) * 100
+    return s * RESORT_SEASON_X if resort else s
+
+
+def _calendar_pts(city, hotel_type, night, resort=False):
     """Day of week + month + events, in pts (before centring)."""
     dow = DOW_ADJUSTMENTS.get(hotel_type, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
-    season = get_seasonality_adjustment(city, night.month) * 100
+    season = season_pts(city, night.month, resort)
     ev, ev_range, names = event_points(city, hotel_type, night)
     return dow, season, ev, ev_range, names
 
 
-def calendar_centre(city, hotel_type, year):
+def calendar_centre(city, hotel_type, year, resort=False):
     """The average of day of week + month + events over every night of the
     year: taken off so that they move a hotel around its anchor, not away
     from it."""
-    key = ('centre', city, hotel_type, year, _EVENT_NIGHTS.get('key'))
+    key = ('centre', city, hotel_type, year, resort, RESORT_SEASON_X, _EVENT_NIGHTS.get('key'))
     if key not in _V1_CACHE:
         n, tot = date(year, 1, 1), 0.0
         days = (date(year + 1, 1, 1) - n).days
         for i in range(days):
-            dow, season, ev, _, _ = _calendar_pts(city, hotel_type, n + timedelta(days=i))
+            dow, season, ev, _, _ = _calendar_pts(city, hotel_type, n + timedelta(days=i), resort)
             tot += dow + season + ev
-        key = ('centre', city, hotel_type, year, _EVENT_NIGHTS.get('key'))
+        key = ('centre', city, hotel_type, year, resort, RESORT_SEASON_X, _EVENT_NIGHTS.get('key'))
         _V1_CACHE[key] = tot / days
     return _V1_CACHE[key]
 
@@ -470,21 +530,25 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
                       'low': None, 'high': None, 'final': None}
     if position is None:
         position = price_positions(today=today).get(str(hotel.get('id', '')).split('.')[0]) or {}
-    dow, season, ev, ev_range, names = _calendar_pts(city, hotel_type, date)
-    centre = calendar_centre(city, hotel_type, date.year)
-    price_pts = position.get('pts')
+    resort = is_seaside_resort(hotel)
+    dow, season, ev, ev_range, names = _calendar_pts(city, hotel_type, date, resort)
+    centre = calendar_centre(city, hotel_type, date.year, resort)
+    price_pts = position.get('pts') if price_position_on() else None
     base = anchor[0] - centre
     c = V1
     mid = _clamp(base + dow + season + ev + (price_pts or 0), c['clamp_low'], c['clamp_high'])
-    half = c['range_base'] + ev_range
-    if anchor[2] == 'national':
-        half += c['range_national']
-    if price_pts is None:
-        half += c['range_no_price_position']
-    if (position.get('history_days') or 0) < c['long_history_days']:
-        half += c['range_short_history']
-    if not scraped_bar:
-        half += c['range_no_price_tonight']
+    if resort:                          # measured error of resorts after the seasonal fix
+        half = c['range_resort'] + ev_range
+    else:
+        half = c['range_base'] + ev_range
+        if anchor[2] == 'national':
+            half += c['range_national']
+        if price_pts is None:
+            half += c['range_no_price_position']
+        if (position.get('history_days') or 0) < c['long_history_days']:
+            half += c['range_short_history']
+        if not scraped_bar:
+            half += c['range_no_price_tonight']
     low, high = (int(round(_clamp(x, c['clamp_low'], c['clamp_high']))) for x in (mid - half, mid + half))
     breakdown = {
         'anchor':                  anchor[0],
@@ -502,8 +566,17 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
         'high':                    high,
         'confidence':              confidence,
         'segment':                 segment,
+        'seaside_resort':          resort,
     }
     return mid / 100, breakdown
+
+
+def price_position_on():
+    """The price-position adjustment (PRICE_POSITION, flags.py): off by
+    default since the Nov 2026 backtest, where it did not point the right
+    way reliably. The code stays; the flag turns it back on."""
+    import flags
+    return flags.on('PRICE_POSITION')
 
 
 # ─── MODEL v2 (phase 1) ──────────────────────────────────────────────────────
@@ -563,6 +636,7 @@ V2 = {
     'range_candidate':          3,
     'range_closed':             5,     # closed or unknown (5+ nights without a price in a row)
     'range_national':           5,     # no official figure for the city: the national one (as v1)
+    'range_widen':              5,     # every non-resort range 5 pts wider each side (Nov 2026 backtest)
     'clamp_low':                5,
     'clamp_high':              98,
 
@@ -840,9 +914,10 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if anchor is None:                   # no official figure: "limited data", no estimate
         return None
     signals = []
-    base = anchor[0] - calendar_centre(hotel.get('city', ''), htype, night.year)
+    resort = is_seaside_resort(hotel)    # the same resort seasonal swing as v1
+    base = anchor[0] - calendar_centre(hotel.get('city', ''), htype, night.year, resort)
     dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
-    season = get_seasonality_adjustment(hotel.get('city', ''), night.month) * 100
+    season = season_pts(hotel.get('city', ''), night.month, resort)
     signals += [f'official_{anchor[2]}({anchor[0]:.0f}% {anchor[1]})', 'day_of_week', 'season']
 
     src = inp.source.get(hid, 'none')
@@ -897,6 +972,8 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     half += ev_range                     # estimated or moon-dependent event dates
     if anchor[2] == 'national':
         half += c['range_national']
+    # as v1 (Nov 2026 backtest): resorts at least their measured error, others 5 pts wider
+    half = max(half, V1['range_resort']) if resort else half + c['range_widen']
     low, high = mid - half, mid + half
     if gap == 'confirmed':
         mid, low, high = max(mid, c['soldout_mid']), max(low, c['soldout_low']), c['clamp_high']
@@ -958,8 +1035,9 @@ class OccupancyModel:
         rates, self.price_days, self.rate_rows = {}, {}, []
         try:
             import rates_store as RS
-            self.rate_rows = RS.read(str(DATA_DIR), priced_only=True, sources=PRICE_SOURCES, data_quality='name_matched',
-                                     scrape_from=self.rates_since, hotel_ids=self.rate_hotels)
+            import rate_flags as RF         # rule (a) errors are no input to the occupancy estimates
+            self.rate_rows = RF.drop(str(DATA_DIR), RS.read(str(DATA_DIR), priced_only=True, sources=PRICE_SOURCES,
+                                     data_quality='name_matched', scrape_from=self.rates_since, hotel_ids=self.rate_hotels))
             for row in self.rate_rows:
                 self.price_days.setdefault(str(row['hotel_id']), set()).add(row.get('scrape_date', ''))
             rates = {f'{hid}_{night}': row for (hid, night), row in RS.latest_per_night(self.rate_rows).items()}

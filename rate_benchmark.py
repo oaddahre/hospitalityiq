@@ -132,9 +132,10 @@ def suggest_comp_set(data_dir, subject_id, limit=MAX_COMP):
 def _read_rates(data_dir, hotel_ids, nights, today):
     """The comp set's usable prices for these nights, collected in the last
     MAX_PRICE_AGE days (rates_store: only these rows are read)."""
-    return RS.read(data_dir, hotel_ids=hotel_ids, stay_from=min(nights), stay_to=max(nights),
+    import rate_flags as RF                 # rule (a) errors never reach a client figure
+    return RF.drop(data_dir, RS.read(data_dir, hotel_ids=hotel_ids, stay_from=min(nights), stay_to=max(nights),
                    scrape_from=(today - timedelta(days=MAX_PRICE_AGE)).isoformat(), priced_only=True,
-                   sources=SOURCE_ORDER, data_quality=MATCHED)
+                   sources=SOURCE_ORDER, data_quality=MATCHED))
 
 
 def _usable(r):
@@ -192,8 +193,9 @@ def past_rates(data_dir, comp_set, month, today: date):
     nights = month_nights(month, today)
     last = {}
     if nights:
-        rows = RS.read(data_dir, hotel_ids=ids, stay_from=nights[0], stay_to=nights[-1], priced_only=True,
-                       sources=SOURCE_ORDER, data_quality=MATCHED)
+        import rate_flags as RF
+        rows = RF.drop(data_dir, RS.read(data_dir, hotel_ids=ids, stay_from=nights[0], stay_to=nights[-1], priced_only=True,
+                       sources=SOURCE_ORDER, data_quality=MATCHED))
         last = RS.last_before_night(rows)
     out = []
     for n in nights:

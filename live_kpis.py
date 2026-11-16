@@ -20,7 +20,7 @@ the dashboard, tables, reports and exports:
   bar_nights  how many of those nights have a price; a hotel with fewer than
               MIN_BAR_NIGHTS has no `bar` (too little to average)
   bar_days    days of price collection since DATA_START (top level)
-A destination's BAR is the plain average of its hotels' `bar`, shown as a
+A destination's BAR is the median of its hotels' `bar`, shown as a
 figure only with MIN_BAR_HOTELS hotels or more ("limited data" below).
 
 Groups (city, brand, owner, the whole market) are aggregated on the page
@@ -47,6 +47,7 @@ from datetime import date, datetime, timedelta
 
 import rates_store as RS
 import rate_benchmark as RB
+import rate_flags as RF
 from occupancy_model import active_model, model_for, row_model
 
 HISTORY_DAYS = 400
@@ -117,6 +118,7 @@ def observed_bar(data_dir, ids, today: date, start: date = None, end: date = Non
     rows = RS.read(data_dir, hotel_ids=ids, stay_from=start.isoformat(), stay_to=end.isoformat(),
                    scrape_from=DATA_START.isoformat(), scrape_to=end.isoformat(), priced_only=True,
                    sources=RB.SOURCE_ORDER, data_quality=RB.MATCHED)
+    rows = RF.drop(data_dir, rows)          # rule (a) errors never reach a client figure
     days = {r.get('scrape_date') for r in rows if r.get('scrape_date') and r['scrape_date'] >= start.isoformat()}
     by = {}
     for (hid, night), r in RS.last_before_night(rows).items():
@@ -139,7 +141,7 @@ def per_hotel(data_dir, today: date):
     rows = RS.read(data_dir, hotel_ids=ids, stay_from=nights[0], stay_to=nights[-1],
                    scrape_from=(today - timedelta(days=RB.MAX_PRICE_AGE)).isoformat(), priced_only=True,
                    sources=RB.SOURCE_ORDER, data_quality=RB.MATCHED)
-    prices = RB.best_prices(rows, ids, nights, today)
+    prices = RB.best_prices(RF.drop(data_dir, rows), ids, nights, today)
     occ, model_run = _stored_occupancy(data_dir, ids, nights)
     import data_quality as DQ
     import flags

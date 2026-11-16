@@ -27,7 +27,7 @@ HISTORY_FILE = 'data_health_history.json'
 HISTORY_DAYS = 14
 MIN_RATE, MAX_RATE = 200, 60000          # plausible published rate (MAD)
 EUR_TO_MAD = 10.8
-JUMP_X = 3.0                             # a price over 3x (or under 1/3) the hotel's own recent median
+PEER_FAR_X = 4.0                         # rule (b): over 4x (or under 1/4 of) same city and category peers, a warning
 HOTELS_DROP_PROBLEM, HOTELS_DROP_WARNING = 0.20, 0.10
 CITY_MOVE_PTS = 8.0
 COST_WARNING_X, COST_PROBLEM_X = 1.5, 2.5
@@ -174,30 +174,42 @@ def rate_checks(today, hotels, rows, cov):
     run = [r for r in priced if r['scrape_date'] == t]
     if not run:
         msg = 'No rate from today\'s run to check.'
-        for cid, title in (('jump', 'Rates over 3x the hotel\'s usual level'), ('range', 'Rates outside 200–60,000 MAD'),
+        for cid, title in (('rate_errors', 'Rate errors (left out of client figures)'), ('peer_far', 'Rates far from their peers'),
+                           ('range', 'Rates outside 200–60,000 MAD'),
                            ('currency', 'Wrong currency'), ('duplicates', 'Duplicate hotel-nights'),
                            ('city_no_prices', 'Cities with no prices today')):
             out.append(check(cid, 'Rates', title, 'no_data', msg))
         return out
-    since = (today - timedelta(days=30)).isoformat()
-    own = {}
-    for r in priced:
-        if since <= r['scrape_date'] < t:
-            own.setdefault(str(r['hotel_id']), []).append(_f(r['rate_mad']))
-    med = {h: statistics.median(v) for h, v in own.items() if len(v) >= 7}
-    jumped = {}
-    for r in run:
-        h, v = str(r['hotel_id']), _f(r['rate_mad'])
-        m = med.get(h)
-        if m and (v > JUMP_X * m or v < m / JUMP_X):
-            jumped.setdefault(h, []).append(r['stay_date'])
+    import rate_flags as RF
     priced_hotels = {str(r['hotel_id']) for r in run}
-    st = 'ok' if not jumped else 'problem' if len(jumped) >= max(5, 0.05 * len(priced_hotels)) else 'warning'
-    out.append(check('jump', 'Rates', 'Rates over 3x the hotel\'s usual level', st,
-                     f"{len(jumped)} hotel{'s' if len(jumped) != 1 else ''} with a rate today more than 3 times above (or below a third of) "
-                     f"its own median of the last 30 days ({sum(len(v) for v in jumped.values())} nights)." if med else
-                     'Fewer than 7 earlier prices per hotel: nothing to compare with yet.',
-                     len(jumped), _hotel_refs(jumped, hotels)))
+    fl = {k: v for k, v in RF.compute(priced, hotels).items() if k[2] == t}
+    err_h = {}
+    for (h, n, sd), (why, detail) in sorted(fl.items()):
+        err_h.setdefault(h, []).append(f'{n}: {detail}')
+    names = lambda h: (hotels.get(h) or {}).get('name', h)
+    out.append(check('rate_errors', 'Rates', 'Rate errors (left out of client figures)', 'problem' if fl else 'ok',
+                     f"{len(fl)} price{'s' if len(fl) != 1 else ''} from tonight's run at {len(err_h)} hotel{'s' if len(err_h) != 1 else ''}: "
+                     f"the same stay date changed more than {RF.CHANGE_X:g}x (or halved) since the previous run, or a new price is "
+                     f"over {RF.NEW_PEER_X:g}x its city and category peers. They stay stored and flagged here, and are left out of BAR, "
+                     "medians and occupancy inputs until a later run confirms the new level.",
+                     len(fl), _hotel_refs(err_h, hotels), items=[f'{names(h)}, {x}' for h, xs in err_h.items() for x in xs]))
+    groups = {}
+    for r in run:
+        x = hotels.get(str(r['hotel_id'])) or {}
+        groups.setdefault((x.get('city', ''), x.get('category', ''), r['stay_date']), {})[str(r['hotel_id'])] = _f(r['rate_mad'])
+    far = {}
+    for (c, cat, n), hs in groups.items():
+        for h, v in hs.items():
+            peers = [p for o, p in hs.items() if o != h]
+            if len(peers) >= 3:
+                m = statistics.median(peers)
+                if v > PEER_FAR_X * m or v < m / PEER_FAR_X:
+                    far.setdefault(h, []).append(f'{n}: {v:,.0f} vs peers {m:,.0f}')
+    out.append(check('peer_far', 'Rates', 'Rates far from their peers', 'warning' if far else 'ok',
+                     f"{len(far)} hotel{'s' if len(far) != 1 else ''} with a rate tonight more than {PEER_FAR_X:g}x (or under a quarter of) "
+                     "the same city and category that night (3+ peers). Not an error: often a premium room type or only dearer rooms "
+                     "left. A warning only: never emailed.",
+                     len(far), _hotel_refs(far, hotels), items=[f'{names(h)}, {x}' for h, xs in far.items() for x in xs[:3]]))
     bad = {str(r['hotel_id']) for r in run if not MIN_RATE <= _f(r['rate_mad']) <= MAX_RATE}
     n_bad = sum(1 for r in run if not MIN_RATE <= _f(r['rate_mad']) <= MAX_RATE)
     out.append(check('range', 'Rates', 'Rates outside 200–60,000 MAD', 'problem' if n_bad else 'ok',

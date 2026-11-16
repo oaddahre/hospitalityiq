@@ -102,9 +102,14 @@ class Anchor(unittest.TestCase):
 
     def test_price_position_capped_and_needs_seven_nights(self):
         n = date(2027, 2, 10)
-        base, _ = OM.estimate_occupancy(hotel(), n, position={'pts': 0.0, 'history_days': 30})
-        up, bd = OM.estimate_occupancy(hotel(), n, position={'pts': OM.V1['price_max_pts'], 'history_days': 30})
+        with mock.patch.dict(os.environ, {'PRICE_POSITION': 'on'}):      # behind a flag since Nov 2026
+            base, _ = OM.estimate_occupancy(hotel(), n, position={'pts': 0.0, 'history_days': 30})
+            up, bd = OM.estimate_occupancy(hotel(), n, position={'pts': OM.V1['price_max_pts'], 'history_days': 30})
         self.assertAlmostEqual((up - base) * 100, OM.V1['price_max_pts'], places=5)
+        with mock.patch.dict(os.environ, {'PRICE_POSITION': ''}):        # off: no effect
+            off, bd = OM.estimate_occupancy(hotel(), n, position={'pts': OM.V1['price_max_pts'], 'history_days': 30})
+        self.assertAlmostEqual(off, base, places=6)
+        self.assertEqual(bd['rate_adjustment'], 0.0)
         self.assertEqual(OM.V1['price_max_pts'], 10)
         self.assertEqual(OM.V1['min_peer_hotels'], 3)
 

@@ -10,6 +10,9 @@ admin's Data health page shows each flag and what it would change.
   QUALITY_RANGES    the v2 occupancy model leaves out prices that failed the
                     data-quality checks and widens the range where history
                     is short or the night's price is doubtful
+  PRICE_POSITION    occupancy model v1's price-position adjustment (the
+                    hotel's BAR against its city and category, capped at
+                    10 pts). Off since the Nov 2026 backtest; on brings it back
   VALUATION_V2      the corrected valuation engine (F&B and other
                     departmental costs, capex in MAD million, IRR terminal
                     timing, levered equity multiple, range from the
@@ -21,6 +24,7 @@ FLAGS = {
     'CONFIDENCE_UI': 'Confidence labels; low-confidence figures greyed or hidden',
     'QUALITY_RANGES': 'Occupancy model ignores failed prices and widens thin-data ranges',
     'VALUATION_V2': 'Corrected valuation engine, ranges from input sensitivity',
+    'PRICE_POSITION': 'Occupancy v1 price-position adjustment (off since the Nov 2026 backtest)',
 }
 
 

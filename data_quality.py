@@ -377,14 +377,15 @@ def structural_year(hotels, year):
         anchor = OM.official_anchor(h.get('city', ''))
         if anchor is None:
             continue
-        base = anchor[0] - OM.calendar_centre(h.get('city', ''), t, year)
+        resort = OM.is_seaside_resort(h)
+        base = anchor[0] - OM.calendar_centre(h.get('city', ''), t, year, resort)
         tot = 0.0
         for n in nights:
-            k = (h.get('city', ''), t, n)
+            k = (h.get('city', ''), t, n, resort)
             if k not in cache:
                 cal = OM._clamp(OM.event_points(k[0], t, n)[0], -OM.V2['calendar_max_pts'], OM.V2['calendar_max_pts'])
                 cache[k] = (OM.DOW_ADJUSTMENTS.get(t, OM.DOW_ADJUSTMENTS['city_business']).get(n.weekday(), 0) * 100
-                            + OM.get_seasonality_adjustment(k[0], n.month) * 100 + cal)
+                            + OM.season_pts(k[0], n.month, resort) + cal)
             tot += OM._clamp(base + cache[k], OM.V2['clamp_low'], OM.V2['clamp_high'])
         out[hid] = tot / len(nights)
     return out
@@ -776,11 +777,10 @@ def preview(data_dir, today=None, report=None):
 MODELS = [
     {'name': 'Occupancy model v1', 'where': 'occupancy_model.estimate_occupancy',
      'data': 'official occupancy of classified accommodation in the city, latest full year (national figure where the '
-             'city has none); weekday, month, events calendar; the hotel\'s BAR since 3 Nov 2026 vs the median of its '
-             'city and category',
-     'assumes': 'the calendar adjustments (hand-set) are centred over the year so a city averages its official figure; '
-                'price position 15 pts x ln(BAR / usual BAR), centred on the city, capped at 10 pts; ranges from fixed '
-                'point widths (8 pts, wider for the national figure, no price position or short history)',
+             'city has none); weekday, month (beach and seaside resorts: the seasonal swing x8.25, fitted on hotel-reported '
+             'figures), events calendar; price position vs city and category only with PRICE_POSITION on (off)',
+     'assumes': 'the calendar adjustments are centred over the year so a city averages its official figure; '
+                'ranges: resorts +/-27 pts (80% of their measured errors), others 13 pts plus data-thinness additions',
      'label': 'Kodo estimate with a range, modelled, not measured',
      'confidence': 'low: anchored on official city figures, hotel level not yet checked against real figures'},
     {'name': 'Occupancy model v2', 'where': 'occupancy_model.estimate_v2',
@@ -817,7 +817,7 @@ MODELS = [
      'data': 'the last published price seen before each night, from 3 Nov 2026', 'assumes': 'a hotel needs 7 priced nights; a group 3 such hotels',
      'label': 'BAR (published rate), "limited data" under 3 hotels', 'confidence': 'observed'},
     {'name': 'Owner, brand and city roll-ups', 'where': 'main.js, app /api/data and /api/brands', 'data': 'per-hotel BAR (observed) and Kodo estimates',
-     'assumes': 'BAR: plain average of hotels; occupancy and Rooms RevPAR: room-weighted', 'label': 'BAR; Kodo estimate',
+     'assumes': 'BAR: median of hotels (rule (a) price errors left out); occupancy and Rooms RevPAR: room-weighted', 'label': 'BAR; Kodo estimate',
      'confidence': 'as the figures they average'},
     {'name': 'Old annual reference price', 'where': 'performance.csv (adr_mad only)',
      'data': 'an old Kodo model estimate per hotel; no longer shown anywhere, and no longer used by v1',

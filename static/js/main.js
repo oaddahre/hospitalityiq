@@ -559,7 +559,7 @@ const KODO_FLAG = name => !!(window.KODO_FLAGS && window.KODO_FLAGS[name]);
 // nights since 3 November 2026 (the last published price seen before each
 // night), from 7 priced nights (bar_mad, bar_nights in /api/hotels and
 // /api/live-kpis). A group's BAR (destination, brand, owner, segment) is the
-// plain average of its hotels' BAR; under 3 such hotels it reads "Limited
+// median of its hotels' BAR; under 3 such hotels it reads "Limited
 // data", never a precise-looking number. Kodo has no achieved rate, so
 // this is always called BAR or published rate. Occupancy and Rooms RevPAR are Kodo estimates (next 30 nights).
 const KodoBar = (() => {
@@ -575,7 +575,9 @@ const KodoBar = (() => {
   // list: rows with bar_mad and bar_nights -> {val, n, nights, limited}
   function group(list) {
     const ok = (list || []).filter(h => h && h.bar_mad != null && !Number.isNaN(Number(h.bar_mad)));
-    const val = ok.length ? ok.reduce((t, h) => t + Number(h.bar_mad), 0) / ok.length : null;
+    // the median of the hotels' BAR: one hotel's suite-level price can't move a city
+    const vs = ok.map(h => Number(h.bar_mad)).sort((a, b) => a - b), m = vs.length >> 1;
+    const val = vs.length ? (vs.length % 2 ? vs[m] : (vs[m - 1] + vs[m]) / 2) : null;
     return { val, n: ok.length, nights: ok.reduce((t, h) => t + (Number(h.bar_nights) || 0), 0),
              limited: ok.length < meta.min_hotels };
   }
@@ -764,7 +766,7 @@ const KodoLive = (() => {
 
 // ─── Aggregation ──────────────────────────────────────────────────
 
-// A group of hotels: BAR (observed, plain average of its hotels' BAR, see
+// A group of hotels: BAR (observed, median of its hotels' BAR, see
 // KodoBar) and the Kodo estimates (occupancy and Rooms RevPAR, next 30 nights,
 // room-weighted over the hotels that have them; null when none has).
 function perfAggs(hs) {

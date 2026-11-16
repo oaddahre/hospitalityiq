@@ -1126,12 +1126,12 @@ def bar_meta():
 
 
 def group_bar(grp):
-    """A group's BAR: the plain average of its hotels' BAR (hotels with 7
+    """A group's BAR: the median of its hotels' BAR (hotels with 7
     priced nights or more). (value or None, hotels, nights, limited): limited
     under MIN_BAR_HOTELS hotels, when the figure must not be shown as one."""
     ok = grp[grp["bar_mad"].notna()] if "bar_mad" in grp else grp.iloc[0:0]
     n = len(ok)
-    val = round(float(ok["bar_mad"].mean())) if n else None
+    val = round(float(ok["bar_mad"].median())) if n else None     # the median: one suite price can't move a city
     nights = int(ok["bar_nights"].sum()) if n else 0
     return val, n, nights, n < LK.MIN_BAR_HOTELS
 
@@ -4612,7 +4612,8 @@ def api_rates():
     today = datetime.utcnow()
     cutoff = (today - timedelta(days=days)).strftime('%Y-%m-%d')
     scope = {'hotel_ids': [hotel_id]} if hotel_id else {'city': city} if city else {}
-    filtered = RS.read(DATA_DIR, scrape_from=cutoff, **scope)
+    import rate_flags as RF                 # rule (a) errors never reach a client figure
+    filtered = RF.drop(DATA_DIR, RS.read(DATA_DIR, scrape_from=cutoff, **scope))
 
     filtered.sort(key=lambda r: r.get('stay_date', ''))
 
@@ -4683,8 +4684,9 @@ def api_rates_past():
     nights = RB.month_nights(month, _casablanca_today())
     last = {}
     if nights:
-        rows = RS.read(DATA_DIR, hotel_ids=[hotel_id], stay_from=nights[0], stay_to=nights[-1], priced_only=True,
-                       sources=LIVE_SOURCES | {'manual_override'})
+        import rate_flags as RF
+        rows = RF.drop(DATA_DIR, RS.read(DATA_DIR, hotel_ids=[hotel_id], stay_from=nights[0], stay_to=nights[-1],
+                                         priced_only=True, sources=LIVE_SOURCES | {'manual_override'}))
         last = RS.last_before_night(rows)
     out = []
     for n in nights:
