@@ -93,7 +93,9 @@ class Anchor(unittest.TestCase):
         self.assertGreater(w(nopos), w(city))
 
     def test_city_year_averages_the_official_figure(self):
-        for city in ('Marrakech', 'Casablanca', 'Tanger', 'Errachidia', 'Kenitra'):
+        # cities without official monthly figures: every hotel averages the official annual figure
+        # (cities with them are held month by month: tests/test_official_monthly.py)
+        for city in ('Kenitra', 'Meknes', 'Tamuda Bay / Tétouan'):
             for cat in ('Luxury', 'Midscale'):
                 nights = [date(2027, 1, 1) + timedelta(days=i) for i in range(365)]
                 v = [OM.estimate_occupancy(hotel(city=city, category=cat), n, position=POS)[0] * 100 for n in nights]

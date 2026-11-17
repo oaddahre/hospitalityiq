@@ -48,6 +48,7 @@ from datetime import date, datetime, timedelta
 import rates_store as RS
 import rate_benchmark as RB
 import rate_flags as RF
+import official_monthly as OMM
 from occupancy_model import active_model, model_for, row_model
 
 HISTORY_DAYS = 400
@@ -173,6 +174,8 @@ def per_hotel(data_dir, today: date):
             'bar_nights': bars[h][1],
             'confidence': (dq.get(h) or {}).get('confidence'),
             'history_days': (dq.get(h) or {}).get('history_days'),
+            # the city is held to its official monthly occupancy (official_monthly.py)
+            'occ_calibrated': OMM.calibrated(hotels[h].get('city', '')),
         }
         if hide_unpriced and dq and not (dq.get(h) or {}).get('history_days'):
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,

@@ -60,18 +60,21 @@ class Resorts(unittest.TestCase):
             self.assertFalse(OM.resort_swing(HOTELS[hid]), HOTELS[hid]['name'])
         for hid in ('353', '121', '137', '292'):
             self.assertTrue(OM.resort_swing(HOTELS[hid]), HOTELS[hid]['name'])
-        with mock.patch.dict(os.environ, {'RESORT_SEASON_ON': 'Agadir / Taghazout', 'RESORT_SEASON_OFF': 'Saidia'}):
-            self.assertTrue(OM.resort_swing(HOTELS['22']))
+        with mock.patch.dict(os.environ, {'RESORT_SEASON_ON': 'Agadir / Taghazout,Al Hoceima', 'RESORT_SEASON_OFF': 'Saidia'}):
+            self.assertFalse(OM.resort_swing(HOTELS['22']))   # never: Agadir has its official monthly pattern
+            self.assertTrue(OM.resort_swing(HOTELS['292']))
             self.assertFalse(OM.resort_swing(HOTELS['137']))
         # Agadir resorts are back on the city pattern: same swing as an Agadir city hotel
         r, c = monthly(year_v1(HOTELS['22'])), monthly(year_v1(HOTELS['404']))
         self.assertLess(abs((max(r.values()) - min(r.values())) - (max(c.values()) - min(c.values()))), 5)
 
     def test_every_city_year_on_official(self):
-        """Every city's 12-month average stays within 1 pt of its official figure (bounds included)."""
+        """Every city without official monthly figures: its 12-month average stays within 1 pt of its
+        official figure (bounds included). The others are held month by month (test_official_monthly)."""
+        import official_monthly as OMM
         by_city = {}
         for h in HOTELS.values():
-            if h.get('status', '').lower() in ('open', 'operating'):
+            if h.get('status', '').lower() in ('open', 'operating') and not OMM.target(h['city'], 2027, 1):
                 by_city.setdefault(h['city'], []).append(h)
         nights = [date(2027, 1, 1) + timedelta(days=i) for i in range(0, 365, 3)]
         for city, hs in by_city.items():

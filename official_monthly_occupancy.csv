@@ -1,0 +1,351 @@
+month,level,name,occupancy_pct,variation_pts,variation_label_on_page,month_confirmed
+2025-10,destination,Marrakech,82,2,vs 24,yes
+2025-10,destination,Agadir,73,1,vs 24,yes
+2025-10,destination,Casablanca,66,6,vs 24,yes
+2025-10,destination,Tanger,59,-3,vs 24,yes
+2025-10,destination,Fès,73,4,vs 24,yes
+2025-10,destination,Essaouira,67,2,vs 24,yes
+2025-10,destination,Al Haouz,82,-4,vs 24,yes
+2025-10,destination,Rabat,66,8,vs 24,yes
+2025-10,destination,Ouarzazate,59,5,vs 24,yes
+2025-10,destination,Errachidia,51,3,vs 24,yes
+2025-10,destination,Autres destinations,46,4,vs 24,yes
+2025-10,national,Total EHTC,64,3,vs 24,yes
+2025-10,region,TTA - Tanger-Tétouan-Al Hoceïma,48,0,vs 24,yes
+2025-10,region,Oriental - Oriental,37,9,vs 24,yes
+2025-10,region,FM - Fès-Meknès,57,3,vs 24,yes
+2025-10,region,RSK - Rabat-Salé-Kénitra,65,9,vs 24,yes
+2025-10,region,CS - Casablanca-Settat,64,5,vs 24,yes
+2025-10,region,MS - Marrakech-Safi,80,2,vs 24,yes
+2025-10,region,BMK - Béni Mellal-Khénifra,36,1,vs 24,yes
+2025-10,region,DT - Drâa-Tafilalet,51,4,vs 24,yes
+2025-10,region,SM - Souss-Massa,72,2,vs 24,yes
+2025-10,region,GON - Guelmim-Oued Noun,42,4,vs 24,yes
+2025-10,region,LSA - Laâyoune-Sakia El Hamra,51,-4,vs 24,yes
+2025-10,region,DOE - Dakhla-Oued Ed-Dahab,63,1,vs 24,yes
+2025-10,category (national),Hôtels classés,63,3,vs 24,yes
+2025-10,category (national),1 étoile,48,1,vs 24,yes
+2025-10,category (national),2 étoiles,49,1,vs 24,yes
+2025-10,category (national),3 étoiles,58,2,vs 24,yes
+2025-10,category (national),4 étoiles,67,3,vs 24,yes
+2025-10,category (national),5 étoiles,72,7,vs 24,yes
+2025-10,category (national),Luxe,66,6,vs 24,yes
+2025-10,category (national),Maisons d'hôtes,74,8,vs 24,yes
+2025-10,category (national),Hôtels clubs,78,0,vs 24,yes
+2025-10,category (national),Résidences hôtelières,57,-1,vs 24,yes
+2025-10,category (national),Autres catégories,58,2,vs 24,yes
+2025-11,destination,Marrakech,79,3,vs 24,yes
+2025-11,destination,Agadir,73,2,vs 24,yes
+2025-11,destination,Casablanca,60,0,vs 24,yes
+2025-11,destination,Tanger,45,-5,vs 24,yes
+2025-11,destination,Fès,64,5,vs 24,yes
+2025-11,destination,Essaouira,60,0,vs 24,yes
+2025-11,destination,Rabat,60,7,vs 24,yes
+2025-11,destination,Ouarzazate,50,5,vs 24,yes
+2025-11,destination,Errachidia,47,5,vs 24,yes
+2025-11,destination,Al Haouz,81,0,vs 24,yes
+2025-11,destination,Autres destinations,41,2,vs 24,yes
+2025-11,national,Total EHTC,59,2,vs 24,yes
+2025-11,region,TTA - Tanger-Tétouan-Al Hoceïma,36,-5,vs 24,yes
+2025-11,region,Oriental - Oriental,35,4,vs 24,yes
+2025-11,region,FM - Fès-Meknès,50,2,vs 24,yes
+2025-11,region,RSK - Rabat-Salé-Kénitra,59,12,vs 24,yes
+2025-11,region,CS - Casablanca-Settat,58,0,vs 24,yes
+2025-11,region,MS - Marrakech-Safi,76,3,vs 24,yes
+2025-11,region,BMK - Béni Mellal-Khénifra,38,2,vs 24,yes
+2025-11,region,DT - Drâa-Tafilalet,44,6,vs 24,yes
+2025-11,region,SM - Souss-Massa,70,2,vs 24,yes
+2025-11,region,GON - Guelmim-Oued Noun,40,2,vs 24,yes
+2025-11,region,LSA - Laâyoune-Sakia El Hamra,40,6,vs 24,yes
+2025-11,region,DOE - Dakhla-Oued Ed-Dahab,66,15,vs 24,yes
+2025-11,category (national),Hôtels classés,58,2,vs 24,yes
+2025-11,category (national),1 étoile,49,4,vs 24,yes
+2025-11,category (national),2 étoiles,47,2,vs 24,yes
+2025-11,category (national),3 étoiles,53,1,vs 24,yes
+2025-11,category (national),4 étoiles,62,1,vs 24,yes
+2025-11,category (national),5 étoiles,66,4,vs 24,yes
+2025-11,category (national),Luxe,59,4,vs 24,yes
+2025-11,category (national),Maisons d'hôtes,67,3,vs 24,yes
+2025-11,category (national),Hôtels clubs,71,0,vs 24,yes
+2025-11,category (national),Résidences hôtelières,55,2,vs 24,yes
+2025-11,category (national),Autres catégories,56,1,vs 24,yes
+2025-12,destination,Marrakech,73,1,vs 24,yes
+2025-12,destination,Agadir,67,2,vs 24,yes
+2025-12,destination,Casablanca,60,6,vs 24,yes
+2025-12,destination,Tanger,52,3,vs 24,yes
+2025-12,destination,Fès,55,4,vs 24,yes
+2025-12,destination,Al Haouz,63,-12,vs 24,yes
+2025-12,destination,Essaouira,54,5,vs 24,yes
+2025-12,destination,Rabat,57,11,vs 24,yes
+2025-12,destination,Ifrane,62,15,vs 24,yes
+2025-12,destination,Ouarzazate,44,8,vs 24,yes
+2025-12,destination,Autres destinations,39,0,vs 24,yes
+2025-12,national,Total EHTC,56,3,vs 24,yes
+2025-12,region,TTA - Tanger-Tétouan-Al Hoceïma,39,0,vs 24,yes
+2025-12,region,Oriental - Oriental,35,2,vs 24,yes
+2025-12,region,FM - Fès-Meknès,51,5,vs 24,yes
+2025-12,region,RSK - Rabat-Salé-Kénitra,55,7,vs 24,yes
+2025-12,region,CS - Casablanca-Settat,56,5,vs 24,yes
+2025-12,region,MS - Marrakech-Safi,69,0,vs 24,yes
+2025-12,region,BMK - Béni Mellal-Khénifra,39,1,vs 24,yes
+2025-12,region,DT - Drâa-Tafilalet,40,4,vs 24,yes
+2025-12,region,SM - Souss-Massa,65,2,vs 24,yes
+2025-12,region,GON - Guelmim-Oued Noun,34,-2,vs 24,yes
+2025-12,region,LSA - Laâyoune-Sakia El Hamra,36,0,vs 24,yes
+2025-12,region,DOE - Dakhla-Oued Ed-Dahab,57,8,vs 24,yes
+2025-12,category (national),Hôtels classés,55,3,vs 24,yes
+2025-12,category (national),1 étoile,46,2,vs 24,yes
+2025-12,category (national),2 étoiles,47,4,vs 24,yes
+2025-12,category (national),3 étoiles,51,3,vs 24,yes
+2025-12,category (national),4 étoiles,57,1,vs 24,yes
+2025-12,category (national),5 étoiles,60,4,vs 24,yes
+2025-12,category (national),Luxe,60,9,vs 24,yes
+2025-12,category (national),Maisons d'hôtes,63,0,vs 24,yes
+2025-12,category (national),Hôtels clubs,64,1,vs 24,yes
+2025-12,category (national),Résidences hôtelières,60,8,vs 24,yes
+2025-12,category (national),Autres catégories,51,-1,vs 24,yes
+2026-01,destination,Marrakech,63,0,vs 25,yes
+2026-01,destination,Agadir,65,-1,vs 25,yes
+2026-01,destination,Casablanca,59,10,vs 25,yes
+2026-01,destination,Tanger,57,16,vs 25,yes
+2026-01,destination,Fès,47,0,vs 25,yes
+2026-01,destination,Rabat,61,15,vs 25,yes
+2026-01,destination,Essaouira,48,1,vs 25,yes
+2026-01,destination,Al Haouz,48,-25,vs 25,yes
+2026-01,destination,Ouarzazate,45,5,vs 25,yes
+2026-01,destination,Errachidia,48,9,vs 25,yes
+2026-01,destination,Autres destinations,37,0,vs 25,yes
+2026-01,national,Total EHTC,53,3,vs 25,yes
+2026-01,region,TTA - Tanger-Tétouan-Al Hoceïma,41,7,vs 25,yes
+2026-01,region,Oriental - Oriental,33,-6,vs 25,yes
+2026-01,region,FM - Fès-Meknès,44,3,vs 25,yes
+2026-01,region,RSK - Rabat-Salé-Kénitra,55,11,vs 25,yes
+2026-01,region,CS - Casablanca-Settat,55,9,vs 25,yes
+2026-01,region,MS - Marrakech-Safi,59,-2,vs 25,yes
+2026-01,region,BMK - Béni Mellal-Khénifra,32,-4,vs 25,yes
+2026-01,region,DT - Drâa-Tafilalet,45,6,vs 25,yes
+2026-01,region,SM - Souss-Massa,62,-2,vs 25,yes
+2026-01,region,GON - Guelmim-Oued Noun,36,-1,vs 25,yes
+2026-01,region,LSA - Laâyoune-Sakia El Hamra,34,0,vs 25,yes
+2026-01,region,DOE - Dakhla-Oued Ed-Dahab,54,15,vs 25,yes
+2026-01,category (national),Hôtels classés,52,3,vs 25,yes
+2026-01,category (national),1 étoile,45,3,vs 25,yes
+2026-01,category (national),2 étoiles,46,5,vs 25,yes
+2026-01,category (national),3 étoiles,50,4,vs 25,yes
+2026-01,category (national),4 étoiles,53,-1,vs 25,yes
+2026-01,category (national),5 étoiles,56,5,vs 25,yes
+2026-01,category (national),Luxe,52,9,vs 25,yes
+2026-01,category (national),Maisons d'hôtes,56,-2,vs 25,yes
+2026-01,category (national),Hôtels clubs,60,-2,vs 25,yes
+2026-01,category (national),Résidences hôtelières,54,7,vs 25,yes
+2026-01,category (national),Autres catégories,49,4,vs 25,yes
+2026-03,destination,Al Haouz,75,11,vs 24 (as printed),yes
+2026-03,destination,Marrakech,71,2,vs 24 (as printed),yes
+2026-03,destination,Agadir,70,6,vs 24 (as printed),yes
+2026-03,destination,Essaouira,55,8,vs 24 (as printed),yes
+2026-03,destination,Ouarzazate,54,6,vs 24 (as printed),yes
+2026-03,destination,Fès,52,6,vs 24 (as printed),yes
+2026-03,destination,Casablanca,47,7,vs 24 (as printed),yes
+2026-03,destination,Rabat,43,5,vs 24 (as printed),yes
+2026-03,destination,Tanger,41,10,vs 24 (as printed),yes
+2026-03,destination,Errachidia,41,4,vs 24 (as printed),yes
+2026-03,destination,Autres destinations,36,2,vs 24 (as printed),yes
+2026-03,national,Total EHTC,54,5,vs 24 (as printed),yes
+2026-03,region,TTA - Tanger-Tétouan-Al Hoceïma,34,4,vs 24 (as printed),yes
+2026-03,region,Oriental - Oriental,24,-3,vs 24 (as printed),yes
+2026-03,region,FM - Fès-Meknès,46,7,vs 24 (as printed),yes
+2026-03,region,RSK - Rabat-Salé-Kénitra,42,5,vs 24 (as printed),yes
+2026-03,region,CS - Casablanca-Settat,44,6,vs 24 (as printed),yes
+2026-03,region,MS - Marrakech-Safi,69,3,vs 24 (as printed),yes
+2026-03,region,BMK - Béni Mellal-Khénifra,31,2,vs 24 (as printed),yes
+2026-03,region,DT - Drâa-Tafilalet,45,5,vs 24 (as printed),yes
+2026-03,region,SM - Souss-Massa,67,5,vs 24 (as printed),yes
+2026-03,region,GON - Guelmim-Oued Noun,30,-4,vs 24 (as printed),yes
+2026-03,region,LSA - Laâyoune-Sakia El Hamra,40,-3,vs 24 (as printed),yes
+2026-03,region,DOE - Dakhla-Oued Ed-Dahab,66,27,vs 24 (as printed),yes
+2026-03,category (national),Hôtels classés,50,4,vs 25,yes
+2026-03,category (national),1 étoile,42,1,vs 25,yes
+2026-03,category (national),2 étoiles,41,3,vs 25,yes
+2026-03,category (national),3 étoiles,45,4,vs 25,yes
+2026-03,category (national),4 étoiles,55,3,vs 25,yes
+2026-03,category (national),5 étoiles,56,7,vs 25,yes
+2026-03,category (national),Luxe,47,5,vs 25,yes
+2026-03,category (national),Maisons d'hôtes,64,6,vs 25,yes
+2026-03,category (national),Hôtels clubs,73,2,vs 25,yes
+2026-03,category (national),Résidences hôtelières,50,6,vs 25,yes
+2026-03,category (national),Autres catégories,50,5,vs 25,yes
+2026-04,destination,Al Haouz,83,-8,vs 24 (as printed),yes
+2026-04,destination,Marrakech,79,1,vs 24 (as printed),yes
+2026-04,destination,Agadir,77,4,vs 24 (as printed),yes
+2026-04,destination,Fès,72,6,vs 24 (as printed),yes
+2026-04,destination,Tanger,64,11,vs 24 (as printed),yes
+2026-04,destination,Essaouira,62,4,vs 24 (as printed),yes
+2026-04,destination,Casablanca,61,-7,vs 24 (as printed),yes
+2026-04,destination,Rabat,61,-1,vs 24 (as printed),yes
+2026-04,destination,Ouarzazate,59,0,vs 24 (as printed),yes
+2026-04,destination,Errachidia,49,2,vs 24 (as printed),yes
+2026-04,destination,Autres destinations,41,-5,vs 24 (as printed),yes
+2026-04,national,Total EHTC,62,0,vs 24 (as printed),yes
+2026-04,region,TTA - Tanger-Tétouan-Al Hoceïma,48,1,vs 24 (as printed),yes
+2026-04,region,Oriental - Oriental,24,-6,vs 24 (as printed),yes
+2026-04,region,FM - Fès-Meknès,58,3,vs 24 (as printed),yes
+2026-04,region,RSK - Rabat-Salé-Kénitra,57,-2,vs 24 (as printed),yes
+2026-04,region,CS - Casablanca-Settat,57,-8,vs 24 (as printed),yes
+2026-04,region,MS - Marrakech-Safi,77,1,vs 24 (as printed),yes
+2026-04,region,BMK - Béni Mellal-Khénifra,36,-6,vs 24 (as printed),yes
+2026-04,region,DT - Drâa-Tafilalet,52,2,vs 24 (as printed),yes
+2026-04,region,SM - Souss-Massa,74,2,vs 24 (as printed),yes
+2026-04,region,GON - Guelmim-Oued Noun,38,-2,vs 24 (as printed),yes
+2026-04,region,LSA - Laâyoune-Sakia El Hamra,32,-8,vs 24 (as printed),yes
+2026-04,region,DOE - Dakhla-Oued Ed-Dahab,72,14,vs 24 (as printed),yes
+2026-04,category (national),Hôtels classés,60,0,vs 25,yes
+2026-04,category (national),1 étoile,47,-2,vs 25,yes
+2026-04,category (national),2 étoiles,50,1,vs 25,yes
+2026-04,category (national),3 étoiles,57,-2,vs 25,yes
+2026-04,category (national),4 étoiles,65,0,vs 25,yes
+2026-04,category (national),5 étoiles,65,2,vs 25,yes
+2026-04,category (national),Luxe,66,7,vs 25,yes
+2026-04,category (national),Maisons d'hôtes,72,3,vs 25,yes
+2026-04,category (national),Hôtels clubs,79,-1,vs 25,yes
+2026-04,category (national),Résidences hôtelières,58,-2,vs 25,yes
+2026-04,category (national),Autres catégories,55,-6,vs 25,yes
+2026-05,destination,Al Haouz,83,1,vs 24 (as printed),yes
+2026-05,destination,Marrakech,78,0,vs 24 (as printed),yes
+2026-05,destination,Agadir,74,3,vs 24 (as printed),yes
+2026-05,destination,Rabat,64,5,vs 24 (as printed),yes
+2026-05,destination,Fès,64,2,vs 24 (as printed),yes
+2026-05,destination,Tanger,62,4,vs 24 (as printed),yes
+2026-05,destination,Essaouira,61,1,vs 24 (as printed),yes
+2026-05,destination,Ouarzazate,59,7,vs 24 (as printed),yes
+2026-05,destination,Casablanca,52,-6,vs 24 (as printed),yes
+2026-05,destination,Errachidia,45,-5,vs 24 (as printed),yes
+2026-05,destination,Autres destinations,41,-4,vs 24 (as printed),yes
+2026-05,national,Total EHTC,60,0,vs 24 (as printed),yes
+2026-05,region,TTA - Tanger-Tétouan-Al Hoceïma,46,-1,vs 24 (as printed),yes
+2026-05,region,Oriental - Oriental,27,-4,vs 24 (as printed),yes
+2026-05,region,FM - Fès-Meknès,56,1,vs 24 (as printed),yes
+2026-05,region,RSK - Rabat-Salé-Kénitra,61,3,vs 24 (as printed),yes
+2026-05,region,CS - Casablanca-Settat,52,-5,vs 24 (as printed),yes
+2026-05,region,MS - Marrakech-Safi,76,0,vs 24 (as printed),yes
+2026-05,region,BMK - Béni Mellal-Khénifra,37,4,vs 24 (as printed),yes
+2026-05,region,DT - Drâa-Tafilalet,52,0,vs 24 (as printed),yes
+2026-05,region,SM - Souss-Massa,71,1,vs 24 (as printed),yes
+2026-05,region,GON - Guelmim-Oued Noun,34,-9,vs 24 (as printed),yes
+2026-05,region,LSA - Laâyoune-Sakia El Hamra,24,-21,vs 24 (as printed),yes
+2026-05,region,DOE - Dakhla-Oued Ed-Dahab,62,8,vs 24 (as printed),yes
+2026-05,category (national),Hôtels classés,58,0,vs 25,yes
+2026-05,category (national),1 étoile,47,-2,vs 25,yes
+2026-05,category (national),2 étoiles,49,1,vs 25,yes
+2026-05,category (national),3 étoiles,54,-1,vs 25,yes
+2026-05,category (national),4 étoiles,63,-1,vs 25,yes
+2026-05,category (national),5 étoiles,63,2,vs 25,yes
+2026-05,category (national),Luxe,60,3,vs 25,yes
+2026-05,category (national),Maisons d'hôtes,70,-2,vs 25,yes
+2026-05,category (national),Hôtels clubs,72,-1,vs 25,yes
+2026-05,category (national),Résidences hôtelières,57,3,vs 25,yes
+2026-05,category (national),Autres catégories,53,-5,vs 25,yes
+2026-06,destination,Al Haouz,87,7,vs 24 (as printed),yes
+2026-06,destination,Agadir,72,0,vs 24 (as printed),yes
+2026-06,destination,Marrakech,69,1,vs 24 (as printed),yes
+2026-06,destination,Tanger,69,18,vs 24 (as printed),yes
+2026-06,destination,Rabat,63,9,vs 24 (as printed),yes
+2026-06,destination,Essaouira,56,-2,vs 24 (as printed),yes
+2026-06,destination,Casablanca,51,-3,vs 24 (as printed),yes
+2026-06,destination,Fès,49,-1,vs 24 (as printed),yes
+2026-06,destination,Berkan (+Saïdia),45,2,vs 24 (as printed),yes
+2026-06,destination,Ouarzazate,40,-1,vs 24 (as printed),yes
+2026-06,destination,Autres destinations,41,-3,vs 24 (as printed),yes
+2026-06,national,Total EHTC,57,1,vs 24 (as printed),yes
+2026-06,region,TTA - Tanger-Tétouan-Al Hoceïma,55,5,vs 24 (as printed),yes
+2026-06,region,Oriental - Oriental,39,-2,vs 24 (as printed),yes
+2026-06,region,FM - Fès-Meknès,43,-2,vs 24 (as printed),yes
+2026-06,region,RSK - Rabat-Salé-Kénitra,59,4,vs 24 (as printed),yes
+2026-06,region,CS - Casablanca-Settat,50,-2,vs 24 (as printed),yes
+2026-06,region,MS - Marrakech-Safi,68,1,vs 24 (as printed),yes
+2026-06,region,BMK - Béni Mellal-Khénifra,34,0,vs 24 (as printed),yes
+2026-06,region,DT - Drâa-Tafilalet,35,-1,vs 24 (as printed),yes
+2026-06,region,SM - Souss-Massa,69,-1,vs 24 (as printed),yes
+2026-06,region,GON - Guelmim-Oued Noun,33,1,vs 24 (as printed),yes
+2026-06,region,LSA - Laâyoune-Sakia El Hamra,27,1,vs 24 (as printed),yes
+2026-06,region,DOE - Dakhla-Oued Ed-Dahab,70,16,vs 24 (as printed),yes
+2026-06,category (national),Hôtels classés,56,1,vs 25,yes
+2026-06,category (national),1 étoile,46,1,vs 25,yes
+2026-06,category (national),2 étoiles,47,4,vs 25,yes
+2026-06,category (national),3 étoiles,52,3,vs 25,yes
+2026-06,category (national),4 étoiles,60,1,vs 25,yes
+2026-06,category (national),5 étoiles,60,-1,vs 25,yes
+2026-06,category (national),Luxe,54,1,vs 25,yes
+2026-06,category (national),Maisons d'hôtes,62,-1,vs 25,yes
+2026-06,category (national),Hôtels clubs,73,-2,vs 25,yes
+2026-06,category (national),Résidences hôtelières,55,2,vs 25,yes
+2026-06,category (national),Autres catégories,48,-1,vs 25,yes
+2026-07,destination,Al Haouz,78,-1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Agadir,75,-1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Tanger,73,10,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,El Jadida,65,-2,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Marrakech,64,2,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Rabat,57,0,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Essaouira,54,-4,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Casablanca,51,-5,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Fès,44,1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Ouarzazate,36,-4,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,destination,Autres destinations,45,-1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,national,Total EHTC,57,0,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,TTA - Tanger-Tétouan-Al Hoceïma,64,4,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,Oriental - Oriental,50,3,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,FM - Fès-Meknès,42,1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,RSK - Rabat-Salé-Kénitra,57,0,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,CS - Casablanca-Settat,52,-4,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,MS - Marrakech-Safi,63,1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,BMK - Béni Mellal-Khénifra,33,-1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,DT - Drâa-Tafilalet,34,-1,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,SM - Souss-Massa,72,-3,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,GON - Guelmim-Oued Noun,35,2,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,LSA - Laâyoune-Sakia El Hamra,33,-3,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,region,DOE - Dakhla-Oued Ed-Dahab,66,14,vs 24 (as printed),"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),Hôtels classés,57,1,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),1 étoile,46,-2,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),2 étoiles,51,1,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),3 étoiles,53,1,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),4 étoiles,61,2,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),5 étoiles,62,-1,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),Luxe,53,3,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),Maisons d'hôtes,56,-1,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),Hôtels clubs,77,1,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),Résidences hôtelières,57,0,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-07,category (national),Autres catégories,46,-4,vs 25,"MONTH NOT SHOWN ON PAGE - assumed July 2026, owner to confirm"
+2026-09,destination,Al Haouz,77,1,(no year printed),yes
+2026-09,destination,Agadir,76,1,(no year printed),yes
+2026-09,destination,Marrakech,76,1,(no year printed),yes
+2026-09,destination,Tanger,68,2,(no year printed),yes
+2026-09,destination,Casablanca,62,-2,(no year printed),yes
+2026-09,destination,Rabat,60,3,(no year printed),yes
+2026-09,destination,Essaouira,57,0,(no year printed),yes
+2026-09,destination,Fès,57,0,(no year printed),yes
+2026-09,destination,Ouarzazate,42,4,(no year printed),yes
+2026-09,destination,Berkan-Saïdia,39,-4,(no year printed),yes
+2026-09,destination,Autres provinces,40,0,(no year printed),yes
+2026-09,national,Total EHTC,60,0,(no year printed),yes
+2026-09,region,TTA - Tanger-Tétouan-Al Hoceïma,54,2,(no year printed),yes
+2026-09,region,Oriental - Oriental,39,-1,(no year printed),yes
+2026-09,region,FM - Fès-Meknès,48,0,(no year printed),yes
+2026-09,region,RSK - Rabat-Salé-Kénitra,55,2,(no year printed),yes
+2026-09,region,CS - Casablanca-Settat,58,-4,(no year printed),yes
+2026-09,region,MS - Marrakech-Safi,73,1,(no year printed),yes
+2026-09,region,BMK - Béni Mellal-Khénifra,33,-1,(no year printed),yes
+2026-09,region,DT - Drâa-Tafilalet,38,1,(no year printed),yes
+2026-09,region,SM - Souss-Massa,73,1,(no year printed),yes
+2026-09,region,GON - Guelmim-Oued Noun,35,3,(no year printed),yes
+2026-09,region,LSA - Laâyoune-Sakia El Hamra,33,0,(no year printed),yes
+2026-09,region,DOE - Dakhla-Oued Ed-Dahab,56,1,(no year printed),yes
+2026-09,category (national),Hôtels classés,59,0,(no year printed),yes
+2026-09,category (national),1 étoile,43,1,(no year printed),yes
+2026-09,category (national),2 étoiles,44,1,(no year printed),yes
+2026-09,category (national),3 étoiles,57,1,(no year printed),yes
+2026-09,category (national),4 étoiles,66,0,(no year printed),yes
+2026-09,category (national),5 étoiles,65,-3,(no year printed),yes
+2026-09,category (national),Luxe,58,1,(no year printed),yes
+2026-09,category (national),Maisons d'hôtes,63,2,(no year printed),yes
+2026-09,category (national),Hôtels clubs,78,1,(no year printed),yes
+2026-09,category (national),Résidences hôtelières,61,0,(no year printed),yes
+2026-09,category (national),Autres catégories,49,0,(no year printed),yes

@@ -31,6 +31,7 @@ from dotenv import load_dotenv
 from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
 import rate_benchmark as RB
+import official_monthly as OMM
 import events_db as EV
 import tourism_data as TD
 import rates_store as RS
@@ -5774,6 +5775,8 @@ def api_occupancy_hotel(hotel_id):
             'avg_revpar_high_30d': round(sum(r_hi) / len(r_hi)) if full else None,
             'confidence_counts': conf_counts,
             'model_run_date':    model_run,
+            # the hotel's city is held to its official monthly occupancy (official_monthly.py)
+            'calibrated':        OMM.calibrated((RB.load_hotels(DATA_DIR).get(str(hotel_id)) or {}).get('city', '')),
         })
     except Exception as e:
         app.logger.error(f'Occupancy hotel error {hotel_id}: {e}', exc_info=True)
@@ -5865,6 +5868,15 @@ def api_admin_occupancy_compare():
                     'avg_v1': round(sum(v1s) / len(v1s), 1) if v1s else None,
                     'avg_v2': round(sum(v2s) / len(v2s), 1) if v2s else None,
                     'model_run_date': max((r.get('model_run_date', '') for r in rows), default='') or None})
+
+
+@app.route('/api/admin/occupancy/official-monthly')
+@admin_required
+def api_admin_occupancy_official_monthly():
+    """The official monthly occupancy (official_monthly.py): each platform city's
+    figure, how it is used and the status of every month; the files' checks."""
+    return jsonify({'source': OMM.SOURCE, 'latest_month': OMM.latest_month(), 'issues': OMM.validate(),
+                    'rows': OMM.coverage_table()})
 
 
 @app.route('/api/admin/occupancy/side-by-side')

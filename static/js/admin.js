@@ -1836,7 +1836,24 @@ function renderReadiness() {
   sbsTable('occ-rd-hotels-table', ['Hotel', 'City', 'Priced nights', 'Days of prices', 'Last 7 days', 'Own price', 'Ready', 'Projected'],
     r.hotel_rows.map(x => [x.name, x.city, x.priced_nights, x.history_days, x.recent_days, yes(x.checks.own_price), yes(x.ready), x.ready ? 'now' : (x.ready_on || 'no date')]));
 }
+async function loadOfficialMonthly() {
+  try {
+    const res = await fetch('/api/admin/occupancy/official-monthly', { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) return;
+    document.getElementById('occ-om-source').textContent = `${d.source}; latest month ${d.latest_month || '—'}`;
+    const iss = document.getElementById('occ-om-issues');
+    iss.replaceChildren(...(d.issues || []).map(t => { const li = document.createElement('div'); li.textContent = '• ' + t; return li; }));
+    const months = ((d.rows || []).find(r => r.months && r.months.length) || { months: [] }).months.map(m => m.month);
+    const mark = { official: '', unconfirmed: ' (unconfirmed)', derived: ' (rebuilt)', region: ' (region)', filled: ' (filled)', missing: '' };
+    sbsTable('occ-om-table', ['City', 'Official figure', 'Level', 'Confidence', 'Used as', 'Yearly change', 'Note', ...months],
+      (d.rows || []).map(r => [r.city || '—', r.official, r.level, r.confidence ? (r.confidence === 'high' ? 'high' : r.confidence.toUpperCase()) : '',
+        r.use === 'series' ? (r.pattern ? 'monthly pattern' : 'series (too few months)') : r.use, r.growth_pts != null ? `${r.growth_pts > 0 ? '+' : ''}${r.growth_pts} pts` : '',
+        r.note || '', ...months.map(m => { const x = (r.months || []).find(y => y.month === m); return x && x.value != null ? `${Math.round(x.value)}%${mark[x.status] || ''}${x.used ? '' : ' ·not used'}` : '–'; })]));
+  } catch { /* the rest of the page still loads */ }
+}
 async function loadSideBySide(refresh) {
+  loadOfficialMonthly();
   const msg = document.getElementById('occ-sbs-msg');
   msg.textContent = 'Loading… (up to a minute the first time each day)';
   try {

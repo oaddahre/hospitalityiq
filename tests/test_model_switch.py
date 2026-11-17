@@ -33,7 +33,8 @@ def inputs(hotels, performance=None, rows=(), no_stand_in=()):
 
 class V2Anchor(unittest.TestCase):
     def test_city_year_on_official_figure(self):
-        for city in ('Marrakech', 'Casablanca', 'Tanger', 'Ouarzazate', 'Dakhla', 'Errachidia'):
+        # without official monthly figures (with them: tests/test_official_monthly.py)
+        for city in ('Kenitra', 'Meknes', 'Oujda'):
             for cat in ('Luxury', 'Midscale'):
                 hs = {'1': hotel('1', city, cat)}
                 inp = inputs(hs)
@@ -45,7 +46,7 @@ class V2Anchor(unittest.TestCase):
         n = date(2027, 3, 10)
         a = OM.estimate_v2(inputs({'1': hotel('1', 'Casablanca')}), '1', n, {})
         b = OM.estimate_v2(inputs({'1': hotel('1', 'Kenitra')}), '1', n, {})
-        self.assertIn('official_city(57% 2025)', a['signals'])
+        self.assertIn('official_city_month(', a['signals'])          # held to the official month (Casablanca)
         self.assertIn('official_national', b['signals'])
         self.assertEqual((b['high'] - b['low']) - (a['high'] - a['low']), 2 * OM.V2['range_national'])
 

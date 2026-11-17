@@ -619,6 +619,8 @@ const KodoBar = (() => {
 })();
 const ROOMS_REVPAR_TIP = 'Rooms RevPAR is room revenue per available room. It excludes food and beverage and other revenue. On Kodo it is estimated from modelled occupancy and the published rate (BAR).';
 const EST_TIP = 'Kodo estimate: occupancy model, next 30 nights; Rooms RevPAR = BAR × modelled occupancy. ' + ROOMS_REVPAR_TIP;
+// Where the hotel's city is held to its official monthly occupancy (occ_calibrated / calibrated from the APIs)
+const CALIBRATED_LABEL = 'Kodo est., calibrated on official monthly city occupancy';
 const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
 
 const KodoLive = (() => {
@@ -669,6 +671,7 @@ const KodoLive = (() => {
       bar: KodoBar.group(rows.map(v => ({ bar_mad: v.bar, bar_nights: v.bar_nights }))),
       rate: w(v => v.rate), occ: w(v => v.occ), low: w(v => v.occ_low), high: w(v => v.occ_high), revpar: w(v => v.revpar),
       rlow: w(v => v.revpar_low), rhigh: w(v => v.revpar_high),
+      calibrated: rows.length > 0 && rows.every(v => v.occ_calibrated),
       change: { occ: change(v => v.occ), revpar: change(v => v.revpar) },
     };
   }
@@ -724,7 +727,7 @@ const KodoLive = (() => {
     const occLine = `Next 30 nights · ${period}`;
     const cover = fig => one ? `estimated on ${one[fig + '_nights'] ?? 0} of ${n} nights`
       : `based on ${a[fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
-    const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'mixed' ? 'v2 where enough prices are collected, v1 elsewhere' : d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: 'Kodo estimate, not measured' });
+    const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'mixed' ? 'v2 where enough prices are collected, v1 elsewhere' : d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: a.calibrated ? CALIBRATED_LABEL + ', not measured' : 'Kodo estimate, not measured' });
     if (els.rate) KodoBar.card(els.rate, one ? { single: true, val: one.bar, nights: one.bar_nights || 0 } : a.bar, d);
     // CONFIDENCE_UI (flags.py, off until approved): a plain label on the
     // modelled cards; greyed under medium, hidden when insufficient
@@ -747,8 +750,8 @@ const KodoLive = (() => {
       else {
         const range = a.low.val != null && a.high.val != null && a.low.n === a.occ.n
           ? `range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%` : '';
-        show(c, `${a.occ.val.toFixed(1)}%`, range ? range : 'Kodo estimate');
-        part(c, 'kpi-sub').textContent = cover('occ');
+        show(c, `${a.occ.val.toFixed(1)}%`, range ? range : (a.calibrated ? CALIBRATED_LABEL : 'Kodo estimate'));
+        part(c, 'kpi-sub').textContent = (a.calibrated && range ? CALIBRATED_LABEL + ' · ' : '') + cover('occ');
         delta(c, a.change.occ, 'pts');
         if (conf) confLine(c, conf);
       }
@@ -2145,9 +2148,9 @@ async function renderOccCalendar(hotelId) {
   const cc = data.price_coverage_counts || {};
   const nDays = (cc.full || 0) + (cc.partial || 0) + (cc.none || 0);
   const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
-  badgeEl.textContent = 'Kodo estimate';
+  badgeEl.textContent = data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';
   if (noteEl) {
-    noteEl.textContent = ['Kodo estimate · modelled, not measured',
+    noteEl.textContent = [(data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ' · modelled, not measured',
       data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
       covLabel && `Price coverage: ${covLabel}`].filter(Boolean).join(' · ');
   }

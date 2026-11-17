@@ -446,14 +446,18 @@ RESORT_SEASON_DESTINATIONS = {
 
 
 def resort_season_destinations(env=os.environ):
-    """{destination: confidence} where the resort swing is on."""
+    """{destination: confidence} where the resort swing is on. Never where the
+    city has its own official monthly pattern (official_monthly.has_pattern:
+    Agadir / Taghazout, Essaouira, Dakhla among them): the official months are
+    its seasonality, whatever the settings say."""
+    import official_monthly as OMM
     names = lambda v: {x.strip() for x in str(env.get(v, '') or '').split(',') if x.strip()}
     out = dict(RESORT_SEASON_DESTINATIONS)
     for c in names('RESORT_SEASON_ON'):
         out.setdefault(c, 'switched on by setting')
     for c in names('RESORT_SEASON_OFF'):
         out.pop(c, None)
-    return out
+    return {c: v for c, v in out.items() if not OMM.has_pattern(c)}
 
 
 def resort_swing(hotel):
@@ -513,6 +517,117 @@ def calendar_centre(city, hotel_type, year, resort=False):
         key = ('centre', city, hotel_type, year, resort, RESORT_SEASON_X, _EVENT_NIGHTS.get('key'))
         _V1_CACHE[key] = tot / days
     return _V1_CACHE[key]
+
+
+# ─── Official monthly city occupancy (official_monthly.py) ────────────────────
+# Where the official figures give a city's occupancy for a month (published,
+# rebuilt or filled; for later months the latest year moved by the city's
+# yearly change; for earlier years the latest year's pattern at that year's
+# annual level), the city's hotels are held to it: one shift in pts, the
+# same for every hotel of the city that month, makes the room-weighted
+# average of their nights (each held within the clamps) equal the official
+# figure. Hotels keep their differences (weekday pattern by type, events,
+# price position, the resort swing where it is on), so the existing logic
+# spreads the city's figure across its hotels. v1 is held with everything it
+# uses; v2 with its structural part (official level, weekday, season,
+# calendar): its price signals then move nights around that level.
+
+def official_month(city, night):
+    """(occupancy %, status, scope) for the city and the night's month, or None."""
+    import official_monthly as OMM
+    return OMM.target(city, night.year, night.month)
+
+
+def _city_hotels(city):
+    """[(hotel, rooms)] open hotels of the city (rooms: 1 where unknown)."""
+    key = ('cityh', HOTELS_CSV, _mtime(HOTELS_CSV))
+    if _V1_CACHE.get('cityh_key') != key:
+        by = {}
+        try:
+            with open(HOTELS_CSV, encoding='utf-8') as f:
+                for r in csv.DictReader(f):
+                    if r.get('status', '').lower() in ('open', 'operating'):
+                        try:
+                            k = float(r.get('keys') or 0) or 1.0
+                        except ValueError:
+                            k = 1.0
+                        by.setdefault(r.get('city', ''), []).append((r, k))
+        except OSError:
+            pass
+        _V1_CACHE.update(cityh_key=key, cityh=by)
+    return _V1_CACHE['cityh'].get(city, [])
+
+
+def _v1_raw(hotel, night, position):
+    """v1 before the clamps and before the month shift: official annual level,
+    day of week, season, events, price position (pts)."""
+    city = hotel.get('city', '')
+    anchor = official_anchor(city)
+    if anchor is None:
+        return None
+    htype = classify_hotel_type(hotel)
+    resort = resort_swing(hotel)
+    dow, season, ev, _, _ = _calendar_pts(city, htype, night, resort)
+    price_pts = (position or {}).get('pts') if price_position_for(hotel) else None
+    base = anchor_base(anchor[0], city, htype, night.year, resort, V1['clamp_low'], V1['clamp_high'])
+    return base + dow + season + ev + (price_pts or 0)
+
+
+def _v2_struct(hotel, night):
+    """v2's structural part before the clamps and the month shift."""
+    city = hotel.get('city', '')
+    anchor = official_anchor(city)
+    if anchor is None:
+        return None
+    htype = classify_hotel_type(hotel)
+    resort = resort_swing(hotel)
+    base = anchor_base(anchor[0], city, htype, night.year, resort, V2['clamp_low'], V2['clamp_high'])
+    dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
+    cal = _clamp(event_points(city, htype, night)[0], -V2['calendar_max_pts'], V2['calendar_max_pts'])
+    return base + dow + season_pts(city, night.month, resort) + cal
+
+
+def _solve_shift(vals, target, lo, hi):
+    """The shift s with sum(k * clamp(x + s)) / sum(k) == target."""
+    w = sum(k for k, _ in vals)
+    a, b = -200.0, 200.0
+    for _ in range(60):
+        mid = (a + b) / 2
+        if sum(k * min(hi, max(lo, x + mid)) for k, x in vals) / w < target:
+            a = mid
+        else:
+            b = mid
+    return (a + b) / 2
+
+
+def month_shift(kind, city, year, month, today=None, hotel=None):
+    """(shift in pts, (target %, status, scope)) holding the city's hotels to
+    the official figure for that month, or None. kind: 'v1' | 'v2'."""
+    t = official_month(city, date(year, month, 1))
+    if t is None:
+        return None
+    if kind == 'v1':
+        pos = price_positions(today=today)
+        pos_key = _V1_CACHE.get('pos_key')
+    else:
+        pos, pos_key = {}, None
+    key = ('mshift', kind, city, year, month, t, pos_key, _mtime(HOTELS_CSV), _EVENT_NIGHTS.get('key'),
+           RESORT_SEASON_X, price_position_mode(), tuple(sorted(resort_season_destinations())))
+    if key not in _V1_CACHE:
+        members = _city_hotels(city) or ([(hotel, 1.0)] if hotel else [])
+        first = date(year, month, 1)
+        nights = [first + timedelta(days=i) for i in range((date(year + (month == 12), month % 12 + 1, 1) - first).days)]
+        vals = []
+        for h, k in members:
+            hid = str(h.get('id', '')).split('.')[0]
+            for n in nights:
+                x = _v1_raw(h, n, pos.get(hid)) if kind == 'v1' else _v2_struct(h, n)
+                if x is not None:
+                    vals.append((k, x))
+        c = V1 if kind == 'v1' else V2
+        _V1_CACHE[key] = _solve_shift(vals, t[0], c['clamp_low'], c['clamp_high']) if vals else None
+    sh = _V1_CACHE[key]
+    return None if sh is None else (sh, t)
 
 
 def price_positions(data_dir=None, today=None):
@@ -590,12 +705,14 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     price_pts = position.get('pts') if price_position_for(hotel) else None
     base = anchor_base(anchor[0], city, hotel_type, date.year, resort, V1['clamp_low'], V1['clamp_high'])
     c = V1
-    mid = _clamp(base + dow + season + ev + (price_pts or 0), c['clamp_low'], c['clamp_high'])
+    held = month_shift('v1', city, date.year, date.month, today, hotel)
+    shift = held[0] if held else 0.0
+    mid = _clamp(base + dow + season + ev + (price_pts or 0) + shift, c['clamp_low'], c['clamp_high'])
     if resort:                          # measured error of resorts after the seasonal fix
         half = c['range_resort'] + ev_range
     else:
         half = c['range_base'] + ev_range
-        if anchor[2] == 'national':
+        if (held[1][2] == 'region') if held else anchor[2] == 'national':
             half += c['range_national']
         if price_pts is None:
             half += c['range_no_price_position']
@@ -609,6 +726,9 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
         'anchor_year':             anchor[1],
         'anchor_scope':            anchor[2],
         'base':                    round(base, 1),
+        'official_month':          held and {'occupancy': held[1][0], 'status': held[1][1], 'scope': held[1][2],
+                                             'month': f'{date.year:04d}-{date.month:02d}'},
+        'month_shift':             round(shift, 1),
         'rate_adjustment':         price_pts or 0.0,
         'dow_adjustment':          round(dow, 1),
         'seasonality_adjustment':  round(season, 1),
@@ -991,7 +1111,13 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     base = anchor_base(anchor[0], hotel.get('city', ''), htype, night.year, resort, c['clamp_low'], c['clamp_high'])
     dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
     season = season_pts(hotel.get('city', ''), night.month, resort)
-    signals += [f'official_{anchor[2]}({anchor[0]:.0f}% {anchor[1]})', 'day_of_week', 'season']
+    held = month_shift('v2', hotel.get('city', ''), night.year, night.month, hotel=hotel)
+    shift = held[0] if held else 0.0
+    if held:                             # held to the city's official figure for the month (as v1)
+        signals += [f'official_{held[1][2]}_month({held[1][0]:.0f}% {night.year:04d}-{night.month:02d} {held[1][1]})',
+                    'day_of_week', 'season']
+    else:
+        signals += [f'official_{anchor[2]}({anchor[0]:.0f}% {anchor[1]})', 'day_of_week', 'season']
 
     src = inp.source.get(hid, 'none')
     signals.append(f'normal_price:{src}' + (f'({inp.points[hid]} nights)' if src == 'history' else ''))
@@ -1023,7 +1149,7 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if names:
         signals.append('calendar:' + ','.join(dict.fromkeys(names)))
 
-    mid = _clamp(base + dow + season + market + own + soldout_city + calendar + cand, c['clamp_low'], c['clamp_high'])
+    mid = _clamp(base + shift + dow + season + market + own + soldout_city + calendar + cand, c['clamp_low'], c['clamp_high'])
 
     priced_city = inp.city_priced(hid, night)
     half = c['range_base'] + next(p for n, p in reversed(c['range_city_priced']) if priced_city >= n)
@@ -1043,7 +1169,7 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if gap == 'closed':
         half += c['range_closed']
     half += ev_range                     # estimated or moon-dependent event dates
-    if anchor[2] == 'national':
+    if (held[1][2] == 'region') if held else anchor[2] == 'national':
         half += c['range_national']
     # as v1 (Nov 2026 backtest): resorts at least their measured error, others 5 pts wider
     half = max(half, V1['range_resort']) if resort else half + c['range_widen']
@@ -1055,7 +1181,7 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
         'low': low, 'mid': mid, 'high': high, 'price': price, 'normal_source': src,
         'normal_price': inp.normal[hid][night.weekday()] if hid in inp.normal else None,
         'market_heat': round((heat - 1) * 100, 1) if heat is not None else None,
-        'base': round(base, 1), 'dow': round(dow, 1), 'season': round(season, 1),
+        'base': round(base + shift, 1), 'dow': round(dow, 1), 'season': round(season, 1), 'month_shift': round(shift, 1),
         'market': round(market, 1), 'own': round(own, 1), 'soldout': round(soldout_city + cand, 1),
         'calendar': round(calendar, 1), 'gap': gap or '',
         'confidence': confidence_for(price, recent_price_days),
@@ -1216,6 +1342,9 @@ class OccupancyModel:
                     'high':                breakdown['high'],
                     'price_coverage':      price_coverage(breakdown['confidence']),
                     'signals_used':        ';'.join(filter(None, [
+                        (f"official_{breakdown['official_month']['scope']}_month({breakdown['official_month']['occupancy']:.0f}% "
+                         f"{breakdown['official_month']['month']} {breakdown['official_month']['status']})")
+                        if breakdown.get('official_month') else
                         f"official_{breakdown['anchor_scope']}({breakdown['anchor']:.0f}% {breakdown['anchor_year']})",
                         'day_of_week', 'season',
                         position.get('pts') is not None and f"price_position({position['pts']:+.1f})",

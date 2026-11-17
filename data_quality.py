@@ -368,7 +368,8 @@ def group_level(members):
 def structural_year(hotels, year):
     """{hotel_id: average modelled occupancy over every night of `year`}
     with no price signal: the models' own prior (the official city anchor,
-    weekday, season, calendar), as v1 and v2 compute it before prices."""
+    the city's official month where there is one, weekday, season, calendar),
+    as v1 and v2 compute it before prices."""
     import occupancy_model as OM
     out, cache = {}, {}
     nights = [date(year, 1, 1) + timedelta(days=i) for i in range((date(year + 1, 1, 1) - date(year, 1, 1)).days)]
@@ -386,7 +387,11 @@ def structural_year(hotels, year):
                 cal = OM._clamp(OM.event_points(k[0], t, n)[0], -OM.V2['calendar_max_pts'], OM.V2['calendar_max_pts'])
                 cache[k] = (OM.DOW_ADJUSTMENTS.get(t, OM.DOW_ADJUSTMENTS['city_business']).get(n.weekday(), 0) * 100
                             + OM.season_pts(k[0], n.month, resort) + cal)
-            tot += OM._clamp(base + cache[k], OM.V2['clamp_low'], OM.V2['clamp_high'])
+            mk = ('shift', k[0], n.year, n.month)          # the city held to its official month
+            if mk not in cache:
+                held = OM.month_shift('v2', k[0], n.year, n.month, hotel=h)
+                cache[mk] = held[0] if held else 0.0
+            tot += OM._clamp(base + cache[k] + cache[mk], OM.V2['clamp_low'], OM.V2['clamp_high'])
         out[hid] = tot / len(nights)
     return out
 

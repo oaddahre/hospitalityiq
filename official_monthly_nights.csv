@@ -1,0 +1,25 @@
+month,name,nights,unit,variation_pct_vs_prior_year,share_pct
+2026-02,Marrakech,1073000,nights (page gives thousands),3,36
+2026-02,Agadir,615000,nights (page gives thousands),4,21
+2026-02,Casablanca,224000,nights (page gives thousands),0,7
+2026-02,Tanger,108000,nights (page gives thousands),-20,4
+2026-02,Fès,107000,nights (page gives thousands),-9,4
+2026-02,Al Haouz,106000,nights (page gives thousands),-7,4
+2026-02,Essaouira,79000,nights (page gives thousands),-12,3
+2026-02,Rabat,64000,nights (page gives thousands),-8,2
+2026-02,Ouarzazate,61000,nights (page gives thousands),-2,2
+2026-02,Errachidia,55000,nights (page gives thousands),-19,2
+2026-02,Autres destinations,501000,nights (page gives thousands),-16,15
+2026-02,Total,2993000,nights (page gives thousands),-4,100
+2026-08,Marrakech,1397506,nights,3,28
+2026-08,Agadir,1021591,nights,6,21
+2026-08,Tanger,307022,nights,-2,6
+2026-08,Casablanca,287599,nights,11,6
+2026-08,Al Haouz,164139,nights,15,3
+2026-08,Essaouira,158347,nights,8,3
+2026-08,Berkan-Saïdia,154974,nights,25,3
+2026-08,Fès,124714,nights,8,3
+2026-08,M'diq-Fnideq,110175,nights,8,2
+2026-08,El Jadida,107093,nights,1,2
+2026-08,Autres provinces,1097575,nights,6,22
+2026-08,Total,4930735,nights,6,100
