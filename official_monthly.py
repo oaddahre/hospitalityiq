@@ -2,6 +2,12 @@
 region (internal: transcribed by the owner from the Observatoire du Tourisme
 monthly dashboards, Nov 2026; never name the provider on a client screen).
 
+New pages: drop a file in the same format next to it, named
+official_monthly_occupancy_<anything>.csv (e.g. ..._2026-02.csv), or replace
+the main file. Every such file is read (main file first, the others by
+name); a month and name in a later file replace the earlier row, and a
+published month replaces the filled one with no other change.
+
 Files (repo): official_monthly_occupancy.csv (occupancy %, change on a year
 earlier in rounded points, the page's label for that change, whether the
 month was shown on the page) and official_monthly_nights.csv (nights, Feb
@@ -27,6 +33,7 @@ earlier years the latest year's monthly pattern at that year's official
 annual level (pattern).
 """
 import csv
+import glob
 import os
 import statistics
 
@@ -53,11 +60,11 @@ MAPPING = {
                               'note': 'the official destination may cover Rabat only; our city also has Salé and Témara'},
     'Essaouira':             {'name': 'Essaouira',  'level': 'destination', 'confidence': 'high',  'use': 'series'},
     'Ouarzazate':            {'name': 'Ouarzazate', 'level': 'destination', 'confidence': 'high',  'use': 'series'},
-    'Errachidia':            {'name': 'Errachidia', 'level': 'destination', 'confidence': 'medium', 'use': 'series',
+    'Errachidia':            {'name': 'Errachidia', 'level': 'destination', 'confidence': 'medium', 'use': 'series', 'range': 'region',
                               'note': 'missing from four pages: those months from the Drâa-Tafilalet region'},
-    'Dakhla':                {'name': 'DOE - Dakhla-Oued Ed-Dahab', 'level': 'region', 'confidence': 'medium', 'use': 'series',
+    'Dakhla':                {'name': 'DOE - Dakhla-Oued Ed-Dahab', 'level': 'region', 'confidence': 'medium', 'use': 'series', 'range': 'region',
                               'note': 'region figure: Dakhla holds nearly all of the region\'s classified hotels'},
-    'Laayoune':              {'name': 'LSA - Laâyoune-Sakia El Hamra', 'level': 'region', 'confidence': 'lower', 'use': 'series',
+    'Laayoune':              {'name': 'LSA - Laâyoune-Sakia El Hamra', 'level': 'region', 'confidence': 'lower', 'use': 'series', 'range': 'region',
                               'note': 'region figure: Laâyoune is most of the region\'s capacity; the region moves a lot month to month'},
     'Ifrane':                {'name': 'Ifrane',     'level': 'destination', 'confidence': 'lower', 'use': 'months',
                               'note': 'published for Dec 2025 only'},
@@ -91,6 +98,29 @@ def _mtime(p):
         return None
 
 
+def occ_files(path=None):
+    """The main occupancy file, then any official_monthly_occupancy_*.csv by name."""
+    path = path or OCC_PATH
+    return [path] + sorted(glob.glob(path[:-4] + '_*.csv'))
+
+
+def _version():
+    return tuple((p, _mtime(p)) for p in occ_files())
+
+
+def _rows(path=None):
+    """[(file, line, row)] from every occupancy file; a later (month, name) replaces an earlier one."""
+    keep = {}
+    for p in occ_files(path):
+        try:
+            with open(p, encoding='utf-8') as f:
+                for i, r in enumerate(csv.DictReader(f), start=2):
+                    keep[(r['month'].strip(), ALIASES.get(r['name'].strip(), r['name'].strip()))] = (p, i, r)
+        except OSError:
+            continue
+    return list(keep.values())
+
+
 def ym(y, m):
     return f'{y:04d}-{m:02d}'
 
@@ -104,7 +134,7 @@ def shift(key, k):
 def _memo(fn):
     """Cache a function of the city (and month) per version of the occupancy file."""
     def wrap(*args):
-        key = (fn.__name__, args, _mtime(OCC_PATH))
+        key = (fn.__name__, args, _version())
         if key not in _cache:
             _cache[key] = fn(*args)
         return _cache[key]
@@ -115,21 +145,17 @@ def _memo(fn):
 def load(path=None):
     """{name: {YYYY-MM: {'occ', 'var', 'label', 'confirmed', 'level'}}} (cached per file version)."""
     path = path or OCC_PATH
-    key = ('load', path, _mtime(path))
+    key = ('load', path, _version())
     if key not in _cache:
         out = {}
-        try:
-            with open(path, encoding='utf-8') as f:
-                for r in csv.DictReader(f):
-                    name = ALIASES.get(r['name'].strip(), r['name'].strip())
-                    out.setdefault(name, {})[r['month'].strip()] = {
-                        'occ': float(r['occupancy_pct']),
-                        'var': float(r['variation_pts']) if str(r.get('variation_pts', '')).strip() not in ('', 'NA') else None,
-                        'label': r.get('variation_label_on_page', ''),
-                        'confirmed': str(r.get('month_confirmed', '')).strip().lower() == 'yes',
-                        'level': r['level'].strip()}
-        except OSError:
-            out = {}
+        for _, _, r in _rows(path):
+            name = ALIASES.get(r['name'].strip(), r['name'].strip())
+            out.setdefault(name, {})[r['month'].strip()] = {
+                'occ': float(r['occupancy_pct']),
+                'var': float(r['variation_pts']) if str(r.get('variation_pts', '')).strip() not in ('', 'NA') else None,
+                'label': r.get('variation_label_on_page', ''),
+                'confirmed': str(r.get('month_confirmed', '')).strip().lower() == 'yes',
+                'level': r['level'].strip()}
         _cache.clear()                             # a new file: every cached result goes
         _cache[key] = out
     return _cache[key]
@@ -137,7 +163,7 @@ def load(path=None):
 
 def latest_month(data=None):
     if data is None:
-        key = ('latest', _mtime(OCC_PATH))
+        key = ('latest', _version())
         if key not in _cache:
             _cache[key] = latest_month(load())
         return _cache[key]
@@ -149,7 +175,7 @@ def raw_series(name, data=None):
     """{YYYY-MM: (value, status)} for one official name: published, the year
     before rebuilt from the change, and gaps filled."""
     data = load() if data is None else data
-    key = ('raw', name, id(data), _mtime(OCC_PATH))
+    key = ('raw', name, id(data), _version())
     if key in _cache:
         return _cache[key]
     pub = data.get(name, {})
@@ -294,6 +320,16 @@ def target(city, year, month):
     return round(max(5.0, min(98.0, v)), 1), 'pattern', scope
 
 
+@_memo
+def range_scope(city):
+    """For the range: 'city' (the city's own monthly series), 'region' (a
+    region stands in, or many of its months come from one: Dakhla, Laayoune,
+    Errachidia) or 'none' (no monthly series)."""
+    if not has_pattern(city):
+        return 'none'
+    return MAPPING[city].get('range', 'city')
+
+
 def calibrated(city):
     """Whether estimates for the city are calibrated on its official monthly figures (the label)."""
     return has_pattern(city)
@@ -325,22 +361,29 @@ def validate(occ_path=None, nights_path=None):
     """Problems and oddities in the two files, as sentences (empty: none)."""
     occ_path, nights_path = occ_path or OCC_PATH, nights_path or NIGHTS_PATH
     issues = []
-    try:
-        with open(occ_path, encoding='utf-8') as f:
-            rows = list(csv.DictReader(f))
-    except OSError as e:
-        return [f'occupancy file unreadable: {e}']
     need = {'month', 'level', 'name', 'occupancy_pct', 'variation_pts', 'variation_label_on_page', 'month_confirmed'}
-    if rows and not need <= set(rows[0]):
-        issues.append(f'occupancy file: missing columns {sorted(need - set(rows[0]))}')
-        return issues
-    seen = set()
+    for p in occ_files(occ_path):
+        try:
+            with open(p, encoding='utf-8') as f:
+                rd = csv.DictReader(f)
+                head = set(rd.fieldnames or [])
+                seen = set()
+                for i, r in enumerate(rd, start=2):
+                    k = (r.get('month'), ALIASES.get(r.get('name'), r.get('name')))
+                    if k in seen:
+                        issues.append(f'{os.path.basename(p)} line {i}: {r.get("name")} {r.get("month")} appears twice')
+                    seen.add(k)
+        except OSError as e:
+            issues.append(f'{os.path.basename(p)} unreadable: {e}')
+            continue
+        if not need <= head:
+            issues.append(f'{os.path.basename(p)}: missing columns {sorted(need - head)}')
+            return issues
+        if p != occ_path:
+            issues.append(f'{os.path.basename(p)}: added on top of the main file (its months replace the same months there)')
+    rows = [r for _, _, r in _rows(occ_path)]
     by_month = {}
     for i, r in enumerate(rows, start=2):
-        k = (r['month'], ALIASES.get(r['name'], r['name']))
-        if k in seen:
-            issues.append(f'line {i}: {r["name"]} {r["month"]} appears twice')
-        seen.add(k)
         try:
             v, var = float(r['occupancy_pct']), float(r['variation_pts'])
         except ValueError:

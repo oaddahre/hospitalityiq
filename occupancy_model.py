@@ -332,15 +332,20 @@ V1 = {
     'price_pts_per_log':     15.0,
     'price_max_pts':         10.0,
     'min_peer_hotels':          3,    # hotels of the city and category with a BAR (the hotel included)
-    # Range: half-width in pts, added up
-    'range_base':              13,    # the whole city shares one official starting point (8, +5 after
-                                      # the Nov 2026 backtest against hotel-reported figures)
-    'range_resort':            25,    # resorts: 80% of their measured monthly errors after the seasonal fix
-    'range_national':           5,    # no official figure for the city: the national one
-    'range_no_price_position':  3,    # under 7 priced nights (no BAR), or fewer than 3 peers
-    'range_short_history':      2,    # under 28 days of price collection for the hotel
-    'long_history_days':       28,
-    'range_no_price_tonight':   2,
+    # Range: half-width in pts, added up. With the city held to its official
+    # monthly figure, what is left is the hotel's own gap from its city.
+    # range_type: set so 77-79% of real months fall inside, per type, in the
+    # 7-hotel backtest (149 months, Nov 2026): city hotels 14 (2 hotels,
+    # 48 months: 77%), other (spa, riad, boutique) 24 (1 hotel, 24 months:
+    # 79%); resorts measured only where the city has no monthly series
+    # (77 months: 77% at 25 = 20 + 5), so 20 where it has one is inferred.
+    'range_type':      {'city': 14, 'resort': 20, 'other': 24},
+    # range_scope: on top, by how the city's level is known: its own official
+    # monthly series, a region standing in (Dakhla, Laayoune, Errachidia), or
+    # no monthly series (annual or national figure). Judgement: the backtest
+    # can't measure it apart (only resorts sit in cities without a series).
+    'range_scope':     {'city': 0, 'region': 3, 'none': 5},
+    'range_no_price_position':  3,    # non-resort with no price position (under 7 priced nights, or < 3 peers)
     'clamp_low':                5,
     'clamp_high':              98,
 }
@@ -630,6 +635,29 @@ def month_shift(kind, city, year, month, today=None, hotel=None):
     return None if sh is None else (sh, t)
 
 
+def range_type(hotel):
+    """'resort' (a classified resort), 'other' (riad or boutique, spa or
+    thermal hotel) or 'city' (every other hotel)."""
+    if is_seaside_resort(hotel):
+        return 'resort'
+    if classify_hotel_type(hotel) == 'riad_boutique' or 'therm' in hotel.get('name', '').lower():
+        return 'other'
+    return 'city'
+
+
+def range_scope(city):
+    """'city' (its own official monthly series), 'region' (a region stands in)
+    or 'none' (no monthly series)."""
+    import official_monthly as OMM
+    return OMM.range_scope(city)
+
+
+def range_width(hotel):
+    """The range half-width in pts by hotel type and city scope (v1 and v2),
+    before events and the other additions."""
+    return V1['range_type'][range_type(hotel)] + V1['range_scope'][range_scope(hotel.get('city', ''))]
+
+
 def price_positions(data_dir=None, today=None):
     """{hotel_id: {'bar', 'bar_nights', 'usual_bar', 'peers', 'pts', 'history_days'}}
     for every open hotel: its BAR since 3 Nov 2026 (live_kpis.observed_bar)
@@ -708,18 +736,9 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     held = month_shift('v1', city, date.year, date.month, today, hotel)
     shift = held[0] if held else 0.0
     mid = _clamp(base + dow + season + ev + (price_pts or 0) + shift, c['clamp_low'], c['clamp_high'])
-    if resort:                          # measured error of resorts after the seasonal fix
-        half = c['range_resort'] + ev_range
-    else:
-        half = c['range_base'] + ev_range
-        if (held[1][2] == 'region') if held else anchor[2] == 'national':
-            half += c['range_national']
-        if price_pts is None:
-            half += c['range_no_price_position']
-        if (position.get('history_days') or 0) < c['long_history_days']:
-            half += c['range_short_history']
-        if not scraped_bar:
-            half += c['range_no_price_tonight']
+    half = range_width(hotel) + ev_range
+    if price_pts is None and not is_seaside_resort(hotel):
+        half += c['range_no_price_position']
     low, high = (int(round(_clamp(x, c['clamp_low'], c['clamp_high']))) for x in (mid - half, mid + half))
     breakdown = {
         'anchor':                  anchor[0],
@@ -820,16 +839,15 @@ V2 = {
     # Calendar: holidays and events from events.json (EVENT_PTS above)
     'calendar_max_pts':        15.0,
 
-    # Range: half-width in pts, added up
-    'range_base':               6,
+    # Range: half-width in pts, added up, on top of v1's width by hotel type
+    # and city scope (range_width): v2 holds the same official level, so the
+    # same hotel gap; these add v2's own data gaps
     'range_city_priced':  ((0, 8), (1, 5), (3, 2), (10, 0)),   # (from N hotels priced in the city that night, + pts)
     'range_no_history':         5,     # ADR fallback or no price history
     'range_short_history':      2,     # under long_history_days
     'range_no_price_tonight':   3,
     'range_candidate':          3,
     'range_closed':             5,     # closed or unknown (5+ nights without a price in a row)
-    'range_national':           5,     # no official figure for the city: the national one (as v1)
-    'range_widen':              5,     # every non-resort range 5 pts wider each side (Nov 2026 backtest)
     'clamp_low':                5,
     'clamp_high':              98,
 
@@ -1152,7 +1170,7 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     mid = _clamp(base + shift + dow + season + market + own + soldout_city + calendar + cand, c['clamp_low'], c['clamp_high'])
 
     priced_city = inp.city_priced(hid, night)
-    half = c['range_base'] + next(p for n, p in reversed(c['range_city_priced']) if priced_city >= n)
+    half = range_width(hotel) + next(p for n, p in reversed(c['range_city_priced']) if priced_city >= n)
     if src != 'history':
         half += c['range_no_history']
     elif inp.history_days.get(hid, 0) < c['long_history_days']:
@@ -1169,10 +1187,6 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if gap == 'closed':
         half += c['range_closed']
     half += ev_range                     # estimated or moon-dependent event dates
-    if (held[1][2] == 'region') if held else anchor[2] == 'national':
-        half += c['range_national']
-    # as v1 (Nov 2026 backtest): resorts at least their measured error, others 5 pts wider
-    half = max(half, V1['range_resort']) if resort else half + c['range_widen']
     low, high = mid - half, mid + half
     if gap == 'confirmed':
         mid, low, high = max(mid, c['soldout_mid']), max(low, c['soldout_low']), c['clamp_high']

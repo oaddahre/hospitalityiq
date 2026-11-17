@@ -101,15 +101,15 @@ class Resorts(unittest.TestCase):
         n = date(2027, 3, 10)
         _, r = OM.estimate_occupancy(HOTELS['353'], n, scraped_bar=1500, position=POS)
         _, c = OM.estimate_occupancy(HOTELS['53'], n, scraped_bar=1500, position={'pts': None, 'history_days': 60})
-        self.assertEqual(OM.V1['range_resort'], 25)
-        self.assertEqual(OM.V1['range_base'], 13)
-        self.assertGreaterEqual(r['high'] - r['low'], 2 * 25 - 2)
-        _, ag = OM.estimate_occupancy(HOTELS['22'], n, scraped_bar=1500, position=POS)    # Agadir resort: the wider city range
-        self.assertLess(ag['high'] - ag['low'], 2 * 25 - 2)
-        self.assertGreaterEqual(c['high'] - c['low'], 2 * 13)
+        # widths by hotel type and city scope (tests/test_official_monthly.py checks them in full)
+        self.assertEqual(OM.V1['range_type'], {'city': 14, 'resort': 20, 'other': 24})
+        self.assertGreaterEqual(r['high'] - r['low'], 2 * (20 + 5) - 2)            # Tamuda Bay: no monthly series
+        _, ag = OM.estimate_occupancy(HOTELS['22'], n, scraped_bar=1500, position=POS)    # Agadir resort: official city
+        self.assertLess(ag['high'] - ag['low'], 2 * (20 + 5) - 2)
+        self.assertGreaterEqual(c['high'] - c['low'], 2 * OM.range_width(HOTELS['53']))
         inp = OM.V2Inputs({'53': HOTELS['53']}, {}, [], [], date(2026, 11, 16))
         e = OM.estimate_v2(inp, '53', n, {})
-        self.assertGreaterEqual(e['high'] - e['low'], 2 * (OM.V2['range_base'] + OM.V2['range_widen']))
+        self.assertGreaterEqual(e['high'] - e['low'], 2 * OM.range_width(HOTELS['53']))
 
     def test_price_position_modes(self):
         self.assertEqual(OM.PRICE_POSITION_DEFAULT, 'nonresort')

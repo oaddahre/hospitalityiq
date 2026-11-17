@@ -48,7 +48,7 @@ class V2Anchor(unittest.TestCase):
         b = OM.estimate_v2(inputs({'1': hotel('1', 'Kenitra')}), '1', n, {})
         self.assertIn('official_city_month(', a['signals'])          # held to the official month (Casablanca)
         self.assertIn('official_national', b['signals'])
-        self.assertEqual((b['high'] - b['low']) - (a['high'] - a['low']), 2 * OM.V2['range_national'])
+        self.assertEqual((b['high'] - b['low']) - (a['high'] - a['low']), 2 * OM.V1['range_scope']['none'])
 
     def test_limited_data_without_official_figure(self):
         with mock.patch.object(OM, 'official_anchor', return_value=None):

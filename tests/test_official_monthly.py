@@ -166,5 +166,58 @@ class Label(unittest.TestCase):
         self.assertIn('official monthly occupancy', meth)
 
 
+class Ranges(unittest.TestCase):
+    def test_widths_by_type_and_scope(self):
+        self.assertEqual(OM.V1['range_type'], {'city': 14, 'resort': 20, 'other': 24})
+        self.assertEqual(OM.V1['range_scope'], {'city': 0, 'region': 3, 'none': 5})
+        self.assertEqual({c: O.range_scope(c) for c in ('Marrakech', 'Dakhla', 'Laayoune', 'Errachidia', 'Tamuda Bay / Tétouan',
+                                                          'Al Hoceima', 'El Jadida', 'Saidia', 'Kenitra')},
+                         {'Marrakech': 'city', 'Dakhla': 'region', 'Laayoune': 'region', 'Errachidia': 'region',
+                          'Tamuda Bay / Tétouan': 'none', 'Al Hoceima': 'none', 'El Jadida': 'none', 'Saidia': 'none', 'Kenitra': 'none'})
+        h = lambda hid, city, name='Hotel X', keys='120': {'id': hid, 'city': city, 'category': 'Upscale', 'keys': keys, 'name': name, 'status': 'Open'}
+        self.assertEqual(OM.range_type(h('9001', 'Casablanca')), 'city')
+        self.assertEqual(OM.range_type(h('9002', 'Fes', 'Vichy Thermalia Spa Hotel')), 'other')
+        self.assertEqual(OM.range_type(h('9003', 'Marrakech', 'Riad Y', '12')), 'other')
+        self.assertEqual(OM.range_type({'id': '353', 'city': 'Tamuda Bay / Tétouan', 'name': 'Sofitel'}), 'resort')
+        pos = {'pts': 0.0, 'history_days': 60}
+        n = date(2027, 10, 13)                                                  # no event that night
+        w = lambda hh: (lambda b: b['high'] - b['low'])(OM.estimate_occupancy(hh, n, position=pos)[1])
+        self.assertEqual(w(h('9001', 'Casablanca')), 2 * 14)
+        self.assertEqual(w(h('9004', 'Dakhla')), 2 * (14 + 3))
+        self.assertEqual(w(h('9005', 'Kenitra')), 2 * (14 + 5))
+
+
+class FileSwap(unittest.TestCase):
+    """New pages (Feb, Aug 2026) are a file drop: they replace the filled months."""
+    def test_drop_in_file_replaces_filled_months(self):
+        import shutil
+        import tempfile
+        d = tempfile.mkdtemp()
+        try:
+            main = os.path.join(d, 'official_monthly_occupancy.csv')
+            shutil.copy(O.OCC_PATH, main)
+            with open(os.path.join(d, 'official_monthly_occupancy_2026-02.csv'), 'w', encoding='utf-8') as f:
+                f.write('month,level,name,occupancy_pct,variation_pts,variation_label_on_page,month_confirmed\n'
+                        '2026-02,destination,Marrakech,70,2,vs 25,yes\n'
+                        '2026-02,national,Total EHTC,55,1,vs 25,yes\n'
+                        '2026-03,destination,Marrakech,72,3,vs 25,yes\n')       # a corrected month replaces the main file's
+            with mock.patch.object(O, 'OCC_PATH', main):
+                O._cache.clear()
+                s = O.series('Marrakech')
+                self.assertEqual(s['2026-02'], (70.0, 'official'))
+                self.assertEqual(s['2025-02'], (68.0, 'derived'))
+                self.assertEqual(s['2026-03'], (72.0, 'official'))
+                self.assertEqual(O.target('Marrakech', 2026, 2), (70.0, 'official', 'city'))
+                issues = ' | '.join(O.validate(main))
+                self.assertIn('official_monthly_occupancy_2026-02.csv: added on top of the main file', issues)
+                self.assertIn('no occupancy for 2026-08', issues)
+                self.assertNotIn('2026-02,', issues.replace(' ', ''))
+            O._cache.clear()
+            self.assertEqual(O.series('Marrakech')['2026-02'], (67.0, 'filled'))   # back to the repo files
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+            O._cache.clear()
+
+
 if __name__ == '__main__':
     unittest.main()
