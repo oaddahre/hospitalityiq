@@ -22,6 +22,14 @@ series(city) gives one value per month with a status:
                the category tables on the same pages say "vs 25", and the
                year rebuilt this way matches the official 2025 annual figures
                within 2 pts, so the change is read as against 2025
+  estimate     a Kodo estimate, never official: Feb and Aug 2025 from the
+               older dashboard's month-to-month shape (official_monthly_older.csv,
+               a different, lower basis: only its shape is used, rescaled per
+               city by the ratio of the two series' averages over the months
+               both cover, at least 4); Feb and
+               Aug 2026 as that 2025 month x (nights 2026 / nights 2025, from
+               official_monthly_nights.csv) / (1 + CAPACITY_GROWTH). A real
+               page (official_monthly_occupancy_2026-02.csv, ...) replaces it
   region       the destination is missing from that month's page: its
                region's figure that month, scaled by their usual ratio
   filled       no figure for the month at all (Feb, Aug 2026 and the year
@@ -40,8 +48,13 @@ import statistics
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 OCC_PATH = os.path.join(APP_DIR, 'official_monthly_occupancy.csv')
 NIGHTS_PATH = os.path.join(APP_DIR, 'official_monthly_nights.csv')
+OLDER_PATH = os.path.join(APP_DIR, 'official_monthly_older.csv')      # older dashboard, Jan-Sep 2024/2025: shape only
 SOURCE = 'Observatoire du Tourisme, monthly dashboards (transcribed by the owner, Nov 2026)'   # internal only
 
+# Nights grow faster than occupancy when rooms are added: official 2024 -> 2025,
+# nights +8.8% and occupancy 55 -> 58% imply about +3% capacity a year
+CAPACITY_GROWTH = 0.03
+SHAPE_YEAR = '2025'           # the older dashboard is used for this year's shape only
 GROWTH_MAX_PTS = 5.0          # a city's yearly change, used to move the latest year forward, at most +-5 pts
 MIN_PATTERN_MONTHS = 9        # months of the latest 12 published (or from its region) for a city's own monthly pattern
 
@@ -161,6 +174,39 @@ def load(path=None):
     return _cache[key]
 
 
+def _older(name):
+    """{YYYY-MM: occupancy} from the older dashboard for one destination ({} if none)."""
+    key = ('older', _mtime(OLDER_PATH))
+    if key not in _cache:
+        out = {}
+        try:
+            with open(OLDER_PATH, encoding='utf-8') as f:
+                for r in csv.DictReader(f):
+                    if r['level'].strip() == 'province/destination':
+                        out.setdefault(r['name'].strip(), {})[r['month'].strip()] = float(r['occupancy_pct'])
+        except (OSError, ValueError, KeyError):
+            out = {}
+        _cache[key] = out
+    return _cache[key].get(name, {})
+
+
+def _nights_change(name):
+    """{YYYY-MM: nights this year / nights a year earlier} for one destination."""
+    key = ('nights', _mtime(NIGHTS_PATH))
+    if key not in _cache:
+        out = {}
+        try:
+            with open(NIGHTS_PATH, encoding='utf-8') as f:
+                for r in csv.DictReader(f):
+                    v = str(r.get('variation_pct_vs_prior_year', '')).strip()
+                    if v not in ('', 'NA'):
+                        out.setdefault(r['name'].strip(), {})[r['month'].strip()] = 1 + float(v) / 100
+        except (OSError, ValueError, KeyError):
+            out = {}
+        _cache[key] = out
+    return _cache[key].get(name, {})
+
+
 def latest_month(data=None):
     if data is None:
         key = ('latest', _version())
@@ -186,6 +232,16 @@ def raw_series(name, data=None):
         p = shift(m, -12)
         if r['var'] is not None and p not in s:
             s[p] = (r['occ'] - r['var'], 'derived')
+    # the year's missing months from the older dashboard's shape, rescaled to this series
+    older = {m: v for m, v in _older(name).items() if m.startswith(SHAPE_YEAR) and v}
+    common = [m for m in older if m in s and s[m][1] in ('official', 'unconfirmed', 'derived')]
+    if len(common) >= 4:
+        # the ratio of the two averages over the shared months (a mean of monthly
+        # ratios is pulled up by the low months: Tanger Mar 2025 31 vs 21)
+        ratio = statistics.mean(s[m][0] for m in common) / statistics.mean(older[m] for m in common)
+        for m, v in older.items():
+            if m not in s:
+                s[m] = (round(max(5.0, min(98.0, v * ratio)), 1), 'estimate')
     if s:
         first, last = min(s), max(s)
         region = REGION_OF.get(name)
@@ -211,6 +267,12 @@ def raw_series(name, data=None):
                     idx = lambda x: int(x[:4]) * 12 + int(x[5:])
                     s[m] = (round(a + (b - a) * (idx(m) - idx(before)) / (idx(after) - idx(before)), 1), 'filled')
             m = shift(m, 1)
+        # no page for the month but its nights: the same month a year earlier x the change in nights
+        for m, k in _nights_change(name).items():
+            prev = shift(m, -12)
+            # only on a 2025 month that is published, rebuilt or rescaled (not itself filled)
+            if (m not in s or s[m][1] in ('filled', 'region')) and prev in s and s[prev][1] in ('official', 'unconfirmed', 'derived', 'estimate'):
+                s[m] = (round(max(5.0, min(98.0, s[prev][0] * k / (1 + CAPACITY_GROWTH))), 1), 'estimate')
     s = dict(sorted(s.items()))
     _cache[key] = s
     return s
@@ -414,7 +476,8 @@ def validate(occ_path=None, nights_path=None):
                 missing.append(cur)
             cur = shift(cur, 1)
         if missing:
-            issues.append('no occupancy for ' + ', '.join(missing) + ' (filled between the nearest months)')
+            issues.append('no occupancy page for ' + ', '.join(missing) + ' (Kodo estimates from nights where the city has them,'
+                          ' else filled between the nearest months; a page dropped in replaces them)')
     dests = {}
     for r in rows:
         if r['level'] == 'destination':
