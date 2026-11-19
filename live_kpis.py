@@ -239,6 +239,57 @@ def with_change(data_dir, data, days=7):
     return data
 
 
+def explain_change(data_dir, today: date, city, days=7):
+    """Why a city's cards moved since `days` days earlier, from the daily
+    snapshots (admin only): the cards' figures on both days as the page
+    computes them (rooms-weighted over the hotels with a figure; the change
+    over the hotels with a figure on both days), the forward published rate
+    behind Rooms RevPAR, and the hotels that entered or left each figure."""
+    hotels = {h: r for h, r in RB.load_hotels(data_dir).items() if r.get('city') == city}
+    hist = _read_history(data_dir)
+    day, prev_day = today.isoformat(), (today - timedelta(days=days)).isoformat()
+    now, before = hist.get(day, {}), hist.get(prev_day, {})
+    keys = {h: (float(r.get('keys') or 0) or 0.0) for h, r in hotels.items()}
+
+    def wavg(src, k, ids):
+        pairs = [(src[h][k], keys[h]) for h in ids if h in src and src[h].get(k) is not None and keys[h]]
+        den = sum(w for _, w in pairs)
+        return (round(sum(v * w for v, w in pairs) / den, 1) if den else None), len(pairs)
+
+    out = {'city': city, 'today': day, 'compared_with': prev_day, 'snapshot_today': bool(now),
+           'snapshot_before': bool(before), 'hotels': len(hotels), 'figures': {}}
+    for k in ('occ', 'revpar', 'rate'):
+        has_now = {h for h in hotels if (now.get(h) or {}).get(k) is not None}
+        has_before = {h for h in hotels if (before.get(h) or {}).get(k) is not None}
+        both = has_now & has_before
+        a_now, n_now = wavg(now, k, has_now)
+        a_before, n_before = wavg(before, k, has_before)
+        c_now, _ = wavg(now, k, both)
+        c_before, _ = wavg(before, k, both)
+        name = lambda h: hotels[h].get('name', h)
+        out['figures'][k] = {
+            'now_all': a_now, 'hotels_now': n_now, 'before_all': a_before, 'hotels_before': n_before,
+            'now_same_hotels': c_now, 'before_same_hotels': c_before, 'same_hotels': len(both),
+            'change_shown': (round(c_now - c_before, 1) if k == 'occ' else
+                             (round((c_now / c_before - 1) * 100, 1) if c_before else None)) if both else None,
+            'entered': sorted(name(h) for h in has_now - has_before),
+            'left': sorted(name(h) for h in has_before - has_now),
+        }
+    # the biggest movers in Rooms RevPAR (same hotels), with their rate and occupancy
+    movers = []
+    for h in hotels:
+        a, b = now.get(h) or {}, before.get(h) or {}
+        if a.get('revpar') is not None and b.get('revpar') is not None:
+            movers.append({'hotel': hotels[h].get('name', h), 'rooms': keys[h],
+                           'revpar_before': b['revpar'], 'revpar_now': a['revpar'],
+                           'occ_before': b.get('occ'), 'occ_now': a.get('occ'),
+                           'rate_before': b.get('rate'), 'rate_now': a.get('rate'),
+                           'weighted_change': round((a['revpar'] - b['revpar']) * keys[h])})
+    out['movers'] = sorted(movers, key=lambda m: m['weighted_change'])[:8] + \
+        sorted(movers, key=lambda m: -m['weighted_change'])[:4]
+    return out
+
+
 def get(data_dir, today: date):
     """Cached per day and per data version (rates store, model run)."""
     key = (data_dir, today.isoformat(), RS.read_from(data_dir), _mtime(RS.csv_path(data_dir)), _mtime(RS.db_path(data_dir)),

@@ -5870,6 +5870,15 @@ def api_admin_occupancy_compare():
                     'model_run_date': max((r.get('model_run_date', '') for r in rows), default='') or None})
 
 
+@app.route('/api/admin/kpi-change')
+@admin_required
+def api_admin_kpi_change():
+    """Why a city's Occupancy, Rooms RevPAR and rate cards moved since 7 days
+    earlier (live_kpis.explain_change, from the daily snapshots)."""
+    city = request.args.get('city', 'Marrakech')
+    return jsonify(LK.explain_change(DATA_DIR, _casablanca_today(), city))
+
+
 @app.route('/api/admin/occupancy/official-monthly')
 @admin_required
 def api_admin_occupancy_official_monthly():

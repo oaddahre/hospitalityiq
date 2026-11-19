@@ -599,7 +599,9 @@ const KodoBar = (() => {
     const L = KodoLive;
     c.querySelector('.kpi-label').textContent = 'BAR (published rate)';
     if (d) setMeta({ since: d.bar_since, days: d.bar_days, min_nights: d.min_bar_nights, min_hotels: d.min_bar_hotels });
-    KodoPeriod.setText(c, caption(), KodoPeriod.tip({ source: 'published hotel rates, the last price seen before each night', note: 'observed; the public price, not what guests paid' }));
+    // Past stay nights only: from 3 Nov to today, each night at the last price seen before it
+    KodoPeriod.setText(c, `Past nights since ${longDay(meta.since).replace(/ \d{4}$/, '')}, up to today · ${days()}`,
+      KodoPeriod.tip({ source: 'published hotel rates, the last price seen before each night', note: 'observed; the public price, not what guests paid' }));
     const v = c.querySelector('.kpi-value');
     v.classList.remove('kpi-value--limited');
     const d0 = c.querySelector('.kpi-delta'); if (d0) { d0.textContent = ''; d0.style.display = 'none'; }
@@ -609,7 +611,7 @@ const KodoBar = (() => {
     }
     if (g.val == null) { L.noData(c, COLLECTING); L.part(c, 'kpi-sub').textContent = `no hotel with ${meta.min_nights} priced nights yet`; return; }
     if (g.limited) { L.noData(c, LIMITED); L.part(c, 'kpi-sub').textContent = `${g.n} hotel${g.n === 1 ? '' : 's'} with ${meta.min_nights} priced nights: needs ${meta.min_hotels}`; return; }
-    L.show(c, fmt.mad(g.val), 'MAD'); L.part(c, 'kpi-sub').textContent = `average of ${g.n} hotels · ${g.nights.toLocaleString('en')} nights`;
+    L.show(c, fmt.mad(g.val), 'MAD'); L.part(c, 'kpi-sub').textContent = `median of ${g.n} hotels' average BAR · ${g.nights.toLocaleString('en')} priced nights`;
   }
   // The empty state of a chart or card with no real data yet
   const collecting = (detail = '') => `<div class="collecting-state" role="status"><span class="collecting-dot" aria-hidden="true"></span>`
@@ -729,6 +731,20 @@ const KodoLive = (() => {
       : `based on ${a[fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
     const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'mixed' ? 'v2 where enough prices are collected, v1 elsewhere' : d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: a.calibrated ? CALIBRATED_LABEL + ', not measured' : 'Kodo estimate, not measured' });
     if (els.rate) KodoBar.card(els.rate, one ? { single: true, val: one.bar, nights: one.bar_nights || 0 } : a.bar, d);
+    // Hover notes: the window each card covers and the hotels it includes
+    const of = (k, what) => one ? '' : ` ${k} of ${a.total} hotel${a.total === 1 ? '' : 's'} ${what}.`;
+    const hover = (c, t) => { if (c) c.title = t; };
+    hover(els.rate, 'Window: past stay nights, from 3 November 2026 up to today (not the coming nights). For each night, the last published price seen before that night. '
+      + (one ? `This hotel's BAR is the average of its ${one.bar_nights || 0} priced nights (it needs ${KodoBar.meta().min_nights}).`
+             : `Each hotel's BAR is the average of its priced nights (it needs ${KodoBar.meta().min_nights}); this figure is the median of those hotel averages, not weighted by rooms.`
+               + of(a.bar.n, `have enough published prices`)));
+    hover(els.occ, `Window: the next 30 nights (${period}). ` + (a.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ': modelled, not measured. '
+      + (one ? '' : 'Average weighted by rooms.' + of(a.occ.n, 'have an estimate'))
+      + ' The change compares the same hotels 7 days earlier.');
+    hover(els.revpar, `Window: the next 30 nights (${period}). For each hotel and night, the published price for that night times the estimated occupancy, `
+      + 'averaged over the nights that have both' + (one ? '.' : '; hotels are then weighted by rooms.' + of(a.revpar.n, 'have a published price for the coming nights'))
+      + ' So it is not the BAR card times the occupancy card: BAR covers past nights and is a median of hotels.'
+      + ' The change compares the same hotels 7 days earlier.');
     // CONFIDENCE_UI (flags.py, off until approved): a plain label on the
     // modelled cards; greyed under medium, hidden when insufficient
     const conf = KODO_FLAG('CONFIDENCE_UI') && a.level;
@@ -827,6 +843,7 @@ function renderKPIs() {
   document.getElementById('kpi-keys-meta').textContent = hotelLabel;
   kc.classList.remove('loading');
   KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
+  kc.title = `Today's count from Kodo's hotel database: ${list.length} open hotel${list.length === 1 ? '' : 's'} and their ${fmt.num(keys)} rooms.`;
   // BAR: observed since 3 Nov 2026. Occupancy, Rooms RevPAR: Kodo estimates, next 30 nights (KodoLive)
   ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
   KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list);

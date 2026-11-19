@@ -533,6 +533,12 @@
     <div id="occ-om-issues" class="adm-hint"></div>
     <div class="dh-scroll"><table class="adm-table" id="occ-om-table"></table></div>
 
+    <h2 class="adm-list-filter-label" style="margin-top:28px">Why a city's cards moved (7 days)</h2>
+    <p class="adm-hint">From the daily snapshots of every hotel's figures. "Shown" is the card's change: the same hotels on both days, weighted by rooms. Rooms RevPAR uses the published price of the coming 30 nights (the "forward rate" here), not the BAR card.</p>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input id="kc-city" class="adm-input" value="Marrakech" style="max-width:220px"><button id="kc-go" class="adm-btn">Explain</button><span id="kc-msg" class="adm-hint"></span></div>
+    <div class="dh-scroll"><table class="adm-table" id="kc-table"></table></div>
+    <div class="dh-scroll"><table class="adm-table" id="kc-movers" style="margin-top:8px"></table></div>
+
     <h2 class="adm-list-filter-label" style="margin-top:28px">Resort seasonal swing, by destination</h2>
     <p class="adm-hint">Classified beach and seaside resorts follow a seasonal swing <span id="occ-res-x">—</span> times the city pattern where it is switched on: "measured" where hotel-reported figures support it, "lower confidence" on the same coast and summer market without figures yet. Elsewhere resorts keep their city's pattern. Railway settings: RESORT_SEASON_ON / RESORT_SEASON_OFF (destination names, comma-separated). Price position: <strong id="occ-pp">—</strong> (PRICE_POSITION: off, nonresort or on).</p>
     <div class="dh-scroll"><table class="adm-table" id="occ-res-table"></table></div>

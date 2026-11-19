@@ -1852,8 +1852,30 @@ async function loadOfficialMonthly() {
         r.note || '', ...months.map(m => { const x = (r.months || []).find(y => y.month === m); return x && x.value != null ? `${Math.round(x.value)}%${mark[x.status] || ''}${x.used ? '' : ' ·not used'}` : '–'; })]));
   } catch { /* the rest of the page still loads */ }
 }
+async function loadKpiChange() {
+  const msg = document.getElementById('kc-msg');
+  msg.textContent = 'Loading…';
+  try {
+    const city = document.getElementById('kc-city').value.trim();
+    const res = await fetch('/api/admin/kpi-change?city=' + encodeURIComponent(city), { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) { msg.textContent = d.error || 'Failed'; return; }
+    msg.textContent = `${d.city}: ${d.hotels} hotels · ${d.today} vs ${d.compared_with}` + (d.snapshot_before ? '' : ' · no snapshot from that day');
+    const NAME = { occ: 'Occupancy (%)', revpar: 'Rooms RevPAR (MAD)', rate: 'Forward published rate (MAD)' };
+    const f = (v, n) => v == null ? '–' : `${v} (${n})`;
+    sbsTable('kc-table', ['Figure', 'Now, all hotels (n)', '7 days ago, all hotels (n)', 'Now, same hotels', '7 days ago, same hotels', 'Same hotels', 'Change shown', 'Entered', 'Left'],
+      Object.entries(d.figures || {}).map(([k, x]) => [NAME[k] || k, f(x.now_all, x.hotels_now), f(x.before_all, x.hotels_before),
+        x.now_same_hotels ?? '–', x.before_same_hotels ?? '–', x.same_hotels, x.change_shown == null ? '–' : (k === 'occ' ? `${x.change_shown} pts` : `${x.change_shown}%`),
+        x.entered.join(', ') || '—', x.left.join(', ') || '—']));
+    sbsTable('kc-movers', ['Hotel', 'Rooms', 'Rooms RevPAR before → now', 'Occupancy before → now', 'Forward rate before → now', 'Effect (MAD × rooms)'],
+      (d.movers || []).map(m => [m.hotel, m.rooms, `${Math.round(m.revpar_before)} → ${Math.round(m.revpar_now)}`,
+        `${m.occ_before ?? '–'} → ${m.occ_now ?? '–'}`, `${m.rate_before != null ? Math.round(m.rate_before) : '–'} → ${m.rate_now != null ? Math.round(m.rate_now) : '–'}`, m.weighted_change.toLocaleString('en')]));
+  } catch { msg.textContent = 'Failed'; }
+}
+document.getElementById('kc-go').addEventListener('click', loadKpiChange);
 async function loadSideBySide(refresh) {
   loadOfficialMonthly();
+  loadKpiChange();
   const msg = document.getElementById('occ-sbs-msg');
   msg.textContent = 'Loading… (up to a minute the first time each day)';
   try {
