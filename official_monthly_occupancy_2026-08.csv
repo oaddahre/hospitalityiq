@@ -1,0 +1,36 @@
+month,level,name,occupancy_pct,variation_pts,variation_label_on_page,month_confirmed
+2026-08,destination,Agadir,83,0,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Tanger,80,1,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Berkan-Saïdia,79,16,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Al Haouz,78,1,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,El Jadida,76,-2,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Marrakech,75,3,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,M'diq-Fnideq,74,-5,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Essaouira,72,3,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Casablanca,53,0,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Fès,45,-1,(no year printed; page 3 says vs 2025),yes
+2026-08,destination,Autres destinations,49,-2,(no year printed; page 3 says vs 2025),yes
+2026-08,national,Total EHTC,65,0,(no year printed; page 3 says vs 2025),yes
+2026-08,region,TTA - Tanger-Tétouan-Al Hoceïma,75,-2,(no year printed; page 3 says vs 2025),yes
+2026-08,region,RSK - Rabat-Salé-Kénitra,54,4,(no year printed; page 3 says vs 2025),yes
+2026-08,region,CS - Casablanca-Settat,56,0,(no year printed; page 3 says vs 2025),yes
+2026-08,region,MS - Marrakech-Safi,74,3,(no year printed; page 3 says vs 2025),yes
+2026-08,region,GON - Guelmim-Oued Noun,43,4,(no year printed; page 3 says vs 2025),yes
+2026-08,region,SM - Souss-Massa,80,0,(no year printed; page 3 says vs 2025),yes
+2026-08,region,LSA - Laâyoune-Sakia El Hamra,37,-2,(no year printed; page 3 says vs 2025),yes
+2026-08,region,DOE - Dakhla-Oued Ed-Dahab,67,1,(no year printed; page 3 says vs 2025),yes
+2026-08,region,DT - Drâa-Tafilalet,36,-4,(no year printed; page 3 says vs 2025),yes
+2026-08,region,BMK - Béni Mellal-Khénifra,43,-1,(no year printed; page 3 says vs 2025),yes
+2026-08,region,FM - Fès-Meknès,46,-2,(no year printed; page 3 says vs 2025),yes
+2026-08,region,Oriental - Oriental,65,8,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),Hôtels classés,64,0,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),1 étoile,53,-2,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),2 étoiles,55,-3,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),3 étoiles,59,1,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),4 étoiles,67,1,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),5 étoiles,72,1,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),Luxe,57,-3,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),Maisons d'hôtes,63,5,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),Hôtels clubs,86,4,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),Résidences hôtelières,72,-1,(no year printed; page 3 says vs 2025),yes
+2026-08,category (national),Autres catégories,57,-4,(no year printed; page 3 says vs 2025),yes

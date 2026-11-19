@@ -22,7 +22,8 @@ series(city) gives one value per month with a status:
                the category tables on the same pages say "vs 25", and the
                year rebuilt this way matches the official 2025 annual figures
                within 2 pts, so the change is read as against 2025
-  estimate     a Kodo estimate, never official: Feb and Aug 2025 from the
+  estimate     a Kodo estimate, never official (after the region figure, which
+               is better where the region has the month): Feb and Aug 2025 from the
                older dashboard's month-to-month shape (official_monthly_older.csv,
                a different, lower basis: only its shape is used, rescaled per
                city by the ratio of the two series' averages over the months
@@ -85,8 +86,9 @@ MAPPING = {
                               'note': 'published for one month only (July 2026, month unconfirmed); the resort profile stays'},
     'Saidia':                {'name': 'Berkan-Saïdia', 'level': 'destination', 'confidence': 'medium', 'use': 'months',
                               'note': 'Berkan province with Saïdia, published for Jun and Sep 2026 only; the resort profile stays'},
-    'Tamuda Bay / Tétouan':  {'name': 'TTA - Tanger-Tétouan-Al Hoceïma', 'level': 'region', 'confidence': 'lower', 'use': 'reference',
-                              'note': 'not used: the region is mostly Tanger\'s city hotels, which have their own figure; the resort profile stays'},
+    'Tamuda Bay / Tétouan':  {'name': "M'diq-Fnideq", 'level': 'destination', 'confidence': 'lower', 'use': 'months',
+                              'note': 'M\'diq-Fnideq prefecture (the Tamuda Bay coast; Tétouan city is outside it), published for Aug 2026 only; '
+                                      'the region (TTA) is mostly Tanger\'s city hotels and is not used; the resort profile stays'},
     'Al Hoceima':            {'name': 'TTA - Tanger-Tétouan-Al Hoceïma', 'level': 'region', 'confidence': 'lower', 'use': 'reference',
                               'note': 'not used: the region is mostly Tanger\'s city hotels; the resort profile stays'},
 }
@@ -99,7 +101,7 @@ REGION_OF = {'Marrakech': 'MS - Marrakech-Safi', 'Essaouira': 'MS - Marrakech-Sa
              'Agadir': 'SM - Souss-Massa', 'Casablanca': 'CS - Casablanca-Settat', 'El Jadida': 'CS - Casablanca-Settat',
              'Tanger': 'TTA - Tanger-Tétouan-Al Hoceïma', 'Fès': 'FM - Fès-Meknès', 'Ifrane': 'FM - Fès-Meknès',
              'Rabat': 'RSK - Rabat-Salé-Kénitra', 'Ouarzazate': 'DT - Drâa-Tafilalet', 'Errachidia': 'DT - Drâa-Tafilalet',
-             'Berkan-Saïdia': 'Oriental - Oriental'}
+             'Berkan-Saïdia': 'Oriental - Oriental', "M'diq-Fnideq": 'TTA - Tanger-Tétouan-Al Hoceïma'}
 
 _cache = {}
 
@@ -232,16 +234,6 @@ def raw_series(name, data=None):
         p = shift(m, -12)
         if r['var'] is not None and p not in s:
             s[p] = (r['occ'] - r['var'], 'derived')
-    # the year's missing months from the older dashboard's shape, rescaled to this series
-    older = {m: v for m, v in _older(name).items() if m.startswith(SHAPE_YEAR) and v}
-    common = [m for m in older if m in s and s[m][1] in ('official', 'unconfirmed', 'derived')]
-    if len(common) >= 4:
-        # the ratio of the two averages over the shared months (a mean of monthly
-        # ratios is pulled up by the low months: Tanger Mar 2025 31 vs 21)
-        ratio = statistics.mean(s[m][0] for m in common) / statistics.mean(older[m] for m in common)
-        for m, v in older.items():
-            if m not in s:
-                s[m] = (round(max(5.0, min(98.0, v * ratio)), 1), 'estimate')
     if s:
         first, last = min(s), max(s)
         region = REGION_OF.get(name)
@@ -256,6 +248,17 @@ def raw_series(name, data=None):
             if m not in s and ratio and m in reg and reg[m][1] in ('official', 'unconfirmed', 'derived'):
                 s[m] = (round(reg[m][0] * ratio, 1), 'region')
             m = shift(m, 1)
+        # still missing: the older dashboard's shape, rescaled to this series (after the region:
+        # on the real Feb and Aug 2026 months the region fill erred 4.5 pts, this 6.3)
+        older = {m: v for m, v in _older(name).items() if m.startswith(SHAPE_YEAR) and v}
+        common = [m for m in older if m in s and s[m][1] in ('official', 'unconfirmed', 'derived')]
+        if len(common) >= 4:
+            # the ratio of the two averages over the shared months (a mean of monthly
+            # ratios is pulled up by the low months: Tanger Mar 2025 31 vs 21)
+            ratio = statistics.mean(s[m][0] for m in common) / statistics.mean(older[m] for m in common)
+            for m, v in older.items():
+                if m not in s:
+                    s[m] = (round(max(5.0, min(98.0, v * ratio)), 1), 'estimate')
         known = dict(s)
         m = first
         while m <= last:                           # else between the nearest months
@@ -270,8 +273,9 @@ def raw_series(name, data=None):
         # no page for the month but its nights: the same month a year earlier x the change in nights
         for m, k in _nights_change(name).items():
             prev = shift(m, -12)
-            # only on a 2025 month that is published, rebuilt or rescaled (not itself filled)
-            if (m not in s or s[m][1] in ('filled', 'region')) and prev in s and s[prev][1] in ('official', 'unconfirmed', 'derived', 'estimate'):
+            # only on a 2025 month that is published, rebuilt or rescaled (not itself filled), and never
+            # over a region figure
+            if (m not in s or s[m][1] == 'filled') and prev in s and s[prev][1] in ('official', 'unconfirmed', 'derived', 'estimate'):
                 s[m] = (round(max(5.0, min(98.0, s[prev][0] * k / (1 + CAPACITY_GROWTH))), 1), 'estimate')
     s = dict(sorted(s.items()))
     _cache[key] = s

@@ -41,10 +41,12 @@ class Files(unittest.TestCase):
         d = O.load()
         self.assertEqual(O.latest_month(), '2026-09')
         self.assertEqual(sorted({m for v in d.values() for m in v}),
-                         ['2025-10', '2025-11', '2025-12', '2026-01', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-09'])
+                         ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06',
+                          '2026-07', '2026-08', '2026-09'])
         issues = ' | '.join(O.validate())
-        for want in ('2026-07: month not shown on the page', 'no occupancy page for 2026-02, 2026-08', '"vs 24" on a 2026 page',
-                     'Errachidia: published for 6 of 10 months', 'El Jadida: published for 1 of 10 months'):
+        for want in ('2026-07: month not shown on the page', '"vs 24" on a 2026 page', 'official_monthly_occupancy_2026-02.csv: added',
+                     'official_monthly_occupancy_2026-08.csv: added', 'Rabat: published for 11 of 12 months',
+                     'El Jadida: published for 2 of 12 months'):
             self.assertIn(want, issues)
         self.assertNotIn('appears twice', issues)
         self.assertNotIn('add up to', issues)                                   # the nights files add up
@@ -71,7 +73,9 @@ class Mapping(unittest.TestCase):
         for c in ('Ifrane', 'El Jadida', 'Saidia'):
             self.assertEqual(O.MAPPING[c]['use'], 'months')
             self.assertFalse(O.calibrated(c), c)
-        for c in ('Tamuda Bay / Tétouan', 'Al Hoceima'):
+        self.assertEqual(O.MAPPING['Tamuda Bay / Tétouan']['name'], "M'diq-Fnideq")    # Aug 2026 only
+        self.assertEqual(O.MAPPING['Tamuda Bay / Tétouan']['use'], 'months')
+        for c in ('Al Hoceima',):
             self.assertEqual(O.MAPPING[c]['use'], 'reference')
             self.assertIsNone(O.target(c, 2026, 7))
         self.assertIn('Al Haouz', O.UNMAPPED)
@@ -82,26 +86,31 @@ class Mapping(unittest.TestCase):
         self.assertEqual(s['2025-11'], (79.0, 'official'))
         self.assertEqual(s['2026-07'], (64.0, 'unconfirmed'))
         self.assertEqual(s['2025-03'], (69.0, 'derived'))                        # 71 in Mar 2026, +2
-        # Feb and Aug: Kodo estimates (older dashboard shape for 2025, the change in nights for 2026)
-        self.assertEqual(s['2025-02'], (73.3, 'estimate'))
-        self.assertEqual(s['2026-02'], (round(73.3 * 1.03 / (1 + O.CAPACITY_GROWTH), 1), 'estimate'))   # nights +3%
-        self.assertEqual(s['2026-08'][1], 'estimate')
-        self.assertEqual(O.series('Rabat / Salé / Témara')['2026-08'][1], 'filled')   # no Rabat nights in Aug
-        self.assertEqual(O.series('Rabat / Salé / Témara')['2026-02'][1], 'filled')   # no Rabat Feb 2025 to rescale
-        self.assertLessEqual(O.series('Tanger')['2025-08'][0], 98.0)
+        # Feb and Aug 2026 pages: published, and the year before rebuilt from their change
+        self.assertEqual(s['2026-02'], (69.0, 'official'))
+        self.assertEqual(s['2025-02'], (71.0, 'derived'))                        # 69, -2
+        self.assertEqual(s['2026-08'], (75.0, 'official'))
+        self.assertEqual(s['2025-08'], (72.0, 'derived'))
+        for c in ('Rabat / Salé / Témara', 'Ouarzazate', 'Errachidia'):         # not on the Aug page: their region
+            self.assertEqual(O.series(c)['2026-08'][1], 'region', c)
+        self.assertEqual(O.series('Dakhla')['2026-02'], (60.0, 'official'))
+        self.assertEqual(O.series('Laayoune')['2026-08'], (37.0, 'official'))
+        self.assertEqual(O.target('Tamuda Bay / Tétouan', 2026, 8), (74.0, 'official', 'city'))
         self.assertEqual(O.series('Errachidia')['2026-06'][1], 'region')
         self.assertEqual(O.target('Marrakech', 2026, 11), (round(79 + O.growth('Marrakech'), 1), 'projected', 'city'))
         self.assertEqual(O.target('Marrakech', 2024, 3)[1], 'pattern')
         self.assertEqual(O.target('Dakhla', 2025, 11)[2], 'region')
         self.assertLessEqual(O.growth('Dakhla'), O.GROWTH_MAX_PTS)               # +11.9 published, capped
         self.assertEqual(O.target('El Jadida', 2026, 7), (65.0, 'unconfirmed', 'city'))
-        self.assertIsNone(O.target('El Jadida', 2026, 8))
+        self.assertEqual(O.target('El Jadida', 2026, 8), (76.0, 'official', 'city'))
+        self.assertIsNone(O.target('El Jadida', 2026, 9))
 
     def test_older_dashboard_only_for_shape(self):
         """Its levels are lower: only the shape is used, rescaled to the series (2025 Feb and Aug)."""
         older = O._older('Casablanca')
         self.assertLess(older['2025-04'], O.series('Casablanca')['2025-04'][0])        # 62 vs 68
         self.assertGreater(O.series('Casablanca')['2025-02'][0], older['2025-02'])
+        self.assertNotIn('estimate', {st for _, st in O.series('Casablanca').values()})   # pages cover Feb, Aug now
         self.assertEqual(O.series('Marrakech')['2025-04'], (78.0, 'derived'))          # published months unchanged
         self.assertEqual(O.CAPACITY_GROWTH, 0.03)
 
@@ -221,12 +230,15 @@ class FileSwap(unittest.TestCase):
                 self.assertEqual(s['2025-02'], (68.0, 'derived'))
                 self.assertEqual(s['2026-03'], (72.0, 'official'))
                 self.assertEqual(O.target('Marrakech', 2026, 2), (70.0, 'official', 'city'))
+                # without the Aug page: the Kodo estimate (older shape for 2025, the change in nights for 2026)
+                self.assertEqual(s['2026-08'][1], 'estimate')
+                self.assertEqual(s['2025-08'][1], 'estimate')
                 issues = ' | '.join(O.validate(main))
                 self.assertIn('official_monthly_occupancy_2026-02.csv: added on top of the main file', issues)
                 self.assertIn('no occupancy page for 2026-08', issues)
                 self.assertNotIn('2026-02,', issues.replace(' ', ''))
             O._cache.clear()
-            self.assertEqual(O.series('Marrakech')['2026-02'][1], 'estimate')      # back to the repo files
+            self.assertEqual(O.series('Marrakech')['2026-02'], (69.0, 'official'))  # back to the repo files
         finally:
             shutil.rmtree(d, ignore_errors=True)
             O._cache.clear()

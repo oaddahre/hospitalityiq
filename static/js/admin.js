@@ -1845,7 +1845,7 @@ async function loadOfficialMonthly() {
     const iss = document.getElementById('occ-om-issues');
     iss.replaceChildren(...(d.issues || []).map(t => { const li = document.createElement('div'); li.textContent = '• ' + t; return li; }));
     const months = ((d.rows || []).find(r => r.months && r.months.length) || { months: [] }).months.map(m => m.month);
-    const mark = { official: '', unconfirmed: ' (unconfirmed)', derived: ' (rebuilt)', estimate: ' (Kodo estimate)', region: ' (region)', filled: ' (filled)', missing: '' };
+    const mark = { official: '', unconfirmed: ' (unconfirmed)', derived: ' (rebuilt)', estimate: ' (Kodo estimate)', region: ' (Kodo estimate from region)', filled: ' (Kodo estimate, filled)', missing: '' };
     sbsTable('occ-om-table', ['City', 'Official figure', 'Level', 'Confidence', 'Used as', 'Yearly change', 'Note', ...months],
       (d.rows || []).map(r => [r.city || '—', r.official, r.level, r.confidence ? (r.confidence === 'high' ? 'high' : r.confidence.toUpperCase()) : '',
         r.use === 'series' ? (r.pattern ? 'monthly pattern' : 'series (too few months)') : r.use, r.growth_pts != null ? `${r.growth_pts > 0 ? '+' : ''}${r.growth_pts} pts` : '',

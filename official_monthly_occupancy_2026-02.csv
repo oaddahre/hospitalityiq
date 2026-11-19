@@ -1,0 +1,36 @@
+month,level,name,occupancy_pct,variation_pts,variation_label_on_page,month_confirmed
+2026-02,destination,Marrakech,69,-2,vs 24 (as printed),yes
+2026-02,destination,Agadir,67,-5,vs 24 (as printed),yes
+2026-02,destination,Casablanca,48,-4,vs 24 (as printed),yes
+2026-02,destination,Tanger,41,-4,vs 24 (as printed),yes
+2026-02,destination,Fès,45,-6,vs 24 (as printed),yes
+2026-02,destination,Al Haouz,73,-3,vs 24 (as printed),yes
+2026-02,destination,Essaouira,47,-5,vs 24 (as printed),yes
+2026-02,destination,Rabat,42,-8,vs 24 (as printed),yes
+2026-02,destination,Ouarzazate,53,0,vs 24 (as printed),yes
+2026-02,destination,Errachidia,35,-2,vs 24 (as printed),yes
+2026-02,destination,Autres destinations,34,-5,vs 24 (as printed),yes
+2026-02,national,Total EHTC,51,-4,vs 24 (as printed),yes
+2026-02,region,LSA - Laâyoune-Sakia El Hamra,29,-4,(no year printed),yes
+2026-02,region,SM - Souss-Massa,64,-6,(no year printed),yes
+2026-02,region,DT - Drâa-Tafilalet,40,-2,(no year printed),yes
+2026-02,region,BMK - Béni Mellal-Khénifra,28,-14,(no year printed),yes
+2026-02,region,FM - Fès-Meknès,38,-6,(no year printed),yes
+2026-02,region,Oriental - Oriental,34,0,(no year printed),yes
+2026-02,region,TTA - Tanger-Tétouan-Al Hoceïma,32,-6,(no year printed),yes
+2026-02,region,RSK - Rabat-Salé-Kénitra,43,-4,(no year printed),yes
+2026-02,region,CS - Casablanca-Settat,47,-4,(no year printed),yes
+2026-02,region,MS - Marrakech-Safi,66,-3,(no year printed),yes
+2026-02,region,GON - Guelmim-Oued Noun,34,-9,(no year printed),yes
+2026-02,region,DOE - Dakhla-Oued Ed-Dahab,60,12,(no year printed),yes
+2026-02,category (national),Hôtels classés,49,-4,vs 25,yes
+2026-02,category (national),1 étoile,43,-3,vs 25,yes
+2026-02,category (national),2 étoiles,39,-4,vs 25,yes
+2026-02,category (national),3 étoiles,44,-4,vs 25,yes
+2026-02,category (national),4 étoiles,51,-6,vs 25,yes
+2026-02,category (national),5 étoiles,54,-3,vs 25,yes
+2026-02,category (national),Luxe,50,0,vs 25,yes
+2026-02,category (national),Maisons d'hôtes,60,-3,vs 25,yes
+2026-02,category (national),Hôtels clubs,67,-9,vs 25,yes
+2026-02,category (national),Résidences hôtelières,53,2,vs 25,yes
+2026-02,category (national),Autres catégories,45,-7,vs 25,yes

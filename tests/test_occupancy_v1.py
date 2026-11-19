@@ -81,7 +81,10 @@ class Anchor(unittest.TestCase):
             for n in (date(2027, 1, 5), date(2027, 8, 14)):
                 occ, bd = OM.estimate_occupancy(hotel(city=city), n, position=POS)
                 self.assertTrue(bd['low'] <= occ * 100 <= bd['high'], (city, n, bd))
-                self.assertGreaterEqual(bd['high'] - bd['low'], 2 * OM.V1['range_type']['city'])
+                if bd['high'] < OM.V1['clamp_high'] and bd['low'] > OM.V1['clamp_low']:   # else cut at the bound
+                    self.assertGreaterEqual(bd['high'] - bd['low'], 2 * OM.V1['range_type']['city'])
+                else:
+                    self.assertGreaterEqual(bd['high'] - bd['low'], OM.V1['range_type']['city'])
 
     def test_wider_range_where_thin(self):
         n = date(2027, 4, 7)
