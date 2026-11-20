@@ -302,5 +302,19 @@
     "hotels": [
       {"name": "Hotel Farah Tanger", "brand_group": "Farah Hotels", "city": "Tanger"}
     ]
+  },
+  {
+    "id": "siger",
+    "name": "SIGER",
+    "full_name": "SIGER",
+    "type": "Private",
+    "parent": null,
+    "headquarters": "Rabat, Morocco",
+    "logo_domain": null,
+    "logo_local": null,
+    "description": "SIGER is a Moroccan holding company based in Rabat, created in 2002 and wholly owned by King Mohammed VI. It holds stakes in the Al Mada holding company and in the agricultural group Les Domaines Agricoles. In the hotel sector it owns the Royal Mansour Marrakech.",
+    "hotels": [
+      {"name": "Royal Mansour Marrakech", "brand_group": "Royal Mansour Collection", "city": "Marrakech"}
+    ]
   }
 ]
