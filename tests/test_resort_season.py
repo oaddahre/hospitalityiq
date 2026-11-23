@@ -58,9 +58,13 @@ class Resorts(unittest.TestCase):
         for hid in ('22', '189', '311', '316'):                                  # Agadir, Dakhla, Essaouira: city pattern
             self.assertTrue(OM.is_seaside_resort(HOTELS[hid]))
             self.assertFalse(OM.resort_swing(HOTELS[hid]), HOTELS[hid]['name'])
-        for hid in ('353', '121', '137', '292'):
+        for hid in ('353', '121'):                                              # Tamuda Bay, El Jadida: the resort swing
             self.assertTrue(OM.resort_swing(HOTELS[hid]), HOTELS[hid]['name'])
-        with mock.patch.dict(os.environ, {'RESORT_SEASON_ON': 'Agadir / Taghazout,Al Hoceima', 'RESORT_SEASON_OFF': 'Saidia'}):
+        for hid in ('137', '292'):                                              # Saidia, Al Hoceima: destination levels instead
+            self.assertTrue(OM.dest_levels_apply(HOTELS[hid]), HOTELS[hid]['name'])
+            self.assertFalse(OM.resort_swing(HOTELS[hid]))
+        with mock.patch.dict(os.environ, {'RESORT_SEASON_ON': 'Agadir / Taghazout,Al Hoceima', 'RESORT_SEASON_OFF': 'Saidia',
+                                          'RESORT_LEVELS': 'off'}):
             self.assertFalse(OM.resort_swing(HOTELS['22']))   # never: Agadir has its official monthly pattern
             self.assertTrue(OM.resort_swing(HOTELS['292']))
             self.assertFalse(OM.resort_swing(HOTELS['137']))
@@ -81,6 +85,8 @@ class Resorts(unittest.TestCase):
             anchor = OM.official_anchor(city)
             types = {}
             for h in hs:                                                         # one hotel per type and resort state
+                if OM.dest_levels_apply(h):                                     # own monthly levels (Saidia, Nador, Al Hoceima)
+                    continue
                 types.setdefault((OM.classify_hotel_type(h), OM.resort_swing(h)), h)
             for h in types.values():
                 v = statistics.mean(OM.estimate_occupancy(h, n, position=POS)[0] * 100 for n in nights)

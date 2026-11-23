@@ -679,6 +679,10 @@ const KodoLive = (() => {
       rate: w(v => v.rate), occ: w(v => v.occ), low: w(v => v.occ_low), high: w(v => v.occ_high), revpar: w(v => v.revpar),
       rlow: w(v => v.revpar_low), rhigh: w(v => v.revpar_high),
       calibrated: rows.length > 0 && rows.every(v => v.occ_calibrated),
+      // destination levels (Saidia, Nador, Al Hoceima): how many real hotels the estimate rests on
+      basis: (() => { const b = rows.filter(v => v.occ_basis && v.occ != null); if (!b.length) return '';
+        const texts = [...new Set(b.map(v => v.occ_basis))], all = rows.filter(v => v.occ != null).length;
+        return (b.length < all ? `${b.length} of ${all} hotels: ` : '') + texts.join('; '); })(),
       change: { occ: change(v => v.occ), revpar: change(v => v.revpar) },
     };
   }
@@ -748,7 +752,7 @@ const KodoLive = (() => {
       + (one ? `This hotel's BAR is the average of its ${one.bar_nights || 0} priced nights (it needs ${KodoBar.meta().min_nights}).`
              : `Each hotel's BAR is the average of its priced nights (it needs ${KodoBar.meta().min_nights}); this figure is the median of those hotel averages, not weighted by rooms.`
                + of(a.bar.n, `have enough published prices`)));
-    hover(els.occ, `Window: the next 30 nights (${period}). ` + (a.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ': modelled, not measured. '
+    hover(els.occ, `Window: the next 30 nights (${period}). ` + (a.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ': modelled, not measured. ' + (a.basis ? a.basis + '. ' : '')
       + (one ? '' : 'Average weighted by rooms.' + of(a.occ.n, 'have an estimate'))
       + ' The change compares the same hotels 7 days earlier.');
     hover(els.revpar, `Window: the next 30 nights (${period}). For each hotel and night, the published price for that night times the estimated occupancy, `
@@ -777,7 +781,7 @@ const KodoLive = (() => {
         const range = a.low.val != null && a.high.val != null && a.low.n === a.occ.n
           ? `range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%` : '';
         show(c, `${a.occ.val.toFixed(1)}%`, range ? range : (a.calibrated ? CALIBRATED_LABEL : 'Kodo estimate'));
-        part(c, 'kpi-sub').textContent = (a.calibrated && range ? CALIBRATED_LABEL + ' · ' : '') + cover('occ');
+        part(c, 'kpi-sub').textContent = (a.calibrated && range ? CALIBRATED_LABEL + ' · ' : '') + (a.basis ? a.basis + ' · ' : '') + cover('occ');
         delta(c, a.change.occ, 'pts');
         if (conf) confLine(c, conf);
       }
@@ -2179,7 +2183,7 @@ async function renderOccCalendar(hotelId) {
   const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
   badgeEl.textContent = data.under_renovation ? RENOVATION_LABEL : data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';
   if (noteEl) {
-    noteEl.textContent = [(data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ' · modelled, not measured',
+    noteEl.textContent = [(data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ' · modelled, not measured', data.occ_basis,
       data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
       covLabel && `Price coverage: ${covLabel}`].filter(Boolean).join(' · ');
   }

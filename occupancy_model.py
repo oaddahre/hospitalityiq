@@ -473,7 +473,10 @@ def resort_swing(hotel):
             and not dest_levels_apply(hotel))
 
 
-# ─── Destination levels (PROPOSAL, Nov 2026: off unless RESORT_LEVELS=on) ─────
+# ─── Destination levels (ON since Nov 2026 for Saidia, Nador, Al Hoceima) ─────
+# Kill switch: RESORT_LEVELS=off in Railway, or the admin button (DATA_DIR/
+# resort_levels.json); either turns all three back to the national anchor
+# and the resort profile at once.
 # Absolute monthly occupancy for destinations where the national anchor is
 # far off: level = shape[month] x annual, instead of the national 58% with a
 # seasonal offset. Derived from licensed hotel figures (internal calibration):
@@ -491,19 +494,68 @@ def resort_swing(hotel):
 # beat it leave-one-out (the two Tamuda Bay resorts sit 30-45 pts apart and
 # price does not explain it).
 DEST_LEVELS = {
-    'Saidia':     {'scope': 'resorts', 'annual': 27.2, 'shape': {1: 0.24, 2: 0.25, 3: 0.27, 4: 0.60, 5: 1.25, 6: 1.45,
+    'Saidia':     {'scope': 'resorts', 'real_hotels': 1, 'annual': 27.2, 'shape': {1: 0.24, 2: 0.25, 3: 0.27, 4: 0.60, 5: 1.25, 6: 1.45,
                                                                  7: 1.87, 8: 3.26, 9: 1.30, 10: 0.79, 11: 0.46, 12: 0.27}},
-    'Al Hoceima': {'scope': 'resorts', 'annual': 36.3, 'borrowed': True,
+    'Al Hoceima': {'scope': 'resorts', 'real_hotels': 0, 'annual': 36.3, 'borrowed': True,
                    'shape': {1: 0.29, 2: 0.25, 3: 0.37, 4: 0.81, 5: 1.20, 6: 1.54, 7: 2.05, 8: 2.47, 9: 1.31, 10: 0.99, 11: 0.40,
                              12: 0.32}},
-    'Nador':      {'scope': 'all', 'annual': 46.6, 'shape': {1: 0.60, 2: 0.60, 3: 0.59, 4: 1.01, 5: 1.03, 6: 0.99, 7: 1.37,
+    'Nador':      {'scope': 'all', 'real_hotels': 1, 'annual': 46.6, 'shape': {1: 0.60, 2: 0.60, 3: 0.59, 4: 1.01, 5: 1.03, 6: 0.99, 7: 1.37,
                                                              8: 1.64, 9: 1.23, 10: 1.03, 11: 0.95, 12: 0.96}},
 }
 RANGE_BORROWED = 5                # pts more each side where the levels rest on neighbouring destinations
 
 
+LEVELS_STATE = 'resort_levels.json'
+_levels_cache = {}
+
+
+def _levels_state_path():
+    return str(DATA_DIR / LEVELS_STATE)
+
+
+def levels_killed():
+    """The admin kill switch (DATA_DIR/resort_levels.json {"off": true})."""
+    p = _levels_state_path()
+    key = (p, _mtime(p))
+    if _levels_cache.get('key') != key:
+        try:
+            with open(p, encoding='utf-8') as f:
+                off = bool(json.load(f).get('off'))
+        except (OSError, ValueError):
+            off = False
+        _levels_cache.update(key=key, off=off)
+    return _levels_cache['off']
+
+
+def set_levels_off(off, by='admin'):
+    p = _levels_state_path()
+    tmp = p + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump({'off': bool(off), 'by': by, 'at': datetime.now(MOROCCO_TZ).isoformat(timespec='seconds')}, f)
+    os.replace(tmp, p)
+
+
+def env_levels(env=os.environ):
+    """'on' | 'off' | None from RESORT_LEVELS."""
+    v = str(env.get('RESORT_LEVELS', '')).strip().lower()
+    return 'off' if v in ('off', '0', 'false', 'no') else 'on' if v in ('on', '1', 'true', 'yes') else None
+
+
 def dest_levels_on(env=os.environ):
-    return str(env.get('RESORT_LEVELS', 'off')).strip().lower() in ('on', '1', 'true', 'yes')
+    """On unless RESORT_LEVELS=off or the admin kill switch is on (RESORT_LEVELS=on overrides the button)."""
+    e = env_levels(env)
+    if e:
+        return e == 'on'
+    return not levels_killed()
+
+
+def dest_basis(hotel):
+    """The note shown with a hotel's estimate where the destination levels apply, or None."""
+    if not dest_levels_apply(hotel):
+        return None
+    n = DEST_LEVELS[hotel['city']]['real_hotels']
+    return ('Estimate based on no real hotel here: borrowed from neighbouring destinations' if n == 0
+            else f"Estimate based on {n} real hotel{'s' if n != 1 else ''}")
 
 
 def dest_levels_apply(hotel):

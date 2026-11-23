@@ -147,16 +147,51 @@ class NoLicensedData(unittest.TestCase):
 
 
 class DestinationLevelsProposal(unittest.TestCase):
-    """Saidia, Al Hoceima and Nador on absolute monthly levels: a proposal, OFF unless RESORT_LEVELS=on."""
+    """Saidia, Al Hoceima and Nador on absolute monthly levels: on since Nov 2026, with a kill switch."""
     RAD = '143'
 
-    def test_off_by_default(self):
+    def test_on_by_default_and_kill_switch(self):
         from unittest import mock
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop('RESORT_LEVELS', None)
+            with mock.patch.object(OM, 'levels_killed', return_value=False):
+                self.assertTrue(OM.dest_levels_on())                           # live since Nov 2026
+                self.assertIsNotNone(OM.dest_level(HOTELS[self.RAD], date(2026, 7, 15)))
+                self.assertFalse(OM.resort_swing(HOTELS[self.RAD]))
+                self.assertEqual(OM.dest_basis(HOTELS[self.RAD]), 'Estimate based on 1 real hotel')
+                hoc = next(h for h in HOTELS.values() if h['city'] == 'Al Hoceima' and OM.is_seaside_resort(h))
+                self.assertIn('borrowed from neighbouring destinations', OM.dest_basis(hoc))
+                for hid in ('353', '433', '121', '423'):                      # Tamuda Bay, El Jadida, Taghazout: as before
+                    self.assertIsNone(OM.dest_level(HOTELS[hid], date(2026, 7, 15)))
+                    self.assertIsNone(OM.dest_basis(HOTELS[hid]))
+                self.assertTrue(OM.resort_swing(HOTELS['353']))
+            with mock.patch.object(OM, 'levels_killed', return_value=True):  # the admin button
+                self.assertFalse(OM.dest_levels_on())
+                self.assertTrue(OM.resort_swing(HOTELS[self.RAD]))
+                self.assertIsNone(OM.dest_basis(HOTELS[self.RAD]))
+                with mock.patch.dict(os.environ, {'RESORT_LEVELS': 'on'}):     # the environment overrides the button
+                    self.assertTrue(OM.dest_levels_on())
+        with mock.patch.dict(os.environ, {'RESORT_LEVELS': 'off'}):
             self.assertFalse(OM.dest_levels_on())
-            self.assertIsNone(OM.dest_level(HOTELS[self.RAD], date(2026, 7, 15)))
-            self.assertTrue(OM.resort_swing(HOTELS[self.RAD]))                  # live: the resort profile as before
+
+    def test_admin_switch_file(self):
+        d = tempfile.mkdtemp()
+        from unittest import mock
+        try:
+            with mock.patch.object(OM, 'DATA_DIR', __import__('pathlib').Path(d)), mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop('RESORT_LEVELS', None)
+                self.assertTrue(OM.dest_levels_on())
+                OM.set_levels_off(True, by='test')
+                self.assertFalse(OM.dest_levels_on())
+                OM.set_levels_off(False, by='test')
+                self.assertTrue(OM.dest_levels_on())
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+        app = open(os.path.join(ROOT, 'app.py'), encoding='utf-8').read()
+        self.assertIn("threading.Thread(target=OMX.run_occupancy_model, daemon=True).start()", app)
+        self.assertIn("'occ_basis':", app)
+        js = open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8').read()
+        self.assertIn('data.occ_basis', js)
 
     def test_on(self):
         from unittest import mock

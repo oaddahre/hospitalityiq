@@ -1873,6 +1873,24 @@ async function loadKpiChange() {
   } catch { msg.textContent = 'Failed'; }
 }
 document.getElementById('kc-go').addEventListener('click', loadKpiChange);
+async function loadResortLevels(body) {
+  const msg = document.getElementById('rl-msg');
+  try {
+    const res = await fetch('/api/admin/resort-levels', body ? { method: 'POST', headers: authHeaders(true), body: JSON.stringify(body) } : { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) { msg.textContent = d.error || 'Failed'; return; }
+    document.getElementById('rl-status').textContent = d.on ? 'on' : `off${d.env === 'off' ? ' (RESORT_LEVELS=off)' : d.killed ? ' (admin button)' : ''}`;
+    document.getElementById('rl-off').style.display = d.on ? '' : 'none';
+    document.getElementById('rl-on').style.display = d.killed && d.env !== 'off' ? '' : 'none';
+    msg.textContent = body ? 'Saved; the model is running again (a few minutes).' : '';
+    sbsTable('rl-table', ['Destination', 'Applies to', 'Real hotels', 'Hotels in the database', 'Hotels covered', 'Note shown'],
+      (d.destinations || []).map(x => [x.city, x.scope, x.real_hotels ? x.real_hotels : 'none (borrowed from neighbouring destinations)', x.hotels_in_database, x.hotels_covered, x.note || '—']));
+  } catch { msg.textContent = 'Failed'; }
+}
+document.getElementById('rl-off').addEventListener('click', () => {
+  if (confirm('Turn the destination levels off? Saïdia, Nador and Al Hoceima go back to the national anchor and the resort profile.')) loadResortLevels({ off: true });
+});
+document.getElementById('rl-on').addEventListener('click', () => loadResortLevels({ off: false }));
 async function loadClassGaps() {
   try {
     const res = await fetch('/api/admin/class-gaps', { headers: authHeaders() });
@@ -1887,6 +1905,7 @@ async function loadClassGaps() {
 async function loadSideBySide(refresh) {
   loadOfficialMonthly();
   loadClassGaps();
+  loadResortLevels();
   loadKpiChange();
   const msg = document.getElementById('occ-sbs-msg');
   msg.textContent = 'Loading… (up to a minute the first time each day)';

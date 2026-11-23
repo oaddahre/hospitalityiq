@@ -61,3 +61,4 @@ scraped_rates_export.csv
 rates.db.importing*
 rates_store_state.json
 live_kpi_history.csv
+resort_levels.json

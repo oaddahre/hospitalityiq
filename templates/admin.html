@@ -543,6 +543,11 @@
     <div class="dh-scroll"><table class="adm-table" id="kc-table"></table></div>
     <div class="dh-scroll"><table class="adm-table" id="kc-movers" style="margin-top:8px"></table></div>
 
+    <h2 class="adm-list-filter-label" style="margin-top:28px">Destination levels (Saïdia, Nador, Al Hoceima)</h2>
+    <p class="adm-hint">These destinations use their own monthly occupancy levels instead of the national rate with a resort swing. The estimate there says how many real hotels it rests on. Kill switch: the button below, or RESORT_LEVELS=off in Railway (RESORT_LEVELS=on overrides the button); the model runs again at once. Status: <strong id="rl-status">—</strong>.</p>
+    <div style="display:flex;gap:8px;margin-bottom:8px"><button class="adm-btn adm-btn-secondary" id="rl-off">Turn off (national anchor)</button><button class="adm-btn adm-btn-secondary" id="rl-on" style="display:none">Turn back on</button><span id="rl-msg" class="adm-hint"></span></div>
+    <div class="dh-scroll"><table class="adm-table" id="rl-table"></table></div>
+
     <h2 class="adm-list-filter-label" style="margin-top:28px">Resort seasonal swing, by destination</h2>
     <p class="adm-hint">Classified beach and seaside resorts follow a seasonal swing <span id="occ-res-x">—</span> times the city pattern where it is switched on: "measured" where hotel-reported figures support it, "lower confidence" on the same coast and summer market without figures yet. Elsewhere resorts keep their city's pattern. Railway settings: RESORT_SEASON_ON / RESORT_SEASON_OFF (destination names, comma-separated). Price position: <strong id="occ-pp">—</strong> (PRICE_POSITION: off, nonresort or on).</p>
     <div class="dh-scroll"><table class="adm-table" id="occ-res-table"></table></div>

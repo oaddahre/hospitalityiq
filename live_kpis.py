@@ -50,6 +50,7 @@ import rate_benchmark as RB
 import rate_flags as RF
 import official_monthly as OMM
 from occupancy_model import active_model, model_for, row_model
+import occupancy_model as OM
 
 HISTORY_DAYS = 400
 DATA_START = date(2026, 11, 3)     # Kodo collects published rates every night from this day
@@ -178,6 +179,8 @@ def per_hotel(data_dir, today: date):
             'history_days': (dq.get(h) or {}).get('history_days'),
             # the city is held to its official monthly occupancy (official_monthly.py)
             'occ_calibrated': OMM.calibrated(hotels[h].get('city', '')),
+            # destination levels (Saidia, Nador, Al Hoceima): how many real hotels the estimate rests on
+            'occ_basis': OM.dest_basis(hotels[h]),
         }
         if h in reno:                   # under renovation (hotel_flags.py): no occupancy or Rooms RevPAR, no rooms in
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
@@ -303,7 +306,7 @@ def get(data_dir, today: date):
            _mtime(os.path.join(data_dir, 'estimated_occupancy.csv')), _mtime(os.path.join(data_dir, 'scraper_log.json')),
            _mtime(history_path(data_dir)), active_model(), _mtime(os.path.join(data_dir, 'data_health.json')),
            os.environ.get('CONFIDENCE_UI', ''), _mtime(os.path.join(data_dir, 'model_switch.json')),
-           os.environ.get('OCC_V2_OFF', ''), _mtime(os.path.join(data_dir, 'hotel_flags.json')))
+           os.environ.get('OCC_V2_OFF', ''), _mtime(os.path.join(data_dir, 'hotel_flags.json')), OM.dest_levels_on())
     with _lock:
         if _cache.get('key') == key:
             return _cache['data']

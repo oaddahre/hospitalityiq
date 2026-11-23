@@ -15,6 +15,7 @@ import math
 import csv
 import io
 import os
+import threading
 import re
 import uuid
 import secrets
@@ -32,6 +33,7 @@ from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
 import rate_benchmark as RB
 import official_monthly as OMM
+import occupancy_model
 from hotel_flags import under_renovation as HFL_under_renovation
 import events_db as EV
 import tourism_data as TD
@@ -5791,6 +5793,7 @@ def api_occupancy_hotel(hotel_id):
             # the hotel's city is held to its official monthly occupancy (official_monthly.py)
             'calibrated':        OMM.calibrated((RB.load_hotels(DATA_DIR).get(str(hotel_id)) or {}).get('city', '')),
             'under_renovation':  HFL_under_renovation(hotel_id),          # partly open: prices shown, no occupancy
+            'occ_basis':         occupancy_model.dest_basis(RB.load_hotels(DATA_DIR).get(str(hotel_id)) or {}),   # Saidia, Nador, Al Hoceima
         })
     except Exception as e:
         app.logger.error(f'Occupancy hotel error {hotel_id}: {e}', exc_info=True)
@@ -5891,6 +5894,32 @@ def api_admin_kpi_change():
     earlier (live_kpis.explain_change, from the daily snapshots)."""
     city = request.args.get('city', 'Marrakech')
     return jsonify(LK.explain_change(DATA_DIR, _casablanca_today(), city))
+
+
+@app.route('/api/admin/resort-levels', methods=['GET', 'POST'])
+@admin_required
+def api_admin_resort_levels():
+    """Destination levels (Saidia, Nador, Al Hoceima): state, kill switch
+    (POST {"off": true|false}, then the model runs again), and per destination
+    the real hotels it rests on and the hotels it covers."""
+    import occupancy_model as OMX
+    if request.method == 'POST':
+        body = request.get_json(silent=True) or {}
+        if not isinstance(body.get('off'), bool):
+            return jsonify({'error': 'off must be true or false'}), 400
+        OMX.set_levels_off(body['off'], by=getattr(current_user, 'email', 'admin'))
+        _log_admin_action('resort_levels', '', 'off' if body['off'] else 'on')
+        threading.Thread(target=OMX.run_occupancy_model, daemon=True).start()
+        LK._cache.clear()
+    hotels = RB.load_hotels(DATA_DIR)
+    dest = []
+    for city, d in OMX.DEST_LEVELS.items():
+        hs = [h for h in hotels.values() if h.get('city') == city]
+        covered = [h for h in hs if d['scope'] == 'all' or OMX.is_seaside_resort(h)]
+        dest.append({'city': city, 'scope': 'all hotels' if d['scope'] == 'all' else 'classified resorts',
+                     'real_hotels': d['real_hotels'], 'borrowed': bool(d.get('borrowed')), 'hotels_in_database': len(hs),
+                     'hotels_covered': len(covered), 'note': OMX.dest_basis(covered[0]) if covered and OMX.dest_levels_on() else None})
+    return jsonify({'on': OMX.dest_levels_on(), 'killed': OMX.levels_killed(), 'env': OMX.env_levels(), 'destinations': dest})
 
 
 @app.route('/api/admin/class-gaps')
