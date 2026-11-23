@@ -612,14 +612,36 @@ def calendar_centre(city, hotel_type, year, resort=False):
 # CATEGORY_ADJUST): a city's gap is never carried to another city.
 CLASS_OF = {'Ultra Luxury': 'lux', 'Luxury': 'lux', 'Upper Upscale': 'lux', 'Upscale': 'up', 'Upper Midscale': 'up',
             'Midscale': 'mid', 'Economy': 'mid'}
-CITY_CLASS_PTS = {
-    'Marrakech':             {'lux': -6.3, 'up': 4.9, 'mid': -0.6},
-    'Casablanca':            {'lux': -8.1, 'up': 1.9, 'mid': 5.1},
-    'Tanger':                {'lux': -3.8, 'up': 3.7, 'mid': -3.8},
-    'Agadir / Taghazout':    {'lux': -9.4, 'up': 5.7, 'mid': 5.7},
-    'Rabat / Salé / Témara': {'lux': -5.6, 'up': 6.4, 'mid': 6.4},
+# Class gaps: the class's occupancy against its whole city, in pts (derived):
+#   gap        the value used: the last 12 months (one 12-month figure where
+#              that is all there is)
+#   gap24      the last 24 months' average; lo, hi: the lowest and highest
+#              gap over the last 24 months (or the history there is)
+#   months     months of history behind it; derived: from the city total and
+#              the other classes (the class itself is hidden)
+# Where the gap drifts over time (Casablanca: luxury from about 0 to -8,
+# midscale changed sign), a hotel whose class gap is used gets the drift, how
+# far the gap moved from `gap` within its window, added to its range.
+CLASS_GAPS = {
+    'Marrakech':             {'lux': {'gap': -6.3, 'months': 12}, 'up': {'gap': 4.9, 'months': 12},
+                              'mid': {'gap': -0.6, 'months': 12, 'derived': True}},
+    'Agadir / Taghazout':    {'lux': {'gap': -9.4, 'months': 12}, 'up': {'gap': 5.7, 'months': 12, 'derived': True},
+                              'mid': {'gap': 5.7, 'months': 12, 'derived': True}},
+    'Rabat / Salé / Témara': {'lux': {'gap': -5.6, 'months': 12}, 'up': {'gap': 6.4, 'months': 12, 'derived': True},
+                              'mid': {'gap': 6.4, 'months': 12, 'derived': True}},
+    'Casablanca':            {'lux': {'gap': -5.9, 'gap24': -3.7, 'lo': -8.1, 'hi': -0.8, 'months': 70},
+                              'up':  {'gap': 1.5, 'gap24': 1.4, 'lo': 0.0, 'hi': 3.0, 'months': 70},
+                              'mid': {'gap': 3.1, 'gap24': 1.3, 'lo': -2.0, 'hi': 5.1, 'months': 67}},
+    'Tanger':                {'lux': {'gap': -10.5, 'lo': -14.1, 'hi': -6.5, 'months': 10,
+                                      'note': 'only 10 months of history (May 2023 to Feb 2024)'},
+                              'up':  {'gap': 3.9, 'gap24': 4.4, 'lo': 3.4, 'hi': 5.3, 'months': 61}},
 }
 CLASS_ADJUST_CITIES = ('Agadir / Taghazout',)   # where the class gap lowered the backtest error (Nov 2026)
+# What the backtest said; a city not listed has not been tested (no real hotel)
+CLASS_GAP_TESTED = {
+    'Agadir / Taghazout': 'yes: Hyatt Regency Taghazout 14.3 -> 8.7 pts, its comp-set group 13.3 -> 5.8; used',
+    'Rabat / Salé / Témara': 'yes: Marriott Rabat 8.9 -> 9.5 pts (worse); not used',
+}
 # Official category gaps to the national rate: 3-star (our Midscale) and
 # guesthouses (our riads and boutique hotels); used outside the cities above
 OFFICIAL_CATEGORY_PTS = {'mid': -5.4, 'riad': 6.0}
@@ -631,16 +653,41 @@ def _setting_list(name, default):
     return tuple(x.strip() for x in v.split(',') if x.strip()) if v is not None else default
 
 
+_CLASS_CITIES_OVERRIDE = None     # class_gaps.test_hotel: the cities, just for that test
+
+
+def class_cities():
+    if _CLASS_CITIES_OVERRIDE is not None:
+        return _CLASS_CITIES_OVERRIDE
+    return _setting_list('CLASS_ADJUST_CITIES', CLASS_ADJUST_CITIES)
+
+
+def class_gap(city, cls):
+    """The stored gap for a city and class with its drift, or None."""
+    e = (CLASS_GAPS.get(city) or {}).get(cls)
+    if not e:
+        return None
+    drift = max(e['gap'] - e['lo'], e['hi'] - e['gap']) if 'lo' in e and 'hi' in e else 0.0
+    return dict(e, drift=round(drift, 1))
+
+
+def class_gap_used(hotel):
+    """The class gap this hotel gets (its city's gap switched on), or None."""
+    city, cls = hotel.get('city', ''), CLASS_OF.get(hotel.get('category', ''))
+    return class_gap(city, cls) if cls and city in class_cities() else None
+
+
 def class_pts(hotel):
     """The hotel's class or category adjustment in pts (0 where none applies)."""
     city, cls = hotel.get('city', ''), CLASS_OF.get(hotel.get('category', ''))
-    if city in _setting_list('CLASS_ADJUST_CITIES', CLASS_ADJUST_CITIES) and city in CITY_CLASS_PTS and cls:
-        return CITY_CLASS_PTS[city][cls]
+    g = class_gap_used(hotel)
+    if g:
+        return g['gap']
     on = os.environ.get('CATEGORY_ADJUST', 'on' if CATEGORY_ADJUST else 'off').lower() in ('on', '1', 'true', 'yes')
     if on:
         if classify_hotel_type(hotel) == 'riad_boutique':
             return OFFICIAL_CATEGORY_PTS['riad']
-        if cls == 'mid' and city not in CITY_CLASS_PTS:
+        if cls == 'mid' and city not in CLASS_GAPS:
             return OFFICIAL_CATEGORY_PTS['mid']
     return 0.0
 
@@ -733,7 +780,7 @@ def month_shift(kind, city, year, month, today=None, hotel=None):
         pos, pos_key = {}, None
     key = ('mshift', kind, city, year, month, t, pos_key, _mtime(HOTELS_CSV), _EVENT_NIGHTS.get('key'),
            RESORT_SEASON_X, price_position_mode(), tuple(sorted(resort_season_destinations())),
-           _setting_list('CLASS_ADJUST_CITIES', CLASS_ADJUST_CITIES), os.environ.get('CATEGORY_ADJUST', ''), dest_levels_on())
+           class_cities(), os.environ.get('CATEGORY_ADJUST', ''), dest_levels_on())
     if key not in _V1_CACHE:
         members = _city_hotels(city) or ([(hotel, 1.0)] if hotel else [])
         first = date(year, month, 1)
@@ -863,7 +910,7 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     shift = held[0] if held else 0.0
     cls_pts = class_pts(hotel)
     mid = _clamp(base + dow + season + ev + (price_pts or 0) + cls_pts + shift, c['clamp_low'], c['clamp_high'])
-    half = range_width(hotel) + ev_range
+    half = range_width(hotel) + ev_range + ((class_gap_used(hotel) or {}).get('drift') or 0)
     if price_pts is None and not is_seaside_resort(hotel):
         half += c['range_no_price_position']
     if lvl is not None and DEST_LEVELS[city].get('borrowed'):
@@ -1322,6 +1369,7 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if gap == 'closed':
         half += c['range_closed']
     half += ev_range                     # estimated or moon-dependent event dates
+    half += (class_gap_used(hotel) or {}).get('drift') or 0      # a drifting class gap: its drift
     if lvl is not None and DEST_LEVELS[hotel['city']].get('borrowed'):
         half += RANGE_BORROWED
     low, high = mid - half, mid + half

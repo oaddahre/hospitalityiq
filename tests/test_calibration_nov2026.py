@@ -117,7 +117,7 @@ class ClassAdjustment(unittest.TestCase):
     def test_agadir_only(self):
         self.assertEqual(OM.CLASS_ADJUST_CITIES, ('Agadir / Taghazout',))
         self.assertFalse(OM.CATEGORY_ADJUST)
-        self.assertEqual(OM.class_pts(HOTELS['423']), OM.CITY_CLASS_PTS['Agadir / Taghazout']['lux'])
+        self.assertEqual(OM.class_pts(HOTELS['423']), OM.class_gap('Agadir / Taghazout', 'lux')['gap'])
         self.assertEqual(OM.class_pts(HOTELS['268']), 0.0)                     # Rabat: worse on the backtest, not used
         self.assertEqual(OM.class_pts(HOTELS['13']), 0.0)                      # Marrakech: untested, not used
 
@@ -179,6 +179,62 @@ class DestinationLevelsProposal(unittest.TestCase):
             _, on = OM.estimate_occupancy(hoc, n, position={'pts': None, 'history_days': 30})
             # the upper side (the lower one can sit on the 5% floor): RANGE_BORROWED wider
             self.assertAlmostEqual((on['high'] - on['final']) - (off['high'] - off['final']), OM.RANGE_BORROWED, delta=1.0)
+
+
+class ClassGapHistory(unittest.TestCase):
+    """Casablanca and Tanger class gaps: stored with their drift, off, tested automatically when a real hotel arrives."""
+    def test_stored_and_off(self):
+        self.assertEqual(OM.class_gap('Casablanca', 'lux')['gap'], -5.9)
+        self.assertEqual(OM.class_gap('Casablanca', 'lux')['drift'], 5.1)
+        self.assertEqual(OM.class_gap('Casablanca', 'mid')['drift'], 5.1)
+        self.assertEqual(OM.class_gap('Tanger', 'up')['gap'], 3.9)
+        self.assertIsNone(OM.class_gap('Tanger', 'mid'))                      # hidden in the source
+        self.assertEqual(OM.class_gap('Tanger', 'lux')['months'], 10)
+        for c in ('Casablanca', 'Tanger'):
+            self.assertNotIn(c, OM.class_cities())
+            self.assertNotIn(c, OM.CLASS_GAP_TESTED)
+        h = next(x for x in HOTELS.values() if x['city'] == 'Casablanca' and x['category'] == 'Luxury' and x['status'].lower() in ('open', 'operating'))
+        self.assertEqual(OM.class_pts(h), 0.0)
+        import class_gaps as CG
+        rows = {(r['city'], r['class']): r for r in CG.table(ROOT)}
+        r = rows[('Casablanca', 'Luxury & Upper Upscale')]
+        self.assertEqual((r['gap_12m'], r['gap_24m'], r['min'], r['max'], r['months'], r['used'], r['tested']),
+                         (-5.9, -3.7, -8.1, -0.8, 70, False, 'no'))
+
+    def test_drift_widens_the_range_when_used(self):
+        h = next(x for x in HOTELS.values() if x['city'] == 'Casablanca' and x['category'] == 'Luxury' and x['status'].lower() in ('open', 'operating'))
+        n = date(2027, 10, 13)
+        p = {'pts': 0.0, 'history_days': 60}
+        _, off = OM.estimate_occupancy(h, n, position=p)
+        try:
+            OM._CLASS_CITIES_OVERRIDE = ('Agadir / Taghazout', 'Casablanca')
+            _, on = OM.estimate_occupancy(h, n, position=p)
+        finally:
+            OM._CLASS_CITIES_OVERRIDE = None
+        self.assertAlmostEqual((on['high'] - on['final']) - (off['high'] - off['final']), 5.1, delta=1.0)
+
+    def test_run_when_a_real_hotel_arrives(self):
+        import class_gaps as CG
+        d = tempfile.mkdtemp()
+        try:
+            for f in ('hotels.csv', 'hotel_flags.json'):
+                shutil.copy(os.path.join(ROOT, f), d)
+            h = next(x for x in HOTELS.values() if x['city'] == 'Casablanca' and x['category'] == 'Luxury' and x['status'].lower() in ('open', 'operating'))
+            with open(os.path.join(d, 'monthly_performance.csv'), 'w', newline='', encoding='utf-8') as f:
+                w = csv.writer(f)
+                w.writerow(['hotel_id', 'month', 'occupancy', 'adr', 'revpar', 'rooms_available', 'data_type', 'uploaded_at'])
+                for m, occ in (('2026-01', 50), ('2026-02', 45), ('2026-03', 40)):
+                    w.writerow([h['id'], m, occ, 2000, 1000, '', 'actual', 'test'])
+            out = CG.run_for(d, [h['id'], '13'], log=lambda *a: None)              # 13: Marrakech luxury, no figures: skipped
+            self.assertEqual([r['hotel_id'] for r in out], [h['id']])
+            r = out[0]
+            self.assertEqual((r['months'], r['switched_on'], r['gap']), (3, False, -5.9))
+            self.assertIsNotNone(r['error_without']); self.assertIsNotNone(r['error_with'])
+            self.assertIn(h['id'], CG.load_tests(d))
+            self.assertNotIn('Casablanca', OM.class_cities())                    # never switched on
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+        self.assertIn("CG.run_in_background(DATA_DIR, {r['hotel_id'] for r in monthly})", open(os.path.join(ROOT, 'app.py'), encoding='utf-8').read())
 
 
 if __name__ == '__main__':

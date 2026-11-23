@@ -3032,6 +3032,9 @@ def _ingest_figures(rows, hotel_id='', hotel_name='', preview=False):
         return {'ok': True, 'preview': True, 'rows': checked, 'notes': notes, 'months': len(monthly), 'nights': len(daily),
                 'replaces': sum(1 for r in checked if r['replaces'])}, 200
     stored = HF.store(DATA_DIR, monthly, daily)
+    # a real hotel in a city and class with a stored class gap: test the gap on it (never switched on here)
+    import class_gaps as CG
+    CG.run_in_background(DATA_DIR, {r['hotel_id'] for r in monthly})
     periods = sorted([r['month'] for r in monthly] + [r['date'] for r in daily])
     names = sorted({(hotels.get(r['hotel_id']) or {}).get('name', r['hotel_id']) for r in monthly + daily})
     log = load_upload_log()
@@ -5888,6 +5891,14 @@ def api_admin_kpi_change():
     earlier (live_kpis.explain_change, from the daily snapshots)."""
     city = request.args.get('city', 'Marrakech')
     return jsonify(LK.explain_change(DATA_DIR, _casablanca_today(), city))
+
+
+@app.route('/api/admin/class-gaps')
+@admin_required
+def api_admin_class_gaps():
+    """Stored class gaps by city (occupancy_model.CLASS_GAPS) and their tests (class_gaps.py). Internal."""
+    import class_gaps as CG
+    return jsonify({'rows': CG.table(DATA_DIR)})
 
 
 @app.route('/api/admin/occupancy/official-monthly')

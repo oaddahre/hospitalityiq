@@ -1873,8 +1873,20 @@ async function loadKpiChange() {
   } catch { msg.textContent = 'Failed'; }
 }
 document.getElementById('kc-go').addEventListener('click', loadKpiChange);
+async function loadClassGaps() {
+  try {
+    const res = await fetch('/api/admin/class-gaps', { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) return;
+    const f = v => v == null ? '–' : `${v > 0 ? '+' : ''}${v}`;
+    sbsTable('cg-table', ['City', 'Class', '12m gap', '24m gap', 'Min', 'Max', 'Drift (range)', 'Months of history', 'Used', 'Tested'],
+      (d.rows || []).map(r => [r.city, r.class + (r.derived ? ' (derived)' : ''), f(r.gap_12m), f(r.gap_24m), f(r.min), f(r.max),
+        r.drift ? `±${r.drift}` : '–', r.months + (r.note ? ` · ${r.note}` : ''), r.used ? 'yes' : 'no', r.tested]));
+  } catch { /* the rest of the page still loads */ }
+}
 async function loadSideBySide(refresh) {
   loadOfficialMonthly();
+  loadClassGaps();
   loadKpiChange();
   const msg = document.getElementById('occ-sbs-msg');
   msg.textContent = 'Loading… (up to a minute the first time each day)';
