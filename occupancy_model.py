@@ -467,8 +467,72 @@ def resort_season_destinations(env=os.environ):
 
 
 def resort_swing(hotel):
-    """A classified resort in a destination where the resort swing is on."""
-    return is_seaside_resort(hotel) and hotel.get('city', '') in resort_season_destinations()
+    """A classified resort in a destination where the resort swing is on (and
+    not on the destination levels below)."""
+    return (is_seaside_resort(hotel) and hotel.get('city', '') in resort_season_destinations()
+            and not dest_levels_apply(hotel))
+
+
+# ─── Destination levels (PROPOSAL, Nov 2026: off unless RESORT_LEVELS=on) ─────
+# Absolute monthly occupancy for destinations where the national anchor is
+# far off: level = shape[month] x annual, instead of the national 58% with a
+# seasonal offset. Derived from licensed hotel figures (internal calibration):
+#   Saidia      shape from its one real resort, level set so its Jun, Aug and
+#               Sep 2026 match the official Berkan-Saidia figures (x1.06).
+#               Leave-one-out (built without that hotel, from the other two
+#               Mediterranean resorts): 8.6 pts against 28.9 today
+#   Al Hoceima  no real hotel: the Mediterranean-north family (3 resorts in
+#               Saidia and Tamuda Bay); rests on neighbouring destinations, so
+#               the range is RANGE_BORROWED wider
+#   Nador       all hotels; from the one real hotel (a city hotel with a summer
+#               diaspora peak): fitted on its first 12 months, 2.5 pts on the
+#               next 6 against 7.5 today
+# Tamuda Bay and El Jadida keep the current model: the family level did not
+# beat it leave-one-out (the two Tamuda Bay resorts sit 30-45 pts apart and
+# price does not explain it).
+DEST_LEVELS = {
+    'Saidia':     {'scope': 'resorts', 'annual': 27.2, 'shape': {1: 0.24, 2: 0.25, 3: 0.27, 4: 0.60, 5: 1.25, 6: 1.45,
+                                                                 7: 1.87, 8: 3.26, 9: 1.30, 10: 0.79, 11: 0.46, 12: 0.27}},
+    'Al Hoceima': {'scope': 'resorts', 'annual': 36.3, 'borrowed': True,
+                   'shape': {1: 0.29, 2: 0.25, 3: 0.37, 4: 0.81, 5: 1.20, 6: 1.54, 7: 2.05, 8: 2.47, 9: 1.31, 10: 0.99, 11: 0.40,
+                             12: 0.32}},
+    'Nador':      {'scope': 'all', 'annual': 46.6, 'shape': {1: 0.60, 2: 0.60, 3: 0.59, 4: 1.01, 5: 1.03, 6: 0.99, 7: 1.37,
+                                                             8: 1.64, 9: 1.23, 10: 1.03, 11: 0.95, 12: 0.96}},
+}
+RANGE_BORROWED = 5                # pts more each side where the levels rest on neighbouring destinations
+
+
+def dest_levels_on(env=os.environ):
+    return str(env.get('RESORT_LEVELS', 'off')).strip().lower() in ('on', '1', 'true', 'yes')
+
+
+def dest_levels_apply(hotel):
+    d = DEST_LEVELS.get(hotel.get('city', ''))
+    return bool(d and dest_levels_on() and (d['scope'] == 'all' or is_seaside_resort(hotel)))
+
+
+def dest_level(hotel, night):
+    """The destination's level for the night's month (pts), or None."""
+    if not dest_levels_apply(hotel):
+        return None
+    d = DEST_LEVELS[hotel['city']]
+    return d['annual'] * d['shape'][night.month]
+
+
+def _month_cal_mean(city, hotel_type, year, month, v2=False):
+    """The month's average of day of week + events (pts), taken off so the
+    hotel's month averages the destination level."""
+    key = ('mcal', city, hotel_type, year, month, v2, _EVENT_NIGHTS.get('key'))
+    if key not in _V1_CACHE:
+        first = date(year, month, 1)
+        nights = [first + timedelta(days=i) for i in range((date(year + (month == 12), month % 12 + 1, 1) - first).days)]
+        tot = 0.0
+        for n in nights:
+            dow = DOW_ADJUSTMENTS.get(hotel_type, DOW_ADJUSTMENTS['city_business']).get(n.weekday(), 0) * 100
+            ev = event_points(city, hotel_type, n)[0]
+            tot += dow + (_clamp(ev, -V2['calendar_max_pts'], V2['calendar_max_pts']) if v2 else ev)
+        _V1_CACHE[key] = tot / len(nights)
+    return _V1_CACHE[key]
 
 
 def anchor_base(anchor_pct, city, hotel_type, year, resort=False, lo=5, hi=98):
@@ -620,6 +684,9 @@ def _v1_raw(hotel, night, position):
     dow, season, ev, _, _ = _calendar_pts(city, htype, night, resort)
     price_pts = (position or {}).get('pts') if price_position_for(hotel) else None
     base = anchor_base(anchor[0], city, htype, night.year, resort, V1['clamp_low'], V1['clamp_high'])
+    lvl = dest_level(hotel, night)
+    if lvl is not None:                  # proposal: the destination's absolute level for the month
+        base, season = lvl - _month_cal_mean(city, htype, night.year, night.month), 0.0
     return base + dow + season + ev + (price_pts or 0) + class_pts(hotel)
 
 
@@ -634,6 +701,9 @@ def _v2_struct(hotel, night):
     base = anchor_base(anchor[0], city, htype, night.year, resort, V2['clamp_low'], V2['clamp_high'])
     dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
     cal = _clamp(event_points(city, htype, night)[0], -V2['calendar_max_pts'], V2['calendar_max_pts'])
+    lvl = dest_level(hotel, night)
+    if lvl is not None:
+        return lvl - _month_cal_mean(city, htype, night.year, night.month, v2=True) + dow + cal + class_pts(hotel)
     return base + dow + season_pts(city, night.month, resort) + cal + class_pts(hotel)
 
 
@@ -663,7 +733,7 @@ def month_shift(kind, city, year, month, today=None, hotel=None):
         pos, pos_key = {}, None
     key = ('mshift', kind, city, year, month, t, pos_key, _mtime(HOTELS_CSV), _EVENT_NIGHTS.get('key'),
            RESORT_SEASON_X, price_position_mode(), tuple(sorted(resort_season_destinations())),
-           _setting_list('CLASS_ADJUST_CITIES', CLASS_ADJUST_CITIES), os.environ.get('CATEGORY_ADJUST', ''))
+           _setting_list('CLASS_ADJUST_CITIES', CLASS_ADJUST_CITIES), os.environ.get('CATEGORY_ADJUST', ''), dest_levels_on())
     if key not in _V1_CACHE:
         members = _city_hotels(city) or ([(hotel, 1.0)] if hotel else [])
         first = date(year, month, 1)
@@ -785,6 +855,9 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     dow, season, ev, ev_range, names = _calendar_pts(city, hotel_type, date, resort)
     price_pts = position.get('pts') if price_position_for(hotel) else None
     base = anchor_base(anchor[0], city, hotel_type, date.year, resort, V1['clamp_low'], V1['clamp_high'])
+    lvl = dest_level(hotel, date)
+    if lvl is not None:                  # proposal (RESORT_LEVELS): the destination's absolute level for the month
+        base, season = lvl - _month_cal_mean(city, hotel_type, date.year, date.month), 0.0
     c = V1
     held = month_shift('v1', city, date.year, date.month, today, hotel)
     shift = held[0] if held else 0.0
@@ -793,12 +866,15 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     half = range_width(hotel) + ev_range
     if price_pts is None and not is_seaside_resort(hotel):
         half += c['range_no_price_position']
+    if lvl is not None and DEST_LEVELS[city].get('borrowed'):
+        half += RANGE_BORROWED
     low, high = (int(round(_clamp(x, c['clamp_low'], c['clamp_high']))) for x in (mid - half, mid + half))
     breakdown = {
         'anchor':                  anchor[0],
         'anchor_year':             anchor[1],
         'anchor_scope':            anchor[2],
         'base':                    round(base, 1),
+        'destination_level':       None if lvl is None else round(lvl, 1),
         'official_month':          held and {'occupancy': held[1][0], 'status': held[1][1], 'scope': held[1][2],
                                              'month': f'{date.year:04d}-{date.month:02d}'},
         'month_shift':             round(shift, 1),
@@ -1184,6 +1260,9 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     base = anchor_base(anchor[0], hotel.get('city', ''), htype, night.year, resort, c['clamp_low'], c['clamp_high'])
     dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
     season = season_pts(hotel.get('city', ''), night.month, resort)
+    lvl = dest_level(hotel, night)
+    if lvl is not None:                  # proposal (RESORT_LEVELS): the destination's absolute level for the month
+        base, season = lvl - _month_cal_mean(hotel.get('city', ''), htype, night.year, night.month, v2=True), 0.0
     held = month_shift('v2', hotel.get('city', ''), night.year, night.month, hotel=hotel)
     shift = held[0] if held else 0.0
     if held:                             # held to the city's official figure for the month (as v1)
@@ -1243,6 +1322,8 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if gap == 'closed':
         half += c['range_closed']
     half += ev_range                     # estimated or moon-dependent event dates
+    if lvl is not None and DEST_LEVELS[hotel['city']].get('borrowed'):
+        half += RANGE_BORROWED
     low, high = mid - half, mid + half
     if gap == 'confirmed':
         mid, low, high = max(mid, c['soldout_mid']), max(low, c['soldout_low']), c['clamp_high']

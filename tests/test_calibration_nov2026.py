@@ -146,5 +146,40 @@ class NoLicensedData(unittest.TestCase):
                     self.assertNotIn(n, text, f'{f}: {n}')
 
 
+class DestinationLevelsProposal(unittest.TestCase):
+    """Saidia, Al Hoceima and Nador on absolute monthly levels: a proposal, OFF unless RESORT_LEVELS=on."""
+    RAD = '143'
+
+    def test_off_by_default(self):
+        from unittest import mock
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('RESORT_LEVELS', None)
+            self.assertFalse(OM.dest_levels_on())
+            self.assertIsNone(OM.dest_level(HOTELS[self.RAD], date(2026, 7, 15)))
+            self.assertTrue(OM.resort_swing(HOTELS[self.RAD]))                  # live: the resort profile as before
+
+    def test_on(self):
+        from unittest import mock
+        with mock.patch.dict(os.environ, {'RESORT_LEVELS': 'on'}):
+            d = OM.DEST_LEVELS['Saidia']
+            self.assertAlmostEqual(OM.dest_level(HOTELS[self.RAD], date(2026, 7, 15)), d['annual'] * d['shape'][7])
+            self.assertFalse(OM.resort_swing(HOTELS[self.RAD]))
+            first = date(2025, 7, 1)
+            v = [OM.estimate_occupancy(HOTELS[self.RAD], first + timedelta(days=i), position={'pts': None, 'history_days': 30})[0] * 100
+                 for i in range(31)]
+            self.assertLess(max(v), OM.V1['clamp_high'])                       # July no longer at the cap
+            self.assertAlmostEqual(sum(v) / len(v), d['annual'] * d['shape'][7], delta=1.0)
+            nador = next(h for h in HOTELS.values() if h['city'] == 'Nador' and not OM.is_seaside_resort(h))
+            self.assertIsNotNone(OM.dest_level(nador, date(2026, 8, 1)))       # Nador: all hotels
+            self.assertIsNone(OM.dest_level(HOTELS['353'], date(2026, 8, 1)))  # Tamuda Bay: unchanged
+            hoc = next(h for h in HOTELS.values() if h['city'] == 'Al Hoceima' and OM.is_seaside_resort(h))
+            n = date(2027, 10, 13)
+            with mock.patch.dict(os.environ, {'RESORT_LEVELS': 'off'}):
+                _, off = OM.estimate_occupancy(hoc, n, position={'pts': None, 'history_days': 30})
+            _, on = OM.estimate_occupancy(hoc, n, position={'pts': None, 'history_days': 30})
+            # the upper side (the lower one can sit on the 5% floor): RANGE_BORROWED wider
+            self.assertAlmostEqual((on['high'] - on['final']) - (off['high'] - off['final']), OM.RANGE_BORROWED, delta=1.0)
+
+
 if __name__ == '__main__':
     unittest.main()
