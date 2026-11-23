@@ -334,17 +334,17 @@ V1 = {
     'min_peer_hotels':          3,    # hotels of the city and category with a BAR (the hotel included)
     # Range: half-width in pts, added up. With the city held to its official
     # monthly figure, what is left is the hotel's own gap from its city.
-    # range_type: set so 77-79% of real months fall inside, per type, in the
-    # 7-hotel backtest (149 months, Nov 2026): city hotels 14 (2 hotels,
-    # 48 months: 77%), other (spa, riad, boutique) 24 (1 hotel, 24 months:
-    # 79%); resorts measured only where the city has no monthly series
-    # (77 months: 77% at 25 = 20 + 5), so 20 where it has one is inferred.
-    'range_type':      {'city': 14, 'resort': 20, 'other': 24},
+    # range_type: set so about 78% of real months fall inside (in-sample, Nov
+    # 2026: 195 months of 8 hotels, the 2 hold-out hotels kept out): city
+    # hotels 13 (79% inside), other (spa, riad, boutique) 22 (79%); resorts
+    # 18, where the city has its own series (89%, one hotel) and 18 + 7 where
+    # it has none (75%, four hotels). Was 14, 20 and 24.
+    'range_type':      {'city': 13, 'resort': 18, 'other': 22},
     # range_scope: on top, by how the city's level is known: its own official
     # monthly series, a region standing in (Dakhla, Laayoune, Errachidia), or
-    # no monthly series (annual or national figure). Judgement: the backtest
-    # can't measure it apart (only resorts sit in cities without a series).
-    'range_scope':     {'city': 0, 'region': 3, 'none': 5},
+    # no monthly series (annual or national figure). "none" from the resorts
+    # of Tamuda Bay and El Jadida (was 5); "region" judgement (no test hotel).
+    'range_scope':     {'city': 0, 'region': 3, 'none': 7},
     'range_no_price_position':  3,    # non-resort with no price position (under 7 priced nights, or < 3 peers)
     'clamp_low':                5,
     'clamp_high':              98,
@@ -537,6 +537,49 @@ def calendar_centre(city, hotel_type, year, resort=False):
 # uses; v2 with its structural part (official level, weekday, season,
 # calendar): its price signals then move nights around that level.
 
+# ─── Class and category adjustments ──────────────────────────────────────────
+# A hotel's class moves it around its city's level; the city's month shift
+# then takes the city back to its official figure, so these only spread the
+# city's occupancy across its hotels. Points from licensed 12-month class
+# figures by city (Nov 2026; derived gaps only, internal calibration) and from
+# the official category figures (national, 12 months to Sep 2026). Each is
+# used only where it lowered the backtest error (CLASS_ADJUST_CITIES,
+# CATEGORY_ADJUST): a city's gap is never carried to another city.
+CLASS_OF = {'Ultra Luxury': 'lux', 'Luxury': 'lux', 'Upper Upscale': 'lux', 'Upscale': 'up', 'Upper Midscale': 'up',
+            'Midscale': 'mid', 'Economy': 'mid'}
+CITY_CLASS_PTS = {
+    'Marrakech':             {'lux': -6.3, 'up': 4.9, 'mid': -0.6},
+    'Casablanca':            {'lux': -8.1, 'up': 1.9, 'mid': 5.1},
+    'Tanger':                {'lux': -3.8, 'up': 3.7, 'mid': -3.8},
+    'Agadir / Taghazout':    {'lux': -9.4, 'up': 5.7, 'mid': 5.7},
+    'Rabat / Salé / Témara': {'lux': -5.6, 'up': 6.4, 'mid': 6.4},
+}
+CLASS_ADJUST_CITIES = ('Agadir / Taghazout',)   # where the class gap lowered the backtest error (Nov 2026)
+# Official category gaps to the national rate: 3-star (our Midscale) and
+# guesthouses (our riads and boutique hotels); used outside the cities above
+OFFICIAL_CATEGORY_PTS = {'mid': -5.4, 'riad': 6.0}
+CATEGORY_ADJUST = False
+
+
+def _setting_list(name, default):
+    v = os.environ.get(name)
+    return tuple(x.strip() for x in v.split(',') if x.strip()) if v is not None else default
+
+
+def class_pts(hotel):
+    """The hotel's class or category adjustment in pts (0 where none applies)."""
+    city, cls = hotel.get('city', ''), CLASS_OF.get(hotel.get('category', ''))
+    if city in _setting_list('CLASS_ADJUST_CITIES', CLASS_ADJUST_CITIES) and city in CITY_CLASS_PTS and cls:
+        return CITY_CLASS_PTS[city][cls]
+    on = os.environ.get('CATEGORY_ADJUST', 'on' if CATEGORY_ADJUST else 'off').lower() in ('on', '1', 'true', 'yes')
+    if on:
+        if classify_hotel_type(hotel) == 'riad_boutique':
+            return OFFICIAL_CATEGORY_PTS['riad']
+        if cls == 'mid' and city not in CITY_CLASS_PTS:
+            return OFFICIAL_CATEGORY_PTS['mid']
+    return 0.0
+
+
 def official_month(city, night):
     """(occupancy %, status, scope) for the city and the night's month, or None."""
     import official_monthly as OMM
@@ -544,14 +587,15 @@ def official_month(city, night):
 
 
 def _city_hotels(city):
-    """[(hotel, rooms)] open hotels of the city (rooms: 1 where unknown)."""
-    key = ('cityh', HOTELS_CSV, _mtime(HOTELS_CSV))
+    """[(hotel, rooms)] open hotels of the city, without those under renovation (rooms: 1 where unknown)."""
+    import hotel_flags as HFL
+    key = ('cityh', HOTELS_CSV, _mtime(HOTELS_CSV), _mtime(HFL.path()))
     if _V1_CACHE.get('cityh_key') != key:
         by = {}
         try:
             with open(HOTELS_CSV, encoding='utf-8') as f:
                 for r in csv.DictReader(f):
-                    if r.get('status', '').lower() in ('open', 'operating'):
+                    if r.get('status', '').lower() in ('open', 'operating') and not HFL.under_renovation(r.get('id', '')):
                         try:
                             k = float(r.get('keys') or 0) or 1.0
                         except ValueError:
@@ -575,7 +619,7 @@ def _v1_raw(hotel, night, position):
     dow, season, ev, _, _ = _calendar_pts(city, htype, night, resort)
     price_pts = (position or {}).get('pts') if price_position_for(hotel) else None
     base = anchor_base(anchor[0], city, htype, night.year, resort, V1['clamp_low'], V1['clamp_high'])
-    return base + dow + season + ev + (price_pts or 0)
+    return base + dow + season + ev + (price_pts or 0) + class_pts(hotel)
 
 
 def _v2_struct(hotel, night):
@@ -589,7 +633,7 @@ def _v2_struct(hotel, night):
     base = anchor_base(anchor[0], city, htype, night.year, resort, V2['clamp_low'], V2['clamp_high'])
     dow = DOW_ADJUSTMENTS.get(htype, DOW_ADJUSTMENTS['city_business']).get(night.weekday(), 0) * 100
     cal = _clamp(event_points(city, htype, night)[0], -V2['calendar_max_pts'], V2['calendar_max_pts'])
-    return base + dow + season_pts(city, night.month, resort) + cal
+    return base + dow + season_pts(city, night.month, resort) + cal + class_pts(hotel)
 
 
 def _solve_shift(vals, target, lo, hi):
@@ -617,7 +661,8 @@ def month_shift(kind, city, year, month, today=None, hotel=None):
     else:
         pos, pos_key = {}, None
     key = ('mshift', kind, city, year, month, t, pos_key, _mtime(HOTELS_CSV), _EVENT_NIGHTS.get('key'),
-           RESORT_SEASON_X, price_position_mode(), tuple(sorted(resort_season_destinations())))
+           RESORT_SEASON_X, price_position_mode(), tuple(sorted(resort_season_destinations())),
+           _setting_list('CLASS_ADJUST_CITIES', CLASS_ADJUST_CITIES), os.environ.get('CATEGORY_ADJUST', ''))
     if key not in _V1_CACHE:
         members = _city_hotels(city) or ([(hotel, 1.0)] if hotel else [])
         first = date(year, month, 1)
@@ -668,14 +713,16 @@ def price_positions(data_dir=None, today=None):
     import rate_benchmark as RB
     data_dir = str(data_dir or DATA_DIR)
     today = today or datetime.now(MOROCCO_TZ).date()
-    key = ('pos', data_dir, today, _mtime(RS.csv_path(data_dir)), _mtime(RS.db_path(data_dir)), _mtime(HOTELS_CSV))
+    import hotel_flags as HFL
+    key = ('pos', data_dir, today, _mtime(RS.csv_path(data_dir)), _mtime(RS.db_path(data_dir)), _mtime(HOTELS_CSV),
+           _mtime(HFL.path(data_dir)))
     if _V1_CACHE.get('pos_key') == key:
         return _V1_CACHE['pos']
     hotels = {}
     try:
         with open(os.path.join(data_dir, 'hotels.csv'), encoding='utf-8') as f:
             hotels = {str(r['id']): r for r in csv.DictReader(f)
-                      if r.get('status', '').lower() in ('open', 'operating')}
+                      if r.get('status', '').lower() in ('open', 'operating') and not HFL.under_renovation(r['id'], data_dir)}
     except (OSError, KeyError):
         pass
     ids = sorted(hotels)
@@ -722,6 +769,10 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     hotel_type = classify_hotel_type(hotel)
     city       = hotel.get('city', '')
     confidence = confidence_for(scraped_bar, recent_price_days)
+    import hotel_flags as HFL
+    if HFL.under_renovation(hotel.get('id', '')):
+        return None, {'limited': True, 'under_renovation': True, 'confidence': confidence, 'price_days_7d': recent_price_days,
+                      'low': None, 'high': None, 'final': None}
     anchor     = official_anchor(city)
     if anchor is None:
         return None, {'limited': True, 'confidence': confidence, 'price_days_7d': recent_price_days,
@@ -735,7 +786,8 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     c = V1
     held = month_shift('v1', city, date.year, date.month, today, hotel)
     shift = held[0] if held else 0.0
-    mid = _clamp(base + dow + season + ev + (price_pts or 0) + shift, c['clamp_low'], c['clamp_high'])
+    cls_pts = class_pts(hotel)
+    mid = _clamp(base + dow + season + ev + (price_pts or 0) + cls_pts + shift, c['clamp_low'], c['clamp_high'])
     half = range_width(hotel) + ev_range
     if price_pts is None and not is_seaside_resort(hotel):
         half += c['range_no_price_position']
@@ -748,6 +800,7 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
         'official_month':          held and {'occupancy': held[1][0], 'status': held[1][1], 'scope': held[1][2],
                                              'month': f'{date.year:04d}-{date.month:02d}'},
         'month_shift':             round(shift, 1),
+        'class_adjustment':        cls_pts,
         'rate_adjustment':         price_pts or 0.0,
         'dow_adjustment':          round(dow, 1),
         'seasonality_adjustment':  round(season, 1),
@@ -1167,7 +1220,8 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     if names:
         signals.append('calendar:' + ','.join(dict.fromkeys(names)))
 
-    mid = _clamp(base + shift + dow + season + market + own + soldout_city + calendar + cand, c['clamp_low'], c['clamp_high'])
+    mid = _clamp(base + shift + dow + season + market + own + soldout_city + calendar + cand + class_pts(hotel),
+                 c['clamp_low'], c['clamp_high'])
 
     priced_city = inp.city_priced(hid, night)
     half = range_width(hotel) + next(p for n, p in reversed(c['range_city_priced']) if priced_city >= n)
@@ -1266,7 +1320,10 @@ class OccupancyModel:
             return []
 
     def open_hotels(self):
-        return {h: r for h, r in self.hotels.items() if r.get('status', '').lower() in ('open', 'operating')}
+        """Open hotels, without those under renovation (hotel_flags.py): no estimate, no calibration."""
+        import hotel_flags as HFL
+        reno = HFL.renovating()
+        return {h: r for h, r in self.hotels.items() if r.get('status', '').lower() in ('open', 'operating') and h not in reno}
 
     def v2_estimates(self, nights, as_of=None, hotel_ids=None, quality=None):
         """{(hotel_id, night iso): v2 result} for these nights (dates), with
@@ -1306,12 +1363,13 @@ class OccupancyModel:
         return len(days & getattr(self, 'price_days', {}).get(str(hotel_id), set()))
 
     def run(self, days_forward=30):
+        import hotel_flags as HFL
         print(f'Running occupancy model for {len(self.hotels)} hotels, {days_forward} days forward')
         today   = datetime.now(MOROCCO_TZ)
         results = []
 
         for hotel_id, hotel in self.hotels.items():
-            if hotel.get('status', '').lower() not in ['open', 'operating']:
+            if hotel.get('status', '').lower() not in ['open', 'operating'] or HFL.under_renovation(hotel_id):
                 continue
 
             price_days = self.recent_price_days(hotel_id, today.date())

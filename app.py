@@ -32,6 +32,7 @@ from disposable_domains import is_disposable_email
 from run_lock import acquire_lock, lock_is_held
 import rate_benchmark as RB
 import official_monthly as OMM
+from hotel_flags import under_renovation as HFL_under_renovation
 import events_db as EV
 import tourism_data as TD
 import rates_store as RS
@@ -179,7 +180,7 @@ DATA_DIR = os.environ.get("DATA_DIR", "").strip() or APP_DIR
 # ever writes to them), so "copy only if missing" is the whole rule.
 if os.path.abspath(DATA_DIR) != os.path.abspath(APP_DIR):
     os.makedirs(DATA_DIR, exist_ok=True)
-    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json", "brand_profiles.json"):
+    for _seed_name in ("hotels.csv", "performance.csv", "pipeline.csv", "owners.json", "brand_profiles.json", "hotel_flags.json"):
         _src, _dst = os.path.join(APP_DIR, _seed_name), os.path.join(DATA_DIR, _seed_name)
         if os.path.exists(_src) and not os.path.exists(_dst):
             shutil.copy2(_src, _dst)
@@ -1095,6 +1096,15 @@ def load_data():
     for col in _HOTEL_NUM_COLS:
         if col in hotels:
             hotels[col] = pd.to_numeric(hotels[col], errors="coerce")
+    # Hotels under renovation (hotel_flags.json): their rooms in service only
+    # (none unless given) count in every total; keys_listed keeps the listed rooms
+    import hotel_flags as HFL
+    flags = HFL.load(DATA_DIR)
+    hotels["under_renovation"] = hotels["id"].map(lambda i: bool((flags.get(str(int(i)) if pd.notna(i) else "") or {}).get("under_renovation")))
+    hotels["keys_listed"] = hotels["keys"]
+    for i in hotels.index[hotels["under_renovation"]]:
+        f = flags.get(str(int(hotels.at[i, "id"]))) or {}
+        hotels.at[i, "keys"] = pd.to_numeric(f.get("rooms_in_service"), errors="coerce") if f.get("rooms_in_service") else 0
     perf = _live_performance()
     merged = hotels.merge(perf, left_on="id", right_on="hotel_id", how="left")
     return hotels, perf, merged
@@ -5777,6 +5787,7 @@ def api_occupancy_hotel(hotel_id):
             'model_run_date':    model_run,
             # the hotel's city is held to its official monthly occupancy (official_monthly.py)
             'calibrated':        OMM.calibrated((RB.load_hotels(DATA_DIR).get(str(hotel_id)) or {}).get('city', '')),
+            'under_renovation':  HFL_under_renovation(hotel_id),
         })
     except Exception as e:
         app.logger.error(f'Occupancy hotel error {hotel_id}: {e}', exc_info=True)

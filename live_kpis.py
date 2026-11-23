@@ -149,6 +149,8 @@ def per_hotel(data_dir, today: date):
     dq = (DQ.load(data_dir) or {}).get('hotels') or {}
     hide_unpriced = flags.on('CONFIDENCE_UI')
     bars, bar_days = observed_bar(data_dir, ids, today)
+    import hotel_flags as HFL
+    reno = HFL.renovating(data_dir)
     out = {}
     for h in ids:
         p = {n: float(r['rate_mad']) for n, r in prices[h].items()}
@@ -177,6 +179,9 @@ def per_hotel(data_dir, today: date):
             # the city is held to its official monthly occupancy (official_monthly.py)
             'occ_calibrated': OMM.calibrated(hotels[h].get('city', '')),
         }
+        if h in reno:                   # under renovation (hotel_flags.py): no figure, out of every aggregate
+            out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
+                          rate=None, bar=None, keys=0, under_renovation=True)
         if hide_unpriced and dq and not (dq.get(h) or {}).get('history_days'):
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
                           occ_hidden='no price history')
@@ -296,7 +301,7 @@ def get(data_dir, today: date):
            _mtime(os.path.join(data_dir, 'estimated_occupancy.csv')), _mtime(os.path.join(data_dir, 'scraper_log.json')),
            _mtime(history_path(data_dir)), active_model(), _mtime(os.path.join(data_dir, 'data_health.json')),
            os.environ.get('CONFIDENCE_UI', ''), _mtime(os.path.join(data_dir, 'model_switch.json')),
-           os.environ.get('OCC_V2_OFF', ''))
+           os.environ.get('OCC_V2_OFF', ''), _mtime(os.path.join(data_dir, 'hotel_flags.json')))
     with _lock:
         if _cache.get('key') == key:
             return _cache['data']

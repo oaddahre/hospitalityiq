@@ -181,7 +181,7 @@ class Label(unittest.TestCase):
         js = open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8').read()
         self.assertIn("const CALIBRATED_LABEL = 'Kodo est., calibrated on official monthly city occupancy';", js)
         self.assertIn('calibrated: rows.length > 0 && rows.every(v => v.occ_calibrated)', js)
-        self.assertIn("badgeEl.textContent = data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';", js)
+        self.assertIn("badgeEl.textContent = data.under_renovation ? RENOVATION_LABEL : data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';", js)
         src = open(os.path.join(ROOT, 'live_kpis.py'), encoding='utf-8').read()
         self.assertIn("'occ_calibrated': OMM.calibrated(hotels[h].get('city', ''))", src)
         meth = open(os.path.join(ROOT, 'templates', 'methodology.html'), encoding='utf-8').read()
@@ -190,8 +190,8 @@ class Label(unittest.TestCase):
 
 class Ranges(unittest.TestCase):
     def test_widths_by_type_and_scope(self):
-        self.assertEqual(OM.V1['range_type'], {'city': 14, 'resort': 20, 'other': 24})
-        self.assertEqual(OM.V1['range_scope'], {'city': 0, 'region': 3, 'none': 5})
+        self.assertEqual(OM.V1['range_type'], {'city': 13, 'resort': 18, 'other': 22})     # Nov 2026 recalibration
+        self.assertEqual(OM.V1['range_scope'], {'city': 0, 'region': 3, 'none': 7})
         self.assertEqual({c: O.range_scope(c) for c in ('Marrakech', 'Dakhla', 'Laayoune', 'Errachidia', 'Tamuda Bay / Tétouan',
                                                           'Al Hoceima', 'El Jadida', 'Saidia', 'Kenitra')},
                          {'Marrakech': 'city', 'Dakhla': 'region', 'Laayoune': 'region', 'Errachidia': 'region',
@@ -204,9 +204,9 @@ class Ranges(unittest.TestCase):
         pos = {'pts': 0.0, 'history_days': 60}
         n = date(2027, 10, 13)                                                  # no event that night
         w = lambda hh: (lambda b: b['high'] - b['low'])(OM.estimate_occupancy(hh, n, position=pos)[1])
-        self.assertEqual(w(h('9001', 'Casablanca')), 2 * 14)
-        self.assertEqual(w(h('9004', 'Dakhla')), 2 * (14 + 3))
-        self.assertEqual(w(h('9005', 'Kenitra')), 2 * (14 + 5))
+        self.assertEqual(w(h('9001', 'Casablanca')), 2 * 13)
+        self.assertEqual(w(h('9004', 'Dakhla')), 2 * (13 + 3))
+        self.assertEqual(w(h('9005', 'Kenitra')), 2 * (13 + 7))
 
 
 class FileSwap(unittest.TestCase):

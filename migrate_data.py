@@ -23,6 +23,8 @@ admin upload panel in the Rates panel:
                        (owners.json) and brand profiles (brand_profiles.json):
                        kodo-profiles-1; a field already set to another
                        value is never overwritten (the migration stops)
+    .flags.json        Hotel flags (hotel_flags.json, kodo-hotel-flags-1):
+                       under renovation, rooms in service, since
     .news.json         Remove articles from news.json (kodo-news-1:
                        {"remove": [{"id", "slug"}]}): an article is removed
                        only when both its id and slug match
@@ -59,7 +61,7 @@ from run_lock import acquire_lock
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 MIGRATIONS_DIR = os.path.join(APP_DIR, 'data_migrations')
-NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json|columns\.json)$')
+NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json|columns\.json|flags\.json)$')
 OFF = {'off', '0', 'false', 'no'}
 
 
@@ -84,6 +86,7 @@ def paths(data_dir):
         'log': os.path.join(data_dir, 'coordinate_changes_applied.log'),
         'news': os.path.join(data_dir, 'news.json'),
         'brand_profiles': os.path.join(data_dir, 'brand_profiles.json'),
+        'flags': os.path.join(data_dir, 'hotel_flags.json'),
         'state': os.path.join(data_dir, 'data_migrations_state.json'),
         'lock': os.path.join(data_dir, 'data_migrations.lock'),
     }
@@ -92,7 +95,7 @@ def paths(data_dir):
 # Files each kind can write (copied first, put back on failure)
 TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance', 'comp_sets'), 'owners.json': ('owners',),
            'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',), 'profiles.json': ('owners', 'brand_profiles'),
-           'columns.json': ('performance',)}
+           'columns.json': ('performance',), 'flags.json': ('flags',)}
 
 
 def available(migrations_dir=MIGRATIONS_DIR):
@@ -104,7 +107,7 @@ def available(migrations_dir=MIGRATIONS_DIR):
             continue                    # after_v2_switch/: run by model_switch.py when the switch is complete
         m = NAME_RE.match(name)
         if not m:
-            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json>')
+            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json|flags.json>')
         if m.group(1) in seen:
             raise MigrationError(f'data_migrations: number {m.group(1)} used twice ({seen[m.group(1)]}, {name})')
         seen[m.group(1)] = name
@@ -183,6 +186,8 @@ def _apply(kind, path, P, actor):
         return _apply_profiles(text, P)
     if kind == 'columns.json':
         return _apply_columns(text, P)
+    if kind == 'flags.json':
+        return _apply_flags(text, P)
     ids, ovs, rej = CA.read_ids_bundle(text)
     plan = CA.ids_plan(P['hotels'], P['ids'], P['overrides'], ids, ovs, rej)
     _problems(plan, {'import', 'reject', 'already'}, 'Google ID')
@@ -222,6 +227,47 @@ def _apply_news(text, P):
             json.dump(keep, f, indent=2, ensure_ascii=False)
         os.replace(tmp, P['news'])
     return len(gone), already, [], {'remove': len(gone), 'already': already}
+
+
+FLAG_FIELDS = ('under_renovation', 'rooms_in_service', 'since', 'note')
+
+
+def _apply_flags(text, P):
+    """Set flags on hotels (hotel_flags.json, kodo-hotel-flags-1): "set" maps a
+    hotel id to its flags and "hotel", its name (checked against the hotel
+    list). A hotel whose flags are already the same counts as already done;
+    other hotels' flags are kept."""
+    import hotel_flags as HF
+    spec = json.loads(text)
+    if spec.get('format') != HF.FORMAT or not isinstance(spec.get('set'), dict):
+        raise MigrationError('flags migration: format must be kodo-hotel-flags-1 with a "set" object')
+    with open(P['hotels'], encoding='utf-8') as f:
+        names = {str(r.get('id', '')).strip(): r.get('name', '') for r in csv.DictReader(f)}
+    try:
+        with open(P['flags'], encoding='utf-8') as f:
+            cur = json.load(f)
+    except (OSError, ValueError):
+        cur = {'format': HF.FORMAT, 'hotels': {}}
+    hotels = cur.setdefault('hotels', {})
+    changed = already = 0
+    for hid, want in spec['set'].items():
+        hid = str(hid)
+        if hid not in names:
+            raise MigrationError(f'flags migration: no hotel {hid}')
+        if want.get('hotel') and CA._norm_name(want['hotel']) != CA._norm_name(names[hid]):
+            raise MigrationError(f'flags migration: hotel {hid} is "{names[hid]}", not "{want["hotel"]}"')
+        flags = {k: want.get(k) for k in FLAG_FIELDS if k in want}
+        if hotels.get(hid) == flags:
+            already += 1
+            continue
+        hotels[hid] = flags
+        changed += 1
+    if changed:
+        tmp = P['flags'] + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(cur, f, indent=1, ensure_ascii=False)
+        os.replace(tmp, P['flags'])
+    return changed, already, [], {'set': changed, 'already': already}
 
 
 PROFILE_FIELDS = ('description', 'logo_local')

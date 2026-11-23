@@ -623,6 +623,10 @@ const ROOMS_REVPAR_TIP = 'Rooms RevPAR is room revenue per available room. It ex
 const EST_TIP = 'Kodo estimate: occupancy model, next 30 nights; Rooms RevPAR = BAR × modelled occupancy. ' + ROOMS_REVPAR_TIP;
 // Where the hotel's city is held to its official monthly occupancy (occ_calibrated / calibrated from the APIs)
 const CALIBRATED_LABEL = 'Kodo est., calibrated on official monthly city occupancy';
+// A hotel under renovation (hotel_flags.json): no estimate, its rooms out of every total
+const RENOVATION_LABEL = 'Under renovation, no estimate';
+const hotelRooms = h => h.under_renovation ? `${fmt.num(h.keys_listed)} (under renovation)` : fmt.num(h.keys);
+const hotelOcc = h => h.under_renovation ? RENOVATION_LABEL : fmt.pct(h.occupancy);
 const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
 
 const KodoLive = (() => {
@@ -730,6 +734,10 @@ const KodoLive = (() => {
     const cover = fig => one ? `estimated on ${one[fig + '_nights'] ?? 0} of ${n} nights`
       : `based on ${a[fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
     const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'mixed' ? 'v2 where enough prices are collected, v1 elsewhere' : d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: a.calibrated ? CALIBRATED_LABEL + ', not measured' : 'Kodo estimate, not measured' });
+    if (one && one.under_renovation) {             // hotel_flags.json: no figure at all
+      Object.values(els).forEach(c => { noData(c, RENOVATION_LABEL); part(c, 'kpi-sub').textContent = 'The hotel is under renovation'; c.title = 'This hotel is under renovation: it has no estimate and is left out of every total.'; });
+      return;
+    }
     if (els.rate) KodoBar.card(els.rate, one ? { single: true, val: one.bar, nights: one.bar_nights || 0 } : a.bar, d);
     // Hover notes: the window each card covers and the hotels it includes
     const of = (k, what) => one ? '' : ` ${k} of ${a.total} hotel${a.total === 1 ? '' : 's'} ${what}.`;
@@ -1489,9 +1497,9 @@ function renderBrandHotelsTable() {
       <td class="hotel-name-cell"><button class="hotel-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button></td>
       <td>${fmt.esc(h.city)}</td>
       <td>${getSegmentBadgeHtml(h.category)}</td>
-      <td>${fmt.num(h.keys)}</td>
+      <td>${hotelRooms(h)}</td>
       <td>${KodoBar.hotelCell(h)}</td>
-      <td title="${EST_TIP}">${fmt.pct(h.occupancy)}</td>
+      <td title="${EST_TIP}">${hotelOcc(h)}</td>
       <td title="${EST_TIP}">${fmt.mad(h.revpar_mad)}</td>
       <td>${fmt.esc(ownerText(h) || '—')}</td>
     </tr>`;
@@ -1594,7 +1602,7 @@ async function showHotelDetail(id) {
 
   // ── 2. KPI cards ──
   const setKv = (id, v) => document.getElementById(id).querySelector('.kpi-value').textContent = v;
-  setKv('hkpi-detail-keys', fmt.num(h.keys));
+  setKv('hkpi-detail-keys', hotelRooms(h));
   KodoPeriod.set('hkpi-detail-keys', KodoPeriod.today(), COUNT_TIP);
   KodoLive.cards({ occ: 'hkpi-occ', rate: 'hkpi-adr', revpar: 'hkpi-revpar' }, [h]);
 
@@ -2165,7 +2173,7 @@ async function renderOccCalendar(hotelId) {
   const cc = data.price_coverage_counts || {};
   const nDays = (cc.full || 0) + (cc.partial || 0) + (cc.none || 0);
   const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
-  badgeEl.textContent = data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';
+  badgeEl.textContent = data.under_renovation ? RENOVATION_LABEL : data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';
   if (noteEl) {
     noteEl.textContent = [(data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ' · modelled, not measured',
       data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
@@ -2210,7 +2218,7 @@ function popupHTML(h) {
       <div class="hiq-popup-meta">${fmt.esc(h.brand)} · ${getSegmentBadgeHtml(h.category)}${h.year_opened ? ` · ${h.year_opened}` : ''}</div>
       <div class="hiq-popup-grid">
         <div class="hiq-popup-stat">
-          <div class="hiq-popup-stat-val">${fmt.num(h.keys)}</div>
+          <div class="hiq-popup-stat-val">${hotelRooms(h)}</div>
           <div class="hiq-popup-stat-lbl">Keys</div>
         </div>
         <div class="hiq-popup-stat">
@@ -2218,7 +2226,7 @@ function popupHTML(h) {
           <div class="hiq-popup-stat-lbl">BAR (MAD)</div>
         </div>
         <div class="hiq-popup-stat" title="${EST_TIP}">
-          <div class="hiq-popup-stat-val">${fmt.pct(h.occupancy)}</div>
+          <div class="hiq-popup-stat-val">${hotelOcc(h)}</div>
           <div class="hiq-popup-stat-lbl">Occ · Kodo est.</div>
         </div>
         <div class="hiq-popup-stat" title="${EST_TIP}">
@@ -2368,7 +2376,7 @@ function showCityPanel(city, cityHotels) {
     .map(h => `
       <div class="map-city-panel-row" onclick="showHotelDetail(${h.id})">
         <div class="map-city-panel-row-name">${fmt.esc(h.name)}</div>
-        <div class="map-city-panel-row-meta">${fmt.esc(h.brand || '')} · ${h.keys || ''} rooms</div>
+        <div class="map-city-panel-row-meta">${fmt.esc(h.brand || '')} · ${h.under_renovation ? `${h.keys_listed || ''} rooms, under renovation` : `${h.keys || ''} rooms`}</div>
       </div>
     `).join('');
 
@@ -2528,9 +2536,9 @@ function renderHotelsTable() {
         <td>${fmt.esc(h.city)}</td>
         <td class="col-hide-mobile">${getSegmentBadgeHtml(h.category)}</td>
         <td class="col-hide-mobile">${getBrandLogoImg(h.brand_group, 16)} ${fmt.esc(h.brand_group)}</td>
-        <td class="col-hide-mobile">${fmt.num(h.keys)}</td>
+        <td class="col-hide-mobile">${hotelRooms(h)}</td>
         <td>${KodoBar.hotelCell(h)}</td>
-        <td class="col-hide-mobile" title="${EST_TIP}">${fmt.pct(h.occupancy)}</td>
+        <td class="col-hide-mobile" title="${EST_TIP}">${hotelOcc(h)}</td>
         <td class="col-hide-mobile" title="${EST_TIP}">${fmt.mad(h.revpar_mad)}</td>
       </tr>`;
     }).join('');
@@ -5818,7 +5826,7 @@ function renderOwnerPortfolioTable(hotels) {
       '<td>' + getBrandLogoImg(h.brand_group, 14) + fmt.esc(h.brand_group || '—') + '</td>' +
       '<td>' + fmt.esc(h.city || '—') + '</td>' +
       '<td>' + getSegmentBadgeHtml(h.category || '—') + '</td>' +
-      '<td style="text-align:right">' + (h.keys ? h.keys.toLocaleString() : '—') + '</td>' +
+      '<td style="text-align:right">' + (h.under_renovation ? hotelRooms(h) : h.keys ? h.keys.toLocaleString() : '—') + '</td>' +
     '</tr>';
   }).join('');
 }

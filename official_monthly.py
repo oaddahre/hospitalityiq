@@ -31,6 +31,9 @@ series(city) gives one value per month with a status:
                Aug 2026 as that 2025 month x (nights 2026 / nights 2025, from
                official_monthly_nights.csv) / (1 + CAPACITY_GROWTH). A real
                page (official_monthly_occupancy_2026-02.csv, ...) replaces it
+  calibrated   a Kodo estimate, calibrated: no official figure for the month
+               (e.g. Oct 2026), so a licensed whole-city monthly series moved by
+               its average gap to this city's official months (official_monthly_calibrated.csv)
   region       the destination is missing from that month's page: its
                region's figure that month, scaled by their usual ratio
   filled       no figure for the month at all (Feb, Aug 2026 and the year
@@ -49,7 +52,12 @@ import statistics
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 OCC_PATH = os.path.join(APP_DIR, 'official_monthly_occupancy.csv')
 NIGHTS_PATH = os.path.join(APP_DIR, 'official_monthly_nights.csv')
-OLDER_PATH = os.path.join(APP_DIR, 'official_monthly_older.csv')      # older dashboard, Jan-Sep 2024/2025: shape only
+OLDER_PATH = os.path.join(APP_DIR, 'official_monthly_older.csv')
+# Months with no official figure filled from a licensed whole-city monthly
+# series (internal calibration): only the derived values are kept here, the
+# series shifted by the city's average gap to the official months (or, where
+# the gap is large and unstable, Agadir, only its month-to-month change)
+CAL_PATH = os.path.join(APP_DIR, 'official_monthly_calibrated.csv')      # older dashboard, Jan-Sep 2024/2025: shape only
 SOURCE = 'Observatoire du Tourisme, monthly dashboards (transcribed by the owner, Nov 2026)'   # internal only
 
 # Nights grow faster than occupancy when rooms are added: official 2024 -> 2025,
@@ -209,6 +217,21 @@ def _nights_change(name):
     return _cache[key].get(name, {})
 
 
+def _calibrated(name):
+    """{YYYY-MM: occupancy} calibrated months for one official name."""
+    key = ('cal', _mtime(CAL_PATH))
+    if key not in _cache:
+        out = {}
+        try:
+            with open(CAL_PATH, encoding='utf-8') as f:
+                for r in csv.DictReader(f):
+                    out.setdefault(r['name'].strip(), {})[r['month'].strip()] = float(r['occupancy_pct'])
+        except (OSError, ValueError, KeyError):
+            out = {}
+        _cache[key] = out
+    return _cache[key].get(name, {})
+
+
 def latest_month(data=None):
     if data is None:
         key = ('latest', _version())
@@ -234,6 +257,9 @@ def raw_series(name, data=None):
         p = shift(m, -12)
         if r['var'] is not None and p not in s:
             s[p] = (r['occ'] - r['var'], 'derived')
+    for m, v in _calibrated(name).items():          # official (published or rebuilt) always wins
+        if m not in s:
+            s[m] = (v, 'calibrated')
     if s:
         first, last = min(s), max(s)
         region = REGION_OF.get(name)
