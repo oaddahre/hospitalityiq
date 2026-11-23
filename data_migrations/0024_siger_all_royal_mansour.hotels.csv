@@ -1,0 +1,5 @@
+hotel_id,action,hotel,reason,new_owner,new_notes
+258,owner,Royal Mansour Casablanca,"owner decision 23 Nov 2026 (founder): SIGER owns all Royal Mansour hotels (was ""Royal Mansour Brand"")",SIGER,
+258,notes,Royal Mansour Casablanca,owner source,,"Owner (Nov 2026): SIGER, confirmed by the founder (SIGER owns every Royal Mansour hotel). Internal note."
+355,owner,Royal Mansour Tamuda Bay,"owner decision 23 Nov 2026 (founder): SIGER owns all Royal Mansour hotels (was ""Royal Mansour Brand"")",SIGER,
+355,notes,Royal Mansour Tamuda Bay,owner source,,"Owner (Nov 2026): SIGER, confirmed by the founder (SIGER owns every Royal Mansour hotel). Internal note."

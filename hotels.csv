@@ -96,7 +96,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 244,Hotel Rif Meknes,Meknes,Fès-Meknès,Midscale,Hotel Rif,Independent Midscale,100,1987,verified,Operating,33.898455,-5.550860,Undisclosed,verified,
 252,Dar Echchaouen,Chefchaouen,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,24,2009,verified,Operating,35.168828,-5.256794,Undisclosed,verified,
 256,Hilton Garden Inn Casablanca Sud,Casablanca,Casablanca-Settat,Upscale,Hilton Garden Inn,Hilton Hotels & Resorts,155,2022,verified,Open,33.508030,-7.631280,Undisclosed,verified,
-258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2024,verified,Open,33.596940,-7.614335,Royal Mansour Brand,verified,
+258,Royal Mansour Casablanca,Casablanca,Casablanca-Settat,Ultra Luxury,Royal Mansour,Royal Mansour Collection,149,2024,verified,Open,33.596940,-7.614335,SIGER,verified,"Owner (Nov 2026): SIGER, confirmed by the founder (SIGER owns every Royal Mansour hotel). Internal note."
 260,Club Med Yasmina,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upper Upscale,Club Med,Club Med,342,1968,verified,Open,35.664659,-5.286675,Madaëf,verified,Owner (Nov 2026): Madaëf. Source: https://madaef.ma/assets/
 261,Waldorf Astoria Rabat Salé,Rabat / Salé / Témara,Rabat-Salé-Kénitra,Ultra Luxury,Waldorf Astoria,Hilton Hotels & Resorts,55,2025,verified,Operating,34.019118,-6.804873,O Tower,verified,"Owner (Nov 2026): O Tower (Bank of Africa, RMA, O Capital Group). Source: https://www.moroccoworldnews.com/2024/11/167859/waldorf-astoria-o-tower-hilton-announce-signing-contract-deal-for-mohammed-vi-tower-hotel/"
 264,Nobu Hotel Marrakech,Marrakech,Marrakech-Safi,Luxury,Nobu Hospitality,Nobu Hospitality,71,2024,,Operating,31.622344,-8.000700,Undisclosed,verified,
@@ -182,7 +182,7 @@ id,name,city,region,category,brand,brand_group,keys,year_opened,year_opened_veri
 352,The St. Regis La Bahia Blanca Resort Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Luxury,St. Regis,Marriott International,100,2024,verified,Open,35.774590,-5.346624,Undisclosed,verified,
 353,Sofitel Tamuda Bay Beach and Spa,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upper Upscale,Sofitel,Accor,104,2016,verified,Open,35.695432,-5.328841,Madaëf,verified,
 354,Hôtel Tamuda Beach,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upper Upscale,Independent,Independent Upper Upscale,83,2019,verified,Open,35.723937,-5.341041,Undisclosed,verified,
-355,Royal Mansour Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,55,2024,verified,Open,35.712429,-5.335602,Royal Mansour Brand,verified,
+355,Royal Mansour Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Ultra Luxury,Royal Mansour,Royal Mansour Collection,55,2024,verified,Open,35.712429,-5.335602,SIGER,verified,"Owner (Nov 2026): SIGER, confirmed by the founder (SIGER owns every Royal Mansour hotel). Internal note."
 356,Hotel Kabila Tamuda Bay,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,96,1974,verified,Open,35.728314,-5.340174,Undisclosed,verified,
 357,Prestige Hotel Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Midscale,Independent,Independent Midscale,60,2015,verified,Open,35.565846,-5.382359,Undisclosed,verified,
 358,Hotel La Paloma Tétouan,Tamuda Bay / Tétouan,Tanger-Tétouan-Al Hoceima,Upscale,Independent,Independent Upscale,110,2012,verified,Open,35.565031,-5.412148,Undisclosed,verified,

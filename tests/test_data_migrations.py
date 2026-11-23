@@ -65,7 +65,8 @@ class DataMigrations(unittest.TestCase):
                                         '0013_pipeline_projects', '0014_owner_decisions', '0015_owner_profiles',
                                         '0016_pipeline_decisions', '0017_remove_placeholder_news', '0018_brand_owner_descriptions',
                                         '0019_performance_reference_only', '0020_hyatt_regency_mazagan',
-                                        '0021_hyatt_regency_mazagan_owner', '0022_siger_royal_mansour', '0023_siger_owner'])
+                                        '0021_hyatt_regency_mazagan_owner', '0022_siger_royal_mansour', '0023_siger_owner',
+                                        '0024_siger_all_royal_mansour', '0025_siger_portfolio'])
         self.assertIsNone(r['failed'])
         for hid in ('58', '320', '266', '467'):
             self.assertEqual(self.hotel(hid)['owner'], 'OCP Group')
