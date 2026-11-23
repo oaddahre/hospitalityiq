@@ -1,0 +1,14 @@
+{
+ "format": "kodo-hotel-flags-1",
+ "set": {
+  "65": {
+   "hotel": "Le Méridien N'Fis Marrakech",
+   "under_renovation": true,
+   "partially_open": true,
+   "status_label": "partially open, under renovation",
+   "rooms_in_service": null,
+   "since": "2024",
+   "note": "Partly open during a renovation of more than two years (founder, Nov 2026): prices and BAR kept, no occupancy estimate, rooms out of the totals until rooms in service are given."
+  }
+ }
+}

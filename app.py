@@ -5787,7 +5787,7 @@ def api_occupancy_hotel(hotel_id):
             'model_run_date':    model_run,
             # the hotel's city is held to its official monthly occupancy (official_monthly.py)
             'calibrated':        OMM.calibrated((RB.load_hotels(DATA_DIR).get(str(hotel_id)) or {}).get('city', '')),
-            'under_renovation':  HFL_under_renovation(hotel_id),
+            'under_renovation':  HFL_under_renovation(hotel_id),          # partly open: prices shown, no occupancy
         })
     except Exception as e:
         app.logger.error(f'Occupancy hotel error {hotel_id}: {e}', exc_info=True)

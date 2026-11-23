@@ -1,10 +1,15 @@
 """Flags on hotels that the hotel list itself does not carry
 (hotel_flags.json, in DATA_DIR on the volume, the repo copy otherwise).
 
-  under_renovation   true: the hotel is closed or mostly closed for works.
-                     It is left out of city room totals, modelled
-                     occupancy, Rooms RevPAR, BAR aggregates and calibration,
-                     and its pages say "Under renovation, no estimate".
+  under_renovation   true: works under way. The hotel is left out of the
+                     occupancy and Rooms RevPAR estimates, its city's monthly
+                     constraint, all calibration and the room totals (only
+                     rooms_in_service count, none until given)
+  partially_open     true: it still sells rooms, so its observed BAR, price
+                     history and calendar stay, and its BAR counts in the city
+                     BAR and in price comparisons; its pages say "Partly open,
+                     under renovation: no occupancy estimate"
+  status_label       the status as shown internally
   rooms_in_service   optional: rooms still sold during the works
   since              optional: when the works started (YYYY or YYYY-MM)
   note               optional, internal
@@ -47,6 +52,10 @@ def load(data_dir=None):
 
 def under_renovation(hotel_id, data_dir=None):
     return bool((load(data_dir).get(str(hotel_id).split('.')[0]) or {}).get('under_renovation'))
+
+
+def partially_open(hotel_id, data_dir=None):
+    return bool((load(data_dir).get(str(hotel_id).split('.')[0]) or {}).get('partially_open'))
 
 
 def renovating(data_dir=None):

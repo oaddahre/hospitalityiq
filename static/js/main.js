@@ -623,9 +623,10 @@ const ROOMS_REVPAR_TIP = 'Rooms RevPAR is room revenue per available room. It ex
 const EST_TIP = 'Kodo estimate: occupancy model, next 30 nights; Rooms RevPAR = BAR × modelled occupancy. ' + ROOMS_REVPAR_TIP;
 // Where the hotel's city is held to its official monthly occupancy (occ_calibrated / calibrated from the APIs)
 const CALIBRATED_LABEL = 'Kodo est., calibrated on official monthly city occupancy';
-// A hotel under renovation (hotel_flags.json): no estimate, its rooms out of every total
-const RENOVATION_LABEL = 'Under renovation, no estimate';
-const hotelRooms = h => h.under_renovation ? `${fmt.num(h.keys_listed)} (under renovation)` : fmt.num(h.keys);
+// A hotel under renovation but partly open (hotel_flags.json): its prices and BAR
+// as usual, no occupancy estimate, its rooms out of the totals
+const RENOVATION_LABEL = 'Partly open, under renovation: no occupancy estimate';
+const hotelRooms = h => h.under_renovation ? `${fmt.num(h.keys_listed)} (partly open, under renovation)` : fmt.num(h.keys);
 const hotelOcc = h => h.under_renovation ? RENOVATION_LABEL : fmt.pct(h.occupancy);
 const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
 
@@ -734,11 +735,12 @@ const KodoLive = (() => {
     const cover = fig => one ? `estimated on ${one[fig + '_nights'] ?? 0} of ${n} nights`
       : `based on ${a[fig].n} of ${a.total} hotel${a.total === 1 ? '' : 's'}`;
     const tipOcc = KodoPeriod.tip({ source: `Kodo's occupancy model (${d.model === 'mixed' ? 'v2 where enough prices are collected, v1 elsewhere' : d.model === 'v2' ? 'v2' : 'v1'})${d.model_run ? ', run ' + stamp(d.model_run) : ''}`, note: a.calibrated ? CALIBRATED_LABEL + ', not measured' : 'Kodo estimate, not measured' });
-    if (one && one.under_renovation) {             // hotel_flags.json: no figure at all
-      Object.values(els).forEach(c => { noData(c, RENOVATION_LABEL); part(c, 'kpi-sub').textContent = 'The hotel is under renovation'; c.title = 'This hotel is under renovation: it has no estimate and is left out of every total.'; });
+    if (els.rate) KodoBar.card(els.rate, one ? { single: true, val: one.bar, nights: one.bar_nights || 0 } : a.bar, d);
+    if (one && one.under_renovation) {             // hotel_flags.json: its BAR as usual, no occupancy or Rooms RevPAR
+      [els.occ, els.revpar].filter(Boolean).forEach(c => { noData(c, RENOVATION_LABEL); part(c, 'kpi-sub').textContent = 'The hotel is partly open during works';
+        c.title = 'This hotel is partly open while under renovation: it has no occupancy or Rooms RevPAR estimate, and its rooms are left out of the totals.'; });
       return;
     }
-    if (els.rate) KodoBar.card(els.rate, one ? { single: true, val: one.bar, nights: one.bar_nights || 0 } : a.bar, d);
     // Hover notes: the window each card covers and the hotels it includes
     const of = (k, what) => one ? '' : ` ${k} of ${a.total} hotel${a.total === 1 ? '' : 's'} ${what}.`;
     const hover = (c, t) => { if (c) c.title = t; };
@@ -851,7 +853,9 @@ function renderKPIs() {
   document.getElementById('kpi-keys-meta').textContent = hotelLabel;
   kc.classList.remove('loading');
   KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
-  kc.title = `Today's count from Kodo's hotel database: ${list.length} open hotel${list.length === 1 ? '' : 's'} and their ${fmt.num(keys)} rooms.`;
+  const reno = list.filter(h => h.under_renovation).length;
+  kc.title = `Today's count from Kodo's hotel database: ${list.length} open hotel${list.length === 1 ? '' : 's'} and their ${fmt.num(keys)} rooms.`
+    + (reno ? ` Excludes ${reno === 1 ? 'a hotel' : reno + ' hotels'} under renovation.` : '');
   // BAR: observed since 3 Nov 2026. Occupancy, Rooms RevPAR: Kodo estimates, next 30 nights (KodoLive)
   ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
   KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list);
@@ -2376,7 +2380,7 @@ function showCityPanel(city, cityHotels) {
     .map(h => `
       <div class="map-city-panel-row" onclick="showHotelDetail(${h.id})">
         <div class="map-city-panel-row-name">${fmt.esc(h.name)}</div>
-        <div class="map-city-panel-row-meta">${fmt.esc(h.brand || '')} · ${h.under_renovation ? `${h.keys_listed || ''} rooms, under renovation` : `${h.keys || ''} rooms`}</div>
+        <div class="map-city-panel-row-meta">${fmt.esc(h.brand || '')} · ${h.under_renovation ? `${h.keys_listed || ''} rooms, partly open, under renovation` : `${h.keys || ''} rooms`}</div>
       </div>
     `).join('');
 

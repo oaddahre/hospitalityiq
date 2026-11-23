@@ -334,17 +334,18 @@ V1 = {
     'min_peer_hotels':          3,    # hotels of the city and category with a BAR (the hotel included)
     # Range: half-width in pts, added up. With the city held to its official
     # monthly figure, what is left is the hotel's own gap from its city.
-    # range_type: set so about 78% of real months fall inside (in-sample, Nov
-    # 2026: 195 months of 8 hotels, the 2 hold-out hotels kept out): city
-    # hotels 13 (79% inside), other (spa, riad, boutique) 22 (79%); resorts
-    # 18, where the city has its own series (89%, one hotel) and 18 + 7 where
-    # it has none (75%, four hotels). Was 14, 20 and 24.
-    'range_type':      {'city': 13, 'resort': 18, 'other': 22},
+    # range_type: 77-79% of real months inside per type on the 7-hotel
+    # backtest (Nov 2026): city hotels 14, other (spa, riad, boutique) 24,
+    # resorts 20 (+5 where the city has no monthly series).
+    # Not live (Nov 2026 recalibration on 10 hotels, kept as a note): city 13,
+    # resort 18, other 22, no series +7 gave 78% inside in-sample but only 67%
+    # on the hold-out, below the 75% target, so the ranges were not narrowed.
+    'range_type':      {'city': 14, 'resort': 20, 'other': 24},
     # range_scope: on top, by how the city's level is known: its own official
     # monthly series, a region standing in (Dakhla, Laayoune, Errachidia), or
-    # no monthly series (annual or national figure). "none" from the resorts
-    # of Tamuda Bay and El Jadida (was 5); "region" judgement (no test hotel).
-    'range_scope':     {'city': 0, 'region': 3, 'none': 7},
+    # no monthly series (annual or national figure). Judgement: the backtest
+    # can't measure it apart (only resorts sit in cities without a series).
+    'range_scope':     {'city': 0, 'region': 3, 'none': 5},
     'range_no_price_position':  3,    # non-resort with no price position (under 7 priced nights, or < 3 peers)
     'clamp_low':                5,
     'clamp_high':              98,
@@ -722,7 +723,8 @@ def price_positions(data_dir=None, today=None):
     try:
         with open(os.path.join(data_dir, 'hotels.csv'), encoding='utf-8') as f:
             hotels = {str(r['id']): r for r in csv.DictReader(f)
-                      if r.get('status', '').lower() in ('open', 'operating') and not HFL.under_renovation(r['id'], data_dir)}
+                      if r.get('status', '').lower() in ('open', 'operating')
+                      and (not HFL.under_renovation(r['id'], data_dir) or HFL.partially_open(r['id'], data_dir))}
     except (OSError, KeyError):
         pass
     ids = sorted(hotels)

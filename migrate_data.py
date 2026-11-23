@@ -229,7 +229,7 @@ def _apply_news(text, P):
     return len(gone), already, [], {'remove': len(gone), 'already': already}
 
 
-FLAG_FIELDS = ('under_renovation', 'rooms_in_service', 'since', 'note')
+FLAG_FIELDS = ('under_renovation', 'partially_open', 'status_label', 'rooms_in_service', 'since', 'note')
 
 
 def _apply_flags(text, P):

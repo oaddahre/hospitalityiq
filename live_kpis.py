@@ -179,9 +179,11 @@ def per_hotel(data_dir, today: date):
             # the city is held to its official monthly occupancy (official_monthly.py)
             'occ_calibrated': OMM.calibrated(hotels[h].get('city', '')),
         }
-        if h in reno:                   # under renovation (hotel_flags.py): no figure, out of every aggregate
+        if h in reno:                   # under renovation (hotel_flags.py): no occupancy or Rooms RevPAR, no rooms in
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
-                          rate=None, bar=None, keys=0, under_renovation=True)
+                          keys=0, under_renovation=True, partially_open=HFL.partially_open(h, data_dir))
+            if not out[h]['partially_open']:                     # closed: no price figure either
+                out[h].update(rate=None, bar=None)
         if hide_unpriced and dq and not (dq.get(h) or {}).get('history_days'):
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
                           occ_hidden='no price history')

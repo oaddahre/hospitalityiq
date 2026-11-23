@@ -29,7 +29,9 @@ class Renovation(unittest.TestCase):
     def test_flag(self):
         self.assertEqual(HOTELS[NFIS]['name'], "Le Méridien N'Fis Marrakech")
         f = HFL.load(ROOT)[NFIS]
-        self.assertEqual((f['under_renovation'], f['since'], f['rooms_in_service']), (True, '2024', None))
+        self.assertEqual((f['under_renovation'], f['partially_open'], f['status_label'], f['since'], f['rooms_in_service']),
+                         (True, True, 'partially open, under renovation', '2024', None))
+        self.assertTrue(HFL.partially_open(NFIS, ROOT))
         self.assertIn(NFIS, HFL.renovating(ROOT))
 
     def test_no_estimate_and_out_of_the_city(self):
@@ -50,7 +52,9 @@ class Renovation(unittest.TestCase):
 
     def test_pages(self):
         js = open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8').read()
-        self.assertIn("const RENOVATION_LABEL = 'Under renovation, no estimate';", js)
+        self.assertIn("const RENOVATION_LABEL = 'Partly open, under renovation: no occupancy estimate';", js)
+        self.assertIn("Excludes ${reno === 1 ? 'a hotel' : reno + ' hotels'} under renovation.", js)   # Total keys hover
+        self.assertIn("[els.occ, els.revpar].filter(Boolean)", js)                                     # its BAR card stays
         self.assertIn('if (one && one.under_renovation)', js)
         self.assertIn("'under_renovation':  HFL_under_renovation(hotel_id),", open(os.path.join(ROOT, 'app.py'), encoding='utf-8').read())
 
@@ -71,6 +75,15 @@ class Renovation(unittest.TestCase):
             self.assertFalse(DM.run_one(d, '9999_bad', 'flags.json', bad, log=lambda *a: None)['ok'])  # name must match
         finally:
             shutil.rmtree(d, ignore_errors=True)
+
+
+class PartlyOpen(unittest.TestCase):
+    def test_prices_kept_occupancy_out(self):
+        src = open(os.path.join(ROOT, 'live_kpis.py'), encoding='utf-8').read()
+        self.assertIn("if not out[h]['partially_open']:", src)                  # only a closed hotel loses its prices
+        with open(os.path.join(ROOT, 'occupancy_model.py'), encoding='utf-8') as f:
+            self.assertIn("or HFL.partially_open(r['id'], data_dir))}", f.read())   # in the peer prices
+        self.assertNotIn(NFIS, [h['id'] for h, _ in OM._city_hotels('Marrakech')])  # not in the city constraint
 
 
 class CalibratedMonths(unittest.TestCase):
