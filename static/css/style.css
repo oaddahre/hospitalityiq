@@ -6478,3 +6478,32 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   #dest-table .th-sort { white-space: normal; }
   #dest-table tbody td.cell-dest { min-width: 0; }
 }
+.sl--estimate { background: color-mix(in srgb, var(--action) 30%, transparent); }
+#screen-dashboard .season-card { margin-bottom: 22px; }
+/* destination Hotels and Brands tables: fit the width, names wrap (no sideways scroll) */
+#dest-hotels-table, #brand-table { width: 100%; }
+#dest-hotels-table tbody td, #brand-table tbody td { white-space: normal; }
+#dest-hotels-table thead th:nth-child(-n+3), #brand-table thead th:nth-child(2) { min-width: 0; }
+#dest-hotels-table tbody td:nth-child(2), #dest-hotels-table thead th:nth-child(2),
+#brand-table tbody td:nth-child(2), #brand-table thead th:nth-child(2) { min-width: 0; max-width: none; }
+#dest-hotels-table .hotel-name-btn, #brand-table .brand-link { white-space: normal; text-align: left; }
+#dest-hotels-table tbody td:nth-child(n+4), #brand-table tbody td:nth-child(n+3) { white-space: nowrap; }
+#dest-hotels-table tbody td:last-child { white-space: normal; }
+#dest-hotels-table .hotel-status { white-space: normal; }
+@media (max-width: 1500px) {
+  #dest-hotels-table tbody td:nth-child(3) { max-width: 180px; }
+}
+@media (max-width: 767px) {
+  #dest-hotels-table .col-hide-mobile, #brand-table .col-hide-mobile { display: none; }
+  #dest-hotels-table thead th, #brand-table thead th { white-space: normal; padding: 6px 4px; }
+  #dest-hotels-table tbody td, #brand-table tbody td { padding: 8px 4px; }
+  #brand-table .brand-link img, #brand-table .brand-link .brand-initials { display: none; }
+}
+@media (max-width: 1400px) {
+  #dest-hotels-table tbody td, #dest-hotels-table thead th { padding-left: 5px; padding-right: 5px; }
+}
+@media (max-width: 767px) {
+  #dest-hotels-table tbody td, #brand-table tbody td { white-space: normal !important; font-size: 11px; }
+  #dest-hotels-table .kodo-badge, #brand-table .kodo-badge { padding: 1px 5px; font-size: 10px; white-space: normal; text-align: center; }
+  #dest-hotels-table thead th, #brand-table thead th { font-size: 8.5px; letter-spacing: .04em; }
+}

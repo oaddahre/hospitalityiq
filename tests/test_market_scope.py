@@ -42,8 +42,10 @@ class Page(unittest.TestCase):
         self.dash = s[s.index('id="screen-dashboard"'):s.index('<!-- ── Map ── -->')]
 
     def test_blocks_and_tabs(self):
-        for tab in ('overview', 'hotels', 'brands', 'seasonality'):
+        for tab in ('overview', 'hotels', 'brands'):
             self.assertIn(f'data-tab="{tab}"', self.dash)
+        self.assertNotIn('data-tab="seasonality"', self.dash)
+        self.assertIn('<div class="chart-card season-card" data-dash="overview" hidden>', self.dash)   # under the cards
         self.assertIn('data-dash="all overview"', self.dash)              # KPI cards
         # All Morocco: one Destinations table replaces both ranking charts and the comparison table
         self.assertNotIn('charts-row', self.dash)
@@ -56,7 +58,8 @@ class Page(unittest.TestCase):
         self.assertIn('id="dash-brands-link"', self.dash)
         self.assertIn('href="/methodology"', self.dash)
         self.assertIn('id="mobile-seg-pills" hidden', self.dash)
-        self.assertIn("const DASH_TABS = ['overview', 'hotels', 'brands', 'seasonality'];", self.js)
+        self.assertIn("const DASH_TABS = ['overview', 'hotels', 'brands'];", self.js)
+        self.assertIn("state.tab = DASH_TABS.includes(tab) ? tab : 'overview';", self.js)       # old ?tab=seasonality -> Overview
 
     def test_url_and_memory(self):
         self.assertIn("q.set('dest', state.city); q.set('tab', state.tab);", self.js)
@@ -74,7 +77,11 @@ class Page(unittest.TestCase):
             self.assertNotIn(name, block)
 
     def test_brand_table_notes(self):
-        self.assertIn("const SHARED_OCC_NOTE = 'destination-level estimate';", self.js)
+        # the "destination-level estimate" note is a tooltip only, never visible text
+        self.assertIn('<span data-tip="${escAttr(SHARED_OCC_TIP)}">', self.js)
+        self.assertNotIn('<span class="occ-shared">', self.js)
+        self.assertNotIn('id="brand-table-note"', self.dash)
+        self.assertIn("note.textContent = 'Estimate only';", self.js)
         self.assertIn("'Destination · Occ. % (est.)'", self.js)
 
     def test_one_disclaimer_system(self):
@@ -133,7 +140,8 @@ class Seasonality(unittest.TestCase):
             self.assertEqual(d['official_months'], sum(1 for p in d['past'] if p['status'] == 'official'))
         js = read('static', 'js', 'main.js')
         self.assertIn("P[m].status === 'official'", js)
-        self.assertIn('the published figure did not state its month', js)
+        self.assertIn("P[m] && P[m].status === 'estimated' ? P[m].occ", js)                    # drawn as an estimate
+        self.assertIn('published figure, month not stated', js)
 
     def test_national_wording(self):
         js, html = read('static', 'js', 'main.js'), read('templates', 'index.html')
