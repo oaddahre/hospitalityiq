@@ -341,8 +341,6 @@ const state = {
 
 let apiData  = null;   // /api/data response
 let hotels   = null;   // /api/hotels response (flat, merged)
-let barChart = null;
-let occChart = null;
 let googleMap          = null;
 let googlePipelineMap  = null;
 let googleMapsApiReady = false;
@@ -812,6 +810,94 @@ const KodoLive = (() => {
 // What a destination's occupancy estimate rests on (live_kpis.destination_confidence):
 // {class: official | real | borrowed | national, label}, or null before the figures load
 const destConf = city => (((KodoLive.raw() || {}).destinations) || {})[city] || null;
+const isOfficial = city => (destConf(city) || {}).class === 'official';
+const escAttr = s => fmt.esc(s).replace(/"/g, '&quot;');
+
+// The page's one disclaimer system: three badges (Official, Estimate,
+// Limited data); the detail sits in the badge's tooltip, never in a sentence
+const BADGE_TEXT = { official: 'Official', estimate: 'Estimate', limited: 'Limited data' };
+function badgeHtml(kind, tip) {
+  return `<span class="kodo-badge kodo-badge--${kind}" role="button" tabindex="0" data-tip="${escAttr(tip)}" aria-label="${BADGE_TEXT[kind]}: ${escAttr(tip)}">${BADGE_TEXT[kind]}</span>`;
+}
+const limitedBadge = tip => badgeHtml('limited', tip);
+const DEST_BADGE_TIP = {
+  official: 'Occupancy calibrated on official monthly figures for this destination.',
+  borrowed: 'Estimate: levels borrowed from neighbouring destinations.',
+  national: 'National estimate: no official monthly figure for this destination yet.',
+};
+function destBadge(city) {
+  const c = destConf(city);
+  if (!c) return '';
+  if (c.class === 'official') return badgeHtml('official', DEST_BADGE_TIP.official);
+  return badgeHtml('estimate', c.class === 'real' ? `Estimate: ${c.label.replace(/^Based/, 'based')}.` : DEST_BADGE_TIP[c.class] || DEST_BADGE_TIP.national);
+}
+
+// Tooltips for [data-tip]: on hover and keyboard focus, and on tap (touch has no hover)
+const KodoTip = (() => {
+  let pop = null, cur = null;
+  function el() {
+    if (!pop) { pop = document.createElement('div'); pop.className = 'kodo-tip-pop'; pop.id = 'kodo-tip-pop'; pop.setAttribute('role', 'tooltip'); pop.hidden = true; document.body.appendChild(pop); }
+    return pop;
+  }
+  function show(t) {
+    const p = el();
+    p.textContent = t.dataset.tip; p.hidden = false; cur = t;
+    t.setAttribute('aria-describedby', 'kodo-tip-pop');
+    const r = t.getBoundingClientRect(), w = p.offsetWidth, h = p.offsetHeight;
+    const x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+    const y = r.bottom + 6 + h > window.innerHeight - 8 ? r.top - h - 6 : r.bottom + 6;
+    p.style.left = x + 'px'; p.style.top = Math.max(8, y) + 'px';
+  }
+  function hide() { if (pop) pop.hidden = true; if (cur) cur.removeAttribute('aria-describedby'); cur = null; }
+  document.addEventListener('mouseover', e => {
+    const t = e.target.closest && e.target.closest('[data-tip]');
+    if (t) { if (t !== cur) show(t); } else if (cur && !cur.matches(':focus')) hide();
+  });
+  document.addEventListener('focusin', e => { const t = e.target.closest && e.target.closest('[data-tip]'); if (t) show(t); });
+  document.addEventListener('focusout', () => hide());
+  // a tap on a badge or an "i" shows its note and does not open the row it sits in
+  document.addEventListener('click', e => {
+    const t = e.target.closest && e.target.closest('.kodo-badge[data-tip], .kpi-info[data-tip]');
+    if (!t) { if (cur && !(e.target.closest && e.target.closest('[data-tip]'))) hide(); return; }
+    e.stopPropagation(); e.preventDefault();
+    if (cur === t && !pop.hidden) hide(); else show(t);
+  }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+  window.addEventListener('scroll', hide, { passive: true, capture: true });
+  return { show, hide };
+})();
+
+// Market Overview cards: a label, one big number and at most one short line;
+// everything else the card says moves to its "i" tooltip
+function compactDashCards(list) {
+  const a = KodoLive.raw() ? KodoLive.agg(list) : null;
+  const text = el => (el && el.style.display !== 'none' ? el.textContent.replace(/\s+/g, ' ').trim() : '');
+  const LABEL = { 'kpi-keys': 'Total keys', 'kpi-adr': 'BAR (median)', 'kpi-occ': 'Occupancy (est.)', 'kpi-revpar': 'Rooms RevPAR (est.)' };
+  Object.keys(LABEL).forEach(id => {
+    const c = document.getElementById(id);
+    if (!c) return;
+    c.querySelector('.kpi-label').textContent = LABEL[id];
+    const v = c.querySelector('.kpi-value'), meta = c.querySelector('.kpi-meta'), sub = c.querySelector('.kpi-sub');
+    const delta = c.querySelector('.kpi-delta'), period = c.querySelector('.kpi-period'), conf = c.querySelector('.kpi-conf');
+    const figure = !v.querySelector('.kpi-nodata-pill');
+    // the window, the change, why there is no figure (if none), then the card's own explanation
+    const notes = [text(period), text(delta), figure ? '' : text(sub), text(conf), c.title].filter(Boolean);
+    c.removeAttribute('title');
+    const range = (text(meta).match(/range [^·]+/i) || [''])[0].trim();
+    let line = '';
+    if (id === 'kpi-keys') line = text(meta);
+    else if (id === 'kpi-adr') line = figure && a && !a.single ? `median of ${a.bar.n} hotels` : figure ? text(sub) : '';
+    else if (figure) line = range ? range.replace(/^RANGE/i, 'range') : text(delta);
+    if (figure && (id === 'kpi-adr' || id === 'kpi-revpar') && !v.querySelector('.kpi-unit')) v.insertAdjacentHTML('beforeend', '<span class="kpi-unit">MAD</span>');
+    let ln = c.querySelector('.kpi-line');
+    if (!ln) { ln = document.createElement('span'); ln.className = 'kpi-line'; v.after(ln); }
+    ln.textContent = line;
+    let i = c.querySelector('.kpi-info');
+    if (!i) { i = document.createElement('button'); i.type = 'button'; i.className = 'kpi-info'; i.textContent = 'i'; c.appendChild(i); }
+    i.dataset.tip = notes.join(' · ');
+    i.setAttribute('aria-label', `About ${LABEL[id]}: ${notes.join('. ')}`);
+  });
+}
 
 // ─── Aggregation ──────────────────────────────────────────────────
 
@@ -884,7 +970,7 @@ function renderKPIs() {
     + (shut ? ` Excludes the rooms of ${shut === 1 ? 'a hotel' : shut + ' hotels'} closed for the season (${CLOSED_NOTE.toLowerCase()}).` : '');
   // BAR: observed since 3 Nov 2026. Occupancy, Rooms RevPAR: Kodo estimates, next 30 nights (KodoLive)
   ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
-  KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list);
+  KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list).then(() => compactDashCards(list));
   const sub = document.getElementById('dashboard-sub');
   sub.textContent = state.city === 'all' ? 'Morocco hotel market' : `${state.city} · ${hotelLabel}`;
 }
@@ -981,14 +1067,6 @@ function chartConfig(labels, values, tooltipSuffix, bgColors, labelFmt) {
   };
 }
 
-// Destination charts: grey by default, the selected city blue (#0075DE);
-// a BAR resting on fewer than 3 hotels lighter grey, labelled "limited data"
-function destColors(labels, limited = []) {
-  const p = KodoPalette.get();
-  const grey = p.families.grey.dot, blue = p.families.blue.dot;
-  return labels.map((c, i) => c === state.city ? blue : limited[i] ? withAlpha(grey, 0.32) : grey);
-}
-
 // Lighter type for the dense city-name charts (axis ticks and bar labels)
 function lightenCityChartLabels(cfg) {
   const color = KodoPalette.get().text2;
@@ -1014,96 +1092,6 @@ function chartOrCollecting(canvasId, empty, detail) {
   return true;
 }
 
-// Clicking a bar selects its destination
-function destChartClick(chart) {
-  return (evt, els) => {
-    if (!els.length) return;
-    selectCity(chart().data.labels[els[0].index]);
-  };
-}
-
-function renderCharts() {
-  const rows = rankedCities();
-  // ── Average BAR per destination
-  const withBar = rows.filter(r => r.bar.val != null);
-  const missing = rows.length - withBar.length;
-  document.getElementById('bar-dest-since').textContent = KodoBar.caption();
-  const note = document.getElementById('bar-dest-note');
-  if (chartOrCollecting('chart-bar', !withBar.length, 'No destination has hotels with 7 priced nights yet.')) {
-    const labels = withBar.map(r => r.city);
-    const limited = withBar.map(r => r.bar.limited);
-    const values = withBar.map(r => Math.round(r.bar.val));
-    document.getElementById('chart-bar').closest('.chart-wrap').style.height = Math.max(240, labels.length * 30 + 60) + 'px';
-    const colors = destColors(labels, limited);
-    if (barChart) {
-      barChart.data.labels = labels;
-      barChart.data.datasets[0].data = values;
-      barChart.data.datasets[0].backgroundColor = colors;
-      barChart.$limited = limited; barChart.$rows = withBar;
-      barChart.update();
-    } else {
-      const cfg = lightenCityChartLabels(chartConfig(labels, values, ' MAD', colors,
-        (v, ctx) => (ctx.chart.$limited || [])[ctx.dataIndex] ? 'limited data' : Math.round(v).toLocaleString('en')));
-      cfg.options.plugins.tooltip.callbacks = {
-        label: ctx => {
-          const r = (ctx.chart.$rows || [])[ctx.dataIndex];
-          if (!r) return '';
-          const base = `${r.bar.n} hotel${r.bar.n === 1 ? '' : 's'} · ${r.bar.nights.toLocaleString('en')} nights`;
-          return r.bar.limited ? ['  Limited data: fewer than 3 hotels with 7 priced nights', '  ' + base]
-            : [`  BAR MAD ${Math.round(r.bar.val).toLocaleString('en')}`, '  ' + base];
-        },
-      };
-      cfg.options.onClick = destChartClick(() => barChart);
-      cfg.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
-      barChart = new Chart(document.getElementById('chart-bar'), cfg);
-      barChart.$limited = limited; barChart.$rows = withBar;
-      barChart.update('none');
-    }
-  }
-  const lim = withBar.filter(r => r.bar.limited).length;
-  note.textContent = [lim ? `Light grey: limited data (fewer than ${KodoBar.meta().min_hotels} hotels with ${KodoBar.meta().min_nights} priced nights).` : '',
-    missing && withBar.length ? `${missing} destination${missing === 1 ? '' : 's'} without enough prices yet.` : ''].filter(Boolean).join(' ');
-
-  // ── Modelled occupancy per destination (Kodo estimate, next 30 nights)
-  const occRows = rows.filter(r => r.occupancy != null).sort((a, b) => b.occupancy - a.occupancy);
-  if (chartOrCollecting('chart-occ', !occRows.length, 'Occupancy estimates appear once the model has prices to work from.')) {
-    const labels = occRows.map(r => r.city);
-    const values = occRows.map(r => parseFloat((r.occupancy * 100).toFixed(1)));
-    // National estimates (no official monthly figure behind them): hollow bars, "est."
-    const national = labels.map(c => (destConf(c) || {}).class === 'national');
-    const grey = KodoPalette.get().families.grey.dot;
-    const fills = destColors(labels).map((col, i) => national[i] ? 'transparent' : col);
-    const borders = destColors(labels).map((col, i) => national[i] ? grey : col);
-    document.getElementById('chart-occ').closest('.chart-wrap').style.height = Math.max(240, labels.length * 30 + 60) + 'px';
-    const style = ds => { ds.backgroundColor = fills; ds.borderColor = borders; ds.borderWidth = national.map(x => (x ? 1.5 : 0)); };
-    if (occChart) {
-      occChart.data.labels = labels;
-      occChart.data.datasets[0].data = values;
-      style(occChart.data.datasets[0]);
-      occChart.$national = national;
-      occChart.update();
-    } else {
-      const cfg = lightenCityChartLabels(chartConfig(labels, values, '%', fills,
-        (v, ctx) => v.toFixed(1) + '%' + ((ctx.chart.$national || [])[ctx.dataIndex] ? ' est.' : '')));
-      style(cfg.data.datasets[0]);
-      cfg.options.plugins.tooltip.callbacks.label = ctx => {
-        const a = KodoLive.agg((hotels || []).filter(h => h.city === ctx.label));
-        const range = a.low.val != null && a.high.val != null && a.low.n === a.occ.n ? ` (range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%)` : '';
-        const conf = destConf(ctx.label);
-        return ['  ' + ctx.raw.toFixed(1) + '%' + range + ' · Kodo estimate'].concat(conf ? ['  Confidence: ' + conf.label] : []);
-      };
-      cfg.options.onClick = destChartClick(() => occChart);
-      cfg.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
-      occChart = new Chart(document.getElementById('chart-occ'), cfg);
-      occChart.$national = national;
-      occChart.update('none');
-    }
-    const nn = national.filter(Boolean).length;
-    document.getElementById('occ-dest-note').textContent = nn
-      ? `Hollow bars marked "est.": national estimate only (${nn} destination${nn === 1 ? '' : 's'}). They have no official monthly figure for the destination yet, so compare them with care.` : '';
-  }
-}
-
 // ─── Destination list (sidebar; chips under 768 px) ───────────────
 
 // The sidebar number: BAR (MAD, observed) or occupancy (%, Kodo estimate,
@@ -1111,15 +1099,14 @@ function renderCharts() {
 const DEST_METRIC_LABEL = { bar: 'Destination · BAR (MAD)', occ: 'Destination · Occ. % (est.)' };
 function destMetricVal(c) {
   if (state.destMetric === 'occ') {
-    if (c.occupancy == null) return { html: '<span class="dest-val dest-val--na">—</span>', v: null, what: 'no occupancy estimate', limited: false };
-    const est = (destConf(c.city) || {}).class === 'national';
+    if (c.occupancy == null) return { html: '<span class="dest-val dest-val--na">—</span>', v: null, what: 'no occupancy estimate', est: false };
+    const est = !isOfficial(c.city);
     const pct = (c.occupancy * 100).toFixed(1);
-    return { html: `<span class="dest-val">${pct}%${est ? '<span class="dest-est">est.</span>' : ''}</span>`, v: c.occupancy, limited: est,
-             what: `occupancy ${pct}%, Kodo estimate${est ? ', national estimate' : ''}` };
+    return { html: `<span class="dest-val">${pct}%</span>`, v: c.occupancy, est, what: `occupancy ${pct}%, ${est ? 'estimate' : 'official'}` };
   }
   return { html: c.bar.val == null ? '<span class="dest-val dest-val--na">—</span>'
-    : c.bar.limited ? '<span class="dest-val dest-val--limited">limited</span>'
-    : `<span class="dest-val">${fmt.mad(c.bar.val)}</span>`, v: c.bar.val, limited: c.bar.limited,
+    : c.bar.limited ? `<span class="dest-val dest-val--limited">${KodoBar.LIMITED}</span>`
+    : `<span class="dest-val">${fmt.mad(c.bar.val)}</span>`, v: c.bar.limited ? null : c.bar.val, est: false,
     what: c.bar.val == null ? 'no BAR yet' : c.bar.limited ? 'BAR limited data' : `BAR ${fmt.mad(c.bar.val)} MAD` };
 }
 
@@ -1130,7 +1117,7 @@ function destRowHtml(c, max) {
   return `<li class="dest-row${sel ? ' is-selected' : ''}" role="option" aria-selected="${sel}" tabindex="${sel ? 0 : -1}"
       data-city="${fmt.esc(c.city)}" aria-label="${fmt.esc(c.city)}, ${c.hotel_count} hotels, ${m.what}">
     <span class="dest-line"><span class="dest-name">${fmt.esc(c.city)}</span><span class="dest-count">${c.hotel_count}</span>${m.html}</span>
-    <span class="dest-meter${m.limited ? ' dest-meter--limited' : ''}" aria-hidden="true"><span style="width:${w}%"></span></span>
+    <span class="dest-meter${m.est ? ' dest-meter--est' : ''}" aria-hidden="true"><span style="width:${w}%"></span></span>
   </li>`;
 }
 
@@ -1157,6 +1144,7 @@ function buildCityFilter() {
   const rows = sidebarCities();
   const max = Math.max(0, ...rows.map(r => destMetricVal(r).v).filter(v => v != null));
   const all = state.city === 'all';
+  document.getElementById('dest-label').textContent = DEST_METRIC_LABEL[state.destMetric];   // the header always matches the toggle
   list.innerHTML = `<li class="dest-row dest-row--all${all ? ' is-selected' : ''}" role="option" aria-selected="${all}" tabindex="${all ? 0 : -1}"
       data-city="all" aria-label="All Morocco, ${(hotels || []).length} hotels">
       <span class="dest-line"><span class="dest-name">All Morocco</span><span class="dest-count">${(hotels || []).length} hotels</span></span></li>`
@@ -1382,21 +1370,60 @@ function applyDashScope() {
   });
 }
 
-// All Morocco: one row per destination, the same figures as the charts and the sidebar
+// All Morocco: one row per destination (Destination | Hotels | Keys | BAR |
+// Occupancy (est.) | badge), sortable by any header, default keys high to
+// low. Inline bars: solid = Official, light = Estimate, none for limited
+// data; blue only for the selected destination.
+const destSort = { key: 'keys', dir: -1 };
+const DEST_SORT_VAL = {
+  city: c => c.city, hotels: c => c.hotel_count, keys: c => c.total_keys,
+  bar: c => (c.bar.val == null || c.bar.limited ? null : c.bar.val), occ: c => c.occupancy,
+  badge: c => ({ official: 0, real: 1, borrowed: 1, national: 1 }[(destConf(c.city) || {}).class] ?? 2),
+};
+function sortedCities() {
+  const f = DEST_SORT_VAL[destSort.key] || DEST_SORT_VAL.keys;
+  return cityAggs(hotels || []).sort((a, b) => {
+    const x = f(a), y = f(b);
+    if (x == null || y == null) return (x == null) - (y == null) || a.city.localeCompare(b.city);   // no figure: last
+    const d = typeof x === 'string' ? x.localeCompare(y) : x - y;
+    return d * destSort.dir || a.city.localeCompare(b.city);
+  });
+}
+function inlineBar(v, max, est, sel) {
+  if (v == null || !max) return '';
+  return `<span class="ibar${est ? ' ibar--est' : ''}${sel ? ' ibar--sel' : ''}" aria-hidden="true"><span style="width:${Math.max(2, Math.round(v / max * 100))}%"></span></span>`;
+}
 function renderDestTable() {
-  const tbody = document.querySelector('#dest-table tbody');
-  if (!tbody) return;
-  tbody.innerHTML = rankedCities().map(c => {
-    const conf = destConf(c.city);
-    return `<tr data-city="${fmt.esc(c.city)}" tabindex="0">
-      <td>${fmt.esc(c.city)}</td>
-      <td>${c.hotel_count}</td>
+  const table = document.getElementById('dest-table');
+  if (!table) return;
+  const rows = sortedCities();
+  const all = cityAggs(hotels || []);
+  const maxBar = Math.max(0, ...all.map(c => DEST_SORT_VAL.bar(c)).filter(v => v != null));
+  const maxOcc = Math.max(0, ...all.map(c => c.occupancy).filter(v => v != null));
+  table.querySelector('tbody').innerHTML = rows.map(c => {
+    const sel = c.city === state.city, est = !isOfficial(c.city);
+    const bar = c.bar.val == null ? '<span class="cell-na">—</span>'
+      : c.bar.limited ? limitedBadge(`BAR: ${c.bar.n} hotel${c.bar.n === 1 ? '' : 's'} with ${KodoBar.meta().min_nights} priced nights; a destination needs ${KodoBar.meta().min_hotels}.`)
+      : `<span class="cell-num">${fmt.mad(c.bar.val)}</span>${inlineBar(c.bar.val, maxBar, false, sel)}`;
+    const occ = c.occupancy == null ? '<span class="cell-na">—</span>'
+      : `<span class="cell-num">${fmt.pct(c.occupancy)}</span>${inlineBar(c.occupancy, maxOcc, est, sel)}`;
+    return `<tr data-city="${escAttr(c.city)}" tabindex="0"${sel ? ' class="is-selected"' : ''}>
+      <td class="cell-dest">${fmt.esc(c.city)}<span class="badge-m">${destBadge(c.city)}</span></td>
+      <td class="col-hide-mobile">${c.hotel_count}</td>
       <td>${fmt.num(c.total_keys)}</td>
-      <td>${KodoBar.cell(c.bar)}</td>
-      <td title="${EST_TIP}">${fmt.pct(c.occupancy)}</td>
-      <td>${conf ? `<span class="conf-label conf-label--${conf.class}">${fmt.esc(conf.label)}</span>` : '—'}</td>
+      <td class="cell-metric">${bar}</td>
+      <td class="cell-metric">${occ}</td>
+      <td class="col-hide-mobile">${destBadge(c.city)}</td>
     </tr>`;
   }).join('');
+  table.querySelectorAll('th[data-sort]').forEach(th => {
+    th.setAttribute('aria-sort', th.dataset.sort === destSort.key ? (destSort.dir > 0 ? 'ascending' : 'descending') : 'none');
+  });
+}
+function sortDestTable(key) {
+  if (destSort.key === key) destSort.dir = -destSort.dir;
+  else { destSort.key = key; destSort.dir = key === 'city' || key === 'badge' ? 1 : -1; }
+  renderDestTable();
 }
 
 // One destination, Hotels tab: its hotels with their status (hotel_flags.json)
@@ -1418,16 +1445,14 @@ function renderDestHotels() {
   document.getElementById('dest-hotels-sub').textContent = `${state.city} · ${list.length} hotel${list.length === 1 ? '' : 's'} · BAR: ${KodoBar.since()} · occupancy and Rooms RevPAR: Kodo estimates, next 30 nights`;
 }
 
-// One destination, Overview: what its occupancy estimate rests on, in the existing wording
-function renderDestBasis() {
-  const el = document.getElementById('dash-basis');
-  if (!el || state.city === 'all') return;
-  const conf = destConf(state.city);
-  const a = KodoLive.raw() ? KodoLive.agg(filteredByCity()) : null;
-  const text = !conf ? '' : conf.class === 'real' || conf.class === 'borrowed' ? (a && a.basis) || conf.label
-    : conf.class === 'official' ? CALIBRATED_LABEL
-    : 'National estimate: no official monthly figure for this destination yet.';
-  document.getElementById('dash-basis-text').textContent = text;
+// The page head: the subtitle, the destination's badge, and the one line
+// that says what is observed and what is estimated (the real dates)
+function renderDashHead() {
+  const d = KodoLive.raw();
+  const est = d && d.window ? ` (${KodoPeriod.label({ kind: 'range', start: d.window.start, end: d.window.end })})` : '';
+  document.getElementById('dash-explain').textContent =
+    `Prices: observed since 3 Nov 2026. Occupancy and Rooms RevPAR: Kodo estimate for the next 30 nights${est}.`;
+  document.getElementById('dash-badge').innerHTML = state.city === 'all' ? '' : destBadge(state.city);
 }
 
 // ─── Brands screen ────────────────────────────────────────────────
@@ -2845,13 +2870,12 @@ function renderHotelsTable() {
 function render() {
   applyDashScope();
   renderKPIs();
-  renderCharts();
   renderBrandTable();
   renderDestTable();
   renderDestHotels();
-  renderDestBasis();
-  // the confidence labels and per-hotel details arrive with the live figures
-  KodoLive.load().then(() => { renderCharts(); renderBrandTable(); renderDestTable(); renderDestHotels(); renderDestBasis(); buildCityFilter(); });
+  renderDashHead();
+  // the confidence badges and per-hotel details arrive with the live figures
+  KodoLive.load().then(() => { renderBrandTable(); renderDestTable(); renderDestHotels(); renderDashHead(); buildCityFilter(); });
   renderSeason();
   if (googleMap) {
     updateMapMarkers();
@@ -2863,10 +2887,7 @@ function render() {
 
 function redrawChartsForTheme() {
   // Dashboard bar charts
-  if (barChart) { barChart.destroy(); barChart = null; }
-  if (occChart)  { occChart.destroy();  occChart = null; }
   if (seasonChart) { seasonChart.destroy(); seasonChart = null; renderSeason(); }
-  if (hotels) renderCharts();
 
   // Pipeline charts
   if (pipelineChartProj) { pipelineChartProj.destroy(); pipelineChartProj = null; }
@@ -4139,7 +4160,9 @@ document.getElementById('screen-news').addEventListener('click', e => {
 
 const SIDEBAR_SCREENS = new Set(['dashboard', 'map']);
 function setSidebar(screen) {
-  document.querySelector('.app-body').classList.toggle('no-sidebar', !SIDEBAR_SCREENS.has(screen));
+  const body = document.querySelector('.app-body');
+  body.classList.toggle('no-sidebar', !SIDEBAR_SCREENS.has(screen));
+  body.dataset.screen = screen;                    // the segment filter shows on the Map page only
 }
 
 // ─── Mobile nav ───────────────────────────────────────────────────
@@ -4244,6 +4267,8 @@ document.getElementById('dash-scope').addEventListener('keydown', e => {   // ar
   document.querySelector(`#dash-scope [data-tab="${t}"]`).focus();
 });
 document.getElementById('dest-table').addEventListener('click', e => {
+  const th = e.target.closest('th[data-sort]');
+  if (th) { sortDestTable(th.dataset.sort); return; }
   const tr = e.target.closest('tr[data-city]');
   if (tr) selectCity(tr.dataset.city);
 });
@@ -4251,7 +4276,10 @@ document.getElementById('dest-table').addEventListener('keydown', e => {
   const tr = e.target.closest('tr[data-city]');
   if (tr && e.key === 'Enter') selectCity(tr.dataset.city);
 });
-document.getElementById('dash-compare').addEventListener('click', e => { e.preventDefault(); selectCity('all'); });
+document.getElementById('dash-brands-link').addEventListener('click', e => {
+  e.preventDefault();
+  document.querySelector('.nav-link[data-screen="brands"]').click();
+});
 document.querySelectorAll('.dest-metric-btn').forEach(b => b.addEventListener('click', () => setDestMetric(b.dataset.metric)));
 
 // Logo click → navigate to Dashboard

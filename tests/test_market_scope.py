@@ -45,10 +45,17 @@ class Page(unittest.TestCase):
         for tab in ('overview', 'hotels', 'brands', 'seasonality'):
             self.assertIn(f'data-tab="{tab}"', self.dash)
         self.assertIn('data-dash="all overview"', self.dash)              # KPI cards
-        self.assertIn('<div class="charts-row" data-dash="all">', self.dash)
-        self.assertIn('id="dest-table"', self.dash)
-        self.assertIn('data-dash="all brands"', self.dash)
-        self.assertIn('Compare with Morocco', self.dash)
+        # All Morocco: one Destinations table replaces both ranking charts and the comparison table
+        self.assertNotIn('charts-row', self.dash)
+        self.assertNotIn('chart-bar', self.dash); self.assertNotIn('chart-occ', self.dash)
+        self.assertIn('<div class="table-card dest-card" data-dash="all">', self.dash)
+        for key in ('city', 'hotels', 'keys', 'bar', 'occ', 'badge'):
+            self.assertIn(f'data-sort="{key}"', self.dash)
+        self.assertIn("const destSort = { key: 'keys', dir: -1 };", self.js)   # default: keys, largest first
+        self.assertIn('<div class="table-card" data-dash="brands" hidden>', self.dash)   # brand groups off All Morocco
+        self.assertIn('id="dash-brands-link"', self.dash)
+        self.assertIn('href="/methodology"', self.dash)
+        self.assertIn('id="mobile-seg-pills" hidden', self.dash)
         self.assertIn("const DASH_TABS = ['overview', 'hotels', 'brands', 'seasonality'];", self.js)
 
     def test_url_and_memory(self):
@@ -68,10 +75,21 @@ class Page(unittest.TestCase):
 
     def test_brand_table_notes(self):
         self.assertIn("const SHARED_OCC_NOTE = 'destination-level estimate';", self.js)
-        self.assertIn('id="brand-table-note"', self.dash)
-        self.assertIn('National estimate', self.dash)
-        self.assertIn('Hollow bars marked "est."', self.js)
         self.assertIn("'Destination · Occ. % (est.)'", self.js)
+
+    def test_one_disclaimer_system(self):
+        # three badges, the detail in the badge's tooltip
+        self.assertIn("const BADGE_TEXT = { official: 'Official', estimate: 'Estimate', limited: 'Limited data' };", self.js)
+        self.assertIn("national: 'National estimate: no official monthly figure for this destination yet.'", self.js)
+        self.assertIn('Prices: observed since 3 Nov 2026. Occupancy and Rooms RevPAR: Kodo estimate for the next 30 nights', self.js)
+        self.assertNotIn('dest-table-note', self.dash)
+        self.assertNotIn('dash-basis', self.dash)
+        # bars: solid = Official, light = Estimate, none for limited data; no hollow bars
+        self.assertNotIn('Hollow bars', self.js)
+        self.assertIn("c.bar.limited ? limitedBadge(", self.js)
+        css = read('static', 'css', 'style.css')
+        self.assertIn('.ibar--est > span', css)
+        self.assertIn('.app-body[data-screen="dashboard"] .seg-section { display: none; }', css)
 
 
 if __name__ == '__main__':

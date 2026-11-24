@@ -6390,3 +6390,91 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 #dest-hotels-table tbody td:nth-child(4), #dest-hotels-table tbody td:nth-child(6) { text-transform: none; font-weight: 400; }
 #dest-hotels-table tbody td:nth-child(3), #dest-hotels-table tbody td:last-child { white-space: normal; }
 #dest-table thead th:last-child, #dest-table tbody td:last-child { text-align: left; text-transform: none; }
+
+/* ─── Market Overview, rebuilt for clarity ───────────────────────────────
+   One disclaimer system (three badges, the detail in a tooltip), bars in two
+   states (solid = Official, light = Estimate, none for limited data), blue
+   only for the selected destination. */
+.dash-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.dash-explain { margin: 4px 0 0; font: 400 12px/1.45 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.kodo-badge { display: inline-flex; align-items: center; padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px;
+  font: 500 10.5px/1.4 'Sweet Sans Pro', sans-serif; letter-spacing: .02em; text-transform: none; white-space: nowrap; cursor: help;
+  color: var(--text-2); background: transparent; }
+.kodo-badge--official { background: var(--text); border-color: var(--text); color: var(--bg); }
+.kodo-badge--limited { color: var(--text-3); background: var(--bg-alt); }
+.kodo-badge:focus-visible, .kpi-info:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+.kodo-tip-pop { position: fixed; z-index: 2000; max-width: min(300px, calc(100vw - 16px)); padding: 8px 10px; border-radius: 6px;
+  background: var(--text); color: var(--bg); font: 400 12px/1.45 'Sweet Sans Pro', sans-serif; pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
+.kodo-tip-pop[hidden] { display: none; }
+
+/* the four cards: label, one big number, one short line, an "i" for the rest */
+#screen-dashboard .kpi-grid .kpi-period, #screen-dashboard .kpi-grid .kpi-meta, #screen-dashboard .kpi-grid .kpi-sub,
+#screen-dashboard .kpi-grid .kpi-delta, #screen-dashboard .kpi-grid .kpi-conf { display: none !important; }
+#screen-dashboard .kpi-grid .kpi-card { padding: 16px 28px 14px; min-width: 0; }
+#screen-dashboard .kpi-grid .kpi-value { font-size: 26px; margin-bottom: 6px; }
+#screen-dashboard .kpi-grid .kpi-value .kpi-nodata-pill { font-size: 11px; }
+.kpi-unit { margin-left: 4px; font-size: 12px; font-weight: 400; color: var(--text-2); }
+.kpi-line { display: block; width: 100%; min-height: 15px; font: 400 11px/1.35 'Sweet Sans Pro', sans-serif; color: var(--text-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kpi-info { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; padding: 0; border: 1px solid var(--border); border-radius: 50%;
+  background: transparent; color: var(--text-2); font: 500 10px/16px 'Sweet Sans Pro', sans-serif; text-align: center; cursor: help; }
+.kpi-info:hover { border-color: var(--text-2); color: var(--text); }
+
+/* Destinations table */
+#dest-table { table-layout: auto; }
+#dest-table thead th { text-align: right; padding: 0; }
+#dest-table thead th:first-child, #dest-table thead th:last-child { text-align: left; }
+#dest-table thead th:nth-child(2), #dest-table tbody td:nth-child(2) { min-width: 0; max-width: none; }
+#dest-table .th-sort { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 6px 8px; cursor: pointer;
+  font: 500 9px 'Sweet Sans Pro', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+#dest-table .th-sort:hover { color: var(--text); }
+#dest-table .th-sort:focus-visible { outline: 2px solid var(--action); outline-offset: -2px; }
+#dest-table th[aria-sort="descending"] .th-sort::after { content: ' ↓'; }
+#dest-table th[aria-sort="ascending"] .th-sort::after { content: ' ↑'; }
+#dest-table tbody tr { cursor: pointer; }
+#dest-table tbody td { padding: 8px; text-transform: none; font-weight: 400; }
+#dest-table tbody td.cell-dest { font-weight: 500; white-space: normal; }
+#dest-table tbody td:last-child { text-align: left; }
+#dest-table tbody tr.is-selected td.cell-dest { color: var(--action); }
+#dest-table tbody tr:focus-visible { outline: 2px solid var(--action); outline-offset: -2px; }
+#dest-table .cell-metric { width: 22%; }
+#dest-table .cell-num { display: block; font-weight: 500; }
+#dest-table .cell-na { color: var(--text-3); }
+.ibar { display: block; height: 4px; margin: 4px 0 0 auto; width: 100%; max-width: 140px; }
+.ibar > span { display: block; height: 100%; margin-left: auto; border-radius: 2px; background: var(--text); }
+.ibar--est > span { background: color-mix(in srgb, var(--text) 22%, transparent); }
+.ibar--sel > span { background: var(--action); }
+.ibar--sel.ibar--est > span { background: color-mix(in srgb, var(--action) 35%, transparent); }
+.dest-card-foot, .dash-foot { margin: 10px 0 0; font: 400 12px 'Sweet Sans Pro', sans-serif; }
+.dash-foot { margin: 18px 0 8px; }
+.dash-link { color: var(--action-text); text-decoration: none; }
+.dash-link:hover { text-decoration: underline; }
+
+/* sidebar meters: the same two states */
+.dest-meter > span { background: var(--text); opacity: 1; }
+.dest-meter--est > span { background: color-mix(in srgb, var(--text) 22%, transparent); }
+.dest-row.is-selected .dest-meter--est > span { background: color-mix(in srgb, #0075DE 35%, transparent); }
+
+/* the segment filter only drives the map: hidden on the Market Overview */
+.app-body[data-screen="dashboard"] .seg-section { display: none; }
+
+@media (max-width: 1100px) {
+  #screen-dashboard .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  #dest-table .col-hide-mobile { display: none; }
+  #dest-table tbody td, #dest-table .th-sort { padding: 8px 4px; }
+  #dest-table .cell-metric { width: auto; }
+  .ibar { max-width: 64px; }
+  #screen-dashboard .kpi-grid .kpi-card { padding: 14px 24px 12px; }
+  #screen-dashboard .kpi-grid .kpi-value { font-size: 22px; }
+}
+#mobile-seg-pills[hidden] { display: none !important; }
+#dest-table tbody td:nth-child(2) { text-align: right; }
+.badge-m { display: none; }
+@media (max-width: 767px) {
+  .badge-m { display: block; margin-top: 4px; }
+  #dest-table .th-sort { white-space: normal; }
+  #dest-table tbody td.cell-dest { min-width: 0; }
+}

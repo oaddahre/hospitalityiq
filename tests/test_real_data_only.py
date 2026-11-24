@@ -213,7 +213,7 @@ class CollectingData(unittest.TestCase):
             js = f.read()
         self.assertIn("const COLLECTING = 'Collecting data since 3 November';", js)
         # each dashboard chart, the brand and hotel charts fall back to it
-        for canvas in ('chart-bar', 'chart-occ', 'chart-brand-revpar', 'chart-hotel-city'):
+        for canvas in ('chart-brand-revpar', 'chart-hotel-city'):
             self.assertRegex(js, r"chartOrCollecting\('" + canvas + "'")
         # the KPI cards and the reports list too
         self.assertIn('noData(c, KodoBar.COLLECTING)', js)

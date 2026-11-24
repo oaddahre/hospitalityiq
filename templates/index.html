@@ -94,7 +94,7 @@
     </div>
   </div>
 
-  <div class="app-body">
+  <div class="app-body" data-screen="dashboard">
 
     <aside class="sidebar">
       <div class="sidebar-section dest-section">
@@ -120,7 +120,7 @@
           <p class="dest-empty" id="dest-empty" hidden>No destination matches.</p>
         </div>
       </div>
-      <div class="sidebar-section">
+      <div class="sidebar-section seg-section">
         <p class="sidebar-label">Segment</p>
         <ul class="sidebar-list" id="segment-sidebar">
           <li class="sidebar-item active" data-seg="all">All Segments</li>
@@ -146,7 +146,8 @@
       <section class="screen active" id="screen-dashboard">
         <div class="screen-header">
           <h1>Market Overview</h1>
-          <p class="screen-sub" id="dashboard-sub">Morocco branded hotel market</p>
+          <p class="screen-sub dash-sub"><span id="dashboard-sub">Morocco hotel market</span><span id="dash-badge"></span></p>
+          <p class="dash-explain" id="dash-explain">Prices: observed since 3 Nov 2026. Occupancy and Rooms RevPAR: Kodo estimate for the next 30 nights.</p>
         </div>
 
         <!-- Under 768 px: the destination list as a row of chips, with its search -->
@@ -157,7 +158,8 @@
             <button type="button" class="dest-chip active" data-mcity="all" aria-pressed="true">All Morocco</button>
           </div>
         </div>
-        <div class="mobile-filter-bar" id="mobile-seg-pills">
+        <!-- The segment filter only drives the map: kept for the Map page, hidden here -->
+        <div class="mobile-filter-bar" id="mobile-seg-pills" hidden>
           <button class="pill active" data-mseg="all">All Segments</button>
           <button class="pill" data-mseg="Luxury">Luxury</button>
           <button class="pill" data-mseg="Upper Upscale">Upper Upscale</button>
@@ -177,7 +179,7 @@
 
         <div class="kpi-grid" data-dash="all overview">
           <div class="kpi-card loading" id="kpi-keys">
-            <span class="kpi-label">Total Keys</span>
+            <span class="kpi-label">Total keys</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta" id="kpi-keys-meta">&nbsp;</span>
             <span class="kpi-delta up" id="kpi-keys-delta"></span>
@@ -202,49 +204,24 @@
           </div>
         </div>
 
-        <p class="dash-basis" id="dash-basis" data-dash="overview" hidden>
-          <span id="dash-basis-text"></span>
-          <a href="/dashboard" class="dash-compare" id="dash-compare">Compare with Morocco</a>
-        </p>
-
-        <div class="charts-row" data-dash="all">
-          <div class="chart-card" id="bar-dest-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Average BAR per destination</span>
-              <span class="chart-unit">BAR (published rate) · MAD · <span id="bar-dest-since">Since 3 November 2026</span></span>
-            </div>
-            <div class="chart-wrap"><canvas id="chart-bar" role="img" aria-label="Average BAR per destination, high to low"></canvas></div>
-            <p class="chart-note" id="bar-dest-note"></p>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Occupancy per destination</span>
-              <span class="chart-unit">% · Kodo estimate · next 30 nights · rooms-weighted</span>
-            </div>
-            <div class="chart-wrap"><canvas id="chart-occ" role="img" aria-label="Occupancy per destination, Kodo estimate"></canvas></div>
-            <p class="chart-note" id="occ-dest-note"></p>
-          </div>
-        </div>
-
-        <div class="table-card" data-dash="all">
+        <div class="table-card dest-card" data-dash="all">
           <div class="table-card-header">
-            <span class="table-title">Destinations compared</span>
-            <span class="table-subtitle" id="dest-table-sub">BAR: since 3 November 2026 · occupancy: Kodo estimate, next 30 nights, rooms-weighted</span>
+            <span class="table-title">Destinations</span>
           </div>
-          <div class="dh-scroll-x"><table class="data-table" id="dest-table">
+          <table class="data-table dest-table" id="dest-table">
             <thead>
               <tr>
-                <th>Destination</th>
-                <th>Hotels</th>
-                <th>Keys</th>
-                <th title="BAR (published rate), since 3 November 2026: the median of the destination's hotels' average BAR">Median BAR (MAD)</th>
-                <th title="Kodo estimate: occupancy model, next 30 nights, weighted by rooms">Occupancy (est.)</th>
-                <th title="What the occupancy estimate rests on">Confidence</th>
+                <th data-sort="city" scope="col"><button type="button" class="th-sort">Destination</button></th>
+                <th data-sort="hotels" scope="col" class="col-hide-mobile"><button type="button" class="th-sort">Hotels</button></th>
+                <th data-sort="keys" scope="col"><button type="button" class="th-sort">Keys</button></th>
+                <th data-sort="bar" scope="col"><button type="button" class="th-sort" data-tip="BAR (published rate): the median of the destination's hotels' average published price over past nights since 3 Nov 2026. Each hotel needs 7 priced nights; a destination needs 3 such hotels.">BAR (MAD)</button></th>
+                <th data-sort="occ" scope="col"><button type="button" class="th-sort" data-tip="Kodo estimate for the next 30 nights, weighted by rooms.">Occupancy (est.)</button></th>
+                <th data-sort="badge" scope="col" class="col-hide-mobile"><button type="button" class="th-sort"><span class="sr-only">Basis</span></button></th>
               </tr>
             </thead>
             <tbody></tbody>
-          </table></div>
-          <p class="chart-note" id="dest-table-note">Confidence: <strong>Official</strong> calibrated on official monthly figures · <strong>Based on N real hotels</strong> destination levels from real hotels · <strong>Borrowed</strong> levels borrowed from neighbouring destinations · <strong>National estimate</strong> the national figure only, no official monthly figure for the destination yet.</p>
+          </table>
+          <p class="dest-card-foot"><a href="#" class="dash-link" id="dash-brands-link">Brand groups</a></p>
         </div>
 
         <div class="table-card" data-dash="hotels" hidden>
@@ -284,7 +261,7 @@
           <p class="chart-note" id="season-note"></p>
         </div>
 
-        <div class="table-card" data-dash="all brands">
+        <div class="table-card" data-dash="brands" hidden>
           <div class="table-card-header">
             <span class="table-title">Brand groups</span>
             <span class="table-subtitle" id="brand-table-sub">All destinations</span>
@@ -305,6 +282,8 @@
           </table>
           <p class="chart-note" id="brand-table-note"></p>
         </div>
+
+        <p class="dash-foot"><a href="/methodology" class="dash-link">Methodology</a></p>
       </section>
 
       <!-- ── Map ── -->
