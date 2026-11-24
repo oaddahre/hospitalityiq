@@ -63,6 +63,11 @@ MIN_BAR_NIGHTS = 7                 # priced nights a hotel needs for its BAR
 MIN_BAR_HOTELS = 3                 # hotels a destination needs for its BAR to show as a figure
 _cache = {}
 _lock = threading.Lock()
+# One build at a time: a cold page load asks for these figures from several
+# endpoints at once (/api/data, /api/hotels, /api/live-kpis), and each build
+# reads the whole rates store; parallel builds slowed each other to minutes
+# after a deploy. Requests that arrive during a build wait for it and reuse it.
+_build_lock = threading.Lock()
 
 
 def _mtime(path):
@@ -349,13 +354,17 @@ def get(data_dir, today: date):
     with _lock:
         if _cache.get('key') == key:
             return _cache['data']
-    data = per_hotel(data_dir, today)
-    try:
-        snapshot(data_dir, data)
-    except OSError:
-        pass
-    with_change(data_dir, data)
-    key = key[:7] + (_mtime(history_path(data_dir)),) + key[8:]
-    with _lock:
-        _cache.update(key=key, data=data)
-    return data
+    with _build_lock:
+        with _lock:                     # built by the request this one waited for
+            if _cache.get('key') == key or _cache.get('built_for') == key:
+                return _cache['data']
+        data = per_hotel(data_dir, today)
+        try:
+            snapshot(data_dir, data)
+        except OSError:
+            pass
+        with_change(data_dir, data)
+        done = key[:7] + (_mtime(history_path(data_dir)),) + key[8:]
+        with _lock:
+            _cache.update(key=done, built_for=key, data=data)
+        return data

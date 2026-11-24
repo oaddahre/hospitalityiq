@@ -101,5 +101,28 @@ class LiveKpis(unittest.TestCase):
         self.assertFalse(L.snapshot(self.d, old))                   # once per day
 
 
+class OneBuildAtATime(unittest.TestCase):
+    def test_parallel_requests_share_one_build(self):
+        import threading, time
+        calls = []
+        real = (L.per_hotel, L.snapshot, L.with_change)
+        def slow(data_dir, today):
+            calls.append(1); time.sleep(0.3)
+            return {'hotels': {}, 'today': today.isoformat()}
+        L.per_hotel, L.snapshot, L.with_change = slow, (lambda d, data: None), (lambda d, data: data)
+        L._cache.clear()
+        d = tempfile.mkdtemp(prefix='kodo-lk1-')
+        try:
+            ts = [threading.Thread(target=L.get, args=(d, TODAY)) for _ in range(6)]
+            [t.start() for t in ts]; [t.join() for t in ts]
+            self.assertEqual(len(calls), 1)                 # six cold requests, one build
+            L.get(d, TODAY)
+            self.assertEqual(len(calls), 1)                 # then served from the cache
+        finally:
+            L.per_hotel, L.snapshot, L.with_change = real
+            L._cache.clear()
+            shutil.rmtree(d, ignore_errors=True)
+
+
 if __name__ == '__main__':
     unittest.main()

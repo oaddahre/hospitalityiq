@@ -16,6 +16,7 @@ import csv
 import io
 import os
 import threading
+import time
 import re
 import uuid
 import secrets
@@ -6216,6 +6217,20 @@ except Exception as _e:
     app.logger.error(f'Rates database start step failed, the platform reads the CSV: {_e}')
 
 
+def _warm_live_kpis():
+    """Build the live figures in the background as the server starts, so the
+    first page after a deploy does not wait minutes for them."""
+    def run():
+        t = time.time()
+        try:
+            LK.get(DATA_DIR, _casablanca_today())
+            app.logger.warning(f'Live KPI figures ready in {time.time() - t:.0f}s')
+        except Exception as e:
+            app.logger.error(f'Live KPI warm-up failed: {e}', exc_info=True)
+    threading.Thread(target=run, daemon=True, name='live-kpi-warmup').start()
+
+
 if __name__ == "__main__":
+    _warm_live_kpis()
     port = int(os.environ.get("PORT", 5001))
     app.run(host="0.0.0.0", port=port, debug=False)
