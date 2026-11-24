@@ -768,7 +768,7 @@ const KodoLive = (() => {
       + (one ? '' : 'Average weighted by rooms.' + of(a.occ.n, 'have an estimate'))
       + ' The change compares the same hotels 7 days earlier.');
     hover(els.revpar, `Window: the next 30 nights (${period}). For each hotel and night, the published price for that night times the estimated occupancy, `
-      + 'averaged over the nights that have both' + (one ? '.' : '; hotels are then weighted by rooms.' + of(a.revpar.n, 'have a published price for the coming nights'))
+      + 'averaged over the nights that have both' + (one ? '.' : '; hotels are then weighted by rooms.' + of(a.revpar.n, `have a BAR and ${KodoBar.meta().min_nights} priced coming nights (a group needs ${KodoBar.meta().min_hotels} such hotels)`))
       + ' So it is not the BAR card times the occupancy card: BAR covers past nights and is a median of hotels.'
       + ' The change compares the same hotels 7 days earlier.');
     // CONFIDENCE_UI (flags.py, off until approved): a plain label on the
@@ -802,6 +802,7 @@ const KodoLive = (() => {
       const c = els.revpar;
       KodoPeriod.setText(c, `Next 30 nights · ${period}`, KodoPeriod.tip({ source: 'published BAR × Kodo occupancy estimate, night by night', note: 'Kodo estimate. ' + ROOMS_REVPAR_TIP }));
       if (conf === 'insufficient') { noData(c, 'Insufficient data'); part(c, 'kpi-sub').textContent = 'Not enough price history yet'; delta(c, null); }
+      else if (!one && a.revpar.n > 0 && a.revpar.n < KodoBar.meta().min_hotels) { noData(c, KodoBar.LIMITED); part(c, 'kpi-sub').textContent = `${a.revpar.n} hotel${a.revpar.n === 1 ? '' : 's'} with ${KodoBar.meta().min_nights} priced nights: needs ${KodoBar.meta().min_hotels}`; delta(c, null); }
       else if (a.revpar.val == null) { noData(c, KodoBar.COLLECTING); part(c, 'kpi-sub').textContent = 'BAR × Kodo occupancy estimate'; delta(c, null); }
       else { const rr = a.rlow.val != null && a.rhigh.val != null && a.rlow.n === a.revpar.n ? ` · range ${fmt.mad(a.rlow.val)}–${fmt.mad(a.rhigh.val)}` : ''; show(c, fmt.mad(a.revpar.val), rr ? 'MAD' + rr : 'MAD · BAR × occupancy estimate'); part(c, 'kpi-sub').textContent = one ? `on ${one.occ_nights ?? 0} of ${n} nights` : cover('revpar'); delta(c, a.change.revpar, '%'); if (conf) confLine(c, conf); }
     }
@@ -824,7 +825,11 @@ function perfAggs(hs) {
     const den = rows.reduce((s, h) => s + h.keys, 0);
     return den ? rows.reduce((s, h) => s + h[k] * h.keys, 0) / den : null;
   };
-  return { bar: KodoBar.group(hs), occupancy: avg('occupancy'), revpar_mad: avg('revpar_mad') };
+  // Rooms RevPAR: the BAR minimum, 3 hotels with a Rooms RevPAR (each needs 7 priced nights) or "limited data"
+  const rn = hs.filter(h => has(h, 'revpar_mad') && (h.keys || 0) > 0).length;
+  const revpar_limited = rn > 0 && rn < KodoBar.meta().min_hotels;
+  return { bar: KodoBar.group(hs), occupancy: avg('occupancy'), revpar_mad: revpar_limited ? null : avg('revpar_mad'),
+           revpar_hotels: rn, revpar_limited };
 }
 
 function cityAggs(hotelList) {
@@ -1064,7 +1069,7 @@ function renderCharts() {
   if (chartOrCollecting('chart-occ', !occRows.length, 'Occupancy estimates appear once the model has prices to work from.')) {
     const labels = occRows.map(r => r.city);
     const values = occRows.map(r => parseFloat((r.occupancy * 100).toFixed(1)));
-    // National estimates (no official monthly figure or real hotels behind them): hollow bars, "est."
+    // National estimates (no official monthly figure behind them): hollow bars, "est."
     const national = labels.map(c => (destConf(c) || {}).class === 'national');
     const grey = KodoPalette.get().families.grey.dot;
     const fills = destColors(labels).map((col, i) => national[i] ? 'transparent' : col);
@@ -1095,7 +1100,7 @@ function renderCharts() {
     }
     const nn = national.filter(Boolean).length;
     document.getElementById('occ-dest-note').textContent = nn
-      ? `Hollow bars marked "est.": national estimate only (${nn} destination${nn === 1 ? '' : 's'}). They have no official monthly figure or real hotels behind them yet, so compare them with care.` : '';
+      ? `Hollow bars marked "est.": national estimate only (${nn} destination${nn === 1 ? '' : 's'}). They have no official monthly figure for the destination yet, so compare them with care.` : '';
   }
 }
 
@@ -1214,11 +1219,13 @@ function sharedOcc(rows) {
 
 // Rooms RevPAR in a table: the figure, with how many published prices of the
 // coming 30 nights it rests on (live_kpis.py rate_nights)
-function revparCell(value, hs) {
-  if (value == null) return `<span title="No published price for the coming 30 nights: Rooms RevPAR needs one (occupancy does not)">${fmt.mad(value)}</span>`;
+function revparCell(value, hs, limited) {
+  const m = KodoBar.meta();
   const L = (KodoLive.raw() || {}).hotels || {};
   const priced = hs.map(h => L[String(h.id)]).filter(v => v && v.revpar != null);
-  const nights = priced.reduce((s, v) => s + (v.rate_nights || 0), 0);
+  if (limited) return `<span class="bar-limited" title="Rooms RevPAR (est.): ${priced.length} hotel${priced.length === 1 ? '' : 's'} with ${m.min_nights} priced nights: needs ${m.min_hotels}">${KodoBar.LIMITED.toLowerCase()}</span>`;
+  if (value == null) return `<span class="bar-na" title="Rooms RevPAR needs a BAR (${m.min_nights} priced past nights) and ${m.min_nights} coming nights with a published price (occupancy does not)">—</span>`;
+  const nights = priced.reduce((s, v) => s + (v.revpar_nights || 0), 0);
   const tip = priced.length ? `Kodo estimate: published price × modelled occupancy over the coming 30 nights · ${priced.length} hotel${priced.length === 1 ? '' : 's'}, ${nights} priced night${nights === 1 ? '' : 's'}` : EST_TIP;
   return `<span title="${tip}">${fmt.mad(value)}</span>`;
 }
@@ -1237,14 +1244,14 @@ function renderBrandTable() {
       <td>${fmt.num(r.total_keys)}</td>
       <td>${KodoBar.cell(r.bar)}</td>
       <td title="${shared(r) ? SHARED_OCC_TIP : EST_TIP}">${fmt.pct(r.occupancy)}${shared(r) ? `<span class="occ-shared">${SHARED_OCC_NOTE}</span>` : ''}</td>
-      <td>${revparCell(r.revpar_mad, list.filter(h => h.brand_group === r.brand_group))}</td>
+      <td>${revparCell(r.revpar_mad, list.filter(h => h.brand_group === r.brand_group), r.revpar_limited)}</td>
     </tr>
   `).join('');
   const m = KodoBar.meta();
   document.getElementById('brand-table-note').textContent =
     `BAR: the median of the group's hotels that have ${m.min_nights} or more priced past nights since 3 November; "limited data" when fewer than ${m.min_hotels} hotels qualify, "—" when none does. `
-    + 'Rooms RevPAR (est.): the published prices of the coming 30 nights × the occupancy estimate, so it can show where BAR is "—" (prices for coming nights but not yet enough past nights), '
-    + 'and it is "—" where no coming night has a published price. Occupancy needs no price, so it can show without Rooms RevPAR.';
+    + `Rooms RevPAR (est.): the published prices of the coming 30 nights × the occupancy estimate, held to the same minimum: a hotel counts once it has a BAR and ${m.min_nights} priced coming nights; "limited data" when fewer than ${m.min_hotels} hotels qualify, "—" when none does. `
+    + 'Occupancy needs no price, so it can show without Rooms RevPAR.';
 
   const sub = document.getElementById('brand-table-sub');
   const dest = state.city === 'all' ? 'All destinations' : state.city;
@@ -1314,12 +1321,16 @@ async function renderSeason() {
   for (let m = first; m && m <= last && months.length < 36; m = step(m)) months.push(m);
   const P = Object.fromEntries(past.map(x => [x.month, x])), N = Object.fromEntries(next.map(x => [x.month, x]));
   const labels = months.map(MON3S);
-  const official = months.map(m => (P[m] ? P[m].occ : null));
+  const official = months.map(m => (P[m] && P[m].status === 'official' ? P[m].occ : null));
+  // a published figure whose month the release did not show: estimated, not official
+  const unconf = months.map(m => (P[m] && P[m].status === 'estimated' ? P[m].occ : null));
   const est = months.map(m => (N[m] ? N[m].occ : null));
   const range = months.map(m => (N[m] && N[m].low != null && N[m].high != null ? [N[m].low, N[m].high] : null));
   const cfg = {
     data: { labels, datasets: [
       { type: 'bar', label: 'Official monthly figure', data: official, backgroundColor: blue, borderRadius: 3, maxBarThickness: 26, grouped: false, order: 2 },
+      { type: 'bar', label: 'Estimated (month not confirmed)', data: unconf, backgroundColor: withAlpha(blue, 0.14), borderColor: blue, borderWidth: 1.5,
+        borderDash: [4, 3], borderRadius: 3, maxBarThickness: 26, grouped: false, order: 2 },
       { type: 'bar', label: 'Estimate range', data: range, backgroundColor: withAlpha(blue, 0.14), borderRadius: 3, maxBarThickness: 26, grouped: false, order: 3 },
       { type: 'line', label: 'Kodo estimate', data: est, borderColor: blue, borderWidth: 2, borderDash: [5, 4], spanGaps: false,
         pointRadius: 3, pointBackgroundColor: cc.pointBorder, pointBorderColor: blue, tension: 0, order: 1 },
@@ -1332,6 +1343,7 @@ async function renderSeason() {
           filter: it => it.raw != null,
           callbacks: { label: it => {
             if (it.dataset.label === 'Official monthly figure') return `  Official monthly figure: ${it.raw}%`;
+            if (it.dataset.label === 'Estimated (month not confirmed)') return `  Estimated: ${it.raw}% (published figure, month not confirmed)`;
             if (it.dataset.label === 'Estimate range') return `  Range: ${Math.round(it.raw[0])}–${Math.round(it.raw[1])}%`;
             return `  Kodo estimate: ${it.raw.toFixed(1)}%`;
           } } },
@@ -1346,16 +1358,18 @@ async function renderSeason() {
   seasonChart = new Chart(document.getElementById('chart-season'), cfg);
   // One line: what is official, what is estimated, and what the estimate rests on
   const n = d.official_months, conf = d.confidence || {};
-  const off = n ? `Official: ${n} of the past 12 months have an official monthly figure${d.official_level === 'region' ? ' (regional level)' : ''}; months without one are left empty.`
+  const off = n ? `Official: ${n} of the past 12 months ${n === 1 ? 'has' : 'have'} an official monthly figure${d.official_level === 'region' ? ' (regional level)' : ''}; months without one are left empty.`
     : 'No official monthly figures for this destination: the chart shows the Kodo estimate only.';
+  const unc = (d.unconfirmed_months || []).map(MON3S).join(', ');
+  const offAll = off + (unc ? ` ${unc} is shown as estimated: the published figure did not state its month.` : '');
   const runDay = d.model_run ? ` (model run ${KodoPeriod.day(d.model_run)})` : '';
   const rests = conf.class === 'real' ? `It rests on ${conf.real_hotels} real hotel${conf.real_hotels === 1 ? '' : 's'}.`
     : conf.class === 'borrowed' ? 'It rests on no real hotel here: levels borrowed from neighbouring destinations.'
     : conf.class === 'official' ? 'It is calibrated on the official monthly figures; no real hotel figures are used.'
-    : 'It rests on the national figure only: no official monthly figure or real hotel here yet.';
+    : 'It rests on the national figure only: no official monthly figure for this destination yet.';
   const est2 = next.some(x => x.occ != null) ? `Estimated: the next 12 months are Kodo estimates${runDay}, weighted by rooms over the hotels open that month. ${rests}`
     : 'The 12-month estimate is not available yet: it is prepared with the nightly model run.';
-  note.textContent = `${off} ${est2}`;
+  note.textContent = `${offAll} ${est2}`;
 }
 
 function applyDashScope() {
@@ -1412,7 +1426,7 @@ function renderDestBasis() {
   const a = KodoLive.raw() ? KodoLive.agg(filteredByCity()) : null;
   const text = !conf ? '' : conf.class === 'real' || conf.class === 'borrowed' ? (a && a.basis) || conf.label
     : conf.class === 'official' ? CALIBRATED_LABEL
-    : 'National estimate: no official monthly figure or real hotels for this destination yet';
+    : 'National estimate: no official monthly figure for this destination yet.';
   document.getElementById('dash-basis-text').textContent = text;
 }
 
@@ -1524,7 +1538,7 @@ function renderBrandsCards() {
       <div class="brn-card-kpis">
         <div class="brn-kpi"><div class="brn-kpi-lbl">BAR</div><div class="brn-kpi-val">${KodoBar.cell({ val: b.bar_mad, n: b.bar_hotels, nights: b.bar_nights, limited: b.bar_limited })}</div></div>
         <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Occ · est.</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
-        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Rooms RevPAR (est.)</div><div class="brn-kpi-val">${fmt.mad(b.avg_revpar)}</div></div>
+        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Rooms RevPAR (est.)</div><div class="brn-kpi-val">${b.revpar_limited ? `<span class="bar-limited">${KodoBar.LIMITED.toLowerCase()}</span>` : fmt.mad(b.avg_revpar)}</div></div>
       </div>
       <div class="brn-card-meta">
         <div class="brn-card-cities">${cityList}${cityMore}</div>
@@ -1606,7 +1620,7 @@ function renderBrandsCompTable() {
       <td>${b.market_share_keys_pct.toFixed(1)}%</td>
       <td>${KodoBar.cell({ val: b.bar_mad, n: b.bar_hotels, nights: b.bar_nights, limited: b.bar_limited })}</td>
       <td title="${EST_TIP}">${fmt.pct(b.avg_occupancy)}</td>
-      <td title="${EST_TIP}">${fmt.mad(b.avg_revpar)}</td>
+      <td title="${EST_TIP}">${b.revpar_limited ? `<span class="bar-limited">${KodoBar.LIMITED.toLowerCase()}</span>` : fmt.mad(b.avg_revpar)}</td>
       <td>${b.pipeline_keys > 0 ? b.pipeline_keys.toLocaleString('en') : '—'}</td>
     </tr>`;
   }).join('');
@@ -1614,7 +1628,7 @@ function renderBrandsCompTable() {
 
 function renderBrandsInsights() {
   const byKeys   = [...brandsData].sort((a, b) => b.total_keys   - a.total_keys)[0];
-  const byRevpar = [...brandsData].filter(b => b.avg_revpar != null && !b.bar_limited).sort((a, b) => b.avg_revpar - a.avg_revpar)[0];
+  const byRevpar = [...brandsData].filter(b => b.avg_revpar != null && !b.bar_limited && !b.revpar_limited).sort((a, b) => b.avg_revpar - a.avg_revpar)[0];
   const byPipe   = [...brandsData].filter(b => b.pipeline_projects > 0)
                                    .sort((a, b) => b.pipeline_keys - a.pipeline_keys)[0];
   const totalKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);
@@ -5860,7 +5874,7 @@ function exportBrands() {
     'BAR hotels':        b.bar_hotels || 0,
     'BAR period':        KodoBar.caption(),
     'Occupancy % (Kodo estimate)': b.avg_occupancy != null ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',
-    'Rooms RevPAR (MAD, est.)': b.avg_revpar != null ? Math.round(b.avg_revpar) : 'N/A',
+    'Rooms RevPAR (MAD, est.)': b.avg_revpar != null ? Math.round(b.avg_revpar) : b.revpar_limited ? KodoBar.LIMITED : 'N/A',
     'Estimate period':   'Next 30 nights',
     'Keys As Of':        asOf,
     'Cities Present':    Array.isArray(b.cities) ? b.cities.join(', ') : 'N/A',

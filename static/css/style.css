@@ -6378,6 +6378,7 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 .season-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .sl { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
 .sl--official { background: var(--action); }
+.sl--unconf { background: var(--action-tint); border: 1.5px dashed var(--action); }
 .sl--est { height: 0; border-top: 2px dashed var(--action); border-radius: 0; }
 .sl--range { background: var(--action-tint); border: 1px solid var(--border); }
 /* the scope hides blocks with [hidden]; their own display rules must not bring them back */

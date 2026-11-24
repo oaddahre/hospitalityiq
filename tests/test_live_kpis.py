@@ -46,7 +46,13 @@ class LiveKpis(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.d, ignore_errors=True)
 
+    def _with_bar(self, bars):
+        real = L.observed_bar
+        L.observed_bar = lambda data_dir, ids, today: ({h: bars.get(h, (None, 0)) for h in ids}, 2)
+        self.addCleanup(setattr, L, 'observed_bar', real)
+
     def test_per_hotel_and_benchmark_agree(self):
+        self._with_bar({'58': (3000, 10), '14': (1800, 10)})
         d = L.per_hotel(self.d, TODAY)
         h58, h14, h61 = d['hotels']['58'], d['hotels']['14'], d['hotels']['61']
         self.assertEqual((h58['rate'], h58['rate_nights'], h58['occ'], h58['revpar']), (3016, 30, 70.0, 2111))   # latest prices only
@@ -55,6 +61,29 @@ class LiveKpis(unittest.TestCase):
         b = RB.rate_benchmark(self.d, {'subject_id': '58', 'comp_ids': ['14', '61']}, TODAY)
         self.assertEqual(b['kpis']['avg_rate'], h58['rate'])
         self.assertEqual(b['kpis']['occ_subject'], h58['occ'])
+
+    def test_revpar_held_to_the_bar_minimum(self):
+        self._with_bar({'58': (3000, 10)})                          # 14 has no BAR (under 7 priced past nights)
+        d = L.per_hotel(self.d, TODAY)['hotels']
+        self.assertEqual(d['58']['revpar'], 2111)
+        self.assertIsNone(d['14']['revpar']); self.assertIsNone(d['14']['revpar_low'])
+        self.assertEqual(d['14']['revpar_nights'], 29)
+        self.assertEqual(d['14']['occ'], 70.0)                      # occupancy needs no price: unchanged
+        ids = [h for h in sorted(RB.load_hotels(self.d)) if h not in ('58', '14', '61')]
+        hid = ids[0]                                                # a BAR but only 6 priced coming nights
+        self._with_bar({'58': (3000, 10), hid: (2000, 10)})
+        RS.append(self.d, [{'hotel_id': hid, 'hotel_name': '', 'city': '', 'scrape_date': (TODAY - timedelta(days=1)).isoformat(),
+                            'stay_date': (TODAY + timedelta(days=k)).isoformat(), 'rate_mad': '2000', 'rate_eur': '', 'source': 'live_dataforseo',
+                            'data_quality': 'name_matched', 'rooms_left': '', 'availability_signal': '', 'scrape_status': 'success'}
+                           for k in range(1, L.MIN_BAR_NIGHTS)], env={})
+        with open(os.path.join(self.d, 'estimated_occupancy.csv'), 'a', newline='', encoding='utf-8') as f:
+            w = csv.writer(f)
+            for k in range(1, 31):
+                w.writerow([hid, (TODAY + timedelta(days=k)).isoformat(), 70, TODAY.isoformat(), 'v1', '', 70, '', 'high'])
+        h = L.per_hotel(self.d, TODAY)['hotels'][hid]
+        self.assertEqual(h['revpar_nights'], L.MIN_BAR_NIGHTS - 1)
+        self.assertIsNone(h['revpar'])
+        self.assertEqual(h['occ'], 70.0)
 
     def test_change_only_with_the_snapshot_7_days_earlier(self):
         d = L.with_change(self.d, L.per_hotel(self.d, TODAY))

@@ -37,7 +37,7 @@ class Cards(unittest.TestCase):
         for want in ('Window: past stay nights, from 3 November 2026 up to today', 'the median of those hotel averages',
                      'have enough published prices', 'Window: the next 30 nights', 'have an estimate',
                      'For each hotel and night, the published price for that night times the estimated occupancy',
-                     'have a published price for the coming nights', 'not the BAR card times the occupancy card'):
+                     'priced coming nights (a group needs', 'not the BAR card times the occupancy card'):
             self.assertIn(want, block)
         self.assertIn("kc.title = `Today's count from Kodo's hotel database", js)
         for name in ('DataForSEO', 'Google', 'Booking'):

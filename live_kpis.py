@@ -8,7 +8,10 @@ For every open hotel, over the next 30 nights (from tomorrow, Casablanca):
            the displayed model), average over the nights it covers; with v2
            also the average low and high of its range
   revpar   indicative Rooms RevPAR: published rate x modelled occupancy, night by
-           night, averaged over the nights that have both
+           night, averaged over the nights that have both; held to the BAR
+           minimum: only for a hotel with a BAR (MIN_BAR_NIGHTS priced past
+           nights) and MIN_BAR_NIGHTS coming nights with both (revpar_nights),
+           so a hotel never shows a Rooms RevPAR next to a BAR of "—"
 These are published booking-site prices and modelled occupancy, never
 achieved figures.
 
@@ -22,6 +25,8 @@ the dashboard, tables, reports and exports:
   bar_days    days of price collection since DATA_START (top level)
 A destination's BAR is the median of its hotels' `bar`, shown as a
 figure only with MIN_BAR_HOTELS hotels or more ("limited data" below).
+A group's Rooms RevPAR follows the same rule: MIN_BAR_HOTELS hotels with a
+`revpar` or "limited data" (app.group_revpar, main.js KodoBar.revpar).
 
 Groups (city, brand, owner, the whole market) are aggregated on the page
 from these per-hotel figures, weighted by rooms (static/js/main.js,
@@ -162,6 +167,7 @@ def per_hotel(data_dir, today: date):
         both = [n for n in nights if n in p and n in o]
         lows = [o[n][1] for n in o if o[n][1] is not None]
         highs = [o[n][2] for n in o if o[n][2] is not None]
+        both_ok = len(both) >= MIN_BAR_NIGHTS and bars[h][0] is not None   # the BAR minimum
         out[h] = {
             'keys': int(float(hotels[h].get('keys') or 0)),
             'rate': round(statistics.mean(p.values())) if p else None,
@@ -170,12 +176,13 @@ def per_hotel(data_dir, today: date):
             'occ_low': round(statistics.mean(lows), 1) if lows and len(lows) == len(o) else None,
             'occ_high': round(statistics.mean(highs), 1) if highs and len(highs) == len(o) else None,
             'occ_nights': len(o),
-            'revpar': round(statistics.mean(p[n] * o[n][0] / 100 for n in both)) if both else None,
+            'revpar': round(statistics.mean(p[n] * o[n][0] / 100 for n in both)) if both_ok else None,
+            'revpar_nights': len(both),
             # the same nights with the occupancy range: Rooms RevPAR as a range too
             'revpar_low': round(statistics.mean(p[n] * o[n][1] / 100 for n in both))
-                          if both and all(o[n][1] is not None for n in both) else None,
+                          if both_ok and all(o[n][1] is not None for n in both) else None,
             'revpar_high': round(statistics.mean(p[n] * o[n][2] / 100 for n in both))
-                           if both and all(o[n][2] is not None for n in both) else None,
+                           if both_ok and all(o[n][2] is not None for n in both) else None,
             'bar': bars[h][0],
             'bar_nights': bars[h][1],
             'confidence': (dq.get(h) or {}).get('confidence'),

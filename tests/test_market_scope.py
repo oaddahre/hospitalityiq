@@ -105,6 +105,25 @@ class Seasonality(unittest.TestCase):
                     self.assertIn(s[p['month']][1], ('official', 'unconfirmed'), (city, p))
         self.assertEqual(d['confidence']['label'], 'Based on 3 real hotels')
 
+    def test_unconfirmed_month_shown_as_estimated(self):
+        # July 2026: published, but the release did not show the month -> estimated, never official
+        for city in ('Marrakech', 'Agadir / Taghazout', 'El Jadida'):
+            d = self.get(city).get_json()
+            jul = next(p for p in d['past'] if p['month'] == '2026-07')
+            self.assertEqual(jul['status'], 'estimated', city)
+            self.assertIn('2026-07', d['unconfirmed_months'])
+            self.assertEqual(d['official_months'], sum(1 for p in d['past'] if p['status'] == 'official'))
+        js = read('static', 'js', 'main.js')
+        self.assertIn("P[m].status === 'official'", js)
+        self.assertIn('the published figure did not state its month', js)
+
+    def test_national_wording(self):
+        js, html = read('static', 'js', 'main.js'), read('templates', 'index.html')
+        self.assertIn("'National estimate: no official monthly figure for this destination yet.'", js)
+        for src in (js, html):
+            self.assertNotIn('or real hotels', src)
+            self.assertNotIn('or real hotel here', src)
+
     def test_no_series_and_unknown(self):
         d = self.get('Oujda').get_json()
         self.assertEqual(d['official_months'], 0)

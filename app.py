@@ -1157,6 +1157,19 @@ def group_bar(grp):
     return val, n, nights, n < LK.MIN_BAR_HOTELS
 
 
+def group_revpar(grp):
+    """A group's Rooms RevPAR (est.), held to the BAR minimum: the room-weighted
+    average of its hotels' Rooms RevPAR (each already needs 7 priced nights,
+    live_kpis.py), shown as a figure only with MIN_BAR_HOTELS hotels or more.
+    (value or None, hotels, limited): the value is None when limited, so no
+    figure resting on one or two hotels reaches a page, report or export."""
+    if "revpar_mad" not in grp or not len(grp):
+        return None, 0, False
+    n = int((grp["revpar_mad"].notna() & grp["keys"].notna() & (grp["keys"] > 0)).sum())
+    limited = 0 < n < LK.MIN_BAR_HOTELS
+    return (None if limited else _kpi_avg(grp, "revpar_mad", 1)), n, limited
+
+
 # ─── Auth routes ──────────────────────────────────────────────────────────────
 
 @app.route("/login", methods=["GET", "POST"])
@@ -1988,6 +2001,7 @@ def _kpi_avg(grp, col, digits):
 
 def _group_row(grp):
     bar, n, nights, limited = group_bar(grp)
+    revpar, revpar_n, revpar_limited = group_revpar(grp)
     return {
         "hotel_count": len(grp),
         "total_keys":  int(grp["keys"].sum()),
@@ -1996,7 +2010,9 @@ def _group_row(grp):
         "bar_nights":  nights,
         "bar_limited": limited,
         "occupancy":   _kpi_avg(grp, "occupancy", 4),     # Kodo estimate, next 30 nights
-        "revpar_mad":  _kpi_avg(grp, "revpar_mad", 1),    # Kodo estimate, next 30 nights
+        "revpar_mad":  revpar,          # Kodo estimate, next 30 nights; None when limited
+        "revpar_hotels":  revpar_n,
+        "revpar_limited": revpar_limited,
     }
 
 
@@ -2135,7 +2151,7 @@ def api_brands():
         tk = safe_int(grp['keys'].sum(), 0)
         bar, bar_n, bar_nights, bar_limited = group_bar(grp)
         avg_occ = _kpi_avg(grp, 'occupancy', 4)
-        avg_revpar = _kpi_avg(grp, 'revpar_mad', 1)
+        avg_revpar, revpar_n, revpar_limited = group_revpar(grp)
 
         cities   = sorted(grp['city'].unique().tolist())
         segments = sorted(grp['category'].unique().tolist())
@@ -2180,7 +2196,9 @@ def api_brands():
             'bar_nights':                bar_nights,
             'bar_limited':               bar_limited,
             'avg_occupancy':             avg_occ,       # Kodo estimate, next 30 nights
-            'avg_revpar':                avg_revpar,    # Kodo estimate, next 30 nights
+            'avg_revpar':                avg_revpar,    # Kodo estimate, next 30 nights; None when limited
+            'revpar_hotels':             revpar_n,
+            'revpar_limited':            revpar_limited,
             'pipeline_projects':         pipeline_projects,
             'pipeline_keys':             pipeline_keys,
             'pipeline_conversions':      pipeline_conversions,
@@ -2540,7 +2558,7 @@ def build_system_prompt():
         return "\n".join(
             f"  {k} | {r['hotel_count']} hotels | {r['total_keys']:,} keys | "
             f"{bar_txt(r['bar_mad'], r['bar_hotels'], r['bar_nights'], r['bar_limited'])} | "
-            f"occupancy (Kodo estimate) {est(r['occupancy'], True)} | Rooms RevPAR (est.) {est(r['revpar_mad'])}"
+            f"occupancy (Kodo estimate) {est(r['occupancy'], True)} | Rooms RevPAR (est.) {'limited data' if r['revpar_limited'] else est(r['revpar_mad'])}"
             for k, r in rows)
 
     nat = _group_row(merged)
@@ -2592,7 +2610,7 @@ to the Methodology page (/methodology).
 MARKET (all hotels)
   Hotels: {len(hotels_df)} | Keys: {int(merged['keys'].sum()):,}
   {bar_txt(nat['bar_mad'], nat['bar_hotels'], nat['bar_nights'], nat['bar_limited'])}
-  Occupancy (Kodo estimate, next 30 nights): {est(nat['occupancy'], True)} | Rooms RevPAR (est.): {est(nat['revpar_mad'])}
+  Occupancy (Kodo estimate, next 30 nights): {est(nat['occupancy'], True)} | Rooms RevPAR (est.): {'limited data' if nat['revpar_limited'] else est(nat['revpar_mad'])}
 
 DESTINATIONS (by BAR, high to low)
 {group_lines("city")}
@@ -3588,7 +3606,8 @@ def compute_city_report_data(city: str, period: dict) -> dict:
     top_bar = priced.head(10)[["name", "category", "keys", "bar_mad", "bar_nights"]].to_dict(orient="records")
 
     # Kodo estimates, next 30 nights (the occupancy model; Rooms RevPAR = BAR x occupancy)
-    est_occ, est_revpar = _kpi_avg(ch, "occupancy", 4), _kpi_avg(ch, "revpar_mad", 1)
+    est_occ = _kpi_avg(ch, "occupancy", 4)
+    est_revpar, _, est_revpar_limited = group_revpar(ch)
     est_n = int(ch["occupancy"].notna().sum())
 
     pip_projects = []
@@ -3629,7 +3648,7 @@ def compute_city_report_data(city: str, period: dict) -> dict:
         "bar": {"value": bar, "hotels": bar_n, "nights": bar_nights, "limited": bar_limited,
                 "by_destination": dest_rows, "top": top_bar, "min_nights": LK.MIN_BAR_NIGHTS,
                 "min_hotels": LK.MIN_BAR_HOTELS},
-        "estimates": {"occupancy": est_occ, "revpar": est_revpar, "hotels": est_n},
+        "estimates": {"occupancy": est_occ, "revpar": est_revpar, "revpar_limited": est_revpar_limited, "hotels": est_n},
         "official_occupancy": _official_occupancy(city),
         "events": events[:10],
         "pipeline": {"projects": pip_projects, "total_projects": len(pip_projects),
@@ -3685,7 +3704,7 @@ Market: {d['city']} | Report period: {d['period']['label']}
 Hotels: {mo['total_hotels']} | Keys: {mo['total_keys']:,}
 Average BAR (published rate), {d['bar_window']}: {_bar_text(b)} ({b['hotels']} hotels with at least {b['min_nights']} priced nights)
 By segment: {segs}
-Kodo estimate, next 30 nights: occupancy {fmt_num(est['occupancy'], '.1f', 100, suffix='%')}, Rooms RevPAR (est.) {fmt_num(est['revpar'], prefix='MAD ')}
+Kodo estimate, next 30 nights: occupancy {fmt_num(est['occupancy'], '.1f', 100, suffix='%')}, Rooms RevPAR (est.) {'limited data' if est.get('revpar_limited') else fmt_num(est['revpar'], prefix='MAD ')}
 Official occupancy of classified accommodation: {off}
 Pipeline: {pip['total_projects']} projects, {pip['total_keys']:,} new keys
 Upcoming events (next 90 days): {', '.join(e['name'] for e in d['events'][:6]) or 'none listed'}
@@ -3779,7 +3798,7 @@ def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
     pdf.kpi_row("Average BAR (published rate)", _bar_text(b), win)
     pdf.kpi_row("Hotels with a BAR", f"{b['hotels']} of {mo['total_hotels']}", f"at least {b['min_nights']} priced nights")
     pdf.kpi_row("Modelled occupancy", fmt_num(est['occupancy'], '.1f', 100, suffix='%') if est['occupancy'] is not None else NOT_AVAILABLE, est_note)
-    pdf.kpi_row("Rooms RevPAR (est.: BAR x modelled occupancy)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note)
+    pdf.kpi_row("Rooms RevPAR (est.: BAR x modelled occupancy)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else 'Limited data' if est.get('revpar_limited') else NOT_AVAILABLE, est_note)
     pdf.kpi_row("Pipeline", f"{pip['total_projects']} projects, {pip['total_keys']:,} new keys", as_of)
 
     # ─── MARKET OVERVIEW ──────────────────────────────────────────────────
@@ -3833,7 +3852,7 @@ def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
         note("No hotel has enough priced nights in this period yet: collecting data.")
     pdf.kpi_boxes([
         ("Modelled occupancy", fmt_num(est['occupancy'], '.1f', 100, suffix='%') if est['occupancy'] is not None else NOT_AVAILABLE, est_note),
-        ("Rooms RevPAR (est.)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else NOT_AVAILABLE, est_note),
+        ("Rooms RevPAR (est.)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else 'Limited data' if est.get('revpar_limited') else NOT_AVAILABLE, est_note),
         ("Hotels modelled", f"{est['hotels']} of {mo['total_hotels']}", "Kodo occupancy model"),
     ])
 
@@ -4712,7 +4731,9 @@ def api_destination_seasonality():
         return jsonify({'error': 'unknown destination'}), 404
     lm = OMM.latest_month()
     s = OMM.series(city)
-    past = [{'month': m, 'occ': s[m][0] if m in s and s[m][1] in ('official', 'unconfirmed') else None}
+    # a figure whose month the release did not show (July 2026) is shown as estimated, not official
+    past = [{'month': m, 'occ': s[m][0] if m in s and s[m][1] in ('official', 'unconfirmed') else None,
+             'status': ('official' if s[m][1] == 'official' else 'estimated') if m in s and s[m][1] in ('official', 'unconfirmed') else None}
             for m in ([OMM.shift(lm, -k) for k in range(11, -1, -1)] if lm else [])]
     mp = OMM.mapping(city) or {}
     nxt, run = [], None
@@ -4745,7 +4766,8 @@ def api_destination_seasonality():
                  if den and all(x[i] is not None for x in got) else None)
             nxt.append({'month': m, 'occ': w(0), 'low': w(1), 'high': w(2), 'hotels': len(got)})
     conf = LK.destination_confidence(hotels).get(city)
-    return jsonify({'city': city, 'past': past, 'official_months': sum(1 for p in past if p['occ'] is not None),
+    return jsonify({'city': city, 'past': past, 'official_months': sum(1 for p in past if p['status'] == 'official'),
+                    'unconfirmed_months': [p['month'] for p in past if p['status'] == 'estimated'],
                     'official_level': (mp.get('level') if past and any(p['occ'] is not None for p in past) else None),
                     'next': nxt, 'model_run': run, 'confidence': conf,
                     'hotels': sum(1 for h in hotels.values() if h.get('city') == city)})
@@ -5830,6 +5852,9 @@ def api_occupancy_hotel(hotel_id):
         priced = [e for e in averaged if e.get('scraped_bar') and e.get('estimated_revpar')]
         r_lo = [e['scraped_bar'] * e['low'] / 100 for e in priced if e.get('low') is not None]
         r_hi = [e['scraped_bar'] * e['high'] / 100 for e in priced if e.get('high') is not None]
+        # the BAR minimum (live_kpis.py): no 30-day Rooms RevPAR where the hotel's cards show none
+        if (LK.get(DATA_DIR, _casablanca_today()).get('hotels', {}).get(str(hotel_id)) or {}).get('revpar') is None:
+            revs, priced = [], []
         full = priced and len(r_lo) == len(priced) and len(r_hi) == len(priced)
         avg_occ   = round(sum(occs) / len(occs), 1) if occs else None
         avg_revpar = round(sum(revs) / len(revs), 0) if revs else None
