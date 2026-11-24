@@ -150,6 +150,15 @@ class DestinationLevelsProposal(unittest.TestCase):
     """Saidia, Al Hoceima and Nador on absolute monthly levels: on since Nov 2026, with a kill switch."""
     RAD = '143'
 
+    def test_saidia_held_out_backtest_in_admin(self):
+        note = OM.dest_backtest_note('Saidia')
+        self.assertIn('each hotel held out: 7.5 pts', note)
+        self.assertIsNone(OM.dest_backtest_note('Tanger'))
+        js = open(os.path.join(ROOT, 'static', 'js', 'admin.js'), encoding='utf-8').read()
+        self.assertIn('c.held_out[k]', js)                                    # calibration line uses it for Saidia
+        self.assertIn("'Backtest'", js)
+        self.assertAlmostEqual(OM.DEST_LEVELS['Saidia']['annual'] * OM.DEST_LEVELS['Saidia']['shape'][3], 6.6, places=1)
+
     def test_on_by_default_and_kill_switch(self):
         from unittest import mock
         with mock.patch.dict(os.environ, {}, clear=False):

@@ -1266,7 +1266,7 @@ async function loadCalibration() {
     const fmt = (k, s) => `${k}: ${s.n} nights · average error v1 ${s.v1_mae_pts ?? '–'} pts, v2 ${s.v2_mae_pts ?? '–'} pts`
       + ` · bias v1 ${s.v1_bias_pts ?? '–'}, v2 ${s.v2_bias_pts ?? '–'}` + (s.v2_inside_range_pct != null ? ` · inside v2 range ${s.v2_inside_range_pct}%` : '');
     line(fmt('All', c.overall));
-    Object.entries(c.by_city || {}).forEach(([k, s]) => line(fmt(k, s)));
+    Object.entries(c.by_city || {}).forEach(([k, s]) => line((c.held_out || {})[k] ? `${k}: ${c.held_out[k]}` : fmt(k, s)));
     Object.entries(c.by_hotel_type || {}).forEach(([k, s]) => line(fmt(k.replace('_', ' '), s)));
     const ab = c.abroad_holidays;
     if (ab) {            // visitors' home-country school holidays (internal list): with and without
@@ -1883,8 +1883,8 @@ async function loadResortLevels(body) {
     document.getElementById('rl-off').style.display = d.on ? '' : 'none';
     document.getElementById('rl-on').style.display = d.killed && d.env !== 'off' ? '' : 'none';
     msg.textContent = body ? 'Saved; the model is running again (a few minutes).' : '';
-    sbsTable('rl-table', ['Destination', 'Applies to', 'Real hotels', 'Hotels in the database', 'Hotels covered', 'Note shown'],
-      (d.destinations || []).map(x => [x.city, x.scope, x.real_hotels ? x.real_hotels : 'none (borrowed from neighbouring destinations)', x.hotels_in_database, x.hotels_covered, x.note || '—']));
+    sbsTable('rl-table', ['Destination', 'Applies to', 'Real hotels', 'Hotels in the database', 'Hotels covered', 'Note shown', 'Backtest'],
+      (d.destinations || []).map(x => [x.city, x.scope, x.real_hotels ? x.real_hotels : 'none (borrowed from neighbouring destinations)', x.hotels_in_database, x.hotels_covered, x.note || '—', x.backtest || '—']));
   } catch { msg.textContent = 'Failed'; }
 }
 document.getElementById('rl-off').addEventListener('click', () => {

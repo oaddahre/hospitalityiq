@@ -483,9 +483,10 @@ def resort_swing(hotel):
 #   Saidia      three real resorts (Nov 2026): per month, the average of the
 #               hotels reporting that month (months without figures are a
 #               closure, never zero; the first two months after an opening
-#               dropped; occupancy only), level set so Jun, Aug and Sep 2026
-#               match the official Berkan-Saidia figures (x0.97). Leave-one-
-#               hotel-out: 7.4 pts over 37 months, 36 inside the range
+#               and a reopening month dropped; occupancy only), level set so
+#               Jun, Aug and Sep 2026 match the official Berkan-Saidia figures
+#               (x0.97). Each hotel held out: 7.5 pts over 35 months, all
+#               inside the range (the admin shows this, not the in-sample 5.7)
 #   Al Hoceima  no real hotel: the Mediterranean-north family (3 resorts in
 #               Saidia and Tamuda Bay); rests on neighbouring destinations, so
 #               the range is RANGE_BORROWED wider
@@ -496,8 +497,9 @@ def resort_swing(hotel):
 # beat it leave-one-out (the two Tamuda Bay resorts sit 30-45 pts apart and
 # price does not explain it).
 DEST_LEVELS = {
-    'Saidia':     {'scope': 'resorts', 'real_hotels': 3, 'annual': 25.3, 'shape': {1: 0.23, 2: 0.24, 3: 0.16, 4: 0.56, 5: 0.85, 6: 1.64,
-                                                                 7: 2.21, 8: 3.23, 9: 1.57, 10: 0.59, 11: 0.45, 12: 0.26}},
+    'Saidia':     {'scope': 'resorts', 'real_hotels': 3, 'annual': 25.5, 'shape': {1: 0.23, 2: 0.24, 3: 0.26, 4: 0.56, 5: 0.84, 6: 1.63,
+                                                                 7: 2.19, 8: 3.20, 9: 1.56, 10: 0.59, 11: 0.44, 12: 0.26},
+                   'held_out': {'error_pts': 7.5, 'months': 35, 'inside': 35}},
     'Al Hoceima': {'scope': 'resorts', 'real_hotels': 0, 'annual': 36.3, 'borrowed': True,
                    'shape': {1: 0.29, 2: 0.25, 3: 0.37, 4: 0.81, 5: 1.20, 6: 1.54, 7: 2.05, 8: 2.47, 9: 1.31, 10: 0.99, 11: 0.40,
                              12: 0.32}},
@@ -558,6 +560,13 @@ def dest_basis(hotel):
     n = DEST_LEVELS[hotel['city']]['real_hotels']
     return ('Estimate based on no real hotel here: borrowed from neighbouring destinations' if n == 0
             else f"Estimate based on {n} real hotel{'s' if n != 1 else ''}")
+
+
+def dest_backtest_note(city):
+    """Admin only: the destination's backtest with each real hotel held out, or None."""
+    b = (DEST_LEVELS.get(city) or {}).get('held_out')
+    return (f"Backtest, each hotel held out: {b['error_pts']} pts average error over {b['months']} months, "
+            f"{b['inside']} inside the range") if b else None
 
 
 def dest_levels_apply(hotel):

@@ -5918,7 +5918,8 @@ def api_admin_resort_levels():
         covered = [h for h in hs if d['scope'] == 'all' or OMX.is_seaside_resort(h)]
         dest.append({'city': city, 'scope': 'all hotels' if d['scope'] == 'all' else 'classified resorts',
                      'real_hotels': d['real_hotels'], 'borrowed': bool(d.get('borrowed')), 'hotels_in_database': len(hs),
-                     'hotels_covered': len(covered), 'note': OMX.dest_basis(covered[0]) if covered and OMX.dest_levels_on() else None})
+                     'hotels_covered': len(covered), 'note': OMX.dest_basis(covered[0]) if covered and OMX.dest_levels_on() else None,
+                     'backtest': OMX.dest_backtest_note(city)})
     return jsonify({'on': OMX.dest_levels_on(), 'killed': OMX.levels_killed(), 'env': OMX.env_levels(), 'destinations': dest})
 
 
@@ -5995,7 +5996,10 @@ def api_admin_price_coverage():
 def api_admin_occupancy_calibration():
     try:
         with open(os.path.join(DATA_DIR, 'calibration_results.json'), encoding='utf-8') as f:
-            return jsonify(json.load(f))
+            out = json.load(f)
+        # where a destination level has a held-out backtest (Saidia), the admin shows that, not the in-sample error
+        out['held_out'] = {c: n for c in occupancy_model.DEST_LEVELS if (n := occupancy_model.dest_backtest_note(c))}
+        return jsonify(out)
     except (OSError, ValueError):
         return jsonify({'status': 'not_run', 'message': 'Calibration has not run yet: it runs after the first '
                         'occupancy model run of each month.'})
