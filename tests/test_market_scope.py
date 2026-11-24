@@ -87,7 +87,7 @@ class Page(unittest.TestCase):
     def test_one_disclaimer_system(self):
         # three badges, the detail in the badge's tooltip
         self.assertIn("const BADGE_TEXT = { official: 'Official', estimate: 'Estimate', limited: 'Limited data' };", self.js)
-        self.assertIn("national: 'National estimate: no official monthly figure for this destination yet.'", self.js)
+        self.assertIn("national: 'National estimate: the estimate does not use an official monthly series for this destination yet.'", self.js)
         self.assertIn('Prices: observed since 3 Nov 2026. Occupancy and Rooms RevPAR: Kodo estimate for the next 30 nights', self.js)
         self.assertNotIn('dest-table-note', self.dash)
         self.assertNotIn('dash-basis', self.dash)
@@ -145,7 +145,9 @@ class Seasonality(unittest.TestCase):
 
     def test_national_wording(self):
         js, html = read('static', 'js', 'main.js'), read('templates', 'index.html')
-        self.assertIn("'National estimate: no official monthly figure for this destination yet.'", js)
+        self.assertIn("'National estimate: the estimate does not use an official monthly series for this destination yet.'", js)
+        self.assertNotIn('no official monthly figure for this destination', js)
+        self.assertIn('>Occupancy basis</button>', html)
         for src in (js, html):
             self.assertNotIn('or real hotels', src)
             self.assertNotIn('or real hotel here', src)

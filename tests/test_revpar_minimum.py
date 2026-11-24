@@ -38,6 +38,35 @@ class Group(unittest.TestCase):
         self.assertEqual(app.group_revpar(self.grp([float('nan')] * 3)), (None, 0, False))
 
 
+class Calendar(unittest.TestCase):
+    def nights(self, live_revpar):
+        import live_kpis as LK
+        from datetime import datetime, timedelta
+        real_get, real_entry, real_read = LK.get, app._occ_entry, app._read_occupancy_csv
+        hid = str(app.load_data()[0].iloc[0]['id'])
+        days = [(datetime.utcnow() + timedelta(days=o)).strftime('%Y-%m-%d') for o in range(0, 32)]
+        LK.get = lambda data_dir, today: {'hotels': {hid: {'revpar': live_revpar}}}
+        # a stored run covering the whole window, every night priced
+        app._read_occupancy_csv = lambda: [{'hotel_id': hid, 'date': d, 'estimated_occupancy': '60', 'model_run_date': days[0],
+                                            'model': 'v1', 'low': '50', 'mid': '60', 'high': '70', 'confidence': 'high'} for d in days]
+        app._occ_entry = lambda r: dict(real_entry(r), scraped_bar=1665.0, estimated_revpar=999.0)
+        app.app.config['LOGIN_DISABLED'] = True
+        try:
+            return app.app.test_client().get(f'/api/occupancy/{hid}').get_json()
+        finally:
+            LK.get, app._occ_entry, app._read_occupancy_csv = real_get, real_entry, real_read
+            app.app.config['LOGIN_DISABLED'] = False
+
+    def test_per_night_revpar_held_to_the_minimum(self):
+        shown = self.nights(500)                                   # the hotel meets the minimum: kept
+        self.assertEqual(len(shown['estimates']), 32)
+        self.assertTrue(all(e['estimated_revpar'] == 999.0 for e in shown['estimates']))
+        self.assertEqual(shown['avg_revpar_30d'], 999.0)
+        hidden = self.nights(None)                                 # no BAR or under 7 priced coming nights
+        self.assertTrue(all(e['estimated_revpar'] is None for e in hidden['estimates']))
+        self.assertIsNone(hidden['avg_revpar_30d'])
+
+
 class Page(unittest.TestCase):
     def test_cells_say_limited_data(self):
         js = read('static', 'js', 'main.js')

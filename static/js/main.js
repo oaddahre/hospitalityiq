@@ -823,7 +823,7 @@ const limitedBadge = tip => badgeHtml('limited', tip);
 const DEST_BADGE_TIP = {
   official: 'Occupancy calibrated on official monthly figures for this destination.',
   borrowed: 'Estimate: levels borrowed from neighbouring destinations.',
-  national: 'National estimate: no official monthly figure for this destination yet.',
+  national: 'National estimate: the estimate does not use an official monthly series for this destination yet.',
 };
 function destBadge(city) {
   const c = destConf(city);

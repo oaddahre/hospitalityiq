@@ -5844,6 +5844,11 @@ def api_occupancy_hotel(hotel_id):
                         model_run = today.strftime('%Y-%m-%d')
 
         estimates = [stored[d] for d in window if d in stored]
+        # the BAR minimum (live_kpis.py): a hotel without a Rooms RevPAR on its cards (no BAR, or
+        # under 7 priced coming nights) gets none per night either; the stored run is not changed
+        no_revpar = (LK.get(DATA_DIR, _casablanca_today()).get('hotels', {}).get(str(hotel_id)) or {}).get('revpar') is None
+        if no_revpar:
+            estimates = [dict(e, estimated_revpar=None) for e in estimates]
         averaged  = [e for e in estimates if e['date'] in avg_window]
 
         occs   = [e['estimated_occupancy'] for e in averaged]
@@ -5852,8 +5857,7 @@ def api_occupancy_hotel(hotel_id):
         priced = [e for e in averaged if e.get('scraped_bar') and e.get('estimated_revpar')]
         r_lo = [e['scraped_bar'] * e['low'] / 100 for e in priced if e.get('low') is not None]
         r_hi = [e['scraped_bar'] * e['high'] / 100 for e in priced if e.get('high') is not None]
-        # the BAR minimum (live_kpis.py): no 30-day Rooms RevPAR where the hotel's cards show none
-        if (LK.get(DATA_DIR, _casablanca_today()).get('hotels', {}).get(str(hotel_id)) or {}).get('revpar') is None:
+        if no_revpar:                   # and no 30-day Rooms RevPAR
             revs, priced = [], []
         full = priced and len(r_lo) == len(priced) and len(r_hi) == len(priced)
         avg_occ   = round(sum(occs) / len(occs), 1) if occs else None
