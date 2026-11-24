@@ -811,6 +811,12 @@ const KodoLive = (() => {
 // {class: official | real | borrowed | national, label}, or null before the figures load
 const destConf = city => (((KodoLive.raw() || {}).destinations) || {})[city] || null;
 const isOfficial = city => (destConf(city) || {}).class === 'official';
+// Display only: destination names with their accents. The keys (hotels.csv,
+// ?dest=…, data-city) stay as they are, so ?dest=Saidia keeps working.
+const DEST_DISPLAY = { 'Saidia': 'Saïdia', 'Laayoune': 'Laâyoune', 'Fes': 'Fès', 'Meknes': 'Meknès', 'Kenitra': 'Kénitra',
+                       'Beni Mellal': 'Béni Mellal', 'Dades Valley': 'Dadès Valley' };
+const dn = city => DEST_DISPLAY[city] || city;
+const fold = t => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();   // search ignores accents
 const escAttr = s => fmt.esc(s).replace(/"/g, '&quot;');
 
 // The page's one disclaimer system: three badges (Official, Estimate,
@@ -972,7 +978,7 @@ function renderKPIs() {
   ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
   KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list).then(() => compactDashCards(list));
   const sub = document.getElementById('dashboard-sub');
-  sub.textContent = state.city === 'all' ? 'Morocco hotel market' : `${state.city} · ${hotelLabel}`;
+  sub.textContent = state.city === 'all' ? 'Morocco hotel market' : `${dn(state.city)} · ${hotelLabel}`;
 }
 
 // ─── Charts ───────────────────────────────────────────────────────
@@ -1115,8 +1121,8 @@ function destRowHtml(c, max) {
   const m = destMetricVal(c);
   const w = m.v != null && max ? Math.max(2, Math.round(m.v / max * 100)) : 0;
   return `<li class="dest-row${sel ? ' is-selected' : ''}" role="option" aria-selected="${sel}" tabindex="${sel ? 0 : -1}"
-      data-city="${fmt.esc(c.city)}" aria-label="${fmt.esc(c.city)}, ${c.hotel_count} hotels, ${m.what}">
-    <span class="dest-line"><span class="dest-name">${fmt.esc(c.city)}</span><span class="dest-count">${c.hotel_count}</span>${m.html}</span>
+      data-city="${escAttr(c.city)}" aria-label="${escAttr(dn(c.city))}, ${c.hotel_count} hotels, ${m.what}">
+    <span class="dest-line"><span class="dest-name">${fmt.esc(dn(c.city))}</span><span class="dest-count">${c.hotel_count}</span>${m.html}</span>
     <span class="dest-meter${m.est ? ' dest-meter--est' : ''}" aria-hidden="true"><span style="width:${w}%"></span></span>
   </li>`;
 }
@@ -1156,10 +1162,10 @@ function buildCityFilter() {
 function filterDestRows() {
   const q = (document.getElementById('dest-search')?.value || '').trim().toLowerCase();
   document.querySelectorAll('#city-filter .dest-row:not(.dest-row--all)').forEach(li => {
-    li.hidden = !!q && !li.dataset.city.toLowerCase().includes(q);
+    li.hidden = !!q && !fold(dn(li.dataset.city)).includes(fold(q));
   });
   document.querySelectorAll('#mobile-city-pills [data-mcity]:not([data-mcity="all"])').forEach(b => {
-    b.hidden = !!q && !b.dataset.mcity.toLowerCase().includes(q);
+    b.hidden = !!q && !fold(dn(b.dataset.mcity)).includes(fold(q));
   });
   const empty = document.getElementById('dest-empty');
   if (empty) empty.hidden = !q || [...document.querySelectorAll('#city-filter .dest-row:not(.dest-row--all)')].some(li => !li.hidden);
@@ -1362,7 +1368,7 @@ function applyDashScope() {
 // data; blue only for the selected destination.
 const destSort = { key: 'keys', dir: -1 };
 const DEST_SORT_VAL = {
-  city: c => c.city, hotels: c => c.hotel_count, keys: c => c.total_keys,
+  city: c => fold(dn(c.city)), hotels: c => c.hotel_count, keys: c => c.total_keys,
   bar: c => (c.bar.val == null || c.bar.limited ? null : c.bar.val), occ: c => c.occupancy,
   badge: c => ({ official: 0, real: 1, borrowed: 1, national: 1 }[(destConf(c.city) || {}).class] ?? 2),
 };
@@ -1394,7 +1400,7 @@ function renderDestTable() {
     const occ = c.occupancy == null ? '<span class="cell-na">—</span>'
       : `<span class="cell-num">${fmt.pct(c.occupancy)}</span>${inlineBar(c.occupancy, maxOcc, est, sel)}`;
     return `<tr data-city="${escAttr(c.city)}" tabindex="0"${sel ? ' class="is-selected"' : ''}>
-      <td class="cell-dest">${fmt.esc(c.city)}<span class="badge-m">${destBadge(c.city)}</span></td>
+      <td class="cell-dest">${fmt.esc(dn(c.city))}<span class="badge-m">${destBadge(c.city)}</span></td>
       <td class="col-hide-mobile">${c.hotel_count}</td>
       <td>${fmt.num(c.total_keys)}</td>
       <td class="cell-metric">${bar}</td>
@@ -1559,7 +1565,7 @@ function renderBrandsCards() {
         <div class="brn-share-mini"><div class="brn-share-mini-fill" style="width:${mktBar}%"></div></div>
         ${pipeRow}
       </div>
-      <button class="brn-card-link" data-brand-group="${esc}">View all properties →</button>
+      <button type="button" class="brn-card-link dash-btn" data-brand-group="${esc}">View all properties <span aria-hidden="true">→</span></button>
     </div>`;
   }).join('');
 }
@@ -4668,9 +4674,9 @@ function buildMobileCityPills(rows) {
   const bar = document.getElementById('mobile-city-pills');
   const on = c => c === state.city;
   bar.innerHTML = `<button type="button" class="dest-chip${on('all') ? ' active' : ''}" data-mcity="all" aria-pressed="${on('all')}">All Morocco</button>`
-    + (rows || sidebarCities()).map(c => `<button type="button" class="dest-chip${on(c.city) ? ' active' : ''}" data-mcity="${fmt.esc(c.city)}" aria-pressed="${on(c.city)}">`
-      + `${fmt.esc(c.city)}<span class="dest-chip-val">${state.destMetric === 'occ' ? (c.occupancy == null ? '' : (c.occupancy * 100).toFixed(1) + '%'
-        + ((destConf(c.city) || {}).class === 'national' ? ' est.' : '')) : c.bar.val == null ? '' : c.bar.limited ? 'limited' : fmt.mad(c.bar.val)}</span></button>`).join('');
+    + (rows || sidebarCities()).map(c => `<button type="button" class="dest-chip${on(c.city) ? ' active' : ''}" data-mcity="${escAttr(c.city)}" aria-pressed="${on(c.city)}">`
+      + `${fmt.esc(dn(c.city))}<span class="dest-chip-val">${state.destMetric === 'occ' ? (c.occupancy == null ? '' : (c.occupancy * 100).toFixed(1) + '%')
+        : c.bar.val == null ? '' : c.bar.limited ? KodoBar.LIMITED : fmt.mad(c.bar.val)}</span></button>`).join('');
   filterDestRows();
 }
 

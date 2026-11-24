@@ -6446,10 +6446,13 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 .ibar--est > span { background: color-mix(in srgb, var(--text) 22%, transparent); }
 .ibar--sel > span { background: var(--action); }
 .ibar--sel.ibar--est > span { background: color-mix(in srgb, var(--action) 35%, transparent); }
-.dest-card-foot, .dash-foot { margin: 10px 0 0; font: 400 12px 'Sweet Sans Pro', sans-serif; }
-.dash-foot { margin: 18px 0 8px; }
-.dash-link { color: var(--action-text); text-decoration: none; }
-.dash-link:hover { text-decoration: underline; }
+/* a quiet outlined button (blue stays for the selected destination and primary actions) */
+.dest-card-foot { display: flex; justify-content: flex-start; margin: 18px 0 4px; }
+.dash-btn { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--text); border-radius: 4px;
+  background: transparent; color: var(--text); font: 500 11px/1.2 'Sweet Sans Pro', sans-serif; letter-spacing: .08em;
+  text-transform: uppercase; cursor: pointer; transition: background 150ms, color 150ms; }
+.dash-btn:hover { background: var(--text); color: var(--bg); }
+.dash-btn:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
 
 /* sidebar meters: the same two states */
 .dest-meter > span { background: var(--text); opacity: 1; }
@@ -6507,3 +6510,5 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   #dest-hotels-table .kodo-badge, #brand-table .kodo-badge { padding: 1px 5px; font-size: 10px; white-space: normal; text-align: center; }
   #dest-hotels-table thead th, #brand-table thead th { font-size: 8.5px; letter-spacing: .04em; }
 }
+.brn-card-link.dash-btn { align-self: flex-start; margin-top: 10px; padding: 6px 12px; }
+.brn-card-link.dash-btn:hover { opacity: 1; }

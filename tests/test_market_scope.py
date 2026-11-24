@@ -56,7 +56,12 @@ class Page(unittest.TestCase):
         self.assertIn("const destSort = { key: 'keys', dir: -1 };", self.js)   # default: keys, largest first
         self.assertIn('<div class="table-card" data-dash="brands" hidden>', self.dash)   # brand groups off All Morocco
         self.assertIn('id="dash-brands-link"', self.dash)
-        self.assertIn('href="/methodology"', self.dash)
+        self.assertNotIn('href="/methodology"', self.dash)                 # the footer has it
+        self.assertIn('class="dash-btn" id="dash-brands-link">Brand groups <span aria-hidden="true">→</span>', self.dash)
+        self.assertNotIn('dash-link', self.dash)                           # no plain blue links on the page
+        # names shown with their accents; the keys (and ?dest=Saidia) unchanged
+        self.assertIn("'Saidia': 'Saïdia', 'Laayoune': 'Laâyoune'", self.js)
+        self.assertIn('data-city="${escAttr(c.city)}"', self.js)
         self.assertIn('id="mobile-seg-pills" hidden', self.dash)
         self.assertIn("const DASH_TABS = ['overview', 'hotels', 'brands'];", self.js)
         self.assertIn("state.tab = DASH_TABS.includes(tab) ? tab : 'overview';", self.js)       # old ?tab=seasonality -> Overview
