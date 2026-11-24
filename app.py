@@ -35,6 +35,8 @@ import rate_benchmark as RB
 import official_monthly as OMM
 import occupancy_model
 from hotel_flags import under_renovation as HFL_under_renovation
+from hotel_flags import in_closed_season as HFL_in_closed_season, closed_months as HFL_closed_months
+from hotel_flags import CLOSED_CLIENT_NOTE as HFL_CLOSED_NOTE
 import events_db as EV
 import tourism_data as TD
 import rates_store as RS
@@ -1108,6 +1110,12 @@ def load_data():
         f = flags.get(str(int(hotels.at[i, "id"]))) or {}
         hotels.at[i, "keys"] = pd.to_numeric(f.get("rooms_in_service"), errors="coerce") if f.get("rooms_in_service") else 0
     perf = _live_performance()
+    # Closed for the season over the whole 30-night window (hotel_flags.json
+    # closed_months, live_kpis.py): no figure, its rooms out of the totals
+    live = LK.get(DATA_DIR, _casablanca_today()).get('hotels') or {}
+    hotels["seasonal_closure"] = hotels["id"].map(
+        lambda i: bool((live.get(str(int(i))) or {}).get("seasonal_closure")) if pd.notna(i) else False)
+    hotels.loc[hotels["seasonal_closure"], "keys"] = 0
     merged = hotels.merge(perf, left_on="id", right_on="hotel_id", how="left")
     return hotels, perf, merged
 
@@ -2032,6 +2040,7 @@ def api_hotels():
         "id", "name", "city", "region", "category", "brand", "brand_group",
         "keys", "year_opened", "year_opened_verified", "status", "lat", "lng", "owner", "data_quality",
         "occupancy", "bar_mad", "bar_nights", "revpar_mad",
+        "under_renovation", "keys_listed", "seasonal_closure",      # hotel_flags.json
     ]
     # For observer tier, hide financial detail columns (still return them but frontend handles display)
     records = merged[cols].to_dict(orient="records")
@@ -5717,6 +5726,7 @@ def api_occupancy_hotel(hotel_id):
                         return jsonify({'error': 'Hotel not found'}), 404
                 else:
                     h            = h_row.iloc[0].to_dict()
+                    h['keys']    = h.get('keys_listed', h.get('keys'))   # the model sizes the hotel by its listed rooms
                     # v1 needs only this hotel's prices; v2 compares it with its city's hotels
                     same_city = merged[merged['city'] == h.get('city')]['id'].astype(str).tolist()
                     on_v2        = model_for(hotel_id) == 'v2'
@@ -5794,6 +5804,9 @@ def api_occupancy_hotel(hotel_id):
             'calibrated':        OMM.calibrated((RB.load_hotels(DATA_DIR).get(str(hotel_id)) or {}).get('city', '')),
             'under_renovation':  HFL_under_renovation(hotel_id),          # partly open: prices shown, no occupancy
             'occ_basis':         occupancy_model.dest_basis(RB.load_hotels(DATA_DIR).get(str(hotel_id)) or {}),   # Saidia, Nador, Al Hoceima
+            # closed for the season (hotel_flags.json): its closed nights in the window that have no estimate
+            'closed_nights':     [d for d in window if d not in stored and HFL_in_closed_season(hotel_id, date.fromisoformat(d))],
+            'closed_note':       HFL_CLOSED_NOTE if HFL_closed_months(hotel_id) else None,
         })
     except Exception as e:
         app.logger.error(f'Occupancy hotel error {hotel_id}: {e}', exc_info=True)
@@ -5921,6 +5934,41 @@ def api_admin_resort_levels():
                      'hotels_covered': len(covered), 'note': OMX.dest_basis(covered[0]) if covered and OMX.dest_levels_on() else None,
                      'backtest': OMX.dest_backtest_note(city)})
     return jsonify({'on': OMX.dest_levels_on(), 'killed': OMX.levels_killed(), 'env': OMX.env_levels(), 'destinations': dest})
+
+
+@app.route('/api/admin/closed-season', methods=['GET', 'POST'])
+@admin_required
+def api_admin_closed_season():
+    """Seasonal closures (hotel_flags.json closed_months): the hotels that
+    have one, and an edit per hotel (POST {"hotel_id", "months": "11-3" | "Nov-Mar" | ""}),
+    after which the model runs again. No deploy needed."""
+    import hotel_flags as HFX
+    import occupancy_model as OMX
+    hotels = RB.load_hotels(DATA_DIR)
+    if request.method == 'POST':
+        body = request.get_json(silent=True) or {}
+        hid = str(body.get('hotel_id') or '').split('.')[0]
+        if hid not in hotels:
+            return jsonify({'error': 'unknown hotel'}), 400
+        try:
+            months = HFX.parse_months(body.get('months', ''))
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
+        HFX.set_closed_months(hid, months, DATA_DIR, by=getattr(current_user, 'email', 'admin'))
+        _log_admin_action('closed_season', hid, ','.join(map(str, months)) or 'none')
+        threading.Thread(target=OMX.run_occupancy_model, daemon=True).start()
+        LK._cache.clear()
+    names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    flags = HFX.load(DATA_DIR)
+    rows = []
+    for hid, f in sorted(flags.items(), key=lambda kv: (hotels.get(kv[0], {}).get('city', ''), hotels.get(kv[0], {}).get('name', ''))):
+        if not f.get('closed_months'):
+            continue
+        ms = list(f['closed_months'])
+        rows.append({'hotel_id': hid, 'hotel': hotels.get(hid, {}).get('name', hid), 'city': hotels.get(hid, {}).get('city', ''),
+                     'months': ms, 'text': f"{names[ms[0] - 1]}–{names[ms[-1] - 1]}" if len(ms) > 1 else names[ms[0] - 1],
+                     'set_by': f.get('closed_months_set_by') or 'data migration', 'set_at': f.get('closed_months_set_at')})
+    return jsonify({'rows': rows})
 
 
 @app.route('/api/admin/class-gaps')

@@ -152,10 +152,13 @@ def per_hotel(data_dir, today: date):
     bars, bar_days = observed_bar(data_dir, ids, today)
     import hotel_flags as HFL
     reno = HFL.renovating(data_dir)
+    season = HFL.seasonal(data_dir)
     out = {}
     for h in ids:
         p = {n: float(r['rate_mad']) for n, r in prices[h].items()}
-        o = occ.get(h, {})
+        # closed for the season (hotel_flags.py): its closed nights without a bookable rate
+        closed = {n for n in nights if int(n[5:7]) in season[h] and n not in p} if h in season else set()
+        o = {n: v for n, v in occ.get(h, {}).items() if n not in closed}
         both = [n for n in nights if n in p and n in o]
         lows = [o[n][1] for n in o if o[n][1] is not None]
         highs = [o[n][2] for n in o if o[n][2] is not None]
@@ -187,6 +190,11 @@ def per_hotel(data_dir, today: date):
                           keys=0, under_renovation=True, partially_open=HFL.partially_open(h, data_dir))
             if not out[h]['partially_open']:                     # closed: no price figure either
                 out[h].update(rate=None, bar=None)
+        if closed:
+            out[h]['closed_nights'] = len(closed)
+        if closed and len(closed) == len(nights):   # closed the whole window: no figure, its rooms out of the totals
+            out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
+                          keys=0, seasonal_closure=True)
         if hide_unpriced and dq and not (dq.get(h) or {}).get('history_days'):
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
                           occ_hidden='no price history')

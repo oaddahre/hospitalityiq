@@ -36,8 +36,9 @@ class Stability(unittest.TestCase):
         cls.dir = tempfile.mkdtemp()
         cls.fx = QF.build(cls.dir)
         cls.today = cls.fx['today']
+        import hotel_flags as HFL
         cls.hotels = {h['id']: h for h in read(os.path.join(cls.dir, 'hotels.csv'))
-                      if h['status'].lower() in ('open', 'operating')}
+                      if h['status'].lower() in ('open', 'operating') and h['id'] not in HFL.seasonal()}   # no estimate when closed
         cls.rows = [r for r in read(os.path.join(cls.dir, 'scraped_rates.csv')) if r['scrape_status'] == 'success']
         cls.cov = read(os.path.join(cls.dir, 'scrape_coverage.csv'))
         cls.nights = [cls.today + timedelta(days=i) for i in range(1, 31)]

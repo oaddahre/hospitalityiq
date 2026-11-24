@@ -24,7 +24,8 @@ admin upload panel in the Rates panel:
                        kodo-profiles-1; a field already set to another
                        value is never overwritten (the migration stops)
     .flags.json        Hotel flags (hotel_flags.json, kodo-hotel-flags-1):
-                       under renovation, rooms in service, since
+                       under renovation, rooms in service, since,
+                       closed_months (seasonal closure)
     .news.json         Remove articles from news.json (kodo-news-1:
                        {"remove": [{"id", "slug"}]}): an article is removed
                        only when both its id and slug match
@@ -229,7 +230,7 @@ def _apply_news(text, P):
     return len(gone), already, [], {'remove': len(gone), 'already': already}
 
 
-FLAG_FIELDS = ('under_renovation', 'partially_open', 'status_label', 'rooms_in_service', 'since', 'note')
+FLAG_FIELDS = ('under_renovation', 'partially_open', 'status_label', 'rooms_in_service', 'since', 'note', 'closed_months')
 
 
 def _apply_flags(text, P):

@@ -626,8 +626,13 @@ const CALIBRATED_LABEL = 'Kodo est., calibrated on official monthly city occupan
 // A hotel under renovation but partly open (hotel_flags.json): its prices and BAR
 // as usual, no occupancy estimate, its rooms out of the totals
 const RENOVATION_LABEL = 'Partly open, under renovation: no occupancy estimate';
-const hotelRooms = h => h.under_renovation ? `${fmt.num(h.keys_listed)} (partly open, under renovation)` : fmt.num(h.keys);
-const hotelOcc = h => h.under_renovation ? RENOVATION_LABEL : fmt.pct(h.occupancy);
+// A hotel closed for the season over the coming 30 nights (hotel_flags.json closed_months):
+// no occupancy or Rooms RevPAR, its rooms out of the totals
+const CLOSED_LABEL = 'Closed for the season';
+const CLOSED_NOTE = 'Usually closed in winter';
+const hotelRooms = h => h.under_renovation ? `${fmt.num(h.keys_listed)} (partly open, under renovation)`
+  : h.seasonal_closure ? `${fmt.num(h.keys_listed)} (${CLOSED_NOTE.toLowerCase()})` : fmt.num(h.keys);
+const hotelOcc = h => h.under_renovation ? RENOVATION_LABEL : h.seasonal_closure ? CLOSED_LABEL : fmt.pct(h.occupancy);
 const COUNT_TIP = KodoPeriod.tip({ source: 'Kodo hotel database', note: 'count when this page loaded' });
 
 const KodoLive = (() => {
@@ -745,6 +750,11 @@ const KodoLive = (() => {
         c.title = 'This hotel is partly open while under renovation: it has no occupancy or Rooms RevPAR estimate, and its rooms are left out of the totals.'; });
       return;
     }
+    if (one && one.seasonal_closure) {             // closed the whole window: no occupancy or Rooms RevPAR
+      [els.occ, els.revpar].filter(Boolean).forEach(c => { noData(c, CLOSED_LABEL); part(c, 'kpi-sub').textContent = CLOSED_NOTE;
+        c.title = `${CLOSED_NOTE}: no occupancy or Rooms RevPAR estimate for the coming 30 nights, and its rooms are left out of the totals.`; });
+      return;
+    }
     // Hover notes: the window each card covers and the hotels it includes
     const of = (k, what) => one ? '' : ` ${k} of ${a.total} hotel${a.total === 1 ? '' : 's'} ${what}.`;
     const hover = (c, t) => { if (c) c.title = t; };
@@ -858,8 +868,10 @@ function renderKPIs() {
   kc.classList.remove('loading');
   KodoPeriod.set('kpi-keys', KodoPeriod.today(), COUNT_TIP);
   const reno = list.filter(h => h.under_renovation).length;
+  const shut = list.filter(h => h.seasonal_closure).length;
   kc.title = `Today's count from Kodo's hotel database: ${list.length} open hotel${list.length === 1 ? '' : 's'} and their ${fmt.num(keys)} rooms.`
-    + (reno ? ` Excludes ${reno === 1 ? 'a hotel' : reno + ' hotels'} under renovation.` : '');
+    + (reno ? ` Excludes ${reno === 1 ? 'a hotel' : reno + ' hotels'} under renovation.` : '')
+    + (shut ? ` Excludes the rooms of ${shut === 1 ? 'a hotel' : shut + ' hotels'} closed for the season (${CLOSED_NOTE.toLowerCase()}).` : '');
   // BAR: observed since 3 Nov 2026. Occupancy, Rooms RevPAR: Kodo estimates, next 30 nights (KodoLive)
   ['kpi-occ', 'kpi-adr', 'kpi-revpar'].forEach(id => document.getElementById(id).classList.remove('loading'));
   KodoLive.cards({ occ: 'kpi-occ', rate: 'kpi-adr', revpar: 'kpi-revpar' }, list);
@@ -2142,6 +2154,7 @@ async function renderOccCalendar(hotelId) {
   const estimates = data.estimates || [];
   const estMap = {};
   for (const e of estimates) estMap[e.date] = e;
+  const closedSet = new Set(data.closed_nights || []);    // closed for the season (no bookable rate)
 
   const dayNumCol = 'var(--text)';
 
@@ -2162,11 +2175,12 @@ async function renderOccCalendar(hotelId) {
     const { bg, col, fw, border } = cell;
 
     const styAttr = `background:${bg};color:${col};${fw ? `font-weight:${fw};` : ''}${border ? `border:${border};` : ''}`;
-    const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : '—';
+    const shut = !e && closedSet.has(iso);
+    const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : shut ? 'Closed' : '—';
     const confBadge = cov === 'full' ? '●' : cov === 'partial' ? '◑' : '○';
     const tip = calTipAttrs(iso, e
       ? [['Modelled occupancy', occRange(e)], ['Price coverage', COVERAGE_LABEL[cov] || cov]]
-      : [['Limited data', 'no estimate for this night']]);
+      : shut ? [[CLOSED_LABEL, CLOSED_NOTE]] : [['Limited data', 'no estimate for this night']]);
     html += `<div class="bar-cal-day" style="${styAttr}"${tip}>
       <div class="bar-cal-dn" style="color:${dayNumCol};opacity:1">${d.getDate()}<span style="font-size:7px;margin-left:2px;opacity:0.6">${confBadge}</span></div>
       <div class="bar-cal-rate">${dispVal}</div>
@@ -2181,9 +2195,13 @@ async function renderOccCalendar(hotelId) {
   const cc = data.price_coverage_counts || {};
   const nDays = (cc.full || 0) + (cc.partial || 0) + (cc.none || 0);
   const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
-  badgeEl.textContent = data.under_renovation ? RENOVATION_LABEL : data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';
-  if (noteEl) {
+  const allShut = closedSet.size && !estimates.some(e => e.date > localIsoDate(today));
+  badgeEl.textContent = data.under_renovation ? RENOVATION_LABEL : allShut ? CLOSED_LABEL : data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';
+  if (noteEl && allShut) {
+    noteEl.textContent = `${CLOSED_LABEL} · ${CLOSED_NOTE}: no occupancy or Rooms RevPAR estimate for the next 30 nights`;
+  } else if (noteEl) {
     noteEl.textContent = [(data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ' · modelled, not measured', data.occ_basis,
+      closedSet.size && `${CLOSED_NOTE}: closed on ${closedSet.size} of the next 30 nights`,
       data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
       covLabel && `Price coverage: ${covLabel}`].filter(Boolean).join(' · ');
   }
@@ -2197,6 +2215,8 @@ async function renderOccCalendar(hotelId) {
     confEl.textContent  = `Price coverage: full ${cc.full ?? 0} days · partial ${cc.partial ?? 0} · none ${cc.none ?? 0}. `
       + 'It describes how many recent published prices we have for the hotel, not how accurate the estimate is.';
     avgBar.style.display = '';
+  } else {
+    avgBar.style.display = 'none';                 // no averages (closed, under renovation): not the previous hotel's
   }
 }
 
@@ -2384,7 +2404,7 @@ function showCityPanel(city, cityHotels) {
     .map(h => `
       <div class="map-city-panel-row" onclick="showHotelDetail(${h.id})">
         <div class="map-city-panel-row-name">${fmt.esc(h.name)}</div>
-        <div class="map-city-panel-row-meta">${fmt.esc(h.brand || '')} · ${h.under_renovation ? `${h.keys_listed || ''} rooms, partly open, under renovation` : `${h.keys || ''} rooms`}</div>
+        <div class="map-city-panel-row-meta">${fmt.esc(h.brand || '')} · ${h.under_renovation ? `${h.keys_listed || ''} rooms, partly open, under renovation` : h.seasonal_closure ? `${h.keys_listed || ''} rooms, ${CLOSED_NOTE.toLowerCase()}` : `${h.keys || ''} rooms`}</div>
       </div>
     `).join('');
 
@@ -5834,7 +5854,7 @@ function renderOwnerPortfolioTable(hotels) {
       '<td>' + getBrandLogoImg(h.brand_group, 14) + fmt.esc(h.brand_group || '—') + '</td>' +
       '<td>' + fmt.esc(h.city || '—') + '</td>' +
       '<td>' + getSegmentBadgeHtml(h.category || '—') + '</td>' +
-      '<td style="text-align:right">' + (h.under_renovation ? hotelRooms(h) : h.keys ? h.keys.toLocaleString() : '—') + '</td>' +
+      '<td style="text-align:right">' + (h.under_renovation || h.seasonal_closure ? hotelRooms(h) : h.keys ? h.keys.toLocaleString() : '—') + '</td>' +
     '</tr>';
   }).join('');
 }

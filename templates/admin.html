@@ -548,6 +548,11 @@
     <div style="display:flex;gap:8px;margin-bottom:8px"><button class="adm-btn adm-btn-secondary" id="rl-off">Turn off (national anchor)</button><button class="adm-btn adm-btn-secondary" id="rl-on" style="display:none">Turn back on</button><span id="rl-msg" class="adm-hint"></span></div>
     <div class="dh-scroll"><table class="adm-table" id="rl-table"></table></div>
 
+    <h2 class="adm-list-filter-label" style="margin-top:28px">Closed season</h2>
+    <p class="adm-hint">Hotels that close every year. On those nights they have no occupancy or Rooms RevPAR estimate ("Closed for the season"), and they are left out of their city's totals and averages; clients read "Usually closed in winter". A night with a bookable published rate counts as open, and Data health lists it. Months as 11-3, Nov-Mar or 11,12,1,2,3; leave empty to remove. Saving runs the model again (a few minutes); no deploy needed.</p>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap"><select id="cs-hotel" class="adm-input" style="max-width:280px"><option value="">Hotel…</option></select><input id="cs-months" class="adm-input" placeholder="Closed season, e.g. Nov-Mar" style="max-width:200px"><button id="cs-save" class="adm-btn">Save</button><span id="cs-msg" class="adm-hint"></span></div>
+    <div class="dh-scroll"><table class="adm-table" id="cs-table"></table></div>
+
     <h2 class="adm-list-filter-label" style="margin-top:28px">Resort seasonal swing, by destination</h2>
     <p class="adm-hint">Classified beach and seaside resorts follow a seasonal swing <span id="occ-res-x">—</span> times the city pattern where it is switched on: "measured" where hotel-reported figures support it, "lower confidence" on the same coast and summer market without figures yet. Elsewhere resorts keep their city's pattern. Railway settings: RESORT_SEASON_ON / RESORT_SEASON_OFF (destination names, comma-separated). Price position: <strong id="occ-pp">—</strong> (PRICE_POSITION: off, nonresort or on).</p>
     <div class="dh-scroll"><table class="adm-table" id="occ-res-table"></table></div>

@@ -1287,7 +1287,7 @@ async function populateHotelSelect() {
   try {
     const res = await fetch('/api/hotels', { headers: authHeaders() });
     const hotels = await res.json();
-    ['ri-hotel-sel', 'ri-gid-hotel', 'ri-occ-hotel'].forEach(selId => {
+    ['ri-hotel-sel', 'ri-gid-hotel', 'ri-occ-hotel', 'cs-hotel'].forEach(selId => {
       const sel = document.getElementById(selId);
       if (!sel || sel.dataset.populated) return;
       (hotels.hotels || hotels).forEach(h => {
@@ -1891,6 +1891,28 @@ document.getElementById('rl-off').addEventListener('click', () => {
   if (confirm('Turn the destination levels off? Saïdia, Nador and Al Hoceima go back to the national anchor and the resort profile.')) loadResortLevels({ off: true });
 });
 document.getElementById('rl-on').addEventListener('click', () => loadResortLevels({ off: false }));
+// Closed season (hotel_flags.json closed_months): editable per hotel
+async function loadClosedSeason(body) {
+  const msg = document.getElementById('cs-msg');
+  try {
+    const res = await fetch('/api/admin/closed-season', body ? { method: 'POST', headers: authHeaders(true), body: JSON.stringify(body) } : { headers: authHeaders() });
+    const d = await res.json();
+    if (!res.ok) { msg.textContent = d.error || 'Failed'; return; }
+    msg.textContent = body ? 'Saved; the model is running again (a few minutes).' : '';
+    sbsTable('cs-table', ['Hotel', 'City', 'Closed season', 'Months', 'Set by'],
+      (d.rows || []).map(x => [x.hotel, x.city, x.text, x.months.join(', '), x.set_by + (x.set_at ? ' · ' + x.set_at.slice(0, 10) : '')]));
+    const t = document.getElementById('cs-table');
+    (d.rows || []).forEach((x, i) => {                    // click a row to edit it
+      const tr = t.tBodies[0] && t.tBodies[0].rows[i];
+      if (tr) { tr.style.cursor = 'pointer'; tr.onclick = () => { document.getElementById('cs-hotel').value = x.hotel_id; document.getElementById('cs-months').value = x.text.replace('–', '-'); }; }
+    });
+  } catch { msg.textContent = 'Failed'; }
+}
+document.getElementById('cs-save').addEventListener('click', () => {
+  const hotel_id = document.getElementById('cs-hotel').value;
+  if (!hotel_id) { document.getElementById('cs-msg').textContent = 'Choose a hotel'; return; }
+  loadClosedSeason({ hotel_id, months: document.getElementById('cs-months').value.trim() });
+});
 async function loadClassGaps() {
   try {
     const res = await fetch('/api/admin/class-gaps', { headers: authHeaders() });
@@ -1906,6 +1928,7 @@ async function loadSideBySide(refresh) {
   loadOfficialMonthly();
   loadClassGaps();
   loadResortLevels();
+  loadClosedSeason();
   loadKpiChange();
   const msg = document.getElementById('occ-sbs-msg');
   msg.textContent = 'Loading… (up to a minute the first time each day)';

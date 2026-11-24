@@ -830,6 +830,11 @@ def _solve_shift(vals, target, lo, hi):
     return (a + b) / 2
 
 
+def _hotel_flags_path():
+    import hotel_flags as HFL
+    return HFL.path()
+
+
 def month_shift(kind, city, year, month, today=None, hotel=None):
     """(shift in pts, (target %, status, scope)) holding the city's hotels to
     the official figure for that month, or None. kind: 'v1' | 'v2'."""
@@ -843,14 +848,17 @@ def month_shift(kind, city, year, month, today=None, hotel=None):
         pos, pos_key = {}, None
     key = ('mshift', kind, city, year, month, t, pos_key, _mtime(HOTELS_CSV), _EVENT_NIGHTS.get('key'),
            RESORT_SEASON_X, price_position_mode(), tuple(sorted(resort_season_destinations())),
-           class_cities(), os.environ.get('CATEGORY_ADJUST', ''), dest_levels_on())
+           class_cities(), os.environ.get('CATEGORY_ADJUST', ''), dest_levels_on(), _mtime(_hotel_flags_path()))
     if key not in _V1_CACHE:
+        import hotel_flags as HFL
         members = _city_hotels(city) or ([(hotel, 1.0)] if hotel else [])
         first = date(year, month, 1)
         nights = [first + timedelta(days=i) for i in range((date(year + (month == 12), month % 12 + 1, 1) - first).days)]
         vals = []
         for h, k in members:
             hid = str(h.get('id', '')).split('.')[0]
+            if month in HFL.closed_months(hid):          # closed for the season: not part of the city that month
+                continue
             for n in nights:
                 x = _v1_raw(h, n, pos.get(hid)) if kind == 'v1' else _v2_struct(h, n)
                 if x is not None:
@@ -954,6 +962,9 @@ def estimate_occupancy(hotel, date, scraped_bar=None, recent_price_days=0, posit
     import hotel_flags as HFL
     if HFL.under_renovation(hotel.get('id', '')):
         return None, {'limited': True, 'under_renovation': True, 'confidence': confidence, 'price_days_7d': recent_price_days,
+                      'low': None, 'high': None, 'final': None}
+    if HFL.in_closed_season(hotel.get('id', ''), date) and not scraped_bar:   # closed for the season, no bookable rate
+        return None, {'limited': True, 'seasonal_closure': True, 'confidence': confidence, 'price_days_7d': recent_price_days,
                       'low': None, 'high': None, 'final': None}
     anchor     = official_anchor(city)
     if anchor is None:
@@ -1384,6 +1395,9 @@ def estimate_v2(inp, hid, night, gaps, recent_price_days=0):
     src = inp.source.get(hid, 'none')
     signals.append(f'normal_price:{src}' + (f'({inp.points[hid]} nights)' if src == 'history' else ''))
     price = inp.price(hid, night)
+    import hotel_flags as HFL
+    if price is None and HFL.in_closed_season(hid, night):   # closed for the season, no bookable rate
+        return None
     heat, group, n_group = inp.market(hid, night)
     market = own = 0.0
     if heat is not None:

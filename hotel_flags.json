@@ -8,6 +8,27 @@
    "rooms_in_service": null,
    "since": "2024",
    "note": "Partly open during a renovation of more than two years (founder, Nov 2026): prices and BAR kept, no occupancy estimate, rooms out of the totals until rooms in service are given."
+  },
+  "296": {
+   "status_label": "seasonal closure",
+   "closed_months": [
+    11,
+    12,
+    1,
+    2,
+    3
+   ],
+   "note": "Closes every winter, November to March (founder, Nov 2026; to confirm with the owner). No occupancy estimate on those nights unless bookable rates are found; editable in the admin."
+  },
+  "295": {
+   "status_label": "seasonal closure",
+   "closed_months": [
+    11,
+    12,
+    1,
+    2
+   ],
+   "note": "Closes every winter, November to February (founder, Nov 2026; to confirm with the owner). No occupancy estimate on those nights unless bookable rates are found; editable in the admin."
   }
  }
 }

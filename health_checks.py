@@ -311,7 +311,10 @@ def occupancy_checks(data_dir, today, hotels, history):
                              else f"No city average moved more than {CITY_MOVE_PTS:.0f} points since {prev['date']}.",
                              len(moves), items=list(moves)))
         have = {str(r.get('hotel_id')) for r in shown}
-        missing = set(hotels) - have
+        import hotel_flags as HFL
+        window = [today + timedelta(days=i) for i in range(1, 31)]
+        closed = {h for h in hotels if all(HFL.in_closed_season(h, n, data_dir) for n in window)}
+        missing = set(hotels) - have - closed         # closed for the season: no estimate expected
         st = 'ok' if not missing else 'problem' if len(missing) > 0.05 * len(hotels) else 'warning'
         out.append(check('occ_missing', 'Occupancy', 'Hotels with no estimate', st,
                          f'{len(missing)} open hotel{"s" if len(missing) != 1 else ""} with no estimate for the coming nights '
@@ -332,6 +335,34 @@ def occupancy_checks(data_dir, today, hotels, history):
                       if lc else 'The readiness check has not run yet.'), len(on), items=sorted(st['cities']))
     out.append(sw)
     return out, cities_now
+
+
+def seasonal_check(data_dir, today, hotels, rows):
+    """Hotels flagged closed for the season (hotel_flags.json closed_months)
+    with bookable rates on nights inside their closed months: those nights
+    count as open (the model estimates them); listed so the season can be
+    corrected in the admin."""
+    import hotel_flags as HFL
+    season = {h: m for h, m in HFL.seasonal(data_dir).items() if h in hotels}
+    title = 'Rates found in a closed season'
+    if not season:
+        return check('seasonal_open', 'Occupancy', title, 'no_data', 'No hotel has a closed season.')
+    t = today.isoformat()
+    found = {}
+    for r in rows:
+        h = str(r.get('hotel_id', ''))
+        n = r.get('stay_date', '')
+        if h in season and n > t and r.get('scrape_status') == 'success' and r.get('rate_mad') and int(n[5:7]) in season[h]:
+            found.setdefault(h, set()).add(n)
+    if not found:
+        return check('seasonal_open', 'Occupancy', title, 'ok',
+                     f'{len(season)} hotel{"s" if len(season) != 1 else ""} with a closed season; no bookable rate found inside it.')
+    parts = [f"{hotels[h].get('name', h)}: {len(ns)} night{'s' if len(ns) != 1 else ''} ({min(ns)} to {max(ns)})"
+             for h, ns in sorted(found.items())]
+    return check('seasonal_open', 'Occupancy', title, 'warning',
+                 'Bookable rates on nights inside the closed season, so those nights are treated as open and estimated: '
+                 + '; '.join(parts) + '. Check the season in Admin → Occupancy → Closed season.',
+                 len(found), _hotel_refs(set(found), hotels))
 
 
 # ─── Database ────────────────────────────────────────────────────────────────
@@ -470,6 +501,7 @@ def run(data_dir, today, pages=None, dq_report=None, write=True, extra_checks=()
     checks += rate_checks(today, hotels, rows, cov)
     o, cities = occupancy_checks(data_dir, today, hotels, history)
     checks += o
+    checks.append(seasonal_check(data_dir, today, hotels, rows))
     checks += database_checks(data_dir, today, hotels_all, hotels, dq_report)
     checks += page_checks(pages)
     checks += list(extra_checks)
