@@ -199,9 +199,33 @@ def per_hotel(data_dir, today: date):
             out[h].update(occ=None, occ_low=None, occ_high=None, revpar=None, revpar_low=None, revpar_high=None,
                           occ_hidden='no price history')
     return {'window': {'start': nights[0], 'end': nights[-1], 'nights': len(nights)}, 'today': today.isoformat(),
+            'destinations': destination_confidence(hotels),
             'model': active_model(), 'model_run': model_run, 'rates_updated': _rates_updated(data_dir),
             'bar_since': DATA_START.isoformat(), 'bar_days': bar_days, 'min_bar_nights': MIN_BAR_NIGHTS,
             'min_bar_hotels': MIN_BAR_HOTELS, 'hotels': out}
+
+
+def destination_confidence(hotels):
+    """What each destination's occupancy estimate rests on, from what the
+    model already uses (no new figure): {city: {'class', 'label', 'real_hotels'}}.
+      real      destination levels built from real hotels (Saidia, Nador)
+      borrowed  destination levels borrowed from neighbouring destinations
+      official  calibrated on official monthly figures (city or region)
+      national  the national fallback only
+    Client labels never name a source."""
+    out = {}
+    for city in sorted({h.get('city', '') for h in hotels.values()} - {''}):
+        d = OM.DEST_LEVELS.get(city) if OM.dest_levels_on() else None
+        if d and d.get('borrowed'):
+            out[city] = {'class': 'borrowed', 'label': 'Borrowed', 'real_hotels': 0}
+        elif d and d.get('real_hotels'):
+            n = d['real_hotels']
+            out[city] = {'class': 'real', 'label': f"Based on {n} real hotel{'s' if n != 1 else ''}", 'real_hotels': n}
+        elif OMM.calibrated(city):
+            out[city] = {'class': 'official', 'label': 'Official', 'real_hotels': None}
+        else:
+            out[city] = {'class': 'national', 'label': 'National estimate', 'real_hotels': None}
+    return out
 
 
 # ─── Daily snapshot and the 7-day change ─────────────────────────────────────

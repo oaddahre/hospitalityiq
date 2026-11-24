@@ -335,6 +335,8 @@ Chart.defaults.scales.linear.ticks.font = { weight: '400', family: "'Sweet Sans 
 const state = {
   city:    'all',
   mapSeg:  'all',
+  tab:     'overview',   // one destination: overview | hotels | brands (remembered)
+  destMetric: 'bar',     // the number next to each destination in the sidebar: bar | occ
 };
 
 let apiData  = null;   // /api/data response
@@ -804,8 +806,11 @@ const KodoLive = (() => {
       else { const rr = a.rlow.val != null && a.rhigh.val != null && a.rlow.n === a.revpar.n ? ` · range ${fmt.mad(a.rlow.val)}–${fmt.mad(a.rhigh.val)}` : ''; show(c, fmt.mad(a.revpar.val), rr ? 'MAD' + rr : 'MAD · BAR × occupancy estimate'); part(c, 'kpi-sub').textContent = one ? `on ${one.occ_nights ?? 0} of ${n} nights` : cover('revpar'); delta(c, a.change.revpar, '%'); if (conf) confLine(c, conf); }
     }
   }
-  return { load, agg, cards, stamp, part, noData, show };
+  return { load, agg, cards, stamp, part, noData, show, raw: () => data };
 })();
+// What a destination's occupancy estimate rests on (live_kpis.destination_confidence):
+// {class: official | real | borrowed | national, label}, or null before the figures load
+const destConf = city => (((KodoLive.raw() || {}).destinations) || {})[city] || null;
 
 // ─── Aggregation ──────────────────────────────────────────────────
 
@@ -1059,46 +1064,93 @@ function renderCharts() {
   if (chartOrCollecting('chart-occ', !occRows.length, 'Occupancy estimates appear once the model has prices to work from.')) {
     const labels = occRows.map(r => r.city);
     const values = occRows.map(r => parseFloat((r.occupancy * 100).toFixed(1)));
+    // National estimates (no official monthly figure or real hotels behind them): hollow bars, "est."
+    const national = labels.map(c => (destConf(c) || {}).class === 'national');
+    const grey = KodoPalette.get().families.grey.dot;
+    const fills = destColors(labels).map((col, i) => national[i] ? 'transparent' : col);
+    const borders = destColors(labels).map((col, i) => national[i] ? grey : col);
     document.getElementById('chart-occ').closest('.chart-wrap').style.height = Math.max(240, labels.length * 30 + 60) + 'px';
+    const style = ds => { ds.backgroundColor = fills; ds.borderColor = borders; ds.borderWidth = national.map(x => (x ? 1.5 : 0)); };
     if (occChart) {
       occChart.data.labels = labels;
       occChart.data.datasets[0].data = values;
-      occChart.data.datasets[0].backgroundColor = destColors(labels);
+      style(occChart.data.datasets[0]);
+      occChart.$national = national;
       occChart.update();
     } else {
-      const cfg = lightenCityChartLabels(chartConfig(labels, values, '%', destColors(labels), v => v.toFixed(1) + '%'));
+      const cfg = lightenCityChartLabels(chartConfig(labels, values, '%', fills,
+        (v, ctx) => v.toFixed(1) + '%' + ((ctx.chart.$national || [])[ctx.dataIndex] ? ' est.' : '')));
+      style(cfg.data.datasets[0]);
       cfg.options.plugins.tooltip.callbacks.label = ctx => {
         const a = KodoLive.agg((hotels || []).filter(h => h.city === ctx.label));
         const range = a.low.val != null && a.high.val != null && a.low.n === a.occ.n ? ` (range ${Math.round(a.low.val)}–${Math.round(a.high.val)}%)` : '';
-        return '  ' + ctx.raw.toFixed(1) + '%' + range + ' · Kodo estimate';
+        const conf = destConf(ctx.label);
+        return ['  ' + ctx.raw.toFixed(1) + '%' + range + ' · Kodo estimate'].concat(conf ? ['  Confidence: ' + conf.label] : []);
       };
       cfg.options.onClick = destChartClick(() => occChart);
       cfg.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
       occChart = new Chart(document.getElementById('chart-occ'), cfg);
+      occChart.$national = national;
+      occChart.update('none');
     }
+    const nn = national.filter(Boolean).length;
+    document.getElementById('occ-dest-note').textContent = nn
+      ? `Hollow bars marked "est.": national estimate only (${nn} destination${nn === 1 ? '' : 's'}). They have no official monthly figure or real hotels behind them yet, so compare them with care.` : '';
   }
 }
 
 // ─── Destination list (sidebar; chips under 768 px) ───────────────
 
+// The sidebar number: BAR (MAD, observed) or occupancy (%, Kodo estimate,
+// next 30 nights), the same figures as the two charts
+const DEST_METRIC_LABEL = { bar: 'Destination · BAR (MAD)', occ: 'Destination · Occ. % (est.)' };
+function destMetricVal(c) {
+  if (state.destMetric === 'occ') {
+    if (c.occupancy == null) return { html: '<span class="dest-val dest-val--na">—</span>', v: null, what: 'no occupancy estimate', limited: false };
+    const est = (destConf(c.city) || {}).class === 'national';
+    const pct = (c.occupancy * 100).toFixed(1);
+    return { html: `<span class="dest-val">${pct}%${est ? '<span class="dest-est">est.</span>' : ''}</span>`, v: c.occupancy, limited: est,
+             what: `occupancy ${pct}%, Kodo estimate${est ? ', national estimate' : ''}` };
+  }
+  return { html: c.bar.val == null ? '<span class="dest-val dest-val--na">—</span>'
+    : c.bar.limited ? '<span class="dest-val dest-val--limited">limited</span>'
+    : `<span class="dest-val">${fmt.mad(c.bar.val)}</span>`, v: c.bar.val, limited: c.bar.limited,
+    what: c.bar.val == null ? 'no BAR yet' : c.bar.limited ? 'BAR limited data' : `BAR ${fmt.mad(c.bar.val)} MAD` };
+}
+
 function destRowHtml(c, max) {
   const sel = c.city === state.city;
-  const val = c.bar.val == null ? '<span class="dest-val dest-val--na">—</span>'
-    : c.bar.limited ? '<span class="dest-val dest-val--limited">limited</span>'
-    : `<span class="dest-val">${fmt.mad(c.bar.val)}</span>`;
-  const w = c.bar.val != null && max ? Math.max(2, Math.round(c.bar.val / max * 100)) : 0;
-  const what = c.bar.val == null ? 'no BAR yet' : c.bar.limited ? 'BAR limited data' : `BAR ${fmt.mad(c.bar.val)} MAD`;
+  const m = destMetricVal(c);
+  const w = m.v != null && max ? Math.max(2, Math.round(m.v / max * 100)) : 0;
   return `<li class="dest-row${sel ? ' is-selected' : ''}" role="option" aria-selected="${sel}" tabindex="${sel ? 0 : -1}"
-      data-city="${fmt.esc(c.city)}" aria-label="${fmt.esc(c.city)}, ${c.hotel_count} hotels, ${what}">
-    <span class="dest-line"><span class="dest-name">${fmt.esc(c.city)}</span><span class="dest-count">${c.hotel_count}</span>${val}</span>
-    <span class="dest-meter${c.bar.limited ? ' dest-meter--limited' : ''}" aria-hidden="true"><span style="width:${w}%"></span></span>
+      data-city="${fmt.esc(c.city)}" aria-label="${fmt.esc(c.city)}, ${c.hotel_count} hotels, ${m.what}">
+    <span class="dest-line"><span class="dest-name">${fmt.esc(c.city)}</span><span class="dest-count">${c.hotel_count}</span>${m.html}</span>
+    <span class="dest-meter${m.limited ? ' dest-meter--limited' : ''}" aria-hidden="true"><span style="width:${w}%"></span></span>
   </li>`;
+}
+
+// Destinations in the order of the sidebar's number (high to low, then none, A–Z)
+function sidebarCities() {
+  if (state.destMetric !== 'occ') return rankedCities();
+  return cityAggs(hotels || []).sort((a, b) => (a.occupancy == null) - (b.occupancy == null)
+    || (b.occupancy || 0) - (a.occupancy || 0) || a.city.localeCompare(b.city));
+}
+
+function setDestMetric(m) {
+  state.destMetric = m === 'occ' ? 'occ' : 'bar';
+  dashPrefs.set('metric', state.destMetric);
+  document.getElementById('dest-label').textContent = DEST_METRIC_LABEL[state.destMetric];
+  document.querySelectorAll('.dest-metric-btn').forEach(b => {
+    const on = b.dataset.metric === state.destMetric;
+    b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on);
+  });
+  buildCityFilter();
 }
 
 function buildCityFilter() {
   const list = document.getElementById('city-filter');
-  const rows = rankedCities();
-  const max = Math.max(0, ...rows.filter(r => r.bar.val != null).map(r => r.bar.val));
+  const rows = sidebarCities();
+  const max = Math.max(0, ...rows.map(r => destMetricVal(r).v).filter(v => v != null));
   const all = state.city === 'all';
   list.innerHTML = `<li class="dest-row dest-row--all${all ? ' is-selected' : ''}" role="option" aria-selected="${all}" tabindex="${all ? 0 : -1}"
       data-city="all" aria-label="All Morocco, ${(hotels || []).length} hotels">
@@ -1124,6 +1176,7 @@ function filterDestRows() {
 // dashboard): only classes change, so the list keeps its scroll position
 function selectCity(city) {
   state.city = city || 'all';
+  writeDashUrl();
   document.querySelectorAll('#city-filter .dest-row').forEach(li => {
     const on = li.dataset.city === state.city;
     li.classList.toggle('is-selected', on);
@@ -1148,9 +1201,33 @@ function selectCity(city) {
 
 // ─── Brand table ──────────────────────────────────────────────────
 
+// Rows whose shown occupancy is the same as another row's: those hotels have
+// no hotel-specific signal yet and carry the destination's estimate for their
+// type of hotel, so identical figures are expected (not a bug)
+const SHARED_OCC_NOTE = 'destination-level estimate';
+const SHARED_OCC_TIP = 'Same figure as other rows: these hotels have no hotel-specific signal yet, so they carry the destination-level estimate for their type of hotel.';
+function sharedOcc(rows) {
+  const n = {};
+  rows.forEach(r => { const k = fmt.pct(r.occupancy); if (r.occupancy != null) n[k] = (n[k] || 0) + 1; });
+  return r => r.occupancy != null && n[fmt.pct(r.occupancy)] > 1;
+}
+
+// Rooms RevPAR in a table: the figure, with how many published prices of the
+// coming 30 nights it rests on (live_kpis.py rate_nights)
+function revparCell(value, hs) {
+  if (value == null) return `<span title="No published price for the coming 30 nights: Rooms RevPAR needs one (occupancy does not)">${fmt.mad(value)}</span>`;
+  const L = (KodoLive.raw() || {}).hotels || {};
+  const priced = hs.map(h => L[String(h.id)]).filter(v => v && v.revpar != null);
+  const nights = priced.reduce((s, v) => s + (v.rate_nights || 0), 0);
+  const tip = priced.length ? `Kodo estimate: published price × modelled occupancy over the coming 30 nights · ${priced.length} hotel${priced.length === 1 ? '' : 's'}, ${nights} priced night${nights === 1 ? '' : 's'}` : EST_TIP;
+  return `<span title="${tip}">${fmt.mad(value)}</span>`;
+}
+
 function renderBrandTable() {
-  const rows = brandAggs(filteredByCity());
+  const list = filteredByCity();
+  const rows = brandAggs(list);
   const tbody = document.querySelector('#brand-table tbody');
+  const shared = sharedOcc(rows);
 
   tbody.innerHTML = rows.map((r, i) => `
     <tr>
@@ -1159,14 +1236,110 @@ function renderBrandTable() {
       <td>${r.hotel_count}</td>
       <td>${fmt.num(r.total_keys)}</td>
       <td>${KodoBar.cell(r.bar)}</td>
-      <td title="${EST_TIP}">${fmt.pct(r.occupancy)}</td>
-      <td title="${EST_TIP}">${fmt.mad(r.revpar_mad)}</td>
+      <td title="${shared(r) ? SHARED_OCC_TIP : EST_TIP}">${fmt.pct(r.occupancy)}${shared(r) ? `<span class="occ-shared">${SHARED_OCC_NOTE}</span>` : ''}</td>
+      <td>${revparCell(r.revpar_mad, list.filter(h => h.brand_group === r.brand_group))}</td>
     </tr>
   `).join('');
+  const m = KodoBar.meta();
+  document.getElementById('brand-table-note').textContent =
+    `BAR: the median of the group's hotels that have ${m.min_nights} or more priced past nights since 3 November; "limited data" when fewer than ${m.min_hotels} hotels qualify, "—" when none does. `
+    + 'Rooms RevPAR (est.): the published prices of the coming 30 nights × the occupancy estimate, so it can show where BAR is "—" (prices for coming nights but not yet enough past nights), '
+    + 'and it is "—" where no coming night has a published price. Occupancy needs no price, so it can show without Rooms RevPAR.';
 
   const sub = document.getElementById('brand-table-sub');
   const dest = state.city === 'all' ? 'All destinations' : state.city;
   sub.textContent = `${dest} · ${rows.length} group${rows.length !== 1 ? 's' : ''} · BAR: ${KodoBar.since()} · occupancy and Rooms RevPAR: Kodo estimates, next 30 nights`;
+}
+
+// ─── Scope: All Morocco (compare destinations) or one destination (tabs) ───
+
+const DASH_TABS = ['overview', 'hotels', 'brands'];
+const dashPrefs = {          // remembered per browser; the page works without it
+  get: k => { try { return localStorage.getItem('kodo.dash.' + k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem('kodo.dash.' + k, v); } catch { /* private mode */ } },
+};
+
+// /dashboard?dest=Saidia&tab=hotels: a link to a destination and tab can be shared
+function readDashUrl() {
+  const q = new URLSearchParams(location.search);
+  const cities = new Set((hotels || []).map(h => h.city));
+  const dest = q.get('dest');
+  if (dest && cities.has(dest)) state.city = dest;
+  const tab = q.get('tab') || dashPrefs.get('tab');
+  state.tab = DASH_TABS.includes(tab) ? tab : 'overview';
+  state.destMetric = dashPrefs.get('metric') === 'occ' ? 'occ' : 'bar';
+}
+function writeDashUrl() {
+  const q = new URLSearchParams(location.search);
+  q.delete('dest'); q.delete('tab');
+  if (state.city !== 'all') { q.set('dest', state.city); q.set('tab', state.tab); }
+  const s = q.toString();
+  try { history.replaceState(history.state, '', location.pathname + (s ? '?' + s : '') + location.hash); } catch { /* file:// */ }
+}
+
+function selectTab(tab) {
+  state.tab = DASH_TABS.includes(tab) ? tab : 'overview';
+  dashPrefs.set('tab', state.tab);
+  writeDashUrl();
+  applyDashScope();
+}
+
+function applyDashScope() {
+  const mode = state.city === 'all' ? 'all' : state.tab;
+  document.getElementById('dash-scope').hidden = state.city === 'all';
+  document.querySelectorAll('#screen-dashboard [data-dash]').forEach(el => { el.hidden = !el.dataset.dash.split(' ').includes(mode); });
+  document.querySelectorAll('#dash-scope [data-tab]').forEach(b => {
+    const on = b.dataset.tab === state.tab;
+    b.classList.toggle('active', on); b.setAttribute('aria-selected', on);
+  });
+}
+
+// All Morocco: one row per destination, the same figures as the charts and the sidebar
+function renderDestTable() {
+  const tbody = document.querySelector('#dest-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = rankedCities().map(c => {
+    const conf = destConf(c.city);
+    return `<tr data-city="${fmt.esc(c.city)}" tabindex="0">
+      <td>${fmt.esc(c.city)}</td>
+      <td>${c.hotel_count}</td>
+      <td>${fmt.num(c.total_keys)}</td>
+      <td>${KodoBar.cell(c.bar)}</td>
+      <td title="${EST_TIP}">${fmt.pct(c.occupancy)}</td>
+      <td>${conf ? `<span class="conf-label conf-label--${conf.class}">${fmt.esc(conf.label)}</span>` : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// One destination, Hotels tab: its hotels with their status (hotel_flags.json)
+function renderDestHotels() {
+  const tbody = document.querySelector('#dest-hotels-table tbody');
+  if (!tbody || state.city === 'all') return;
+  const list = filteredByCity().slice().sort((a, b) => (b.keys_listed ?? b.keys ?? 0) - (a.keys_listed ?? a.keys ?? 0) || a.name.localeCompare(b.name));
+  const status = h => h.under_renovation ? 'Partly open, under renovation' : h.seasonal_closure ? CLOSED_NOTE : '';
+  tbody.innerHTML = list.map(h => `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
+      <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
+      <td class="col-hide-mobile">${getSegmentBadgeHtml(h.category)}</td>
+      <td class="col-hide-mobile">${getBrandLogoImg(h.brand_group, 16)} ${fmt.esc(h.brand_group)}</td>
+      <td title="${h.under_renovation || h.seasonal_closure ? 'Listed rooms; left out of the totals while ' + (h.under_renovation ? 'under renovation' : 'closed for the season') : ''}">${fmt.num(h.under_renovation || h.seasonal_closure ? h.keys_listed : h.keys)}</td>
+      <td>${KodoBar.hotelCell(h)}</td>
+      <td title="${EST_TIP}">${hotelOcc(h)}</td>
+      <td class="col-hide-mobile">${revparCell(h.revpar_mad, [h])}</td>
+      <td><span class="hotel-status">${status(h) || '—'}</span></td>
+    </tr>`).join('');
+  document.getElementById('dest-hotels-sub').textContent = `${state.city} · ${list.length} hotel${list.length === 1 ? '' : 's'} · BAR: ${KodoBar.since()} · occupancy and Rooms RevPAR: Kodo estimates, next 30 nights`;
+}
+
+// One destination, Overview: what its occupancy estimate rests on, in the existing wording
+function renderDestBasis() {
+  const el = document.getElementById('dash-basis');
+  if (!el || state.city === 'all') return;
+  const conf = destConf(state.city);
+  const a = KodoLive.raw() ? KodoLive.agg(filteredByCity()) : null;
+  const text = !conf ? '' : conf.class === 'real' || conf.class === 'borrowed' ? (a && a.basis) || conf.label
+    : conf.class === 'official' ? CALIBRATED_LABEL
+    : 'National estimate: no official monthly figure or real hotels for this destination yet';
+  document.getElementById('dash-basis-text').textContent = text;
 }
 
 // ─── Brands screen ────────────────────────────────────────────────
@@ -2582,9 +2755,15 @@ function renderHotelsTable() {
 // ─── Full render ──────────────────────────────────────────────────
 
 function render() {
+  applyDashScope();
   renderKPIs();
   renderCharts();
   renderBrandTable();
+  renderDestTable();
+  renderDestHotels();
+  renderDestBasis();
+  // the confidence labels and per-hotel details arrive with the live figures
+  KodoLive.load().then(() => { renderCharts(); renderBrandTable(); renderDestTable(); renderDestHotels(); renderDestBasis(); buildCityFilter(); });
   if (googleMap) {
     updateMapMarkers();
     panMap();
@@ -3962,6 +4141,29 @@ document.querySelectorAll('.nav-link').forEach(link => {
   });
 });
 
+// Market Overview scope: destination tabs, the comparison table, "Compare with Morocco", the sidebar number
+document.getElementById('dash-scope').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]');
+  if (b) selectTab(b.dataset.tab);
+});
+document.getElementById('dash-scope').addEventListener('keydown', e => {   // arrow keys between tabs
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const i = DASH_TABS.indexOf(state.tab) + (e.key === 'ArrowRight' ? 1 : -1);
+  const t = DASH_TABS[(i + DASH_TABS.length) % DASH_TABS.length];
+  selectTab(t);
+  document.querySelector(`#dash-scope [data-tab="${t}"]`).focus();
+});
+document.getElementById('dest-table').addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-city]');
+  if (tr) selectCity(tr.dataset.city);
+});
+document.getElementById('dest-table').addEventListener('keydown', e => {
+  const tr = e.target.closest('tr[data-city]');
+  if (tr && e.key === 'Enter') selectCity(tr.dataset.city);
+});
+document.getElementById('dash-compare').addEventListener('click', e => { e.preventDefault(); selectCity('all'); });
+document.querySelectorAll('.dest-metric-btn').forEach(b => b.addEventListener('click', () => setDestMetric(b.dataset.metric)));
+
 // Logo click → navigate to Dashboard
 document.getElementById('navbar-logo').addEventListener('click', () => {
   document.querySelector('.nav-link[data-screen="dashboard"]').click();
@@ -4363,8 +4565,9 @@ function buildMobileCityPills(rows) {
   const bar = document.getElementById('mobile-city-pills');
   const on = c => c === state.city;
   bar.innerHTML = `<button type="button" class="dest-chip${on('all') ? ' active' : ''}" data-mcity="all" aria-pressed="${on('all')}">All Morocco</button>`
-    + (rows || rankedCities()).map(c => `<button type="button" class="dest-chip${on(c.city) ? ' active' : ''}" data-mcity="${fmt.esc(c.city)}" aria-pressed="${on(c.city)}">`
-      + `${fmt.esc(c.city)}<span class="dest-chip-val">${c.bar.val == null ? '' : c.bar.limited ? 'limited' : fmt.mad(c.bar.val)}</span></button>`).join('');
+    + (rows || sidebarCities()).map(c => `<button type="button" class="dest-chip${on(c.city) ? ' active' : ''}" data-mcity="${fmt.esc(c.city)}" aria-pressed="${on(c.city)}">`
+      + `${fmt.esc(c.city)}<span class="dest-chip-val">${state.destMetric === 'occ' ? (c.occupancy == null ? '' : (c.occupancy * 100).toFixed(1) + '%'
+        + ((destConf(c.city) || {}).class === 'national' ? ' est.' : '')) : c.bar.val == null ? '' : c.bar.limited ? 'limited' : fmt.mad(c.bar.val)}</span></button>`).join('');
   filterDestRows();
 }
 
@@ -5160,7 +5363,8 @@ async function boot() {
   // Descriptions kept in the data (brand_profiles.json) fill the brands the code has none for
   Object.entries(profiles || {}).forEach(([bg, p]) => { if (p.description && !BRAND_DESCRIPTIONS[bg]) BRAND_DESCRIPTIONS[bg] = p.description; });
   KodoBar.setMeta(apiData && apiData.bar);
-  buildCityFilter();
+  readDashUrl();                 // ?dest=…&tab=… (old /dashboard links: All Morocco)
+  setDestMetric(state.destMetric);
   buildCityPills();
   buildSegPills();
   buildOwnerSelect();

@@ -6354,3 +6354,32 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   display: inline-flex; align-items: center; justify-content: center; outline: 1px solid var(--border);
   font-family: 'Sweet Sans Pro', sans-serif; font-weight: 400; letter-spacing: 0.02em; line-height: 1;
 }
+
+/* ─── Market Overview scope: All Morocco (compare) or one destination (tabs) ─── */
+.dest-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-right: 4px; }
+.dest-metric { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; flex: none; }
+.dest-metric-btn { font: 400 10px 'Sweet Sans Pro', sans-serif; color: var(--text-2); background: var(--bg); border: 0; padding: 2px 7px; cursor: pointer; }
+.dest-metric-btn + .dest-metric-btn { border-left: 1px solid var(--border); }
+.dest-metric-btn.is-on { background: var(--action); color: var(--on-action); }
+.dest-metric-btn:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; }
+.dest-est { font: 400 9.5px 'Sweet Sans Pro', sans-serif; color: var(--text-3); margin-left: 3px; }
+.dash-scope { margin: 0 0 14px; }
+.dash-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.dash-basis { margin: -6px 0 18px; font: 400 12px 'Sweet Sans Pro', sans-serif; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.dash-compare { color: var(--action-text); text-decoration: none; font-weight: 500; }
+.dash-compare:hover { text-decoration: underline; }
+.dh-scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+#dest-table tbody tr { cursor: pointer; }
+.conf-label { font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); white-space: nowrap; }
+.conf-label--national { color: var(--text-3); font-style: italic; }
+.occ-shared { display: block; text-transform: none; font: 400 10px 'Sweet Sans Pro', sans-serif; color: var(--text-3); }
+.hotel-status { font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); white-space: nowrap; }
+/* the scope hides blocks with [hidden]; their own display rules must not bring them back */
+#screen-dashboard [data-dash][hidden], .dash-scope[hidden] { display: none !important; }
+/* Destination Hotels tab: text columns as on the Hotels screen (left, not upper case, may wrap) */
+#dest-hotels-table thead th:nth-child(-n+3), #dest-hotels-table tbody td:nth-child(-n+3),
+#dest-hotels-table thead th:last-child, #dest-hotels-table tbody td:last-child { text-align: left; }
+#dest-hotels-table tbody td:nth-child(3), #dest-hotels-table tbody td:last-child,
+#dest-hotels-table tbody td:nth-child(4), #dest-hotels-table tbody td:nth-child(6) { text-transform: none; font-weight: 400; }
+#dest-hotels-table tbody td:nth-child(3), #dest-hotels-table tbody td:last-child { white-space: normal; }
+#dest-table thead th:last-child, #dest-table tbody td:last-child { text-align: left; text-transform: none; }
