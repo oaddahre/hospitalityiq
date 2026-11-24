@@ -158,7 +158,7 @@ class DestinationLevelsProposal(unittest.TestCase):
                 self.assertTrue(OM.dest_levels_on())                           # live since Nov 2026
                 self.assertIsNotNone(OM.dest_level(HOTELS[self.RAD], date(2026, 7, 15)))
                 self.assertFalse(OM.resort_swing(HOTELS[self.RAD]))
-                self.assertEqual(OM.dest_basis(HOTELS[self.RAD]), 'Estimate based on 1 real hotel')
+                self.assertEqual(OM.dest_basis(HOTELS[self.RAD]), 'Estimate based on 3 real hotels')
                 hoc = next(h for h in HOTELS.values() if h['city'] == 'Al Hoceima' and OM.is_seaside_resort(h))
                 self.assertIn('borrowed from neighbouring destinations', OM.dest_basis(hoc))
                 for hid in ('353', '433', '121', '423'):                      # Tamuda Bay, El Jadida, Taghazout: as before

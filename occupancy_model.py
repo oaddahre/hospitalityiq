@@ -480,10 +480,12 @@ def resort_swing(hotel):
 # Absolute monthly occupancy for destinations where the national anchor is
 # far off: level = shape[month] x annual, instead of the national 58% with a
 # seasonal offset. Derived from licensed hotel figures (internal calibration):
-#   Saidia      shape from its one real resort, level set so its Jun, Aug and
-#               Sep 2026 match the official Berkan-Saidia figures (x1.06).
-#               Leave-one-out (built without that hotel, from the other two
-#               Mediterranean resorts): 8.6 pts against 28.9 today
+#   Saidia      three real resorts (Nov 2026): per month, the average of the
+#               hotels reporting that month (months without figures are a
+#               closure, never zero; the first two months after an opening
+#               dropped; occupancy only), level set so Jun, Aug and Sep 2026
+#               match the official Berkan-Saidia figures (x0.97). Leave-one-
+#               hotel-out: 7.4 pts over 37 months, 36 inside the range
 #   Al Hoceima  no real hotel: the Mediterranean-north family (3 resorts in
 #               Saidia and Tamuda Bay); rests on neighbouring destinations, so
 #               the range is RANGE_BORROWED wider
@@ -494,8 +496,8 @@ def resort_swing(hotel):
 # beat it leave-one-out (the two Tamuda Bay resorts sit 30-45 pts apart and
 # price does not explain it).
 DEST_LEVELS = {
-    'Saidia':     {'scope': 'resorts', 'real_hotels': 1, 'annual': 27.2, 'shape': {1: 0.24, 2: 0.25, 3: 0.27, 4: 0.60, 5: 1.25, 6: 1.45,
-                                                                 7: 1.87, 8: 3.26, 9: 1.30, 10: 0.79, 11: 0.46, 12: 0.27}},
+    'Saidia':     {'scope': 'resorts', 'real_hotels': 3, 'annual': 25.3, 'shape': {1: 0.23, 2: 0.24, 3: 0.16, 4: 0.56, 5: 0.85, 6: 1.64,
+                                                                 7: 2.21, 8: 3.23, 9: 1.57, 10: 0.59, 11: 0.45, 12: 0.26}},
     'Al Hoceima': {'scope': 'resorts', 'real_hotels': 0, 'annual': 36.3, 'borrowed': True,
                    'shape': {1: 0.29, 2: 0.25, 3: 0.37, 4: 0.81, 5: 1.20, 6: 1.54, 7: 2.05, 8: 2.47, 9: 1.31, 10: 0.99, 11: 0.40,
                              12: 0.32}},
