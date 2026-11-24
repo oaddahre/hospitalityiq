@@ -171,6 +171,7 @@
             <button type="button" class="seg-btn active" role="tab" data-tab="overview" aria-selected="true">Overview</button>
             <button type="button" class="seg-btn" role="tab" data-tab="hotels" aria-selected="false">Hotels</button>
             <button type="button" class="seg-btn" role="tab" data-tab="brands" aria-selected="false">Brands</button>
+            <button type="button" class="seg-btn" role="tab" data-tab="seasonality" aria-selected="false">Seasonality</button>
           </div>
         </div>
 
@@ -266,6 +267,20 @@
             </thead>
             <tbody></tbody>
           </table></div>
+        </div>
+
+        <div class="chart-card season-card" data-dash="seasonality" hidden>
+          <div class="chart-card-header">
+            <span class="chart-title">Seasonality</span>
+            <span class="chart-unit">Occupancy % · past 12 months: official monthly figures · next 12 months: Kodo estimate</span>
+          </div>
+          <div class="season-legend" aria-hidden="true">
+            <span><i class="sl sl--official"></i>Official monthly figure</span>
+            <span><i class="sl sl--est"></i>Kodo estimate</span>
+            <span><i class="sl sl--range"></i>Estimate range</span>
+          </div>
+          <div class="chart-wrap" style="height:320px"><canvas id="chart-season" role="img" aria-label="Occupancy by month: official figures for the past 12 months, Kodo estimate for the next 12"></canvas></div>
+          <p class="chart-note" id="season-note"></p>
         </div>
 
         <div class="table-card" data-dash="all brands">

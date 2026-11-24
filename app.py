@@ -4697,6 +4697,60 @@ def api_live_kpis():
     return resp
 
 
+@app.route('/api/destination-seasonality')
+@login_required
+def api_destination_seasonality():
+    """One destination's Seasonality tab: the past 12 months' official monthly
+    occupancy (published months only, the others are gaps, never zero) and the
+    next 12 months' Kodo estimate with its range, read from the nightly model
+    output (occupancy_compare.json, each hotel on the model it is shown with,
+    weighted by rooms). Nothing is estimated here."""
+    import occupancy_compare as OC
+    city = request.args.get('city', '')
+    hotels = RB.load_hotels(DATA_DIR)
+    if not city or city not in {h.get('city') for h in hotels.values()}:
+        return jsonify({'error': 'unknown destination'}), 404
+    lm = OMM.latest_month()
+    s = OMM.series(city)
+    past = [{'month': m, 'occ': s[m][0] if m in s and s[m][1] in ('official', 'unconfirmed') else None}
+            for m in ([OMM.shift(lm, -k) for k in range(11, -1, -1)] if lm else [])]
+    mp = OMM.mapping(city) or {}
+    nxt, run = [], None
+    try:
+        with open(os.path.join(DATA_DIR, OC.CACHE), encoding='utf-8') as f:
+            cmp = json.load(f)
+    except (OSError, ValueError):
+        cmp = None
+    if cmp:
+        run = cmp.get('today')
+        this_month = _casablanca_today().strftime('%Y-%m')
+        rows = [r for r in cmp.get('hotels', []) if r.get('city') == city]
+
+        def rooms(hid):
+            try:
+                return float((hotels.get(str(hid)) or {}).get('keys') or 0) or 1.0
+            except ValueError:
+                return 1.0
+        for m in cmp.get('months', []):
+            if m <= this_month:
+                continue
+            got = []
+            for r in rows:
+                mo = (r.get('months') or {}).get(m) or {}
+                v = 'v2' if occupancy_model.model_for(r['id']) == 'v2' else 'v1'
+                if mo.get(v) is not None:
+                    got.append((mo[v], mo.get(v + '_low'), mo.get(v + '_high'), rooms(r['id'])))
+            den = sum(k for *_, k in got)
+            w = (lambda i: round(sum(x[i] * x[3] for x in got) / den, 1)
+                 if den and all(x[i] is not None for x in got) else None)
+            nxt.append({'month': m, 'occ': w(0), 'low': w(1), 'high': w(2), 'hotels': len(got)})
+    conf = LK.destination_confidence(hotels).get(city)
+    return jsonify({'city': city, 'past': past, 'official_months': sum(1 for p in past if p['occ'] is not None),
+                    'official_level': (mp.get('level') if past and any(p['occ'] is not None for p in past) else None),
+                    'next': nxt, 'model_run': run, 'confidence': conf,
+                    'hotels': sum(1 for h in hotels.values() if h.get('city') == city)})
+
+
 @app.route('/api/rates/past')
 @login_required
 def api_rates_past():

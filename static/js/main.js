@@ -1253,7 +1253,7 @@ function renderBrandTable() {
 
 // ─── Scope: All Morocco (compare destinations) or one destination (tabs) ───
 
-const DASH_TABS = ['overview', 'hotels', 'brands'];
+const DASH_TABS = ['overview', 'hotels', 'brands', 'seasonality'];
 const dashPrefs = {          // remembered per browser; the page works without it
   get: k => { try { return localStorage.getItem('kodo.dash.' + k); } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem('kodo.dash.' + k, v); } catch { /* private mode */ } },
@@ -1282,6 +1282,80 @@ function selectTab(tab) {
   dashPrefs.set('tab', state.tab);
   writeDashUrl();
   applyDashScope();
+  renderSeason();
+}
+
+// One destination, Seasonality: the past 12 months' official monthly figures
+// (solid; months without one are gaps, never zero) and the next 12 months'
+// Kodo estimate with its range (dashed line over a light band), both read
+// as stored (/api/destination-seasonality: no estimate is made for the page)
+let seasonChart = null;
+const seasonCache = {};
+const MON3S = m => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m.slice(5) - 1] + ' ' + m.slice(2, 4);
+async function renderSeason() {
+  if (state.city === 'all' || state.tab !== 'seasonality') return;
+  const city = state.city;
+  const note = document.getElementById('season-note');
+  let d = seasonCache[city];
+  if (!d) {
+    note.textContent = 'Loading…';
+    try { const r = await fetch('/api/destination-seasonality?city=' + encodeURIComponent(city)); d = r.ok ? await r.json() : null; } catch { d = null; }
+    if (!d) { note.textContent = 'Seasonality is not available right now.'; return; }
+    seasonCache[city] = d;
+  }
+  if (state.city !== city || state.tab !== 'seasonality') return;
+  const p = KodoPalette.get(), blue = p.families.blue.dot, cc = getChartColors();
+  const past = d.past || [], next = d.next || [];
+  // one continuous timeline: months between the last official one and the
+  // first estimated one (the latest month not yet published, this month) stay empty
+  const months = [];
+  const step = m => { const y = +m.slice(0, 4), mo = +m.slice(5); return mo === 12 ? `${y + 1}-01` : `${y}-${String(mo + 1).padStart(2, '0')}`; };
+  const first = (past[0] || next[0] || {}).month, last = (next[next.length - 1] || past[past.length - 1] || {}).month;
+  for (let m = first; m && m <= last && months.length < 36; m = step(m)) months.push(m);
+  const P = Object.fromEntries(past.map(x => [x.month, x])), N = Object.fromEntries(next.map(x => [x.month, x]));
+  const labels = months.map(MON3S);
+  const official = months.map(m => (P[m] ? P[m].occ : null));
+  const est = months.map(m => (N[m] ? N[m].occ : null));
+  const range = months.map(m => (N[m] && N[m].low != null && N[m].high != null ? [N[m].low, N[m].high] : null));
+  const cfg = {
+    data: { labels, datasets: [
+      { type: 'bar', label: 'Official monthly figure', data: official, backgroundColor: blue, borderRadius: 3, maxBarThickness: 26, grouped: false, order: 2 },
+      { type: 'bar', label: 'Estimate range', data: range, backgroundColor: withAlpha(blue, 0.14), borderRadius: 3, maxBarThickness: 26, grouped: false, order: 3 },
+      { type: 'line', label: 'Kodo estimate', data: est, borderColor: blue, borderWidth: 2, borderDash: [5, 4], spanGaps: false,
+        pointRadius: 3, pointBackgroundColor: cc.pointBorder, pointBorderColor: blue, tension: 0, order: 1 },
+    ] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+      plugins: {
+        legend: { display: false }, datalabels: { display: false },
+        tooltip: { backgroundColor: cc.tooltipBg, borderColor: cc.tooltipBdr, borderWidth: 1, titleColor: cc.tooltipTtl, bodyColor: cc.tooltipBdy,
+          filter: it => it.raw != null,
+          callbacks: { label: it => {
+            if (it.dataset.label === 'Official monthly figure') return `  Official monthly figure: ${it.raw}%`;
+            if (it.dataset.label === 'Estimate range') return `  Range: ${Math.round(it.raw[0])}–${Math.round(it.raw[1])}%`;
+            return `  Kodo estimate: ${it.raw.toFixed(1)}%`;
+          } } },
+      },
+      scales: {
+        x: { ticks: { color: cc.tick, font: { size: 10 }, maxRotation: 0, autoSkip: true }, grid: { display: false } },
+        y: { min: 0, max: 100, ticks: { color: cc.tick, font: { size: 11 }, callback: v => v + '%' }, grid: { color: cc.gridColor } },
+      },
+    },
+  };
+  if (seasonChart) seasonChart.destroy();
+  seasonChart = new Chart(document.getElementById('chart-season'), cfg);
+  // One line: what is official, what is estimated, and what the estimate rests on
+  const n = d.official_months, conf = d.confidence || {};
+  const off = n ? `Official: ${n} of the past 12 months have an official monthly figure${d.official_level === 'region' ? ' (regional level)' : ''}; months without one are left empty.`
+    : 'No official monthly figures for this destination: the chart shows the Kodo estimate only.';
+  const runDay = d.model_run ? ` (model run ${KodoPeriod.day(d.model_run)})` : '';
+  const rests = conf.class === 'real' ? `It rests on ${conf.real_hotels} real hotel${conf.real_hotels === 1 ? '' : 's'}.`
+    : conf.class === 'borrowed' ? 'It rests on no real hotel here: levels borrowed from neighbouring destinations.'
+    : conf.class === 'official' ? 'It is calibrated on the official monthly figures; no real hotel figures are used.'
+    : 'It rests on the national figure only: no official monthly figure or real hotel here yet.';
+  const est2 = next.some(x => x.occ != null) ? `Estimated: the next 12 months are Kodo estimates${runDay}, weighted by rooms over the hotels open that month. ${rests}`
+    : 'The 12-month estimate is not available yet: it is prepared with the nightly model run.';
+  note.textContent = `${off} ${est2}`;
 }
 
 function applyDashScope() {
@@ -2764,6 +2838,7 @@ function render() {
   renderDestBasis();
   // the confidence labels and per-hotel details arrive with the live figures
   KodoLive.load().then(() => { renderCharts(); renderBrandTable(); renderDestTable(); renderDestHotels(); renderDestBasis(); buildCityFilter(); });
+  renderSeason();
   if (googleMap) {
     updateMapMarkers();
     panMap();
@@ -2776,6 +2851,7 @@ function redrawChartsForTheme() {
   // Dashboard bar charts
   if (barChart) { barChart.destroy(); barChart = null; }
   if (occChart)  { occChart.destroy();  occChart = null; }
+  if (seasonChart) { seasonChart.destroy(); seasonChart = null; renderSeason(); }
   if (hotels) renderCharts();
 
   // Pipeline charts

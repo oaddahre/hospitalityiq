@@ -6374,6 +6374,12 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 .conf-label--national { color: var(--text-3); font-style: italic; }
 .occ-shared { display: block; text-transform: none; font: 400 10px 'Sweet Sans Pro', sans-serif; color: var(--text-3); }
 .hotel-status { font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); white-space: nowrap; }
+.season-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.season-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sl { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+.sl--official { background: var(--action); }
+.sl--est { height: 0; border-top: 2px dashed var(--action); border-radius: 0; }
+.sl--range { background: var(--action-tint); border: 1px solid var(--border); }
 /* the scope hides blocks with [hidden]; their own display rules must not bring them back */
 #screen-dashboard [data-dash][hidden], .dash-scope[hidden] { display: none !important; }
 /* Destination Hotels tab: text columns as on the Hotels screen (left, not upper case, may wrap) */
