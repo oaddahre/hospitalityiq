@@ -1,14 +1,45 @@
 /* ═══════════════════════════════════════════════════════════════════
    Kodo UI standard: shared components (docs/ui-standard.md).
-   Loaded after tokens.css and the page's own stylesheet. Colours come only
-   from tokens.css: black, white and grey; --action blue for the selected
-   item, primary actions and focus; --positive / --negative for up/down
-   changes and errors. No category colours.
+   Loaded after tokens.css and the page's own stylesheet, on the platform
+   pages only (index, account, admin). Colours come only from tokens: black,
+   white and grey; --positive / --negative for up/down changes and errors.
+   No blue anywhere on the platform (Nov 2026, until further notice): the
+   block below re-points the blue tokens at black / white for these pages,
+   so the landing, login pages, emails and PDFs keep theirs. The selected
+   item is inverted (black fill + white text; white + black in dark).
 
    The older names on the right of each selector (kodo-badge, dash-btn,
    ibar, kpi-info, kodo-tip-pop) are the Market Overview's originals and
    stay valid; new markup uses the k- names.
    ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── No blue on the platform: blue tokens re-pointed at black / white ───
+   Hex values (not var()) because the charts and the Google Maps styles read
+   these through getComputedStyle and need plain colours. */
+:root {
+  --action: #1F1E1C; --action-hover: #3A3936; --action-press: #000000; --action-text: #1F1E1C;
+  --action-tint: #EDEDEB; --action-tint-2: #F6F6F5; --on-action: #FFFFFF;
+  /* the blue, sky and violet families become black and greys */
+  --cat-1-dot: #1F1E1C; --cat-1-text: #1F1E1C; --cat-1-text-lg: #1F1E1C; --cat-1-tint: #EDEDEB;
+  --cat-4-dot: #5F5B55; --cat-4-text: #5F5B55; --cat-4-text-lg: #5F5B55; --cat-4-tint: #F1F0EE;
+  --cat-5-dot: #BDB8B1; --cat-5-text: #5F5B55; --cat-5-text-lg: #5F5B55; --cat-5-tint: #F1F0EE;
+  /* chart series: greys from dark to light (palette.js) */
+  --series-1: #1F1E1C; --series-2: #6F6B66; --series-3: #A8A39C; --series-4: #4A4744; --series-5: #C9C5BF; --series-6: #8A857E;
+  --focus-ring: var(--text);
+}
+:root[data-theme="dark"] {
+  --action: #F2F1EE; --action-hover: #D9D7D2; --action-press: #FFFFFF; --action-text: #F2F1EE;
+  --action-tint: #262625; --action-tint-2: #161616; --on-action: #000000;
+  --cat-1-dot: #F2F1EE; --cat-1-text: #F2F1EE; --cat-1-text-lg: #F2F1EE; --cat-1-tint: #262625;
+  --cat-4-dot: #A8A39C; --cat-4-text: #A8A39C; --cat-4-text-lg: #A8A39C; --cat-4-tint: #1E1E1D;
+  --cat-5-dot: #5F5B55; --cat-5-text: #A8A39C; --cat-5-text-lg: #A8A39C; --cat-5-tint: #1E1E1D;
+  --series-1: #F2F1EE; --series-2: #A8A39C; --series-3: #6F6B66; --series-4: #D0CCC6; --series-5: #4A4744; --series-6: #8A857E;
+}
+/* focus: a 2px ring in the text colour; form controls and text selection neutral */
+:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+input, select, textarea, progress { accent-color: var(--text); }
+::selection { background: color-mix(in srgb, var(--text) 22%, transparent); color: inherit; }
+a { -webkit-tap-highlight-color: transparent; }
 
 /* ─── Page header: title + one line ─── */
 .k-head { margin-bottom: 22px; }
@@ -64,7 +95,7 @@ th[aria-sort="ascending"] > .k-th-sort::after { content: ' ↑'; }
 .k-pill--solid { background: var(--text); border-color: var(--text); color: var(--bg); }
 .k-pill--muted { color: var(--text-3); border-color: transparent; background: color-mix(in srgb, var(--text) 6%, transparent); }
 
-/* ─── Buttons: outlined with an arrow (default), solid blue (primary) ─── */
+/* ─── Buttons: outlined with an arrow (default), solid black / white (primary) ─── */
 .k-btn, .dash-btn { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--text); border-radius: 4px;
   background: transparent; color: var(--text); font: 500 11px/1.2 'Sweet Sans Pro', sans-serif; letter-spacing: .08em;
   text-transform: uppercase; cursor: pointer; text-decoration: none; transition: background 150ms, color 150ms; }
@@ -92,7 +123,7 @@ th[aria-sort="ascending"] > .k-th-sort::after { content: ' ↑'; }
 .k-tip[hidden], .kodo-tip-pop[hidden] { display: none; }
 .k-menu { background: var(--menu-bg); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .12); }
 
-/* ─── Segmented control (views, stages): outlined, the selected one blue ─── */
+/* ─── Segmented control (views, stages): outlined, the selected one inverted ─── */
 .k-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 999px; padding: 2px; gap: 2px; }
 .k-seg > button { background: transparent; border: 0; border-radius: 999px; padding: 5px 12px; cursor: pointer; white-space: nowrap;
   font: 500 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); transition: background 150ms, color 150ms; }
@@ -108,6 +139,21 @@ th[aria-sort="ascending"] > .k-th-sort::after { content: ' ↑'; }
 .k-search::placeholder { color: var(--text-2); font-size: 12px; text-transform: none; letter-spacing: 0; }
 .k-select { cursor: pointer; }
 :root[data-theme="dark"] .k-select { color-scheme: dark; }
+
+/* ─── Every dropdown on the platform: one chevron, 15px from the right edge,
+   the text stopping 13px before it. appearance:none so Chrome and Safari
+   draw the same arrow in the same place (Safari ignores padding around its
+   native arrow). !important because older per-screen rules set a
+   background shorthand with !important. ─── */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235F5B55' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right 15px center !important; background-size: 10px 6px !important;
+  padding-right: 38px !important; text-overflow: ellipsis;
+}
+:root[data-theme="dark"] select:not([multiple]):not([size]) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23A8A39C' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important; }
+/* a pill button with a caret (admin user menu): the caret 15px from the edge */
+.adm-user-menu-btn { padding-right: 15px; gap: 8px; }
 
 /* ─── Empty and loading states ─── */
 .k-empty { padding: 40px 16px; text-align: center; font: 400 13px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }

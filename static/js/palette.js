@@ -20,7 +20,9 @@
     return {
       theme: document.documentElement.getAttribute('data-theme') || 'light',
       // Chart series order: blue, green, orange, violet, sky, grey (dot colours)
-      series: [fam.blue.dot, fam.green.dot, fam.orange.dot, fam.violet.dot, fam.sky.dot, fam.grey.dot],
+      // (the platform pages set --series-1..6 to greys in ui.css: no blue there)
+      series: [fam.blue.dot, fam.green.dot, fam.orange.dot, fam.violet.dot, fam.sky.dot, fam.grey.dot]
+        .map(function (c, i) { return v('--series-' + (i + 1)) || c; }),
       families: fam,
       bg: v('--bg'),
       bgAlt: v('--bg-alt'),

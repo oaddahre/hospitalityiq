@@ -557,7 +557,7 @@ body.light .nav-logout  { color: var(--text-2); }
 
 /* ─── Destination list (dashboard and map sidebar) ─────────────
    Ranked by BAR: name, hotel count (small, grey), BAR at the right and a
-   thin bar under it, proportional to the BAR (grey; blue when selected).
+   thin bar under it, proportional to the BAR (grey; black / white when selected).
    The list scrolls in its own box; selecting changes colours only, never
    sizes, so nothing moves. */
 .dest-section { display: flex; flex-direction: column; flex: 1 1 0; min-height: 180px; }
@@ -580,7 +580,7 @@ body.light .nav-logout  { color: var(--text-2); }
 .dest-row[hidden] { display: none; }
 .dest-row:hover { background: var(--bg-hover); }
 .dest-row:focus-visible { outline: 2px solid var(--action); outline-offset: -2px; }
-.dest-row.is-selected { background: var(--action-tint); border-left-color: #0075DE; }
+.dest-row.is-selected { background: var(--action-tint); border-left-color: var(--selected); }
 .dest-line { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .dest-name { font: 400 13px 'Sweet Sans Pro', sans-serif; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .dest-count { font: 400 10.5px 'Sweet Sans Pro', sans-serif; color: var(--text-3); flex: none; font-variant-numeric: tabular-nums; }
@@ -590,10 +590,10 @@ body.light .nav-logout  { color: var(--text-2); }
 .dest-meter { display: block; height: 3px; border-radius: 2px; background: transparent; overflow: hidden; }
 .dest-meter > span { display: block; height: 100%; border-radius: 2px; background: var(--text-3); opacity: .55; }
 .dest-meter--limited > span { opacity: .22; }
-.dest-row.is-selected .dest-meter > span { background: #0075DE; opacity: 1; }
+.dest-row.is-selected .dest-meter > span { background: var(--selected); opacity: 1; }
 .dest-empty { font: 400 12px 'Sweet Sans Pro', sans-serif; color: var(--text-3); padding: 8px 9px; margin: 0; }
 
-/* Under 768 px: chips (selected solid blue) with the search above them */
+/* Under 768 px: chips (selected inverted) with the search above them */
 .dest-mobile { display: none; }
 .dest-chip {
   flex-shrink: 0; display: inline-flex; align-items: baseline; gap: 6px; height: 32px; padding: 0 12px;
@@ -603,7 +603,7 @@ body.light .nav-logout  { color: var(--text-2); }
 .dest-chip[hidden] { display: none; }
 .dest-chip-val { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
 .dest-chip-val:empty { display: none; }
-.dest-chip.active { background: #0075DE; border-color: #0075DE; color: #fff; }
+.dest-chip.active { background: var(--selected); border-color: var(--selected); color: var(--on-action); }
 .dest-chip.active .dest-chip-val { color: rgba(255,255,255,.82); }
 .dest-chip:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
 
@@ -6419,13 +6419,13 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 #dest-table .cell-metric { width: 22%; }
 #dest-table .cell-num { display: block; font-weight: 500; }
 #dest-table .cell-na { color: var(--text-3); }
-/* a quiet outlined button (blue stays for the selected destination and primary actions) */
+/* a quiet outlined button */
 .dest-card-foot { display: flex; justify-content: flex-start; margin: 18px 0 4px; }
 
 /* sidebar meters: the same two states */
 .dest-meter > span { background: var(--text); opacity: 1; }
 .dest-meter--est > span { background: color-mix(in srgb, var(--text) 22%, transparent); }
-.dest-row.is-selected .dest-meter--est > span { background: color-mix(in srgb, #0075DE 35%, transparent); }
+.dest-row.is-selected .dest-meter--est > span { background: color-mix(in srgb, var(--selected) 35%, transparent); }
 
 /* the segment filter only drives the map: hidden on the Market Overview */
 .app-body[data-screen="dashboard"] .seg-section { display: none; }
@@ -6525,7 +6525,7 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 .pipe-map-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
 .pipe-map-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .pml { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
-.pml--uc { background: var(--text); }
+.pml--uc { background: var(--text-2); }
 .pml--pl { background: var(--text-3); }
 #screen-pipeline [data-pview][hidden] { display: none !important; }   /* only the selected view renders */
 .pipe-map-card { margin-top: 16px; padding: 14px 16px 16px; }

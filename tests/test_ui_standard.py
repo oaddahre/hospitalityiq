@@ -28,8 +28,11 @@ class UiStandard(unittest.TestCase):
         for cls in ('.k-card', '.k-kpi', '.k-table', '.k-th-sort', '.k-ibar', '.k-badge', '.k-pill', '.k-btn', '.k-btn--primary',
                     '.k-link', '.k-info', '.k-tip', '.k-seg', '.k-select', '.k-search', '.k-empty', '.logo-tile'):
             self.assertIn(cls, css)
-        self.assertEqual(set(re.findall(r'#[0-9A-Fa-f]{3,6}\b', css)), {'#fff'})              # colours only from tokens (the logo tile is white)
-        self.assertNotIn('--cat-', css)
+        # the token block at the top re-points blue at black / white (no blue on the platform);
+        # below it, colours only from tokens (the logo tile is white)
+        comps = css[css.index('/* ─── Page header'):]
+        self.assertEqual(set(re.findall(r'#[0-9A-Fa-f]{3,6}\b', comps)), {'#fff'})
+        self.assertNotIn('--cat-', comps)
 
     def test_linked_after_the_page_stylesheet(self):
         for t in ('index.html', 'admin.html', 'account.html'):

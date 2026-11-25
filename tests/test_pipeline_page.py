@@ -68,7 +68,7 @@ class PipelinePage(unittest.TestCase):
         self.assertIn('#screen-pipeline #pipeline-map-container { height: 320px; }', css)
 
     def test_map_follows_filters_and_selection(self):
-        f = self.js[self.js.index('function applyPipelineFilter'):self.js.index('// Map: markers')]
+        f = self.js[self.js.index('function applyPipelineFilter'):self.js.index('let pipeSelectedId')]
         self.assertIn('marker.setMap(ids.has(project.id)', f)
         show = self.js[self.js.index('function pipeShowProject'):self.js.index('function pipelinePopupHTML')]
         self.assertIn("scrollIntoView", show)
@@ -81,8 +81,9 @@ class PipelinePage(unittest.TestCase):
 
     def test_markers_neutral_selected_blue(self):
         icon = self.js[self.js.index('function pipeMarkerIcon'):self.js.index('function pipeRestyleMarkers')]
-        for t in ("'--action'", "'--text'", "'--text-3'"):
+        for t in ("'--text'", "'--text-2'", "'--text-3'"):
             self.assertIn(t, icon)
+        self.assertNotIn('--action', icon)                                      # no blue: the open marker is black
 
     def test_updated_endpoint_same_plan(self):
         app = read('app.py')

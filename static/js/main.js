@@ -1003,8 +1003,8 @@ function getChartColors() {
     barColor4:  p.series[3],
     series:     p.series,
     compColor:  p.series[5],                 // comp-set / benchmark reference: grey
-    hoverColor: p.families.blue.text,       // highlighted bar: deeper blue (lighter in dark)
-    forecastColor: p.series[4],              // forecast years: sky
+    hoverColor: p.families.blue.text,       // highlighted bar: black (white in dark): no blue on the platform
+    forecastColor: p.series[1],              // forecast years: mid grey (the lightest greys vanish at 45%)
     fillColor:  withAlpha(p.series[0], 0.12),
     gridColor:  p.grid,
     tick:       p.text2,                     // axis text (--text-3 is below AA at 11px)
@@ -3808,19 +3808,21 @@ function applyPipelineFilter() {
   }
 }
 
-// Map: markers black (under construction) or grey (planning), the open one blue
+// Map: the open project black (white in dark), the others grey: dark grey
+// under construction, light grey planning. No blue.
 let pipeSelectedId = null;
 function pipeMarkerIcon(p) {
   const cs = getComputedStyle(document.documentElement);
-  const color = String(p.id) === String(pipeSelectedId) ? cs.getPropertyValue('--action').trim()
-    : p.status === 'Under Construction' ? cs.getPropertyValue('--text').trim() : cs.getPropertyValue('--text-3').trim();
-  return { path: google.maps.SymbolPath.CIRCLE, scale: Math.max(8, Math.sqrt(p.keys || 0) * 0.85),
-           fillColor: color, fillOpacity: 0.85, strokeColor: cs.getPropertyValue('--bg').trim(), strokeWeight: 1 };
+  const sel = String(p.id) === String(pipeSelectedId);
+  const color = sel ? cs.getPropertyValue('--text').trim()
+    : p.status === 'Under Construction' ? cs.getPropertyValue('--text-2').trim() : cs.getPropertyValue('--text-3').trim();
+  return { path: google.maps.SymbolPath.CIRCLE, scale: Math.max(8, Math.sqrt(p.keys || 0) * 0.85) + (sel ? 2 : 0),
+           fillColor: color, fillOpacity: sel ? 1 : 0.8, strokeColor: cs.getPropertyValue('--bg').trim(), strokeWeight: sel ? 2 : 1 };
 }
 function pipeRestyleMarkers() {
   if (googlePipelineMap) pipelineMarkers.forEach(({ marker, project }) => marker.setIcon(pipeMarkerIcon(project)));
 }
-// The selected project: blue marker, highlighted row / card (no scrolling)
+// The selected project: black marker, highlighted row / card (no scrolling)
 function pipeMarkSelected() {
   document.querySelectorAll('#screen-pipeline [data-pid]').forEach(el =>
     el.classList.toggle('is-selected', el.dataset.pid === String(pipeSelectedId)));
