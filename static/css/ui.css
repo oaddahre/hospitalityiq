@@ -105,7 +105,9 @@ th[aria-sort="ascending"] > .k-th-sort::after { content: ' ↑'; }
 .k-select, .k-search { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg);
   color: var(--text); font: 400 12px 'Sweet Sans Pro', sans-serif; max-width: 100%; }
 .k-select:focus-visible, .k-search:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; }
-.k-search::placeholder { color: var(--text-2); }
+.k-search::placeholder { color: var(--text-2); font-size: 12px; text-transform: none; letter-spacing: 0; }
+.k-select { cursor: pointer; }
+:root[data-theme="dark"] .k-select { color-scheme: dark; }
 
 /* ─── Empty and loading states ─── */
 .k-empty { padding: 40px 16px; text-align: center; font: 400 13px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
@@ -132,8 +134,10 @@ th[aria-sort="ascending"] > .k-th-sort::after { content: ' ↑'; }
 }
 @media (max-width: 767px) {
   .k-ibar, .ibar { max-width: 64px; }
-  .k-kpi { padding: 14px 24px 12px; }
   .k-kpi-value { font-size: 22px; }
+  .k-kpi-line { white-space: normal; }
+  .k-kpi-label { padding: 0 16px; }
+  .k-kpi { padding: 14px 12px 12px; }
   .k-table thead th { white-space: normal; padding: 6px 4px; }
   .k-table tbody td { padding: 8px 4px; }
   .k-filters > * { flex: 1 1 100%; }

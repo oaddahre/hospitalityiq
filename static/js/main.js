@@ -358,9 +358,8 @@ const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner']);
 let tourismInited   = false;
 let pipelineInited  = false;
 let pipelineData    = null;
-const pipelineState = { status: 'all', city: 'all', category: 'all' };
+const pipelineState = { stage: 'all', city: 'all', group: 'all', q: '', view: 'table' };
 const pipelineSort  = { col: 'expected_opening', dir: 1 };
-const PIPE_STR_COLS = new Set(['name', 'city', 'category', 'brand', 'status']);
 
 let hotelDetailPrevScreen = 'hotels';
 let hotelCityChart        = null;
@@ -866,7 +865,7 @@ const KodoTip = (() => {
   document.addEventListener('focusout', () => hide());
   // a tap on a badge or an "i" shows its note and does not open the row it sits in
   document.addEventListener('click', e => {
-    const t = e.target.closest && e.target.closest('.kodo-badge[data-tip], .kpi-info[data-tip]');
+    const t = e.target.closest && e.target.closest('.kodo-badge[data-tip], .kpi-info[data-tip], .k-info[data-tip], .k-badge[data-tip]');
     if (!t) { if (cur && !(e.target.closest && e.target.closest('[data-tip]'))) hide(); return; }
     e.stopPropagation(); e.preventDefault();
     if (cur === t && !pop.hidden) hide(); else show(t);
@@ -2031,7 +2030,7 @@ async function renderHotelPipeline(h) {
     <div class="hpipe-item">
       <div class="hpipe-item-name">${fmt.esc(p.name)}</div>
       <span class="hpipe-item-meta">${pipeBrandHtml(p, 14)} · ${p.keys || 'TBC'} keys · ${fmt.esc(pipeYear(p))}${conv}</span>
-      ${pipeStatusPill(p)}
+      ${pipeStagePill(p)}
     </div>`;
   }).join('');
   const undated = cityPipe.some(p => !p.expected_opening && !p.conversion);
@@ -2884,11 +2883,7 @@ function redrawChartsForTheme() {
   if (seasonChart) { seasonChart.destroy(); seasonChart = null; renderSeason(); }
 
   // Pipeline charts
-  if (pipelineChartProj) { pipelineChartProj.destroy(); pipelineChartProj = null; }
-  if (pipelineChartCity) { pipelineChartCity.destroy(); pipelineChartCity = null; }
-  if (pipelineChartYear) { pipelineChartYear.destroy(); pipelineChartYear = null; }
-  if (pipelineChartCityKeys) { pipelineChartCityKeys.destroy(); pipelineChartCityKeys = null; }
-  if (pipelineInited && pipelineData) renderPipelineCharts();
+  pipeRestyleMarkers();                              // pipeline markers follow the theme
 
   // Tourism charts — destroy and reset flag; reinit if screen is active
   if (tourismInited) {
@@ -3598,17 +3593,14 @@ function showTourismOutlook(year) {
 }
 
 // ─── Pipeline screen ──────────────────────────────────────────────
-// A project with no announced opening shows "Date not announced" (never a
-// year). A conversion of an operating hotel keeps its keys on its card, but
-// they are already counted with that hotel, so every new-supply total leaves
-// them out.
+// One main view (table, cards or map) under a row of filters; black, white
+// and grey only (docs/ui-standard.md). A project with no announced opening
+// shows "Date not announced" (never a year). A conversion of an operating
+// hotel keeps its keys on its card, but they are already counted with that
+// hotel, so every new-supply total leaves them out.
 const PIPE_NO_DATE = 'Date not announced';
 const pipeYear   = p => p.expected_opening || PIPE_NO_DATE;
 const pipeNewKeys = p => p.conversion ? 0 : (p.keys || 0);
-const pipeStatusPill = p => p.status === 'Under Construction'
-  ? `<span class="pipe-status-uc pill--blue">${fmt.esc(p.status)}</span>`
-  : p.conversion ? `<span class="pipe-status-pl pill--orange">${fmt.esc(p.status)}</span>`
-  : `<span class="pipe-status-pl pill--grey">${fmt.esc(p.status)}</span>`;
 const pipeConversionLine = p => p.conversion
   ? `<div class="pipe-card-conversion">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')} · keys already counted</div>` : '';
 // The project's brand group in the Brands page's logo tile: a local logo
@@ -3643,14 +3635,25 @@ function pipeOpenBrand(e, el) {
   if (activeInfoWindow) activeInfoWindow.close();
   showBrandDetail(el.dataset.brandGroup, document.getElementById('screen-hotel').classList.contains('active') ? 'hotel' : 'pipeline');
 }
-// Keys per group (opening year or city), new rooms only; "Date not announced" last
-// (groups with no known new keys, e.g. only a conversion, are left out)
+// Keys per group (opening year or city), new rooms only
 function pipeKeysBy(data, key) {
   const t = {};
   data.forEach(p => { if (pipeNewKeys(p)) { const k = key(p); t[k] = (t[k] || 0) + pipeNewKeys(p); } });
   return t;
 }
 
+// Stage: the project's status, plus "Opening soon" (an announced opening year
+// within the next 12 months, to the year: openings are announced as a year)
+const pipeSoonYear = () => new Date(Date.now() + 365 * 864e5).getFullYear();
+const pipeIsSoon = p => p.status !== 'Opened' && !!p.expected_opening && p.expected_opening <= pipeSoonYear();
+function pipeMatchesStage(p, stage) {
+  return stage === 'all' || (stage === 'soon' ? pipeIsSoon(p) : p.status === stage);
+}
+
+const PIPE_VIEWS = ['table', 'cards', 'map'];
+function pipeSavedView() {
+  try { const v = localStorage.getItem('kodo.pipeline.view'); return PIPE_VIEWS.includes(v) ? v : 'table'; } catch { return 'table'; }
+}
 
 async function initPipeline() {
   if (pipelineInited) {
@@ -3670,277 +3673,241 @@ async function initPipeline() {
   }
   pipelineData = await res.json();
   buildSearchIndex();
+  fetch('/api/pipeline/updated').then(r => r.ok ? r.json() : null).then(d => {
+    if (d && d.updated) document.getElementById('pipe-line').textContent =
+      `Hotel projects announced or under construction in Morocco, not yet open. Updated ${pipeDay(d.updated)}.`;
+  }).catch(() => {});
 
-  // Populate filter dropdowns
-  const cities = [...new Set(pipelineData.map(p => p.city))].sort();
-  const cats   = [...new Set(pipelineData.map(p => p.category))].sort();
+  const cities = [...new Set(pipelineData.map(p => p.city))].sort((a, b) => dn(a).localeCompare(dn(b)));
+  const groups = [...new Set(pipelineData.map(pipeBrandGroup).filter(Boolean))].sort();
   const cityEl = document.getElementById('pipe-city-filter');
-  const catEl  = document.getElementById('pipe-cat-filter');
-  cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cityEl.appendChild(o); });
-  cats.forEach(c   => { const o = document.createElement('option'); o.value = c; o.textContent = c; catEl.appendChild(o); });
+  const grpEl  = document.getElementById('pipe-group-filter');
+  cities.forEach(c => cityEl.add(new Option(dn(c), c)));
+  groups.forEach(g => grpEl.add(new Option(g, g)));
 
   renderPipelineKPIs();
-  renderPipelineCards();
-  renderPipelineCharts();
-  setTimeout(initPipelineMap, 120);
+  pipeSetView(pipeSavedView(), false);
+  applyPipelineFilter();
 }
+
+const pipeDay = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 function filteredPipeline() {
+  const q = fold(pipelineState.q.trim());
   return pipelineData.filter(p =>
-    (pipelineState.status === 'all'   || p.status   === pipelineState.status) &&
-    (pipelineState.city   === 'all'   || p.city     === pipelineState.city)   &&
-    (pipelineState.category === 'all' || p.category === pipelineState.category)
-  );
+    pipeMatchesStage(p, pipelineState.stage) &&
+    (pipelineState.city  === 'all' || p.city === pipelineState.city) &&
+    (pipelineState.group === 'all' || pipeBrandGroup(p) === pipelineState.group) &&
+    (!q || fold(`${p.name || ''} ${p.brand || ''} ${p.brand_group || ''} ${p.city || ''} ${dn(p.city || '')}`).includes(q)));
 }
 
+// Summary: counts only (projects, new keys, opening within 12 months, under construction)
 function renderPipelineKPIs() {
   const all = pipelineData;
-  const totalKeys = all.reduce((s, p) => s + pipeNewKeys(p), 0);
-  const totalInv  = all.reduce((s, p) => s + (p.investment_mad || 0), 0);
-  const by2027    = all.filter(p => p.expected_opening && p.expected_opening <= 2027).length;
-
-  const setKpi = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.querySelector('.kpi-value').textContent = val;
-  };
-  setKpi('pkpi-total', all.length);
-  setKpi('pkpi-keys',  totalKeys.toLocaleString('en'));
-  setKpi('pkpi-inv',   (totalInv / 1e9).toFixed(1) + 'B');
-  setKpi('pkpi-2027',  by2027);
-  const pipeTip = KodoPeriod.tip({ source: 'Kodo pipeline tracker', note: 'count when this page loaded' });
-  ['pkpi-total', 'pkpi-keys', 'pkpi-inv', 'pkpi-2027'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), pipeTip));
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('pkpi-total', all.length);
+  set('pkpi-keys', all.reduce((s, p) => s + pipeNewKeys(p), 0).toLocaleString('en'));
+  const noKeys = all.filter(p => !p.keys && !p.conversion).length;
+  set('pkpi-keys-line', noKeys ? `${noKeys} project${noKeys !== 1 ? 's' : ''} with no room count yet` : ' ');
+  const y = pipeSoonYear();
+  set('pkpi-soon', all.filter(pipeIsSoon).length);
+  set('pkpi-soon-line', `announced for ${y - 1}–${y}`);
+  document.getElementById('pkpi-soon-tip').dataset.tip =
+    `Projects with an announced opening year up to ${y}: the next 12 months, to the year, since openings are announced as a year. Projects with no date announced are not counted.`;
+  set('pkpi-uc', all.filter(p => p.status === 'Under Construction').length);
+  const counts = { all: all.length, Planning: 0, 'Under Construction': 0, soon: 0, Opened: 0 };
+  all.forEach(p => { if (p.status in counts) counts[p.status]++; if (pipeIsSoon(p)) counts.soon++; });
+  document.querySelectorAll('#pipe-stage [data-stage]').forEach(b => {
+    const n = counts[b.dataset.stage] || 0;
+    b.disabled = !n && b.dataset.stage !== 'all';
+    b.title = n ? '' : 'No project at this stage';
+  });
 }
 
-function initPipelineMap() {
+// Stage: black = under construction, outlined = planning, grey = opened / other
+function pipeStagePill(p) {
+  if (p.status === 'Under Construction') return '<span class="k-pill k-pill--solid">Under construction</span>';
+  if (p.status === 'Planning') return '<span class="k-pill">Planning</span>';
+  return `<span class="k-pill k-pill--muted">${fmt.esc(p.status || 'Other')}</span>`;
+}
+const pipeKeysText = p => p.keys ? p.keys.toLocaleString('en') : 'TBC';
+const pipeInvText  = p => p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
+
+function pipeSorted(data) {
+  const { col, dir } = pipelineSort;
+  const val = p => col === 'category' ? (SEGMENT_ORDER_JS.indexOf(p.category) + 1 || 99)
+    : col === 'city' ? dn(p.city || '') : col === 'name' ? (p.name || '') : col === 'status' ? (p.status || '') : p[col];
+  return [...data].sort((a, b) => {
+    const av = val(a), bv = val(b);
+    if (av == null || bv == null || av === '' || bv === '') return (av == null || av === '') - (bv == null || bv === '') || (a.name || '').localeCompare(b.name || '');
+    const c = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+    return dir * c || (a.name || '').localeCompare(b.name || '');
+  });
+}
+const SEGMENT_ORDER_JS = ['Ultra Luxury', 'Luxury', 'Upper Upscale', 'Upscale', 'Upper Midscale', 'Midscale', 'Economy'];
+
+function renderPipelineTableView(data) {
+  const tbody = document.getElementById('pipeline-tbody');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" class="k-empty">No project matches these filters.</td></tr>'; return; }
+  tbody.innerHTML = pipeSorted(data).map(p => `<tr data-pid="${fmt.esc(String(p.id))}" tabindex="0" title="Show on the map">
+      <td class="pipe-proj">
+        <span class="pipe-proj-name">${fmt.esc(p.name)}</span>
+        <span class="pipe-proj-brand">${pipeBrandHtml(p, 16)}</span>
+        <span class="pipe-proj-m">${fmt.esc(dn(p.city || ''))}</span>
+        ${pipeConversionLine(p)}
+      </td>
+      <td class="col-hide-mobile">${fmt.esc(dn(p.city || ''))}</td>
+      <td class="col-hide-mobile">${fmt.esc(p.category || '—')}</td>
+      <td>${pipeStagePill(p)}</td>
+      <td class="num">${p.expected_opening || '<span class="pipe-tba" title="' + PIPE_NO_DATE + '">TBA</span>'}</td>
+      <td class="num">${pipeKeysText(p)}</td>
+      <td class="num col-hide-mobile pipe-inv">${pipeInvText(p)}</td>
+    </tr>`).join('');
+}
+
+function renderPipelineCards(data) {
+  const grid = document.getElementById('pipe-cards-grid');
+  if (!data.length) { grid.innerHTML = '<p class="k-empty">No project matches these filters.</p>'; return; }
+  grid.innerHTML = pipeSorted(data).map(p => `<div class="pipe-card2" data-pid="${fmt.esc(String(p.id))}" tabindex="0" title="Show on the map">
+      <div class="pipe-card2-top"><span class="pipe-proj-name">${fmt.esc(p.name)}</span>${pipeStagePill(p)}</div>
+      <div class="pipe-proj-brand">${pipeBrandHtml(p, 16)}</div>
+      <div class="pipe-card2-meta">${fmt.esc(dn(p.city || ''))}${p.category ? ' · ' + fmt.esc(p.category) : ''}</div>
+      ${pipeConversionLine(p)}
+      <dl class="pipe-card2-nums">
+        <div><dt>Opening</dt><dd>${fmt.esc(String(pipeYear(p)))}</dd></div>
+        <div><dt>Keys</dt><dd>${pipeKeysText(p)}</dd></div>
+        <div><dt>Inv. (MAD M)</dt><dd>${pipeInvText(p)}</dd></div>
+      </dl>
+    </div>`).join('');
+}
+
+function pipeSetView(view, save = true) {
+  pipelineState.view = view;
+  document.querySelectorAll('#pipe-view [data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+  document.querySelectorAll('#screen-pipeline [data-pview]').forEach(v => { v.hidden = v.dataset.pview !== view; });
+  if (save) try { localStorage.setItem('kodo.pipeline.view', view); } catch { /* private window */ }
+  if (view === 'map') {
+    if (!googlePipelineMap) setTimeout(initPipelineMap, 60);
+    else setTimeout(() => google.maps.event.trigger(googlePipelineMap, 'resize'), 60);
+  }
+}
+
+function applyPipelineFilter() {
+  const data = filteredPipeline();
+  const el = document.getElementById('pipe-count');
+  if (el) el.textContent = `${data.length} project${data.length !== 1 ? 's' : ''}`;
+  renderPipelineTableView(data);
+  renderPipelineCards(data);
+  if (googlePipelineMap) {
+    const ids = new Set(data.map(p => p.id));
+    pipelineMarkers.forEach(({ marker, project }) => marker.setMap(ids.has(project.id) ? googlePipelineMap : null));
+  }
+}
+
+// Map: markers black (under construction) or grey (planning), the open one blue
+let pipeSelectedId = null;
+function pipeMarkerIcon(p) {
+  const cs = getComputedStyle(document.documentElement);
+  const color = String(p.id) === String(pipeSelectedId) ? cs.getPropertyValue('--action').trim()
+    : p.status === 'Under Construction' ? cs.getPropertyValue('--text').trim() : cs.getPropertyValue('--text-3').trim();
+  return { path: google.maps.SymbolPath.CIRCLE, scale: Math.max(8, Math.sqrt(p.keys || 0) * 0.85),
+           fillColor: color, fillOpacity: 0.85, strokeColor: cs.getPropertyValue('--bg').trim(), strokeWeight: 1 };
+}
+function pipeRestyleMarkers() {
+  if (googlePipelineMap) pipelineMarkers.forEach(({ marker, project }) => marker.setIcon(pipeMarkerIcon(project)));
+}
+function pipeOpenOnMap(p, marker) {
+  if (activeInfoWindow) activeInfoWindow.close();
+  pipeSelectedId = p.id; pipeRestyleMarkers();
+  activeInfoWindow = new google.maps.InfoWindow({ content: pipelinePopupHTML(p) });
+  activeInfoWindow.addListener('closeclick', () => { pipeSelectedId = null; pipeRestyleMarkers(); });
+  activeInfoWindow.open({ map: googlePipelineMap, anchor: marker });
+}
+
+function initPipelineMap(then) {
   const container = document.getElementById('pipeline-map-container');
   if (!container || !googleMapsApiReady || googlePipelineMap) return;
   try {
-    const isDark = !document.body.classList.contains('light');
     googlePipelineMap = new google.maps.Map(container, {
       ...GMAP_OPTIONS_BASE,
       center: { lat: 31.5, lng: -5.5 },
       zoom:   6,
       styles: gmapStyles(),
     });
-
-    pipelineMarkers = pipelineData.map(p => {
-      const color  = familyDot(p.status === 'Under Construction' ? 'blue' : p.conversion ? 'orange' : 'grey');
-      const radius = Math.max(8, Math.sqrt(p.keys || 0) * 0.85);
-      const marker = new google.maps.Marker({
-        position: { lat: p.lat, lng: p.lng },
-        map:      googlePipelineMap,
-        icon: {
-          path:        google.maps.SymbolPath.CIRCLE,
-          scale:       radius,
-          fillColor:   color,
-          fillOpacity: 0.85,
-          strokeColor: color,
-          strokeWeight: 1.5,
-        },
-      });
-      marker.addListener('click', () => {
-        if (activeInfoWindow) activeInfoWindow.close();
-        activeInfoWindow = new google.maps.InfoWindow({ content: pipelinePopupHTML(p) });
-        activeInfoWindow.open({ map: googlePipelineMap, anchor: marker });
-      });
+    const ids = new Set(filteredPipeline().map(p => p.id));
+    pipelineMarkers = pipelineData.filter(p => p.lat != null && p.lng != null).map(p => {
+      const marker = new google.maps.Marker({ position: { lat: p.lat, lng: p.lng }, map: ids.has(p.id) ? googlePipelineMap : null,
+                                              icon: pipeMarkerIcon(p), title: p.name });
+      marker.addListener('click', () => pipeOpenOnMap(p, marker));
       return { marker, project: p };
     });
+    if (then) then();
   } catch (e) {
     console.error('Google Maps pipeline init failed:', e);
   }
 }
 
+// Row or card click: the project's detail, its pop-up on the map
+function pipeShowProject(id) {
+  const open = () => {
+    const m = pipelineMarkers.find(x => String(x.project.id) === String(id));
+    if (!m) return;
+    if (!m.marker.getMap()) m.marker.setMap(googlePipelineMap);
+    googlePipelineMap.panTo(m.marker.getPosition());
+    if (googlePipelineMap.getZoom() < 8) googlePipelineMap.setZoom(8);
+    pipeOpenOnMap(m.project, m.marker);
+  };
+  pipeSetView('map');
+  if (googlePipelineMap) setTimeout(open, 120); else setTimeout(() => initPipelineMap(open), 80);
+}
+
 function pipelinePopupHTML(p) {
-  const invB = p.investment_mad ? (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
-  const pillCls = p.status === 'Under Construction' ? 'pill--blue' : p.conversion ? 'pill--orange' : 'pill--grey';
-  const statusPill = `<span class="${pillCls}" style="font-family:'Sweet Sans Pro',sans-serif;font-size:10px;">${fmt.esc(p.status)}</span>`;
+  const inv = p.investment_mad ? 'MAD ' + (p.investment_mad / 1e9).toFixed(2) + 'B' : 'TBC';
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
-    <div class="hiq-popup-meta">${pipeBrandHtml(p, 14)} · ${getSegmentBadgeHtml(p.category)}</div>
+    <div class="hiq-popup-meta">${pipeBrandHtml(p, 14)}</div>
+    <div class="hiq-popup-meta">${fmt.esc(dn(p.city || ''))}${p.category ? ' · ' + fmt.esc(p.category) : ''}</div>
     ${p.conversion ? `<div class="hiq-popup-meta">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')} · keys already counted</div>` : ''}
     <div class="hiq-popup-grid">
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys || 'TBC'}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
-      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${fmt.esc(pipeYear(p))}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
-      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.investment_mad ? 'MAD ' + invB : invB}</div><div class="hiq-popup-stat-lbl">Investment</div></div>
-      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${statusPill}</div><div class="hiq-popup-stat-lbl">Status</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${fmt.esc(String(pipeYear(p)))}</div><div class="hiq-popup-stat-lbl">Opening</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${inv}</div><div class="hiq-popup-stat-lbl">Investment</div></div>
+      <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${pipeStagePill(p)}</div><div class="hiq-popup-stat-lbl">Stage</div></div>
     </div>
   </div>`;
 }
 
-let pipelineChartProj = null;
-let pipelineChartCity = null;
-let pipelineChartYear = null;
-let pipelineChartCityKeys = null;
-
-function renderPipelineCards() {
-  const data = filteredPipeline();
-  const grid = document.getElementById('pipe-cards-grid');
-  const countEl = document.getElementById('pipe-count');
-  if (countEl) countEl.textContent = data.length + ' project' + (data.length !== 1 ? 's' : '');
-
-  if (!data.length) {
-    grid.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:8px 0">No projects match the selected filters.</p>';
-    return;
-  }
-  grid.innerHTML = data.map(p => {
-    const isUC = p.status === 'Under Construction';
-    const pill  = pipeStatusPill(p);
-    const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
-    return `<div class="pipe-card ${isUC ? 'pipe-card-uc' : 'pipe-card-pl'}">
-      <div>
-        <div class="pipe-card-header-row">
-          <div class="pipe-card-name">${fmt.esc(p.name)}</div>
-          ${pill}
-        </div>
-        <div class="pipe-card-location">${fmt.esc(p.city)} · ${getSegmentBadgeHtml(p.category)}</div>
-        <div class="pipe-card-brand">${pipeBrandHtml(p, 16)}</div>
-        ${pipeConversionLine(p)}
-      </div>
-      <div class="pipe-card-year${p.expected_opening ? '' : ' pipe-card-year-tba'}">${fmt.esc(pipeYear(p))}</div>
-      <div class="pipe-card-metrics">
-        <div>
-          <div class="pipe-card-metric-val">${p.keys ? p.keys.toLocaleString('en') : 'TBC'}</div>
-          <div class="pipe-card-metric-lbl">Keys</div>
-        </div>
-        <div>
-          <div class="pipe-card-metric-val">${invM}</div>
-          <div class="pipe-card-metric-lbl">MAD M</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderPipelineTableView() {
-  const data = filteredPipeline();
-  const tbody = document.getElementById('pipeline-tbody');
-  data.sort((a, b) => {
-    const av = a[pipelineSort.col], bv = b[pipelineSort.col];
-    if (PIPE_STR_COLS.has(pipelineSort.col)) return pipelineSort.dir * String(av ?? '').localeCompare(String(bv ?? ''));
-    if (av == null || bv == null) return (av == null) - (bv == null);       // no value (e.g. no date): last
-    return pipelineSort.dir * (av - bv);
-  });
-  if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">No projects match filters.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = data.map(p => {
-    const pill  = pipeStatusPill(p);
-    const invM  = p.investment_mad ? Math.round(p.investment_mad / 1e6).toLocaleString('en') : 'TBC';
-    return `<tr>
-      <td style="font-weight:600">${fmt.esc(p.name)}${p.conversion ? `<div class="pipe-card-conversion">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')}</div>` : ''}</td>
-      <td>${fmt.esc(p.city)}</td>
-      <td>${pipeBrandHtml(p, 16)}</td>
-      <td class="num-col">${fmt.esc(pipeYear(p))}</td>
-      <td>${pill}</td>
-      <td class="num-col">${p.keys ? p.keys.toLocaleString('en') : 'TBC'}</td>
-      <td class="num-col">${invM}</td>
-    </tr>`;
-  }).join('');
-}
-
-function togglePipelineTable() {
-  const wrap = document.getElementById('pipe-table-wrap');
-  const btn  = document.getElementById('pipe-table-toggle');
-  const open = wrap.classList.toggle('open');
-  btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke-linecap="round"/></svg> ${open ? 'Hide table view' : 'Show table view'}`;
-  if (open) renderPipelineTableView();
-}
-
-function renderPipelineCharts() {
-  const data = filteredPipeline();
-
-  // Keys by project (horizontal bar, sorted asc so largest at top); projects
-  // without a room count are left out, a conversion is labelled as such
-  const sorted = data.filter(p => p.keys).sort((a, b) => a.keys - b.keys);
-  const projLabels = sorted.map(p => p.conversion ? p.name + ' (conversion)' : p.name);
-  const projVals   = sorted.map(p => p.keys);
-  const projColors = sorted.map(() => getChartColors().barColor);
-
-  const projWrap = document.getElementById('pwrap-proj');
-  if (projWrap) { projWrap.style.minHeight = '0'; projWrap.style.height = Math.max(220, projLabels.length * 36 + 50) + 'px'; }
-  if (pipelineChartProj) { pipelineChartProj.destroy(); pipelineChartProj = null; }
-  const projCfg = chartConfig(projLabels, projVals, ' keys', projColors, v => v);
-  projCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw + ' keys';
-  pipelineChartProj = new Chart(document.getElementById('chart-pipeline-proj'), projCfg);
-
-  // Investment by city (horizontal bar, sorted asc)
-  const cityTotals = {};
-  data.forEach(p => { if (p.investment_mad) cityTotals[p.city] = (cityTotals[p.city] || 0) + p.investment_mad; });
-  const cityEntries = Object.entries(cityTotals).sort((a, b) => a[1] - b[1]);   // cities with no known figure left out
-  const cityLabels  = cityEntries.map(e => e[0]);
-  const cityVals    = cityEntries.map(e => parseFloat((e[1] / 1e9).toFixed(2)));
-
-  const cityWrap = document.getElementById('pwrap-city');
-  if (cityWrap) { cityWrap.style.minHeight = '0'; cityWrap.style.height = Math.max(200, cityLabels.length * 38 + 50) + 'px'; }
-  if (pipelineChartCity) { pipelineChartCity.destroy(); pipelineChartCity = null; }
-  const cityCfg = chartConfig(cityLabels, cityVals, 'B', cityLabels.map(() => getChartColors().barColor), v => v + 'B');
-  cityCfg.options.plugins.tooltip.callbacks.label = ctx => '  MAD ' + ctx.raw + 'B';
-  pipelineChartCity = new Chart(document.getElementById('chart-pipeline-city'), cityCfg);
-
-  // New keys by opening year (years in order, "Date not announced" last) and by city
-  const byYear = pipeKeysBy(data, pipeYear);
-  const yLabels = Object.keys(byYear).sort((a, b) => (a === PIPE_NO_DATE) - (b === PIPE_NO_DATE) || a.localeCompare(b));
-  if (pipelineChartYear) { pipelineChartYear.destroy(); pipelineChartYear = null; }
-  const yearCfg = chartConfig(yLabels, yLabels.map(y => byYear[y]), ' keys', yLabels.map(() => getChartColors().barColor), v => v);
-  yearCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toLocaleString('en') + ' new keys';
-  const yWrap = document.getElementById('pwrap-year');
-  if (yWrap) { yWrap.style.minHeight = '0'; yWrap.style.height = Math.max(200, yLabels.length * 38 + 50) + 'px'; }
-  pipelineChartYear = new Chart(document.getElementById('chart-pipeline-year'), yearCfg);
-
-  const byCity = Object.entries(pipeKeysBy(data, p => p.city)).sort((a, b) => a[1] - b[1]);
-  if (pipelineChartCityKeys) { pipelineChartCityKeys.destroy(); pipelineChartCityKeys = null; }
-  const ckCfg = chartConfig(byCity.map(e => e[0]), byCity.map(e => e[1]), ' keys', byCity.map(() => getChartColors().barColor), v => v);
-  ckCfg.options.plugins.tooltip.callbacks.label = ctx => '  ' + ctx.raw.toLocaleString('en') + ' new keys';
-  const ckWrap = document.getElementById('pwrap-citykeys');
-  if (ckWrap) { ckWrap.style.minHeight = '0'; ckWrap.style.height = Math.max(200, byCity.length * 38 + 50) + 'px'; }
-  pipelineChartCityKeys = new Chart(document.getElementById('chart-pipeline-citykeys'), ckCfg);
-}
-
-function applyPipelineFilter() {
-  renderPipelineCards();
-  renderPipelineCharts();
-  const tableOpen = document.getElementById('pipe-table-wrap').classList.contains('open');
-  if (tableOpen) renderPipelineTableView();
-  if (googlePipelineMap) {
-    pipelineMarkers.forEach(({ marker, project: p }) => {
-      const show = (pipelineState.status   === 'all' || p.status   === pipelineState.status) &&
-                   (pipelineState.city     === 'all' || p.city     === pipelineState.city)   &&
-                   (pipelineState.category === 'all' || p.category === pipelineState.category);
-      marker.setMap(show ? googlePipelineMap : null);
-    });
-  }
-}
-
-// Pipeline filter events (event delegation on the screen)
+// Pipeline events (delegation on the screen)
 document.getElementById('screen-pipeline').addEventListener('click', e => {
-  const btn = e.target.closest('[data-pstatus]');
-  if (btn) {
-    document.querySelectorAll('[data-pstatus]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    pipelineState.status = btn.dataset.pstatus;
+  const st = e.target.closest('#pipe-stage [data-stage]');
+  if (st && !st.disabled) {
+    pipelineState.stage = st.dataset.stage;
+    document.querySelectorAll('#pipe-stage [data-stage]').forEach(b => b.setAttribute('aria-pressed', String(b === st)));
     applyPipelineFilter();
+    return;
   }
-  const tBtn = e.target.closest('#pipe-table-toggle');
-  if (tBtn) togglePipelineTable();
-  const th = e.target.closest('th[data-pcol]');
+  const vw = e.target.closest('#pipe-view [data-view]');
+  if (vw) { pipeSetView(vw.dataset.view); return; }
+  const th = e.target.closest('th[data-psort]');
   if (th) {
-    const col = th.dataset.pcol;
-    pipelineSort.dir = pipelineSort.col === col ? -pipelineSort.dir : 1;
+    const col = th.dataset.psort;
+    pipelineSort.dir = pipelineSort.col === col ? -pipelineSort.dir : (['keys', 'investment_mad'].includes(col) ? -1 : 1);
     pipelineSort.col = col;
-    document.querySelectorAll('#pipeline-table th').forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
-    th.classList.add(pipelineSort.dir === 1 ? 'sort-asc' : 'sort-desc');
-    renderPipelineTableView();
+    document.querySelectorAll('#pipeline-table th[data-psort]').forEach(t => t.removeAttribute('aria-sort'));
+    th.setAttribute('aria-sort', pipelineSort.dir === 1 ? 'ascending' : 'descending');
+    applyPipelineFilter();
+    return;
   }
+  const row = e.target.closest('[data-pid]');
+  if (row && !e.target.closest('a, button')) pipeShowProject(row.dataset.pid);
 });
-document.getElementById('pipe-city-filter').addEventListener('change', e => {
-  pipelineState.city = e.target.value;
-  applyPipelineFilter();
+document.getElementById('screen-pipeline').addEventListener('keydown', e => {
+  const row = e.target.closest && e.target.closest('[data-pid]');
+  if (row && e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pipeShowProject(row.dataset.pid); }
 });
-document.getElementById('pipe-cat-filter').addEventListener('change', e => {
-  pipelineState.category = e.target.value;
-  applyPipelineFilter();
-});
+document.getElementById('pipe-city-filter').addEventListener('change', e => { pipelineState.city = e.target.value; applyPipelineFilter(); });
+document.getElementById('pipe-group-filter').addEventListener('change', e => { pipelineState.group = e.target.value; applyPipelineFilter(); });
+document.getElementById('pipe-search').addEventListener('input', e => { pipelineState.q = e.target.value; applyPipelineFilter(); });
 
 // ─── Editorial / News screen ──────────────────────────────────────
 let newsData    = null;

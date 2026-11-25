@@ -323,142 +323,74 @@
 
       <!-- ── Pipeline ── -->
       <section class="screen" id="screen-pipeline">
-        <div class="screen-header">
-          <h1>Morocco Hotel Pipeline</h1>
-          <div class="screen-header-legend">
-            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-1-dot);"></span>Under Construction</span>
-            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-6-dot);"></span>Planning</span>
-            <span class="screen-header-legend-item"><span class="screen-header-legend-dot" style="background:var(--cat-3-dot);"></span>Conversion</span>
-          </div>
+        <div class="k-head">
+          <h1 class="k-title">Pipeline</h1>
+          <p class="k-line" id="pipe-line">Hotel projects announced or under construction in Morocco, not yet open.</p>
         </div>
 
-        <!-- KPI Cards -->
-        <div class="kpi-grid pipe-kpi-grid">
-          <div class="kpi-card" id="pkpi-total">
-            <span class="kpi-label">Projects Tracked</span>
-            <span class="kpi-value">—</span>
-            <span class="kpi-meta">all pipeline</span>
-          </div>
-          <div class="kpi-card" id="pkpi-keys">
-            <span class="kpi-label">Keys in Pipeline</span>
-            <span class="kpi-value">—</span>
-            <span class="kpi-meta">new rooms · conversions not counted</span>
-          </div>
-          <div class="kpi-card" id="pkpi-inv">
-            <span class="kpi-label">Est. Investment</span>
-            <span class="kpi-value">—</span>
-            <span class="kpi-meta">MAD billions</span>
-          </div>
-          <div class="kpi-card" id="pkpi-2027">
-            <span class="kpi-label">Opening by 2027</span>
-            <span class="kpi-value">—</span>
-            <span class="kpi-meta">projects</span>
-          </div>
+        <div class="k-kpis" id="pipe-kpis">
+          <div class="k-kpi"><span class="k-kpi-label">Projects</span><span class="k-kpi-value" id="pkpi-total">—</span>
+            <span class="k-kpi-line">&nbsp;</span>
+            <button type="button" class="kpi-info" data-tip="Every project in Kodo's pipeline tracker today, all stages." aria-label="About this figure">i</button></div>
+          <div class="k-kpi"><span class="k-kpi-label">New keys</span><span class="k-kpi-value" id="pkpi-keys">—</span>
+            <span class="k-kpi-line" id="pkpi-keys-line">&nbsp;</span>
+            <button type="button" class="kpi-info" data-tip="Rooms the projects will add. A conversion of an operating hotel is left out: its rooms are already counted. Projects with no announced room count add nothing." aria-label="About this figure">i</button></div>
+          <div class="k-kpi"><span class="k-kpi-label" id="pkpi-soon-label">Opening next 12 months</span><span class="k-kpi-value" id="pkpi-soon">—</span>
+            <span class="k-kpi-line" id="pkpi-soon-line">&nbsp;</span>
+            <button type="button" class="kpi-info" id="pkpi-soon-tip" data-tip="Openings are announced as a year." aria-label="About this figure">i</button></div>
+          <div class="k-kpi"><span class="k-kpi-label">Under construction</span><span class="k-kpi-value" id="pkpi-uc">—</span>
+            <span class="k-kpi-line">&nbsp;</span>
+            <button type="button" class="kpi-info" data-tip="Projects whose stage is Under construction." aria-label="About this figure">i</button></div>
         </div>
 
-        <!-- Filter bar -->
-        <div class="pipe-filter-bar">
-          <div class="pipe-status-pills" id="pipe-status-pills">
-            <button class="seg-btn active" data-pstatus="all">All</button>
-            <button class="seg-btn" data-pstatus="Under Construction">
-              <span class="seg-dot" style="background:var(--cat-1-dot)"></span>Under Construction
-            </button>
-            <button class="seg-btn" data-pstatus="Planning">
-              <span class="seg-dot" style="background:var(--cat-6-dot)"></span>Planning
-            </button>
-            <button class="seg-btn" data-pstatus="Conversion">
-              <span class="seg-dot" style="background:var(--cat-3-dot)"></span>Conversion
-            </button>
+        <div class="k-filters pipe-filters">
+          <div class="k-seg" id="pipe-stage" role="group" aria-label="Stage">
+            <button type="button" data-stage="all" aria-pressed="true">All</button>
+            <button type="button" data-stage="Planning" aria-pressed="false">Planning</button>
+            <button type="button" data-stage="Under Construction" aria-pressed="false">Under construction</button>
+            <button type="button" data-stage="soon" aria-pressed="false">Opening soon</button>
+            <button type="button" data-stage="Opened" aria-pressed="false">Opened</button>
           </div>
-          <select id="pipe-city-filter" class="pipe-select">
-            <option value="all">All Cities</option>
-          </select>
-          <select id="pipe-cat-filter" class="pipe-select">
-            <option value="all">All Categories</option>
-          </select>
-          <span class="pipe-count" id="pipe-count"></span>
-          <button class="export-btn" id="btn-export-pipeline">↓ Export</button>
+          <select id="pipe-city-filter" class="k-select" aria-label="Destination"><option value="all">All destinations</option></select>
+          <select id="pipe-group-filter" class="k-select" aria-label="Brand group"><option value="all">All brand groups</option></select>
+          <input type="search" id="pipe-search" class="k-search" placeholder="Search projects" autocomplete="off" aria-label="Search projects">
         </div>
 
-        <!-- Analytics row -->
-        <div class="charts-row tour-2col" style="margin-bottom:24px">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Keys by Project</span>
+        <div class="k-card pipe-main">
+          <div class="pipe-main-head">
+            <span class="k-card-title" id="pipe-count">&nbsp;</span>
+            <div class="k-seg" id="pipe-view" role="group" aria-label="View">
+              <button type="button" data-view="table" aria-pressed="true">Table</button>
+              <button type="button" data-view="cards" aria-pressed="false">Cards</button>
+              <button type="button" data-view="map" aria-pressed="false">Map</button>
             </div>
-            <div class="chart-wrap" id="pwrap-proj"><canvas id="chart-pipeline-proj"></canvas></div>
           </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">Investment by City</span>
-              <span class="chart-unit">MAD billions · total pipeline</span>
-            </div>
-            <div class="chart-wrap" id="pwrap-city"><canvas id="chart-pipeline-city"></canvas></div>
-          </div>
-        </div>
-        <div class="charts-row tour-2col" style="margin-bottom:24px">
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">New Keys by Opening Year</span>
-              <span class="chart-unit">conversions not counted</span>
-            </div>
-            <div class="chart-wrap" id="pwrap-year"><canvas id="chart-pipeline-year"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title">New Keys by City</span>
-              <span class="chart-unit">conversions not counted</span>
-            </div>
-            <div class="chart-wrap" id="pwrap-citykeys"><canvas id="chart-pipeline-citykeys"></canvas></div>
-          </div>
-        </div>
-
-        <!-- Project cards -->
-        <div class="pipe-cards-grid" id="pipe-cards-grid"></div>
-
-        <!-- Collapsible table -->
-        <div class="pipe-table-section">
-          <button class="pipe-table-toggle" id="pipe-table-toggle">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke-linecap="round"/></svg>
-            Show table view
-          </button>
-          <div class="pipe-table-wrap" id="pipe-table-wrap">
-            <table class="hotels-table" id="pipeline-table">
+          <div class="pipe-view" data-pview="table">
+            <table class="k-table pipe-table" id="pipeline-table">
               <thead>
                 <tr>
-                  <th data-pcol="name">Project</th>
-                  <th data-pcol="city">City</th>
-                  <th data-pcol="brand">Brand</th>
-                  <th data-pcol="expected_opening" class="num-col">Opening</th>
-                  <th data-pcol="status" style="min-width:140px">Status</th>
-                  <th data-pcol="keys" class="num-col">Keys</th>
-                  <th data-pcol="investment_mad" class="num-col">Inv. (MAD M)</th>
+                  <th scope="col" data-psort="name"><button type="button" class="k-th-sort">Project</button></th>
+                  <th scope="col" data-psort="city" class="col-hide-mobile"><button type="button" class="k-th-sort">Destination</button></th>
+                  <th scope="col" data-psort="category" class="col-hide-mobile"><button type="button" class="k-th-sort">Segment</button></th>
+                  <th scope="col" data-psort="status"><button type="button" class="k-th-sort">Stage</button></th>
+                  <th scope="col" data-psort="expected_opening" class="num" aria-sort="ascending"><button type="button" class="k-th-sort">Opening</button></th>
+                  <th scope="col" data-psort="keys" class="num"><button type="button" class="k-th-sort">Keys</button></th>
+                  <th scope="col" data-psort="investment_mad" class="num col-hide-mobile"><button type="button" class="k-th-sort" data-tip="Investment as announced, in MAD millions; TBC where none was announced.">Inv. (MAD M)</button></th>
                 </tr>
               </thead>
               <tbody id="pipeline-tbody"></tbody>
             </table>
           </div>
-        </div>
-
-        <!-- Pipeline map -->
-        <div class="chart-card" style="margin-top:24px">
-          <div class="chart-card-header">
-            <span class="chart-title">Pipeline Map</span>
-            <div class="pipeline-map-legend">
-              <span class="pipeline-legend-item">
-                <span class="pipeline-legend-dot" style="background:var(--cat-1-dot);"></span>
-                <span class="pipeline-legend-label">Under Construction</span>
-              </span>
-              <span class="pipeline-legend-item">
-                <span class="pipeline-legend-dot" style="background:var(--cat-6-dot);"></span>
-                <span class="pipeline-legend-label">Planning</span>
-              </span>
-              <span class="pipeline-legend-item">
-                <span class="pipeline-legend-label" style="color:var(--text-faint)">Circle size = keys</span>
-              </span>
+          <div class="pipe-view pipe-cards" data-pview="cards" id="pipe-cards-grid" hidden></div>
+          <div class="pipe-view" data-pview="map" hidden>
+            <div class="pipe-map-legend" aria-hidden="true">
+              <span><i class="pml pml--uc"></i>Under construction</span>
+              <span><i class="pml pml--pl"></i>Planning</span>
+              <span>Circle size = keys</span>
             </div>
+            <div id="pipeline-map-container"></div>
           </div>
-          <div id="pipeline-map-container"></div>
+          <div class="k-btn-row"><button type="button" class="k-btn" id="btn-export-pipeline">Export <span aria-hidden="true">↓</span></button></div>
         </div>
       </section>
 
@@ -1634,7 +1566,7 @@
         </div>
 
         <!-- Nearby pipeline -->
-        <div class="chart-card" style="margin-bottom:20px">
+        <div class="chart-card hpipe-card" style="margin-bottom:20px">
           <div class="chart-card-header">
             <span class="chart-title">Upcoming supply — <span id="hotel-pipe-city">—</span></span>
             <span class="chart-unit">confirmed pipeline projects</span>

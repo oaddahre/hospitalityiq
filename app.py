@@ -2244,6 +2244,23 @@ def api_pipeline():
     return jsonify(records)
 
 
+@app.route("/api/pipeline/updated")
+@login_required
+@tier_required("benchmarker")
+def api_pipeline_updated():
+    """The day pipeline.csv last changed: the Pipeline page's "Updated" line."""
+    try:
+        ts = os.path.getmtime(os.path.join(DATA_DIR, "pipeline.csv"))
+    except OSError:
+        return jsonify({"updated": None})
+    try:
+        import pytz
+        day = datetime.fromtimestamp(ts, pytz.timezone("Africa/Casablanca")).date()
+    except Exception:
+        day = datetime.utcfromtimestamp(ts).date()
+    return jsonify({"updated": day.isoformat()})
+
+
 OWNERS_FILE = os.path.join(DATA_DIR, "owners.json")
 BRAND_PROFILES_FILE = os.path.join(DATA_DIR, "brand_profiles.json")
 

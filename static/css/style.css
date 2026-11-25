@@ -167,9 +167,9 @@ input[type="text"]:not(.hotels-search-input):not(.list-search-input):not(.adm-in
 input[type="email"]:not(.adm-input),
 input[type="number"]:not(.adm-input),
 input[type="password"]:not(.adm-input),
-input[type="search"],
+input[type="search"]:not(.k-search),
 textarea:not(.adm-textarea),
-select:not(.adm-select),
+select:not(.adm-select):not(.k-select),
 .form-input,
 .filter-input,
 .search-input,
@@ -189,9 +189,9 @@ select:not(.adm-select),
   width: auto;
 }
 
-input:focus,
+input:not(.k-search):focus,
 textarea:focus,
-select:focus,
+select:not(.k-select):focus,
 .form-input:focus,
 .filter-input:focus,
 .search-input:focus,
@@ -6496,3 +6496,48 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 @media (hover: none) { .pipe-brand-link > span:not(.logo-tile):not(.pipe-brand-arrow) { text-decoration-color: var(--border); } }
 .pipe-card-brand .pipe-brand, .hpipe-item-meta .pipe-brand { color: var(--text); }
 #pipeline-tbody .pipe-brand, #pipeline-tbody .pipe-brand > span:not(.logo-tile) { font-size: inherit; }
+
+/* ─── Pipeline on the UI standard (docs/ui-standard.md) ─── */
+.pipe-filters .k-select { min-width: 170px; }
+.pipe-filters .k-search { flex: 1 1 200px; min-width: 160px; }
+.pipe-filters .k-seg button:disabled { color: var(--text-3); cursor: default; background: transparent; }
+.pipe-main { padding: 14px 16px 12px; }
+.pipe-main-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.pipe-table { table-layout: auto; }
+.pipe-table th.num, .pipe-table td.num { text-align: right; }
+.pipe-table tbody tr[data-pid] { cursor: pointer; }
+.pipe-table tbody tr[data-pid]:focus-visible, .pipe-card2:focus-visible { outline: 2px solid var(--action); outline-offset: -2px; }
+.pipe-proj-name { display: block; font-weight: 500; color: var(--text); overflow-wrap: anywhere; }
+.pipe-proj-brand { display: block; margin-top: 3px; font-size: 11px; color: var(--text-2); }
+.pipe-proj-brand .pipe-brand, .pipe-proj-brand .pipe-brand-link { color: var(--text-2); font-size: 11px; }
+.pipe-proj-m { display: none; margin-top: 2px; font-size: 11px; color: var(--text-2); }
+.pipe-proj .pipe-card-conversion { margin-top: 3px; font-size: 11px; color: var(--text-2); }
+.pipe-inv, .pipe-tba { color: var(--text-2); }
+.pipe-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.pipe-card2 { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--line); background: var(--card-bg);
+  cursor: pointer; min-width: 0; transition: background 150ms; }
+.pipe-card2:hover { background: var(--row-hover); }
+.pipe-card2-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.pipe-card2-meta { font-size: 11px; color: var(--text-2); }
+.pipe-card2-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); }
+.pipe-card2-nums dt { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.pipe-card2-nums dd { margin: 2px 0 0; font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
+.pipe-map-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.pipe-map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.pml { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.pml--uc { background: var(--text); }
+.pml--pl { background: var(--text-3); }
+#screen-pipeline #pipeline-map-container { height: 520px; background: var(--bg); border: 1px solid var(--line); }
+.hiq-popup .k-pill { font-size: 10px; }
+/* the hotel page's pipeline block: the same neutral style */
+.hpipe-card { background: var(--card-bg); }
+.hpipe-item { border-bottom: 0; padding: 8px 0; }
+@media (max-width: 767px) {
+  .pipe-table .col-hide-mobile { display: none; }
+  .pipe-proj-m { display: block; }
+  .pipe-filters .k-select, .pipe-filters .k-search { min-width: 0; width: 100%; }
+  .pipe-main { padding: 12px 10px; }
+  #screen-pipeline #pipeline-map-container { height: 380px; }
+  .pipe-table .k-pill { padding: 1px 6px; font-size: 9.5px; }
+  .pipe-table tbody td, .pipe-table thead th { padding-left: 4px; padding-right: 4px; }
+}
