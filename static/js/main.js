@@ -2,16 +2,12 @@
 
 const BRAND_DOMAINS = {
   'Accor': 'accor.com',
-  'Marriott International': 'marriotthotels.com',
   'Hilton Hotels & Resorts': 'hilton.com',
   'Hyatt Hotels Corporation': 'hyatt.com',
-  'Four Seasons Hotels & Resorts': 'fourseasons.com',
-  'Radisson Hotel Group': 'radissonhotels.com',
   'RIU Hotels & Resorts': 'riu.com',
   'Barceló Hotel Group': 'barcelo.com',
   'Kenzi Hotels Group': 'kenzi-hotels.com',
   'Atlas Hotels Group': 'almada.ma',
-  'Atlas Hospitality Group': 'almada.ma',
   'View Hotels': 'almada.ma',
   'The View': 'almada.ma',
   'Terminus Hotels': 'almada.ma',
@@ -64,7 +60,7 @@ const LOCAL_BRAND_LOGOS = {
   "Hilton Hotels & Resorts": '/static/images/brands/hilton_logo.png?v=2',
   "Hotusa (Eurostars Hotel Company)": '/static/images/brands/eurostars_logo.png?v=2',
   "Hyatt Hotels Corporation": '/static/images/brands/hyatt_logo.png?v=2',
-  "IHG Hotels & Resorts": '/static/images/brands/ihg_logo.png?v=2',
+  "IHG Hotels & Resorts": '/static/images/brands/ihg_logo.png?v=3',
   "Kenzi Hotels Group": '/static/images/brands/kenzi_logo.png?v=2',
   "Mandarin Oriental Hotel Group": '/static/images/brands/mandarin_logo.png?v=2',
   "Mogador Hotels Group": '/static/images/brands/mogador_logo.png?v=2',
@@ -78,6 +74,13 @@ const LOCAL_BRAND_LOGOS = {
   "Virgin Limited Edition": '/static/images/brands/virgin_logo.png?v=2',
   "Wyndham Hotels & Resorts": '/static/images/brands/wyndham_logo.png?v=2',
   "Xaluca Hotels": '/static/images/brands/xaluca_logo.png?v=2',
+  // Official logos supplied in _handoff/logos/originals (25 Nov 2026; IHG
+  // replaced the same day): trimmed, 200 px square on white
+  "Marriott International": '/static/images/brands/marriott_logo.png?v=1',
+  "Radisson Hotel Group": '/static/images/brands/radisson_logo.png?v=1',
+  "The Ascott Limited": '/static/images/brands/ascott_logo.png?v=1',
+  "Four Seasons Hotels & Resorts": '/static/images/brands/fourseasons_logo.png?v=1',   // tree symbol: the wordmark is unreadable at 40 px
+  "Atlas Hospitality Group": '/static/images/brands/atlas_logo.png?v=1',               // "AHG" monogram, same reason
 };
 
 const BRAND_CUSTOM_LOGOS = {

@@ -79,7 +79,8 @@ class LogoFiles(unittest.TestCase):
         d = os.path.join(ROOT, 'static', 'images', 'brands')
         for f in os.listdir(d):
             im = Image.open(os.path.join(d, f))
-            self.assertEqual(im.size, (512, 512), f)
+            self.assertEqual(im.width, im.height, f)                         # square: 512 px, or 200 px for the Nov 2026 files
+            self.assertIn(im.width, (200, 512), f)
             self.assertEqual(im.mode, 'RGBA', f)
             self.assertEqual(im.getpixel((0, 0))[3], 0, f'{f}: corner not transparent')
             self.assertLess(os.path.getsize(os.path.join(d, f)), 150 * 1024, f)

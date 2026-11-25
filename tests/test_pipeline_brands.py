@@ -45,5 +45,19 @@ class PipelineBrands(unittest.TestCase):
         self.assertIn('.pipe-brand-link:focus-visible { outline: 2px solid var(--action)', css)
 
 
+class LocalGroupLogos(unittest.TestCase):
+    def test_group_logos_served_locally(self):
+        js = read('static', 'js', 'main.js')
+        local = js[js.index('const LOCAL_BRAND_LOGOS'):js.index('const BRAND_CUSTOM_LOGOS')]
+        domains = js[js.index('const BRAND_DOMAINS'):js.index('const LOCAL_BRAND_LOGOS')]
+        for group, f in (('Marriott International', 'marriott_logo.png'), ('Radisson Hotel Group', 'radisson_logo.png'),
+                         ('The Ascott Limited', 'ascott_logo.png'), ('Four Seasons Hotels & Resorts', 'fourseasons_logo.png'),
+                         ('Atlas Hospitality Group', 'atlas_logo.png'), ('IHG Hotels & Resorts', 'ihg_logo.png')):
+            self.assertIn(f'"{group}": \'/static/images/brands/{f}', local)
+            self.assertNotIn(f"'{group}':", domains)                          # no outside image service
+            path = os.path.join(ROOT, 'static', 'images', 'brands', f)
+            self.assertLess(os.path.getsize(path), 30 * 1024)
+
+
 if __name__ == '__main__':
     unittest.main()
