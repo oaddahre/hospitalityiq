@@ -6512,3 +6512,19 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 }
 .brn-card-link.dash-btn { align-self: flex-start; margin-top: 10px; padding: 6px 12px; }
 .brn-card-link.dash-btn:hover { opacity: 1; }
+
+/* Pipeline: brand tile + name, opening the group's page on Brands */
+.pipe-brand { display: inline-flex; align-items: center; max-width: 100%; vertical-align: middle; color: var(--text); }
+.pipe-brand > span:not(.logo-tile) { overflow-wrap: anywhere; }
+.pipe-brand .logo-tile { flex: none; }
+.pipe-brand-link { background: none; border: 0; padding: 1px 2px; margin: -1px -2px; font: inherit; color: var(--text); text-align: left;
+  cursor: pointer; border-radius: 3px; text-decoration: none; }
+.pipe-brand-link > span:not(.logo-tile):not(.pipe-brand-arrow) { text-decoration: underline; text-decoration-color: transparent;
+  text-underline-offset: 2px; transition: text-decoration-color 150ms; }
+.pipe-brand-link:hover > span:not(.logo-tile):not(.pipe-brand-arrow) { text-decoration-color: currentColor; }
+.pipe-brand-arrow { margin-left: 4px; opacity: 0; transition: opacity 150ms; }
+.pipe-brand-link:hover .pipe-brand-arrow, .pipe-brand-link:focus-visible .pipe-brand-arrow { opacity: 1; }
+.pipe-brand-link:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+@media (hover: none) { .pipe-brand-link > span:not(.logo-tile):not(.pipe-brand-arrow) { text-decoration-color: var(--border); } }
+.pipe-card-brand .pipe-brand, .hpipe-item-meta .pipe-brand { color: var(--text); }
+#pipeline-tbody .pipe-brand, #pipeline-tbody .pipe-brand > span:not(.logo-tile) { font-size: inherit; }

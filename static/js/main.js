@@ -1677,7 +1677,7 @@ function renderBrandsInsights() {
 function showBrandDetail(brandGroup, prevScreen) {
   brandDetailPrevScreen = prevScreen || 'dashboard';
   const backBtn = document.getElementById('brand-back-btn');
-  backBtn.textContent = brandDetailPrevScreen === 'brands' ? '← Back to Brands' : '← Back to Dashboard';
+  backBtn.textContent = '← Back to ' + ({ brands: 'Brands', pipeline: 'Pipeline', hotel: 'Hotel' }[brandDetailPrevScreen] || 'Dashboard');
 
   brandHotelsData = hotels.filter(h => h.brand_group === brandGroup
     || (brandGroup === 'Independent Hotels' && (h.brand_group === 'Independent' || h.brand_group === 'Independent Luxury')));
@@ -2027,7 +2027,7 @@ async function renderHotelPipeline(h) {
     return `
     <div class="hpipe-item">
       <div class="hpipe-item-name">${fmt.esc(p.name)}</div>
-      <span class="hpipe-item-meta">${fmt.esc(p.brand)} · ${p.keys || 'TBC'} keys · ${fmt.esc(pipeYear(p))}${conv}</span>
+      <span class="hpipe-item-meta">${pipeBrandHtml(p, 14)} · ${p.keys || 'TBC'} keys · ${fmt.esc(pipeYear(p))}${conv}</span>
       ${pipeStatusPill(p)}
     </div>`;
   }).join('');
@@ -3608,6 +3608,35 @@ const pipeStatusPill = p => p.status === 'Under Construction'
   : `<span class="pipe-status-pl pill--grey">${fmt.esc(p.status)}</span>`;
 const pipeConversionLine = p => p.conversion
   ? `<div class="pipe-card-conversion">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')} · keys already counted</div>` : '';
+// The project's brand group in the Brands page's logo tile: a local logo
+// file or the group's initials tile (never a remote image), or a neutral
+// "?" tile when no group is stored. Brand and tile open the group's page on
+// Brands when it has one (operating hotels); otherwise they are plain text.
+const PIPE_NO_GROUP = new Set(['', 'Undisclosed', 'Unknown', 'None', 'N/A']);
+function pipeBrandGroup(p) {
+  const bg = String(p.brand_group || '').trim();
+  return PIPE_NO_GROUP.has(bg) ? '' : bg;
+}
+const pipeHasBrandPage = bg => !!bg && Array.isArray(hotels) && hotels.some(h => h.brand_group === bg);
+function pipeBrandTile(bg, size) {
+  if (!bg) return initialsTile('?', size, 6, 'var(--bg-alt)', 'var(--text-3)');
+  if (LOCAL_BRAND_LOGOS[bg]) return logoChipImg(LOCAL_BRAND_LOGOS[bg], bg, size, 6, brandInitials(bg, size, 6));
+  const custom = BRAND_CUSTOM_LOGOS[bg];
+  if (custom) return initialsTile(custom.letter, size, 6, custom.bg, custom.color);
+  return brandInitials(bg, size, 6);
+}
+function pipeBrandHtml(p, size) {
+  const bg = pipeBrandGroup(p), label = fmt.esc(p.brand || bg || 'Brand not stored');
+  if (!pipeHasBrandPage(bg)) return `<span class="pipe-brand">${pipeBrandTile(bg, size)}<span>${label}</span></span>`;
+  return `<button type="button" class="pipe-brand pipe-brand-link" data-brand-group="${fmt.esc(bg)}" title="${fmt.esc(bg)} on Brands"`
+    + ` aria-label="${label}: open ${fmt.esc(bg)} on Brands" onclick="pipeOpenBrand(event, this)">${pipeBrandTile(bg, size)}<span>${label}</span>`
+    + `<span class="pipe-brand-arrow" aria-hidden="true">→</span></button>`;
+}
+function pipeOpenBrand(e, el) {
+  e.stopPropagation();                               // the card, row or marker keeps its own click
+  if (activeInfoWindow) activeInfoWindow.close();
+  showBrandDetail(el.dataset.brandGroup, document.getElementById('screen-hotel').classList.contains('active') ? 'hotel' : 'pipeline');
+}
 // Keys per group (opening year or city), new rooms only; "Date not announced" last
 // (groups with no known new keys, e.g. only a conversion, are left out)
 function pipeKeysBy(data, key) {
@@ -3721,7 +3750,7 @@ function pipelinePopupHTML(p) {
   const statusPill = `<span class="${pillCls}" style="font-family:'Sweet Sans Pro',sans-serif;font-size:10px;">${fmt.esc(p.status)}</span>`;
   return `<div class="hiq-popup">
     <div class="hiq-popup-name">${fmt.esc(p.name)}</div>
-    <div class="hiq-popup-meta">${fmt.esc(p.brand)} · ${getSegmentBadgeHtml(p.category)}</div>
+    <div class="hiq-popup-meta">${pipeBrandHtml(p, 14)} · ${getSegmentBadgeHtml(p.category)}</div>
     ${p.conversion ? `<div class="hiq-popup-meta">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')} · keys already counted</div>` : ''}
     <div class="hiq-popup-grid">
       <div class="hiq-popup-stat"><div class="hiq-popup-stat-val">${p.keys || 'TBC'}</div><div class="hiq-popup-stat-lbl">Keys</div></div>
@@ -3758,7 +3787,7 @@ function renderPipelineCards() {
           ${pill}
         </div>
         <div class="pipe-card-location">${fmt.esc(p.city)} · ${getSegmentBadgeHtml(p.category)}</div>
-        <div class="pipe-card-brand">${getBrandLogoImg(p.brand, 16)} ${fmt.esc(p.brand)}</div>
+        <div class="pipe-card-brand">${pipeBrandHtml(p, 16)}</div>
         ${pipeConversionLine(p)}
       </div>
       <div class="pipe-card-year${p.expected_opening ? '' : ' pipe-card-year-tba'}">${fmt.esc(pipeYear(p))}</div>
@@ -3795,7 +3824,7 @@ function renderPipelineTableView() {
     return `<tr>
       <td style="font-weight:600">${fmt.esc(p.name)}${p.conversion ? `<div class="pipe-card-conversion">Conversion of ${fmt.esc(p.converts_hotel_name || 'an operating hotel')}</div>` : ''}</td>
       <td>${fmt.esc(p.city)}</td>
-      <td>${fmt.esc(p.brand)}</td>
+      <td>${pipeBrandHtml(p, 16)}</td>
       <td class="num-col">${fmt.esc(pipeYear(p))}</td>
       <td>${pill}</td>
       <td class="num-col">${p.keys ? p.keys.toLocaleString('en') : 'TBC'}</td>
