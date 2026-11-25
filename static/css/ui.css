@@ -1,0 +1,141 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Kodo UI standard: shared components (docs/ui-standard.md).
+   Loaded after tokens.css and the page's own stylesheet. Colours come only
+   from tokens.css: black, white and grey; --action blue for the selected
+   item, primary actions and focus; --positive / --negative for up/down
+   changes and errors. No category colours.
+
+   The older names on the right of each selector (kodo-badge, dash-btn,
+   ibar, kpi-info, kodo-tip-pop) are the Market Overview's originals and
+   stay valid; new markup uses the k- names.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Page header: title + one line ─── */
+.k-head { margin-bottom: 22px; }
+.k-title { font: 700 20px/1.25 'Sweet Sans Pro', sans-serif; letter-spacing: .01em; color: var(--text); }
+.k-line { margin-top: 4px; font: 400 12px/1.45 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+
+/* ─── Surfaces: transparent containers with a 1px low-contrast edge ─── */
+.k-card { background: var(--card-bg); border: 1px solid var(--line); padding: 16px 20px; }
+.k-card-title { font: 600 13px 'Sweet Sans Pro', sans-serif; color: var(--text); }
+
+/* ─── Summary cards: label, one number, one short line, an "i" ─── */
+.k-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
+.k-kpi { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0;
+  padding: 16px 28px 14px; background: var(--card-bg); border: 1px solid var(--line); }
+.k-kpi-label { font: 400 9px 'Sweet Sans Pro', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.k-kpi-value { margin: 6px 0; font: 400 26px/1.1 'Sweet Sans Pro', sans-serif; color: var(--text); font-variant-numeric: tabular-nums; }
+.k-kpi-line { display: block; width: 100%; font: 400 11px/1.35 'Sweet Sans Pro', sans-serif; color: var(--text-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ─── Tables: one hairline under the header, no row borders, a hover tint ─── */
+.k-table { width: 100%; border-collapse: collapse; font: 400 12px 'Sweet Sans Pro', sans-serif; }
+.k-table thead th { padding: 6px 8px; text-align: left; font: 500 9px 'Sweet Sans Pro', sans-serif; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-2); border-bottom: 1px solid var(--line); white-space: nowrap; }
+.k-table tbody td { padding: 10px 8px; color: var(--text); vertical-align: middle; border: 0; }
+.k-table tbody tr { border: 0; }
+.k-table tbody tr:hover td { background: var(--row-hover); }
+.k-table tbody tr.is-selected td:first-child { color: var(--selected); }
+.k-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.k-th-sort { all: unset; box-sizing: border-box; display: block; width: 100%; cursor: pointer; font: inherit; letter-spacing: inherit;
+  text-transform: inherit; color: inherit; text-align: inherit; }
+.k-th-sort:hover { color: var(--text); }
+.k-th-sort:focus-visible { outline: 2px solid var(--action); outline-offset: -2px; }
+th[aria-sort="descending"] > .k-th-sort::after { content: ' ↓'; }
+th[aria-sort="ascending"] > .k-th-sort::after { content: ' ↑'; }
+
+/* inline bar under a number: solid = official, light = estimate, none = limited data */
+.k-ibar, .ibar { display: block; height: 4px; margin: 4px 0 0 auto; width: 100%; max-width: 140px; }
+.k-ibar > span, .ibar > span { display: block; height: 100%; margin-left: auto; border-radius: 2px; background: var(--text); }
+.k-ibar--est > span, .ibar--est > span { background: color-mix(in srgb, var(--text) 22%, transparent); }
+.k-ibar--sel > span, .ibar--sel > span { background: var(--selected); }
+.k-ibar--sel.k-ibar--est > span, .ibar--sel.ibar--est > span { background: color-mix(in srgb, var(--selected) 35%, transparent); }
+
+/* ─── Badges: Official / Estimate / Limited data (detail in a tooltip) ─── */
+.k-badge, .kodo-badge { display: inline-flex; align-items: center; padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px;
+  font: 500 10.5px/1.4 'Sweet Sans Pro', sans-serif; letter-spacing: .02em; text-transform: none; white-space: nowrap; cursor: help;
+  color: var(--text-2); background: transparent; }
+.k-badge--official, .kodo-badge--official { background: var(--text); border-color: var(--text); color: var(--bg); }
+.k-badge--limited, .kodo-badge--limited { color: var(--text-3); background: var(--bg-alt); }
+
+/* ─── Neutral pills: segment, stage, status (never colour-coded) ─── */
+.k-pill { display: inline-flex; align-items: center; padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px;
+  font: 500 10.5px/1.4 'Sweet Sans Pro', sans-serif; color: var(--text-2); background: transparent; white-space: nowrap; }
+.k-pill--solid { background: var(--text); border-color: var(--text); color: var(--bg); }
+.k-pill--muted { color: var(--text-3); border-color: transparent; background: color-mix(in srgb, var(--text) 6%, transparent); }
+
+/* ─── Buttons: outlined with an arrow (default), solid blue (primary) ─── */
+.k-btn, .dash-btn { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--text); border-radius: 4px;
+  background: transparent; color: var(--text); font: 500 11px/1.2 'Sweet Sans Pro', sans-serif; letter-spacing: .08em;
+  text-transform: uppercase; cursor: pointer; text-decoration: none; transition: background 150ms, color 150ms; }
+.k-btn:hover, .dash-btn:hover { background: var(--text); color: var(--bg); }
+.k-btn--primary { background: var(--action); border-color: var(--action); color: var(--on-action); }
+.k-btn--primary:hover { background: var(--action-hover); border-color: var(--action-hover); color: var(--on-action); }
+.k-btn:focus-visible, .dash-btn:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+.k-btn-row, .dest-card-foot { display: flex; justify-content: flex-start; gap: 10px; margin: 18px 0 4px; }
+
+/* ─── Links: black text, underline on hover; never browser blue ─── */
+.k-link { color: var(--text); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px;
+  background: none; border: 0; padding: 0; font: inherit; cursor: pointer; transition: text-decoration-color 150ms; }
+.k-link:hover { text-decoration-color: currentColor; }
+.k-link:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; border-radius: 2px; }
+
+/* ─── "i" and tooltips (solid surface so they stay readable) ─── */
+.k-info, .kpi-info { width: 18px; height: 18px; padding: 0; border: 1px solid var(--border); border-radius: 50%;
+  background: transparent; color: var(--text-2); font: 500 10px/16px 'Sweet Sans Pro', sans-serif; text-align: center; cursor: help; }
+.kpi-info { position: absolute; top: 8px; right: 8px; }
+.k-info:hover, .kpi-info:hover { border-color: var(--text-2); color: var(--text); }
+.k-info:focus-visible, .kpi-info:focus-visible, .k-badge:focus-visible, .kodo-badge:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+.k-tip, .kodo-tip-pop { position: fixed; z-index: 2000; max-width: min(300px, calc(100vw - 16px)); padding: 8px 10px; border-radius: 6px;
+  background: var(--pop-bg); color: var(--pop-text); font: 400 12px/1.45 'Sweet Sans Pro', sans-serif; pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
+.k-tip[hidden], .kodo-tip-pop[hidden] { display: none; }
+.k-menu { background: var(--menu-bg); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .12); }
+
+/* ─── Segmented control (views, stages): outlined, the selected one blue ─── */
+.k-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 999px; padding: 2px; gap: 2px; }
+.k-seg > button { background: transparent; border: 0; border-radius: 999px; padding: 5px 12px; cursor: pointer; white-space: nowrap;
+  font: 500 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); transition: background 150ms, color 150ms; }
+.k-seg > button:hover { color: var(--text); background: var(--row-hover); }
+.k-seg > button[aria-pressed="true"], .k-seg > button[aria-selected="true"] { background: var(--selected); color: var(--on-action); }
+.k-seg > button:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; }
+
+/* form controls in a filter row */
+.k-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
+.k-select, .k-search { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg);
+  color: var(--text); font: 400 12px 'Sweet Sans Pro', sans-serif; max-width: 100%; }
+.k-select:focus-visible, .k-search:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; }
+.k-search::placeholder { color: var(--text-2); }
+
+/* ─── Empty and loading states ─── */
+.k-empty { padding: 40px 16px; text-align: center; font: 400 13px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+
+/* ─── Brand logo tile: square, white in both themes ─── */
+.logo-tile {
+  display: inline-block; box-sizing: border-box; flex-shrink: 0; vertical-align: middle;
+  object-fit: contain; background: #fff; outline: 1px solid rgba(0, 0, 0, 0.08); outline-offset: -1px;
+}
+.logo-tile--initials {
+  display: inline-flex; align-items: center; justify-content: center; outline: 1px solid var(--border);
+  font-family: 'Sweet Sans Pro', sans-serif; font-weight: 400; letter-spacing: 0.02em; line-height: 1;
+}
+
+/* ─── Market Overview on the surface rule: no grey fill, no row borders ─── */
+#screen-dashboard .kpi-card, #screen-dashboard .chart-card, #screen-dashboard .table-card { background: var(--card-bg); }
+#screen-dashboard .table-card-header { border-bottom: 0; }
+#screen-dashboard .data-table tbody tr { border-bottom: 0; }
+#screen-dashboard .data-table tbody tr:hover td { background: var(--row-hover); }
+#screen-dashboard .data-table tbody td { padding-top: 10px; padding-bottom: 10px; }
+
+@media (max-width: 1100px) {
+  .k-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .k-ibar, .ibar { max-width: 64px; }
+  .k-kpi { padding: 14px 24px 12px; }
+  .k-kpi-value { font-size: 22px; }
+  .k-table thead th { white-space: normal; padding: 6px 4px; }
+  .k-table tbody td { padding: 8px 4px; }
+  .k-filters > * { flex: 1 1 100%; }
+  .k-seg { border-radius: 14px; }
+}

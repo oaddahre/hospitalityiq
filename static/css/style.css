@@ -6345,15 +6345,6 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 .kpi-card .kpi-value .kpi-nodata-pill { display: inline-flex; }
 .kpi-card > .kpi-sub { font-size: 11px; line-height: 1.35; color: var(--text-muted); margin-top: 2px; }
 
-/* ─── Logo tile: one square tile for every brand and owner logo ─── */
-.logo-tile {
-  display: inline-block; box-sizing: border-box; flex-shrink: 0; vertical-align: middle;
-  object-fit: contain; background: #fff; outline: 1px solid rgba(0, 0, 0, 0.08); outline-offset: -1px;
-}
-.logo-tile--initials {
-  display: inline-flex; align-items: center; justify-content: center; outline: 1px solid var(--border);
-  font-family: 'Sweet Sans Pro', sans-serif; font-weight: 400; letter-spacing: 0.02em; line-height: 1;
-}
 
 /* ─── Market Overview scope: All Morocco (compare) or one destination (tabs) ─── */
 .dest-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-right: 4px; }
@@ -6397,16 +6388,6 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
    only for the selected destination. */
 .dash-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
 .dash-explain { margin: 4px 0 0; font: 400 12px/1.45 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
-.kodo-badge { display: inline-flex; align-items: center; padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px;
-  font: 500 10.5px/1.4 'Sweet Sans Pro', sans-serif; letter-spacing: .02em; text-transform: none; white-space: nowrap; cursor: help;
-  color: var(--text-2); background: transparent; }
-.kodo-badge--official { background: var(--text); border-color: var(--text); color: var(--bg); }
-.kodo-badge--limited { color: var(--text-3); background: var(--bg-alt); }
-.kodo-badge:focus-visible, .kpi-info:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
-.kodo-tip-pop { position: fixed; z-index: 2000; max-width: min(300px, calc(100vw - 16px)); padding: 8px 10px; border-radius: 6px;
-  background: var(--text); color: var(--bg); font: 400 12px/1.45 'Sweet Sans Pro', sans-serif; pointer-events: none;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
-.kodo-tip-pop[hidden] { display: none; }
 
 /* the four cards: label, one big number, one short line, an "i" for the rest */
 #screen-dashboard .kpi-grid .kpi-period, #screen-dashboard .kpi-grid .kpi-meta, #screen-dashboard .kpi-grid .kpi-sub,
@@ -6417,9 +6398,6 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 .kpi-unit { margin-left: 4px; font-size: 12px; font-weight: 400; color: var(--text-2); }
 .kpi-line { display: block; width: 100%; min-height: 15px; font: 400 11px/1.35 'Sweet Sans Pro', sans-serif; color: var(--text-2);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.kpi-info { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; padding: 0; border: 1px solid var(--border); border-radius: 50%;
-  background: transparent; color: var(--text-2); font: 500 10px/16px 'Sweet Sans Pro', sans-serif; text-align: center; cursor: help; }
-.kpi-info:hover { border-color: var(--text-2); color: var(--text); }
 
 /* Destinations table */
 #dest-table { table-layout: auto; }
@@ -6441,18 +6419,8 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 #dest-table .cell-metric { width: 22%; }
 #dest-table .cell-num { display: block; font-weight: 500; }
 #dest-table .cell-na { color: var(--text-3); }
-.ibar { display: block; height: 4px; margin: 4px 0 0 auto; width: 100%; max-width: 140px; }
-.ibar > span { display: block; height: 100%; margin-left: auto; border-radius: 2px; background: var(--text); }
-.ibar--est > span { background: color-mix(in srgb, var(--text) 22%, transparent); }
-.ibar--sel > span { background: var(--action); }
-.ibar--sel.ibar--est > span { background: color-mix(in srgb, var(--action) 35%, transparent); }
 /* a quiet outlined button (blue stays for the selected destination and primary actions) */
 .dest-card-foot { display: flex; justify-content: flex-start; margin: 18px 0 4px; }
-.dash-btn { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--text); border-radius: 4px;
-  background: transparent; color: var(--text); font: 500 11px/1.2 'Sweet Sans Pro', sans-serif; letter-spacing: .08em;
-  text-transform: uppercase; cursor: pointer; transition: background 150ms, color 150ms; }
-.dash-btn:hover { background: var(--text); color: var(--bg); }
-.dash-btn:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
 
 /* sidebar meters: the same two states */
 .dest-meter > span { background: var(--text); opacity: 1; }

@@ -99,7 +99,7 @@ class Page(unittest.TestCase):
         # bars: solid = Official, light = Estimate, none for limited data; no hollow bars
         self.assertNotIn('Hollow bars', self.js)
         self.assertIn("c.bar.limited ? limitedBadge(", self.js)
-        css = read('static', 'css', 'style.css')
+        css = read('static', 'css', 'style.css') + read('static', 'css', 'ui.css')
         self.assertIn('.ibar--est > span', css)
         self.assertIn('.app-body[data-screen="dashboard"] .seg-section { display: none; }', css)
 
