@@ -3626,10 +3626,13 @@ function pipeBrandTile(bg, size) {
   return brandInitials(bg, size, 6);
 }
 function pipeBrandHtml(p, size) {
-  const bg = pipeBrandGroup(p), label = fmt.esc(p.brand || bg || 'Brand not stored');
-  if (!pipeHasBrandPage(bg)) return `<span class="pipe-brand">${pipeBrandTile(bg, size)}<span>${label}</span></span>`;
-  return `<button type="button" class="pipe-brand pipe-brand-link" data-brand-group="${fmt.esc(bg)}" title="${fmt.esc(bg)} on Brands"`
-    + ` aria-label="${label}: open ${fmt.esc(bg)} on Brands" onclick="pipeOpenBrand(event, this)">${pipeBrandTile(bg, size)}<span>${label}</span>`
+  // The group's name as the Brands page shows it; the stored brand (e.g.
+  // "Ritz Carlton") only in the hover title
+  const bg = pipeBrandGroup(p), label = fmt.esc(bg || 'Brand not stored');
+  const tip = p.brand && p.brand !== bg ? ` title="${fmt.esc(p.brand)}"` : '';
+  if (!pipeHasBrandPage(bg)) return `<span class="pipe-brand"${tip}>${pipeBrandTile(bg, size)}<span>${label}</span></span>`;
+  return `<button type="button" class="pipe-brand pipe-brand-link" data-brand-group="${fmt.esc(bg)}"${tip}`
+    + ` aria-label="${label}${tip ? ' (' + fmt.esc(p.brand) + ')' : ''}: open on Brands" onclick="pipeOpenBrand(event, this)">${pipeBrandTile(bg, size)}<span>${label}</span>`
     + `<span class="pipe-brand-arrow" aria-hidden="true">→</span></button>`;
 }
 function pipeOpenBrand(e, el) {

@@ -38,6 +38,9 @@ class PipelineBrands(unittest.TestCase):
         opener = self.js[self.js.index('function pipeOpenBrand'):]
         self.assertIn('e.stopPropagation()', opener[:300])
         self.assertIn('showBrandDetail(el.dataset.brandGroup', opener[:400])
+        html = self.js[self.js.index('function pipeBrandHtml'):self.js.index('function pipeOpenBrand')]
+        self.assertIn("label = fmt.esc(bg || 'Brand not stored')", html)      # the group's name is shown
+        self.assertIn('title="${fmt.esc(p.brand)}"', html)                  # the stored brand only on hover
         css = read('static', 'css', 'style.css')
         self.assertIn('.pipe-brand-link:focus-visible { outline: 2px solid var(--action)', css)
 
