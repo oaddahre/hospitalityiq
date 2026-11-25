@@ -6527,7 +6527,15 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 .pml { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 .pml--uc { background: var(--text); }
 .pml--pl { background: var(--text-3); }
-#screen-pipeline #pipeline-map-container { height: 520px; background: var(--bg); border: 1px solid var(--line); }
+#screen-pipeline [data-pview][hidden] { display: none !important; }   /* only the selected view renders */
+.pipe-map-card { margin-top: 16px; padding: 14px 16px 16px; }
+.pipe-map-card .pipe-main-head { margin-bottom: 10px; }
+.pipe-map-card .pipe-map-legend { margin: 0; }
+#screen-pipeline #pipeline-map-container { height: 460px; background: var(--bg); border: 1px solid var(--line); scroll-margin: 16px; }
+.pipe-table tbody tr.is-selected td { background: var(--row-hover); }
+.pipe-table tbody tr.is-selected td:first-child { box-shadow: inset 2px 0 0 var(--selected); }
+.pipe-table tbody tr.is-selected .pipe-proj-name, .pipe-card2.is-selected .pipe-proj-name { color: var(--selected); }
+.pipe-card2.is-selected { border-color: var(--selected); background: var(--row-hover); }
 .hiq-popup .k-pill { font-size: 10px; }
 /* the hotel page's pipeline block: the same neutral style */
 .hpipe-card { background: var(--card-bg); }
@@ -6536,8 +6544,8 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   .pipe-table .col-hide-mobile { display: none; }
   .pipe-proj-m { display: block; }
   .pipe-filters .k-select, .pipe-filters .k-search { min-width: 0; width: 100%; }
-  .pipe-main { padding: 12px 10px; }
-  #screen-pipeline #pipeline-map-container { height: 380px; }
+  .pipe-main, .pipe-map-card { padding: 12px 10px; }
+  #screen-pipeline #pipeline-map-container { height: 320px; }
   .pipe-table .k-pill { padding: 1px 6px; font-size: 9.5px; }
   .pipe-table tbody td, .pipe-table thead th { padding-left: 4px; padding-right: 4px; }
 }

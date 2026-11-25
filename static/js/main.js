@@ -2566,6 +2566,7 @@ function initGoogleMaps() {
   if (document.getElementById('screen-map')?.classList.contains('active') && !googleMap) {
     initMap();
   }
+  if (pipelineInited && !googlePipelineMap) initPipelineMap();
 }
 // Defensive: guarantee this is reachable as a global even if this file is
 // ever wrapped/bundled in a way that stops top-level functions from
@@ -3650,7 +3651,7 @@ function pipeMatchesStage(p, stage) {
   return stage === 'all' || (stage === 'soon' ? pipeIsSoon(p) : p.status === stage);
 }
 
-const PIPE_VIEWS = ['table', 'cards', 'map'];
+const PIPE_VIEWS = ['table', 'cards'];   // the map is always shown, under the view
 function pipeSavedView() {
   try { const v = localStorage.getItem('kodo.pipeline.view'); return PIPE_VIEWS.includes(v) ? v : 'table'; } catch { return 'table'; }
 }
@@ -3658,6 +3659,7 @@ function pipeSavedView() {
 async function initPipeline() {
   if (pipelineInited) {
     if (googlePipelineMap) setTimeout(() => google.maps.event.trigger(googlePipelineMap, 'resize'), 60);
+    else setTimeout(initPipelineMap, 60);
     return;
   }
   pipelineInited = true;
@@ -3688,6 +3690,7 @@ async function initPipeline() {
   renderPipelineKPIs();
   pipeSetView(pipeSavedView(), false);
   applyPipelineFilter();
+  setTimeout(initPipelineMap, 60);
 }
 
 const pipeDay = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -3746,10 +3749,11 @@ function pipeSorted(data) {
 }
 const SEGMENT_ORDER_JS = ['Ultra Luxury', 'Luxury', 'Upper Upscale', 'Upscale', 'Upper Midscale', 'Midscale', 'Economy'];
 
+const pipeSelClass = p => String(p.id) === String(pipeSelectedId) ? ' class="is-selected"' : '';
 function renderPipelineTableView(data) {
   const tbody = document.getElementById('pipeline-tbody');
   if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" class="k-empty">No project matches these filters.</td></tr>'; return; }
-  tbody.innerHTML = pipeSorted(data).map(p => `<tr data-pid="${fmt.esc(String(p.id))}" tabindex="0" title="Show on the map">
+  tbody.innerHTML = pipeSorted(data).map(p => `<tr data-pid="${fmt.esc(String(p.id))}" tabindex="0" title="Show on the map"${pipeSelClass(p)}>
       <td class="pipe-proj">
         <span class="pipe-proj-name">${fmt.esc(p.name)}</span>
         <span class="pipe-proj-brand">${pipeBrandHtml(p, 16)}</span>
@@ -3768,7 +3772,7 @@ function renderPipelineTableView(data) {
 function renderPipelineCards(data) {
   const grid = document.getElementById('pipe-cards-grid');
   if (!data.length) { grid.innerHTML = '<p class="k-empty">No project matches these filters.</p>'; return; }
-  grid.innerHTML = pipeSorted(data).map(p => `<div class="pipe-card2" data-pid="${fmt.esc(String(p.id))}" tabindex="0" title="Show on the map">
+  grid.innerHTML = pipeSorted(data).map(p => `<div class="pipe-card2${String(p.id) === String(pipeSelectedId) ? ' is-selected' : ''}" data-pid="${fmt.esc(String(p.id))}" tabindex="0" title="Show on the map">
       <div class="pipe-card2-top"><span class="pipe-proj-name">${fmt.esc(p.name)}</span>${pipeStagePill(p)}</div>
       <div class="pipe-proj-brand">${pipeBrandHtml(p, 16)}</div>
       <div class="pipe-card2-meta">${fmt.esc(dn(p.city || ''))}${p.category ? ' · ' + fmt.esc(p.category) : ''}</div>
@@ -3786,10 +3790,6 @@ function pipeSetView(view, save = true) {
   document.querySelectorAll('#pipe-view [data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
   document.querySelectorAll('#screen-pipeline [data-pview]').forEach(v => { v.hidden = v.dataset.pview !== view; });
   if (save) try { localStorage.setItem('kodo.pipeline.view', view); } catch { /* private window */ }
-  if (view === 'map') {
-    if (!googlePipelineMap) setTimeout(initPipelineMap, 60);
-    else setTimeout(() => google.maps.event.trigger(googlePipelineMap, 'resize'), 60);
-  }
 }
 
 function applyPipelineFilter() {
@@ -3798,8 +3798,12 @@ function applyPipelineFilter() {
   if (el) el.textContent = `${data.length} project${data.length !== 1 ? 's' : ''}`;
   renderPipelineTableView(data);
   renderPipelineCards(data);
+  const onMap = data.filter(p => p.lat != null && p.lng != null).length;
+  const mc = document.getElementById('pipe-map-count');
+  if (mc) mc.textContent = `Map · ${onMap} project${onMap !== 1 ? 's' : ''}`;
   if (googlePipelineMap) {
     const ids = new Set(data.map(p => p.id));
+    if (pipeSelectedId != null && !ids.has(pipeSelectedId)) pipeCloseSelected();
     pipelineMarkers.forEach(({ marker, project }) => marker.setMap(ids.has(project.id) ? googlePipelineMap : null));
   }
 }
@@ -3816,17 +3820,26 @@ function pipeMarkerIcon(p) {
 function pipeRestyleMarkers() {
   if (googlePipelineMap) pipelineMarkers.forEach(({ marker, project }) => marker.setIcon(pipeMarkerIcon(project)));
 }
+// The selected project: blue marker, highlighted row / card (no scrolling)
+function pipeMarkSelected() {
+  document.querySelectorAll('#screen-pipeline [data-pid]').forEach(el =>
+    el.classList.toggle('is-selected', el.dataset.pid === String(pipeSelectedId)));
+}
+function pipeCloseSelected() {
+  if (activeInfoWindow) activeInfoWindow.close();
+  pipeSelectedId = null; pipeRestyleMarkers(); pipeMarkSelected();
+}
 function pipeOpenOnMap(p, marker) {
   if (activeInfoWindow) activeInfoWindow.close();
-  pipeSelectedId = p.id; pipeRestyleMarkers();
+  pipeSelectedId = p.id; pipeRestyleMarkers(); pipeMarkSelected();
   activeInfoWindow = new google.maps.InfoWindow({ content: pipelinePopupHTML(p) });
-  activeInfoWindow.addListener('closeclick', () => { pipeSelectedId = null; pipeRestyleMarkers(); });
-  activeInfoWindow.open({ map: googlePipelineMap, anchor: marker });
+  activeInfoWindow.addListener('closeclick', () => { pipeSelectedId = null; pipeRestyleMarkers(); pipeMarkSelected(); });
+  activeInfoWindow.open({ map: googlePipelineMap, anchor: marker, shouldFocus: false });
 }
 
 function initPipelineMap(then) {
   const container = document.getElementById('pipeline-map-container');
-  if (!container || !googleMapsApiReady || googlePipelineMap) return;
+  if (!container || !googleMapsApiReady || googlePipelineMap || !pipelineData) return;
   try {
     googlePipelineMap = new google.maps.Map(container, {
       ...GMAP_OPTIONS_BASE,
@@ -3847,18 +3860,20 @@ function initPipelineMap(then) {
   }
 }
 
-// Row or card click: the project's detail, its pop-up on the map
+// Row or card click ("Show on the map"): scroll to the map, centre it on the
+// project and open its pop-up
 function pipeShowProject(id) {
+  const card = document.getElementById('pipe-map-card');
+  if (card) card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
   const open = () => {
     const m = pipelineMarkers.find(x => String(x.project.id) === String(id));
     if (!m) return;
     if (!m.marker.getMap()) m.marker.setMap(googlePipelineMap);
-    googlePipelineMap.panTo(m.marker.getPosition());
+    googlePipelineMap.setCenter(m.marker.getPosition());
     if (googlePipelineMap.getZoom() < 8) googlePipelineMap.setZoom(8);
     pipeOpenOnMap(m.project, m.marker);
   };
-  pipeSetView('map');
-  if (googlePipelineMap) setTimeout(open, 120); else setTimeout(() => initPipelineMap(open), 80);
+  if (googlePipelineMap) open(); else initPipelineMap(open);
 }
 
 function pipelinePopupHTML(p) {

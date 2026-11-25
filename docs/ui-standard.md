@@ -48,7 +48,7 @@ One family, Sweet Sans Pro. Numbers use tabular figures.
 1. **Header**: title + one line (what the page shows and the date of the data). Disclaimers once, here, in one short sentence; details go in tooltips; the footer holds the one Methodology link.
 2. **Summary cards**: 3–4 numbers (`.k-kpis` > `.k-kpi`): label, number, one short line, an "i" for the rest.
 3. **Filters**: one row (`.k-filters`): segmented control, selects, search.
-4. **One main view**: a sortable table by default; other views (cards, map) as a segmented control, never stacked lists showing the same thing twice.
+4. **One main view**: a sortable table by default; another view (cards) as a segmented control, never stacked lists showing the same thing twice. A map is not a view: when a page has one it sits under the view, always shown, follows the filters, at a fixed height (460px, 320px on phones).
 5. **Quiet links**: outlined buttons under the view.
 
 ## Components (`ui.css`)

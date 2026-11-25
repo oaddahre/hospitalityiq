@@ -362,7 +362,6 @@
             <div class="k-seg" id="pipe-view" role="group" aria-label="View">
               <button type="button" data-view="table" aria-pressed="true">Table</button>
               <button type="button" data-view="cards" aria-pressed="false">Cards</button>
-              <button type="button" data-view="map" aria-pressed="false">Map</button>
             </div>
           </div>
           <div class="pipe-view" data-pview="table">
@@ -382,15 +381,19 @@
             </table>
           </div>
           <div class="pipe-view pipe-cards" data-pview="cards" id="pipe-cards-grid" hidden></div>
-          <div class="pipe-view" data-pview="map" hidden>
+          <div class="k-btn-row"><button type="button" class="k-btn" id="btn-export-pipeline">Export <span aria-hidden="true">↓</span></button></div>
+        </div>
+
+        <div class="k-card pipe-map-card" id="pipe-map-card">
+          <div class="pipe-main-head">
+            <span class="k-card-title" id="pipe-map-count">Map</span>
             <div class="pipe-map-legend" aria-hidden="true">
               <span><i class="pml pml--uc"></i>Under construction</span>
               <span><i class="pml pml--pl"></i>Planning</span>
               <span>Circle size = keys</span>
             </div>
-            <div id="pipeline-map-container"></div>
           </div>
-          <div class="k-btn-row"><button type="button" class="k-btn" id="btn-export-pipeline">Export <span aria-hidden="true">↓</span></button></div>
+          <div id="pipeline-map-container" role="region" aria-label="Map of the projects shown"></div>
         </div>
       </section>
 
