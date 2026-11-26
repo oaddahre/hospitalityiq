@@ -1703,22 +1703,6 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 
 /* ─── Hotels table enhancements ─────────────────── */
-#hotels-table-wrap {
-  overflow-y: auto;
-  max-height: calc(100vh - 400px);
-  min-height: 200px;
-}
-#hotels-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--surface);
-}
-#hotels-table tbody tr:nth-child(even) td { background: var(--surface); }
-#hotels-table tbody tr:nth-child(odd)  td { background: var(--bg); }
-#hotels-table tbody tr:hover td { background: var(--surface-hover) !important; }
-#hotels-table thead th,
-#hotels-table tbody td,
 #brand-hotels-table thead th,
 #brand-hotels-table tbody td { text-align: left; }
 
@@ -4633,16 +4617,6 @@ body.light .nav-logout  { color: var(--text-2); }
   .chart-wrap { min-height: 220px; }
   .chart-card { padding: 14px 14px 12px; }
   .table-card { overflow-x: auto; }
-  #hotels-table th:nth-child(4),
-  #hotels-table th:nth-child(5),
-  #hotels-table th:nth-child(6),
-  #hotels-table th:nth-child(7),
-  #hotels-table th:nth-child(9),
-  #hotels-tbody td:nth-child(4),
-  #hotels-tbody td:nth-child(5),
-  #hotels-tbody td:nth-child(6),
-  #hotels-tbody td:nth-child(7),
-  #hotels-tbody td:nth-child(9) { display: none; }
   .search-wrap { max-width: 100%; }
   .filter-pills {
     flex-wrap: nowrap;
@@ -4716,10 +4690,7 @@ body.light .nav-logout  { color: var(--text-2); }
   .data-table { font-size: 12px; }
   .data-table tbody td { padding: 10px 10px; }
   .data-table thead th { padding: 8px 10px; }
-  #hotels-table thead .col-hide-mobile,
-  #hotels-table tbody .col-hide-mobile { display: none; }
   .hotels-sort-select { font-size: 11px; padding: 4px 8px; }
-  #hotels-table-wrap { max-height: calc(100vh - 480px); }
 
   /* ── Plain text arrows on mobile ── */
   /* Add → to mobile nav items */
@@ -6548,4 +6519,55 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   #screen-pipeline #pipeline-map-container { height: 320px; }
   .pipe-table .k-pill { padding: 1px 6px; font-size: 9.5px; }
   .pipe-table tbody td, .pipe-table thead th { padding-left: 4px; padding-right: 4px; }
+}
+
+/* ─── Hotel Directory on the UI standard (docs/ui-standard.md) ─── */
+.k-kpis.k-kpis--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.hotels-filters { gap: 8px; }
+.hotels-filters .k-search { flex: 1 1 140px; min-width: 130px; }
+.hotels-filters .k-select { max-width: 160px; }
+.hotels-filters #hotels-sort-select { max-width: 150px; }
+.hotels-filters .k-seg > button { padding: 5px 9px; }
+.hotels-end { display: inline-flex; align-items: center; gap: 14px; margin-left: auto; }
+.hotels-count { font: 400 12px 'Sweet Sans Pro', sans-serif; color: var(--text-2); white-space: nowrap; }
+.hotels-end .k-btn { padding: 6px 12px; }
+.hotels-main { padding: 0 16px 10px; }
+.hotels-main .k-table thead th { padding-top: 0; }
+.k-table.hotels-table { table-layout: auto; border-collapse: separate; border-spacing: 0; }   /* separate: the sticky header's top border paints in full */
+/* the page scrolls (no box of its own); the header stays in view */
+/* top: minus the page padding, with a border of the page colour that covers it */
+.hotels-table thead th { position: sticky; top: -28px; z-index: 2; background: var(--bg); border-top: 28px solid var(--bg); }
+.hotels-table th.num, .hotels-table td.num { text-align: right; }
+.hotels-table th.num .k-th-sort { text-align: right; }
+.hotels-table tbody tr { cursor: pointer; }
+.hotels-table tbody tr:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+.hotels-name-t { display: block; font-weight: 500; overflow-wrap: anywhere; }
+.hotels-name-m { display: none; margin-top: 2px; font-size: 11px; color: var(--text-2); }
+.hotels-table .cell-metric { width: 15%; }
+.hotels-table .cell-num { font-variant-numeric: tabular-nums; }
+.hotels-table .k-ibar, .hotels-table .ibar { margin-left: auto; }
+.hotels-table .cell-na, .hotels-table .bar-na { color: var(--text-3); }
+.hotels-occ { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.hotels-occ .kodo-badge { font-size: 9.5px; padding: 1px 6px; }
+.hotels-status { color: var(--text-2); white-space: nowrap; }
+.k-brand { display: inline-flex; align-items: center; gap: 8px; font: inherit; color: var(--text); text-align: left; }
+.k-brand-link { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: transparent;
+  text-underline-offset: 2px; transition: text-decoration-color 150ms; }
+.k-brand-link:hover { text-decoration-color: currentColor; }
+.k-brand-link:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+@media (max-width: 1100px) {
+  .hotels-end { margin-left: 0; }
+}
+@media (max-width: 767px) {
+  .k-kpis--3 { gap: 6px; }
+  .k-kpis--3 .k-kpi { padding: 12px 6px 10px; }
+  .k-kpis--3 .k-kpi-label { padding: 0; }
+  .k-kpis--3 .k-kpi-value { font-size: 18px; }
+  .hotels-filters .k-search, .hotels-filters .k-select, .hotels-filters #hotels-sort-select { min-width: 0; width: 100%; max-width: none; }
+  .hotels-end { justify-content: space-between; }
+  .hotels-table .col-hide-mobile { display: none; }
+  .hotels-name-m { display: block; }
+  .hotels-main { padding: 4px 8px 8px; }
+  .hotels-table .cell-metric { width: auto; }
+  .hotels-occ .kodo-badge { display: none; }
 }

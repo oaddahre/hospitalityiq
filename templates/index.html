@@ -399,103 +399,58 @@
 
       <!-- ── Hotels ── -->
       <section class="screen" id="screen-hotels">
-        <div class="screen-header">
-          <h1>Hotel Directory</h1>
+        <div class="k-head">
+          <h1 class="k-title">Hotel Directory</h1>
+          <p class="k-line" id="hotels-line">Morocco's hotels in Kodo's database. BAR: published rates observed since 3 Nov 2026; occupancy: Kodo estimate for the next 30 nights.</p>
         </div>
-        <div class="hotels-kpi-row">
-          <div class="kpi-card">
-            <span class="kpi-label">Total Hotels</span>
-            <span class="kpi-value" id="hkpi-total">—</span>
-          </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Cities Covered</span>
-            <span class="kpi-value" id="hkpi-cities">—</span>
-          </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Total Keys</span>
-            <span class="kpi-value" id="hkpi-keys">—</span>
-          </div>
-          <div class="kpi-card" id="hkpi-perf-card">
-            <span class="kpi-label">BAR, occupancy, Rooms RevPAR (est.) columns</span>
-            <span class="kpi-value" style="font-size:15px;"><span class="kodo-estimate-badge">BAR observed</span></span>
-            <span class="kpi-sub">BAR: published rates, 7 priced nights or more. Occupancy and Rooms RevPAR: Kodo estimates, next 30 nights</span>
-          </div>
+        <div class="k-kpis k-kpis--3">
+          <div class="k-kpi"><span class="k-kpi-label">Total hotels</span><span class="k-kpi-value" id="hkpi-total">—</span><span class="k-kpi-line" id="hkpi-total-line">&nbsp;</span></div>
+          <div class="k-kpi"><span class="k-kpi-label">Destinations covered</span><span class="k-kpi-value" id="hkpi-cities">—</span><span class="k-kpi-line" id="hkpi-cities-line">&nbsp;</span></div>
+          <div class="k-kpi"><span class="k-kpi-label">Total keys</span><span class="k-kpi-value" id="hkpi-keys">—</span><span class="k-kpi-line" id="hkpi-keys-line">&nbsp;</span></div>
         </div>
 
-        <div class="hotels-controls">
-          <!-- Search -->
-          <div class="hotels-search-wrap">
-            <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
-            </svg>
-            <input type="text" id="hotels-search" class="hotels-search-input"
-                   placeholder="Search hotels, brands, cities..." autocomplete="off" />
-            <button class="search-clear-btn" id="hotels-search-clear" aria-label="Clear search">×</button>
+        <div class="k-filters hotels-filters">
+          <input type="search" id="hotels-search" class="k-search" placeholder="Search hotels" autocomplete="off" aria-label="Search hotels, brands, destinations">
+          <select id="hotels-city-select" class="k-select" aria-label="Destination"><option value="all">All destinations</option></select>
+          <div class="k-seg" id="hotels-seg" role="group" aria-label="Segment">
+            <button type="button" data-hseg="all" aria-pressed="true">All</button>
+            <button type="button" data-hseg="Ultra Luxury" aria-pressed="false">Ultra Luxury</button>
+            <button type="button" data-hseg="Luxury" aria-pressed="false">Luxury</button>
+            <button type="button" data-hseg="Upper Upscale" aria-pressed="false">Upper Upscale</button>
+            <button type="button" data-hseg="Upscale" aria-pressed="false">Upscale</button>
+            <button type="button" data-hseg="Midscale" aria-pressed="false">Midscale</button>
           </div>
-          <!-- City pills -->
-          <div class="filter-row-wrap">
-            <div class="filter-pills filter-pills--scroll" id="hotels-city-pills">
-              <button class="pill active" data-hcity="all">All</button>
-            </div>
-            <div class="filter-row-fade"></div>
-          </div>
-          <!-- Segment pills -->
-          <div class="filter-row-wrap">
-            <div class="filter-pills filter-pills--scroll" id="hotels-seg-pills">
-              <button class="pill active" data-hseg="all">All Segments</button>
-              <button class="pill" data-hseg="Ultra Luxury">Ultra Luxury</button>
-              <button class="pill" data-hseg="Luxury">Luxury</button>
-              <button class="pill" data-hseg="Upper Upscale">Upper Upscale</button>
-              <button class="pill" data-hseg="Upscale">Upscale</button>
-              <button class="pill" data-hseg="Midscale">Midscale</button>
-            </div>
-            <div class="filter-row-fade"></div>
-          </div>
-          <!-- Sort + Owner + Count -->
-          <div class="hotels-sort-row">
-            <div class="hotels-sort-left">
-              <select class="hotels-sort-select" id="hotels-sort-select">
-                <option value="bar_mad">Sort: BAR ↓</option>
-                <option value="occupancy">Sort: Occupancy (Kodo est.) ↓</option>
-                <option value="revpar_mad">Sort: Rooms RevPAR (est.) ↓</option>
-                <option value="keys">Sort: Keys ↓</option>
-                <option value="year_opened">Sort: Year Opened ↓</option>
-                <option value="name">Sort: Name A–Z</option>
-              </select>
-              <select class="hotels-sort-select" id="hotels-owner-select">
-                <option value="all">All Owners</option>
-                <!-- filled from the hotel list: buildOwnerSelect() -->
-              </select>
-            </div>
-            <span class="hotels-results-count" id="hotels-results-count"></span>
-            <button class="export-btn" id="btn-export-hotels">↓ Export</button>
-          </div>
-          <!-- Active filter chips -->
-          <div class="active-filters-row" id="hotels-active-filters">
-            <div class="active-filters-chips" id="hotels-filter-chips"></div>
-            <button class="clear-all-filters" id="hotels-clear-all">Clear all filters</button>
-          </div>
+          <select id="hotels-owner-select" class="k-select" aria-label="Owner"><option value="all">All owners</option></select>
+          <select id="hotels-sort-select" class="k-select" aria-label="Sort">
+            <option value="bar_mad">Sort: BAR ↓</option>
+            <option value="occupancy">Sort: Occupancy (est.) ↓</option>
+            <option value="revpar_mad">Sort: Rooms RevPAR (est.) ↓</option>
+            <option value="keys">Sort: Keys ↓</option>
+            <option value="year_opened">Sort: Year opened ↓</option>
+            <option value="name">Sort: Name A–Z</option>
+          </select>
+          <span class="hotels-end">
+            <span class="hotels-count" id="hotels-results-count"></span>
+            <button type="button" class="k-btn" id="btn-export-hotels">Export <span aria-hidden="true">↓</span></button>
+          </span>
         </div>
 
-        <div class="table-card">
-          <div id="hotels-table-wrap">
-            <table class="data-table" id="hotels-table">
-              <thead>
-                <tr>
-                  <th class="sortable-col" data-col="name">Hotel Name <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-col="city">City <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="category">Segment <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="brand_group">Brand Group <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-col="bar_mad" title="BAR (published rate) since 3 November 2026: the hotel's average over its priced nights (7 or more)">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col col-hide-mobile" data-col="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">Rooms RevPAR (est.) <span class="sort-icon">↕&#xFE0E;</span></th>
-                </tr>
-              </thead>
-              <tbody id="hotels-tbody"></tbody>
-            </table>
-          </div>
-          <div class="table-footer" id="hotels-footer">Loading…</div>
+        <div class="k-card hotels-main">
+          <table class="k-table hotels-table" id="hotels-table">
+            <thead>
+              <tr>
+                <th scope="col" data-col="name"><button type="button" class="k-th-sort">Hotel</button></th>
+                <th scope="col" data-col="city" class="col-hide-mobile"><button type="button" class="k-th-sort">Destination</button></th>
+                <th scope="col" data-col="category" class="col-hide-mobile"><button type="button" class="k-th-sort">Segment</button></th>
+                <th scope="col" data-col="brand_group" class="col-hide-mobile"><button type="button" class="k-th-sort">Brand group</button></th>
+                <th scope="col" data-col="keys" class="num col-hide-mobile"><button type="button" class="k-th-sort">Keys</button></th>
+                <th scope="col" data-col="bar_mad" class="num"><button type="button" class="k-th-sort" data-tip="BAR (published rate): the hotel's average over its priced nights since 3 November 2026 (7 or more).">BAR (MAD)</button></th>
+                <th scope="col" data-col="occupancy" class="num"><button type="button" class="k-th-sort" data-tip="Kodo estimate for the next 30 nights. Official: calibrated on official monthly figures for the destination; Estimate: not yet.">Occupancy (est.)</button></th>
+                <th scope="col" data-col="status" class="col-hide-mobile"><button type="button" class="k-th-sort">Status</button></th>
+              </tr>
+            </thead>
+            <tbody id="hotels-tbody"></tbody>
+          </table>
         </div>
       </section>
 

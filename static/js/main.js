@@ -1679,7 +1679,7 @@ function renderBrandsInsights() {
 function showBrandDetail(brandGroup, prevScreen) {
   brandDetailPrevScreen = prevScreen || 'dashboard';
   const backBtn = document.getElementById('brand-back-btn');
-  backBtn.textContent = '← Back to ' + ({ brands: 'Brands', pipeline: 'Pipeline', hotel: 'Hotel' }[brandDetailPrevScreen] || 'Dashboard');
+  backBtn.textContent = '← Back to ' + ({ brands: 'Brands', pipeline: 'Pipeline', hotel: 'Hotel', hotels: 'Hotels' }[brandDetailPrevScreen] || 'Dashboard');
 
   brandHotelsData = hotels.filter(h => h.brand_group === brandGroup
     || (brandGroup === 'Independent Hotels' && (h.brand_group === 'Independent' || h.brand_group === 'Independent Luxury')));
@@ -2720,8 +2720,10 @@ function panMap() {
 }
 
 // ─── Hotels screen ────────────────────────────────────────────────
+// Title + one line, three counts, one filter row, one sortable table
+// (docs/ui-standard.md). The page scrolls; the table header is sticky.
 
-const STRING_COLS = new Set(['name', 'city', 'category', 'brand_group', 'brand']);
+const STRING_COLS = new Set(['name', 'city', 'category', 'brand_group', 'brand', 'status']);
 
 const hotelsState = {
   query: '',
@@ -2732,14 +2734,19 @@ const hotelsState = {
   dir:   -1,
 };
 
+// Status as plain text: Open, Partly open (under renovation), Closed for the season
+const hotelStatus = h => h.under_renovation ? 'Partly open' : h.seasonal_closure ? CLOSED_LABEL : 'Open';
+const hotelStatusTip = h => h.under_renovation ? 'Partly open, under renovation: no occupancy estimate; its rooms are left out of the totals.'
+  : h.seasonal_closure ? `${CLOSED_NOTE}: no occupancy estimate over the coming 30 nights; its rooms are left out of the totals.` : '';
+
 function filterHotels() {
-  const q = hotelsState.query.trim().toLowerCase();
+  const q = fold(hotelsState.query.trim());
   return (hotels || []).filter(h => {
     if (hotelsState.city  !== 'all' && h.city     !== hotelsState.city)  return false;
     if (hotelsState.seg   !== 'all' && h.category !== hotelsState.seg)   return false;
     if (hotelsState.owner !== 'all' && h.owner    !== hotelsState.owner) return false;
     if (q) {
-      const haystack = [h.name, h.city, h.brand, h.brand_group, h.owner].join(' ').toLowerCase();
+      const haystack = fold([h.name, h.city, dn(h.city), h.brand, h.brand_group, h.owner].join(' '));
       if (!haystack.includes(q)) return false;
     }
     return true;
@@ -2748,46 +2755,22 @@ function filterHotels() {
 
 function sortHotels(list) {
   const { col, dir } = hotelsState;
+  const val = h => col === 'status' ? hotelStatus(h) : col === 'city' ? dn(h.city || '') : h[col];
   return [...list].sort((a, b) => {
-    const va = a[col], vb = b[col];
-    if (STRING_COLS.has(col)) return dir * String(va).localeCompare(String(vb));
+    const va = val(a), vb = val(b);
+    if (STRING_COLS.has(col)) return dir * String(va ?? '').localeCompare(String(vb ?? '')) || a.name.localeCompare(b.name);
     if (va == null || vb == null) return (va == null) - (vb == null);   // no figure: always last
     return dir * (va - vb);
   });
 }
 
 function syncHotelsSortIcons() {
-  document.querySelectorAll('#hotels-table .sortable-col').forEach(th => {
-    const icon = th.querySelector('.sort-icon');
-    if (!icon) return;
-    th.classList.remove('sort-asc', 'sort-desc');
-    if (th.dataset.col === hotelsState.col) {
-      th.classList.add(hotelsState.dir === 1 ? 'sort-asc' : 'sort-desc');
-      icon.textContent = hotelsState.dir === 1 ? '↑︎' : '↓︎';
-    } else {
-      icon.textContent = '↕︎';
-    }
+  document.querySelectorAll('#hotels-table th[data-col]').forEach(th => {
+    if (th.dataset.col === hotelsState.col) th.setAttribute('aria-sort', hotelsState.dir === 1 ? 'ascending' : 'descending');
+    else th.removeAttribute('aria-sort');
   });
   const sel = document.getElementById('hotels-sort-select');
   if (sel && sel.querySelector(`option[value="${hotelsState.col}"]`)) sel.value = hotelsState.col;
-}
-
-function renderActiveHotelsFilters() {
-  const chips = [];
-  if (hotelsState.city  !== 'all') chips.push({ type: 'city',  label: hotelsState.city });
-  if (hotelsState.seg   !== 'all') chips.push({ type: 'seg',   label: hotelsState.seg });
-  if (hotelsState.owner !== 'all') chips.push({ type: 'owner', label: ownerText(hotels.find(h => h.owner === hotelsState.owner) || { owner: hotelsState.owner }) });
-  if (hotelsState.query)           chips.push({ type: 'query', label: `"${hotelsState.query}"` });
-
-  const row     = document.getElementById('hotels-active-filters');
-  const chipsEl = document.getElementById('hotels-filter-chips');
-  const clearEl = document.getElementById('hotels-clear-all');
-  if (!chips.length) { row.classList.remove('visible'); return; }
-  row.classList.add('visible');
-  chipsEl.innerHTML = chips.map(c =>
-    `<span class="filter-chip" data-ftype="${c.type}">${fmt.esc(c.label)}<button class="filter-chip-remove" aria-label="Remove">×</button></span>`
-  ).join('');
-  clearEl.style.display = chips.length > 1 ? '' : 'none';
 }
 
 function clearAllHotelsFilters() {
@@ -2795,17 +2778,23 @@ function clearAllHotelsFilters() {
   hotelsState.city  = 'all';
   hotelsState.seg   = 'all';
   hotelsState.owner = 'all';
-  const searchEl = document.getElementById('hotels-search');
-  if (searchEl) { searchEl.value = ''; }
-  const clearBtn = document.getElementById('hotels-search-clear');
-  if (clearBtn) clearBtn.classList.remove('visible');
-  const ownerSel = document.getElementById('hotels-owner-select');
-  if (ownerSel) ownerSel.value = 'all';
-  document.querySelectorAll('#hotels-city-pills .pill').forEach(p =>
-    p.classList.toggle('active', p.dataset.hcity === 'all'));
-  document.querySelectorAll('#hotels-seg-pills .pill').forEach(p =>
-    p.classList.toggle('active', p.dataset.hseg === 'all'));
+  document.getElementById('hotels-search').value = '';
+  document.getElementById('hotels-city-select').value = 'all';
+  document.getElementById('hotels-owner-select').value = 'all';
+  syncHotelsSeg();
   renderHotelsTable();
+}
+function syncHotelsSeg() {
+  document.querySelectorAll('#hotels-seg [data-hseg]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.hseg === hotelsState.seg)));
+}
+
+// Brand group: logo tile + name, linked to its page on Brands
+function brandGroupLink(bg, size, from) {
+  if (!bg) return '<span class="cell-na">—</span>';
+  const tile = getBrandLogoImg(bg, size);
+  if (!pipeHasBrandPage(bg)) return `<span class="k-brand">${tile}<span>${fmt.esc(bg)}</span></span>`;
+  return `<button type="button" class="k-brand k-brand-link" data-brand-group="${escAttr(bg)}" data-from="${from}"`
+    + ` aria-label="${escAttr(bg)}: open on Brands">${tile}<span>${fmt.esc(bg)}</span></button>`;
 }
 
 function renderHotelsTable() {
@@ -2814,49 +2803,42 @@ function renderHotelsTable() {
   const sorted   = sortHotels(filtered);
   const total    = hotels.length;
 
-  const totalHotels = hotels.length;
-  const totalCities = new Set(hotels.map(h => h.city)).size;
-  const totalKeys   = hotels.reduce((s, h) => s + (h.keys || 0), 0);
-  const hkpiTotal  = document.getElementById('hkpi-total');
-  const hkpiCities = document.getElementById('hkpi-cities');
-  const hkpiKeys   = document.getElementById('hkpi-keys');
-  if (hkpiTotal)  hkpiTotal.textContent  = totalHotels.toLocaleString('en');
-  if (hkpiCities) hkpiCities.textContent = totalCities;
-  if (hkpiKeys)   hkpiKeys.textContent   = totalKeys.toLocaleString('en');
-  [hkpiTotal, hkpiCities, hkpiKeys].forEach(el => el && KodoPeriod.set(el.closest('.kpi-card'), KodoPeriod.today(), COUNT_TIP));
-  const perfCard = document.getElementById('hkpi-perf-card');
-  if (perfCard) KodoPeriod.setText(perfCard, KodoBar.caption(), 'BAR: observed published rates. Occupancy and Rooms RevPAR: Kodo estimates, next 30 nights');
+  const today = KodoPeriod.label(KodoPeriod.today());              // "As of 26 Nov 2026"
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('hkpi-total', total.toLocaleString('en'));
+  set('hkpi-cities', new Set(hotels.map(h => h.city)).size);
+  set('hkpi-keys', hotels.reduce((s, h) => s + (h.keys || 0), 0).toLocaleString('en'));
+  ['hkpi-total-line', 'hkpi-cities-line', 'hkpi-keys-line'].forEach(id => set(id, today));
 
-  const countEl = document.getElementById('hotels-results-count');
-  if (countEl) countEl.textContent = `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
+  set('hotels-results-count', `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`);
 
   const tbody = document.getElementById('hotels-tbody');
   if (!sorted.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="kodo-empty" style="align-items:center;text-align:center">
-      <span class="kodo-empty-msg">[ NO DATA ]</span>
-      <span class="kodo-empty-sub">No hotels match your filters</span>
-      <button class="btn btn-ghost" onclick="clearAllHotelsFilters()" style="font-size:12px;padding:6px 16px;margin-top:8px">Clear all filters</button>
-    </div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="k-empty">No hotel matches these filters. <button type="button" class="k-link" onclick="clearAllHotelsFilters()">Clear the filters</button></td></tr>`;
   } else {
+    const maxBar = Math.max(0, ...hotels.map(h => h.bar_mad).filter(v => v != null));
+    const maxOcc = Math.max(0, ...hotels.map(h => h.occupancy).filter(v => v != null));
     tbody.innerHTML = sorted.map(h => {
-      return `<tr class="hotel-row-link" onclick="showHotelDetail(${h.id})">
-        <td class="hotel-name-cell"><button class="hotel-name-btn">${fmt.esc(h.name)}</button></td>
-        <td>${fmt.esc(h.city)}</td>
-        <td class="col-hide-mobile">${getSegmentBadgeHtml(h.category)}</td>
-        <td class="col-hide-mobile">${getBrandLogoImg(h.brand_group, 16)} ${fmt.esc(h.brand_group)}</td>
-        <td class="col-hide-mobile">${hotelRooms(h)}</td>
-        <td>${KodoBar.hotelCell(h)}</td>
-        <td class="col-hide-mobile" title="${EST_TIP}">${hotelOcc(h)}</td>
-        <td class="col-hide-mobile" title="${EST_TIP}">${fmt.mad(h.revpar_mad)}</td>
+      const out = h.under_renovation || h.seasonal_closure;
+      const bar = h.bar_mad == null ? KodoBar.hotelCell(h) : `<span class="cell-num">${KodoBar.hotelCell(h)}</span>${inlineBar(h.bar_mad, maxBar, false)}`;
+      const occ = out || h.occupancy == null
+        ? `<span class="cell-na" title="${escAttr(out ? hotelStatusTip(h) : 'No estimate yet')}">—</span>`
+        : `<span class="hotels-occ"><span class="cell-num" title="${EST_TIP}">${fmt.pct(h.occupancy)}</span>${destBadge(h.city)}</span>${inlineBar(h.occupancy, maxOcc, !isOfficial(h.city))}`;
+      const tip = hotelStatusTip(h);
+      return `<tr data-hid="${h.id}" tabindex="0">
+        <td class="hotels-name"><span class="hotels-name-t">${fmt.esc(h.name)}</span><span class="hotels-name-m">${fmt.esc(dn(h.city))}${h.category ? ' · ' + fmt.esc(h.category) : ''}</span></td>
+        <td class="col-hide-mobile">${fmt.esc(dn(h.city))}</td>
+        <td class="col-hide-mobile">${fmt.esc(h.category || '—')}</td>
+        <td class="col-hide-mobile">${brandGroupLink(h.brand_group, 16, 'hotels')}</td>
+        <td class="num col-hide-mobile"${out ? ` title="Listed rooms; left out of the totals while ${h.under_renovation ? 'under renovation' : 'closed for the season'}"` : ''}>${fmt.num(out ? h.keys_listed : h.keys)}</td>
+        <td class="num cell-metric">${bar}</td>
+        <td class="num cell-metric">${occ}</td>
+        <td class="col-hide-mobile"><span class="hotels-status"${tip ? ` title="${escAttr(tip)}"` : ''}>${hotelStatus(h)}</span></td>
       </tr>`;
     }).join('');
   }
 
-  document.getElementById('hotels-footer').textContent =
-    `Showing ${sorted.length} of ${total} hotel${total !== 1 ? 's' : ''}`;
-
   syncHotelsSortIcons();
-  renderActiveHotelsFilters();
 }
 
 // ─── Full render ──────────────────────────────────────────────────
@@ -4357,95 +4339,49 @@ document.getElementById('segment-sidebar').addEventListener('click', e => {
   if (googleMap) updateMapMarkers();
 });
 
-// Hotels: search input + clear button
+// Hotels: one filter row (search, destination, segment, owner, sort), sortable headers, row click
 document.getElementById('hotels-search').addEventListener('input', e => {
   hotelsState.query = e.target.value;
-  const clearBtn = document.getElementById('hotels-search-clear');
-  if (clearBtn) clearBtn.classList.toggle('visible', !!e.target.value);
   renderHotelsTable();
 });
-document.getElementById('hotels-search-clear').addEventListener('click', () => {
-  hotelsState.query = '';
-  document.getElementById('hotels-search').value = '';
-  document.getElementById('hotels-search-clear').classList.remove('visible');
+document.getElementById('hotels-city-select').addEventListener('change', e => {
+  hotelsState.city = e.target.value;
   renderHotelsTable();
 });
-
-// Hotels: sort select
+document.getElementById('hotels-seg').addEventListener('click', e => {
+  const b = e.target.closest('[data-hseg]');
+  if (!b) return;
+  hotelsState.seg = b.dataset.hseg;
+  syncHotelsSeg();
+  renderHotelsTable();
+});
 document.getElementById('hotels-sort-select').addEventListener('change', e => {
   const val = e.target.value;
   hotelsState.col = val;
   hotelsState.dir = STRING_COLS.has(val) ? 1 : -1;
   renderHotelsTable();
 });
-
-// Hotels: owner select
 document.getElementById('hotels-owner-select').addEventListener('change', e => {
   hotelsState.owner = e.target.value;
   renderHotelsTable();
 });
-
-// Hotels: active filter chip removal
-document.getElementById('hotels-active-filters').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-chip-remove');
-  if (!btn) return;
-  const chip = btn.closest('.filter-chip');
-  if (!chip) return;
-  const type = chip.dataset.ftype;
-  if (type === 'city') {
-    hotelsState.city = 'all';
-    document.querySelectorAll('#hotels-city-pills .pill').forEach(p =>
-      p.classList.toggle('active', p.dataset.hcity === 'all'));
-  } else if (type === 'seg') {
-    hotelsState.seg = 'all';
-    document.querySelectorAll('#hotels-seg-pills .pill').forEach(p =>
-      p.classList.toggle('active', p.dataset.hseg === 'all'));
-  } else if (type === 'owner') {
-    hotelsState.owner = 'all';
-    document.getElementById('hotels-owner-select').value = 'all';
-  } else if (type === 'query') {
-    hotelsState.query = '';
-    document.getElementById('hotels-search').value = '';
-    document.getElementById('hotels-search-clear').classList.remove('visible');
-  }
-  renderHotelsTable();
-});
-
-// Hotels: clear all filters
-document.getElementById('hotels-clear-all').addEventListener('click', clearAllHotelsFilters);
-
-// Hotels: city pills
-document.getElementById('hotels-city-pills').addEventListener('click', e => {
-  const pill = e.target.closest('.pill');
-  if (!pill) return;
-  document.querySelectorAll('#hotels-city-pills .pill').forEach(p => p.classList.remove('active'));
-  pill.classList.add('active');
-  hotelsState.city = pill.dataset.hcity;
-  renderHotelsTable();
-});
-
-// Hotels: segment pills
-document.getElementById('hotels-seg-pills').addEventListener('click', e => {
-  const pill = e.target.closest('.pill');
-  if (!pill) return;
-  document.querySelectorAll('#hotels-seg-pills .pill').forEach(p => p.classList.remove('active'));
-  pill.classList.add('active');
-  hotelsState.seg = pill.dataset.hseg;
-  renderHotelsTable();
-});
-
-// Hotels: column sort (also syncs sort select)
 document.getElementById('hotels-table').addEventListener('click', e => {
-  const th = e.target.closest('.sortable-col');
-  if (!th) return;
-  const col = th.dataset.col;
-  if (col === hotelsState.col) {
-    hotelsState.dir *= -1;
-  } else {
-    hotelsState.col = col;
-    hotelsState.dir = STRING_COLS.has(col) ? 1 : -1;
+  const brand = e.target.closest('.k-brand-link');
+  if (brand) { e.stopPropagation(); showBrandDetail(brand.dataset.brandGroup, brand.dataset.from); return; }
+  const th = e.target.closest('th[data-col]');
+  if (th) {
+    const col = th.dataset.col;
+    if (col === hotelsState.col) hotelsState.dir *= -1;
+    else { hotelsState.col = col; hotelsState.dir = STRING_COLS.has(col) ? 1 : -1; }
+    renderHotelsTable();
+    return;
   }
-  renderHotelsTable();
+  const row = e.target.closest('tr[data-hid]');
+  if (row) showHotelDetail(+row.dataset.hid);
+});
+document.getElementById('hotels-table').addEventListener('keydown', e => {
+  const row = e.target.closest && e.target.closest('tr[data-hid]');
+  if (row && e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showHotelDetail(+row.dataset.hid); }
 });
 
 // Brand table — click brand group name → brand detail
@@ -4660,31 +4596,22 @@ document.getElementById('chat-chips').addEventListener('click', e => {
 
 // ─── Dynamic filters ──────────────────────────────────────────────
 
+// Hotels filter row: the destination select (with counts) and the segment counts
 function buildCityPills() {
-  const all    = hotels || [];
-  const cities = [...new Set(all.map(h => h.city))].sort();
-  const bar    = document.getElementById('hotels-city-pills');
-  bar.querySelectorAll('[data-hcity]:not([data-hcity="all"])').forEach(el => el.remove());
-  bar.querySelector('[data-hcity="all"]').textContent = `All (${all.length})`;
-  cities.forEach(city => {
-    const count = all.filter(h => h.city === city).length;
-    const btn = document.createElement('button');
-    btn.className = 'pill';
-    btn.dataset.hcity = city;
-    btn.textContent = `${city} (${count})`;
-    bar.appendChild(btn);
-  });
+  const all = hotels || [];
+  const sel = document.getElementById('hotels-city-select');
+  const cities = [...new Set(all.map(h => h.city))].sort((a, b) => dn(a).localeCompare(dn(b)));
+  const keep = cities.includes(sel.value) ? sel.value : 'all';
+  sel.replaceChildren(new Option('All destinations', 'all'),
+    ...cities.map(c => new Option(`${dn(c)} (${all.filter(h => h.city === c).length})`, c)));
+  sel.value = keep;
 }
 
 function buildSegPills() {
   const all = hotels || [];
-  const bar = document.getElementById('hotels-seg-pills');
-  bar.querySelector('[data-hseg="all"]').textContent = `All Segments (${all.length})`;
-  ['Ultra Luxury','Luxury','Upper Upscale','Upscale','Midscale'].forEach(seg => {
-    const btn = bar.querySelector(`[data-hseg="${seg}"]`);
-    if (!btn) return;
-    const count = all.filter(h => h.category === seg).length;
-    btn.textContent = `${seg} (${count})`;
+  document.querySelectorAll('#hotels-seg [data-hseg]').forEach(b => {
+    const seg = b.dataset.hseg;
+    b.title = `${seg === 'all' ? all.length : all.filter(h => h.category === seg).length} hotels`;
   });
 }
 
@@ -5515,7 +5442,7 @@ function buildOwnerSelect() {
     .sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
   if (counts.Undisclosed) names.push('Undisclosed');
   const keep = names.includes(sel.value) ? sel.value : 'all';
-  sel.replaceChildren(new Option('All Owners', 'all'),
+  sel.replaceChildren(new Option('All owners', 'all'),
     ...names.map(o => new Option(via[o] ? `${o} (via ${via[o]})` : o, o)));
   sel.value = keep;
   if (keep === 'all' && hotelsState.owner !== 'all') hotelsState.owner = 'all';
