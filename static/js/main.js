@@ -879,12 +879,22 @@ const KodoTip = (() => {
 // everything else the card says moves to its "i" tooltip
 function compactDashCards(list) {
   const a = KodoLive.raw() ? KodoLive.agg(list) : null;
+  compactKpiCards([
+    { id: 'kpi-keys', label: 'Total keys', kind: 'keys' },
+    { id: 'kpi-adr', label: 'BAR (median)', kind: 'adr' },
+    { id: 'kpi-occ', label: 'Occupancy (est.)', kind: 'occ' },
+    { id: 'kpi-revpar', label: 'Rooms RevPAR (est.)', kind: 'revpar' },
+  ], a);
+}
+// A KPI card in the standard form: label, one number, one short line, and an
+// "i" holding the window, the change and the card's own explanation.
+// defs: [{ id, label, kind: keys | adr | occ | revpar, line?, badge? }]; a: KodoLive.agg of the cards' hotels (or null)
+function compactKpiCards(defs, a) {
   const text = el => (el && el.style.display !== 'none' ? el.textContent.replace(/\s+/g, ' ').trim() : '');
-  const LABEL = { 'kpi-keys': 'Total keys', 'kpi-adr': 'BAR (median)', 'kpi-occ': 'Occupancy (est.)', 'kpi-revpar': 'Rooms RevPAR (est.)' };
-  Object.keys(LABEL).forEach(id => {
+  defs.forEach(({ id, label, kind, line: fixed, badge }) => {
     const c = document.getElementById(id);
     if (!c) return;
-    c.querySelector('.kpi-label').textContent = LABEL[id];
+    c.querySelector('.kpi-label').textContent = label;
     const v = c.querySelector('.kpi-value'), meta = c.querySelector('.kpi-meta'), sub = c.querySelector('.kpi-sub');
     const delta = c.querySelector('.kpi-delta'), period = c.querySelector('.kpi-period'), conf = c.querySelector('.kpi-conf');
     const figure = !v.querySelector('.kpi-nodata-pill');
@@ -893,17 +903,18 @@ function compactDashCards(list) {
     c.removeAttribute('title');
     const range = (text(meta).match(/range [^·]+/i) || [''])[0].trim();
     let line = '';
-    if (id === 'kpi-keys') line = text(meta);
-    else if (id === 'kpi-adr') line = figure && a && !a.single ? `median of ${a.bar.n} hotels` : figure ? text(sub) : '';
+    if (fixed != null) line = fixed;
+    else if (kind === 'keys') line = text(meta);
+    else if (kind === 'adr') line = figure && a && !a.single ? `median of ${a.bar.n} hotels` : figure ? text(sub) : '';
     else if (figure) line = range ? range.replace(/^RANGE/i, 'range') : text(delta);
-    if (figure && (id === 'kpi-adr' || id === 'kpi-revpar') && !v.querySelector('.kpi-unit')) v.insertAdjacentHTML('beforeend', '<span class="kpi-unit">MAD</span>');
+    if (figure && (kind === 'adr' || kind === 'revpar') && !v.querySelector('.kpi-unit')) v.insertAdjacentHTML('beforeend', '<span class="kpi-unit">MAD</span>');
     let ln = c.querySelector('.kpi-line');
     if (!ln) { ln = document.createElement('span'); ln.className = 'kpi-line'; v.after(ln); }
-    ln.textContent = line;
+    ln.innerHTML = (badge ? badge + ' ' : '') + fmt.esc(line);
     let i = c.querySelector('.kpi-info');
     if (!i) { i = document.createElement('button'); i.type = 'button'; i.className = 'kpi-info'; i.textContent = 'i'; c.appendChild(i); }
     i.dataset.tip = notes.join(' · ');
-    i.setAttribute('aria-label', `About ${LABEL[id]}: ${notes.join('. ')}`);
+    i.setAttribute('aria-label', `About ${label}: ${notes.join('. ')}`);
   });
 }
 
@@ -1871,39 +1882,22 @@ async function showHotelDetail(id) {
   setSidebar('hotel');
   scrollMainToTop();
 
-  // ── 1. Header ──
+  // ── 1. Header: name, status and verified as neutral pills; one line with
+  // the brand group (logo, linked to Brands), the destination (linked to the
+  // Market Overview), the segment, the owner (linked to Owners) and the year opened
   document.getElementById('hotel-hd-name').textContent = h.name;
-  // Independents often have brand === name; don't repeat the name
-  const subBrand = h.brand && h.brand !== h.name ? `${fmt.esc(h.brand)} · ` : '';
-  document.getElementById('hotel-hd-sub').innerHTML =
-    `${subBrand}${fmt.esc(h.city)} · ${getSegmentBadgeHtml(h.category)}`;
+  const st = document.getElementById('hotel-hd-status');
+  st.textContent = hotelStatus(h);
+  st.title = hotelStatusTip(h);
+  const verified = (h.data_quality || '').toLowerCase().startsWith('verified');
+  document.getElementById('hotel-hd-dq').textContent = verified ? 'Verified' : 'Estimated';
+  renderHotelHeadLine(h);
 
-  const ownerLine = document.getElementById('hotel-hd-owner');
-  if (h.owner && h.owner !== 'Undisclosed') {
-    ownerLine.textContent = `Owner: ${h.owner}${h.owner_via ? ` · via ${h.owner_via}` : ''}`;
-    ownerLine.style.display = '';
-  } else {
-    ownerLine.style.display = 'none';
-  }
-
-  const yearEl = document.getElementById('hotel-hd-year');
-  yearEl.textContent   = h.year_opened ? `Opened ${h.year_opened}` : '';
-  yearEl.style.display = h.year_opened ? '' : 'none';
-
-  const dqEl = document.getElementById('hotel-hd-dq');
-  if ((h.data_quality || '').toLowerCase().startsWith('verified')) {
-    dqEl.textContent = 'Verified';
-    dqEl.className   = 'hotel-dq-badge dq-verified';
-  } else {
-    dqEl.textContent = 'Estimated';
-    dqEl.className   = 'hotel-dq-badge dq-estimate';
-  }
-
-  // ── 2. KPI cards ──
+  // ── 2. Cards: label, one number, one short line; the rest in the "i"
   const setKv = (id, v) => document.getElementById(id).querySelector('.kpi-value').textContent = v;
-  setKv('hkpi-detail-keys', hotelRooms(h));
+  setKv('hkpi-detail-keys', fmt.num(h.under_renovation || h.seasonal_closure ? h.keys_listed : h.keys));
   KodoPeriod.set('hkpi-detail-keys', KodoPeriod.today(), COUNT_TIP);
-  KodoLive.cards({ occ: 'hkpi-occ', rate: 'hkpi-adr', revpar: 'hkpi-revpar' }, [h]);
+  Promise.resolve(KodoLive.cards({ occ: 'hkpi-occ', rate: 'hkpi-adr', revpar: 'hkpi-revpar' }, [h])).then(() => compactHotelCards(h));
 
   // ── 4. Market context chart ──
   document.getElementById('hotel-ctx-city').textContent = h.city;
@@ -1928,9 +1922,48 @@ async function showHotelDetail(id) {
   renderOwnerSection(h);
   KodoEvents.renderNext90(document.getElementById('hotel-events-next90'), h.city);
 
-  // ── 9. Live Rate Intelligence ──
+  // ── 9. One calendar: occupancy (est.) as the shade, BAR as the number ──
   renderRateCalendar(h.id);
-  renderOccCalendar(h.id);
+}
+
+function renderHotelHeadLine(h) {
+  const el = document.getElementById('hotel-hd-sub');
+  const parts = [brandGroupLink(h.brand_group, 18, 'hotel')];
+  if (h.brand && h.brand !== h.brand_group && h.brand !== h.name) parts[0] = parts[0].replace('<span>' + fmt.esc(h.brand_group) + '</span>', `<span>${fmt.esc(h.brand_group)}</span><span class="hotel-hd-sub-brand">(${fmt.esc(h.brand)})</span>`);
+  parts.push(`<button type="button" class="k-link" data-dest="${escAttr(h.city)}" title="Open ${escAttr(dn(h.city))} on the Market Overview">${fmt.esc(dn(h.city))}</button>`);
+  if (h.category) parts.push(fmt.esc(h.category));
+  if (h.owner && h.owner !== 'Undisclosed')
+    parts.push(`Owner: <button type="button" class="k-link" data-owner="${escAttr(h.owner)}">${fmt.esc(h.owner)}</button>${h.owner_via ? ` (via ${fmt.esc(h.owner_via)})` : ''}`);
+  if (h.year_opened) parts.push(`Opened ${h.year_opened}`);
+  el.innerHTML = parts.map(x => `<span class="hotel-hd-part">${x}</span>`).join('<span class="hotel-hd-sep" aria-hidden="true">·</span>');
+}
+// Owner name -> its page on Owners (the owners list loads once)
+async function openOwnerByName(name) {
+  if (!ownersData) { try { ownersData = await fetch('/api/owners').then(r => r.ok ? r.json() : null); } catch { ownersData = null; } }
+  const o = (ownersData || []).find(x => x.name === name) || (ownersData || []).find(x => fold(x.name) === fold(name));
+  _srchNavigateToScreen('owners');
+  if (o) showOwnerDetail(o.id);
+}
+document.getElementById('hotel-hd-sub').addEventListener('click', e => {
+  const brand = e.target.closest('.k-brand-link');
+  if (brand) { showBrandDetail(brand.dataset.brandGroup, 'hotel'); return; }
+  const dest = e.target.closest('[data-dest]');
+  if (dest) { _srchNavigateToScreen('dashboard'); selectCity(dest.dataset.dest); return; }
+  const own = e.target.closest('[data-owner]');
+  if (own) openOwnerByName(own.dataset.owner);
+});
+
+// The hotel's four cards in the Market Overview's form; the occupancy card
+// carries the Official / Estimate badge (the calibration detail in its tooltip)
+function compactHotelCards(h) {
+  const L = (KodoLive.raw() || {}).hotels || {};
+  const keysLine = h.under_renovation ? 'partly open, under renovation' : h.seasonal_closure ? CLOSED_NOTE.toLowerCase() : KodoPeriod.label(KodoPeriod.today());
+  compactKpiCards([
+    { id: 'hkpi-detail-keys', label: 'Keys', kind: 'keys', line: keysLine },
+    { id: 'hkpi-adr', label: 'BAR', kind: 'adr' },
+    { id: 'hkpi-occ', label: 'Occupancy (est.)', kind: 'occ', badge: h.under_renovation || h.seasonal_closure ? '' : destBadge(h.city) },
+    { id: 'hkpi-revpar', label: 'Rooms RevPAR (est.)', kind: 'revpar' },
+  ], null);
 }
 
 // Market positioning: BAR of every hotel in the city (observed since
@@ -2207,13 +2240,18 @@ function fmtMadLong(v) {
 // ── Hotel rate calendar: "Next 30 nights", or a past month showing each
 // night's last published rate (the last price seen before the night) ──
 const HR_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const hrState = { hotelId: null, view: 'next', first: null, req: 0 };
+const hrState = { hotelId: null, view: 'next', first: null, req: 0, shade: 'occ', next: null };
 const hrMonthKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 const hrMonthName = k => `${HR_MONTHS[+k.slice(5) - 1]} ${k.slice(0, 4)}`;
 const hrShift = (k, n) => { const d = new Date(+k.slice(0, 4), +k.slice(5) - 1 + n, 1); return hrMonthKey(d); };
 
+// The hotel page's one calendar. Next 30 nights: each night's date, its BAR
+// (the latest published price) as the number and the occupancy estimate as
+// the shade (greyscale, darker = busier), or the BAR as the shade on
+// request. Past months: each night's last published rate (BAR shade only).
+// Nights closed for the season read "Closed".
 async function renderRateCalendar(hotelId) {
-  hrState.hotelId = hotelId; hrState.view = 'next'; hrState.first = null;
+  hrState.hotelId = hotelId; hrState.view = 'next'; hrState.first = null; hrState.next = null;
   return hrRender();
 }
 function hrNav() {
@@ -2224,10 +2262,19 @@ function hrNav() {
   document.getElementById('hrate-prev').disabled = !!hrState.first && prev < hrState.first && v !== 'next';
   document.getElementById('hrate-prev').setAttribute('aria-label', `Show ${hrMonthName(prev)}: last published rates`);
   document.getElementById('hrate-next').setAttribute('aria-label', v === 'next' ? 'Later' : (hrShift(v, 1) > cur ? 'Show the next 30 nights' : `Show ${hrMonthName(hrShift(v, 1))}`));
+  // past months have published rates only: the shade is the BAR
+  const occBtn = document.querySelector('#hcal-shade [data-shade="occ"]');
+  occBtn.disabled = v !== 'next';
+  occBtn.title = v === 'next' ? '' : 'Past months have published rates only';
+  hrSyncShade();
+}
+const hrShadeNow = () => hrState.view === 'next' ? hrState.shade : 'bar';
+function hrSyncShade() {
+  document.querySelectorAll('#hcal-shade [data-shade]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.shade === hrShadeNow())));
 }
 function hrRender() {
   hrNav();
-  return hrState.view === 'next' ? renderRateNext(hrState.hotelId) : renderRatePast(hrState.hotelId, hrState.view);
+  return hrState.view === 'next' ? renderCalNext(hrState.hotelId) : renderRatePast(hrState.hotelId, hrState.view);
 }
 document.getElementById('hrate-prev')?.addEventListener('click', () => {
   hrState.view = hrState.view === 'next' ? hrMonthKey(new Date()) : hrShift(hrState.view, -1); hrRender();
@@ -2237,14 +2284,179 @@ document.getElementById('hrate-next')?.addEventListener('click', () => {
   const n = hrShift(hrState.view, 1);
   hrState.view = n > hrMonthKey(new Date()) ? 'next' : n; hrRender();
 });
+document.getElementById('hcal-shade')?.addEventListener('click', e => {
+  const b = e.target.closest('[data-shade]');
+  if (!b || b.disabled) return;
+  hrState.shade = b.dataset.shade;
+  hrSyncShade();
+  if (hrState.view === 'next' && hrState.next) drawCalNext();
+});
 
-// Calendar legends: a swatch drawn with the cell's own class (same colours as
-// the cells, light and dark), and the event marker (an orange corner flag,
-// used for nothing else on the calendars)
-const calLegSw = (cls, label) => `<span class="bar-cal-leg-item"><span class="bar-cal-sw ${cls}" aria-hidden="true"></span>${label}</span>`;
-const CAL_LEG_EVENT = '<span class="bar-cal-leg-item"><span class="bar-cal-leg-ev" aria-hidden="true"></span>Event</span>';
-const HR_LEGEND_PAST = calLegSw('src-past', 'Last published rate') + calLegSw('src-unavailable', 'No price collected')
-  + calLegSw('src-upcoming', 'Upcoming night') + CAL_LEG_EVENT;
+// Shade levels 0–3 (greyscale): occupancy in four bands; BAR from the
+// lowest to the highest price shown (this hotel, these nights)
+const HCAL_OCC_BANDS = ['under 40%', '40–60%', '60–80%', '80% and over'];
+const hcalOccLevel = occ => occ >= 80 ? 3 : occ >= 60 ? 2 : occ >= 40 ? 1 : 0;
+function hcalBarLevels(values) {
+  const v = values.filter(x => x != null);
+  const lo = Math.min(...v), hi = Math.max(...v);
+  return x => x == null ? null : hi === lo ? 1 : Math.min(3, Math.floor((x - lo) / (hi - lo) * 4));
+}
+const hcalSw = (cls, label) => `<span class="hcal-leg-item"><span class="hcal-sw ${cls}" aria-hidden="true"></span>${label}</span>`;
+const HCAL_LEG_EVENT = '<span class="hcal-leg-item"><span class="hcal-leg-ev" aria-hidden="true"></span>Event</span>';
+function hcalLegend(shade, extra) {
+  const sw = shade === 'occ'
+    ? HCAL_OCC_BANDS.map((b, i) => hcalSw('hcal-l' + i, i === 0 ? 'Occupancy (est.) ' + b : b)).join('')
+    : hcalSw('hcal-l0', 'Lower BAR') + hcalSw('hcal-l1', '') + hcalSw('hcal-l2', '') + hcalSw('hcal-l3', 'Higher BAR (this hotel, these nights)');
+  return sw + extra.join('') + HCAL_LEG_EVENT;
+}
+const DAYS3 = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+async function renderRatePast(hotelId, month) {
+  const calEl = document.getElementById('hrate-calendar');
+  const req = ++hrState.req;
+  document.getElementById('hcal-badge').innerHTML = '<span class="k-pill k-pill--muted">Past nights</span>';
+  document.getElementById('hcal-note').innerHTML = 'Last published rate: the last price seen before each night.';
+  calEl.innerHTML = '<div class="bar-cal-loading">Loading past rates…</div>';
+  let d;
+  try { d = await (await fetch(`/api/rates/past?hotel_id=${encodeURIComponent(hotelId)}&month=${month}`)).json(); }
+  catch { calEl.innerHTML = '<div class="bar-cal-loading">Past rates unavailable</div>'; return; }
+  if (req !== hrState.req) return;
+  hrState.first = d.first_month || month;
+  hrNav();
+  const byNight = Object.fromEntries((d.nights || []).map(n => [n.night, n]));
+  const total = new Date(+month.slice(0, 4), +month.slice(5), 0).getDate();
+  const level = hcalBarLevels((d.nights || []).filter(n => n.night < d.today).map(n => n.rate_mad == null ? null : +n.rate_mad));
+  let html = '';
+  for (let day = 1; day <= total; day++) {
+    const dt = new Date(+month.slice(0, 4), +month.slice(5) - 1, day), iso = localIsoDate(dt);
+    const n = byNight[iso], dn = `${DAYS3[dt.getDay()]} ${day}`;
+    if (iso >= d.today) {
+      html += `<div class="hcal-day hcal-none"${calTipAttrs(iso, [['Upcoming night: see Next 30 nights']])}><div class="hcal-dn">${dn}</div><div class="hcal-bar">·</div></div>`;
+    } else if (!n || n.rate_mad == null) {
+      html += `<div class="hcal-day hcal-none"${calTipAttrs(iso, [['No price collected before this night']])}><div class="hcal-dn">${dn}</div><div class="hcal-bar">—</div></div>`;
+    } else {
+      const tip = calTipAttrs(iso, [['Last published rate', fmtMadLong(n.rate_mad)],
+        ['Collected', `${KodoPeriod.day(n.collected_on)} · ${n.days_before} ${n.days_before === 1 ? 'day' : 'days'} before`],
+        ['Source', SOURCE_LABEL[n.source] || n.source]]);
+      html += `<div class="hcal-day hcal-l${level(+n.rate_mad)}"${tip}><div class="hcal-dn">${dn}</div><div class="hcal-bar">${fmtMadShort(n.rate_mad)}</div></div>`;
+    }
+  }
+  calEl.innerHTML = html;
+  document.getElementById('hrate-legend').innerHTML = hcalLegend('bar', [hcalSw('hcal-none', 'No price collected')]);
+  KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
+}
+
+async function renderCalNext(hotelId) {
+  const calEl = document.getElementById('hrate-calendar');
+  const req = ++hrState.req;
+  calEl.innerHTML = '<div class="bar-cal-loading">Loading…</div>';
+  const get = url => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
+  const [rates, occ] = await Promise.all([get(`/api/rates?hotel_id=${hotelId}&days=35`), get(`/api/occupancy/${hotelId}`)]);
+  if (req !== hrState.req) return;
+  hrState.next = { rates: rates || {}, occ: occ || {}, hotelId, ok: !!(rates || occ) };
+  if (!rates && !occ) { calEl.innerHTML = '<div class="bar-cal-loading">Calendar unavailable</div>'; return; }
+  drawCalNext();
+  renderCalAverages(occ);
+}
+
+function drawCalNext() {
+  const { rates: data, occ, hotelId } = hrState.next;
+  const calEl = document.getElementById('hrate-calendar');
+  const shade = hrShadeNow();
+  const h = hotels.find(x => +x.id === +hotelId) || {};
+
+  // stay_date → the latest price observed for each night (on the same scrape
+  // day the more trusted source wins, as in rates_store.py)
+  const priority = {'live_dataforseo':5,'live_brand':5,'manual_override':4,'live_booking':3,'estimated':1,'unavailable':0};
+  const later = (a, b) => a.scrape_date !== b.scrape_date ? a.scrape_date > b.scrape_date : (priority[a.source]||0) > (priority[b.source]||0);
+  const rateMap = {};
+  for (const r of (data.rates || [])) if (!rateMap[r.stay_date] || later(r, rateMap[r.stay_date])) rateMap[r.stay_date] = r;
+  const estMap = {};
+  for (const e of (occ.estimates || [])) estMap[e.date] = e;
+  const closedSet = new Set(occ.closed_nights || []);    // closed for the season (no bookable rate)
+
+  const today = new Date();
+  const todayIso = data.today || localIsoDate(today);
+  const ageDays = sd => Math.round((Date.parse(todayIso) - Date.parse(String(sd).slice(0, 10))) / 86400000);
+  const nights = [];
+  for (let i = 1; i <= 30; i++) {
+    const d = new Date(today); d.setDate(today.getDate() + i);
+    const iso = localIsoDate(d), r = rateMap[iso] || null, e = estMap[iso] || null;
+    nights.push({ d, iso, r, e, rate: r && r.rate_mad ? +r.rate_mad : null, occ: e ? +e.estimated_occupancy : null, shut: !e && closedSet.has(iso) });
+  }
+  const barLevel = hcalBarLevels(nights.map(n => n.rate));
+  let stale = false, noEst = false, noRate = false;
+  calEl.innerHTML = nights.map(n => {
+    const lvl = shade === 'occ' ? (n.occ == null ? null : hcalOccLevel(n.occ)) : barLevel(n.rate);
+    const old = n.rate != null && ageDays(n.r.scrape_date) > RATE_STALE_DAYS;
+    if (old) stale = true;
+    if (n.occ == null && !n.shut) noEst = true;
+    if (n.rate == null) noRate = true;
+    const rows = [];
+    let why = '';                                       // an empty night says why, in the cell
+    if (n.rate != null) {
+      const age = ageDays(n.r.scrape_date);
+      rows.push(['BAR', fmtMadLong(n.rate)], ['Seen', `${seenAgo(age)} (${KodoPeriod.day(n.r.scrape_date)})`], ['Source', SOURCE_LABEL[n.r.source] || n.r.source]);
+      if (old) rows.push(['', 'Seen over a week ago: it may have changed']);
+    } else {
+      const [txt, reason] = emptyNightLabel(data.lookup, n.iso);
+      why = txt;
+      rows.push([txt, reason]);
+    }
+    if (n.e) rows.push(['Occupancy (est.)', occRange(n.e)], ['Price coverage', COVERAGE_LABEL[occCoverage(n.e)] || occCoverage(n.e)]);
+    else if (n.shut) rows.push([CLOSED_LABEL, CLOSED_NOTE]);
+    else rows.push(['Occupancy (est.)', 'no estimate for this night']);
+    const cls = n.shut ? 'hcal-closed' : lvl == null ? 'hcal-none' : 'hcal-l' + lvl;
+    return `<div class="hcal-day ${cls}"${calTipAttrs(n.iso, rows)}>
+      <div class="hcal-dn">${DAYS3[n.d.getDay()]} ${n.d.getDate()}</div>
+      <div class="hcal-bar${old ? ' hcal-stale' : ''}${n.rate == null && !n.shut ? ' hcal-why' : ''}">${n.shut && n.rate == null ? 'Closed' : n.rate != null ? fmtMadShort(n.rate) : `<span class="hcal-why-l">${why}</span><span class="hcal-why-s" aria-hidden="true">—</span>`}</div>
+      <div class="hcal-occ">${n.occ != null ? Math.round(n.occ) + '%' : n.shut ? '' : '—'}</div>
+    </div>`;
+  }).join('');
+
+  const extra = [];
+  if (shade === 'occ' && noEst) extra.push(hcalSw('hcal-none', 'No estimate'));
+  if (shade === 'bar' && noRate) extra.push(hcalSw('hcal-none', 'No price: reason in the cell'));
+  if (closedSet.size) extra.push(hcalSw('hcal-closed', CLOSED_LABEL));
+  if (stale) extra.push('<span class="hcal-leg-item"><span class="hcal-stale">1.2k</span>&nbsp;price seen over a week ago</span>');
+  document.getElementById('hrate-legend').innerHTML = hcalLegend(shade, extra);
+
+  // the occupancy basis: Official / Estimate, the detail in the tooltip
+  const allShut = closedSet.size && !(occ.estimates || []).some(e => e.date > localIsoDate(today));
+  const cc = occ.price_coverage_counts || {};
+  const nDays = (cc.full || 0) + (cc.partial || 0) + (cc.none || 0);
+  const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
+  const detail = ['Occupancy: modelled, not measured', occ.occ_basis, occ.model_run_date && `model run ${KodoPeriod.day(occ.model_run_date)}`,
+    covLabel && `price coverage ${covLabel}`, closedSet.size && !allShut && `${CLOSED_NOTE}: closed on ${closedSet.size} of the next 30 nights`].filter(Boolean).join(' · ');
+  document.getElementById('hcal-badge').innerHTML = occ.under_renovation ? `<span class="k-pill k-pill--muted">${RENOVATION_LABEL}</span>`
+    : allShut ? `<span class="k-pill k-pill--muted" title="${escAttr(CLOSED_NOTE + ': no occupancy or Rooms RevPAR estimate for the next 30 nights')}">${CLOSED_LABEL}</span>`
+    : occ.calibrated ? badgeHtml('official', `${DEST_BADGE_TIP.official} ${detail}.`) : badgeHtml('estimate', `Kodo estimate. ${detail}.`);
+
+  // when the prices were last collected: one quiet line
+  document.getElementById('hcal-note').textContent = data.last_live
+    ? (data.live_stale ? `Last live rates: ${KodoPeriod.day(data.last_live)} · not updated since` : `Prices last collected ${KodoPeriod.day(data.last_live)} · updated nightly`)
+    : ((data.rates || []).length ? 'Manual prices only · no live rates collected yet' : '');
+  KodoEvents.markCells(calEl, h.city);
+}
+
+// 30-day averages and price coverage: one quiet line, the detail in its "i"
+function renderCalAverages(data) {
+  const line = document.getElementById('hotel-cal-averages');
+  if (!data || data.avg_occupancy_30d == null) { line.hidden = true; return; }   // closed, under renovation: not the previous hotel's
+  const cc = data.price_coverage_counts || {};
+  const range = data.avg_low_30d != null && data.avg_high_30d != null ? ` (range ${data.avg_low_30d}–${data.avg_high_30d}%)` : '';
+  const rRange = data.avg_revpar_low_30d != null && data.avg_revpar_high_30d != null ? ` (range ${Math.round(+data.avg_revpar_low_30d).toLocaleString()}–${Math.round(+data.avg_revpar_high_30d).toLocaleString()})` : '';
+  document.getElementById('hcal-avg-bar-text').textContent = `Next 30 nights on average: occupancy (est.) ${data.avg_occupancy_30d}%`
+    + (data.avg_revpar_30d ? ` · Rooms RevPAR (est.) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}` : '');
+  const tip = `Occupancy (Kodo estimate) ${data.avg_occupancy_30d}%${range}.`
+    + (data.avg_revpar_30d ? ` Rooms RevPAR (est.: BAR × modelled occupancy) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}${rRange}.` : '')
+    + ` Price coverage: full ${cc.full ?? 0} days · partial ${cc.partial ?? 0} · none ${cc.none ?? 0}; it describes how many recent published prices we have for the hotel, not how accurate the estimate is.`;
+  const i = document.getElementById('hcal-avg-info');
+  i.dataset.tip = tip;
+  i.setAttribute('aria-label', 'About these averages: ' + tip);
+  line.hidden = false;
+}
+
 const RATE_STALE_DAYS = 7;          // a price seen longer ago than this looks less certain
 // Why a night of the next 30 has no price, from the hotel's lookup in the
 // latest nightly run: [cell label, tooltip text]. Never "sold out": a
@@ -2263,240 +2475,12 @@ function seenAgo(days) {
   return days <= 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`;
 }
 
-async function renderRatePast(hotelId, month) {
-  const calEl = document.getElementById('hrate-calendar');
-  const badgeEl = document.getElementById('hrate-source-badge');
-  const req = ++hrState.req;
-  document.getElementById('hrate-title').textContent = `Last Published Rate · ${hrMonthName(month)}`;
-  document.getElementById('hrate-legend').innerHTML = HR_LEGEND_PAST;
-  badgeEl.style.display = ''; badgeEl.className = 'rate-source-badge pill--grey'; badgeEl.textContent = 'Past nights';
-  document.getElementById('hrate-updated').textContent = 'Last published rate: the last price seen before each night. BAR is the public price, not what guests paid.';
-  calEl.innerHTML = '<div class="bar-cal-loading">Loading past rates…</div>';
-  let d;
-  try { d = await (await fetch(`/api/rates/past?hotel_id=${encodeURIComponent(hotelId)}&month=${month}`)).json(); }
-  catch { calEl.innerHTML = '<div class="bar-cal-loading">Past rates unavailable</div>'; return; }
-  if (req !== hrState.req) return;
-  hrState.first = d.first_month || month;
-  hrNav();
-  const byNight = Object.fromEntries((d.nights || []).map(n => [n.night, n]));
-  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const total = new Date(+month.slice(0, 4), +month.slice(5), 0).getDate();
-  let html = '';
-  for (let day = 1; day <= total; day++) {
-    const dt = new Date(+month.slice(0, 4), +month.slice(5) - 1, day), iso = localIsoDate(dt);
-    const n = byNight[iso], dn = `${DAYS[dt.getDay()]} ${day}`;
-    if (iso >= d.today) {
-      html += `<div class="bar-cal-day src-upcoming"${calTipAttrs(iso, [['Upcoming night: see Next 30 nights']])}><div class="bar-cal-dn">${dn}</div><div class="bar-cal-rate">·</div></div>`;
-    } else if (!n || n.rate_mad == null) {
-      html += `<div class="bar-cal-day src-unavailable"${calTipAttrs(iso, [['No price collected before this night']])}><div class="bar-cal-dn">${dn}</div><div class="bar-cal-rate">No data</div></div>`;
-    } else {
-      const tip = calTipAttrs(iso, [['Last published rate', fmtMadLong(n.rate_mad)],
-        ['Collected', `${KodoPeriod.day(n.collected_on)} · ${n.days_before} ${n.days_before === 1 ? 'day' : 'days'} before`],
-        ['Source', SOURCE_LABEL[n.source] || n.source]]);
-      html += `<div class="bar-cal-day src-past"${tip}><div class="bar-cal-dn">${dn}</div><div class="bar-cal-rate">${fmtMadShort(n.rate_mad)}</div></div>`;
-    }
-  }
-  calEl.innerHTML = html;
-  KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
-}
-
-async function renderRateNext(hotelId) {
-  const calEl    = document.getElementById('hrate-calendar');
-  const badgeEl  = document.getElementById('hrate-source-badge');
-  const updEl    = document.getElementById('hrate-updated');
-  const req = ++hrState.req;
-  document.getElementById('hrate-title').textContent = 'Best Available Rate · Next 30 Days';
-  badgeEl.className = 'rate-source-badge pill--blue';
-
-  calEl.innerHTML = '<div class="bar-cal-loading">Loading rate data…</div>';
-
-  let data;
-  try {
-    const resp = await fetch(`/api/rates?hotel_id=${hotelId}&days=35`);
-    data = await resp.json();
-  } catch (e) {
-    calEl.innerHTML = '<div class="bar-cal-loading">Rate data unavailable</div>';
-    return;
-  }
-  if (req !== hrState.req) return;
-
-  const rates   = data.rates || [];
-  const sources = data.source_breakdown || {};
-
-  // Only collected prices are shown: with none, the card says so rather
-  // than filling the month with an estimate.
-  const lastLive = data.last_live
-    ? (data.live_stale
-        ? `Last live rates: ${KodoPeriod.day(data.last_live)} · not updated since`
-        : `Last updated: ${KodoPeriod.day(data.last_live)} · Updates daily at 3:00 AM`)
-    : '';
-  badgeEl.style.display = rates.length ? '' : 'none';
-
-  // stay_date → rate row: the latest price observed for each night (the
-  // server already sends one per night; on the same scrape day the more
-  // trusted source wins, as in rates_store.py)
-  const priority = {'live_dataforseo':5,'live_brand':5,'manual_override':4,'live_booking':3,'estimated':1,'unavailable':0};
-  const later = (a, b) => a.scrape_date !== b.scrape_date ? a.scrape_date > b.scrape_date : (priority[a.source]||0) > (priority[b.source]||0);
-  const rateMap = {};
-  for (const r of rates) {
-    const sd = r.stay_date;
-    if (!rateMap[sd] || later(r, rateMap[sd])) rateMap[sd] = r;
-  }
-
-  // Generate next 30 days
-  const today = new Date();
-  const cells  = [];
-  for (let i = 1; i <= 30; i++) {
-    const d   = new Date(today); d.setDate(today.getDate() + i);
-    const iso = localIsoDate(d);
-    const r   = rateMap[iso] || null;
-    cells.push({ iso, d, r });
-  }
-
-  // Dominant source for badge
-  let dominantSrc = 'unavailable';
-  let maxCount = 0;
-  for (const [src, cnt] of Object.entries(sources)) {
-    if (cnt > maxCount && src !== 'unavailable') { maxCount = cnt; dominantSrc = src; }
-  }
-  badgeEl.textContent = `Source: ${SOURCE_LABEL[dominantSrc] || dominantSrc}`;
-
-  updEl.textContent = lastLive || (rates.length ? 'Manual prices only · no live rates collected yet' : '');
-
-  // Build grid
-  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const todayIso = data.today || localIsoDate(today);
-  const ageDays = sd => Math.round((Date.parse(todayIso) - Date.parse(String(sd).slice(0, 10))) / 86400000);
-  const seen = new Set();               // the classes shown, for the legend
-  let stale = false;
-  let html = '';
-  for (const { iso, d, r } of cells) {
-    const rateMAD = r && r.rate_mad ? +r.rate_mad : null;
-    let cls, label, tip;
-    if (rateMAD) {
-      cls = SOURCE_CLASS[r.source] || 'src-estimated';
-      const age = ageDays(r.scrape_date);
-      const old = age > RATE_STALE_DAYS;
-      if (old) { cls += ' bar-cal-stale'; stale = true; }
-      label = fmtMadShort(rateMAD);
-      tip = calTipAttrs(iso, [['Rate', fmtMadLong(rateMAD)], ['Seen', `${seenAgo(age)} (${KodoPeriod.day(r.scrape_date)})`],
-        ['Source', SOURCE_LABEL[r.source] || r.source]].concat(old ? [['', 'Seen over a week ago: it may have changed']] : []));
-    } else {
-      const [txt, why] = emptyNightLabel(data.lookup, iso);
-      cls = 'src-unavailable';
-      label = txt;
-      tip = calTipAttrs(iso, [[txt, why]]);
-    }
-    seen.add(cls.split(' ')[0]);
-    html += `<div class="bar-cal-day ${cls}"${tip}>
-      <div class="bar-cal-dn">${DAYS[d.getDay()]} ${d.getDate()}</div>
-      <div class="bar-cal-rate">${label}</div>
-    </div>`;
-  }
-  calEl.innerHTML = html;
-  const LEG = { 'src-live-google': 'Published rate', 'src-live-brand': 'Brand site rate', 'src-live-booking': 'Published rate (second site)',
-                'src-manual-override': 'Manual price', 'src-estimated': 'Other' };
-  document.getElementById('hrate-legend').innerHTML = Object.keys(LEG).filter(c => seen.has(c)).map(c => calLegSw(c, LEG[c])).join('')
-    + (stale ? calLegSw('src-live-google bar-cal-stale', 'Seen over a week ago') : '')
-    + (seen.has('src-unavailable') ? calLegSw('src-unavailable', 'No price: reason in the cell') : '') + CAL_LEG_EVENT;
-  KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
-}
-
 function fmMad(n) {
   if (!n) return '—';
   n = +n;
   if (n >= 1_000_000_000) return `MAD ${(n/1e9).toFixed(1)}B`;
   if (n >= 1_000_000)     return `MAD ${(n/1e6).toFixed(1)}M`;
   return `MAD ${Math.round(n).toLocaleString()}`;
-}
-
-async function renderOccCalendar(hotelId) {
-  const calEl   = document.getElementById('hocc-calendar');
-  const badgeEl = document.getElementById('hocc-model-badge');
-  const avgBar  = document.getElementById('hotel-cal-averages');
-  const avgText = document.getElementById('hcal-avg-bar-text');
-  const confEl  = document.getElementById('hcal-conf-note');
-  const noteEl  = document.getElementById('hocc-note');
-
-  calEl.innerHTML = '<div class="bar-cal-loading">Loading occupancy data…</div>';
-
-  let data;
-  try {
-    const resp = await fetch(`/api/occupancy/${hotelId}`);
-    if (!resp.ok) { calEl.innerHTML = '<div class="bar-cal-loading">Occupancy data unavailable</div>'; return; }
-    data = await resp.json();
-  } catch (e) {
-    calEl.innerHTML = '<div class="bar-cal-loading">Occupancy data unavailable</div>';
-    return;
-  }
-
-  const estimates = data.estimates || [];
-  const estMap = {};
-  for (const e of estimates) estMap[e.date] = e;
-  const closedSet = new Set(data.closed_nights || []);    // closed for the season (no bookable rate)
-
-  const dayNumCol = 'var(--text)';
-
-  const today = new Date();
-  let html = '';
-  for (let i = 1; i <= 30; i++) {
-    const d   = new Date(today); d.setDate(today.getDate() + i);
-    const iso = localIsoDate(d);
-    const e   = estMap[iso];
-    const occ = e ? +e.estimated_occupancy : null;
-    const cov = e ? occCoverage(e) : 'none';
-
-    const cell = occ === null ? HEAT_EMPTY
-      : occ >= 80 ? heatCell('green', 3, '600')
-      : occ >= 60 ? heatCell('green', 2, '500')
-      : occ >= 40 ? heatCell('green', 1)
-      : heatCell('green', 0);
-    const { bg, col, fw, border } = cell;
-
-    const styAttr = `background:${bg};color:${col};${fw ? `font-weight:${fw};` : ''}${border ? `border:${border};` : ''}`;
-    const shut = !e && closedSet.has(iso);
-    const dispVal  = occ !== null ? `${occ.toFixed(0)}%` : shut ? 'Closed' : '—';
-    const confBadge = cov === 'full' ? '●' : cov === 'partial' ? '◑' : '○';
-    const tip = calTipAttrs(iso, e
-      ? [['Modelled occupancy', occRange(e)], ['Price coverage', COVERAGE_LABEL[cov] || cov]]
-      : shut ? [[CLOSED_LABEL, CLOSED_NOTE]] : [['Limited data', 'no estimate for this night']]);
-    html += `<div class="bar-cal-day" style="${styAttr}"${tip}>
-      <div class="bar-cal-dn" style="color:${dayNumCol};opacity:1">${d.getDate()}<span style="font-size:7px;margin-left:2px;opacity:0.6">${confBadge}</span></div>
-      <div class="bar-cal-rate">${dispVal}</div>
-    </div>`;
-  }
-  calEl.innerHTML = html;
-  KodoEvents.markCells(calEl, (hotels.find(x => +x.id === +hotelId) || {}).city);
-
-  // Modelled, not measured: say so, with the run date and the price
-  // coverage (most days' level; "mixed" when no level has a majority).
-  // Price coverage says how many recent prices we have, not accuracy.
-  const cc = data.price_coverage_counts || {};
-  const nDays = (cc.full || 0) + (cc.partial || 0) + (cc.none || 0);
-  const covLabel = ['full', 'partial', 'none'].find(k => nDays && (cc[k] || 0) > nDays / 2) || (nDays ? 'mixed' : '');
-  const allShut = closedSet.size && !estimates.some(e => e.date > localIsoDate(today));
-  badgeEl.textContent = data.under_renovation ? RENOVATION_LABEL : allShut ? CLOSED_LABEL : data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';
-  if (noteEl && allShut) {
-    noteEl.textContent = `${CLOSED_LABEL} · ${CLOSED_NOTE}: no occupancy or Rooms RevPAR estimate for the next 30 nights`;
-  } else if (noteEl) {
-    noteEl.textContent = [(data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate') + ' · modelled, not measured', data.occ_basis,
-      closedSet.size && `${CLOSED_NOTE}: closed on ${closedSet.size} of the next 30 nights`,
-      data.model_run_date && `model run ${KodoPeriod.day(data.model_run_date)}`,
-      covLabel && `Price coverage: ${covLabel}`].filter(Boolean).join(' · ');
-  }
-
-  // Averages bar
-  if (data.avg_occupancy_30d != null) {
-    const range = data.avg_low_30d != null && data.avg_high_30d != null ? ` (range ${data.avg_low_30d}–${data.avg_high_30d}%)` : '';
-    const rRange = data.avg_revpar_low_30d != null && data.avg_revpar_high_30d != null ? ` (range ${Math.round(+data.avg_revpar_low_30d).toLocaleString()}–${Math.round(+data.avg_revpar_high_30d).toLocaleString()})` : '';
-    const revStr = data.avg_revpar_30d ? ` · Rooms RevPAR (est.: BAR × modelled occupancy) MAD ${Math.round(+data.avg_revpar_30d).toLocaleString()}${rRange}` : '';
-    avgText.textContent = `30-day averages: occupancy (Kodo estimate) ${data.avg_occupancy_30d}%${range}${revStr}`;
-    confEl.textContent  = `Price coverage: full ${cc.full ?? 0} days · partial ${cc.partial ?? 0} · none ${cc.none ?? 0}. `
-      + 'It describes how many recent published prices we have for the hotel, not how accurate the estimate is.';
-    avgBar.style.display = '';
-  } else {
-    avgBar.style.display = 'none';                 // no averages (closed, under renovation): not the previous hotel's
-  }
 }
 
 // Price coverage of a stored night (full | partial | none); older rows

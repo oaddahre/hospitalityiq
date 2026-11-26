@@ -143,7 +143,8 @@ class Labels(unittest.TestCase):
         self.assertIn("occ: 'Occupancy · Kodo estimate'", js)
         self.assertIn('const range = a.low.val != null', js)                 # v1 range on the cards too
         self.assertNotIn("d.model === 'v2' && a.low.val", js)
-        self.assertIn("LABEL = { 'kpi-keys': 'Total keys', 'kpi-adr': 'BAR (median)', 'kpi-occ': 'Occupancy (est.)'", js)   # Market Overview cards
+        self.assertIn("{ id: 'kpi-occ', label: 'Occupancy (est.)', kind: 'occ' }", js)   # Market Overview cards
+        self.assertIn("{ id: 'hkpi-occ', label: 'Occupancy (est.)', kind: 'occ'", js)  # hotel page cards
         self.assertIn('Range ${k.occ_subject_low}', js)                     # comp set
         self.assertIn("'Limited data'", js)
         self.assertNotIn('observed occupancy', js.lower())

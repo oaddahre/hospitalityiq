@@ -200,7 +200,7 @@ class DestinationLevelsProposal(unittest.TestCase):
         self.assertIn("threading.Thread(target=OMX.run_occupancy_model, daemon=True).start()", app)
         self.assertIn("'occ_basis':", app)
         js = open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8').read()
-        self.assertIn('data.occ_basis', js)
+        self.assertIn('occ.occ_basis', js)
 
     def test_on(self):
         from unittest import mock

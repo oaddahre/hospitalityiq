@@ -1398,36 +1398,34 @@
       <!-- ── Hotel Detail ── -->
       <section class="screen" id="screen-hotel">
 
-        <!-- Header -->
+        <!-- Header: back, name, status, verified; one line with the brand group, destination, segment, owner, opened -->
         <div class="hotel-hd">
-          <button class="back-btn" id="hotel-back-btn">← Back</button>
+          <button type="button" class="back-btn" id="hotel-back-btn">← Back</button>
           <div class="hotel-hd-body">
             <div class="hotel-hd-row1">
-              <h1 id="hotel-hd-name">—</h1>
+              <h1 class="k-title" id="hotel-hd-name">—</h1>
               <div class="hotel-hd-badges">
-                <span class="hotel-status-badge pill--green" id="hotel-hd-status">Open</span>
-                <span class="hotel-dq-badge dq-estimate" id="hotel-hd-dq">Estimated</span>
+                <span class="k-pill" id="hotel-hd-status">Open</span>
+                <span class="k-pill" id="hotel-hd-dq">Estimated</span>
               </div>
             </div>
-            <p class="screen-sub" id="hotel-hd-sub">—</p>
-            <p class="hotel-hd-owner" id="hotel-hd-owner" style="display:none">—</p>
-            <p class="hotel-hd-year" id="hotel-hd-year">—</p>
+            <p class="k-line hotel-hd-line" id="hotel-hd-sub">—</p>
           </div>
         </div>
 
-        <!-- KPI cards -->
-        <div class="kpi-grid brand-kpi-grid" style="margin-bottom:22px">
+        <!-- Four cards: label, one number, one short line, an "i" -->
+        <div class="kpi-grid brand-kpi-grid kpi-compact" style="margin-bottom:22px">
           <div class="kpi-card" id="hkpi-detail-keys">
-            <span class="kpi-label">Total Keys</span>
+            <span class="kpi-label">Keys</span>
             <span class="kpi-value">—</span>
           </div>
           <div class="kpi-card" id="hkpi-adr">
-            <span class="kpi-label">BAR (published rate)</span>
+            <span class="kpi-label">BAR</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
           <div class="kpi-card" id="hkpi-occ">
-            <span class="kpi-label">Occupancy · Kodo estimate</span>
+            <span class="kpi-label">Occupancy (est.)</span>
             <span class="kpi-value">—</span>
           </div>
           <div class="kpi-card" id="hkpi-revpar">
@@ -1437,56 +1435,37 @@
           </div>
         </div>
 
-        <!-- Section A: Live Rate Intelligence — BAR Calendar -->
-        <!-- Dual calendar: BAR + Occupancy side by side -->
-        <div class="dual-cal-wrap" id="hotel-rates-section" style="margin-bottom:20px">
-          <!-- BAR Calendar -->
-          <div class="table-card dual-cal-card">
-            <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
-              <span class="table-title" id="hrate-title">Best Available Rate · Next 30 Days</span>
-              <span class="rate-source-badge pill--blue" id="hrate-source-badge">Loading…</span>
+        <!-- One calendar: occupancy (est.) as the shade, BAR as the number; past months show published rates -->
+        <div class="k-card hcal-card" id="hotel-rates-section">
+          <div class="hcal-head">
+            <div class="hcal-nav" role="group" aria-label="Calendar period">
+              <button type="button" class="hcal-nav-btn" id="hrate-prev" aria-label="Earlier month">&#8592;</button>
+              <span class="k-card-title" id="hrate-period" aria-live="polite">Next 30 nights</span>
+              <button type="button" class="hcal-nav-btn" id="hrate-next" aria-label="Later" disabled>&#8594;</button>
+              <span id="hcal-badge"></span>
             </div>
-            <div class="bar-cal-nav" role="group" aria-label="Rate calendar period">
-              <button type="button" class="bench-cal-nav-btn" id="hrate-prev" aria-label="Earlier month">&#8592;</button>
-              <span class="bar-cal-nav-label" id="hrate-period" aria-live="polite">Next 30 nights</span>
-              <button type="button" class="bench-cal-nav-btn" id="hrate-next" aria-label="Later" disabled>&#8594;</button>
+            <div class="hcal-shade">
+              <span class="hcal-shade-label" id="hcal-shade-label">Shade by</span>
+              <div class="k-seg" id="hcal-shade" role="group" aria-labelledby="hcal-shade-label">
+                <button type="button" data-shade="occ" aria-pressed="true">Occupancy</button>
+                <button type="button" data-shade="bar" aria-pressed="false">BAR</button>
+              </div>
             </div>
-            <div id="hrate-calendar" class="bar-calendar">
-              <div class="bar-cal-loading">Loading rate data…</div>
-            </div>
-            <div class="bar-cal-legend" id="hrate-legend"></div>
-            <p id="hrate-updated" class="rate-updated-note"></p>
           </div>
-          <!-- Occupancy Calendar -->
-          <div class="table-card dual-cal-card">
-            <div class="table-card-header" style="flex-wrap:wrap;gap:8px">
-              <span class="table-title">Occupancy · Next 30 Days</span>
-              <span class="rate-source-badge pill--blue" id="hocc-model-badge">Kodo estimate</span>
-            </div>
-            <div id="hocc-calendar" class="bar-calendar">
-              <div class="bar-cal-loading">Loading occupancy data…</div>
-            </div>
-            <div class="bar-cal-legend">
-              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 55%, var(--bg))"></span>&gt;80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 35%, var(--bg))"></span>60–80%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 20%, var(--bg))"></span>40–60%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-sw" aria-hidden="true" style="background:color-mix(in srgb, var(--cat-2-dot) 8%, var(--bg))"></span>&lt;40%</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-sw src-unavailable" aria-hidden="true"></span>No estimate</span>
-              <span class="bar-cal-leg-item"><span class="bar-cal-leg-ev" aria-hidden="true"></span>Event</span>
-            </div>
-            <p id="hocc-note" class="rate-updated-note"></p>
+          <div id="hrate-calendar" class="hcal-grid" role="grid" aria-label="Calendar">
+            <div class="bar-cal-loading">Loading…</div>
           </div>
+          <div class="hcal-legend" id="hrate-legend"></div>
+          <p class="hcal-note" id="hcal-note"></p>
         </div>
-        <!-- 30-day averages bar -->
-        <div class="dual-cal-avg-bar" id="hotel-cal-averages" style="display:none;margin-bottom:20px">
-          <span id="hcal-avg-bar-text">—</span>
-          <span class="dual-cal-conf-note" id="hcal-conf-note">—</span>
-        </div>
+        <!-- 30-day averages and price coverage: one quiet line, the detail in the "i" -->
+        <p class="hcal-avg" id="hotel-cal-averages" hidden><span id="hcal-avg-bar-text">—</span> <button type="button" class="k-info" id="hcal-avg-info" data-tip="" aria-label="About these averages">i</button></p>
+
         <!-- Events in the hotel's city, next 90 days (static/js/events.js) -->
         <div class="table-card evc-next90" id="hotel-events-next90" style="margin-bottom:20px">
           <div class="table-card-header">
             <span class="table-title" data-ev-title>Events · next 90 days</span>
-            <span class="table-subtitle">Dots on the calendars above mark these dates</span>
+            <span class="table-subtitle">Marked on the calendar above</span>
           </div>
           <div class="evc-chips" data-ev-list><p class="evc-empty">Loading events…</p></div>
         </div>

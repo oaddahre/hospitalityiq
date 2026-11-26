@@ -58,9 +58,9 @@ class EventMarker(unittest.TestCase):
         self.assertFalse('dot-live-google' in JS + HTML + CSS, 'old legend dot')
         self.assertTrue('aria-hidden="true"></span>Event</span>\';' in JS, 'Event legend entry')
         self.assertIn('id="hrate-legend"></div>', HTML)
-        occ = HTML[HTML.index('id="hocc-calendar"'):HTML.index('id="hocc-note"')]
-        self.assertIn('bar-cal-leg-ev', occ)
-        self.assertIn('>No estimate<', occ)
+        self.assertNotIn('id="hocc-calendar"', HTML)                       # one calendar (Nov 2026)
+        self.assertIn("hcalSw('hcal-none', 'No estimate')", JS)
+        self.assertIn('class="hcal-leg-ev"', JS)
         self.assertTrue('Last published rate' in JS, 'past legend')
 
     def test_legend_swatches_use_the_cell_colours(self):
@@ -69,8 +69,10 @@ class EventMarker(unittest.TestCase):
         for k in ('src-live-booking', 'src-estimated', 'src-unavailable', 'src-past', 'src-upcoming'):
             self.assertEqual(cell[k].strip(), sw[k].strip(), k)
         self.assertIn('.bar-cal-sw.src-live-google, .bar-cal-sw.src-live-brand, .bar-cal-sw.src-manual-override { background: var(--cat-4-tint)', CSS)
-        occ = re.findall(r'color-mix\(in srgb, var\(--cat-2-dot\) (\d+)%', HTML)
-        self.assertEqual(sorted(set(occ), key=int), ['8', '20', '35', '55'])
+        # the one calendar: greyscale levels, the legend swatches use the cells' own classes
+        for i in range(4):
+            self.assertRegex(CSS, r'\.hcal-l%d \{ background: color-mix\(in srgb, var\(--text\)' % i)
+        self.assertIn("hcalSw('hcal-l' + i,", JS)
         self.assertTrue('const HEAT_LEVELS = [8, 20, 35, 55];' in JS, 'heat levels')
 
 
@@ -90,10 +92,10 @@ class EmptyNights(unittest.TestCase):
     def test_short_and_never_sold_out(self):
         for label in ('No rate published', 'Not tracked yet', 'Lookup failed', 'Not checked yet'):
             self.assertLessEqual(len(label), 17)
-        fn = js_function('emptyNightLabel') + js_function('renderRateNext')
+        fn = js_function('emptyNightLabel') + js_function('drawCalNext')
         self.assertNotRegex(re.sub(r'//.*', '', fn), re.compile('sold out', re.I))
-        self.assertNotIn("'—'", js_function('renderRateNext'))
-        self.assertIn('overflow-wrap: anywhere', re.search(r'\.bar-cal-day\.src-unavailable \.bar-cal-rate \{[^}]*\}', CSS).group(0))
+        self.assertIn('n.rate != null ? fmtMadShort(n.rate) : `<span class="hcal-why-l">${why}</span>', js_function('drawCalNext'))   # the reason in the cell
+        self.assertIn('overflow-wrap: anywhere', re.search(r'^\.hcal-why \{[^}]*\}', CSS, re.M).group(0))
 
 
 class PriceAge(unittest.TestCase):
@@ -101,11 +103,11 @@ class PriceAge(unittest.TestCase):
         self.assertTrue('const RATE_STALE_DAYS = 7;' in JS, 'RATE_STALE_DAYS')
         self.assertEqual(run_js(js_function('seenAgo') + 'console.log(JSON.stringify([0, 1, 3, 12].map(seenAgo)))'),
                          ['today', '1 day ago', '3 days ago', '12 days ago'])
-        fn = js_function('renderRateNext')
+        fn = js_function('drawCalNext')
         self.assertIn("['Seen', `${seenAgo(age)}", fn)
-        self.assertIn("cls += ' bar-cal-stale'", fn)
-        self.assertIn('age > RATE_STALE_DAYS', fn)
-        self.assertRegex(CSS, r'\.bar-cal-day\.bar-cal-stale \.bar-cal-rate \{ opacity: 0\.5')
+        self.assertIn("${old ? ' hcal-stale' : ''}", fn)
+        self.assertIn('ageDays(n.r.scrape_date) > RATE_STALE_DAYS', fn)
+        self.assertRegex(CSS, r'\.hcal-stale \{ opacity: 0\.5')
 
 
 FIELDS = ['hotel_id', 'hotel_name', 'city', 'scrape_date', 'stay_date', 'rate_mad', 'rate_eur', 'source',

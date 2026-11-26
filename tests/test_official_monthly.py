@@ -181,7 +181,8 @@ class Label(unittest.TestCase):
         js = open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8').read()
         self.assertIn("const CALIBRATED_LABEL = 'Kodo est., calibrated on official monthly city occupancy';", js)
         self.assertIn('calibrated: rows.length > 0 && rows.every(v => v.occ_calibrated)', js)
-        self.assertIn("badgeEl.textContent = data.under_renovation ? RENOVATION_LABEL : allShut ? CLOSED_LABEL : data.calibrated ? CALIBRATED_LABEL : 'Kodo estimate';", js)
+        # the hotel calendar: Official only where calibrated, the detail in the badge's tooltip
+        self.assertIn("occ.calibrated ? badgeHtml('official', `${DEST_BADGE_TIP.official} ${detail}.`) : badgeHtml('estimate',", js)
         src = open(os.path.join(ROOT, 'live_kpis.py'), encoding='utf-8').read()
         self.assertIn("'occ_calibrated': OMM.calibrated(hotels[h].get('city', ''))", src)
         meth = open(os.path.join(ROOT, 'templates', 'methodology.html'), encoding='utf-8').read()

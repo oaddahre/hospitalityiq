@@ -6571,3 +6571,84 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   .hotels-table .cell-metric { width: auto; }
   .hotels-occ .kodo-badge { display: none; }
 }
+
+/* ─── Hotel page on the UI standard (docs/ui-standard.md) ─── */
+#screen-hotel .chart-card, #screen-hotel .table-card, #screen-hotel .kpi-card { background: var(--card-bg); }
+#screen-hotel .table-card-header, #screen-hotel .chart-card-header { border-bottom: 0; }
+.hotel-hd-row1 .k-title { margin: 0; }
+.hotel-hd-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 0; margin-top: 6px; }
+.hotel-hd-part { display: inline-flex; align-items: center; gap: 4px; }
+.hotel-hd-sep { margin: 0 8px; color: var(--text-3); }
+.hotel-hd-sub-brand { margin-left: 4px; color: var(--text-2); }
+.hotel-hd-line .k-brand { font-size: 12px; }
+/* the four cards: label, one number, one short line, an "i" (as the Market Overview) */
+.kpi-compact .kpi-period, .kpi-compact .kpi-meta, .kpi-compact .kpi-sub,
+.kpi-compact .kpi-delta, .kpi-compact .kpi-conf { display: none !important; }
+.kpi-compact .kpi-card { position: relative; padding: 16px 28px 14px; min-width: 0; }
+.kpi-compact .kpi-value { font-size: 26px; margin-bottom: 6px; }
+.kpi-compact .kpi-value .kpi-nodata-pill { font-size: 11px; }
+.kpi-compact .kpi-line .kodo-badge { margin-right: 4px; font-size: 9.5px; padding: 1px 6px; }
+#screen-hotel .kpi-compact { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+/* the one calendar */
+.hcal-card { padding: 14px 16px 12px; margin-bottom: 12px; }
+.hcal-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.hcal-nav { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hcal-nav-btn { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--text); cursor: pointer; font-size: 13px; }
+.hcal-nav-btn:disabled { color: var(--text-3); cursor: default; }
+.hcal-nav-btn:not(:disabled):hover { background: var(--row-hover); }
+.hcal-shade { display: inline-flex; align-items: center; gap: 8px; }
+.hcal-shade-label { font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.hcal-shade .k-seg > button:disabled { color: var(--text-3); cursor: default; background: transparent; }
+.hcal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.hcal-day { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 60px; padding: 6px 8px;
+  border: 1px solid var(--line); color: var(--text); cursor: default; }
+.hcal-dn { font: 500 10px 'Sweet Sans Pro', sans-serif; letter-spacing: .02em; color: var(--text-2); }
+.hcal-bar { font: 500 13px 'Sweet Sans Pro', sans-serif; font-variant-numeric: tabular-nums; }
+.hcal-occ { font: 400 10.5px 'Sweet Sans Pro', sans-serif; font-variant-numeric: tabular-nums; color: var(--text-2); }
+/* greyscale shade, darker = busier (or higher BAR); the text stays the text colour (AA on every level) */
+.hcal-l0 { background: color-mix(in srgb, var(--text) 4%, var(--bg)); }
+.hcal-l1 { background: color-mix(in srgb, var(--text) 13%, var(--bg)); }
+.hcal-l2 { background: color-mix(in srgb, var(--text) 25%, var(--bg)); }
+.hcal-l3 { background: color-mix(in srgb, var(--text) 40%, var(--bg)); }
+.hcal-l2 .hcal-dn, .hcal-l3 .hcal-dn, .hcal-l2 .hcal-occ, .hcal-l3 .hcal-occ, .hcal-l2 .hcal-why, .hcal-l3 .hcal-why { color: var(--text); }
+.hcal-none { background: transparent; border-style: dashed; }
+.hcal-closed { background: repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in srgb, var(--text) 8%, transparent) 5px 6px); }
+.hcal-stale { opacity: 0.5; }                  /* a price seen over a week ago looks less certain */
+.hcal-why { font-size: 10px; font-weight: 400; color: var(--text-2); overflow-wrap: anywhere; }
+.hcal-why-s { display: none; }
+/* no colour-coded categories on the hotel page (event status, type): neutral pills */
+#screen-hotel .pill--blue, #screen-hotel .pill--green, #screen-hotel .pill--orange, #screen-hotel .pill--violet, #screen-hotel .pill--sky {
+  --pill-tint: color-mix(in srgb, var(--text) 6%, transparent); --pill-text: var(--text-2); --pill-dot: var(--text-3); }
+.hcal-day:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
+.hcal-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 10px; font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.hcal-leg-item { display: inline-flex; align-items: center; gap: 6px; }
+.hcal-leg-item:empty { display: none; }
+.hcal-sw { display: inline-block; width: 14px; height: 14px; border: 1px solid var(--line); }
+.hcal-leg-ev { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--text); }
+.hcal-note { margin-top: 6px; font: 400 11px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.hcal-note:empty { display: none; }
+.hcal-avg { display: flex; align-items: center; gap: 8px; margin: 0 0 22px; font: 400 12px 'Sweet Sans Pro', sans-serif; color: var(--text-2); }
+.hcal-avg[hidden] { display: none; }
+/* events on the calendar: a small neutral dot (no colour) */
+.hcal-grid .evc-mark { top: 2px; right: 2px; width: 16px; height: 16px; }
+.hcal-grid .evc-mark::before { top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; clip-path: none; background: var(--text); }
+.hcal-grid .evc-mark--medium::before, .hcal-grid .evc-mark--low::before { width: 5px; height: 5px; }
+.hcal-grid .evc-mark--low::before { background: var(--text-2); }
+@media (max-width: 1100px) {
+  #screen-hotel .kpi-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .kpi-compact .kpi-card { padding: 14px 24px 12px; }
+  .kpi-compact .kpi-value { font-size: 22px; }
+  .hcal-grid { gap: 2px; }
+  .hcal-day { min-height: 50px; padding: 4px 3px; }
+  .hcal-dn { font-size: 9px; }
+  .hcal-bar { font-size: 11px; }
+  .hcal-occ { font-size: 9.5px; }
+  .hcal-shade { width: 100%; justify-content: space-between; }
+  .hotel-hd-sep { margin: 0 6px; }
+  .hcal-why-l { display: none; }               /* the reason stays in the tooltip */
+  .hcal-why-s { display: inline; }
+  .hcal-dn { padding-right: 6px; }
+  .kpi-compact .kpi-line { white-space: normal; }
+}
