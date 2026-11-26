@@ -212,8 +212,8 @@ class CollectingData(unittest.TestCase):
         with open(os.path.join(ROOT, 'static', 'js', 'main.js'), encoding='utf-8') as f:
             js = f.read()
         self.assertIn("const COLLECTING = 'Collecting data since 3 November';", js)
-        # each dashboard chart, the brand and hotel charts fall back to it
-        for canvas in ('chart-brand-revpar', 'chart-hotel-city'):
+        # the hotel page's chart falls back to it (the brand page's chart became the hotels table, Nov 2026)
+        for canvas in ('chart-hotel-city',):
             self.assertRegex(js, r"chartOrCollecting\('" + canvas + "'")
         # the KPI cards and the reports list too
         self.assertIn('noData(c, KodoBar.COLLECTING)', js)

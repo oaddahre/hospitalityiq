@@ -354,7 +354,8 @@ let brandChart      = null;
 let brandHotelsData = [];
 const brandState    = { col: 'name', dir: 1 };
 let activeBrandCity = null;
-const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner']);
+const BRAND_STR_COLS = new Set(['name', 'city', 'category', 'owner', 'status']);
+let brandDetailGroup = null;
 let tourismInited   = false;
 let pipelineInited  = false;
 let pipelineData    = null;
@@ -1627,175 +1628,163 @@ function openPipelineForGroup(bg) {
 
 // ─── Brand detail ─────────────────────────────────────────────────
 
+// Brand page: back, logo tile, name, one line; a Destination select that
+// filters the page; four compact cards; About in three lines; the hotels
+// table; the group's pipeline projects (linked to the Pipeline)
 function showBrandDetail(brandGroup, prevScreen) {
   brandDetailPrevScreen = prevScreen || 'dashboard';
+  brandDetailGroup = brandGroup;
   const backBtn = document.getElementById('brand-back-btn');
   backBtn.textContent = '← Back to ' + ({ brands: 'Brands', pipeline: 'Pipeline', hotel: 'Hotel', hotels: 'Hotels' }[brandDetailPrevScreen] || 'Dashboard');
 
   brandHotelsData = hotels.filter(h => h.brand_group === brandGroup
     || (brandGroup === 'Independent Hotels' && (h.brand_group === 'Independent' || h.brand_group === 'Independent Luxury')));
+  const cities = [...new Set(brandHotelsData.map(h => h.city))].sort((a, b) => dn(a).localeCompare(dn(b)));
 
-  const tk    = brandHotelsData.reduce((s, h) => s + h.keys, 0);
-  const cities      = [...new Set(brandHotelsData.map(h => h.city))].sort();
-  const ownerValues = [...new Set(brandHotelsData.map(h => h.owner).filter(Boolean))];
-  const distinctOwners = ownerValues.filter(o => o !== 'Undisclosed');
-
-  // Header
-  document.getElementById('brand-detail-name').innerHTML = getBrandLogoImg(brandGroup, 40) + ' ' + fmt.esc(brandGroup);
-  document.getElementById('brand-meta-hotels').textContent = `${brandHotelsData.length} Hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
-  document.getElementById('brand-meta-keys').textContent   = `${fmt.num(tk)} Key${tk !== 1 ? 's' : ''}`;
-
-  const ownerBadge = document.getElementById('brand-owner-badge');
-  if (distinctOwners.length === 1) {
-    const ownerHotel = brandHotelsData.find(h => h.owner === distinctOwners[0]);
-    ownerBadge.textContent = `· Owned by ${ownerText(ownerHotel)}`;
-    ownerBadge.style.display = '';
-  } else {
-    ownerBadge.style.display = 'none';
-  }
-
+  document.getElementById('brand-detail-logo').innerHTML = getBrandLogoImg(brandGroup, 44);
+  document.getElementById('brand-detail-name').textContent = brandGroup;
+  const sel = document.getElementById('brand-dest-select');
+  sel.replaceChildren(new Option('All destinations', ''), ...cities.map(c => new Option(dn(c), c)));
+  sel.hidden = cities.length < 2;
   activeBrandCity = null;
-  const visibleCities = cities.slice(0, 5);
-  const hiddenCities  = cities.slice(5);
-  const mkCityPill = c =>
-    `<span class="brand-city-pill" data-city="${fmt.esc(c)}" onclick="filterBrandHotelsByCity('${fmt.esc(c).replace(/'/g, "\\'")}')">${fmt.esc(c)}</span>`;
-  const hiddenHtml  = hiddenCities.length
-    ? `<span class="brand-cities-hidden">${hiddenCities.map(mkCityPill).join('')}</span>`
-    : '';
-  const moreHtml    = hiddenCities.length
-    ? `<span class="brand-cities-more" onclick="expandBrandCities(this)">+${hiddenCities.length} more</span>`
-    : '';
-  document.getElementById('brand-cities-row').innerHTML =
-    `<span class="brand-cities-label">Present in</span>` +
-    `<span class="brand-city-pill active" data-city="" onclick="filterBrandHotelsByCity(null)">All Cities</span>` +
-    visibleCities.map(mkCityPill).join('') +
-    hiddenHtml + moreHtml;
 
-  // KPI cards
-  const setKpi = (id, val) => {
-    const el = document.getElementById(id);
-    el.querySelector('.kpi-value').textContent = val;
-  };
-  setKpi('brand-bkpi-keys',   fmt.num(tk));
-  KodoPeriod.set('brand-bkpi-keys', KodoPeriod.today(), COUNT_TIP);
-  KodoLive.cards({ occ: 'brand-bkpi-occ', rate: 'brand-bkpi-adr', revpar: 'brand-bkpi-revpar' }, brandHotelsData);
-
-  // Switch to brand screen FIRST so the canvas has visible dimensions for Chart.js
+  // Switch to the brand screen
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-brand').classList.add('active');
   scrollMainToTop();
   setSidebar('brand');
 
-  // About card
+  // About: three lines, "Read more" opens the rest
   const description = BRAND_DESCRIPTIONS[brandGroup] || '';
-  const aboutSlot = document.getElementById('brand-about-slot');
-  aboutSlot.innerHTML = description
-    ? `<div class="brand-about-card">
-        <div class="brand-about-title">About ${fmt.esc(brandGroup)}</div>
-        <div class="brand-about-divider"></div>
-        <p class="brand-about-body">${fmt.esc(description)}</p>
-      </div>`
-    : '';
+  const about = document.getElementById('brand-about-slot');
+  about.hidden = !description;
+  document.getElementById('brand-about-text').textContent = description;
+  about.classList.remove('is-open');
+  const more = document.getElementById('brand-about-more');
+  more.textContent = 'Read more'; more.setAttribute('aria-expanded', 'false');
+  requestAnimationFrame(() => { const t = document.getElementById('brand-about-text'); more.hidden = t.scrollHeight <= t.clientHeight + 2; });
 
-  // BAR by hotel (observed since 3 Nov 2026); "Collecting data" when no hotel has one yet
-  renderBrandBarChart();
-
-  // Hotel table
   brandState.col = 'name';
   brandState.dir = 1;
-  renderBrandHotelsTable();
-
+  renderBrandScope();
 }
 
-function renderBrandBarChart() {
-  const rows = brandHotelsData.filter(h => h.bar_mad != null).sort((a, b) => b.bar_mad - a.bar_mad);
-  document.getElementById('brand-chart-sub').textContent = `BAR (published rate) · MAD · ${KodoBar.caption()}`;
-  if (brandChart) { brandChart.destroy(); brandChart = null; }
-  if (!chartOrCollecting('chart-brand-revpar', !rows.length, `No hotel of this group has ${KodoBar.meta().min_nights} priced nights yet.`)) return;
-  document.getElementById('brand-chart-wrap').style.height = Math.max(200, rows.length * 30 + 50) + 'px';
-  const labels = rows.map(h => h.name);
-  const cfg = chartConfig(labels, rows.map(h => h.bar_mad), ' MAD', labels.map(() => getChartColors().barColor), v => Math.round(v).toLocaleString('en'));
-  cfg.options.plugins.tooltip.callbacks.label = ctx => `  BAR MAD ${Math.round(ctx.raw).toLocaleString('en')} · ${rows[ctx.dataIndex].bar_nights} nights · ${rows[ctx.dataIndex].city}`;
-  cfg.options.scales.y.ticks.callback = function (value) {
-    const label = this.getLabelForValue(value);
-    const max = this.chart.width < 520 ? 16 : 44;
-    return label.length > max ? label.slice(0, max - 1).trimEnd() + '…' : label;
-  };
-  brandChart = new Chart(document.getElementById('chart-brand-revpar'), cfg);
+// Everything that follows the Destination select: line, cards, hotels, pipeline
+function renderBrandScope() {
+  const list = activeBrandCity ? brandHotelsData.filter(h => h.city === activeBrandCity) : brandHotelsData;
+  const keysOf = h => h.under_renovation || h.seasonal_closure ? 0 : (h.keys || 0);
+  const tk = list.reduce((s, h) => s + keysOf(h), 0);
+  const nDest = new Set(list.map(h => h.city)).size;
+  const owners = [...new Set(list.map(h => h.owner).filter(o => o && o !== 'Undisclosed'))];
+  const parts = [`${list.length} hotel${list.length !== 1 ? 's' : ''}`, `${fmt.num(tk)} key${tk !== 1 ? 's' : ''}`,
+    activeBrandCity ? dn(activeBrandCity) : `${nDest} destination${nDest !== 1 ? 's' : ''}`];
+  if (owners.length === 1) parts.push(`owned by ${ownerText(list.find(h => h.owner === owners[0]))}`);
+  document.getElementById('brand-detail-line').textContent = parts.join(' · ');
+
+  document.getElementById('brand-bkpi-keys').querySelector('.kpi-value').textContent = fmt.num(tk);
+  KodoPeriod.set('brand-bkpi-keys', KodoPeriod.today(), COUNT_TIP);
+  Promise.resolve(KodoLive.cards({ occ: 'brand-bkpi-occ', rate: 'brand-bkpi-adr', revpar: 'brand-bkpi-revpar' }, list)).then(() => {
+    const a = KodoLive.raw() ? KodoLive.agg(list) : null;
+    compactKpiCards([
+      { id: 'brand-bkpi-adr', label: 'BAR (median)', kind: 'adr' },
+      { id: 'brand-bkpi-occ', label: 'Occupancy (est.)', kind: 'occ' },
+      { id: 'brand-bkpi-revpar', label: 'Rooms RevPAR (est.)', kind: 'revpar' },
+      { id: 'brand-bkpi-keys', label: 'Total keys', kind: 'keys', line: `${list.length} hotel${list.length !== 1 ? 's' : ''} · ${KodoPeriod.label(KodoPeriod.today())}` },
+    ], a);
+  });
+  renderBrandHotelsTable();
+  renderBrandPipeline();
+}
+
+// The group's pipeline projects (same group names as the Pipeline page);
+// hidden when there are none or the plan has no Pipeline
+async function renderBrandPipeline() {
+  const card = document.getElementById('brand-pipe-card');
+  const bg = brandDetailGroup;
+  if (!pipelineData) {
+    try {
+      const r = await fetch('/api/pipeline');
+      if (!r.ok) { card.hidden = true; return; }
+      pipelineData = await r.json();
+    } catch { card.hidden = true; return; }
+  }
+  if (bg !== brandDetailGroup) return;
+  const rows = pipelineData.filter(p => pipeBrandGroup(p) === bg && (!activeBrandCity || p.city === activeBrandCity))
+    .sort((a, b) => (a.expected_opening || 9999) - (b.expected_opening || 9999) || (a.name || '').localeCompare(b.name || ''));
+  card.hidden = !rows.length;
+  if (!rows.length) return;
+  const keys = rows.reduce((s, p) => s + pipeNewKeys(p), 0);
+  document.getElementById('brand-pipe-title').textContent = `Pipeline · ${rows.length} project${rows.length !== 1 ? 's' : ''}${keys ? ` · ${keys.toLocaleString('en')} new keys` : ''}`;
+  document.getElementById('brand-pipe-tbody').innerHTML = rows.map(p => `<tr data-pipe-open tabindex="0" title="Open in Pipeline">
+      <td><span class="brand-pipe-name">${fmt.esc(p.name)}</span>${pipeConversionLine(p)}</td>
+      <td class="col-hide-mobile">${fmt.esc(dn(p.city || ''))}</td>
+      <td>${pipeStagePill(p)}</td>
+      <td class="num">${fmt.esc(String(pipeYear(p) === PIPE_NO_DATE ? 'TBA' : pipeYear(p)))}</td>
+      <td class="num">${pipeKeysText(p)}</td>
+    </tr>`).join('');
 }
 
 function renderBrandHotelsTable() {
   const { col, dir } = brandState;
-  const filtered = activeBrandCity
-    ? brandHotelsData.filter(h => h.city === activeBrandCity)
-    : brandHotelsData;
+  const filtered = activeBrandCity ? brandHotelsData.filter(h => h.city === activeBrandCity) : brandHotelsData;
+  const val = h => col === 'status' ? hotelStatus(h) : col === 'city' ? dn(h.city || '') : h[col];
   const sorted = [...filtered].sort((a, b) => {
-    const va = a[col], vb = b[col];
-    if (BRAND_STR_COLS.has(col)) return dir * String(va).localeCompare(String(vb));
+    const va = val(a), vb = val(b);
+    if (BRAND_STR_COLS.has(col)) return dir * String(va ?? '').localeCompare(String(vb ?? '')) || a.name.localeCompare(b.name);
     if (va == null || vb == null) return (va == null) - (vb == null);
     return dir * (va - vb);
   });
-
   document.getElementById('brand-hotels-title').textContent =
-    activeBrandCity
-      ? `${sorted.length} hotel${sorted.length !== 1 ? 's' : ''} in ${activeBrandCity}`
-      : `${brandHotelsData.length} hotel${brandHotelsData.length !== 1 ? 's' : ''}`;
-
+    `Hotels · ${sorted.length}${activeBrandCity ? ' in ' + dn(activeBrandCity) : ''}`;
+  const maxBar = Math.max(0, ...brandHotelsData.map(h => h.bar_mad).filter(v => v != null));
+  const maxOcc = Math.max(0, ...brandHotelsData.map(h => h.occupancy).filter(v => v != null));
   document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
-    return `<tr class="brand-hotel-row">
-      <td class="hotel-name-cell"><button class="hotel-name-btn" onclick="showHotelDetail(${h.id})">${fmt.esc(h.name)}</button></td>
-      <td>${fmt.esc(h.city)}</td>
-      <td>${getSegmentBadgeHtml(h.category)}</td>
-      <td>${hotelRooms(h)}</td>
-      <td>${KodoBar.hotelCell(h)}</td>
-      <td title="${EST_TIP}">${hotelOcc(h)}</td>
-      <td title="${EST_TIP}">${fmt.mad(h.revpar_mad)}</td>
-      <td>${fmt.esc(ownerText(h) || '—')}</td>
+    const out = h.under_renovation || h.seasonal_closure;
+    const bar = h.bar_mad == null ? KodoBar.hotelCell(h) : `<span class="cell-num">${KodoBar.hotelCell(h)}</span>${inlineBar(h.bar_mad, maxBar, false)}`;
+    const occ = out || h.occupancy == null
+      ? `<span class="cell-na" title="${escAttr(out ? hotelStatusTip(h) : 'No estimate yet')}">—</span>`
+      : `<span class="hotels-occ"><span class="cell-num" title="${EST_TIP}">${fmt.pct(h.occupancy)}</span>${destBadge(h.city)}</span>${inlineBar(h.occupancy, maxOcc, !isOfficial(h.city))}`;
+    const tip = hotelStatusTip(h);
+    return `<tr data-hid="${h.id}" tabindex="0">
+      <td class="hotels-name"><span class="hotels-name-t">${fmt.esc(h.name)}</span><span class="hotels-name-m">${fmt.esc(dn(h.city))}${h.category ? ' · ' + fmt.esc(h.category) : ''}</span></td>
+      <td class="col-hide-mobile">${fmt.esc(dn(h.city))}</td>
+      <td class="col-hide-mobile">${fmt.esc(h.category || '—')}</td>
+      <td class="num col-hide-mobile">${fmt.num(out ? h.keys_listed : h.keys)}</td>
+      <td class="num cell-metric">${bar}</td>
+      <td class="num cell-metric">${occ}</td>
+      <td class="col-hide-mobile"><span class="hotels-status"${tip ? ` title="${escAttr(tip)}"` : ''}>${hotelStatus(h)}</span></td>
     </tr>`;
   }).join('');
-
-  document.querySelectorAll('#brand-hotels-table .sortable-col').forEach(th => {
-    const icon = th.querySelector('.sort-icon');
-    th.classList.remove('sort-asc', 'sort-desc');
-    if (th.dataset.bcol === col) {
-      th.classList.add(dir === 1 ? 'sort-asc' : 'sort-desc');
-      icon.textContent = dir === 1 ? '↑︎' : '↓︎';
-    } else {
-      icon.textContent = '↕︎';
-    }
+  document.querySelectorAll('#brand-hotels-table th[data-bcol]').forEach(th => {
+    if (th.dataset.bcol === col) th.setAttribute('aria-sort', dir === 1 ? 'ascending' : 'descending');
+    else th.removeAttribute('aria-sort');
   });
 }
 
-function filterBrandHotelsByCity(city) {
-  activeBrandCity = activeBrandCity === city ? null : city;
-  updateBrandCityPills(activeBrandCity);
-  renderBrandHotelsTable();
-}
-
-function updateBrandCityPills(activeCity) {
-  document.querySelectorAll('#brand-cities-row .brand-city-pill').forEach(pill => {
-    const pillCity = pill.dataset.city || null;
-    pill.classList.toggle('active', pillCity === activeCity);
-  });
-}
-
-function expandBrandCities(el) {
-  const hidden = el.parentElement.querySelector('.brand-cities-hidden');
-  if (!hidden) return;
-  hidden.style.display = 'contents';
-  const pills = hidden.querySelectorAll('.brand-city-pill');
-  pills.forEach((pill, i) => {
-    pill.style.opacity = '0';
-    pill.style.transform = 'translateY(4px)';
-    pill.style.transition = 'opacity 200ms ease, transform 200ms ease';
-    setTimeout(() => {
-      pill.style.opacity = '1';
-      pill.style.transform = 'translateY(0)';
-    }, i * 40);
-  });
-  el.remove();
-}
+// Brand page events: the Destination select, About, rows, pipeline
+document.getElementById('brand-dest-select').addEventListener('change', e => {
+  activeBrandCity = e.target.value || null;
+  renderBrandScope();
+});
+document.getElementById('brand-about-more').addEventListener('click', e => {
+  const about = document.getElementById('brand-about-slot');
+  const open = about.classList.toggle('is-open');
+  e.currentTarget.textContent = open ? 'Show less' : 'Read more';
+  e.currentTarget.setAttribute('aria-expanded', String(open));
+});
+document.getElementById('brand-hotels-tbody').addEventListener('click', e => {
+  if (e.target.closest('[data-tip], .kodo-badge')) return;
+  const row = e.target.closest('tr[data-hid]');
+  if (row) showHotelDetail(+row.dataset.hid);
+});
+document.getElementById('brand-pipe-open').addEventListener('click', () => openPipelineForGroup(brandDetailGroup));
+document.getElementById('brand-pipe-tbody').addEventListener('click', e => { if (e.target.closest('tr[data-pipe-open]')) openPipelineForGroup(brandDetailGroup); });
+document.getElementById('screen-brand').addEventListener('keydown', e => {
+  if (!e.target.matches || !(e.key === 'Enter' || e.key === ' ')) return;
+  if (e.target.matches('tr[data-hid]')) { e.preventDefault(); showHotelDetail(+e.target.dataset.hid); }
+  else if (e.target.matches('tr[data-pipe-open]')) { e.preventDefault(); openPipelineForGroup(brandDetailGroup); }
+});
 
 // ─── Hotel detail ─────────────────────────────────────────────────
 
@@ -2802,10 +2791,6 @@ function redrawChartsForTheme() {
     }
   }
 
-  // Brand detail chart — recreate if screen is currently visible
-  if (brandChart) { brandChart.destroy(); brandChart = null; }
-  const brandScreen = document.getElementById('screen-brand');
-  if (brandScreen && brandScreen.classList.contains('active') && brandHotelsData.length) renderBrandBarChart();
 
   // Hotel city chart — recreate if screen is currently visible
   if (hotelCityChart) { hotelCityChart.destroy(); hotelCityChart = null; }
@@ -4347,7 +4332,7 @@ document.getElementById('hotel-back-btn').addEventListener('click', () => {
 
 // Brand detail — hotel table column sort
 document.getElementById('brand-hotels-table').addEventListener('click', e => {
-  const th = e.target.closest('.sortable-col[data-bcol]');
+  const th = e.target.closest('th[data-bcol]');
   if (!th) return;
   const col = th.dataset.bcol;
   if (col === brandState.col) {

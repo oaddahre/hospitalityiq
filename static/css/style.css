@@ -1703,8 +1703,6 @@ body.light .nav-logout  { color: var(--text-2); }
 }
 
 /* ─── Hotels table enhancements ─────────────────── */
-#brand-hotels-table thead th,
-#brand-hotels-table tbody td { text-align: left; }
 
 .table-empty-state {
   padding: 48px 20px;
@@ -6699,4 +6697,44 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   .brands-name-m { display: block; }
   .brands-main { padding: 0 8px 8px; }
   .brands-table .cell-metric { width: auto; }
+}
+
+/* ─── Brand page on the UI standard (docs/ui-standard.md) ─── */
+#screen-brand .kpi-card { background: var(--card-bg); }
+#screen-brand .kpi-compact { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
+.brand-hd { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0; }
+.brand-top { align-items: center; }
+@media (max-width: 767px) { .brand-top { flex-direction: column; align-items: stretch; gap: 14px; } .brand-top .back-btn { align-self: flex-start; } }
+.brand-hd-title { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand-hd-title .k-title { margin: 0; }
+.brand-hd .k-select { min-width: 190px; max-width: 240px; }
+.brand-hd .k-select[hidden] { display: none; }
+.brand-about { margin: -6px 0 22px; max-width: 880px; }
+.brand-about[hidden] { display: none; }
+.brand-about-text { margin: 0; font: 400 13px/1.6 'Sweet Sans Pro', sans-serif; color: var(--text-2);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.brand-about.is-open .brand-about-text { display: block; -webkit-line-clamp: unset; }
+.brand-about-more { margin-top: 4px; font-size: 12px; }
+.brand-about-more[hidden] { display: none; }
+.brand-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 0 6px; }
+.brand-hotels-card, .brand-pipe-card { padding: 0 16px 10px; margin-bottom: 16px; }
+.brand-pipe-card[hidden] { display: none; }
+.brand-hotels-table th.num, .brand-hotels-table td.num, .brand-pipe-table th.num, .brand-pipe-table td.num { text-align: right; }
+.brand-hotels-table th.num .k-th-sort { text-align: right; }
+.brand-hotels-table tbody tr, .brand-pipe-table tbody tr { cursor: pointer; }
+.brand-hotels-table tbody tr:focus-visible, .brand-pipe-table tbody tr:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+.brand-hotels-table .cell-metric { width: 16%; }
+.brand-hotels-table .cell-na, .brand-hotels-table .bar-na { color: var(--text-3); }
+.brand-pipe-name { display: block; font-weight: 500; }
+.brand-pipe-table .pipe-card-conversion { margin-top: 2px; font-size: 11px; color: var(--text-2); }
+@media (max-width: 1100px) {
+  #screen-brand .kpi-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .brand-hd .k-select { width: 100%; max-width: none; }
+  .brand-hotels-table .col-hide-mobile, .brand-pipe-table .col-hide-mobile { display: none; }
+  .brand-hotels-table .hotels-name-m { display: block; }
+  .brand-hotels-table .hotels-occ .kodo-badge { display: none; }
+  .brand-hotels-card, .brand-pipe-card { padding: 0 8px 8px; }
+  .brand-hotels-table .cell-metric { width: auto; }
 }

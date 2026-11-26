@@ -1283,26 +1283,27 @@
       <!-- ── Brand Detail ── -->
       <section class="screen" id="screen-brand">
         <div class="brand-top">
-          <button class="back-btn" id="brand-back-btn">← Back</button>
-          <div class="brand-detail-header">
-            <h1 id="brand-detail-name">—</h1>
-            <div class="brand-meta-row">
-              <span class="brand-meta-pill" id="brand-meta-hotels">—</span>
-              <span class="brand-meta-pill" id="brand-meta-keys">—</span>
-              <span class="brand-owner-badge" id="brand-owner-badge" style="display:none">—</span>
+          <button type="button" class="back-btn" id="brand-back-btn">← Back to Brands</button>
+          <div class="brand-hd">
+            <div class="brand-hd-title">
+              <span id="brand-detail-logo"></span>
+              <div>
+                <h1 class="k-title" id="brand-detail-name">—</h1>
+                <p class="k-line" id="brand-detail-line">—</p>
+              </div>
             </div>
-            <div class="brand-meta-row" id="brand-cities-row"></div>
+            <select id="brand-dest-select" class="k-select" aria-label="Destination"><option value="">All destinations</option></select>
           </div>
         </div>
 
-        <div class="brand-kpi-row">
+        <div class="kpi-grid brand-kpi-row kpi-compact">
           <div class="kpi-card" id="brand-bkpi-adr">
-            <span class="kpi-label">BAR (published rate)</span>
+            <span class="kpi-label">BAR (median)</span>
             <span class="kpi-value">—</span>
             <span class="kpi-meta">MAD</span>
           </div>
           <div class="kpi-card" id="brand-bkpi-occ">
-            <span class="kpi-label">Occupancy · Kodo estimate</span>
+            <span class="kpi-label">Occupancy (est.)</span>
             <span class="kpi-value">—</span>
           </div>
           <div class="kpi-card" id="brand-bkpi-revpar">
@@ -1311,41 +1312,50 @@
             <span class="kpi-meta">MAD</span>
           </div>
           <div class="kpi-card" id="brand-bkpi-keys">
-            <span class="kpi-label">Total Keys</span>
+            <span class="kpi-label">Total keys</span>
             <span class="kpi-value">—</span>
           </div>
         </div>
 
-        <div id="brand-about-slot"></div>
-
-        <div class="chart-card" id="brand-chart-card" style="margin-bottom:20px">
-          <div class="chart-card-header">
-            <span class="chart-title">BAR by hotel</span>
-            <span class="chart-unit" id="brand-chart-sub">BAR (published rate) · MAD</span>
-          </div>
-          <div class="chart-wrap" id="brand-chart-wrap">
-            <canvas id="chart-brand-revpar"></canvas>
-          </div>
+        <div class="brand-about" id="brand-about-slot" hidden>
+          <p class="brand-about-text" id="brand-about-text"></p>
+          <button type="button" class="k-link brand-about-more" id="brand-about-more" aria-expanded="false">Read more</button>
         </div>
 
-        <div class="table-card">
-          <div class="table-card-header">
-            <span class="table-title" id="brand-hotels-title">Hotels</span>
-          </div>
-          <table class="data-table" id="brand-hotels-table">
+        <div class="k-card brand-hotels-card">
+          <div class="brand-sec-head"><span class="k-card-title" id="brand-hotels-title">Hotels</span></div>
+          <table class="k-table brand-hotels-table" id="brand-hotels-table">
             <thead>
               <tr>
-                <th class="sortable-col sort-asc" data-bcol="name">Hotel Name <span class="sort-icon">↑&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="city">City <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="category">Segment <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="keys">Keys <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="bar_mad" title="BAR (published rate) since 3 November 2026: the hotel's average over its priced nights (7 or more)">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="revpar_mad" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">Rooms RevPAR (est.) <span class="sort-icon">↕&#xFE0E;</span></th>
-                <th class="sortable-col" data-bcol="owner">Owner <span class="sort-icon">↕&#xFE0E;</span></th>
+                <th scope="col" data-bcol="name" aria-sort="ascending"><button type="button" class="k-th-sort">Hotel</button></th>
+                <th scope="col" data-bcol="city" class="col-hide-mobile"><button type="button" class="k-th-sort">Destination</button></th>
+                <th scope="col" data-bcol="category" class="col-hide-mobile"><button type="button" class="k-th-sort">Segment</button></th>
+                <th scope="col" data-bcol="keys" class="num col-hide-mobile"><button type="button" class="k-th-sort">Keys</button></th>
+                <th scope="col" data-bcol="bar_mad" class="num"><button type="button" class="k-th-sort" data-tip="BAR (published rate): the hotel's average over its priced nights since 3 November 2026 (7 or more).">BAR (MAD)</button></th>
+                <th scope="col" data-bcol="occupancy" class="num"><button type="button" class="k-th-sort" data-tip="Kodo estimate for the next 30 nights. Official: calibrated on official monthly figures for the destination; Estimate: not yet.">Occupancy (est.)</button></th>
+                <th scope="col" data-bcol="status" class="col-hide-mobile"><button type="button" class="k-th-sort">Status</button></th>
               </tr>
             </thead>
             <tbody id="brand-hotels-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="k-card brand-pipe-card" id="brand-pipe-card" hidden>
+          <div class="brand-sec-head">
+            <span class="k-card-title" id="brand-pipe-title">Pipeline</span>
+            <button type="button" class="k-link" id="brand-pipe-open">Open in Pipeline →</button>
+          </div>
+          <table class="k-table brand-pipe-table">
+            <thead>
+              <tr>
+                <th scope="col">Project</th>
+                <th scope="col" class="col-hide-mobile">Destination</th>
+                <th scope="col">Stage</th>
+                <th scope="col" class="num">Opening</th>
+                <th scope="col" class="num">Keys</th>
+              </tr>
+            </thead>
+            <tbody id="brand-pipe-tbody"></tbody>
           </table>
         </div>
       </section>
