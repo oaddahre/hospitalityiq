@@ -1519,8 +1519,7 @@ function renderBrands() {
 }
 
 function renderBrandsKPIs() {
-  const branded = brandsData.filter(b => !/^Independent/.test(b.brand_group));
-  const brandedKeys = branded.reduce((s, b) => s + b.total_keys, 0);
+  const allKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);   // as before Nov 2026: every group, independents included
   const largest = [...brandsData].sort((a, b) => b.total_keys - a.total_keys)[0];
   const today = KodoPeriod.label(KodoPeriod.today());
   const card = (id, value, line, tip) => {
@@ -1529,7 +1528,7 @@ function renderBrandsKPIs() {
     c.title = tip || '';
   };
   card('brnkpi-groups', brandsData.length, '', COUNT_TIP);
-  card('brnkpi-keys', brandedKeys.toLocaleString('en'), '', `${COUNT_TIP}. Branded: every group except independent hotels (${(brandsData.reduce((s, b) => s + b.total_keys, 0) - brandedKeys).toLocaleString('en')} keys).`);
+  card('brnkpi-keys', allKeys.toLocaleString('en'), '', `${COUNT_TIP}. Every group's keys, independent hotels included.`);
   card('brnkpi-largest', largest ? largest.brand_group : '—', '', largest ? `${COUNT_TIP}. By keys: ${largest.total_keys.toLocaleString('en')} keys, ${largest.hotels} hotels.` : '');
   // Highest BAR among groups whose BAR rests on 3 hotels or more (observed since 3 Nov 2026)
   const best = [...brandsData].filter(b => b.bar_mad != null && !b.bar_limited).sort((x, y) => y.bar_mad - x.bar_mad)[0];
@@ -1539,7 +1538,7 @@ function renderBrandsKPIs() {
   ch.title = `BAR (published rate) · ${KodoBar.caption()} · median of the group's hotels; only groups with ${KodoBar.meta().min_hotels} hotels or more with ${KodoBar.meta().min_nights} priced nights.`;
   compactKpiCards([
     { id: 'brnkpi-groups', label: 'Brand groups', kind: 'keys', line: `incl. independent hotels · ${today}` },
-    { id: 'brnkpi-keys', label: 'Total branded keys', kind: 'keys', line: `${branded.length} branded groups` },
+    { id: 'brnkpi-keys', label: 'Total branded keys', kind: 'keys', line: `all ${brandsData.length} groups, incl. independents` },
     { id: 'brnkpi-champion', label: 'Highest BAR (group)', kind: 'keys', line: best ? `MAD ${fmt.mad(best.bar_mad)} · median of ${best.bar_hotels} hotels` : '' },
     { id: 'brnkpi-largest', label: 'Largest group', kind: 'keys', line: largest ? `${largest.total_keys.toLocaleString('en')} keys · ${largest.market_share_keys_pct.toFixed(1)}% of all keys` : '' },
   ], null);
