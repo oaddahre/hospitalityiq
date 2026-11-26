@@ -826,110 +826,65 @@
 
       <!-- ── Brands ── -->
       <section class="screen" id="screen-brands">
-        <div class="screen-header">
-          <h1>Brand Intelligence</h1>
+        <div class="k-head">
+          <h1 class="k-title">Brands</h1>
+          <p class="k-line">Hotel brand groups in Morocco. BAR: published rates observed since 3 Nov 2026; occupancy and Rooms RevPAR: Kodo estimates for the next 30 nights.</p>
         </div>
 
-        <!-- Summary KPIs -->
-        <div class="kpi-grid brands-kpi-grid" id="brands-kpi-grid">
-          <div class="kpi-card" id="brnkpi-groups">
-            <span class="kpi-label">Brand Groups</span>
-            <span class="kpi-value">—</span>
-          </div>
-          <div class="kpi-card" id="brnkpi-keys">
-            <span class="kpi-label">Total Branded Keys</span>
-            <span class="kpi-value">—</span>
-          </div>
-          <div class="kpi-card" id="brnkpi-champion">
-            <span class="kpi-label">Highest BAR (published rate)</span>
-            <span class="kpi-value">—</span>
-          </div>
-          <div class="kpi-card" id="brnkpi-largest">
-            <span class="kpi-label">Largest Group</span>
-            <span class="kpi-value">—</span>
-          </div>
+        <div class="kpi-grid brands-kpi-grid kpi-compact" id="brands-kpi-grid">
+          <div class="kpi-card" id="brnkpi-groups"><span class="kpi-label">Brand groups</span><span class="kpi-value">—</span></div>
+          <div class="kpi-card" id="brnkpi-keys"><span class="kpi-label">Total branded keys</span><span class="kpi-value">—</span></div>
+          <div class="kpi-card" id="brnkpi-champion"><span class="kpi-label">Highest BAR (group)</span><span class="kpi-value">—</span></div>
+          <div class="kpi-card" id="brnkpi-largest"><span class="kpi-label">Largest group</span><span class="kpi-value">—</span></div>
         </div>
 
-        <!-- Filter / sort bar -->
-        <div class="brands-filter-bar">
-          <div class="brands-seg-pills" id="brands-seg-pills">
-            <button class="seg-btn active" data-bseg="all">All</button>
-            <button class="seg-btn" data-bseg="Ultra Luxury">Ultra Luxury</button>
-            <button class="seg-btn" data-bseg="Luxury">Luxury</button>
-            <button class="seg-btn" data-bseg="Upper Upscale">Upper Upscale</button>
-            <button class="seg-btn" data-bseg="Upscale">Upscale</button>
-            <button class="seg-btn" data-bseg="Midscale">Midscale</button>
+        <div class="k-filters brands-filters">
+          <input type="search" id="brands-search" class="k-search" placeholder="Search brand groups" autocomplete="off" aria-label="Search brand groups">
+          <div class="k-seg" id="brands-seg-pills" role="group" aria-label="Segment">
+            <button type="button" data-bseg="all" aria-pressed="true">All</button>
+            <button type="button" data-bseg="Ultra Luxury" aria-pressed="false">Ultra Luxury</button>
+            <button type="button" data-bseg="Luxury" aria-pressed="false">Luxury</button>
+            <button type="button" data-bseg="Upper Upscale" aria-pressed="false">Upper Upscale</button>
+            <button type="button" data-bseg="Upscale" aria-pressed="false">Upscale</button>
+            <button type="button" data-bseg="Midscale" aria-pressed="false">Midscale</button>
           </div>
-          <div class="brands-filter-right">
-            <input type="text" id="brands-search" class="brands-search-input" placeholder="Search brands…">
-            <select id="brands-sort" class="pipe-select">
-              <option value="total_keys">Sort by: Keys</option>
-              <option value="bar_mad">Sort by: BAR</option>
-              <option value="hotels">Sort by: Hotels</option>
-              <option value="avg_occupancy">Sort by: Occupancy (Kodo est.)</option>
-              <option value="avg_revpar">Sort by: Rooms RevPAR (est.)</option>
-            </select>
-            <button class="export-btn" id="btn-export-brands">↓ Export</button>
-          </div>
+          <select id="brands-sort" class="k-select" aria-label="Sort">
+            <option value="total_keys">Sort: Keys ↓</option>
+            <option value="bar_mad">Sort: BAR ↓</option>
+            <option value="hotels">Sort: Hotels ↓</option>
+            <option value="avg_occupancy">Sort: Occupancy (est.) ↓</option>
+            <option value="avg_revpar">Sort: Rooms RevPAR (est.) ↓</option>
+            <option value="pipeline_keys">Sort: Pipeline keys ↓</option>
+            <option value="brand_group">Sort: Name A–Z</option>
+          </select>
+          <span class="brands-end">
+            <span class="hotels-count" id="brands-count"></span>
+            <div class="k-seg" id="brands-view" role="group" aria-label="View">
+              <button type="button" data-view="table" aria-pressed="true">Table</button>
+              <button type="button" data-view="cards" aria-pressed="false">Cards</button>
+            </div>
+            <button type="button" class="k-btn" id="btn-export-brands">Export <span aria-hidden="true">↓</span></button>
+          </span>
         </div>
 
-        <!-- Brand cards grid -->
-        <div class="brands-cards-grid" id="brands-cards-grid">
-          <p style="color:var(--text-muted);font-size:13px;padding:16px 0">Loading brand data…</p>
+        <div class="k-card brands-main" data-bview="table">
+          <table class="k-table brands-table" id="brands-comp-table">
+            <thead>
+              <tr>
+                <th scope="col" data-bccol="brand_group"><button type="button" class="k-th-sort">Brand group</button></th>
+                <th scope="col" data-bccol="hotels" class="num col-hide-mobile"><button type="button" class="k-th-sort">Hotels</button></th>
+                <th scope="col" data-bccol="total_keys" class="num" aria-sort="descending"><button type="button" class="k-th-sort">Keys</button></th>
+                <th scope="col" data-bccol="market_share_keys_pct" class="num col-hide-mobile"><button type="button" class="k-th-sort" data-tip="Share of all hotel keys in Kodo's database for Morocco.">Market share</button></th>
+                <th scope="col" data-bccol="bar_mad" class="num"><button type="button" class="k-th-sort" id="brands-th-bar">BAR (MAD)</button></th>
+                <th scope="col" data-bccol="avg_occupancy" class="num col-hide-mobile"><button type="button" class="k-th-sort" data-tip="Kodo estimate for the next 30 nights, room-weighted over the group's hotels.">Occupancy (est.)</button></th>
+                <th scope="col" data-bccol="avg_revpar" class="num col-hide-mobile"><button type="button" class="k-th-sort" id="brands-th-revpar">Rooms RevPAR (est.)</button></th>
+                <th scope="col" data-bccol="pipeline_keys" class="num col-hide-mobile"><button type="button" class="k-th-sort" data-tip="Projects in the pipeline / new keys (conversions of open hotels add no keys). Opens the Pipeline filtered on the group.">Pipeline</button></th>
+              </tr>
+            </thead>
+            <tbody id="brands-comp-tbody"></tbody>
+          </table>
         </div>
-
-        <!-- Market share chart -->
-        <div class="chart-card" style="margin-bottom:20px" id="brands-mktshare-card">
-          <div class="chart-card-header">
-            <span class="chart-title">Market Share by Keys</span>
-            <span class="chart-unit">% of total Morocco hotel keys</span>
-          </div>
-          <div id="brands-market-share-wrap"></div>
-        </div>
-
-        <!-- Comparison table -->
-        <div class="table-card" style="margin-bottom:20px">
-          <div class="table-card-header">
-            <span class="table-title">Brand ranking</span>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="data-table" id="brands-comp-table">
-              <thead>
-                <tr>
-                  <th style="width:40px">Rank</th>
-                  <th class="sortable-col" data-bccol="brand_group">Brand Group <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="hotels">Hotels <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col sort-desc" data-bccol="total_keys">Keys <span class="sort-icon">↓&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="market_share_keys_pct">Mkt Share <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="bar_mad" title="BAR (published rate) since 3 November 2026: average of the group's hotels">BAR (MAD) <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="avg_occupancy" title="Kodo estimate: occupancy model, next 30 nights">Occ % · Kodo est. <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="avg_revpar" title="Kodo estimate: BAR × modelled occupancy, next 30 nights">Rooms RevPAR (est.) <span class="sort-icon">↕&#xFE0E;</span></th>
-                  <th class="sortable-col" data-bccol="pipeline_keys">Pipeline Keys <span class="sort-icon">↕&#xFE0E;</span></th>
-                </tr>
-              </thead>
-              <tbody id="brands-comp-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Insights row -->
-        <div class="brands-insights-row">
-          <div class="brands-insight-card" id="brni-leader">
-            <div class="brni-title">Market Leader</div>
-            <div class="brni-value" id="brni-leader-val">—</div>
-            <div class="brni-desc" id="brni-leader-desc">—</div>
-          </div>
-          <div class="brands-insight-card" id="brni-revpar">
-            <div class="brni-title">Highest Rooms RevPAR (est.)</div>
-            <div class="brni-value" id="brni-revpar-val">—</div>
-            <div class="brni-desc" id="brni-revpar-desc">—</div>
-          </div>
-          <div class="brands-insight-card" id="brni-pipeline">
-            <div class="brni-title">Fastest Growing</div>
-            <div class="brni-value" id="brni-pipeline-val">—</div>
-            <div class="brni-desc" id="brni-pipeline-desc">—</div>
-          </div>
-        </div>
+        <div class="brands-cards-grid brands-cards2" id="brands-cards-grid" data-bview="cards" hidden></div>
       </section>
 
       <!-- ── Owners ── -->

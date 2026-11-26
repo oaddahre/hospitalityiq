@@ -367,12 +367,10 @@ let hotelCityChart        = null;
 let brandsData   = null;
 let brandsInited = false;
 let brandDetailPrevScreen = 'dashboard';
-const brandsFilter   = { sort: 'total_keys', search: '', segment: 'all' };
-const brandsCompSort = { col: 'total_keys', dir: -1 };
+const brandsFilter   = { sort: 'total_keys', dir: -1, search: '', segment: 'all' };
 const BRANDS_STR_COLS = new Set(['brand_group']);
 // Brand share colours cycle through the chart series (blue, green, orange, violet, sky, grey)
 const BRAND_PALETTE = new Proxy([], { get: (_, i) => (i === 'length' ? 6 : KodoPalette.get().series[Number(i) % 6]) });
-const BRANDS_COMP_STR = new Set(['brand_group']);
 
 // ─── Theme ────────────────────────────────────────────────────────
 
@@ -1467,56 +1465,83 @@ async function initBrands() {
       brandsData   = await fetch('/api/brands').then(r => r.json());
       brandsInited = true;
     } catch (e) {
-      document.getElementById('brands-cards-grid').innerHTML =
-        '<p style="color:var(--text-muted);font-size:13px;padding:16px 0">Failed to load brand data.</p>';
+      document.getElementById('brands-comp-tbody').innerHTML = '<tr><td colspan="8" class="k-empty">Failed to load brand data.</td></tr>';
       return;
     }
   }
   renderBrandsKPIs();
-  renderBrandsCards();
-  renderBrandsMarketShare();
-  renderBrandsCompTable();
-  renderBrandsInsights();
+  brandsSetView(brandsSavedView(), false);
+  renderBrands();
+}
+
+// Brands: title + one line, four cards, one row of controls, one main view
+// (sortable table by default, or compact cards); row or card opens the brand page
+const BRANDS_VIEWS = ['table', 'cards'];
+function brandsSavedView() {
+  try { const v = localStorage.getItem('kodo.brands.view'); return BRANDS_VIEWS.includes(v) ? v : 'table'; } catch { return 'table'; }
+}
+function brandsSetView(view, save = true) {
+  document.querySelectorAll('#brands-view [data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+  document.querySelectorAll('#screen-brands [data-bview]').forEach(v => { v.hidden = v.dataset.bview !== view; });
+  if (save) try { localStorage.setItem('kodo.brands.view', view); } catch { /* private window */ }
 }
 
 function filteredBrands() {
   let data = [...brandsData];
-  if (brandsFilter.segment !== 'all') {
-    data = data.filter(b => b.segments.includes(brandsFilter.segment));
-  }
-  if (brandsFilter.search.trim()) {
-    const q = brandsFilter.search.trim().toLowerCase();
-    data = data.filter(b => b.brand_group.toLowerCase().includes(q));
-  }
-  const k = brandsFilter.sort;
-  data.sort((a, b) => (a[k] == null || b[k] == null) ? (a[k] == null) - (b[k] == null) : b[k] - a[k]);
+  if (brandsFilter.segment !== 'all') data = data.filter(b => b.segments.includes(brandsFilter.segment));
+  const q = fold(brandsFilter.search.trim());
+  if (q) data = data.filter(b => fold(b.brand_group).includes(q));
+  const k = brandsFilter.sort, dir = brandsFilter.dir;
+  // a limited BAR or Rooms RevPAR sorts with the groups that have none
+  const val = b => k === 'bar_mad' && b.bar_limited ? null : k === 'avg_revpar' && b.revpar_limited ? null : b[k];
+  data.sort((a, b) => {
+    if (BRANDS_STR_COLS.has(k)) return dir * String(a[k]).localeCompare(String(b[k]));
+    const x = val(a), y = val(b);
+    if (x == null || y == null) return (x == null) - (y == null) || a.brand_group.localeCompare(b.brand_group);
+    return dir * (x - y) || a.brand_group.localeCompare(b.brand_group);
+  });
   return data;
 }
 
-function renderBrandsKPIs() {
-  const branded = brandsData.filter(b => b.brand_group !== 'Independent Hotels');
-  const allKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);
-  const largest  = [...brandsData].sort((a, b) => b.total_keys - a.total_keys)[0];
-
-  document.querySelector('#brnkpi-groups .kpi-value').textContent  = brandsData.length;
-  document.querySelector('#brnkpi-keys .kpi-value').textContent    = allKeys.toLocaleString('en');
-  brnRenderChampion();
-  document.querySelector('#brnkpi-largest .kpi-value').textContent  = largest  ? largest.brand_group  : '—';
-
-  ['brnkpi-groups', 'brnkpi-keys', 'brnkpi-largest'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), COUNT_TIP));
+function renderBrands() {
+  if (!brandsData) return;
+  const data = filteredBrands();
+  document.getElementById('brands-count').textContent = `${data.length} of ${brandsData.length} groups`;
+  document.querySelectorAll('#brands-comp-table th[data-bccol]').forEach(th => {
+    if (th.dataset.bccol === brandsFilter.sort) th.setAttribute('aria-sort', brandsFilter.dir === 1 ? 'ascending' : 'descending');
+    else th.removeAttribute('aria-sort');
+  });
+  const sel = document.getElementById('brands-sort');
+  if (sel.querySelector(`option[value="${brandsFilter.sort}"]`)) sel.value = brandsFilter.sort;
+  renderBrandsCompTable(data);
+  renderBrandsCards(data);
 }
 
-// Highest BAR among brand groups (observed since 3 Nov 2026): only groups
-// whose BAR rests on 3 hotels or more
-function brnRenderChampion() {
-  const card = document.getElementById('brnkpi-champion');
-  card.querySelector('.kpi-label').textContent = 'Highest BAR (published rate)';
-  const best = [...(brandsData || [])].filter(b => b.bar_mad != null && !b.bar_limited).sort((x, y) => y.bar_mad - x.bar_mad)[0];
-  const v = card.querySelector('.kpi-value');
-  const sub = card.querySelector('.kpi-sub') || card.appendChild(Object.assign(document.createElement('span'), { className: 'kpi-sub' }));
-  if (!best) { v.innerHTML = `<span class="pill--grey kpi-nodata-pill">${KodoBar.COLLECTING}</span>`; sub.textContent = ''; }
-  else { v.textContent = best.brand_group; sub.textContent = `MAD ${fmt.mad(best.bar_mad)} · average of ${best.bar_hotels} hotels`; }
-  KodoPeriod.setText(card, KodoBar.caption(), KodoPeriod.tip({ source: 'published hotel rates', note: 'groups with 3 hotels or more with 7 priced nights' }));
+function renderBrandsKPIs() {
+  const branded = brandsData.filter(b => !/^Independent/.test(b.brand_group));
+  const brandedKeys = branded.reduce((s, b) => s + b.total_keys, 0);
+  const largest = [...brandsData].sort((a, b) => b.total_keys - a.total_keys)[0];
+  const today = KodoPeriod.label(KodoPeriod.today());
+  const card = (id, value, line, tip) => {
+    const c = document.getElementById(id);
+    c.querySelector('.kpi-value').textContent = value;
+    c.title = tip || '';
+  };
+  card('brnkpi-groups', brandsData.length, '', COUNT_TIP);
+  card('brnkpi-keys', brandedKeys.toLocaleString('en'), '', `${COUNT_TIP}. Branded: every group except independent hotels (${(brandsData.reduce((s, b) => s + b.total_keys, 0) - brandedKeys).toLocaleString('en')} keys).`);
+  card('brnkpi-largest', largest ? largest.brand_group : '—', '', largest ? `${COUNT_TIP}. By keys: ${largest.total_keys.toLocaleString('en')} keys, ${largest.hotels} hotels.` : '');
+  // Highest BAR among groups whose BAR rests on 3 hotels or more (observed since 3 Nov 2026)
+  const best = [...brandsData].filter(b => b.bar_mad != null && !b.bar_limited).sort((x, y) => y.bar_mad - x.bar_mad)[0];
+  const ch = document.getElementById('brnkpi-champion');
+  if (!best) ch.querySelector('.kpi-value').innerHTML = `<span class="pill--grey kpi-nodata-pill">${KodoBar.COLLECTING}</span>`;
+  else ch.querySelector('.kpi-value').textContent = best.brand_group;
+  ch.title = `BAR (published rate) · ${KodoBar.caption()} · median of the group's hotels; only groups with ${KodoBar.meta().min_hotels} hotels or more with ${KodoBar.meta().min_nights} priced nights.`;
+  compactKpiCards([
+    { id: 'brnkpi-groups', label: 'Brand groups', kind: 'keys', line: `incl. independent hotels · ${today}` },
+    { id: 'brnkpi-keys', label: 'Total branded keys', kind: 'keys', line: `${branded.length} branded groups` },
+    { id: 'brnkpi-champion', label: 'Highest BAR (group)', kind: 'keys', line: best ? `MAD ${fmt.mad(best.bar_mad)} · median of ${best.bar_hotels} hotels` : '' },
+    { id: 'brnkpi-largest', label: 'Largest group', kind: 'keys', line: largest ? `${largest.total_keys.toLocaleString('en')} keys · ${largest.market_share_keys_pct.toFixed(1)}% of all keys` : '' },
+  ], null);
 }
 
 function brandLogoOrInitials(bg, size) {
@@ -1529,160 +1554,75 @@ function brandLogoOrInitials(bg, size) {
 function brandInitials(bg, size, gap = 0) {
   const initials = String(bg || '?').replace('Hotels', '').replace('Hotel', '').replace('Resorts', '').replace('International', '')
     .trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  // Tinted tile in one of the six chart families (tokens.css), picked by name
-  const fam = (Math.abs(String(bg).split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % 6) + 1;
-  return initialsTile(initials, size, gap, `var(--cat-${fam}-tint)`, `var(--cat-${fam}-text)`);
+  // a neutral tile (no colour-coded categories, docs/ui-standard.md)
+  return initialsTile(initials, size, gap, 'var(--bg)', 'var(--text-2)');
 }
 
-function renderBrandsCards() {
-  const data = filteredBrands();
+// The group's BAR and Rooms RevPAR as on the Market Overview: the figure with its
+// inline bar, the Limited data badge (under 3 hotels), or "—"
+const brandsBarCell = (b, max) => b.bar_mad == null ? '<span class="cell-na">—</span>'
+  : b.bar_limited ? limitedBadge(`${b.bar_hotels} hotel${b.bar_hotels === 1 ? '' : 's'} with ${KodoBar.meta().min_nights} priced nights; a group needs ${KodoBar.meta().min_hotels}.`)
+  : `<span class="cell-num" data-tip="${escAttr(`Median of ${b.bar_hotels} hotels' BAR · ${b.bar_nights} priced nights`)}">${fmt.mad(b.bar_mad)}</span>${inlineBar(b.bar_mad, max, false)}`;
+const brandsRevparCell = b => b.revpar_limited ? limitedBadge(`Rooms RevPAR (est.): fewer than ${KodoBar.meta().min_hotels} hotels with a BAR and ${KodoBar.meta().min_nights} priced coming nights.`)
+  : b.avg_revpar == null ? '<span class="cell-na">—</span>' : `<span title="${EST_TIP}">${fmt.mad(b.avg_revpar)}</span>`;
+const brandsPipeCell = b => b.pipeline_projects > 0
+  ? `<button type="button" class="k-link brands-pipe" data-pipe-group="${escAttr(b.brand_group)}" title="Open the Pipeline filtered on ${escAttr(b.brand_group)}">${b.pipeline_projects} / ${b.pipeline_keys.toLocaleString('en')}</button>`
+  : '<span class="cell-na">—</span>';
+
+function renderBrandsCompTable(data) {
+  const tbody = document.getElementById('brands-comp-tbody');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="k-empty">No brand group matches these filters.</td></tr>'; return; }
+  const ok = brandsData.filter(b => b.bar_mad != null && !b.bar_limited);
+  const maxBar = Math.max(0, ...ok.map(b => b.bar_mad));
+  const maxShare = Math.max(0, ...brandsData.map(b => b.market_share_keys_pct || 0));
+  const maxOcc = Math.max(0, ...brandsData.map(b => b.avg_occupancy || 0));
+  tbody.innerHTML = data.map(b => `<tr data-brand-group="${escAttr(b.brand_group)}" tabindex="0">
+      <td class="brands-name"><span class="k-brand">${getBrandLogoImg(b.brand_group, 20)}<span>${fmt.esc(b.brand_group)}</span></span>
+        <span class="brands-name-m">${b.hotels} hotel${b.hotels !== 1 ? 's' : ''} · ${b.market_share_keys_pct.toFixed(1)}% of keys</span></td>
+      <td class="num col-hide-mobile">${b.hotels}</td>
+      <td class="num">${b.total_keys.toLocaleString('en')}</td>
+      <td class="num cell-metric col-hide-mobile"><span class="cell-num">${b.market_share_keys_pct.toFixed(1)}%</span>${inlineBar(b.market_share_keys_pct, maxShare, false)}</td>
+      <td class="num cell-metric">${brandsBarCell(b, maxBar)}</td>
+      <td class="num cell-metric col-hide-mobile">${b.avg_occupancy == null ? '<span class="cell-na">—</span>' : `<span class="cell-num" title="${EST_TIP}">${fmt.pct(b.avg_occupancy)}</span>${inlineBar(b.avg_occupancy, maxOcc, true)}`}</td>
+      <td class="num col-hide-mobile">${brandsRevparCell(b)}</td>
+      <td class="num col-hide-mobile">${brandsPipeCell(b)}</td>
+    </tr>`).join('');
+  const m = KodoBar.meta();
+  document.getElementById('brands-th-bar').dataset.tip = `BAR (published rate): the median of the group's hotels that have ${m.min_nights} or more priced past nights since 3 Nov 2026. Limited data under ${m.min_hotels} such hotels, "—" with none.`;
+  document.getElementById('brands-th-revpar').dataset.tip = `Rooms RevPAR (est.): published price × estimated occupancy over the next 30 nights. Limited data under ${m.min_hotels} hotels with a BAR and ${m.min_nights} priced coming nights.`;
+}
+
+// Cards: the same figures in compact equal-height cards (no descriptions, no coloured pills)
+function renderBrandsCards(data) {
   const grid = document.getElementById('brands-cards-grid');
-  if (!data.length) {
-    grid.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:16px 0">No brands match the selected filters.</p>';
-    return;
-  }
-  grid.innerHTML = data.map(b => {
-    const cityList  = b.cities.slice(0, 3).map(fmt.esc).join(' · ');
-    const cityMore  = b.cities.length > 3 ? ` <span class="brn-more pill--grey">+${b.cities.length - 3}</span>` : '';
-    const segPills  = b.segments.map(s => pillHtml(SEGMENT_FAMILY[s] || 'grey', s, 'brn-seg-pill')).join('');
-    const mktBar    = Math.min(b.market_share_keys_pct * 4, 100);
-    const pipeRow   = b.pipeline_projects > 0
-      ? `<div class="brn-card-pipeline">Pipeline: ${b.pipeline_projects} project${b.pipeline_projects !== 1 ? 's' : ''}${b.pipeline_conversions ? ` (${b.pipeline_conversions} conversion${b.pipeline_conversions !== 1 ? 's' : ''})` : ''} · ${b.pipeline_keys.toLocaleString('en')} new keys →</div>`
-      : '';
-    const _desc     = BRAND_DESCRIPTIONS[b.brand_group] || '';
-    const descRow   = _desc
-      ? `<p class="brand-card-teaser">${fmt.esc(_desc.split('.')[0] + '.')}</p>`
-      : '';
-    const esc = fmt.esc(b.brand_group).replace(/'/g, '&#39;');
-
-    return `<div class="brn-card" data-brand-group="${esc}">
-      <div class="brn-card-header">
-        <div class="brn-card-logo-wrap">${brandLogoOrInitials(b.brand_group, 40)}</div>
-        <div class="brn-card-header-info">
-          <div class="brn-card-name">${fmt.esc(b.brand_group)}</div>
-          <div class="brn-card-sub">${b.hotels} hotel${b.hotels !== 1 ? 's' : ''} · ${b.total_keys.toLocaleString('en')} keys</div>
-        </div>
-      </div>
-      ${descRow}
-      <div class="brn-card-kpis">
-        <div class="brn-kpi"><div class="brn-kpi-lbl">BAR</div><div class="brn-kpi-val">${KodoBar.cell({ val: b.bar_mad, n: b.bar_hotels, nights: b.bar_nights, limited: b.bar_limited })}</div></div>
-        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Occ · est.</div><div class="brn-kpi-val">${fmt.pct(b.avg_occupancy)}</div></div>
-        <div class="brn-kpi" title="${EST_TIP}"><div class="brn-kpi-lbl">Rooms RevPAR (est.)</div><div class="brn-kpi-val">${b.revpar_limited ? `<span class="bar-limited">${KodoBar.LIMITED.toLowerCase()}</span>` : fmt.mad(b.avg_revpar)}</div></div>
-      </div>
-      <div class="brn-card-meta">
-        <div class="brn-card-cities">${cityList}${cityMore}</div>
-        <div class="brn-card-segs">${segPills}</div>
-      </div>
-      <div class="brn-card-share">
-        <span class="brn-share-txt">Mkt share: ${b.market_share_keys_pct.toFixed(1)}% of keys</span>
-        <div class="brn-share-mini"><div class="brn-share-mini-fill" style="width:${mktBar}%"></div></div>
-        ${pipeRow}
-      </div>
-      <button type="button" class="brn-card-link dash-btn" data-brand-group="${esc}">View all properties <span aria-hidden="true">→</span></button>
-    </div>`;
-  }).join('');
+  if (!data.length) { grid.innerHTML = '<p class="k-empty">No brand group matches these filters.</p>'; return; }
+  const ok = brandsData.filter(b => b.bar_mad != null && !b.bar_limited);
+  const maxBar = Math.max(0, ...ok.map(b => b.bar_mad));
+  grid.innerHTML = data.map(b => `<div class="brn-card2" data-brand-group="${escAttr(b.brand_group)}" tabindex="0" role="link" aria-label="${escAttr(b.brand_group)}: open the brand page">
+      <div class="brn-card2-head">${brandLogoOrInitials(b.brand_group, 32)}<div><div class="brn-card2-name">${fmt.esc(b.brand_group)}</div>
+        <div class="brn-card2-sub">${b.hotels} hotel${b.hotels !== 1 ? 's' : ''} · ${b.total_keys.toLocaleString('en')} keys · ${b.market_share_keys_pct.toFixed(1)}%</div></div></div>
+      <dl class="brn-card2-nums">
+        <div><dt>BAR</dt><dd>${brandsBarCell(b, maxBar)}</dd></div>
+        <div><dt>Occupancy (est.)</dt><dd>${b.avg_occupancy == null ? '<span class="cell-na">—</span>' : `<span title="${EST_TIP}">${fmt.pct(b.avg_occupancy)}</span>`}</dd></div>
+        <div><dt>Rooms RevPAR (est.)</dt><dd>${brandsRevparCell(b)}</dd></div>
+        <div><dt>Pipeline</dt><dd>${brandsPipeCell(b)}</dd></div>
+      </dl>
+    </div>`).join('');
 }
 
-function renderBrandsMarketShare() {
-  const sorted = [...brandsData].sort((a, b) => b.total_keys - a.total_keys);
-  const total  = sorted.reduce((s, b) => s + b.total_keys, 0);
-  const top8   = sorted.slice(0, 8);
-  const others = sorted.slice(8);
-  const otherKeys = others.reduce((s, b) => s + b.total_keys, 0);
-
-  const segs = top8.map((b, i) => ({
-    name:  b.brand_group,
-    pct:   b.total_keys / total * 100,
-    color: BRAND_PALETTE[i],
-  }));
-  if (otherKeys > 0) segs.push({ name: 'Other', pct: otherKeys / total * 100, color: KodoPalette.get().text3 });
-
-  const barHtml = segs.map(s =>
-    `<div class="brn-mkt-seg" style="width:${s.pct.toFixed(2)}%;background:${s.color}" title="${s.name}: ${s.pct.toFixed(1)}%"></div>`
-  ).join('');
-
-  const legendHtml = segs.map(s =>
-    `<div class="brn-mkt-legend-item">
-      <span class="brn-mkt-dot" style="background:${s.color}"></span>
-      <span class="brn-mkt-label">${fmt.esc(s.name)}</span>
-      <span class="brn-mkt-pct">${s.pct.toFixed(1)}%</span>
-    </div>`
-  ).join('');
-
-  document.getElementById('brands-market-share-wrap').innerHTML =
-    `<div class="brn-mkt-bar">${barHtml}</div>
-     <div class="brn-mkt-legend">${legendHtml}</div>`;
-}
-
-function renderBrandsCompTable() {
-  const { col, dir } = brandsCompSort;
-  const sorted = [...brandsData].sort((a, b) => {
-    if (BRANDS_COMP_STR.has(col)) return dir * String(a[col]).localeCompare(String(b[col]));
-    if (a[col] == null || b[col] == null) return (a[col] == null) - (b[col] == null);
-    return dir * (a[col] - b[col]);
-  });
-
-  document.querySelectorAll('#brands-comp-table .sortable-col').forEach(th => {
-    th.classList.remove('sort-asc', 'sort-desc');
-    const icon = th.querySelector('.sort-icon');
-    if (th.dataset.bccol === col) {
-      th.classList.add(dir === 1 ? 'sort-asc' : 'sort-desc');
-      if (icon) icon.textContent = dir === 1 ? '↑︎' : '↓︎';
-    } else {
-      if (icon) icon.textContent = '↕︎';
-    }
-  });
-
-  document.getElementById('brands-comp-tbody').innerHTML = sorted.map((b, i) => {
-    const rank      = i + 1;
-    const topClass  = rank <= 3 ? ' brn-top3' : '';
-    const rankStyle = rank <= 3 ? `style="font-weight:700"` : '';  // top 3 stand out by weight
-    return `<tr class="brand-hotel-row${topClass}" data-brand-group="${fmt.esc(b.brand_group).replace(/'/g,'&#39;')}">
-      <td class="rank-cell" ${rankStyle}>${rank}</td>
-      <td>
-        <button class="brand-link" data-brand-group="${fmt.esc(b.brand_group).replace(/'/g,'&#39;')}" style="display:flex;align-items:center;gap:6px">
-          ${getBrandLogoImg(b.brand_group, 20)} ${fmt.esc(b.brand_group)}
-        </button>
-      </td>
-      <td>${b.hotels}</td>
-      <td>${b.total_keys.toLocaleString('en')}</td>
-      <td>${b.market_share_keys_pct.toFixed(1)}%</td>
-      <td>${KodoBar.cell({ val: b.bar_mad, n: b.bar_hotels, nights: b.bar_nights, limited: b.bar_limited })}</td>
-      <td title="${EST_TIP}">${fmt.pct(b.avg_occupancy)}</td>
-      <td title="${EST_TIP}">${b.revpar_limited ? `<span class="bar-limited">${KodoBar.LIMITED.toLowerCase()}</span>` : fmt.mad(b.avg_revpar)}</td>
-      <td>${b.pipeline_keys > 0 ? b.pipeline_keys.toLocaleString('en') : '—'}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderBrandsInsights() {
-  const byKeys   = [...brandsData].sort((a, b) => b.total_keys   - a.total_keys)[0];
-  const byRevpar = [...brandsData].filter(b => b.avg_revpar != null && !b.bar_limited && !b.revpar_limited).sort((a, b) => b.avg_revpar - a.avg_revpar)[0];
-  const byPipe   = [...brandsData].filter(b => b.pipeline_projects > 0)
-                                   .sort((a, b) => b.pipeline_keys - a.pipeline_keys)[0];
-  const totalKeys = brandsData.reduce((s, b) => s + b.total_keys, 0);
-
-  if (byKeys) {
-    document.getElementById('brni-leader-val').textContent  = byKeys.brand_group;
-    document.getElementById('brni-leader-desc').textContent =
-      `${byKeys.market_share_keys_pct.toFixed(1)}% of all Morocco hotel keys`;
-  }
-  if (byRevpar) {
-    document.getElementById('brni-revpar-val').textContent  = byRevpar.brand_group;
-    document.getElementById('brni-revpar-desc').textContent =
-      `MAD ${fmt.mad(byRevpar.avg_revpar)} Rooms RevPAR (est.), next 30 nights (BAR × modelled occupancy)`;
-  } else {
-    document.getElementById('brni-revpar-val').textContent  = '—';
-    document.getElementById('brni-revpar-desc').textContent = KodoBar.COLLECTING;
-  }
-  if (byPipe) {
-    document.getElementById('brni-pipeline-val').textContent  = byPipe.brand_group;
-    document.getElementById('brni-pipeline-desc').textContent =
-      `${byPipe.pipeline_projects} project${byPipe.pipeline_projects !== 1 ? 's' : ''} · ${byPipe.pipeline_keys.toLocaleString('en')} key${byPipe.pipeline_keys !== 1 ? 's' : ''} in pipeline`;
-  } else {
-    document.getElementById('brni-pipeline-val').textContent  = '—';
-    document.getElementById('brni-pipeline-desc').textContent = 'No pipeline data available';
-  }
+// Pipeline cell: the Pipeline screen, filtered on the group
+function openPipelineForGroup(bg) {
+  _srchNavigateToScreen('pipeline');
+  let tries = 0;
+  const apply = () => {
+    const sel = document.getElementById('pipe-group-filter');
+    if (!pipelineData || sel.options.length < 2) { if (tries++ < 60) setTimeout(apply, 100); return; }
+    const opt = [...sel.options].find(o => o.value === bg);
+    if (opt) { sel.value = bg; pipelineState.group = bg; }
+    else { pipelineState.q = bg; document.getElementById('pipe-search').value = bg; }
+    applyPipelineFilter();
+  };
+  apply();
 }
 
 // ─── Brand detail ─────────────────────────────────────────────────
@@ -4421,55 +4361,48 @@ document.getElementById('brand-hotels-table').addEventListener('click', e => {
 
 // ─── Brands screen events ─────────────────────────────────────────
 
-// Card clicks + comparison table brand clicks → brand detail
-document.getElementById('brands-cards-grid').addEventListener('click', e => {
-  const card = e.target.closest('[data-brand-group]');
-  if (!card) return;
-  const bg = card.dataset.brandGroup;
-  if (bg) showBrandDetail(bg, 'brands');
-});
-
-document.getElementById('brands-comp-tbody').addEventListener('click', e => {
+// Brands: row or card opens the brand page; the Pipeline cell opens the Pipeline filtered on the group
+function brandsOpen(e) {
+  const pipe = e.target.closest('[data-pipe-group]');
+  if (pipe) { e.stopPropagation(); openPipelineForGroup(pipe.dataset.pipeGroup); return true; }
+  if (e.target.closest('[data-tip], .kodo-badge')) return true;            // a tooltip, not the row
   const row = e.target.closest('[data-brand-group]');
-  if (!row) return;
-  const bg = row.dataset.brandGroup;
-  if (bg) showBrandDetail(bg, 'brands');
+  if (row) { showBrandDetail(row.dataset.brandGroup, 'brands'); return true; }
+  return false;
+}
+document.getElementById('brands-cards-grid').addEventListener('click', brandsOpen);
+document.getElementById('brands-comp-tbody').addEventListener('click', brandsOpen);
+document.getElementById('screen-brands').addEventListener('keydown', e => {
+  const row = e.target.closest && e.target.closest('[data-brand-group]');
+  if (row && e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showBrandDetail(row.dataset.brandGroup, 'brands'); }
 });
-
-// Comparison table column sort
 document.getElementById('brands-comp-table').addEventListener('click', e => {
-  const th = e.target.closest('.sortable-col[data-bccol]');
+  const th = e.target.closest('th[data-bccol]');
   if (!th) return;
   const col = th.dataset.bccol;
-  if (col === brandsCompSort.col) {
-    brandsCompSort.dir *= -1;
-  } else {
-    brandsCompSort.col = col;
-    brandsCompSort.dir = BRANDS_COMP_STR.has(col) ? 1 : -1;
-  }
-  if (brandsInited) renderBrandsCompTable();
+  if (col === brandsFilter.sort) brandsFilter.dir *= -1;
+  else { brandsFilter.sort = col; brandsFilter.dir = BRANDS_STR_COLS.has(col) ? 1 : -1; }
+  if (brandsInited) renderBrands();
 });
-
-// Segment filter pills
 document.getElementById('brands-seg-pills').addEventListener('click', e => {
-  const btn = e.target.closest('.seg-btn');
+  const btn = e.target.closest('[data-bseg]');
   if (!btn) return;
-  document.querySelectorAll('#brands-seg-pills .seg-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('#brands-seg-pills [data-bseg]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
   brandsFilter.segment = btn.dataset.bseg;
-  if (brandsInited) renderBrandsCards();
+  if (brandsInited) renderBrands();
 });
-
-// Search input
 document.getElementById('brands-search').addEventListener('input', e => {
   brandsFilter.search = e.target.value;
-  if (brandsInited) renderBrandsCards();
+  if (brandsInited) renderBrands();
 });
-
-// Sort select
 document.getElementById('brands-sort').addEventListener('change', e => {
   brandsFilter.sort = e.target.value;
-  if (brandsInited) renderBrandsCards();
+  brandsFilter.dir = BRANDS_STR_COLS.has(e.target.value) ? 1 : -1;
+  if (brandsInited) renderBrands();
+});
+document.getElementById('brands-view').addEventListener('click', e => {
+  const b = e.target.closest('[data-view]');
+  if (b) brandsSetView(b.dataset.view);
 });
 
 // ─── AI Chat ──────────────────────────────────────────────────────
