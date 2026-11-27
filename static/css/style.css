@@ -6765,3 +6765,28 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 #screen-owners .owner-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
 #screen-owners .brand-hotels-table .k-brand { font-size: 12px; }
 @media (max-width: 1100px) { #screen-owners .owner-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ─── Map on the UI standard (docs/ui-standard.md) ─── */
+.app-body[data-screen="map"] .seg-section { display: none; }        /* one segment control: the one above the map */
+.map-filters { align-items: center; }
+.map-count { margin-left: auto; }
+#screen-map .map-seg-bar { margin: 0; padding: 2px; }
+#screen-map #map-container { background: var(--bg); border: 1px solid var(--line); }
+#screen-map .map-legend { background: var(--menu-bg); border: 1px solid var(--line); box-shadow: none; }
+.map-legend-item--sel { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+#screen-map .map-legend-dot { background: var(--cat-6-dot) !important; }   /* the markers' grey */
+#screen-map .map-legend-item--sel .map-legend-dot { background: var(--text) !important; }
+.map-city-panel { background: var(--menu-bg); border-color: var(--line); box-shadow: 0 6px 18px rgba(0, 0, 0, .12); }
+.map-city-panel-header { border-bottom: 1px solid var(--line); }
+.map-city-panel-count { color: var(--text-2); letter-spacing: .08em; }
+.map-city-panel-row { border-bottom: 0; padding: 8px; margin: 0 -8px; }
+.map-city-panel-row:hover { background: var(--row-hover); }
+.map-city-panel-row-meta { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--text-2); font-size: 11px; }
+.k-seg > button.active { background: var(--selected); color: var(--on-action); }
+@media (max-width: 767px) { .map-count { margin-left: 0; } }
+@media (max-width: 767px) {
+  #screen-map .map-legend { padding: 8px 10px; }
+  #screen-map .map-legend-item { padding: 2px 0; }
+  #screen-map .map-legend-label { font-size: 8.5px; }
+  #screen-map .map-count { display: inline; }
+}

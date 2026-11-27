@@ -2602,7 +2602,7 @@ function showCityPanel(city, cityHotels) {
 
   const hotelRows = cityHotels
     .slice()
-    .sort((a, b) => b.revpar_mad - a.revpar_mad)
+    .sort((a, b) => (b.keys || 0) - (a.keys || 0) || a.name.localeCompare(b.name))   // most rooms first
     .map(h => `
       <div class="map-city-panel-row" onclick="showHotelDetail(${h.id})">
         <div class="map-city-panel-row-name">${fmt.esc(h.name)}</div>
@@ -2613,8 +2613,8 @@ function showCityPanel(city, cityHotels) {
   panel.innerHTML = `
     <div class="map-city-panel-header">
       <div>
-        <div class="map-city-panel-count">${cityHotels.length} Hotel${cityHotels.length !== 1 ? 's' : ''}</div>
-        <div class="map-city-panel-city">${fmt.esc(city)}</div>
+        <div class="map-city-panel-count">${cityHotels.length} hotel${cityHotels.length !== 1 ? 's' : ''}</div>
+        <div class="map-city-panel-city">${fmt.esc(dn(city))}</div>
       </div>
       <button class="map-city-panel-close" onclick="document.getElementById('map-city-panel').remove(); if (selectedCityEntry) { selectedCityEntry.marker.setIcon(cityDotIcon(selectedCityEntry.count, false)); selectedCityEntry = null; }">✕</button>
     </div>
@@ -4231,13 +4231,19 @@ document.getElementById('city-filter').addEventListener('keydown', e => {
   });
 });
 
-// Map segment filter buttons
+// Map segment filter: one segmented control (the sidebar list and the phone pills follow it)
+function syncMapSeg() {
+  document.querySelectorAll('#map-seg-bar [data-map-seg]').forEach(b => {
+    const on = b.dataset.mapSeg === state.mapSeg;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
+}
 document.getElementById('map-seg-bar').addEventListener('click', e => {
-  const btn = e.target.closest('.seg-btn');
+  const btn = e.target.closest('[data-map-seg]');
   if (!btn) return;
-  document.querySelectorAll('#map-seg-bar .seg-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
   state.mapSeg = btn.dataset.mapSeg;
+  syncMapSeg();
   updateMapMarkers();
 });
 
@@ -4249,9 +4255,7 @@ document.getElementById('segment-sidebar').addEventListener('click', e => {
   item.classList.add('active');
   // Also sync map segment filter
   state.mapSeg = item.dataset.seg;
-  document.querySelectorAll('#map-seg-bar .seg-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mapSeg === state.mapSeg);
-  });
+  syncMapSeg();
   if (googleMap) updateMapMarkers();
 });
 
@@ -4553,9 +4557,7 @@ document.getElementById('mobile-seg-pills').addEventListener('click', e => {
   document.querySelectorAll('#segment-sidebar .sidebar-item').forEach(el =>
     el.classList.toggle('active', el.dataset.seg === state.mapSeg)
   );
-  document.querySelectorAll('#map-seg-bar .seg-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.mapSeg === state.mapSeg)
-  );
+  syncMapSeg();
   if (googleMap) updateMapMarkers();
 });
 

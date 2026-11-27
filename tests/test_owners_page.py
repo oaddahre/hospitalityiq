@@ -57,3 +57,16 @@ class OwnerPage(unittest.TestCase):
         self.assertIn("brandGroupLink(x.brand_group, 16, 'owners')", tbl)
         self.assertIn('cappedBar(h.bar_mad, capBar)', tbl)
         self.assertNotIn("showLoading(document.getElementById('owner-detail-header'))", JS)
+
+
+class MapPage(unittest.TestCase):
+    def test_map(self):
+        html = HTML[HTML.index('<section class="screen" id="screen-map">'):]
+        html = html[:html.index('</section>')]
+        self.assertIn('<h1 class="k-title">Hotel Map</h1>', html)
+        self.assertIn('class="k-seg map-seg-bar" id="map-seg-bar"', html)
+        self.assertNotIn('cat-1-dot', html)
+        self.assertNotIn('seg-pip', HTML)                                   # no coloured segment pips
+        css = read('static', 'css', 'style.css')
+        self.assertIn('.app-body[data-screen="map"] .seg-section { display: none; }', css)
+        self.assertIn('function syncMapSeg()', JS)

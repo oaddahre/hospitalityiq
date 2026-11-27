@@ -126,16 +126,16 @@
         <ul class="sidebar-list" id="segment-sidebar">
           <li class="sidebar-item active" data-seg="all">All Segments</li>
           <li class="sidebar-item" data-seg="Luxury">
-            <span class="seg-pip" style="background:var(--cat-1-dot)"></span>Luxury
+            Luxury
           </li>
           <li class="sidebar-item" data-seg="Upper Upscale">
-            <span class="seg-pip" style="background:var(--cat-5-dot)"></span>Upper Upscale
+            Upper Upscale
           </li>
           <li class="sidebar-item" data-seg="Upscale">
-            <span class="seg-pip" style="background:var(--cat-2-dot)"></span>Upscale
+            Upscale
           </li>
           <li class="sidebar-item" data-seg="Midscale">
-            <span class="seg-pip" style="background:var(--cat-3-dot)"></span>Midscale
+            Midscale
           </li>
         </ul>
       </div>
@@ -283,16 +283,19 @@
 
       <!-- ── Map ── -->
       <section class="screen" id="screen-map">
-        <div class="screen-header">
-          <h1>Hotel Map</h1>
+        <div class="k-head">
+          <h1 class="k-title">Hotel Map</h1>
+          <p class="k-line">Hotels in Kodo's database by destination: circle size = number of hotels. Click a circle for its hotels.</p>
         </div>
-        <div class="map-seg-bar" id="map-seg-bar">
-          <button class="seg-btn active" data-map-seg="all">All</button>
-          <button class="seg-btn" data-map-seg="Luxury">Luxury</button>
-          <button class="seg-btn" data-map-seg="Upper Upscale">Upper Upscale</button>
-          <button class="seg-btn" data-map-seg="Upscale">Upscale</button>
-          <button class="seg-btn" data-map-seg="Midscale">Midscale</button>
-          <span class="map-count" id="map-count"></span>
+        <div class="k-filters map-filters">
+          <div class="k-seg map-seg-bar" id="map-seg-bar" role="group" aria-label="Segment">
+            <button type="button" class="active" data-map-seg="all" aria-pressed="true">All</button>
+            <button type="button" data-map-seg="Luxury" aria-pressed="false">Luxury</button>
+            <button type="button" data-map-seg="Upper Upscale" aria-pressed="false">Upper Upscale</button>
+            <button type="button" data-map-seg="Upscale" aria-pressed="false">Upscale</button>
+            <button type="button" data-map-seg="Midscale" aria-pressed="false">Midscale</button>
+          </div>
+          <span class="hotels-count map-count" id="map-count"></span>
         </div>
         <div class="map-viewport">
           <div id="map-container"></div>
@@ -313,9 +316,9 @@
               <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:20px;height:20px;background:var(--cat-6-dot);"></span></span>
               <span class="map-legend-label">16+ Hotels</span>
             </div>
-            <div class="map-legend-item" style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);">
-              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:10px;height:10px;background:var(--cat-1-dot);"></span></span>
-              <span class="map-legend-label">Selected city</span>
+            <div class="map-legend-item map-legend-item--sel">
+              <span class="map-legend-dot-slot"><span class="map-legend-dot" style="width:10px;height:10px;background:var(--text);"></span></span>
+              <span class="map-legend-label">Selected destination</span>
             </div>
           </div>
         </div>
