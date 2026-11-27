@@ -324,7 +324,7 @@
       <p>In return, participating hotels receive free Benchmarker access — our full competitive intelligence suite including anonymous comp set benchmarking, trend charts, and monthly summaries — at no cost, for as long as the data sharing agreement is active. Data contributors also benefit from improved model accuracy for their own market, better seasonal calibration, and early access to new platform features.</p>
       <p style="font-weight:600;color:var(--text);">What participants receive:</p>
       <ul>
-        <li>Free Benchmarker plan access (normally MAD 2,490/month)</li>
+        {% set P = pricing() %}<li>Free Benchmarker access (normally {{ P.first_price }} {{ P.currency }} per seat per month)</li>
         <li>Anonymous comp set benchmarking vs. your competitive set</li>
         <li>Monthly performance trend reports</li>
         <li>Priority support and direct access to our research team</li>

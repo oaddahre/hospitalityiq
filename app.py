@@ -1069,7 +1069,7 @@ def tier_required(required: str):
                 labels = {"benchmarker": "Benchmarker", "advisory": "Advisory"}
                 return jsonify({
                     "error": "upgrade_required",
-                    "message": f"This feature requires the {labels.get(required, required)} plan",
+                    "message": "This feature is part of the Benchmarker subscription, which is not active on this account.",
                     "upgrade_url": "/pricing",
                 }), 403
             return fn(*args, **kwargs)
@@ -5816,7 +5816,7 @@ HEALTH_APIS = ('/api/data', '/api/hotels', '/api/brands', '/api/owners', '/api/l
 def _health_page_probe():
     """[(path, kind, status, seconds)] for the public pages and the key API
     endpoints, requested in-process (no network), the APIs as the first
-    active Advisory user (nothing is changed). Runs in its own thread: inside
+    active staff user (nothing is changed). Runs in its own thread: inside
     an admin request the outer context's user would be reused."""
     import threading
     box = {}

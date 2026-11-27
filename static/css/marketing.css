@@ -2634,6 +2634,8 @@ a.lp-contact-info-val:hover { color: var(--lp-action); }
 
 /* Keep grid columns at their existing widths: larger text must not stretch a column */
 .lp-landing .lp-plan-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lp-landing .lp-plan-grid.lp-plan-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 880px; margin-left: auto; margin-right: auto; }
+@media (max-width: 768px) { .lp-landing .lp-plan-grid.lp-plan-grid--two { grid-template-columns: minmax(0, 1fr); } }
 .lp-landing .lp-reports-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .lp-landing .lp-plan-price { flex-wrap: wrap; justify-content: center; row-gap: 4px; }
 @media (max-width: 768px) {

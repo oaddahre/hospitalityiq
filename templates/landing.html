@@ -630,73 +630,49 @@
   </div>
 </section>
 
-<!-- PRICING -->
+<!-- PRICING: two plans; every number from the pricing settings (billing.json, Admin > Billing) -->
+{% set P = pricing() %}
 <section class="lp-section" id="pricing">
   <div class="lp-inner">
   <div class="lp-section-opener lp-reveal">
     <span class="lp-section-tag">05 — Pricing</span>
-    <span class="lp-section-meta">Subscription Plans</span>
+    <span class="lp-section-meta">Subscription</span>
   </div>
-  <h2 class="lp-section-headline lp-reveal lp-reveal-d1">Simple monthly plans.</h2>
-  <p class="lp-section-sub lp-reveal lp-reveal-d2">Change or cancel whenever you like.</p>
-  <div class="lp-plan-grid lp-reveal lp-reveal-d2">
+  <h2 class="lp-section-headline lp-reveal lp-reveal-d1">One plan, priced per seat.</h2>
+  <p class="lp-section-sub lp-reveal lp-reveal-d2">Every feature in Benchmarker. Advisory adds our team's analysis on top.</p>
+  <div class="lp-plan-grid lp-plan-grid--two lp-reveal lp-reveal-d2">
 
-    <div class="lp-plan-card">
-      <div class="lp-plan-badge-row"></div>
-      <span class="lp-plan-name">Observer</span>
-      <div class="lp-plan-price"><span class="lp-plan-amount">990</span></div>
-      <span class="lp-plan-currency">MAD / month</span>
+    <div class="lp-plan-card lp-plan-featured">
+      <div class="lp-plan-badge-row"><div class="lp-plan-badge">All features</div></div>
+      <span class="lp-plan-name">Benchmarker</span>
+      <div class="lp-plan-price"><span class="lp-plan-amount">{{ P.first_price }}</span></div>
+      <span class="lp-plan-currency">{{ P.currency }} per seat per month for the first {{ P.first_seats }} seats<br>{{ P.extra_price }} {{ P.currency }} per month for each additional seat</span>
       <ul class="lp-plan-features">
         <li><span class="lp-ck">✓</span>Hotel Directory ({{ ps.hotels }}+ hotels)</li>
         <li><span class="lp-ck">✓</span>Interactive Map</li>
         <li><span class="lp-ck">✓</span>Development Pipeline</li>
-        <li><span class="lp-ck">✓</span>Brand Intelligence</li>
-        <li><span class="lp-ck">✓</span>Ownership Intelligence</li>
+        <li><span class="lp-ck">✓</span>Brand and Ownership Intelligence</li>
         <li><span class="lp-ck">✓</span>Tourism Data & News</li>
-        <li><span class="lp-ck">✓</span>AI Analyst (10 queries/month)</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Market Benchmarking</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Intelligence Reports</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Excel Data Export</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Hotel Valuation Tool</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Priority Advisory Access</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Custom Reports</li>
-      </ul>
-      <a href="/register" class="btn-outline lp-plan-cta">Get Started →</a>
-    </div>
-
-    <div class="lp-plan-card lp-plan-featured">
-      <div class="lp-plan-badge-row"><div class="lp-plan-badge">Most Popular</div></div>
-      <span class="lp-plan-name">Benchmarker</span>
-      <div class="lp-plan-price"><span class="lp-plan-amount">2,490</span></div>
-      <span class="lp-plan-currency">MAD / month</span>
-      <ul class="lp-plan-features">
-        <li><span class="lp-ck">✓</span>Everything in Observer</li>
         <li><span class="lp-ck">✓</span>Market Benchmarking tool</li>
-        <li><span class="lp-ck">✓</span>Intelligence Reports (PDF)</li>
-        <li><span class="lp-ck">✓</span>Excel Data Export</li>
-        <li><span class="lp-ck">✓</span>Unlimited AI Analyst</li>
         <li><span class="lp-ck">✓</span>Rate intelligence calendar</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Hotel Valuation Tool</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Priority Advisory Access</li>
-        <li class="lp-plan-feat-off"><span class="lp-ds">×</span>Custom Reports</li>
+        <li><span class="lp-ck">✓</span>Intelligence Reports (PDF)</li>
+        <li><span class="lp-ck">✓</span>Hotel Valuation Tool</li>
+        <li><span class="lp-ck">✓</span>Excel Data Export</li>
+        <li><span class="lp-ck">✓</span>AI Analyst</li>
       </ul>
-      <a href="/register" class="btn-fill lp-plan-cta">Get Started →</a>
+      <a href="/register" class="btn-fill lp-plan-cta">Register →</a>
     </div>
 
     <div class="lp-plan-card">
       <div class="lp-plan-badge-row"></div>
       <span class="lp-plan-name">Advisory</span>
       <div class="lp-plan-price"><span class="lp-price-custom">Custom</span></div>
-      <span class="lp-plan-currency">Tailored to your needs</span>
+      <span class="lp-plan-currency">Priced to your needs</span>
       <ul class="lp-plan-features">
-        <li><span class="lp-ck">✓</span>Full platform access</li>
-        <li><span class="lp-ck">✓</span>Hotel Valuation Tool</li>
-        <li><span class="lp-ck">✓</span>Priority advisory team access</li>
-        <li><span class="lp-ck">✓</span>Custom market reports</li>
+        <li><span class="lp-ck">✓</span>Everything in Benchmarker</li>
+        <li><span class="lp-ck">✓</span>Custom analysis by our team</li>
         <li><span class="lp-ck">✓</span>Direct analyst support</li>
-        <li><span class="lp-ck">✓</span>Unlimited AI Analyst</li>
-        <li><span class="lp-ck">✓</span>Excel Data Export</li>
-        <li><span class="lp-ck">✓</span>Rate intelligence calendar</li>
+        <li><span class="lp-ck">✓</span>Bespoke market reports</li>
       </ul>
       <a href="/contact" class="btn-accent-outline lp-plan-cta">Contact Us →</a>
     </div>

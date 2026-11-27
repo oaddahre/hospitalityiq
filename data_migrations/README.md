@@ -15,6 +15,8 @@ Name: `NNNN_what_it_does.<kind>`, numbered in the order they must run:
 | `.profiles.json` | Set description (or logo) on owner profiles and brand profiles (brand_profiles.json); a field already holding another value is never overwritten | `{"format": "kodo-profiles-1", "owners": [{"name", "set": {...}, "sources": [...]}], "brands": [...]}` |
 | `.columns.json` | Keep only the listed columns of performance.csv (every row kept; already done when the file has exactly those columns) | `{"format": "kodo-columns-1", "file": "performance.csv", "keep": [...]}` |
 | `.news.json` | Remove articles from news.json (id and slug must both match) | `{"format": "kodo-news-1", "remove": [{"id": 1, "slug": "..."}]}` |
+| `.users.json` | Accounts (users.json, organisations.json): named idempotent operations (`grant_staff_to_admin_tier`, `report_accounts`, `observer_to_benchmarker`, `seats_from_members`); the summary names the accounts changed | `{"format": "kodo-users-1", "ops": [...]}` |
+| `.billing.json` | Pricing settings (billing.json, Admin > Billing): writes only the keys not set yet, never an admin's values | `{"format": "kodo-billing-1", "set_if_missing": {...}}` |
 
 Rules:
 - Make the same change in the repo's own files too (the repo is the source

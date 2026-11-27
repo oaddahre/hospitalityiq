@@ -3599,7 +3599,7 @@ async function initPipeline() {
     const err = await res.json().catch(() => ({}));
     if (err.error === 'upgrade_required') {
       pipelineInited = false;
-      if (typeof showUpgradeModal === 'function') showUpgradeModal('Pipeline requires Benchmarker', err.message);
+      if (typeof showUpgradeModal === 'function') showUpgradeModal('Part of Benchmarker', err.message);
       return;
     }
   }
@@ -4996,7 +4996,7 @@ document.getElementById('rb-save').addEventListener('click', async () => {
 
 // ── Excel export (same labels and the methodology note) ──
 function exportRateBenchmark() {
-  if (!canExport()) { showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans.'); return; }
+  if (!canExport()) { showUpgradeModal('Part of Benchmarker', 'Excel export is included in the Benchmarker subscription.'); return; }
   const d = rbState.data;
   if (!d || !d.kpis) return;
   const k = d.kpis;
@@ -5573,7 +5573,7 @@ function renderReportList() {
 // transient status line appended under the row instead of a fixed slot.
 async function handleReportGenerate(btn, canGenerate) {
   if (!canGenerate) {
-    showUpgradeModal('Benchmarker & Advisory Only', 'Reports are available on Benchmarker and Advisory plans. Upgrade to download institutional-grade PDF market reports.');
+    showUpgradeModal('Part of Benchmarker', 'PDF market reports are included in the Benchmarker subscription.');
     return;
   }
 
@@ -5723,7 +5723,7 @@ function exportToExcel(sheets, filename) {
 
 function exportHotels() {
   if (!canExport()) {
-    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download hotel directory data.');
+    showUpgradeModal('Part of Benchmarker', 'Excel export is included in the Benchmarker subscription.');
     return;
   }
   const filtered = filterHotels();
@@ -5754,7 +5754,7 @@ function exportHotels() {
 
 function exportPipeline() {
   if (!canExport()) {
-    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download pipeline data.');
+    showUpgradeModal('Part of Benchmarker', 'Excel export is included in the Benchmarker subscription.');
     return;
   }
   if (!pipelineData) return;
@@ -5779,7 +5779,7 @@ function exportPipeline() {
 
 function exportBrands() {
   if (!canExport()) {
-    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download brand performance data.');
+    showUpgradeModal('Part of Benchmarker', 'Excel export is included in the Benchmarker subscription.');
     return;
   }
   if (!brandsData) return;
@@ -5807,7 +5807,7 @@ function exportBrands() {
 
 function exportTourism() {
   if (!canExport()) {
-    showUpgradeModal('Benchmarker & Advisory Only', 'Excel export is available on Benchmarker and Advisory plans. Upgrade to download tourism intelligence data.');
+    showUpgradeModal('Part of Benchmarker', 'Excel export is included in the Benchmarker subscription.');
     return;
   }
   if (!tourismData) { loadTourismData().then(exportTourism).catch(() => {}); return; }
