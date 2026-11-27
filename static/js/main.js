@@ -6390,8 +6390,9 @@ function valUpdateLiveMetrics() {
   const noiEl = valEl('val-q-noi-margin');
   gopEl.textContent = fmtPct(gopMargin * 100);
   noiEl.textContent = fmtPct(noiMargin * 100);
-  gopEl.className = 'val-metric-value ' + (gopMargin >= 0.30 ? 'val-metric-good pill--green' : gopMargin >= 0.20 ? 'val-metric-mid' : 'val-metric-poor pill--red');
-  noiEl.className = 'val-metric-value ' + (noiMargin >= 0.26 ? 'val-metric-good pill--green' : noiMargin >= 0.16 ? 'val-metric-mid' : 'val-metric-poor pill--red');
+  // same bands as before, shown in greys (red / green only for changes up or down)
+  gopEl.className = 'val-metric-value ' + (gopMargin >= 0.30 ? 'val-metric-good' : gopMargin >= 0.20 ? 'val-metric-mid' : 'val-metric-poor');
+  noiEl.className = 'val-metric-value ' + (noiMargin >= 0.26 ? 'val-metric-good' : noiMargin >= 0.16 ? 'val-metric-mid' : 'val-metric-poor');
 }
 
 // ─── Mode switching ───────────────────────────────────────────────────
@@ -6767,3 +6768,9 @@ async function valExportPDF() {
     btn.textContent = originalText;
   }
 }
+
+// Valuation: the page scrolls as one (no inner boxes), so Run brings the results into view
+document.getElementById('val-run-btn')?.addEventListener('click', () => setTimeout(() => {
+  const r = document.getElementById('val-results');
+  if (r && getComputedStyle(r).display !== 'none') r.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+}, 60));

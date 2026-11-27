@@ -117,3 +117,15 @@ class NewsPage(unittest.TestCase):
         self.assertIn('class="k-seg ed-cat-bar" id="ed-cat-bar"', html)
         css = read('static', 'css', 'style.css')
         self.assertIn('#screen-news .pill--blue, #screen-news .pill--green', css)
+
+
+class ValuationPage(unittest.TestCase):
+    def test_valuation(self):
+        html = HTML[HTML.index('<section class="screen" id="screen-valuation">'):]
+        html = html[:html.index('</section>')]
+        self.assertIn('<h1 class="k-title">Valuation tool', html)
+        css = read('static', 'css', 'style.css')
+        self.assertIn('#screen-valuation.active { height: auto; overflow: visible;', css)      # the page scrolls
+        self.assertIn('#screen-valuation .val-sens-high     { background: color-mix(in srgb, var(--text) 22%', css)
+        self.assertNotIn("'val-metric-good pill--green'", JS)
+        self.assertIn("r.scrollIntoView(", JS)

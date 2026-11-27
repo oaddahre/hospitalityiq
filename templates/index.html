@@ -989,12 +989,12 @@
       <!-- ── Valuation ── -->
       <section class="screen" id="screen-valuation">
 
+        <div class="k-head val-head">
+          <h1 class="k-title">Valuation tool <span class="kodo-badge" role="button" tabindex="0" data-tip="A Kodo estimate from your inputs: not a valuation report and not for investment decisions.">Estimate</span></h1>
+          <p class="k-line">A hotel's value by discounted cash flow and income capitalization, with sensitivity, from your inputs.</p>
+        </div>
+
         <div class="val-input-panel" id="val-input-panel">
-          <div class="val-title">Hotel Valuation</div>
-          <div class="val-subtitle">DCF · Income Capitalization · Sensitivity</div>
-          <div class="val-disclaimer-row">
-            <span class="kodo-estimate-badge">Kodo estimate · Not for investment decisions</span>
-          </div>
 
           <div class="val-mode-toggle">
             <button class="val-mode-btn active" id="val-mode-quick-btn" data-mode="quick">Quick Valuation</button>
@@ -1275,7 +1275,7 @@
             </div>
 
             <div class="val-output-section">
-              <div class="val-output-header"><span class="val-output-title">Valuation Approaches</span></div>
+              <div class="val-output-header"><span class="val-output-title">Valuation approaches</span></div>
               <div class="val-approach-row">
                 <div class="val-approach-card">
                   <div class="val-approach-title">Income Capitalization</div>
@@ -1300,14 +1300,14 @@
                   <div class="val-reconciled-value" id="val-rec-value">—</div>
                   <div class="val-reconciled-perkey" id="val-rec-perkey">—</div>
                   <div class="val-reconciled-sub">Income Cap 40% · DCF 60%</div>
-                  <span class="kodo-estimate-badge">Estimated</span>
+                  <span class="kodo-badge">Estimate</span>
                 </div>
               </div>
             </div>
 
             <div class="val-output-section" id="val-sensitivity-section">
               <div class="val-output-header">
-                <span class="val-output-title">Sensitivity Analysis <span class="val-tier-pill">Advisory</span></span>
+                <span class="val-output-title">Sensitivity analysis <span class="val-tier-pill">Advisory</span></span>
               </div>
               <div class="val-sens-row" id="val-sens-row">
                 <div class="val-sens-block">
@@ -1322,7 +1322,7 @@
             </div>
 
             <div class="val-output-section" style="text-align:right">
-              <button class="val-export-btn" id="val-export-btn">↓ Export Valuation Report</button>
+              <button type="button" class="k-btn val-export-btn" id="val-export-btn">Export valuation report <span aria-hidden="true">↓</span></button>
             </div>
 
           </div>

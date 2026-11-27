@@ -6899,3 +6899,32 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 #screen-news .ed-spons-cta { background: transparent; color: var(--text); border: 1px solid var(--text); }
 #screen-news .ed-spons-cta:hover { background: var(--text); color: var(--bg); }
 #screen-news .ed-article-wrap { background: transparent; }
+
+/* ─── Valuation tool on the UI standard (docs/ui-standard.md) ───
+   The page scrolls (no inner scroll boxes): title + one line across the top,
+   inputs on the left, results on the right. */
+#screen-valuation.active { height: auto; overflow: visible; margin: 0; gap: 0 24px; align-items: start; }
+#screen-valuation .val-head { grid-column: 1 / -1; }
+#screen-valuation .val-head .kodo-badge { vertical-align: middle; margin-left: 6px; font-weight: 500; }
+#screen-valuation .val-input-panel { overflow: visible; background: var(--card-bg); border: 1px solid var(--line); padding: 18px 20px; }
+#screen-valuation .val-output-panel { overflow: visible; padding: 0; }
+#screen-valuation .val-placeholder { border: 1px dashed var(--line); background: transparent; }
+#screen-valuation .val-mode-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; gap: 2px; }
+#screen-valuation .val-mode-btn { border: 0; border-radius: 999px; background: transparent; color: var(--text-2); }
+#screen-valuation .val-mode-btn.active { background: var(--selected); color: var(--on-action); }
+#screen-valuation .val-kpi-card, #screen-valuation .val-approach-card, #screen-valuation .val-assumptions { background: var(--card-bg); border-color: var(--line); box-shadow: none; }
+#screen-valuation .val-approach-card--reconciled { border-top: 1px solid var(--line); }
+#screen-valuation .val-cf-table tbody tr:nth-child(even) td, #screen-valuation .val-cf-table thead th { background: transparent; }
+#screen-valuation .val-cf-table td { border-bottom: 0; }
+#screen-valuation .val-cf-table thead th { border-bottom: 1px solid var(--line); }
+#screen-valuation .val-cf-table tbody tr:hover td { background: var(--row-hover); }
+#screen-valuation .val-metric-good { color: var(--text); font-weight: 600; }
+#screen-valuation .val-metric-poor { color: var(--text-2); }
+/* sensitivity: the same IRR bands in greys (darker = higher IRR) */
+#screen-valuation .val-sens-high     { background: color-mix(in srgb, var(--text) 22%, var(--bg)); color: var(--text); font-weight: 600; }
+#screen-valuation .val-sens-mid-high { background: color-mix(in srgb, var(--text) 12%, var(--bg)); color: var(--text); }
+#screen-valuation .val-sens-mid      { background: color-mix(in srgb, var(--text) 5%, var(--bg)); color: var(--text); }
+#screen-valuation .val-sens-low      { background: transparent; color: var(--text-2); }
+#screen-valuation .val-sens-current  { outline: 2px solid var(--text); }
+#screen-valuation .val-input, #screen-valuation .val-select { background: var(--bg); border-color: var(--line); }
+@media (max-width: 1100px) { #screen-valuation.active { grid-template-columns: 1fr; gap: 16px; } }
