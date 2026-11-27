@@ -52,3 +52,19 @@ class BrandsPage(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class BarLabels(unittest.TestCase):
+    """A group's BAR is the median of its hotels' BAR (app.group_bar); every
+    label says so (no "average" for a group)."""
+    def test_median_everywhere(self):
+        app = read('app.py')
+        self.assertIn('val = int(math.floor(float(ok["bar_mad"].median()) + 0.5))', app)   # halves up, as Math.round
+        self.assertIn("a group's BAR is the median\n   of its hotels' BAR", app)
+        self.assertNotIn('"Average BAR', app)
+        self.assertNotIn('plain\n   average of its hotels', app)
+        js = read('static', 'js', 'main.js')
+        self.assertIn("'BAR (MAD, median of hotels)'", js)
+        self.assertIn("median of ${best.bar_hotels} hotels", js)
+        self.assertNotIn('average of ${best.bar_hotels}', js)
+        self.assertIn("label: 'Total keys', kind: 'keys', line: `all ${brandsData.length} groups", js)

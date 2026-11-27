@@ -42,9 +42,13 @@ class HotelsPage(unittest.TestCase):
 
     def test_table(self):
         js = self.js
-        self.assertIn('inlineBar(h.bar_mad, maxBar', js)
-        self.assertIn('inlineBar(h.occupancy, maxOcc', js)
-        self.assertIn('destBadge(h.city)', js)
+        self.assertIn('cappedBar(h.bar_mad, capBar)', js)                 # BAR scale capped at ~p95
+        self.assertIn('const occ = hotelOccCell(h, maxOcc);', js)
+        self.assertNotIn('destBadge(h.city)', js)                          # no badge on every row
+        full = read('static', 'js', 'main.js')
+        cell = full[full.index('function hotelOccCell'):full.index('function renderDestTable')]
+        self.assertIn('kodo-badge--limited', cell)                         # badges only for the exceptions
+        self.assertIn('Math.ceil(v.length * 0.95) - 1', full)
         self.assertIn("brandGroupLink(h.brand_group, 16, 'hotels')", js)
         self.assertNotIn('getSegmentBadgeHtml', js)
         self.assertIn("h.under_renovation ? 'Partly open' : h.seasonal_closure ? CLOSED_LABEL : 'Open'", js)

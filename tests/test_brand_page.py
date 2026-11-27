@@ -46,7 +46,7 @@ class BrandPage(unittest.TestCase):
         self.assertIn("openPipelineForGroup(brandDetailGroup)", js)
         table = js[js.index('function renderBrandHotelsTable'):]
         table = table[:table.index('\n}\n')]
-        self.assertIn('inlineBar(h.bar_mad, maxBar', table)
+        self.assertIn('cappedBar(h.bar_mad, capBar)', table)
         self.assertNotIn('getSegmentBadgeHtml', table)
 
     def test_about_three_lines(self):

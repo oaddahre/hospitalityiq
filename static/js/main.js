@@ -1397,6 +1397,25 @@ function inlineBar(v, max, est, sel) {
   if (v == null || !max) return '';
   return `<span class="ibar${est ? ' ibar--est' : ''}${sel ? ' ibar--sel' : ''}" aria-hidden="true"><span style="width:${Math.max(2, Math.round(v / max * 100))}%"></span></span>`;
 }
+// A BAR scale capped at about the 95th percentile of the hotels with a BAR, so
+// one very high price does not flatten every other bar; hotels above it get a
+// full bar with a small arrow at its end (the number stays exact)
+function barCap(values) {
+  const v = values.filter(x => x != null).sort((a, b) => a - b);
+  return v.length ? v[Math.max(0, Math.ceil(v.length * 0.95) - 1)] : 0;
+}
+function cappedBar(v, cap) {
+  if (v == null || !cap) return '';
+  if (v <= cap) return inlineBar(v, cap, false);
+  return `<span class="ibar ibar--over" aria-hidden="true" title="Above the scale of this column (about the top 5% of hotels)"><span style="width:100%"></span><i class="ibar-arrow">▸</i></span>`;
+}
+// Occupancy cell of a hotel row: the figure and its bar; a badge only for exceptions
+function hotelOccCell(h, maxOcc) {
+  if (h.seasonal_closure) return `<span class="kodo-badge kodo-badge--limited" data-tip="${escAttr(hotelStatusTip(h))}">${CLOSED_LABEL}</span>`;
+  if (h.under_renovation) return `<span class="kodo-badge kodo-badge--limited" data-tip="${escAttr(hotelStatusTip(h))}">Partly open</span>`;
+  if (h.occupancy == null) return '<span class="cell-na" title="No estimate yet">—</span>';
+  return `<span class="cell-num" title="${EST_TIP}">${fmt.pct(h.occupancy)}</span>${inlineBar(h.occupancy, maxOcc, !isOfficial(h.city))}`;
+}
 function renderDestTable() {
   const table = document.getElementById('dest-table');
   if (!table) return;
@@ -1538,7 +1557,7 @@ function renderBrandsKPIs() {
   ch.title = `BAR (published rate) · ${KodoBar.caption()} · median of the group's hotels; only groups with ${KodoBar.meta().min_hotels} hotels or more with ${KodoBar.meta().min_nights} priced nights.`;
   compactKpiCards([
     { id: 'brnkpi-groups', label: 'Brand groups', kind: 'keys', line: `incl. independent hotels · ${today}` },
-    { id: 'brnkpi-keys', label: 'Total branded keys', kind: 'keys', line: `all ${brandsData.length} groups, incl. independents` },
+    { id: 'brnkpi-keys', label: 'Total keys', kind: 'keys', line: `all ${brandsData.length} groups, incl. independents` },
     { id: 'brnkpi-champion', label: 'Highest BAR (group)', kind: 'keys', line: best ? `MAD ${fmt.mad(best.bar_mad)} · median of ${best.bar_hotels} hotels` : '' },
     { id: 'brnkpi-largest', label: 'Largest group', kind: 'keys', line: largest ? `${largest.total_keys.toLocaleString('en')} keys · ${largest.market_share_keys_pct.toFixed(1)}% of all keys` : '' },
   ], null);
@@ -1736,14 +1755,13 @@ function renderBrandHotelsTable() {
   });
   document.getElementById('brand-hotels-title').textContent =
     `Hotels · ${sorted.length}${activeBrandCity ? ' in ' + dn(activeBrandCity) : ''}`;
-  const maxBar = Math.max(0, ...brandHotelsData.map(h => h.bar_mad).filter(v => v != null));
-  const maxOcc = Math.max(0, ...brandHotelsData.map(h => h.occupancy).filter(v => v != null));
+  // the same capped scale as the Hotel Directory (all hotels with a BAR)
+  const capBar = barCap(hotels.map(h => h.bar_mad));
+  const maxOcc = Math.max(0, ...hotels.map(h => h.occupancy).filter(v => v != null));
   document.getElementById('brand-hotels-tbody').innerHTML = sorted.map(h => {
     const out = h.under_renovation || h.seasonal_closure;
-    const bar = h.bar_mad == null ? KodoBar.hotelCell(h) : `<span class="cell-num">${KodoBar.hotelCell(h)}</span>${inlineBar(h.bar_mad, maxBar, false)}`;
-    const occ = out || h.occupancy == null
-      ? `<span class="cell-na" title="${escAttr(out ? hotelStatusTip(h) : 'No estimate yet')}">—</span>`
-      : `<span class="hotels-occ"><span class="cell-num" title="${EST_TIP}">${fmt.pct(h.occupancy)}</span>${destBadge(h.city)}</span>${inlineBar(h.occupancy, maxOcc, !isOfficial(h.city))}`;
+    const bar = h.bar_mad == null ? KodoBar.hotelCell(h) : `<span class="cell-num">${KodoBar.hotelCell(h)}</span>${cappedBar(h.bar_mad, capBar)}`;
+    const occ = hotelOccCell(h, maxOcc);
     const tip = hotelStatusTip(h);
     return `<tr data-hid="${h.id}" tabindex="0">
       <td class="hotels-name"><span class="hotels-name-t">${fmt.esc(h.name)}</span><span class="hotels-name-m">${fmt.esc(dn(h.city))}${h.category ? ' · ' + fmt.esc(h.category) : ''}</span></td>
@@ -1833,14 +1851,6 @@ async function showHotelDetail(id) {
 
   // ── 5. Segment benchmarks ──
   renderHotelSegBench(h);
-
-  // ── 6. Brand info ──
-  const brandCount = hotels.filter(x => x.brand_group === h.brand_group).length;
-  document.getElementById('hotel-brand-name').innerHTML = getBrandLogoImg(h.brand_group, 32) + ' ' + fmt.esc(h.brand_group);
-  document.getElementById('hotel-brand-count').textContent = brandCount;
-  const brandBtn = document.getElementById('hotel-brand-link');
-  brandBtn.textContent     = `View all ${h.brand_group} properties →`;
-  brandBtn.dataset.brand   = h.brand_group;
 
   // ── 7. Pipeline ──
   document.getElementById('hotel-pipe-city').textContent = h.city;
@@ -2728,14 +2738,12 @@ function renderHotelsTable() {
   if (!sorted.length) {
     tbody.innerHTML = `<tr><td colspan="8" class="k-empty">No hotel matches these filters. <button type="button" class="k-link" onclick="clearAllHotelsFilters()">Clear the filters</button></td></tr>`;
   } else {
-    const maxBar = Math.max(0, ...hotels.map(h => h.bar_mad).filter(v => v != null));
+    const capBar = barCap(hotels.map(h => h.bar_mad));
     const maxOcc = Math.max(0, ...hotels.map(h => h.occupancy).filter(v => v != null));
     tbody.innerHTML = sorted.map(h => {
       const out = h.under_renovation || h.seasonal_closure;
-      const bar = h.bar_mad == null ? KodoBar.hotelCell(h) : `<span class="cell-num">${KodoBar.hotelCell(h)}</span>${inlineBar(h.bar_mad, maxBar, false)}`;
-      const occ = out || h.occupancy == null
-        ? `<span class="cell-na" title="${escAttr(out ? hotelStatusTip(h) : 'No estimate yet')}">—</span>`
-        : `<span class="hotels-occ"><span class="cell-num" title="${EST_TIP}">${fmt.pct(h.occupancy)}</span>${destBadge(h.city)}</span>${inlineBar(h.occupancy, maxOcc, !isOfficial(h.city))}`;
+      const bar = h.bar_mad == null ? KodoBar.hotelCell(h) : `<span class="cell-num">${KodoBar.hotelCell(h)}</span>${cappedBar(h.bar_mad, capBar)}`;
+      const occ = hotelOccCell(h, maxOcc);
       const tip = hotelStatusTip(h);
       return `<tr data-hid="${h.id}" tabindex="0">
         <td class="hotels-name"><span class="hotels-name-t">${fmt.esc(h.name)}</span><span class="hotels-name-m">${fmt.esc(dn(h.city))}${h.category ? ' · ' + fmt.esc(h.category) : ''}</span></td>
@@ -4276,6 +4284,7 @@ document.getElementById('hotels-owner-select').addEventListener('change', e => {
 document.getElementById('hotels-table').addEventListener('click', e => {
   const brand = e.target.closest('.k-brand-link');
   if (brand) { e.stopPropagation(); showBrandDetail(brand.dataset.brandGroup, brand.dataset.from); return; }
+  if (e.target.closest('.k-info, .kodo-badge')) return;                 // a tooltip, not a sort or a row
   const th = e.target.closest('th[data-col]');
   if (th) {
     const col = th.dataset.col;
@@ -4331,6 +4340,7 @@ document.getElementById('hotel-back-btn').addEventListener('click', () => {
 
 // Brand detail — hotel table column sort
 document.getElementById('brand-hotels-table').addEventListener('click', e => {
+  if (e.target.closest('.k-info')) return;
   const th = e.target.closest('th[data-bcol]');
   if (!th) return;
   const col = th.dataset.bcol;
@@ -5737,7 +5747,7 @@ function exportBrands() {
     'Hotels':            b.hotels,
     'Total Keys':        b.total_keys,
     'Market Share %':    b.market_share_keys_pct != null ? b.market_share_keys_pct.toFixed(1) + '%' : 'N/A',
-    'BAR (MAD)':         b.bar_mad == null ? 'Not enough prices yet' : b.bar_limited ? 'Limited data' : b.bar_mad,
+    'BAR (MAD, median of hotels)': b.bar_mad == null ? 'Not enough prices yet' : b.bar_limited ? 'Limited data' : b.bar_mad,
     'BAR hotels':        b.bar_hotels || 0,
     'BAR period':        KodoBar.caption(),
     'Occupancy % (Kodo estimate)': b.avg_occupancy != null ? (b.avg_occupancy * 100).toFixed(1) + '%' : 'N/A',

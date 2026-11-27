@@ -1153,7 +1153,8 @@ def group_bar(grp):
     under MIN_BAR_HOTELS hotels, when the figure must not be shown as one."""
     ok = grp[grp["bar_mad"].notna()] if "bar_mad" in grp else grp.iloc[0:0]
     n = len(ok)
-    val = round(float(ok["bar_mad"].median())) if n else None     # the median: one suite price can't move a city
+    # the median: one suite price can't move a city; halves round up, as the pages do (Math.round)
+    val = int(math.floor(float(ok["bar_mad"].median()) + 0.5)) if n else None
     nights = int(ok["bar_nights"].sum()) if n else 0
     return val, n, nights, n < LK.MIN_BAR_HOTELS
 
@@ -2609,8 +2610,8 @@ WHAT YOU MAY USE (nothing else exists)
 ══════════════════════════════════════════════════
 1. BAR (published rate), observed: the average published room rate, collected every night
    since {since} ({meta['days']} days of data so far). A hotel's BAR is its average over the
-   nights since then (at least {meta['min_nights']} priced nights); a group's BAR is the plain
-   average of its hotels' BAR, and is "limited data" under {meta['min_hotels']} hotels. Always
+   nights since then (at least {meta['min_nights']} priced nights); a group's BAR is the median
+   of its hotels' BAR, and is "limited data" under {meta['min_hotels']} hotels. Always
    call it "BAR" or "published rate". Never call it ADR: Kodo has no ADR (achieved revenue per
    room sold), no reported occupancy, no reported Rooms RevPAR, no revenue and no GOP for any hotel.
 2. Kodo estimates, always labelled "Kodo estimate": modelled occupancy for the next 30 nights
@@ -3797,7 +3798,7 @@ def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
     pdf.kpi_boxes([
         ("Total Hotels", str(mo["total_hotels"]), as_of),
         ("Total Keys", f"{mo['total_keys']:,}", as_of),
-        ("Average BAR", _bar_text(b), win),
+        ("BAR (median of hotels)", _bar_text(b), win),
         ("Pipeline keys", f"{pip['total_keys']:,}", as_of),
     ])
     pdf.set_xy(_LM, 272)
@@ -3813,7 +3814,7 @@ def generate_pdf_report(data: dict, ai: dict, theme: str = 'light') -> bytes:
     sub("Market at a Glance")
     pdf.kpi_row("Total Hotels", str(mo["total_hotels"]), as_of)
     pdf.kpi_row("Total Keys", f"{mo['total_keys']:,}", as_of)
-    pdf.kpi_row("Average BAR (published rate)", _bar_text(b), win)
+    pdf.kpi_row("BAR (published rate), median of hotels", _bar_text(b), win)
     pdf.kpi_row("Hotels with a BAR", f"{b['hotels']} of {mo['total_hotels']}", f"at least {b['min_nights']} priced nights")
     pdf.kpi_row("Modelled occupancy", fmt_num(est['occupancy'], '.1f', 100, suffix='%') if est['occupancy'] is not None else NOT_AVAILABLE, est_note)
     pdf.kpi_row("Rooms RevPAR (est.: BAR x modelled occupancy)", fmt_num(est['revpar'], prefix='MAD ') if est['revpar'] is not None else 'Limited data' if est.get('revpar_limited') else NOT_AVAILABLE, est_note)

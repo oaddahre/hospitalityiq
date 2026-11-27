@@ -80,6 +80,13 @@ th[aria-sort="ascending"] > .k-th-sort::after { content: ' ↑'; }
 .k-ibar > span, .ibar > span { display: block; height: 100%; margin-left: auto; border-radius: 2px; background: var(--text); }
 .k-ibar--est > span, .ibar--est > span { background: color-mix(in srgb, var(--text) 22%, transparent); }
 .k-ibar--sel > span, .ibar--sel > span { background: var(--selected); }
+/* a value above the column's capped scale: a full bar with a small arrow at its end */
+.k-ibar.ibar--over, .ibar.ibar--over { position: relative; }
+.ibar-arrow { position: absolute; right: -8px; top: 50%; transform: translateY(-50%); font: normal 9px/1 'Sweet Sans Pro', sans-serif; color: var(--text); }
+/* an "i" in a table header, before the sortable label */
+.th-with-info { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; width: 100%; }
+.th-with-info .k-th-sort { width: auto; }
+.k-info--th { width: 15px; height: 15px; font-size: 9px; line-height: 13px; letter-spacing: 0; text-transform: none; flex: none; }
 .k-ibar--sel.k-ibar--est > span, .ibar--sel.ibar--est > span { background: color-mix(in srgb, var(--selected) 35%, transparent); }
 
 /* ─── Badges: Official / Estimate / Limited data (detail in a tooltip) ─── */

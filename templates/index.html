@@ -445,7 +445,7 @@
                 <th scope="col" data-col="brand_group" class="col-hide-mobile"><button type="button" class="k-th-sort">Brand group</button></th>
                 <th scope="col" data-col="keys" class="num col-hide-mobile"><button type="button" class="k-th-sort">Keys</button></th>
                 <th scope="col" data-col="bar_mad" class="num"><button type="button" class="k-th-sort" data-tip="BAR (published rate): the hotel's average over its priced nights since 3 November 2026 (7 or more).">BAR (MAD)</button></th>
-                <th scope="col" data-col="occupancy" class="num"><button type="button" class="k-th-sort" data-tip="Kodo estimate for the next 30 nights. Official: calibrated on official monthly figures for the destination; Estimate: not yet.">Occupancy (est.)</button></th>
+                <th scope="col" data-col="occupancy" class="num"><span class="th-with-info"><button type="button" class="k-info k-info--th" data-tip="Kodo estimate for the next 30 nights. Where the destination is calibrated on official monthly figures the estimate is held to them; elsewhere it is a model estimate. A badge marks the exceptions: closed for the season, partly open." aria-label="About occupancy (est.)">i</button><button type="button" class="k-th-sort">Occupancy (est.)</button></span></th>
                 <th scope="col" data-col="status" class="col-hide-mobile"><button type="button" class="k-th-sort">Status</button></th>
               </tr>
             </thead>
@@ -833,7 +833,7 @@
 
         <div class="kpi-grid brands-kpi-grid kpi-compact" id="brands-kpi-grid">
           <div class="kpi-card" id="brnkpi-groups"><span class="kpi-label">Brand groups</span><span class="kpi-value">—</span></div>
-          <div class="kpi-card" id="brnkpi-keys"><span class="kpi-label">Total branded keys</span><span class="kpi-value">—</span></div>
+          <div class="kpi-card" id="brnkpi-keys"><span class="kpi-label">Total keys</span><span class="kpi-value">—</span></div>
           <div class="kpi-card" id="brnkpi-champion"><span class="kpi-label">Highest BAR (group)</span><span class="kpi-value">—</span></div>
           <div class="kpi-card" id="brnkpi-largest"><span class="kpi-label">Largest group</span><span class="kpi-value">—</span></div>
         </div>
@@ -1332,7 +1332,7 @@
                 <th scope="col" data-bcol="category" class="col-hide-mobile"><button type="button" class="k-th-sort">Segment</button></th>
                 <th scope="col" data-bcol="keys" class="num col-hide-mobile"><button type="button" class="k-th-sort">Keys</button></th>
                 <th scope="col" data-bcol="bar_mad" class="num"><button type="button" class="k-th-sort" data-tip="BAR (published rate): the hotel's average over its priced nights since 3 November 2026 (7 or more).">BAR (MAD)</button></th>
-                <th scope="col" data-bcol="occupancy" class="num"><button type="button" class="k-th-sort" data-tip="Kodo estimate for the next 30 nights. Official: calibrated on official monthly figures for the destination; Estimate: not yet.">Occupancy (est.)</button></th>
+                <th scope="col" data-bcol="occupancy" class="num"><span class="th-with-info"><button type="button" class="k-info k-info--th" data-tip="Kodo estimate for the next 30 nights. Where the destination is calibrated on official monthly figures the estimate is held to them; elsewhere it is a model estimate. A badge marks the exceptions: closed for the season, partly open." aria-label="About occupancy (est.)">i</button><button type="button" class="k-th-sort">Occupancy (est.)</button></span></th>
                 <th scope="col" data-bcol="status" class="col-hide-mobile"><button type="button" class="k-th-sort">Status</button></th>
               </tr>
             </thead>
@@ -1451,20 +1451,6 @@
             <span class="chart-unit"><span id="hotel-bench-ctx">vs city average in same segment</span></span>
           </div>
           <div id="hotel-seg-bench"></div>
-        </div>
-
-        <!-- Brand group -->
-        <div class="chart-card" style="margin-bottom:20px">
-          <div class="chart-card-header">
-            <span class="chart-title">Brand group</span>
-          </div>
-          <div class="hotel-brand-row">
-            <div>
-              <div class="hotel-brand-name" id="hotel-brand-name">—</div>
-              <div class="hotel-brand-meta"><span id="hotel-brand-count">—</span> hotels in Morocco under this group</div>
-            </div>
-            <button class="hotel-brand-link" id="hotel-brand-link" onclick="showBrandDetail(this.dataset.brand)">—</button>
-          </div>
         </div>
 
         <!-- Nearby pipeline -->
@@ -1591,7 +1577,7 @@
               <div class="chat-welcome-title">Kodo Market Intelligence</div>
               <div class="chat-welcome-sub">Ask any question about Morocco's branded hotel market</div>
               <div class="chat-chips" id="chat-chips">
-                <button class="chat-chip" data-q="Which destination has the highest average BAR since 3 November?">Which destination has the highest BAR?</button>
+                <button class="chat-chip" data-q="Which destination has the highest BAR (the median of its hotels' BAR) since 3 November?">Which destination has the highest BAR?</button>
                 <button class="chat-chip" data-q="Compare Accor and Marriott International in Morocco: hotels, keys and BAR.">Accor vs Marriott: hotels, keys, BAR?</button>
                 <button class="chat-chip" data-q="What is in the Marrakech hotel pipeline?">What is in the Marrakech pipeline?</button>
               </div>
