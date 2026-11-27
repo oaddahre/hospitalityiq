@@ -358,12 +358,24 @@ class User(UserMixin):
         self.email_verified        = data.get("email_verified", True)
         self.verified_at           = data.get("verified_at")
         self.last_login            = data.get("last_login")  # set on successful login, see login_page()
+        # Staff (Kodo's own team): opens /admin. A role on the user, never a
+        # plan: a customer on any plan is not staff (data_migrations/0029).
+        self.staff                 = bool(data.get("staff", False))
 
     def get_id(self):
         return self.id
 
     def is_active(self):
         return self.status == "active"
+
+
+def is_staff(user) -> bool:
+    """The one place that defines what "is an admin" means: the user's staff
+    role (a User or a users.json row). It never depends on the plan: before
+    Nov 2026 it was "tier == advisory", which let any Advisory customer in."""
+    if isinstance(user, dict):
+        return bool(user.get("staff"))
+    return bool(getattr(user, "staff", False))
 
 
 # ─── Users storage ────────────────────────────────────────────────────────────
@@ -777,7 +789,14 @@ def ensure_seed_user():
     if not email or not password:
         return
     db = load_users_db()
-    if any(u["email"].lower() == email.lower() for u in db["users"]):
+    seed = next((u for u in db["users"] if u["email"].lower() == email.lower()), None)
+    if seed is not None:
+        # Never locked out of /admin: with no staff account at all (e.g. data
+        # migrations off), the seed account, Kodo's own, gets the role back
+        if not any(is_staff(u) for u in db["users"]):
+            seed["staff"] = True
+            save_users_db(db)
+            print(f"[SEED] Staff role given to the seed account (no staff account existed): {email}")
         return
     db["users"].append({
         "id":               str(uuid.uuid5(uuid.NAMESPACE_URL, email)),
@@ -786,6 +805,7 @@ def ensure_seed_user():
         "name":             name,
         "organisation":     "Kodo Hospitality",
         "tier":             "advisory",
+        "staff":            True,            # the seed account is Kodo's own: it opens /admin
         "status":           "active",
         "created_at":       datetime.utcnow().strftime("%Y-%m-%d"),
         "approved_at":      datetime.utcnow().strftime("%Y-%m-%d"),
@@ -1033,16 +1053,8 @@ def _admin_csrf_ok() -> bool:
     return hmac.compare_digest(provided, expected)
 
 
-def is_admin_tier(tier: str) -> bool:
-    """The one place that defines what "is an admin" means, so the admin
-    UI's "Admin" tag can ask the server for this fact (via admin_users_list's
-    is_admin field) instead of re-deciding it itself from tier alone — if
-    this rule ever grows beyond a tier check, there's one place to change."""
-    return tier == "advisory"
-
-
 def admin_required(fn):
-    """Gate for the admin API: a logged-in Advisory-tier session, always —
+    """Gate for the admin API: a logged-in staff session (is_staff), always —
     plus, for any state-changing request (POST/PUT/PATCH/DELETE), a valid
     X-CSRF-Token header matching the per-session token admin_page() issued.
     Replaces the old shared ADMIN_PASSWORD header: that value had to be
@@ -1058,7 +1070,7 @@ def admin_required(fn):
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
             return jsonify({"error": "Unauthorized"}), 401
-        if not is_admin_tier(current_user.tier):
+        if not is_staff(current_user):
             return jsonify({"error": "Forbidden"}), 403
         if request.method in ("POST", "PUT", "PATCH", "DELETE") and not _admin_csrf_ok():
             return jsonify({"error": "Invalid or missing CSRF token"}), 403
@@ -2726,7 +2738,7 @@ def api_chat():
 @app.route("/admin")
 @login_required
 def admin_page():
-    if current_user.tier != "advisory":
+    if not is_staff(current_user):
         return redirect(url_for("index"))
     # One CSRF token per session, generated here and reused for as long as
     # the session lasts (not rotated on every page load — a refresh or a
@@ -2851,7 +2863,7 @@ def admin_users_list():
     for u in db["users"]:
         row = {k: v for k, v in u.items() if k != "password_hash"}
         row["unverified_7d"] = _is_unverified_over_7_days(u)
-        row["is_admin"] = is_admin_tier(u.get("tier", "observer"))
+        row["is_admin"] = is_staff(u)
         row["is_self"] = u["id"] == current_user.id
         safe.append(row)
     safe.sort(key=lambda u: u.get("created_at") or "", reverse=True)
@@ -2929,6 +2941,12 @@ def admin_users_update(uid):
             if "tier" in data and data["tier"] in TIER_ORDER:
                 u["tier"] = data["tier"]
                 changes.append(f"tier={data['tier']}")
+            if "staff" in data and bool(data["staff"]) != is_staff(u):
+                # the last staff account can't lose the role (nobody could open /admin again)
+                if not data["staff"] and sum(1 for x in db["users"] if is_staff(x)) <= 1:
+                    return jsonify({"error": "You can't remove the staff role from the last staff account."}), 400
+                u["staff"] = bool(data["staff"])
+                changes.append(f"staff={'yes' if u['staff'] else 'no'}")
             if "status" in data and data["status"] in ("active", "suspended", "pending_payment", "pending", "pending_approval", "rejected"):
                 u["status"] = data["status"]
                 changes.append(f"status={data['status']}")
@@ -2955,8 +2973,8 @@ def admin_users_delete(uid):
     # Allowed for anyone else in any status (pending, active, disabled) —
     # the one other hard stop is the last admin account, or nobody could
     # ever sign back in to this page again.
-    if is_admin_tier(target.get("tier", "observer")):
-        admin_count = sum(1 for u in db["users"] if is_admin_tier(u.get("tier", "observer")))
+    if is_staff(target):
+        admin_count = sum(1 for u in db["users"] if is_staff(u))
         if admin_count <= 1:
             return jsonify({"error": "You can't delete the last remaining admin."}), 400
 
@@ -5514,7 +5532,7 @@ def _health_page_requests():
         t0 = _t.perf_counter()
         r = c.get(p)
         out.append((p, 'page', r.status_code, round(_t.perf_counter() - t0, 3)))
-    user = next((u for u in load_users_db().get('users', []) if u.get('status') == 'active' and is_admin_tier(u.get('tier'))), None)
+    user = next((u for u in load_users_db().get('users', []) if u.get('status') == 'active' and is_staff(u)), None)
     if user:
         with c.session_transaction() as sess:
             sess['_user_id'] = user['id']

@@ -481,7 +481,7 @@ function renderUsers() {
       return `<div class="adm-row adm-row-users">
         <div class="adm-row-main" data-label="Name" style="flex-direction:row;align-items:center;gap:6px">
           <span class="adm-row-name" title="${escHtml(u.name || u.email)}">${escHtml(u.name || '—')}</span>
-          ${u.is_admin ? '<span class="adm-admin-tag" data-plan="admin">Admin</span>' : ''}
+          ${u.is_admin ? '<span class="adm-admin-tag" data-plan="admin" title="Staff: opens the admin page">Staff</span>' : ''}
         </div>
         <span class="adm-row-email" data-label="Email" title="${escHtml(u.email)}">${escHtml(u.email)}</span>
         <span data-label="Tier"><span class="adm-pill pill--plan" data-plan="${planKey}">${tierMeta.label}</span></span>
@@ -648,6 +648,7 @@ function openEditUserPanel(uid) {
         ${['active', 'pending_approval', 'pending_payment', 'pending', 'suspended', 'rejected'].map(s => `<option value="${s}"${u.status === s ? ' selected' : ''}>${s.replace(/_/g, ' ')}</option>`).join('')}
       </select>
     </div>
+    <div class="adm-field-group"><label class="adm-label"><input type="checkbox" id="ue-staff"${u.is_admin ? ' checked' : ''}> Staff (opens the admin page; Kodo's team only, never a customer)</label></div>
     <div class="adm-panel-actions">
       <button class="adm-btn adm-btn-primary" id="ue-submit">Save</button>
       <span class="adm-inline-msg" id="ue-msg"></span>
@@ -658,7 +659,8 @@ function openEditUserPanel(uid) {
     const org = document.getElementById('ue-org').value.trim();
     const tier = document.getElementById('ue-tier').value;
     const status = document.getElementById('ue-status').value;
-    await updateUser(uid, { name, organisation: org, tier, status });
+    const staff = document.getElementById('ue-staff').checked;
+    await updateUser(uid, { name, organisation: org, tier, status, staff });
     closePanel();
   });
 }

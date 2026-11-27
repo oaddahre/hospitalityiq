@@ -1,0 +1,5 @@
+{
+  "format": "kodo-users-1",
+  "note": "Admin access becomes a staff role on the user (no longer the Advisory plan). The accounts that open /admin today (own tier advisory) get staff: true, so no one loses or gains access. Remove the role from any customer in Admin > Users.",
+  "ops": ["grant_staff_to_admin_tier"]
+}

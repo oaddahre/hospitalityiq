@@ -175,7 +175,7 @@ class NoData(unittest.TestCase):
 
 def app_run(d, code):
     with open(os.path.join(d, 'users.json'), 'w') as uf:
-        json.dump({'users': [{'id': 'u1', 'email': 'qa@example.test', 'name': 'QA', 'tier': 'advisory', 'status': 'active',
+        json.dump({'users': [{'id': 'u1', 'email': 'qa@example.test', 'name': 'QA', 'tier': 'advisory', 'staff': True, 'status': 'active',
                               'role': 'owner', 'email_verified': True, 'password_hash': 'x'}]}, uf)
     for f in ('performance.csv', 'pipeline.csv', 'owners.json'):
         if not os.path.exists(os.path.join(d, f)):

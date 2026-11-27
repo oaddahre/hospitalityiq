@@ -166,7 +166,7 @@ class Api(unittest.TestCase):
             for f in ('performance.csv', 'pipeline.csv', 'owners.json'):
                 shutil.copy(os.path.join(ROOT, f), d)
             with open(os.path.join(d, 'users.json'), 'w') as uf:
-                json.dump({'users': [{'id': 'u1', 'email': 'qa@example.test', 'name': 'QA', 'tier': tier, 'status': 'active',
+                json.dump({'users': [{'id': 'u1', 'email': 'qa@example.test', 'name': 'QA', 'tier': tier, 'staff': tier == 'advisory', 'status': 'active',
                                       'role': 'owner', 'email_verified': True, 'password_hash': 'x'}]}, uf)
             code = ("import sys,json; sys.path.insert(0, %r); import app as A, datetime as dt\n"
                     "A._casablanca_today = lambda: dt.date(2026, 11, 16)\n"

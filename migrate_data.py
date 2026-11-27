@@ -26,6 +26,9 @@ admin upload panel in the Rates panel:
     .flags.json        Hotel flags (hotel_flags.json, kodo-hotel-flags-1):
                        under renovation, rooms in service, since,
                        closed_months (seasonal closure)
+    .users.json        Accounts (users.json, organisations.json; kodo-users-1):
+                       a list of named operations, each idempotent (see
+                       _apply_users); the summary names the accounts changed
     .news.json         Remove articles from news.json (kodo-news-1:
                        {"remove": [{"id", "slug"}]}): an article is removed
                        only when both its id and slug match
@@ -62,7 +65,7 @@ from run_lock import acquire_lock
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 MIGRATIONS_DIR = os.path.join(APP_DIR, 'data_migrations')
-NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json|columns\.json|flags\.json)$')
+NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json|columns\.json|flags\.json|users\.json)$')
 OFF = {'off', '0', 'false', 'no'}
 
 
@@ -88,6 +91,8 @@ def paths(data_dir):
         'news': os.path.join(data_dir, 'news.json'),
         'brand_profiles': os.path.join(data_dir, 'brand_profiles.json'),
         'flags': os.path.join(data_dir, 'hotel_flags.json'),
+        'users': os.path.join(data_dir, 'users.json'),
+        'orgs': os.path.join(data_dir, 'organisations.json'),
         'state': os.path.join(data_dir, 'data_migrations_state.json'),
         'lock': os.path.join(data_dir, 'data_migrations.lock'),
     }
@@ -96,7 +101,7 @@ def paths(data_dir):
 # Files each kind can write (copied first, put back on failure)
 TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance', 'comp_sets'), 'owners.json': ('owners',),
            'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',), 'profiles.json': ('owners', 'brand_profiles'),
-           'columns.json': ('performance',), 'flags.json': ('flags',)}
+           'columns.json': ('performance',), 'flags.json': ('flags',), 'users.json': ('users', 'orgs')}
 
 
 def available(migrations_dir=MIGRATIONS_DIR):
@@ -108,7 +113,7 @@ def available(migrations_dir=MIGRATIONS_DIR):
             continue                    # after_v2_switch/: run by model_switch.py when the switch is complete
         m = NAME_RE.match(name)
         if not m:
-            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json|flags.json>')
+            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json|flags.json|users.json>')
         if m.group(1) in seen:
             raise MigrationError(f'data_migrations: number {m.group(1)} used twice ({seen[m.group(1)]}, {name})')
         seen[m.group(1)] = name
@@ -189,6 +194,8 @@ def _apply(kind, path, P, actor):
         return _apply_columns(text, P)
     if kind == 'flags.json':
         return _apply_flags(text, P)
+    if kind == 'users.json':
+        return _apply_users(text, P)
     ids, ovs, rej = CA.read_ids_bundle(text)
     plan = CA.ids_plan(P['hotels'], P['ids'], P['overrides'], ids, ovs, rej)
     _problems(plan, {'import', 'reject', 'already'}, 'Google ID')
@@ -228,6 +235,78 @@ def _apply_news(text, P):
             json.dump(keep, f, indent=2, ensure_ascii=False)
         os.replace(tmp, P['news'])
     return len(gone), already, [], {'remove': len(gone), 'already': already}
+
+
+def _read_json(path, default):
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return default
+
+
+def _write_json(path, data):
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, path)
+
+
+USER_OPS = ('grant_staff_to_admin_tier', 'observer_to_benchmarker')
+
+
+def _apply_users(text, P):
+    """Accounts (kodo-users-1): {"ops": [...]}, each operation idempotent:
+
+    grant_staff_to_admin_tier   every user whose own tier is "advisory" (the
+                                accounts that could open /admin before the
+                                staff role existed) gets staff: true, so no one
+                                loses or gains admin access; the summary names them
+    observer_to_benchmarker     users and organisations on "observer" move to
+                                "benchmarker": access only, the status (payment)
+                                is not touched
+
+    Only the fields named are written; every other field of an account is kept."""
+    spec = json.loads(text)
+    if spec.get('format') != 'kodo-users-1' or not isinstance(spec.get('ops'), list):
+        raise MigrationError('users migration: format must be kodo-users-1 with an "ops" list')
+    bad = [o for o in spec['ops'] if o not in USER_OPS]
+    if bad:
+        raise MigrationError(f'users migration: unknown operation(s) {bad}')
+    db = _read_json(P['users'], {'users': []})
+    orgs = _read_json(P['orgs'], {'organisations': []})
+    if not isinstance(db, dict) or not isinstance(db.get('users'), list):
+        raise MigrationError('users migration: users.json is not {"users": [...]}')
+    users = db['users']
+    org_list = orgs.get('organisations') if isinstance(orgs, dict) else None
+    changed, already, counts = 0, 0, {}
+    users_dirty = orgs_dirty = False
+    for op in spec['ops']:
+        if op == 'grant_staff_to_admin_tier':
+            hit = [u for u in users if u.get('tier') == 'advisory']
+            new = [u for u in hit if not u.get('staff')]
+            for u in new:
+                u['staff'] = True
+            users_dirty |= bool(new)
+            changed += len(new); already += len(hit) - len(new)
+            counts['staff granted'] = len(new)
+            counts['staff accounts'] = ' '.join(sorted(u.get('email', '?') for u in hit)) or 'none'
+        elif op == 'observer_to_benchmarker':
+            uo = [u for u in users if u.get('tier') == 'observer']
+            for u in uo:
+                u['tier'] = 'benchmarker'
+            oo = [o for o in (org_list or []) if o.get('plan') == 'observer']
+            for o in oo:
+                o['plan'] = 'benchmarker'
+            users_dirty |= bool(uo); orgs_dirty |= bool(oo)
+            changed += len(uo) + len(oo)
+            counts['observer users moved'] = len(uo)
+            counts['observer organisations moved'] = len(oo)
+    if users_dirty:
+        _write_json(P['users'], db)
+    if orgs_dirty:
+        _write_json(P['orgs'], orgs)
+    return changed, already, [], counts
 
 
 FLAG_FIELDS = ('under_renovation', 'partially_open', 'status_label', 'rooms_in_service', 'since', 'note', 'closed_months')

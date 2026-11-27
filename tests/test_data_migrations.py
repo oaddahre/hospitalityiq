@@ -57,7 +57,9 @@ class DataMigrations(unittest.TestCase):
 
     def test_apply_once_then_nothing(self):
         r = self.run_all()
-        self.assertEqual(r['applied'], ['0001_ocp_group_hotels', '0002_sofitel_marrakech_palais_imperial_rooms',
+        # every migration applies, in order (the account migrations from 0029 on follow these)
+        self.assertEqual(r['applied'], [m[0] for m in DM.available()])
+        self.assertEqual(r['applied'][:28], ['0001_ocp_group_hotels', '0002_sofitel_marrakech_palais_imperial_rooms',
                                         '0003_ocp_group_owner', '0004_ritz_carlton_rabat_google_id',
                                         '0005_palais_jamai_pipeline', '0006_ocp_group_palais_jamai',
                                         '0007_room_corrections', '0008_merge_duplicates', '0009_be_live',
