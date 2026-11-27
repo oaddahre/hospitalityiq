@@ -1584,32 +1584,30 @@
 
       <!-- ── Reports ── -->
       <section class="screen" id="screen-reports">
-        <div class="screen-header">
-          <h1>Market Intelligence Reports</h1>
-          <p class="screen-sub-tags">City and market reports · PDF</p>
-          <p style="font-size:0.75rem;color:var(--text-faint);margin-top:4px;">Built from real data only: the hotel database, BAR (published rates) collected every night since 3 November 2026, Kodo estimates (labelled) and official tourism figures</p>
+        <div class="k-head">
+          <h1 class="k-title">Reports</h1>
+          <p class="k-line">City and market reports as PDF, built from Kodo's hotel database, published rates (BAR) since 3 Nov 2026, labelled Kodo estimates and official tourism figures.</p>
         </div>
-
-        <div class="report-list-header">
-          <span class="chart-title insight-header-title">REPORTS</span>
-          <span class="report-count" id="report-count"></span>
+        <div class="k-filters reports-filters">
+          <input type="search" id="report-search" class="k-search" placeholder="Search reports" autocomplete="off" aria-label="Search reports">
+          <select id="report-type-filters" class="k-select" aria-label="Type"><option value="all">All types</option></select>
+          <select id="report-period-filters" class="k-select" aria-label="Period"><option value="all">All periods</option></select>
+          <span class="hotels-count reports-count" id="report-count"></span>
         </div>
-
-        <div class="list-search-wrap">
-          <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
-            <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
-          </svg>
-          <input type="text" id="report-search" class="list-search-input" placeholder="Search reports" autocomplete="off" />
-        </div>
-
-        <div class="list-filter-label">Type</div>
-        <div class="list-filters" id="report-type-filters"></div>
-
-        <div class="list-filter-label">Period</div>
-        <div class="list-filters" id="report-period-filters"></div>
-
-        <div id="reports-grid">
-          <p class="bench-loading">Loading reports…</p>
+        <div class="k-card reports-main">
+          <table class="k-table reports-table" id="reports-table">
+            <thead>
+              <tr>
+                <th scope="col" data-rsort="city"><button type="button" class="k-th-sort">Report</button></th>
+                <th scope="col" data-rsort="type" class="col-hide-mobile"><button type="button" class="k-th-sort">Type</button></th>
+                <th scope="col" data-rsort="periodLabel"><button type="button" class="k-th-sort">Period</button></th>
+                <th scope="col" data-rsort="hotels" class="num col-hide-mobile"><button type="button" class="k-th-sort">Hotels</button></th>
+                <th scope="col" data-rsort="keys" class="num col-hide-mobile"><button type="button" class="k-th-sort">Keys</button></th>
+                <th scope="col" class="num"><span class="visually-hidden">PDF</span></th>
+              </tr>
+            </thead>
+            <tbody id="reports-grid"><tr><td colspan="6" class="k-empty">Loading reports…</td></tr></tbody>
+          </table>
         </div>
       </section>
 

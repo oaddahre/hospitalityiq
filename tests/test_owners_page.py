@@ -83,3 +83,14 @@ class BenchmarkingPage(unittest.TestCase):
         self.assertIn("return heatCell('ink', 0);", JS)                     # greyscale calendars
         self.assertNotIn("heatCell('green', 3, '600');\n  if (p >= 60) return heatCell('green'", JS)
         self.assertIn('function rbCard(id, value, sub, line)', JS)
+
+
+class ReportsPage(unittest.TestCase):
+    def test_one_filter_row_and_table(self):
+        html = HTML[HTML.index('<section class="screen" id="screen-reports">'):]
+        html = html[:html.index('</section>')]
+        self.assertIn('<h1 class="k-title">Reports</h1>', html)
+        self.assertIn('<select id="report-type-filters" class="k-select"', html)
+        self.assertIn('<select id="report-period-filters" class="k-select"', html)
+        self.assertIn('id="reports-table"', html)
+        self.assertNotIn('list-pill', JS[JS.index('function buildReportFilters'):JS.index('async function handleReportGenerate')])

@@ -5450,31 +5450,22 @@ async function initReports() {
   }
 }
 
+// Reports: one filter row (search, type, period), one sortable table
+const reportsSort = { col: 'city', dir: 1 };
 function buildReportFilters(periods) {
   const typeEl   = document.getElementById('report-type-filters');
   const periodEl = document.getElementById('report-period-filters');
   if (!typeEl || !periodEl) return;
-
-  // Type: the city reports and the Morocco market report
-  const typeOptions = ['All', 'City', 'Market'];
-  typeEl.innerHTML = typeOptions.map((t, i) =>
-    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="type" data-value="${i === 0 ? 'all' : fmt.esc(t)}">${fmt.esc(t)}</button>`
-  ).join('');
-
-  const periodOptions = [{ id: 'all', label: 'All' }, ...periods];
-  periodEl.innerHTML = periodOptions.map((p, i) =>
-    `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="period" data-value="${fmt.esc(p.id)}">${fmt.esc(p.label)}</button>`
-  ).join('');
-
-  [typeEl, periodEl].forEach(container => {
-    container.addEventListener('click', e => {
-      const btn = e.target.closest('.list-pill');
-      if (!btn) return;
-      container.querySelectorAll('.list-pill').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      reportsFilterState[btn.dataset.filter] = btn.dataset.value;
-      renderReportList();
-    });
+  typeEl.replaceChildren(new Option('All types', 'all'), new Option('City', 'City'), new Option('Market', 'Market'));
+  periodEl.replaceChildren(new Option('All periods', 'all'), ...periods.map(p => new Option(p.label, p.id)));
+  typeEl.addEventListener('change', () => { reportsFilterState.type = typeEl.value; renderReportList(); });
+  periodEl.addEventListener('change', () => { reportsFilterState.period = periodEl.value; renderReportList(); });
+  document.getElementById('reports-table').addEventListener('click', e => {
+    const th = e.target.closest('th[data-rsort]');
+    if (!th) return;
+    const c = th.dataset.rsort;
+    if (reportsSort.col === c) reportsSort.dir *= -1; else { reportsSort.col = c; reportsSort.dir = c === 'hotels' || c === 'keys' ? -1 : 1; }
+    renderReportList();
   });
 }
 
@@ -5491,15 +5482,11 @@ function resetReportFilters() {
   reportsFilterState = { type: 'all', period: 'all', search: '' };
   const searchInput = document.getElementById('report-search');
   if (searchInput) searchInput.value = '';
-  document.querySelectorAll('#report-type-filters .list-pill, #report-period-filters .list-pill')
-    .forEach(b => b.classList.toggle('active', b.dataset.value === 'all'));
+  document.getElementById('report-type-filters').value = 'all';
+  document.getElementById('report-period-filters').value = 'all';
   renderReportList();
 }
 
-// Re-renders just the row list from reportsAllRows + the current filter
-// state — called on every filter-pill click and search keystroke, and
-// re-attaches each row's action handler since the list is rebuilt from
-// scratch each time (no stale DOM nodes to assume still exist).
 function renderReportList() {
   const listEl  = document.getElementById('reports-grid');
   const countEl = document.getElementById('report-count');
@@ -5509,18 +5496,27 @@ function renderReportList() {
   const filtered = reportsAllRows.filter(r => {
     if (type !== 'all' && r.type !== type) return false;
     if (period !== 'all' && r.period !== period) return false;
-    if (search && !r.city.toLowerCase().includes(search)) return false;
+    if (search && !fold(`${r.city} ${dn(r.city)}`).includes(fold(search))) return false;
     return true;
+  });
+  const { col, dir } = reportsSort;
+  filtered.sort((a, b) => {
+    const x = a[col], y = b[col];
+    if (x == null || y == null) return (x == null) - (y == null);
+    return (typeof x === 'string' ? (col === 'city' ? dn(x).localeCompare(dn(y)) : x.localeCompare(y)) : x - y) * dir;
+  });
+  document.querySelectorAll('#reports-table th[data-rsort]').forEach(th => {
+    if (th.dataset.rsort === col) th.setAttribute('aria-sort', dir === 1 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort');
   });
 
   if (countEl) countEl.textContent = `${filtered.length} report${filtered.length !== 1 ? 's' : ''}`;
 
   if (!reportsAllRows.length) {
-    listEl.innerHTML = KodoBar.collecting('The first report period opens once published rates have been collected.');
+    listEl.innerHTML = `<tr><td colspan="6">${KodoBar.collecting('The first report period opens once published rates have been collected.')}</td></tr>`;
     return;
   }
   if (!filtered.length) {
-    listEl.innerHTML = `<p class="list-empty">No reports match your filters.<button class="list-clear-btn" id="report-clear-filters">Clear filters</button></p>`;
+    listEl.innerHTML = `<tr><td colspan="6" class="k-empty">No report matches these filters. <button type="button" class="k-link" id="report-clear-filters">Clear the filters</button></td></tr>`;
     document.getElementById('report-clear-filters')?.addEventListener('click', resetReportFilters);
     return;
   }
@@ -5529,15 +5525,14 @@ function renderReportList() {
   const canGenerate = tier === 'benchmarker' || tier === 'advisory';
 
   listEl.innerHTML = filtered.map(r => `
-    <div class="report-row">
-      <div class="report-main">
-        <span class="report-title">${fmt.esc(r.city)}</span>
-        <span class="report-desc">${r.hotels} hotels tracked · ${r.keys != null ? r.keys.toLocaleString('en') : '—'} keys${r.partial ? ` · ${KodoBar.since()}` : ''}</span>
-      </div>
-      <span class="report-type">${fmt.esc(r.type)}</span>
-      <span class="report-date">${fmt.esc(r.periodLabel)}</span>
-      <button class="report-action" data-city="${fmt.esc(r.city)}" data-period="${fmt.esc(r.period)}">Generate Report</button>
-    </div>`).join('');
+    <tr>
+      <td><span class="report-title"${r.partial ? ` title="${escAttr(KodoBar.since())}"` : ''}>${fmt.esc(dn(r.city))}</span></td>
+      <td class="col-hide-mobile">${fmt.esc(r.type)}</td>
+      <td>${fmt.esc(r.periodLabel)}</td>
+      <td class="num col-hide-mobile">${r.hotels}</td>
+      <td class="num col-hide-mobile">${r.keys != null ? r.keys.toLocaleString('en') : '—'}</td>
+      <td class="num report-act"><button type="button" class="k-btn report-action" data-city="${fmt.esc(r.city)}" data-period="${fmt.esc(r.period)}">Generate PDF <span aria-hidden="true">↓</span></button></td>
+    </tr>`).join('');
 
   listEl.querySelectorAll('.report-action').forEach(btn => {
     btn.addEventListener('click', () => handleReportGenerate(btn, canGenerate));
@@ -5557,7 +5552,7 @@ async function handleReportGenerate(btn, canGenerate) {
   const city   = btn.dataset.city;
   const period = btn.dataset.period;
   const theme  = 'light'; // Reports are light-mode only.
-  const row    = btn.closest('.report-row');
+  const row    = btn.closest('td') || btn.parentElement;   // the status line goes under the button
 
   let statusEl = row.querySelector('.report-row-status');
   if (!statusEl) {

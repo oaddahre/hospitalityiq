@@ -6828,3 +6828,27 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   #screen-benchmarking .rb-kpi-sub { white-space: normal; }
   #screen-benchmarking .bench-kpi-card { padding: 14px 18px 12px; }
 }
+
+/* ─── Reports on the UI standard (docs/ui-standard.md) ─── */
+.reports-filters .k-search { flex: 0 1 280px; min-width: 160px; }
+.reports-count { margin-left: auto; }
+.reports-main { padding: 0 16px 10px; }
+.k-table.reports-table { border-collapse: separate; border-spacing: 0; }
+.reports-table thead th { position: sticky; top: -28px; z-index: 2; background: var(--bg); border-top: 28px solid var(--bg); padding-top: 0; }
+.reports-table th.num, .reports-table td.num { text-align: right; }
+.reports-table th.num .k-th-sort { text-align: right; }
+.reports-table .report-title { display: block; font-weight: 500; color: var(--text); }
+.reports-table .report-desc { display: block; margin-top: 2px; font-size: 11px; color: var(--text-2); }
+.reports-table .report-action { padding: 6px 12px; white-space: nowrap; }
+.reports-table .report-row-status { margin-top: 6px; font-size: 11px; color: var(--text-2); text-align: right; white-space: normal; }
+.reports-table .report-row-status.is-error { color: var(--negative); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 767px) {
+  .reports-filters .k-search, .reports-filters .k-select { min-width: 0; width: 100%; flex: 1 1 100%; }
+  .reports-count { margin-left: 0; }
+  .reports-table .col-hide-mobile { display: none; }
+  .reports-main { padding: 0 8px 8px; }
+  .reports-table .report-action { padding: 5px 8px; font-size: 10px; }
+}
+.reports-table .report-action { border-color: var(--text); background: transparent; color: var(--text); }
+.reports-table .report-action:hover { background: var(--text); color: var(--bg); }
