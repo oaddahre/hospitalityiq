@@ -70,3 +70,16 @@ class MapPage(unittest.TestCase):
         css = read('static', 'css', 'style.css')
         self.assertIn('.app-body[data-screen="map"] .seg-section { display: none; }', css)
         self.assertIn('function syncMapSeg()', JS)
+
+
+class BenchmarkingPage(unittest.TestCase):
+    def test_neutral_and_compact(self):
+        html = HTML[HTML.index('<section class="screen" id="screen-benchmarking">'):]
+        html = html[:html.index('</section>')]
+        self.assertIn('<h1 class="k-title">Benchmarking', html)
+        for gone in ('pill--green', 'pill--solid', 'pill--outline', 'href="/methodology"'):
+            self.assertNotIn(gone, html)
+        self.assertIn('id="bench-method"', html)                            # the method text stays (the export copies it)
+        self.assertIn("return heatCell('ink', 0);", JS)                     # greyscale calendars
+        self.assertNotIn("heatCell('green', 3, '600');\n  if (p >= 60) return heatCell('green'", JS)
+        self.assertIn('function rbCard(id, value, sub, line)', JS)

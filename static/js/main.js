@@ -166,9 +166,11 @@ function familyDot(family) {
 // Heat cells: the family's dot colour mixed into the page colour at four
 // strengths; the text stays --text, which is AA on every level in both modes.
 const HEAT_LEVELS = [8, 20, 35, 55];
+const HEAT_INK = [4, 13, 25, 40];          // greyscale levels: the text stays readable on each
 function heatCell(family, level, fw) {
   return {
-    bg: `color-mix(in srgb, var(--cat-${FAMILY_INDEX[family] || 6}-dot) ${HEAT_LEVELS[level]}%, var(--bg))`,
+    // 'ink': the text colour itself (black, white in dark), for greyscale heat
+    bg: `color-mix(in srgb, ${family === 'ink' ? 'var(--text)' : `var(--cat-${FAMILY_INDEX[family] || 6}-dot)`} ${family === 'ink' ? HEAT_INK[level] : HEAT_LEVELS[level]}%, var(--bg))`,
     col: 'var(--text)', fw: fw || '', border: '',
   };
 }
@@ -4573,17 +4575,18 @@ async function initBenchmarking() {
   await initRateBenchmark();
 }
 
-// Calendar heat: published rate = blue, modelled occupancy = green
+// Calendar heat, greyscale (no colour-coded calendars): your hotel in
+// shades of the text colour, the comp set in greys
 function adrCellStyle(adr, isCompSet = false) {
   if (isCompSet) {
     if (adr >= 6000) return heatCell('grey', 3, '600');
     if (adr >= 4000) return heatCell('grey', 2, '500');
     return heatCell('grey', 1);
   }
-  if (adr >= 6000) return heatCell('blue', 3, '600');
-  if (adr >= 4000) return heatCell('blue', 2, '500');
-  if (adr >= 2000) return heatCell('blue', 1);
-  return heatCell('blue', 0);
+  if (adr >= 6000) return heatCell('ink', 3, '600');
+  if (adr >= 4000) return heatCell('ink', 2, '500');
+  if (adr >= 2000) return heatCell('ink', 1);
+  return heatCell('ink', 0);
 }
 
 function occCellStyle(occ, isCompSet = false) {
@@ -4593,10 +4596,10 @@ function occCellStyle(occ, isCompSet = false) {
     if (p >= 60) return heatCell('grey', 2, '500');
     return heatCell('grey', 1);
   }
-  if (p >= 80) return heatCell('green', 3, '600');
-  if (p >= 60) return heatCell('green', 2, '500');
-  if (p >= 40) return heatCell('green', 1);
-  return heatCell('green', 0);
+  if (p >= 80) return heatCell('ink', 3, '600');
+  if (p >= 60) return heatCell('ink', 2, '500');
+  if (p >= 40) return heatCell('ink', 1);
+  return heatCell('ink', 0);
 }
 
 // ─── Benchmarking: rate benchmark (real mode) ─────────────────────
@@ -4644,12 +4647,12 @@ function applyBenchMode() {
   const real = rbState.canReal && (rbState.compSet || rbState.editing);
   document.getElementById('bench-real').hidden = !real;
   document.getElementById('bench-empty').hidden = real;
-  document.getElementById('bench-sub-tags').textContent = 'BAR (published rates) · Occupancy (Kodo estimate)';
+  document.getElementById('bench-sub-tags').textContent = 'Your hotel against a comp set: BAR (published rates) and occupancy (Kodo estimate), next 30 nights.';
 
   const pill = document.getElementById('bench-mode-badge');
   const live = real && rbState.data && rbState.data.state === 'live';
   pill.hidden = !live;
-  if (live) { pill.textContent = 'Live data available'; pill.className = 'pill--green bench-title-pill'; }
+  if (live) { pill.textContent = 'Live data available'; pill.className = 'k-pill bench-title-pill'; }
 
   const title = document.getElementById('bench-empty-title');
   const sub = document.getElementById('bench-empty-sub');
@@ -4680,7 +4683,7 @@ function renderRateBenchmark() {
     ? `<div class="bench-prop-name">${fmt.esc(sub.name)}</div><div class="bench-prop-meta">${fmt.esc(sub.city)} · ${fmt.esc(sub.category)} · ${sub.keys} keys</div>`
     : '<div class="bench-prop-meta">No hotel chosen yet</div>';
   document.getElementById('rb-comps').innerHTML = cs
-    ? cs.comp_ids.map(id => rbHotel(id)).filter(Boolean).map(h => `<span class="bench-comp-pill">${fmt.esc(h.name)}</span>`).join('')
+    ? cs.comp_ids.map(id => rbHotel(id)).filter(Boolean).map(h => `<span class="k-pill bench-comp-pill">${fmt.esc(h.name)}</span>`).join('')
     : '';
 
   const statusEl = document.getElementById('rb-status');
@@ -4699,34 +4702,45 @@ function renderRateBenchmark() {
   rbRenderInsights();
 }
 
-function rbCard(id, value, sub) {
+// A card: label, one number, one short line; the rest (what it is, the
+// window, the update date) in its "i"
+function rbCard(id, value, sub, line) {
   const card = document.getElementById(id);
   const v = card.querySelector('.rb-kpi-val');
   const na = value == null;
   v.textContent = na ? 'Not available yet' : value;
   v.classList.toggle('kpi-value--na', na);
-  card.querySelector('.rb-kpi-sub').textContent = sub || '';
+  card.querySelector('.rb-kpi-sub').textContent = na ? '' : (line || '');
   const d = rbState.data;
   const tip = KodoPeriod.tip({ source: 'published rates (scraped_rates.csv) and Kodo modelled occupancy' });
   KodoPeriod.set(card, { kind: 'next', days: 30 }, tip,
     { compare: d && d.rates_updated ? `rates updated ${KodoPeriod.day(d.rates_updated)}` : 'no rates collected yet' });
+  const period = card.querySelector('.kpi-period');
+  const notes = [sub, period && period.textContent.trim()].filter(Boolean);
+  let i = card.querySelector('.kpi-info');
+  if (!i) { i = document.createElement('button'); i.type = 'button'; i.className = 'kpi-info'; i.textContent = 'i'; card.appendChild(i); }
+  i.hidden = !notes.length;
+  i.dataset.tip = notes.join(' · ');
+  i.setAttribute('aria-label', `About ${card.querySelector('.bench-kpi-title').textContent}: ${notes.join('. ')}`);
 }
 
 function rbRenderKPIs() {
   const d = rbState.data, k = d && d.kpis;
   const ok = k && d.state !== 'empty' && d.state !== 'error';
   rbCard('rbk-index', ok && k.rate_index != null ? String(Math.round(k.rate_index)) : null,
-    ok && k.rate_index != null ? `Your published rate ÷ comp set median × 100 · ${k.nights_compared} nights compared` : '');
+    ok && k.rate_index != null ? `Your published rate ÷ comp set median × 100 · ${k.nights_compared} nights compared` : '',
+    ok && k.rate_index != null ? `100 = the comp set median` : '');
   rbCard('rbk-rate', ok && k.avg_rate != null ? rbMad(k.avg_rate) : null,
-    ok && k.avg_rate != null ? `Comp set median ${rbMad(k.avg_comp_median)} · nights with your live rate` : '');
+    ok && k.avg_rate != null ? `Comp set median ${rbMad(k.avg_comp_median)} · nights with your live rate` : '',
+    ok && k.avg_rate != null ? `comp set median ${rbMad(k.avg_comp_median)}` : '');
   rbCard('rbk-rank', ok && k.rank != null ? `${k.rank} of ${k.ranked_of}` : null,
-    ok && k.rank != null ? 'By average published rate · 1 = highest' : '');
+    ok && k.rank != null ? 'By average published rate · 1 = highest' : '', '1 = highest published rate');
   rbCard('rbk-occ', ok && k.occ_subject != null ? `${k.occ_subject.toFixed(1)}%` : null,
     ok && k.occ_subject != null
       ? `${k.occ_subject_low != null && k.occ_subject_high != null ? `Range ${k.occ_subject_low}–${k.occ_subject_high}% · ` : ''}Comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'} · Kodo estimate · modelled, not measured · Price coverage: ${rbConf(k.occ_confidence)} · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
-      : '');
+      : '', ok && k.occ_subject != null ? `comp set average ${k.occ_comp != null ? k.occ_comp.toFixed(1) + '%' : '–'}` : '');
   rbCard('rbk-cover', ok ? `${k.nights_with_rate} of ${d.window.nights}` : null,
-    ok ? 'Nights with a live published rate for your hotel' : '');
+    ok ? 'Nights with a live published rate for your hotel' : '', 'nights with your live rate');
   const note = document.getElementById('rb-occ-note');
   note.textContent = ok
     ? `Kodo estimate · modelled, not measured · your hotel, with the comp set average below · Price coverage: ${rbConf(k.occ_confidence)} (how many recent prices we have, not accuracy) · model run ${k.model_run_date ? KodoPeriod.day(k.model_run_date) : '–'}`
