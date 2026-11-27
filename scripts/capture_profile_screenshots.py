@@ -76,11 +76,11 @@ CHECK_JS = """
 SHOTS = {
     "hotel-profile": {
         "open": f"showHotelDetail({HOTEL_ID})",
-        "ready": """() => document.querySelectorAll('#hrate-calendar .bar-cal-day').length === 30
-                    && document.querySelectorAll('#hocc-calendar .bar-cal-day').length === 30
-                    && getComputedStyle(document.getElementById('hotel-cal-averages')).display !== 'none'""",
-        "blocks": ".hotel-hd, .kpi-card, .table-card-header, .bar-calendar, .bar-cal-legend, .rate-updated-note,"
-                  " .dual-cal-avg-bar, .fin-range-row, .fin-disclaimer, .chart-card-header",
+        # one calendar (Nov 2026): occupancy as the shade, BAR as the number
+        "ready": """() => document.querySelectorAll('#hrate-calendar .hcal-day').length === 30
+                    && !document.getElementById('hotel-cal-averages').hidden""",
+        "blocks": ".hotel-hd, .kpi-card, .hcal-head, .hcal-grid, .hcal-legend, .hcal-note, .hcal-avg,"
+                  " .table-card-header, .chart-card-header",
         "limit": 48,           # keeps the hotel name clear of the top bar
     },
     "owner-profile": {
@@ -89,8 +89,7 @@ SHOTS = {
         "ready": """() => getComputedStyle(document.getElementById('screen-owner-detail')).display !== 'none'
                     && document.querySelectorAll('#owner-portfolio-tbody tr').length > 0
                     && [...document.querySelectorAll('#screen-owner-detail img')].every(i => i.complete)""",
-        "blocks": ".brand-detail-header, .brand-about-card, .kpi-card, .brand-meta-row, .chart-card-header,"
-                  " .owner-portfolio-table tr",
+        "blocks": ".brand-top, .kpi-card, .brand-about, .brand-sec-head, #owner-portfolio-table tr",
         "limit": 48,
     },
 }
@@ -118,7 +117,7 @@ def capture(base, mode, work):
         for name, spec in SHOTS.items():
             if spec.get("nav"):
                 page.evaluate(f"document.querySelector('.nav-link[data-screen=\"{spec['nav']}\"]').click()")
-                page.wait_for_function("document.querySelectorAll('#owners-grid .owner-card').length > 0")
+                page.wait_for_function("document.querySelectorAll('#owners-grid tr[data-owner-id]').length > 0")
                 page.wait_for_load_state("networkidle")
             page.evaluate(spec["open"])
             page.wait_for_function(spec["ready"], timeout=30000)

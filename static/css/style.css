@@ -6942,3 +6942,6 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 #screen-ai .msg-bubble table th { background: transparent; }
 #screen-ai .msg-bubble table td { border-bottom: 0; }
 #screen-ai .chat-send-btn { background: var(--text); color: var(--bg); border-color: var(--text); }
+#screen-benchmarking .insight-header-title { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; }
+#screen-benchmarking .bench-refresh-btn { background: transparent; border: 1px solid var(--text); color: var(--text); }
+#screen-benchmarking .bench-refresh-btn:hover { background: var(--text); color: var(--bg); }

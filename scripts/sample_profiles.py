@@ -15,8 +15,8 @@
 - performance.csv: a fictional FY 2025 row per hotel (the platform shows
   these as Kodo model estimates). daily_performance.csv: header only.
 - scraped_rates.csv: fictional published prices for every hotel, collected
-  on each of the last 7 days for the next 30 nights, a few nights with no
-  price, as the scraper writes them (7 days, like the real history so far).
+  on each of the last 14 days for the next 30 nights, a few nights with no
+  price, as the scraper writes them (14 days: enough past nights for a BAR).
 - estimated_occupancy.csv: the platform's own occupancy model (the
   displayed model) run on that data, in a subprocess.
 
@@ -117,7 +117,7 @@ MONTH = {1: 0.95, 2: 1.00, 3: 1.10, 4: 1.16, 5: 1.05, 6: 0.90,
 CITY_OCC = {"Marrakech": 0.72, "Casablanca": 0.66, "Rabat / Salé / Témara": 0.63, "Tanger": 0.61,
             "Agadir / Taghazout": 0.70, "Fes": 0.58, "Essaouira": 0.60, "Ouarzazate": 0.52,
             "Dakhla": 0.64, "Tamuda Bay / Tétouan": 0.55}
-SCRAPE_DAYS = 7
+SCRAPE_DAYS = 14          # enough past nights for a BAR (a hotel needs 7 priced past nights)
 NIGHTS = 30
 
 

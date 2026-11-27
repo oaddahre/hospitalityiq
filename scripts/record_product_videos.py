@@ -310,32 +310,35 @@ def tab(screen):
     return f'.nav-link[data-screen="{screen}"]:not(.mobile-menu-link)'
 
 
-OWNER_CARD = f"#owners-grid .owner-card[onclick*=\"'{OWNER_ID}'\"]"
-HOTEL_ROW = f'#hotels-table tbody tr[onclick="showHotelDetail({SUBJECT_ID})"]'
+OWNER_CARD = f'#owners-grid tr[data-owner-id="{OWNER_ID}"]'          # the Owners table (Nov 2026)
+HOTEL_ROW = f'#hotels-table tbody tr[data-hid="{SUBJECT_ID}"] .hotels-name-t'
 CITY = "Marrakech"
 
 
 def tour(t):
     """The scripted product tour (times are approximate starts)."""
     p = t.page
-    # 0 s: Dashboard, the market KPI cards, then average BAR by destination
+    # 0 s: Dashboard, the market KPI cards, then the seasonality chart
     t.hold(2.2)
-    t.scroll(t.top_of("#chart-bar", 150), 0.7)
+    t.scroll(t.top_of("#chart-season", 150), 0.7)
     t.hold(1.3)
-    # 4 s: Hotels, filtered to Marrakech, then Palais Ocre
+    # 4 s: Hotels, filtered to Marrakech (the destination select), then Palais Ocre
     t.go(tab("hotels"), 0.7, 0.5)
-    t.go(f'#hotels-city-pills .pill[data-hcity="{CITY}"]', 0.6, 0.9)
+    t.move("#hotels-city-select", 0.6)
+    t.click(real=False)
+    p.select_option("#hotels-city-select", CITY)
+    t.hold(0.9)
     t.go(HOTEL_ROW, 0.6)
-    t.ready("document.querySelectorAll('#hrate-calendar .bar-cal-day').length === 30"
-             " && document.querySelectorAll('#hocc-calendar .bar-cal-day').length === 30", "hotel calendars")
+    t.ready("document.querySelectorAll('#hrate-calendar .hcal-day').length === 30", "hotel calendar")
     t.hold(0.2)
-    # 9 s: hotel profile: KPI cards, a night on each calendar (tooltips)
+    # 9 s: hotel profile: KPI cards, a night on the calendar (tooltip), then shade by BAR
     t.move((1180, 120), 0.5)
     t.hold(1.0)
-    t.move("#hrate-calendar .bar-cal-day:nth-child(17)", 0.6)
+    t.move("#hrate-calendar .hcal-day:nth-child(17)", 0.6)
     t.hold(1.5)
-    t.move("#hocc-calendar .bar-cal-day:nth-child(17)", 0.6)
-    t.hold(1.5)
+    t.go('#hcal-shade [data-shade="bar"]', 0.6, 1.2)
+    t.move("#hrate-calendar .hcal-day:nth-child(10)", 0.5)
+    t.hold(0.8)
     # 15 s: Map, the Marrakech dot and its hotels
     t.go(tab("map"), 0.7, 0.6)
     t.go(t.map_dot(CITY), 0.6, 0.2)
@@ -378,14 +381,12 @@ def tour(t):
         t.click(real=False)
         p.select_option(sel, value)
         t.hold(0.35)
-    # the Run button to just above the page footer, then click it
-    t.scroll(p.evaluate("""(() => { const pn = document.getElementById('val-input-panel');
-        return pn.scrollTop + document.getElementById('val-run-btn').getBoundingClientRect().top - 740; })()"""),
-             0.6, "#val-input-panel")
+    # the page scrolls as one (Nov 2026): the Run button to just above the footer, then click it
+    t.scroll(t.top_of("#val-run-btn", 740), 0.6)
     t.go("#val-run-btn", 0.5)
     t.ready("getComputedStyle(document.getElementById('val-results')).display !== 'none'", "valuation results")
     t.hold(0.1)
-    p.evaluate("document.getElementById('val-output-panel').scrollTop = 0")   # results from the top
+    p.evaluate("document.getElementById('val-results').scrollIntoView({ block: 'start' })")   # results from the top, at once
     t.hold(0.1)
     t.move((900, 300), 0.5)
     t.hold(2.2)
