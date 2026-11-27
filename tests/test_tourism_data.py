@@ -190,7 +190,7 @@ class NoSourcesShownToClients(unittest.TestCase):
         html = open(os.path.join(ROOT, 'templates', 'index.html'), encoding='utf-8').read()
         start = html.index('id="screen-tourism"')
         self.assertClean(html[start:html.index('id="screen-brands"')], 'tourism template')
-        self.assertIn('Source: official Moroccan statistics and Kodo analysis. See <a href="/methodology#tourism">Methodology</a>.', html)
+        self.assertIn('Source: official Moroccan statistics and Kodo analysis.</p>', html)          # Methodology: the footer link only (UI standard)
 
     def test_methodology_and_ai_context(self):
         import app as A

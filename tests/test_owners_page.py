@@ -94,3 +94,16 @@ class ReportsPage(unittest.TestCase):
         self.assertIn('<select id="report-period-filters" class="k-select"', html)
         self.assertIn('id="reports-table"', html)
         self.assertNotIn('list-pill', JS[JS.index('function buildReportFilters'):JS.index('async function handleReportGenerate')])
+
+
+class TourismPage(unittest.TestCase):
+    def test_tourism(self):
+        html = HTML[HTML.index('<section class="screen" id="screen-tourism">'):]
+        html = html[:html.index('</section>', html.index('id="evcal"'))]
+        self.assertIn('<h1 class="k-title">Tourism</h1>', html)
+        self.assertNotIn('href="/methodology', html)
+        self.assertIn("d.className = 'kpi-delta ' + (delta < 0 ? 'down' : 'up');", JS)   # change as red/green text, no pill
+        self.assertIn('function compactTourCards()', JS)
+        self.assertIn('function tourNotesToInfo()', JS)
+        css = read('static', 'css', 'style.css')
+        self.assertIn('#screen-tourism .pill--blue, #screen-tourism .pill--green', css)

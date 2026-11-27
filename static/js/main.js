@@ -2883,6 +2883,33 @@ function tourYearFigures(key) {
            notMarkets: [], notCities: [] };
 }
 
+// The cards in the standard form: label, one number, one line (the change, or
+// for the top market its share); the year, basis and range in the "i"
+function compactTourCards() {
+  document.querySelectorAll('#tour-kpis .kpi-card').forEach(c => {
+    const txt = sel => { const el = c.querySelector(sel); return el && el.style.display !== 'none' ? el.textContent.replace(/\s+/g, ' ').trim() : ''; };
+    const origin = c.id === 'tour-kpi-origin';
+    const notes = [txt('.kpi-period'), origin ? '' : txt('.kpi-meta'), txt('.tour-kpi-range'), c.querySelector('.kpi-value').title].filter(Boolean);
+    let i = c.querySelector('.kpi-info');
+    if (!i) { i = document.createElement('button'); i.type = 'button'; i.className = 'kpi-info'; i.textContent = 'i'; c.appendChild(i); }
+    i.dataset.tip = notes.join(' · ');
+    i.setAttribute('aria-label', `About ${c.querySelector('.kpi-label').textContent}: ${notes.join('. ')}`);
+  });
+}
+
+// A chart's one-line note goes into an "i" in its header (no paragraphs in cards)
+function tourNotesToInfo() {
+  document.querySelectorAll('#screen-tourism .chart-card .tour-note').forEach(p => {
+    const card = p.closest('.chart-card'), head = card && card.querySelector('.chart-card-header');
+    if (!head) return;
+    let i = head.querySelector('.tour-note-info');
+    if (!i) { i = document.createElement('button'); i.type = 'button'; i.className = 'k-info tour-note-info'; i.textContent = 'i'; head.appendChild(i); }
+    const t = p.textContent.trim();
+    i.hidden = !t; i.dataset.tip = t; i.setAttribute('aria-label', 'Note: ' + t);
+    p.hidden = true;
+  });
+}
+
 function tourismKpiPeriods(key) {
   const ids = ['tour-kpi-arrivals', 'tour-kpi-nights', 'tour-kpi-revenue', 'tour-kpi-occ', 'tour-kpi-origin'];
   if (tourIsKodo(key)) ids.forEach(id => KodoPeriod.setText(id, `${key} · ${TOUR_KODO[key].note}`));
@@ -2927,7 +2954,7 @@ function setTourismYear(v) {
     if (!d) return;
     if (delta == null) { d.style.display = 'none'; return; }
     d.textContent = deltaText;
-    d.className = 'kpi-delta ' + (delta < 0 ? 'down pill--red' : 'up pill--green');
+    d.className = 'kpi-delta ' + (delta < 0 ? 'down' : 'up');              // red / green text: a change down or up
     d.style.display = '';
   };
   const vs = kodo ? `vs ${prevKey}` : KodoPeriod.vs({ kind: 'year', year: +key - 1 });
@@ -2963,6 +2990,8 @@ function setTourismYear(v) {
     card('origin', TOUR_NOT);
     document.getElementById('tour-kpi-origin-meta').textContent = 'markets not forecast for this year';
   }
+
+  compactTourCards();
 
   // Breakdown charts for the selected year
   const upd = (id, labels, values) => { const c = Chart.getChart(id); if (c) { c.data.labels = labels; c.data.datasets[0].data = values; c.update(); } };
@@ -3090,6 +3119,7 @@ function initTourismCharts() {
     return;
   }
   TOUR_CHART_IDS.forEach(id => { const c = Chart.getChart(id); if (c) c.destroy(); });
+  setTimeout(tourNotesToInfo, 0);                    // after the notes get their text
   const cc = getChartColors();
   const F = tourismData.forecast, F27 = F.forecast_2027, N26 = F.nowcast_2026;
   const setH = (id, h) => { const el = document.getElementById(id); el.style.minHeight = '0'; el.style.height = h + 'px'; };

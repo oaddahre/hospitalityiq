@@ -6852,3 +6852,37 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 }
 .reports-table .report-action { border-color: var(--text); background: transparent; color: var(--text); }
 .reports-table .report-action:hover { background: var(--text); color: var(--bg); }
+
+/* ─── Tourism on the UI standard (docs/ui-standard.md) ─── */
+#screen-tourism .kpi-card, #screen-tourism .chart-card, #screen-tourism .table-card, #screen-tourism .tour-ytd,
+#screen-tourism .catalyst-card, #screen-tourism .tour-fc-card { background: var(--card-bg); border-color: var(--line); box-shadow: none; }
+#screen-tourism .chart-card-header, #screen-tourism .table-card-header { border-bottom: 0; }
+#screen-tourism .tour-toolbar { margin-bottom: 16px; }
+#screen-tourism .tour-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
+#tour-kpis .kpi-card { position: relative; padding: 16px 24px 14px; min-width: 0; }
+#tour-kpis .kpi-period, #tour-kpis .tour-kpi-range, #tour-kpis .kpi-card:not(#tour-kpi-origin) .kpi-meta { display: none !important; }
+#tour-kpis .kpi-value { font-size: 26px; font-weight: 400; margin: 6px 0; }
+#tour-kpi-origin .kpi-value { text-transform: none; }
+#tour-kpis .kpi-meta { font-size: 11px; text-transform: none; letter-spacing: 0; color: var(--text-2); }
+#tour-kpis .kpi-delta { background: transparent !important; padding: 0; font-size: 11px; font-weight: 500; text-transform: none; letter-spacing: 0; }
+#tour-kpis .kpi-delta::before { display: none; }
+#tour-kpis .kpi-delta.up { color: var(--positive); }
+#tour-kpis .kpi-delta.down { color: var(--negative); }
+#screen-tourism .chart-card-header { position: relative; }
+#screen-tourism .tour-note-info { margin-left: auto; }
+#screen-tourism .tour-table tr:nth-child(even) td, #screen-tourism .tour-table th { background: transparent; }
+#screen-tourism .tour-table td, #screen-tourism .tour-table th { border-bottom: 0; }
+#screen-tourism .tour-table thead th, #screen-tourism .tour-table tr:first-child th { border-bottom: 1px solid var(--line); }
+/* no colour-coded categories: event types and statuses as neutral pills, event marks as dots */
+#screen-tourism .pill--blue, #screen-tourism .pill--green, #screen-tourism .pill--orange, #screen-tourism .pill--violet, #screen-tourism .pill--sky {
+  --pill-tint: color-mix(in srgb, var(--text) 6%, transparent); --pill-text: var(--text-2); --pill-dot: var(--text-3); }
+#screen-tourism .evcal-bar[class*="pill--"] { --pill-tint: color-mix(in srgb, var(--text) 12%, transparent); --pill-text: var(--text); }
+#screen-tourism .evc-mark::before { top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; clip-path: none; background: var(--text); }
+@media (max-width: 1100px) { #screen-tourism .tour-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767px) {
+  #screen-tourism .tour-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  #tour-kpis .kpi-value { font-size: 20px; }
+}
+#screen-tourism .evcal-search .k-search { width: 100%; }
+#screen-tourism .evcal .export-btn { background: transparent; border-color: var(--line); }
+@media (max-width: 767px) { #screen-tourism .tour-toolbar > * { flex: 0 0 auto; } #screen-tourism .tour-toolbar .k-select { flex: 1 1 auto; width: auto; } }

@@ -579,12 +579,13 @@
 
       <!-- ── Tourism ── -->
       <section class="screen" id="screen-tourism">
-        <div class="screen-header">
-          <h1>Morocco — Tourism Intelligence</h1>
+        <div class="k-head">
+          <h1 class="k-title">Tourism</h1>
+          <p class="k-line">Morocco's official tourism figures (arrivals, nights, receipts, occupancy, airport traffic) and Kodo's 2026E estimate and 2027F forecast.</p>
         </div>
-        <div class="tour-toolbar">
+        <div class="k-filters tour-toolbar">
           <label class="tour-year-label" for="tourism-export-year">Year</label>
-          <select id="tourism-export-year" class="export-select" title="Year shown in the cards and breakdowns">
+          <select id="tourism-export-year" class="k-select" title="Year shown in the cards and breakdowns">
             <option value="2019">2019</option>
             <option value="2023">2023</option>
             <option value="2024">2024</option>
@@ -594,11 +595,11 @@
               <option value="2027F">2027F · forecast</option>
             </optgroup>
           </select>
-          <button class="export-btn" id="btn-export-tourism">↓ Export</button>
+          <button type="button" class="k-btn" id="btn-export-tourism" style="margin-left:auto">Export <span aria-hidden="true">↓</span></button>
         </div>
 
         <!-- KPI cards: official figures for the selected year (tourism.json) -->
-        <div class="kpi-grid brand-kpi-grid" id="tour-kpis">
+        <div class="kpi-grid brand-kpi-grid tour-kpis" id="tour-kpis">
           <div class="kpi-card" id="tour-kpi-arrivals">
             <span class="kpi-label">Arrivals</span>
             <span class="kpi-value" id="tour-kpi-arrivals-value">—</span>
@@ -606,13 +607,13 @@
             <span class="kpi-delta" id="tour-kpi-arrivals-delta" style="display:none"></span>
           </div>
           <div class="kpi-card" id="tour-kpi-nights">
-            <span class="kpi-label">Tourist Nights</span>
+            <span class="kpi-label">Tourist nights</span>
             <span class="kpi-value" id="tour-kpi-nights-value">—</span>
             <span class="kpi-meta">classified accommodation</span>
             <span class="kpi-delta" id="tour-kpi-nights-delta" style="display:none"></span>
           </div>
           <div class="kpi-card" id="tour-kpi-revenue">
-            <span class="kpi-label">Travel Receipts</span>
+            <span class="kpi-label">Travel receipts</span>
             <span class="kpi-value" id="tour-kpi-revenue-value">—</span>
             <span class="kpi-meta">Moroccan dirhams</span>
             <span class="kpi-delta" id="tour-kpi-revenue-delta" style="display:none"></span>
@@ -624,7 +625,7 @@
             <span class="kpi-delta" id="tour-kpi-occ-delta" style="display:none"></span>
           </div>
           <div class="kpi-card" id="tour-kpi-origin">
-            <span class="kpi-label">Top Origin Market</span>
+            <span class="kpi-label">Top origin market</span>
             <span class="kpi-value" id="tour-kpi-origin-value">—</span>
             <span class="kpi-meta" id="tour-kpi-origin-meta">of arrivals, MRE included</span>
           </div>
@@ -764,7 +765,7 @@
         <!-- How to read the figures; the source records stay internal (tourism.json) -->
         <div class="tour-notes-wrap">
           <p class="tour-disclaimer" id="tour-notes"></p>
-          <p class="tour-source-line">Source: official Moroccan statistics and Kodo analysis. See <a href="/methodology#tourism">Methodology</a>.</p>
+          <p class="tour-source-line">Source: official Moroccan statistics and Kodo analysis.</p>
         </div>
 
         <!-- Events calendar (static/js/events.js; data: events.json) -->
@@ -785,11 +786,8 @@
                 <option value="all">All impacts</option><option value="medium">High and medium</option><option value="high">High only</option>
               </select></label>
             <button type="button" class="events-filter-pill" id="evcal-national" aria-pressed="true" title="Show nationwide holidays and school breaks">Nationwide</button>
-            <div class="hotels-search-wrap evcal-search">
-              <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l3.5 3.5" stroke-linecap="round"/>
-              </svg>
-              <input type="search" class="hotels-search-input" id="evcal-search" placeholder="Search events" aria-label="Search events" autocomplete="off">
+            <div class="evcal-search">
+              <input type="search" class="k-search" id="evcal-search" placeholder="Search events" aria-label="Search events" autocomplete="off">
             </div>
             <div class="evcal-exports">
               <button type="button" class="export-btn" id="evcal-ics" title="Add the filtered upcoming events to your calendar">↓ Calendar (.ics)</button>
