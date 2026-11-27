@@ -840,3 +840,20 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
   .hc-item { grid-template-columns: minmax(0, 1fr); gap: 6px; }
   .hc-light { align-items: flex-start; }
 }
+
+/* ─── Admin on the UI standard (docs/ui-standard.md): dense as before, only
+   colour and fills removed and the components aligned ─── */
+.adm-section-nav { display: inline-flex; flex-wrap: wrap; overflow: visible; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 16px; max-width: 100%; }
+.adm-section-nav .list-pill { border: 0; background: transparent; padding: 5px 11px; font-size: 11px; color: var(--text-2); }
+.adm-section-nav .list-pill:hover { background: var(--row-hover); color: var(--text); }
+.adm-section-nav .list-pill.active { background: var(--selected); color: var(--on-action); }
+/* statuses as neutral pills (red stays for errors) */
+.pill--green, .pill--orange, .pill--violet, .pill--sky, .pill--blue {
+  --pill-tint: color-mix(in srgb, var(--text) 7%, transparent); --pill-text: var(--text); --pill-dot: var(--text-2); }
+/* links: the text colour, underline (never browser blue) */
+.adm-section a:not([class]) { color: var(--text); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; }
+.adm-section a:not([class]):hover { text-decoration-color: currentColor; }
+/* no grey fills: code, logs and backup rows get a 1px edge instead */
+.adm-section code { background: transparent; border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; }
+.adm-log, .adm-backup-row { background: transparent; border: 1px solid var(--line); }
+.adm-card, .adm-panel { background: var(--card-bg); }

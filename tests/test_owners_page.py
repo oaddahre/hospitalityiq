@@ -160,3 +160,11 @@ class PublicPages(unittest.TestCase):
         css = read('static', 'css', 'pages.css')
         self.assertIn('--action: #1F1E1C;', css)
         self.assertIn('.lp-about-point { background: transparent; }', css)
+
+
+class AdminPage(unittest.TestCase):
+    def test_admin_neutral(self):
+        css = read('static', 'css', 'admin.css')
+        self.assertIn('.adm-section-nav .list-pill.active { background: var(--selected);', css)
+        self.assertIn('.pill--green, .pill--orange, .pill--violet, .pill--sky, .pill--blue {', css)
+        self.assertIn('.adm-log, .adm-backup-row { background: transparent;', css)
