@@ -40,3 +40,20 @@ class OwnersList(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class OwnerPage(unittest.TestCase):
+    def test_brand_page_structure(self):
+        det = PAGE[PAGE.index('screen-owner-detail'):]
+        for i in ('owner-back-btn', 'owner-detail-logo', 'owner-detail-name', 'owner-detail-line', 'owner-dest-select',
+                  'owner-about-more', 'owner-portfolio-table', 'owner-pipe-card'):
+            self.assertIn(f'id="{i}"', det)
+        self.assertEqual(det.count('class="kpi-card"'), 4)
+        self.assertNotIn('owner-portfolio-table" id', det)                  # no zebra class
+        js = JS[JS.index('function renderOwnerScope'):JS.index('function renderOwnerPortfolioTable')]
+        self.assertIn("label: 'BAR (median)', kind: 'adr'", js)
+        self.assertNotIn('ownerTypeBadge', JS[JS.index('function renderOwnerDetail'):JS.index('// Owner page events')])
+        tbl = JS[JS.index('function renderOwnerPortfolioTable'):JS.index('// Owner page events')]
+        self.assertIn("brandGroupLink(x.brand_group, 16, 'owners')", tbl)
+        self.assertIn('cappedBar(h.bar_mad, capBar)', tbl)
+        self.assertNotIn("showLoading(document.getElementById('owner-detail-header'))", JS)

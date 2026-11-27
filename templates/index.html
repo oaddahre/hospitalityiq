@@ -928,38 +928,60 @@
             </table>
           </div>
         </div>
-        <!-- Owner detail (hidden by default) -->
+        <!-- Owner page (hidden by default): the Brand page's structure -->
         <div id="screen-owner-detail" style="display:none">
-          <button class="back-btn" id="owner-back-btn">← Ownership Intelligence</button>
-          <div class="brand-detail-header" id="owner-detail-header"></div>
-          <div id="owner-about-slot"></div>
-          <div class="brand-kpi-row" id="owner-kpi-row">
-            <div class="kpi-card"><span class="kpi-label">Total Hotels</span><span class="kpi-value" id="odkpi-hotels">—</span></div>
-            <div class="kpi-card"><span class="kpi-label">Total Keys</span><span class="kpi-value" id="odkpi-keys">—</span></div>
-            <div class="kpi-card"><span class="kpi-label">Cities Present</span><span class="kpi-value" id="odkpi-cities">—</span></div>
-            <div class="kpi-card"><span class="kpi-label">Brands Operated</span><span class="kpi-value" id="odkpi-brands">—</span></div>
-            <div class="kpi-card" id="odkpi-rate"><span class="kpi-label">BAR (published rate)</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
-            <div class="kpi-card" id="odkpi-occ"><span class="kpi-label">Occupancy · Kodo estimate</span><span class="kpi-value">—</span><span class="kpi-meta"></span></div>
-            <div class="kpi-card" id="odkpi-revpar"><span class="kpi-label">Rooms RevPAR (est.)</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
+          <div class="brand-top">
+            <button type="button" class="back-btn" id="owner-back-btn">← Back to Owners</button>
+            <div class="brand-hd" id="owner-detail-header">
+              <div class="brand-hd-title">
+                <span id="owner-detail-logo"></span>
+                <div>
+                  <h1 class="k-title" id="owner-detail-name">—</h1>
+                  <p class="k-line" id="owner-detail-line">—</p>
+                </div>
+              </div>
+              <select id="owner-dest-select" class="k-select" aria-label="Destination"><option value="">All destinations</option></select>
+            </div>
           </div>
-          <div class="brand-meta-row" id="owner-destinations-row" style="margin-bottom:8px"></div>
-          <div class="brand-meta-row" id="owner-operators-row" style="margin-bottom:20px"></div>
-          <div class="chart-card">
-            <div class="chart-card-header">
-              <span class="chart-title" id="owner-portfolio-title">Hotel Portfolio</span>
-            </div>
-            <div style="overflow-x:auto">
-              <table class="owner-portfolio-table" id="owner-portfolio-table">
-                <thead><tr>
-                  <th>Hotel Name</th>
-                  <th data-sort="brand_group" style="cursor:pointer">Brand / Operator ↕&#xFE0E;</th>
-                  <th data-sort="city" style="cursor:pointer">City ↕&#xFE0E;</th>
-                  <th data-sort="category" style="cursor:pointer">Segment ↕&#xFE0E;</th>
-                  <th data-sort="keys" style="cursor:pointer">Keys ↕&#xFE0E;</th>
-                </tr></thead>
-                <tbody id="owner-portfolio-tbody"></tbody>
-              </table>
-            </div>
+          <div class="kpi-grid brand-kpi-row kpi-compact owner-kpis" id="owner-kpi-row">
+            <div class="kpi-card" id="odkpi-rate"><span class="kpi-label">BAR (median)</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
+            <div class="kpi-card" id="odkpi-occ"><span class="kpi-label">Occupancy (est.)</span><span class="kpi-value">—</span><span class="kpi-meta"></span></div>
+            <div class="kpi-card" id="odkpi-revpar"><span class="kpi-label">Rooms RevPAR (est.)</span><span class="kpi-value">—</span><span class="kpi-meta">MAD</span></div>
+            <div class="kpi-card" id="odkpi-keys-card"><span class="kpi-label">Total keys</span><span class="kpi-value" id="odkpi-keys">—</span></div>
+          </div>
+          <div class="brand-about" id="owner-about-slot" hidden>
+            <p class="brand-about-text" id="owner-about-text"></p>
+            <button type="button" class="k-link brand-about-more" id="owner-about-more" aria-expanded="false">Read more</button>
+          </div>
+          <div class="k-card brand-hotels-card">
+            <div class="brand-sec-head"><span class="k-card-title" id="owner-portfolio-title">Hotels</span></div>
+            <table class="k-table brand-hotels-table" id="owner-portfolio-table">
+              <thead><tr>
+                <th scope="col" data-sort="name"><button type="button" class="k-th-sort">Hotel</button></th>
+                <th scope="col" data-sort="brand_group" class="col-hide-mobile"><button type="button" class="k-th-sort">Brand group</button></th>
+                <th scope="col" data-sort="city" class="col-hide-mobile"><button type="button" class="k-th-sort">Destination</button></th>
+                <th scope="col" data-sort="category" class="col-hide-mobile"><button type="button" class="k-th-sort">Segment</button></th>
+                <th scope="col" data-sort="keys" class="num col-hide-mobile"><button type="button" class="k-th-sort">Keys</button></th>
+                <th scope="col" data-sort="bar_mad" class="num"><button type="button" class="k-th-sort">BAR (MAD)</button></th>
+                <th scope="col" data-sort="occupancy" class="num"><button type="button" class="k-th-sort">Occupancy (est.)</button></th>
+                <th scope="col" data-sort="status" class="col-hide-mobile"><button type="button" class="k-th-sort">Status</button></th>
+              </tr></thead>
+              <tbody id="owner-portfolio-tbody"></tbody>
+            </table>
+          </div>
+          <div class="k-card brand-pipe-card" id="owner-pipe-card" hidden>
+            <div class="brand-sec-head"><span class="k-card-title" id="owner-pipe-title">Pipeline</span></div>
+            <table class="k-table brand-pipe-table">
+              <thead><tr>
+                <th scope="col">Project</th>
+                <th scope="col" class="col-hide-mobile">Brand group</th>
+                <th scope="col" class="col-hide-mobile">Destination</th>
+                <th scope="col">Stage</th>
+                <th scope="col" class="num">Opening</th>
+                <th scope="col" class="num">Keys</th>
+              </tr></thead>
+              <tbody id="owner-pipe-tbody"></tbody>
+            </table>
           </div>
         </div>
       </section>

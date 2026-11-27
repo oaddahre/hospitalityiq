@@ -1653,7 +1653,7 @@ function showBrandDetail(brandGroup, prevScreen) {
   brandDetailPrevScreen = prevScreen || 'dashboard';
   brandDetailGroup = brandGroup;
   const backBtn = document.getElementById('brand-back-btn');
-  backBtn.textContent = '← Back to ' + ({ brands: 'Brands', pipeline: 'Pipeline', hotel: 'Hotel', hotels: 'Hotels' }[brandDetailPrevScreen] || 'Dashboard');
+  backBtn.textContent = '← Back to ' + ({ brands: 'Brands', pipeline: 'Pipeline', hotel: 'Hotel', hotels: 'Hotels', owners: 'Owner' }[brandDetailPrevScreen] || 'Dashboard');
 
   brandHotelsData = hotels.filter(h => h.brand_group === brandGroup
     || (brandGroup === 'Independent Hotels' && (h.brand_group === 'Independent' || h.brand_group === 'Independent Luxury')));
@@ -5826,7 +5826,6 @@ function exportTourism() {
 
 var ownersData = null;
 var ownerDetailData = null;
-var ownerPortfolioSort = { col: null, dir: 1 };
 
 async function initOwners() {
   if (ownersData) { renderOwnerCards(); return; }
@@ -5927,140 +5926,154 @@ async function showOwnerDetail(ownerId) {
   var detail = document.getElementById('screen-owner-detail');
   detail.style.display = '';
   scrollMainToTop();
-  showLoading(document.getElementById('owner-detail-header'));
+  document.getElementById('owner-detail-name').textContent = 'Loading…';
+  document.getElementById('owner-detail-line').textContent = '';
+  document.getElementById('owner-detail-logo').innerHTML = '';
 
   try {
     const res = await fetch('/api/owners/' + ownerId);
     ownerDetailData = await res.json();
     renderOwnerDetail(ownerDetailData);
   } catch(e) {
-    document.getElementById('owner-detail-header').innerHTML = '<p style="color:var(--text-muted)">Error loading owner.</p>';
+    document.getElementById('owner-detail-name').textContent = 'Error loading owner';
   }
 }
 
+// Owner page: the Brand page's structure. Header (logo tile, name, one
+// line), a Destination select filtering the page, four compact cards, About
+// in three lines, the hotels table, the pipeline projects
+let ownerDetailCity = null;
+let ownerPortfolioSort = { col: 'keys', dir: -1 };
 function renderOwnerDetail(o) {
-  // Header
-  document.getElementById('owner-detail-header').innerHTML =
-    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">' +
-      getOwnerLogoImg(o.name, 52) +
-      '<div>' +
-        '<h1 style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:20px;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;color:var(--text);margin:0">' + fmt.esc(o.name) + '</h1>' +
-        (o.via ? '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:12px;color:var(--text-muted);margin-top:4px">via ' + fmt.esc(o.via) + '</div>' : '') +
-        '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
-          ownerTypeBadge(o.type || 'Private') +
-        '</div>' +
-      '</div>' +
-    '</div>';
+  ownerDetailCity = null;
+  ownerPortfolioSort = { col: 'keys', dir: -1 };
+  document.getElementById('owner-detail-logo').innerHTML = getOwnerLogoImg(o.name, 44);
+  document.getElementById('owner-detail-name').textContent = o.name;
+  const cities = [...new Set((o.hotels || []).filter(h => !h.pipeline && h.city).map(h => h.city))].sort((a, b) => dn(a).localeCompare(dn(b)));
+  const sel = document.getElementById('owner-dest-select');
+  sel.replaceChildren(new Option('All destinations', ''), ...cities.map(c => new Option(dn(c), c)));
+  sel.hidden = cities.length < 2;
 
-  // About card
-  if (o.description) {
-    document.getElementById('owner-about-slot').innerHTML =
-      '<div class="brand-about-card" style="margin-bottom:20px">' +
-        '<p style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:13px;color:var(--text-muted);line-height:1.65;margin:0">' + fmt.esc(o.description) + '</p>' +
-      '</div>';
-  } else {
-    document.getElementById('owner-about-slot').innerHTML = '';
-  }
+  const about = document.getElementById('owner-about-slot');
+  about.hidden = !o.description;
+  document.getElementById('owner-about-text').textContent = o.description || '';
+  about.classList.remove('is-open');
+  const more = document.getElementById('owner-about-more');
+  more.textContent = 'Read more'; more.setAttribute('aria-expanded', 'false');
+  requestAnimationFrame(() => { const t = document.getElementById('owner-about-text'); more.hidden = t.scrollHeight <= t.clientHeight + 2; });
 
-  // KPI row
-  document.getElementById('odkpi-hotels').textContent = o.total_hotels || 0;
-  // A project not open yet (pipeline) is listed, but not in these totals
-  const kpiCard = document.getElementById('odkpi-hotels').closest('.kpi-card');
-  kpiCard.querySelector('.owner-kpi-pipe')?.remove();
-  if (o.pipeline_hotels) {
-    const note = document.createElement('span');
-    note.className = 'kpi-meta owner-kpi-pipe';
-    note.textContent = `+ ${o.pipeline_hotels} in the pipeline (${(o.pipeline_keys || 0).toLocaleString()} keys)`;
-    kpiCard.appendChild(note);
-  }
-  document.getElementById('odkpi-keys').textContent = (o.total_keys || 0).toLocaleString();
-  document.getElementById('odkpi-cities').textContent = (o.cities || []).length;
-  document.getElementById('odkpi-brands').textContent = (o.brands_operated || []).length;
-  const ownerTip = KodoPeriod.tip({ source: 'Kodo owner profile, keys from the Kodo hotel database', note: 'count when this page loaded' });
-  ['odkpi-hotels', 'odkpi-keys', 'odkpi-cities', 'odkpi-brands'].forEach(id =>
-    KodoPeriod.set(document.getElementById(id).closest('.kpi-card'), KodoPeriod.today(), ownerTip));
-  // Live figures over the owner's open hotels (not its pipeline projects)
-  const ownHotels = (o.hotels || []).filter(x => x.hotel_id && !x.pipeline)
-    .map(x => (hotels || []).find(h => +h.id === +x.hotel_id)).filter(Boolean);
-  KodoLive.cards({ rate: 'odkpi-rate', occ: 'odkpi-occ', revpar: 'odkpi-revpar' }, ownHotels);
+  renderOwnerScope();
+}
 
-  // Destination pills
-  document.getElementById('owner-destinations-row').innerHTML =
-    '<span style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Cities</span>' +
-    (o.cities || []).map(function(c) {
-      return '<span class="brand-meta-pill">' + fmt.esc(c) + '</span>';
-    }).join('');
+function renderOwnerScope() {
+  const o = ownerDetailData;
+  const inScope = h => !ownerDetailCity || h.city === ownerDetailCity;
+  const open = (o.hotels || []).filter(h => !h.pipeline && inScope(h));
+  const pipe = (o.hotels || []).filter(h => h.pipeline && inScope(h));
+  const keys = open.reduce((s, h) => s + (h.keys || 0), 0);
+  const nDest = new Set(open.map(h => h.city).filter(Boolean)).size;
+  const parts = [`${open.length} hotel${open.length !== 1 ? 's' : ''}`, `${keys.toLocaleString('en')} keys`,
+    ownerDetailCity ? dn(ownerDetailCity) : `${nDest} destination${nDest !== 1 ? 's' : ''}`];
+  if (o.type && o.type !== 'Undisclosed') parts.push(o.type);
+  if (o.via) parts.push(`via ${o.via}`);
+  document.getElementById('owner-detail-line').textContent = parts.join(' · ');
 
-  // Operator pills
-  document.getElementById('owner-operators-row').innerHTML =
-    '<span style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-right:8px">Operators</span>' +
-    (o.brands_operated || []).map(function(b) {
-      return '<span class="brand-meta-pill">' + getBrandLogoImg(b, 14) + fmt.esc(b) + '</span>';
-    }).join('');
-
-  // Portfolio title
-  document.getElementById('owner-portfolio-title').textContent = o.name + ' Hotel Portfolio (' + (o.total_hotels || 0) + ' hotels'
-    + (o.pipeline_hotels ? ', ' + o.pipeline_hotels + ' in the pipeline' : '') + ')';
-
-  // Portfolio table
-  ownerPortfolioSort = { col: null, dir: 1 };
-  renderOwnerPortfolioTable(o.hotels || []);
-
-  // Wire sort headers
-  document.querySelectorAll('#owner-portfolio-table th[data-sort]').forEach(function(th) {
-    th.onclick = function() {
-      var col = th.dataset.sort;
-      if (ownerPortfolioSort.col === col) {
-        ownerPortfolioSort.dir *= -1;
-      } else {
-        ownerPortfolioSort.col = col;
-        ownerPortfolioSort.dir = 1;
-      }
-      renderOwnerPortfolioTable(ownerDetailData.hotels || []);
-    };
+  document.getElementById('odkpi-keys').textContent = keys.toLocaleString('en');
+  KodoPeriod.set('odkpi-keys-card', KodoPeriod.today(), KodoPeriod.tip({ source: 'Kodo owner profile, keys from the Kodo hotel database', note: 'count when this page loaded; projects not open yet are not counted' }));
+  // live figures over the owner's open hotels in the scope (not its pipeline projects)
+  const ownHotels = open.filter(x => x.hotel_id).map(x => (hotels || []).find(h => +h.id === +x.hotel_id)).filter(Boolean);
+  Promise.resolve(KodoLive.cards({ rate: 'odkpi-rate', occ: 'odkpi-occ', revpar: 'odkpi-revpar' }, ownHotels)).then(() => {
+    const a = KodoLive.raw() ? KodoLive.agg(ownHotels) : null;
+    compactKpiCards([
+      { id: 'odkpi-rate', label: 'BAR (median)', kind: 'adr' },
+      { id: 'odkpi-occ', label: 'Occupancy (est.)', kind: 'occ' },
+      { id: 'odkpi-revpar', label: 'Rooms RevPAR (est.)', kind: 'revpar' },
+      { id: 'odkpi-keys-card', label: 'Total keys', kind: 'keys', line: `${open.length} hotel${open.length !== 1 ? 's' : ''}${pipe.length ? ` · + ${pipe.length} in the pipeline` : ''}` },
+    ], a);
   });
 
-  // Back button
-  document.getElementById('owner-back-btn').onclick = function() {
-    document.getElementById('screen-owner-detail').style.display = 'none';
-    document.getElementById('owners-list').style.display = '';
-  };
-}
-
-function renderOwnerPortfolioTable(hotels) {
-  var sorted = hotels.slice();
-  if (ownerPortfolioSort.col) {
-    var col = ownerPortfolioSort.col;
-    var dir = ownerPortfolioSort.dir;
-    sorted.sort(function(a, b) {
-      var av = a[col] || '';
-      var bv = b[col] || '';
-      if (col === 'keys') { av = Number(av) || 0; bv = Number(bv) || 0; }
-      if (av < bv) return -1 * dir;
-      if (av > bv) return 1 * dir;
-      return 0;
-    });
+  document.getElementById('owner-portfolio-title').textContent = `Hotels · ${open.length}${ownerDetailCity ? ' in ' + dn(ownerDetailCity) : ''}`;
+  renderOwnerPortfolioTable(open);
+  const card = document.getElementById('owner-pipe-card');
+  card.hidden = !pipe.length;
+  if (pipe.length) {
+    const pk = pipe.reduce((s, p) => s + (p.keys || 0), 0);
+    document.getElementById('owner-pipe-title').textContent = `Pipeline · ${pipe.length} project${pipe.length !== 1 ? 's' : ''}${pk ? ` · ${pk.toLocaleString('en')} keys` : ''}`;
+    document.getElementById('owner-pipe-tbody').innerHTML = pipe.map(p => `<tr data-pipe-open tabindex="0" title="Open in Pipeline">
+        <td><span class="brand-pipe-name">${fmt.esc(p.name)}</span></td>
+        <td class="col-hide-mobile">${brandGroupLink(p.brand_group, 16, 'owners')}</td>
+        <td class="col-hide-mobile">${fmt.esc(dn(p.city || ''))}</td>
+        <td><span class="k-pill">${fmt.esc(p.label || p.pipeline_status || 'Pipeline')}</span></td>
+        <td class="num">${p.expected_opening || 'TBA'}</td>
+        <td class="num">${p.keys ? p.keys.toLocaleString('en') : 'TBC'}</td>
+      </tr>`).join('');
   }
-
-  var tbody = document.getElementById('owner-portfolio-tbody');
-  tbody.innerHTML = sorted.map(function(h) {
-    var nameCell = h.hotel_id
-      ? '<span class="owner-hotel-link" onclick="showHotelDetail(' + h.hotel_id + ')">' + fmt.esc(h.name) + '</span>'
-      : fmt.esc(h.name);
-    if (h.pipeline) {
-      nameCell += ' <span class="pill--grey owner-pipe-pill" title="Not open yet: in the pipeline, not counted in the totals">'
-        + fmt.esc(h.label || h.pipeline_status || 'Pipeline')
-        + (h.expected_opening ? ' · ' + h.expected_opening : '') + '</span>';
-    }
-    return '<tr' + (h.pipeline ? ' class="owner-row-pipe"' : '') + '>' +
-      '<td>' + nameCell + '</td>' +
-      '<td>' + getBrandLogoImg(h.brand_group, 14) + fmt.esc(h.brand_group || '—') + '</td>' +
-      '<td>' + fmt.esc(h.city || '—') + '</td>' +
-      '<td>' + getSegmentBadgeHtml(h.category || '—') + '</td>' +
-      '<td style="text-align:right">' + (h.under_renovation || h.seasonal_closure ? hotelRooms(h) : h.keys ? h.keys.toLocaleString() : '—') + '</td>' +
-    '</tr>';
-  }).join('');
 }
+
+function renderOwnerPortfolioTable(list) {
+  const { col, dir } = ownerPortfolioSort;
+  const rows = list.map(x => ({ x, h: x.hotel_id ? (hotels || []).find(h => +h.id === +x.hotel_id) : null }));
+  const val = r => col === 'bar_mad' || col === 'occupancy' ? (r.h ? r.h[col] : null)
+    : col === 'status' ? (r.h ? hotelStatus(r.h) : '') : col === 'city' ? dn(r.x.city || '') : col === 'keys' ? (r.x.keys || 0) : String(r.x[col] || '');
+  rows.sort((a, b) => {
+    const p = val(a), q = val(b);
+    if (p == null || q == null) return (p == null) - (q == null);
+    return (typeof p === 'string' ? p.localeCompare(q) : p - q) * dir || String(a.x.name).localeCompare(String(b.x.name));
+  });
+  const capBar = barCap(hotels.map(h => h.bar_mad));
+  const maxOcc = Math.max(0, ...hotels.map(h => h.occupancy).filter(v => v != null));
+  document.getElementById('owner-portfolio-tbody').innerHTML = rows.map(({ x, h }) => {
+    const bar = !h ? '<span class="cell-na">—</span>' : h.bar_mad == null ? KodoBar.hotelCell(h) : `<span class="cell-num">${KodoBar.hotelCell(h)}</span>${cappedBar(h.bar_mad, capBar)}`;
+    const occ = h ? hotelOccCell(h, maxOcc) : '<span class="cell-na">—</span>';
+    const out = h && (h.under_renovation || h.seasonal_closure);
+    return `<tr${h ? ` data-hid="${h.id}" tabindex="0"` : ''}>
+      <td class="hotels-name"><span class="hotels-name-t">${fmt.esc(x.name)}</span><span class="hotels-name-m">${fmt.esc(dn(x.city || ''))}${x.category ? ' · ' + fmt.esc(x.category) : ''}</span></td>
+      <td class="col-hide-mobile">${brandGroupLink(x.brand_group, 16, 'owners')}</td>
+      <td class="col-hide-mobile">${fmt.esc(dn(x.city || '—'))}</td>
+      <td class="col-hide-mobile">${fmt.esc(x.category || '—')}</td>
+      <td class="num col-hide-mobile">${out ? fmt.num(h.keys_listed) : x.keys ? x.keys.toLocaleString('en') : '—'}</td>
+      <td class="num cell-metric">${bar}</td>
+      <td class="num cell-metric">${occ}</td>
+      <td class="col-hide-mobile"><span class="hotels-status"${h && hotelStatusTip(h) ? ` title="${escAttr(hotelStatusTip(h))}"` : ''}>${h ? hotelStatus(h) : '—'}</span></td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('#owner-portfolio-table th[data-sort]').forEach(th => {
+    if (th.dataset.sort === col) th.setAttribute('aria-sort', dir === 1 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort');
+  });
+}
+
+// Owner page events
+document.getElementById('owner-dest-select').addEventListener('change', e => { ownerDetailCity = e.target.value || null; renderOwnerScope(); });
+document.getElementById('owner-about-more').addEventListener('click', e => {
+  const open = document.getElementById('owner-about-slot').classList.toggle('is-open');
+  e.currentTarget.textContent = open ? 'Show less' : 'Read more';
+  e.currentTarget.setAttribute('aria-expanded', String(open));
+});
+document.getElementById('owner-portfolio-table').addEventListener('click', e => {
+  const brand = e.target.closest('.k-brand-link');
+  if (brand) { e.stopPropagation(); showBrandDetail(brand.dataset.brandGroup, 'owners'); return; }
+  if (e.target.closest('[data-tip], .kodo-badge')) return;
+  const th = e.target.closest('th[data-sort]');
+  if (th) {
+    const c = th.dataset.sort;
+    if (ownerPortfolioSort.col === c) ownerPortfolioSort.dir *= -1;
+    else { ownerPortfolioSort.col = c; ownerPortfolioSort.dir = ['keys', 'bar_mad', 'occupancy'].includes(c) ? -1 : 1; }
+    renderOwnerScope();
+    return;
+  }
+  const row = e.target.closest('tr[data-hid]');
+  if (row) showHotelDetail(+row.dataset.hid);
+});
+document.getElementById('owner-pipe-card').addEventListener('click', e => {
+  const brand = e.target.closest('.k-brand-link');
+  if (brand) { e.stopPropagation(); showBrandDetail(brand.dataset.brandGroup, 'owners'); return; }
+  if (e.target.closest('tr[data-pipe-open]')) _srchNavigateToScreen('pipeline');
+});
+document.getElementById('owner-back-btn').addEventListener('click', () => {
+  document.getElementById('screen-owner-detail').style.display = 'none';
+  document.getElementById('owners-list').style.display = '';
+  scrollMainToTop();
+});
 
 // Wire up export button clicks
 document.getElementById('btn-export-hotels')  ?.addEventListener('click', exportHotels);
