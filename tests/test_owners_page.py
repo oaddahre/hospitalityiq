@@ -129,3 +129,15 @@ class ValuationPage(unittest.TestCase):
         self.assertIn('#screen-valuation .val-sens-high     { background: color-mix(in srgb, var(--text) 22%', css)
         self.assertNotIn("'val-metric-good pill--green'", JS)
         self.assertIn("r.scrollIntoView(", JS)
+
+
+class AiPage(unittest.TestCase):
+    def test_ai(self):
+        html = HTML[HTML.index('<section class="screen" id="screen-ai">'):]
+        html = html[:html.index('</section>')]
+        self.assertIn('<h1 class="k-title">AI Analyst</h1>', html)
+        self.assertNotIn('Powered by', html)
+        self.assertIn('function chatScrollEnd()', JS)
+        self.assertNotIn('chatThread.scrollTop = chatThread.scrollHeight', JS)
+        css = read('static', 'css', 'style.css')
+        self.assertIn('#screen-ai .chat-thread { overflow: visible;', css)

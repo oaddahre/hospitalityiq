@@ -4478,7 +4478,12 @@ function appendMessage(role, content) {
 
   wrap.appendChild(bubble);
   chatThread.appendChild(wrap);
-  chatThread.scrollTop = chatThread.scrollHeight;
+  chatScrollEnd();
+}
+// The page scrolls (the conversation has no box of its own): bring the newest message into view
+function chatScrollEnd() {
+  const main = document.querySelector('.main-content');
+  if (main) main.scrollTop = main.scrollHeight;
 }
 
 function setLoading(on) {
@@ -4486,7 +4491,7 @@ function setLoading(on) {
   chatSend.disabled = on;
   chatInput.disabled = on;
   chatTyping.style.display = on ? 'flex' : 'none';
-  if (on) chatThread.scrollTop = chatThread.scrollHeight;
+  if (on) chatScrollEnd();
 }
 
 async function sendChat(text) {
