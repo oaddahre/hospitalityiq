@@ -5414,20 +5414,14 @@ fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
   if (!me) return;
   const badge = document.getElementById('tier-badge');
   if (!badge) return;
-  // Colour comes from data-plan (tokens.css); an unknown or missing plan shows as Observer
-  const PLAN_LABELS = { observer: 'Observer', benchmarker: 'Benchmarker', advisory: 'Advisory' };
-  const plan = PLAN_LABELS[me.tier] ? me.tier : 'observer';
+  // One plan, Benchmarker; Advisory adds service, the same access (Nov 2026)
+  const PLAN_LABELS = { benchmarker: 'Benchmarker', advisory: 'Advisory' };
+  const plan = PLAN_LABELS[me.tier] ? me.tier : 'benchmarker';
   badge.textContent = PLAN_LABELS[plan];
   badge.className = `tier-badge tier-badge--${plan} pill--plan`;
   badge.dataset.plan = plan;
   badge.style.display = '';
   window._kodoUser = me;
-  // Hide export buttons and dropdowns for Observer tier
-  if (me.tier === 'observer') {
-    document.querySelectorAll(
-      '.export-btn, #tourism-export-year'
-    ).forEach(el => { el.style.display = 'none'; });
-  }
 });
 
 // ── Reports ──────────────────────────────────────────────────────────────────
@@ -5636,6 +5630,11 @@ async function handleReportGenerate(btn, canGenerate) {
 
 // ─── Excel Export ─────────────────────────────────────────────────────────────
 
+// Every feature is in Benchmarker; Advisory has the same access (it adds service)
+function hasFullAccess() {
+  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  return tier === 'benchmarker' || tier === 'advisory';
+}
 function canExport() {
   const tier = (window._kodoUser && window._kodoUser.tier) || '';
   return tier === 'benchmarker' || tier === 'advisory';
@@ -6270,70 +6269,15 @@ function valBuildCityOptions() {
   });
 }
 
-// ─── Tier gating ──────────────────────────────────────────────────────
+// ─── Access ───────────────────────────────────────────────────────────
+// One plan (Nov 2026): Benchmarker and Advisory both have the whole tool:
+// quick and custom cash flows, sensitivity tables and the PDF export.
 function valApplyTierGating() {
-  const tier = (window._kodoUser && window._kodoUser.tier) || '';
+  const ok = hasFullAccess();
   const panel = valEl('val-input-panel');
-
-  // Remove any existing overlay first
-  const existingOverlay = document.getElementById('val-observer-overlay');
-  if (existingOverlay) existingOverlay.remove();
-
-  if (tier === 'observer') {
-    panel.style.position = 'relative';
-    const overlay = document.createElement('div');
-    overlay.id = 'val-observer-overlay';
-    overlay.className = 'val-lock-overlay';
-    overlay.innerHTML = `
-      <div class="val-lock-card">
-        <div class="val-lock-label">Upgrade Required</div>
-        <div class="val-lock-title">Hotel Valuation Tool</div>
-        <div class="val-lock-body">DCF modelling, income capitalization, and sensitivity analysis are available on the Benchmarker and Advisory plans.</div>
-        <a href="/#pricing" class="val-lock-cta">Upgrade now →</a>
-      </div>`;
-    panel.appendChild(overlay);
-    panel.querySelectorAll('input, select, button').forEach(el => {
-      if (el.id !== 'val-mode-quick-btn') el.disabled = true;
-    });
-  } else {
-    panel.querySelectorAll('input, select, button').forEach(el => { el.disabled = false; });
-  }
-
-  const customLock = valEl('val-mode-custom-lock');
-  if (tier === 'observer' || tier === 'benchmarker') {
-    customLock.style.display = '';
-  } else {
-    customLock.style.display = 'none';
-  }
-
-  // If currently on custom mode but tier no longer allows it, bounce back
-  if (valState.mode === 'custom' && tier !== 'advisory') {
-    valSwitchMode('quick');
-  }
-
-  // Sensitivity — Advisory only
-  const sensSection = valEl('val-sensitivity-section');
-  const existingSensOverlay = document.getElementById('val-sens-overlay');
-  if (existingSensOverlay) existingSensOverlay.remove();
-  if (tier !== 'advisory') {
-    sensSection.style.position = 'relative';
-    const overlay = document.createElement('div');
-    overlay.id = 'val-sens-overlay';
-    overlay.className = 'val-lock-overlay';
-    overlay.style.position = 'absolute';
-    overlay.innerHTML = `
-      <div class="val-lock-card">
-        <div class="val-lock-label">Advisory Only</div>
-        <div class="val-lock-title">Sensitivity Tables</div>
-        <div class="val-lock-body">IRR and value sensitivity grids across occupancy and cap-rate scenarios are available on the Advisory plan.</div>
-        <a href="/#pricing" class="val-lock-cta">Upgrade now →</a>
-      </div>`;
-    sensSection.appendChild(overlay);
-  }
-
-  // Export — Advisory only
-  const exportBtn = valEl('val-export-btn');
-  exportBtn.disabled = (tier !== 'advisory');
+  panel.querySelectorAll('input, select, button').forEach(el => { el.disabled = !ok && el.id !== 'val-mode-quick-btn'; });
+  document.getElementById('val-sens-overlay')?.remove();
+  valEl('val-export-btn').disabled = !ok;
 }
 
 // ─── Segment defaults ─────────────────────────────────────────────────
@@ -6402,13 +6346,7 @@ function valUpdateLiveMetrics() {
 
 // ─── Mode switching ───────────────────────────────────────────────────
 function valSwitchMode(mode) {
-  const tier = (window._kodoUser && window._kodoUser.tier) || '';
-  if (mode === 'custom' && tier !== 'advisory') {
-    if (typeof showUpgradeModal === 'function') {
-      showUpgradeModal('Advisory Only', 'Custom Cash Flows mode — build and edit a fully custom 10-year projection — is available on the Advisory plan.');
-    }
-    return;
-  }
+  if (mode === 'custom' && !hasFullAccess()) return;
   valState.mode = mode;
   document.querySelectorAll('.val-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
   document.querySelectorAll('.val-mode-panel').forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
@@ -6462,8 +6400,7 @@ function valRunValuation() {
   valRenderCashFlowTable(inputs, results, valState.mode === 'custom');
   valRenderApproachCards(inputs, results);
 
-  const tier = (window._kodoUser && window._kodoUser.tier) || '';
-  if (tier === 'advisory') {
+  if (hasFullAccess()) {
     const sens = generateSensitivityTables(inputs, results);
     valRenderSensitivityTables(inputs, sens);
   }
@@ -6707,13 +6644,7 @@ function valWireEvents() {
 
 // ─── PDF export ─────────────────────────────────────────────────────────
 async function valExportPDF() {
-  const tier = (window._kodoUser && window._kodoUser.tier) || '';
-  if (tier !== 'advisory') {
-    if (typeof showUpgradeModal === 'function') {
-      showUpgradeModal('Advisory Only', 'PDF valuation reports are available on the Advisory plan.');
-    }
-    return;
-  }
+  if (!hasFullAccess()) return;
   if (!valState.lastResults || !valState.lastInputs) {
     if (typeof showUpgradeModal === 'function') {
       showUpgradeModal('Run a valuation first', 'Configure your inputs and click Run Valuation before exporting a report.');

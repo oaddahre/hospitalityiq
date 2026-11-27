@@ -300,7 +300,6 @@ async function loadOverview() {
     document.getElementById('ov-users-verified').textContent   = verified;
     document.getElementById('ov-users-unverified').textContent = unverified;
     document.getElementById('ov-orgs-total').textContent       = orgs.length;
-    document.getElementById('ov-tier-observer').textContent    = byTier('observer');
     document.getElementById('ov-tier-benchmarker').textContent = byTier('benchmarker');
     document.getElementById('ov-tier-advisory').textContent    = byTier('advisory');
 
@@ -362,7 +361,6 @@ const STATUS_META = {
 // plan mapping in tokens.css); being an admin is called out separately by
 // .adm-admin-tag (data-plan="admin", the ink pill).
 const TIER_META = {
-  observer:    { label: 'Observer' },
   benchmarker: { label: 'Benchmarker' },
   advisory:    { label: 'Advisory' },
 };
@@ -377,7 +375,7 @@ function shortDate(dateStr) {
 function buildUsersFilters() {
   const tierEl   = document.getElementById('users-tier-filters');
   const statusEl = document.getElementById('users-status-filters');
-  const tiers = [['All', 'all'], ['Observer', 'observer'], ['Benchmarker', 'benchmarker'], ['Advisory', 'advisory']];
+  const tiers = [['All', 'all'], ['Benchmarker', 'benchmarker'], ['Advisory', 'advisory']];
   tierEl.innerHTML = tiers.map(([label, val], i) =>
     `<button class="list-pill${i === 0 ? ' active' : ''}" data-filter="tier" data-value="${val}">${label}</button>`
   ).join('');
@@ -475,7 +473,7 @@ function renderUsers() {
     ledger.innerHTML = '<p class="adm-empty">No users match your filters.</p>';
   } else {
     ledger.innerHTML = pageItems.map(u => {
-      const planKey = TIER_META[u.tier] ? u.tier : 'observer';
+      const planKey = TIER_META[u.tier] ? u.tier : 'benchmarker';
       const tierMeta = TIER_META[planKey];
       const statusMeta = STATUS_META[statusBucket(u)];
       return `<div class="adm-row adm-row-users">
@@ -605,9 +603,8 @@ function openCreateUserPanel() {
     <div class="adm-field-group"><label class="adm-label">Organisation (optional)</label><input class="adm-input" id="uf-org" /></div>
     <div class="adm-field-group"><label class="adm-label">Tier</label>
       <select class="adm-select" id="uf-tier">
-        <option value="observer">Observer</option>
-        <option value="benchmarker">Benchmarker</option>
-        <option value="advisory" selected>Advisory</option>
+        <option value="benchmarker" selected>Benchmarker</option>
+        <option value="advisory">Advisory (custom: adds service)</option>
       </select>
     </div>
     <div class="adm-panel-actions">
@@ -640,7 +637,7 @@ function openEditUserPanel(uid) {
     <div class="adm-field-group"><label class="adm-label">Organisation</label><input class="adm-input" id="ue-org" value="${escHtml(u.organisation || '')}" /></div>
     <div class="adm-field-group"><label class="adm-label">Tier</label>
       <select class="adm-select" id="ue-tier">
-        ${['observer', 'benchmarker', 'advisory'].map(t => `<option value="${t}"${u.tier === t ? ' selected' : ''}>${t[0].toUpperCase() + t.slice(1)}</option>`).join('')}
+        ${['benchmarker', 'advisory'].map(t => `<option value="${t}"${u.tier === t ? ' selected' : ''}>${t[0].toUpperCase() + t.slice(1)}</option>`).join('')}
       </select>
     </div>
     <div class="adm-field-group"><label class="adm-label">Status</label>

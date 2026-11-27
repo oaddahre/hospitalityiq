@@ -1,0 +1,8 @@
+{
+  "format": "kodo-users-1",
+  "note": "One plan: Observer accounts (users and organisations) move to Benchmarker. Access only: the status (payment) of every account is left as it is. The summary first counts the accounts by plan and status as they were.",
+  "ops": [
+    "report_accounts",
+    "observer_to_benchmarker"
+  ]
+}

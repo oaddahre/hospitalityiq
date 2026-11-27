@@ -848,7 +848,7 @@ body.light .nav-logout  { color: var(--text-2); }
   font-weight: 400 !important;
 }
 
-/* Plan/tier badges (Advisory, Benchmarker, Observer) — same Sweet
+/* Plan badges (Benchmarker, Advisory) — same Sweet
    Sans Pro as the shared badge rule above now; this rule mainly
    exists for the wider letter-spacing (0.12em vs 0.08em). Also
    covers the valuation tool's "Advisory" lock pill (.val-tier-pill),

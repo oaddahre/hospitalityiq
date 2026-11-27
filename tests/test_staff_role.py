@@ -88,3 +88,42 @@ class AdminRoute(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ObserverMigration(unittest.TestCase):
+    def test_observer_moves_access_only(self):
+        d = tempfile.mkdtemp()
+        try:
+            _users(d, [{'id': '1', 'email': 'o@client.test', 'tier': 'observer', 'status': 'pending_payment', 'organisation_id': 'g'},
+                       {'id': '2', 'email': 'b@client.test', 'tier': 'benchmarker', 'status': 'active'}])
+            with open(os.path.join(d, 'organisations.json'), 'w') as f:
+                json.dump({'organisations': [{'id': 'g', 'name': 'G', 'plan': 'observer', 'status': 'active'}]}, f)
+            mig = os.path.join(d, 'm'); os.makedirs(mig)
+            shutil.copy(os.path.join(ROOT, 'data_migrations', '0030_observer_to_benchmarker.users.json'), mig)
+            r = DM.run_pending(d, log=lambda *a: None, migrations_dir=mig)
+            self.assertEqual(r['applied'], ['0030_observer_to_benchmarker'])
+            u = {x['id']: x for x in json.load(open(os.path.join(d, 'users.json')))['users']}
+            self.assertEqual((u['1']['tier'], u['1']['status']), ('benchmarker', 'pending_payment'))   # payment status kept
+            org = json.load(open(os.path.join(d, 'organisations.json')))['organisations'][0]
+            self.assertEqual((org['plan'], org['status']), ('benchmarker', 'active'))
+            summary = json.load(open(os.path.join(d, 'data_migrations_state.json')))['applied']['0030_observer_to_benchmarker']['summary']
+            self.assertIn('observer/pending_payment=1', summary)
+            self.assertIn('o@client.test', summary)
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+
+
+class NoObserverInCode(unittest.TestCase):
+    def test_gone(self):
+        import re
+        for f in ('app.py', 'static/js/main.js', 'static/js/admin.js', 'templates/admin.html', 'templates/account.html',
+                  'templates/accept_invite.html', 'templates/login.html', 'templates/index.html'):
+            text = open(os.path.join(ROOT, f), encoding='utf-8').read()
+            text = text.replace('IntersectionObserver', '')
+            hits = [m for m in re.finditer(r'observer', text, re.I)]
+            hits = [m for m in hits if 'data_migrations/0030' not in text[max(0, m.start() - 40):m.end() + 40]
+                    and '"observer" is gone' not in text[max(0, m.start() - 10):m.end() + 12]]
+            self.assertEqual(hits, [], f)
+        js = open(os.path.join(ROOT, 'static/js/main.js'), encoding='utf-8').read()
+        self.assertNotIn("tier !== 'advisory'", js)                   # no Advisory-only feature left
+        self.assertIn('@tier_required("benchmarker")\ndef api_valuation_export', open(os.path.join(ROOT, 'app.py')).read())

@@ -186,7 +186,7 @@
       <div class="plan-box">
         <span class="plan-box__label">Plan access</span>
         <span class="plan-badge plan-badge--{{ org.plan }} pill--grey">
-          {{ {'observer':'Observer','benchmarker':'Benchmarker','advisory':'Advisory'}.get(org.plan, org.plan) }}
+          {{ {'benchmarker':'Benchmarker','advisory':'Advisory'}.get(org.plan, 'Benchmarker') }}
         </span>
       </div>
 

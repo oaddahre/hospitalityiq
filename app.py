@@ -221,8 +221,13 @@ ORGS_FILE            = os.path.join(DATA_DIR, "organisations.json")
 RESET_TOKENS_FILE    = os.path.join(DATA_DIR, "reset_tokens.json")
 VERIFICATION_TOKENS_FILE = os.path.join(DATA_DIR, "verification_tokens.json")
 
-TIER_ORDER  = {"observer": 0, "benchmarker": 1, "advisory": 2}
-PLAN_SEATS  = {"observer": 1, "benchmarker": 3, "advisory": 5}
+# One plan (Nov 2026): Benchmarker has every feature; Advisory is custom and
+# adds service (analysis, analyst support, bespoke reports) with the same
+# access. "observer" is gone (data_migrations/0030 moved its accounts to
+# Benchmarker); an unknown value gets no paid access.
+TIER_ORDER  = {"benchmarker": 1, "advisory": 1}
+PAID_TIERS  = ("benchmarker", "advisory")
+PLAN_SEATS  = {"benchmarker": 3, "advisory": 5}
 
 _login_failures: dict = {}   # {email: {"count": int, "since": datetime}}
 _reset_requests: dict = {}   # {email: datetime of last forgot-password request} — spam cooldown
@@ -344,7 +349,7 @@ class User(UserMixin):
         self.password_hash         = data.get("password_hash", "")
         self.name                  = data.get("name", "")
         self.organisation          = data.get("organisation", "")
-        self.tier                  = data.get("tier", "observer")
+        self.tier                  = data.get("tier", "benchmarker")
         self.status                = data.get("status", "pending")
         self.ai_queries_used       = data.get("ai_queries_used", 0)
         self.ai_queries_reset      = data.get("ai_queries_reset", "")
@@ -686,9 +691,9 @@ def _reset_email_html(reset_url: str) -> str:
 
 
 def _welcome_email_html(name: str, active: bool) -> str:
-    # `active` accounts (Observer, self-serve) can log straight in; accounts
-    # created in "pending_approval" (paid tiers, activated manually today)
-    # get accurate copy instead of a false "you're all set" message.
+    # `active` accounts can log straight in; accounts in "pending_approval"
+    # (waiting for their payment to be confirmed) get accurate copy instead
+    # of a false "you're all set" message.
     if active:
         status_line = "Your account is active — log in to start exploring."
     else:
@@ -1330,10 +1335,8 @@ def reset_password():
         update_fields["email_verified"] = True
         update_fields["verified_at"]    = datetime.utcnow().isoformat()
         if user.status == "pending_verification":
-            is_observer = user.tier == "observer"
-            update_fields["status"] = "active" if is_observer else "pending_approval"
-            if is_observer:
-                update_fields["approved_at"] = datetime.utcnow().strftime("%Y-%m-%d")
+            # every plan is paid: confirmed, the account waits for its payment
+            update_fields["status"] = "pending_approval"
     update_user_field(user.id, update_fields)
 
     # Invalidate every outstanding token for this email, not just the one
@@ -1415,14 +1418,10 @@ def register_page():
             error = "An account with this email already exists."
             _log_registration_attempt("duplicate_email")
         else:
-            reg_tier = request.form.get("tier", "observer")
-            if reg_tier not in ("observer", "benchmarker"):
-                reg_tier = "observer"
-            # Every self-registered account starts pending_verification,
-            # regardless of tier, and is never logged in automatically —
-            # the old immediate-active-for-observer / pending_approval-for-
-            # benchmarker split now only happens once the email is
-            # confirmed (see api_verify_email below).
+            reg_tier = "benchmarker"           # the one plan (Advisory is assigned by an admin)
+            # Every self-registered account starts pending_verification and is
+            # never logged in automatically; once the email is confirmed it
+            # waits for its payment (pending_approval, see api_verify_email).
             new_user_data = {
                 "id":               str(uuid.uuid4()),
                 "email":            email,
@@ -1610,13 +1609,11 @@ def api_verify_email():
     tokens[stored_hash]["used"] = True
     save_verification_tokens(tokens)
 
-    is_observer  = user.tier == "observer"
-    new_status   = "active" if is_observer else "pending_approval"
-    update_user_field(user.id, {
+    update_user_field(user.id, {                 # every plan is paid: waits for its payment
         "email_verified": True,
         "verified_at":    datetime.utcnow().isoformat(),
-        "status":         new_status,
-        "approved_at":    datetime.utcnow().strftime("%Y-%m-%d") if is_observer else None,
+        "status":         "pending_approval",
+        "approved_at":    None,
     })
     _log_registration_attempt("verified", email=email)
 
@@ -1627,13 +1624,11 @@ def api_verify_email():
                 "from":    "Kodo Hospitality <contact@kodohospitality.com>",
                 "to":      email,
                 "subject": "Welcome to Kodo Hospitality",
-                "html":    _welcome_email_html(html.escape(user.name), is_observer),
+                "html":    _welcome_email_html(html.escape(user.name), False),
             })
         except Exception as e:
             app.logger.error(f"Welcome email error: {e}")
 
-    if is_observer:
-        return jsonify({"success": True, "redirect": "/login?verified=1"})
     return jsonify({"success": True, "redirect": "/payment-pending"})
 
 
@@ -1800,10 +1795,10 @@ def index():
 @login_required
 def account_page():
     # The plan the account actually has (an active organisation's plan
-    # wins), as the top bar shows it; an unknown key shows as Observer
+    # wins), as the top bar shows it; an unknown key shows as Benchmarker
     plan = effective_tier(current_user)
     return render_template("account.html", user=current_user,
-                           plan=plan if plan in TIER_ORDER else "observer")
+                           plan=plan if plan in TIER_ORDER else "benchmarker")
 
 
 @app.route("/account/change-password", methods=["POST"])
@@ -1885,7 +1880,7 @@ def health():
 @login_required
 def api_me():
     eff_tier = effective_tier(current_user)
-    limits   = {"observer": 10, "benchmarker": None, "advisory": None}
+    limits   = {"benchmarker": None, "advisory": None}      # no AI query limit on the plan (as before)
     org      = find_org_by_id(current_user.organisation_id) if current_user.organisation_id else None
     return jsonify({
         "id":               current_user.id,
@@ -2072,7 +2067,6 @@ def api_hotels():
         "occupancy", "bar_mad", "bar_nights", "revpar_mad",
         "under_renovation", "keys_listed", "seasonal_closure",      # hotel_flags.json
     ]
-    # For observer tier, hide financial detail columns (still return them but frontend handles display)
     records = merged[cols].to_dict(orient="records")
     # "via ..." from the owner's profile (e.g. OCP Group via Maghreb Hospitality Company)
     vias = _owner_vias()
@@ -2671,22 +2665,7 @@ them BAR and modelled occupancy, never ADR or achieved occupancy."""
 @app.route("/api/chat", methods=["POST"])
 @login_required
 def api_chat():
-    # Observer tier: 10 queries/month
-    if current_user.tier == "observer":
-        now_month = datetime.utcnow().strftime("%Y-%m")
-        db = load_users_db()
-        user_rec = next((u for u in db["users"] if u["id"] == current_user.id), None)
-        if user_rec:
-            if user_rec.get("ai_queries_reset", "") != now_month:
-                user_rec["ai_queries_used"]  = 0
-                user_rec["ai_queries_reset"] = now_month
-                save_users_db(db)
-            if user_rec.get("ai_queries_used", 0) >= 10:
-                return jsonify({
-                    "error": "upgrade_required",
-                    "message": "Observer plan includes 10 AI queries per month. Upgrade to Benchmarker for unlimited access.",
-                    "upgrade_url": "/pricing",
-                }), 403
+    # No AI query limit on the plan (Benchmarker and Advisory were unlimited before, and stay so)
 
     payload = request.get_json(silent=True)
     if not payload:
@@ -2711,12 +2690,6 @@ def api_chat():
             messages=messages,
         )
 
-        # Increment observer query counter
-        if current_user.tier == "observer":
-            update_user_field(current_user.id, {
-                "ai_queries_used":  (current_user.ai_queries_used or 0) + 1,
-                "ai_queries_reset": datetime.utcnow().strftime("%Y-%m"),
-            })
 
         return jsonify({"response": response.content[0].text})
     except anthropic.AuthenticationError as e:
@@ -2877,7 +2850,7 @@ def admin_users_create():
     name  = (data.get("name", "") or "").strip()
     email = (data.get("email", "") or "").strip().lower()
     org   = (data.get("organisation", "") or "").strip()
-    tier  = data.get("tier", "observer")
+    tier  = data.get("tier", "benchmarker")
 
     if not name or not email:
         return jsonify({"error": "name and email required"}), 400
@@ -3029,10 +3002,7 @@ def admin_users_verify(uid):
             u["email_verified"] = True
             u["verified_at"]    = datetime.utcnow().isoformat()
             if u.get("status") == "pending_verification":
-                is_observer = u.get("tier") == "observer"
-                u["status"] = "active" if is_observer else "pending_approval"
-                if is_observer:
-                    u["approved_at"] = datetime.utcnow().strftime("%Y-%m-%d")
+                u["status"] = "pending_approval"     # every plan is paid: waits for its payment
             save_users_db(db)
             # Explicitly required: this one skips the normal email-ownership
             # proof, so the log line needs to be unambiguous about who
@@ -4346,7 +4316,7 @@ def generate_valuation_pdf(property_: dict, inputs: dict, results: dict,
 
 @app.route("/api/valuation/export", methods=["POST"])
 @login_required
-@tier_required("advisory")
+@tier_required("benchmarker")
 def api_valuation_export():
     if not PDF_AVAILABLE:
         return jsonify({"error": "PDF generation temporarily unavailable", "fallback": True}), 503

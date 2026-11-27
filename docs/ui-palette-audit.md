@@ -118,7 +118,7 @@ The Market Overview's two blue entries are the Seasonality chart (official solid
 
 | Family | Colour | Elements | Where (examples) |
 |---|---|---|---|
-| blue | `#006BCC` | 5 | a [color] "Start with Observer →"; a [color] "Reset it →"; a [color] "Terms of Service" |
+| blue | `#006BCC` | 5 | a [color] "Register →"; a [color] "Reset it →"; a [color] "Terms of Service" |
 
 ### /register
 

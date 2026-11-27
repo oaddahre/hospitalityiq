@@ -165,14 +165,14 @@
 /* ═══ Plans ═════════════════════════════════════════════════════════
    The one mapping from plan key to colour. Plan keys are the "tier" on a
    user (users.json) and the "plan" on an organisation (organisations.json):
-   observer | benchmarker | advisory. Any element with data-plan="<key>"
+   benchmarker | advisory. Any element with data-plan="<key>"
    gets the family's --pill-* values; .pill--plan gives it the pill shape.
-   A missing or unknown key falls back to Observer. "admin" is the internal
+   A missing or unknown key gets the neutral grey. "admin" is the internal
    account tag: an ink pill (--text fill, --bg label; white on near-black
    in light mode, inverted in dark). Green and red stay semantic, never
    plans.
    ═══════════════════════════════════════════════════════════════════ */
-[data-plan]                 { --pill-tint: var(--cat-6-tint); --pill-text: var(--cat-6-text); --pill-dot: var(--cat-6-dot); }  /* observer, unknown */
+[data-plan]                 { --pill-tint: var(--cat-6-tint); --pill-text: var(--cat-6-text); --pill-dot: var(--cat-6-dot); }  /* default, unknown */
 [data-plan="benchmarker"]   { --pill-tint: var(--cat-1-tint); --pill-text: var(--cat-1-text); --pill-dot: var(--cat-1-dot); }  /* blue */
 [data-plan="advisory"]      { --pill-tint: var(--cat-4-tint); --pill-text: var(--cat-4-text); --pill-dot: var(--cat-4-dot); }  /* violet */
 [data-plan="admin"]         { --pill-tint: var(--text);       --pill-text: var(--bg);         --pill-dot: var(--bg); }          /* ink */

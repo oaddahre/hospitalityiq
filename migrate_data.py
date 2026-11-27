@@ -252,7 +252,7 @@ def _write_json(path, data):
     os.replace(tmp, path)
 
 
-USER_OPS = ('grant_staff_to_admin_tier', 'observer_to_benchmarker')
+USER_OPS = ('grant_staff_to_admin_tier', 'report_accounts', 'observer_to_benchmarker')
 
 
 def _apply_users(text, P):
@@ -262,6 +262,8 @@ def _apply_users(text, P):
                                 accounts that could open /admin before the
                                 staff role existed) gets staff: true, so no one
                                 loses or gains admin access; the summary names them
+    report_accounts             writes nothing: the summary counts the accounts
+                                by plan and status (as they are before the next op)
     observer_to_benchmarker     users and organisations on "observer" move to
                                 "benchmarker": access only, the status (payment)
                                 is not touched
@@ -291,6 +293,17 @@ def _apply_users(text, P):
             changed += len(new); already += len(hit) - len(new)
             counts['staff granted'] = len(new)
             counts['staff accounts'] = ' '.join(sorted(u.get('email', '?') for u in hit)) or 'none'
+        elif op == 'report_accounts':
+            by = {}
+            for u in users:
+                k = f"{u.get('tier') or '?'}/{u.get('status') or '?'}"
+                by[k] = by.get(k, 0) + 1
+            counts['accounts by plan/status'] = ' '.join(f'{k}={v}' for k, v in sorted(by.items())) or 'none'
+            ob = {}
+            for o in (org_list or []):
+                k = f"{o.get('plan') or '?'}/{o.get('status') or '?'}"
+                ob[k] = ob.get(k, 0) + 1
+            counts['organisations by plan/status'] = ' '.join(f'{k}={v}' for k, v in sorted(ob.items())) or 'none'
         elif op == 'observer_to_benchmarker':
             uo = [u for u in users if u.get('tier') == 'observer']
             for u in uo:
@@ -301,6 +314,7 @@ def _apply_users(text, P):
             users_dirty |= bool(uo); orgs_dirty |= bool(oo)
             changed += len(uo) + len(oo)
             counts['observer users moved'] = len(uo)
+            counts['moved accounts'] = ' '.join(sorted(u.get('email', '?') for u in uo)) or 'none'
             counts['observer organisations moved'] = len(oo)
     if users_dirty:
         _write_json(P['users'], db)

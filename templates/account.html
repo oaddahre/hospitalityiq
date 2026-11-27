@@ -183,7 +183,7 @@
         <div class="acc-field__label">Plan</div>
         <div class="acc-field__value">
           <span class="k-pill">
-            {{ {'observer': 'Observer', 'benchmarker': 'Benchmarker', 'advisory': 'Advisory'}[plan] }}
+            {{ {'benchmarker': 'Benchmarker', 'advisory': 'Advisory'}.get(plan, 'Benchmarker') }}
           </span>
         </div>
       </div>
