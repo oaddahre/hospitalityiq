@@ -5063,19 +5063,17 @@ def api_live_kpis():
     return resp
 
 
-@app.route('/api/destination-seasonality')
-@login_required
-def api_destination_seasonality():
-    """One destination's Seasonality tab: the past 12 months' official monthly
+def destination_seasonality(city):
+    """One destination's seasonality: the past 12 months' official monthly
     occupancy (published months only, the others are gaps, never zero) and the
     next 12 months' Kodo estimate with its range, read from the nightly model
     output (occupancy_compare.json, each hotel on the model it is shown with,
-    weighted by rooms). Nothing is estimated here."""
+    weighted by rooms). Nothing is estimated here. None for an unknown
+    destination. Shared by the Seasonality tab and the market study."""
     import occupancy_compare as OC
-    city = request.args.get('city', '')
     hotels = RB.load_hotels(DATA_DIR)
     if not city or city not in {h.get('city') for h in hotels.values()}:
-        return jsonify({'error': 'unknown destination'}), 404
+        return None
     lm = OMM.latest_month()
     s = OMM.series(city)
     # a figure whose month the release did not show (July 2026) is shown as estimated, not official
@@ -5113,11 +5111,89 @@ def api_destination_seasonality():
                  if den and all(x[i] is not None for x in got) else None)
             nxt.append({'month': m, 'occ': w(0), 'low': w(1), 'high': w(2), 'hotels': len(got)})
     conf = LK.destination_confidence(hotels).get(city)
-    return jsonify({'city': city, 'past': past, 'official_months': sum(1 for p in past if p['status'] == 'official'),
+    return ({'city': city, 'past': past, 'official_months': sum(1 for p in past if p['status'] == 'official'),
                     'unconfirmed_months': [p['month'] for p in past if p['status'] == 'estimated'],
                     'official_level': (mp.get('level') if past and any(p['occ'] is not None for p in past) else None),
                     'next': nxt, 'model_run': run, 'confidence': conf,
                     'hotels': sum(1 for h in hotels.values() if h.get('city') == city)})
+
+
+# ─── Market study (market_study.py): the data it reads, all already on the site ───
+
+import market_study as MS
+
+MARKET_STUDY_CONFIG = os.path.join(DATA_DIR, "market_study.json")
+
+
+def market_study_config():
+    """The defaults (market_study.DEFAULTS) with the admin's values (market_study.json)."""
+    try:
+        with open(MARKET_STUDY_CONFIG, encoding="utf-8") as f:
+            over = json.load(f)
+    except (OSError, ValueError):
+        over = {}
+    return MS.config(over if isinstance(over, dict) else {})
+
+
+def market_study_brand_groups():
+    """Brand groups present in Morocco (open hotels), independents left out."""
+    _, _, merged = load_data()
+    return sorted({g for g in merged["brand_group"].dropna().astype(str) if g and not MS.is_independent(g)})
+
+
+def market_study_data(city):
+    """What a study of `city` reads: hotels with their published rate and
+    occupancy (est.), the 30-night live figures with ranges, the destination's
+    seasonality, the national official series, the pipeline (without its
+    investment column) and the data dates."""
+    _, _, merged = load_data()
+    cols = ["id", "name", "city", "category", "brand_group", "keys", "bar_mad", "bar_nights", "occupancy",
+            "under_renovation", "seasonal_closure"]
+    hotels = _nan_to_none(merged[cols].to_dict(orient="records"))
+    today = _casablanca_today()
+    live = LK.get(DATA_DIR, today)
+    nat = OMM.raw_series("Hôtels classés")
+    lm = OMM.latest_month()
+    months = [OMM.shift(lm, -k) for k in range(23, -1, -1)] if lm else []
+    national = [(m, nat[m][0]) for m in months if m in nat and nat[m][1] in ("official", "unconfirmed", "derived")]
+    try:
+        with open(os.path.join(DATA_DIR, "pipeline.csv"), encoding="utf-8") as f:
+            pipeline = [{k: v for k, v in r.items() if k != "investment_mad"} for r in csv.DictReader(f)]
+    except OSError:
+        pipeline = []
+    meta = bar_meta()
+    return {
+        "hotels": hotels, "live": live.get("hotels") or {}, "seasonality": destination_seasonality(city) or {},
+        "confidence": LK.destination_confidence(RB.load_hotels(DATA_DIR)), "national": national, "pipeline": pipeline,
+        "meta": {"today": today.isoformat(), "bar_since": meta.get("since"), "bar_days": meta.get("days"),
+                 "rates_updated": live.get("rates_updated"), "model_run": live.get("model_run"), "official_latest": lm,
+                 "window": live.get("window")},
+    }
+
+
+def market_study_compute(form):
+    """(inputs, errors, facts, ratings): validated inputs, the facts and the ratings."""
+    cfg = market_study_config()
+    inp, err = MS.validate(form, cfg, market_study_brand_groups(), _casablanca_today())
+    if err:
+        return inp, err, None, None
+    facts = MS.build_facts(inp, market_study_data(inp["destination"]), cfg)
+    return inp, {}, facts, MS.rate(facts, cfg)
+
+
+@app.route('/api/destination-seasonality')
+@login_required
+def api_destination_seasonality():
+    """One destination's Seasonality tab: the past 12 months' official monthly
+    occupancy (published months only, the others are gaps, never zero) and the
+    next 12 months' Kodo estimate with its range, read from the nightly model
+    output (occupancy_compare.json, each hotel on the model it is shown with,
+    weighted by rooms). Nothing is estimated here."""
+    city = request.args.get('city', '')
+    out = destination_seasonality(city)
+    if out is None:
+        return jsonify({'error': 'unknown destination'}), 404
+    return jsonify(out)
 
 
 @app.route('/api/rates/past')
