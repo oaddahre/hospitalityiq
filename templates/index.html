@@ -1529,19 +1529,20 @@
 
         <!-- ── Editorial main view ── -->
         <div id="editorial-view">
-          <div class="screen-header">
-            <h1>Kodo Editorial</h1>
-            <p class="screen-sub-tags">Morocco · Hotel Market · Industry Intelligence</p>
+          <div class="k-head">
+            <h1 class="k-title">News</h1>
+            <p class="k-line">Kodo's notes on Morocco's hotel market: market intelligence, pipeline, openings and interviews.</p>
           </div>
 
-          <!-- Category filter pills -->
-          <div class="ed-cat-bar" id="ed-cat-bar">
-            <button class="ed-cat-pill active" data-cat="all">All</button>
-            <button class="ed-cat-pill" data-cat="Market Intelligence">Market Intelligence</button>
-            <button class="ed-cat-pill" data-cat="Pipeline">Pipeline</button>
-            <button class="ed-cat-pill" data-cat="Openings">Openings</button>
-            <button class="ed-cat-pill" data-cat="Interviews">Interviews</button>
-            <button class="ed-cat-pill" data-cat="Sponsored">Sponsored</button>
+          <div class="k-filters ed-filters">
+            <div class="k-seg ed-cat-bar" id="ed-cat-bar" role="group" aria-label="Category">
+              <button type="button" class="ed-cat-pill active" data-cat="all" aria-pressed="true">All</button>
+              <button type="button" class="ed-cat-pill" data-cat="Market Intelligence" aria-pressed="false">Market Intelligence</button>
+              <button type="button" class="ed-cat-pill" data-cat="Pipeline" aria-pressed="false">Pipeline</button>
+              <button type="button" class="ed-cat-pill" data-cat="Openings" aria-pressed="false">Openings</button>
+              <button type="button" class="ed-cat-pill" data-cat="Interviews" aria-pressed="false">Interviews</button>
+              <button type="button" class="ed-cat-pill" data-cat="Sponsored" aria-pressed="false">Sponsored</button>
+            </div>
           </div>
 
           <!-- Featured hero -->
@@ -1550,7 +1551,7 @@
           <!-- Sponsored strip -->
           <div id="ed-sponsored-wrap" style="display:none;margin-bottom:24px">
             <div class="ed-section-header">
-              <span class="ed-section-title">Partner Features</span>
+              <span class="ed-section-title">Partner features</span>
               <span class="ed-sponsored-label">Sponsored</span>
             </div>
             <div class="ed-sponsored-strip" id="ed-sponsored-strip"></div>
@@ -1561,13 +1562,13 @@
 
           <!-- Load more -->
           <div style="text-align:center;margin-top:24px;margin-bottom:8px">
-            <button class="ed-load-more" id="ed-load-more" style="display:none" onclick="loadMoreArticles()">Load more articles</button>
+            <button type="button" class="k-btn ed-load-more" id="ed-load-more" style="display:none" onclick="loadMoreArticles()">Load more articles</button>
           </div>
         </div>
 
         <!-- ── Article detail view ── -->
         <div id="article-detail-view" style="display:none">
-          <button class="back-btn" id="article-back-btn" onclick="closeArticleDetail()">← Back to Editorial</button>
+          <button class="back-btn" id="article-back-btn" onclick="closeArticleDetail()">← Back to News</button>
           <div class="ed-article-wrap">
             <div class="ed-article-meta-top" id="art-meta-top"></div>
             <h1 class="ed-article-title" id="art-title"></h1>

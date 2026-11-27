@@ -107,3 +107,13 @@ class TourismPage(unittest.TestCase):
         self.assertIn('function tourNotesToInfo()', JS)
         css = read('static', 'css', 'style.css')
         self.assertIn('#screen-tourism .pill--blue, #screen-tourism .pill--green', css)
+
+
+class NewsPage(unittest.TestCase):
+    def test_news(self):
+        html = HTML[HTML.index('<section class="screen" id="screen-news">'):]
+        html = html[:html.index('</section>')]
+        self.assertIn('<h1 class="k-title">News</h1>', html)
+        self.assertIn('class="k-seg ed-cat-bar" id="ed-cat-bar"', html)
+        css = read('static', 'css', 'style.css')
+        self.assertIn('#screen-news .pill--blue, #screen-news .pill--green', css)

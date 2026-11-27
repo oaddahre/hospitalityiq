@@ -4082,8 +4082,7 @@ function closeArticleDetail() {
 document.getElementById('ed-cat-bar').addEventListener('click', e => {
   const btn = e.target.closest('.ed-cat-pill');
   if (!btn) return;
-  document.querySelectorAll('.ed-cat-pill').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.ed-cat-pill').forEach(b => { b.classList.toggle('active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
   newsCatFilter = btn.dataset.cat;
   if (newsInited) renderEditorialMain();
 });

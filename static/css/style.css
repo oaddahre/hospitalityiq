@@ -6886,3 +6886,16 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
 #screen-tourism .evcal-search .k-search { width: 100%; }
 #screen-tourism .evcal .export-btn { background: transparent; border-color: var(--line); }
 @media (max-width: 767px) { #screen-tourism .tour-toolbar > * { flex: 0 0 auto; } #screen-tourism .tour-toolbar .k-select { flex: 1 1 auto; width: auto; } }
+
+/* ─── News on the UI standard (docs/ui-standard.md) ─── */
+#screen-news .ed-cat-bar { margin: 0; }
+#screen-news .ed-cat-pill { border: 0; font-weight: 500; }
+#screen-news .ed-cat-pill.active { background: var(--selected); color: var(--on-action); }
+#screen-news .ed-hero-card, #screen-news .ed-card, #screen-news .ed-spons-card { background: var(--card-bg); border-color: var(--line); box-shadow: none; }
+#screen-news .ed-card:hover, #screen-news .ed-hero-card:hover { background: var(--row-hover); }
+#screen-news .pill--blue, #screen-news .pill--green, #screen-news .pill--orange, #screen-news .pill--violet, #screen-news .pill--sky {
+  --pill-tint: color-mix(in srgb, var(--text) 6%, transparent); --pill-text: var(--text-2); --pill-dot: var(--text-3); }
+#screen-news .ed-spons-logo-placeholder { background: var(--bg); color: var(--text-2); border: 1px solid var(--line); }
+#screen-news .ed-spons-cta { background: transparent; color: var(--text); border: 1px solid var(--text); }
+#screen-news .ed-spons-cta:hover { background: var(--text); color: var(--bg); }
+#screen-news .ed-article-wrap { background: transparent; }
