@@ -194,6 +194,8 @@
     .checkbox-row a:hover { text-decoration: underline; }
 
     /* ── Plan info box ── */
+    .seats-total { margin-top: 8px; font-size: 0.8125rem; color: var(--text-2); line-height: 1.5; }
+    .seats-total strong { color: var(--text); font-weight: 600; }
     .plan-box {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -298,7 +300,8 @@
 
 <div class="auth-wrap">
   <div class="auth-card">
-    <p class="auth-eyebrow">Observer Plan</p>
+    {% set P = pricing() %}
+    <p class="auth-eyebrow">Benchmarker</p>
     <h1 class="auth-heading">Create your account.</h1>
     <p class="auth-sub">Morocco's leading hospitality intelligence platform — market data, benchmarks, and AI analytics.</p>
 
@@ -307,13 +310,13 @@
     {% endif %}
 
     <div class="plan-box">
-      <p class="plan-box__name">Observer</p>
-      <p class="plan-box__price">MAD 990 <span style="font-size:0.875rem;font-weight:400;color:var(--text-2);">/ month</span></p>
+      <p class="plan-box__name">Benchmarker · all features</p>
+      <p class="plan-box__price">{{ P.first_price }} {{ P.currency }} <span style="font-size:0.875rem;font-weight:400;color:var(--text-2);">per seat per month</span></p>
       <ul class="plan-box__items">
         <li>{{ public_stats().hotels }}+ hotels · {{ public_stats().destinations }} destinations</li>
-        <li>National KPIs, city and segment data</li>
-        <li>Hotel directory and market news</li>
-        <li>10 AI Analyst queries per month</li>
+        <li>Market overview, hotels, brands, owners, pipeline and tourism</li>
+        <li>Benchmarking, reports, valuation tool and exports</li>
+        <li>AI Analyst</li>
       </ul>
     </div>
 
@@ -329,6 +332,14 @@
           <input class="form-input" type="text" id="organisation" name="organisation"
                  placeholder="Groupe Alliances">
         </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="seats">Seats (users) *</label>
+        <input class="form-input" type="number" id="seats" name="seats" min="1" max="200" step="1" value="1" required inputmode="numeric">
+        <p class="seats-total" id="seats-total" aria-live="polite"
+           data-first-seats="{{ P.first_seats }}" data-first-price="{{ P.first_price_n }}" data-extra-price="{{ P.extra_price_n }}" data-currency="{{ P.currency }}">
+          1 seat: <strong>{{ P.first_price }} {{ P.currency }} per month</strong> · {{ P.rule }}
+        </p>
       </div>
       <div class="form-group">
         <label class="form-label" for="email">Email Address *</label>
@@ -362,9 +373,8 @@
         <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
       </div>
 
-      <input type="hidden" name="tier" value="observer">
       <button type="submit" class="btn-primary">Create account</button>
-      <p class="btn-note">Access activated immediately — billing handled separately</p>
+      <p class="btn-note">After you confirm your email, we send the payment details. Access opens once the payment is confirmed.</p>
     </form>
 
     <div class="auth-footer">
@@ -375,5 +385,21 @@
 
 <p class="auth-note">© 2026 Kodo Hospitality · Morocco Hospitality Intelligence</p>
 
+<script>
+  // The monthly total for the seats chosen, from the pricing settings
+  (function () {
+    var input = document.getElementById('seats'), out = document.getElementById('seats-total');
+    if (!input || !out) return;
+    var d = out.dataset, first = +d.firstSeats, p1 = +d.firstPrice, p2 = +d.extraPrice, cur = d.currency;
+    var rule = out.textContent.split('·').slice(1).join('·').trim();
+    function update() {
+      var n = Math.max(1, Math.min(200, parseInt(input.value, 10) || 1));
+      var total = Math.min(n, first) * p1 + Math.max(0, n - first) * p2;
+      out.innerHTML = n + (n === 1 ? ' seat' : ' seats') + ': <strong>' + total.toLocaleString('en') + ' ' + cur + ' per month</strong> · ' + rule;
+    }
+    input.addEventListener('input', update);
+    update();
+  })();
+</script>
 </body>
 </html>

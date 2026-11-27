@@ -124,6 +124,9 @@
     }
     .acc-btn:hover { background: var(--action-hover); }
     .acc-btn:disabled { opacity: 0.45; cursor: default; }
+    .acc-btn--outline { background: transparent; color: var(--text); border: 1px solid var(--text); }
+    .acc-btn--outline:hover { background: var(--text); color: var(--bg); }
+    .acc-seats-line { font-size: 12px; color: var(--text-2); margin: -4px 0 10px; }
     .acc-msg { font-size: 12px; }
     .acc-msg--ok  { color: var(--positive); }
     .acc-msg--err { color: var(--negative); }
@@ -217,9 +220,13 @@
   <!-- Team section — org owners only -->
   <div class="acc-card" id="team-card">
     <div class="acc-card__title" id="team-card-title">Team · loading…</div>
+    <p class="acc-seats-line" id="team-seats-line"></p>
     <div id="team-members-list" style="min-height:40px"></div>
+    <p class="acc-msg" id="team-full-msg" style="display:none;margin-top:12px"></p>
     <div class="acc-footer-row" style="margin-top:16px">
-      <button class="acc-btn" onclick="openInviteModal()">+ Invite member</button>
+      <button class="acc-btn" id="invite-open-btn" onclick="openInviteModal()">+ Invite member</button>
+      <button class="acc-btn acc-btn--outline" id="seats-add-btn" onclick="requestSeats()">Add seats</button>
+      <span id="seats-msg" class="acc-msg" style="display:none"></span>
     </div>
   </div>
 
@@ -322,9 +329,22 @@
       const members = data.members || [];
 
       const seatsUsed  = org.seats_used  ?? members.filter(m => ['active','invited'].includes(m.status)).length;
-      const seatsTotal = org.seats_total ?? 1;
+      const seatsTotal = org.seats_purchased ?? org.seats_total ?? 1;
+      window._seats = { used: seatsUsed, total: seatsTotal, open: !!org.seat_request_open };
       document.getElementById('team-card-title').textContent =
         `Team · ${seatsUsed} of ${seatsTotal} seat${seatsTotal > 1 ? 's' : ''} used`;
+      // the subscription in one line: seats and the monthly amount (pricing settings)
+      document.getElementById('team-seats-line').textContent = org.monthly_amount != null
+        ? `${seatsTotal} seat${seatsTotal > 1 ? 's' : ''} · ${org.monthly_amount.toLocaleString('en')} ${org.currency} per month (${org.price_rule})`
+          + (org.paid_until ? ` · paid until ${org.paid_until}` : '')
+        : `Advisory · custom${org.paid_until ? ` · paid until ${org.paid_until}` : ''}`;
+      const full = seatsUsed >= seatsTotal;
+      const fullMsg = document.getElementById('team-full-msg');
+      fullMsg.style.display = full ? '' : 'none';
+      fullMsg.textContent = org.seat_request_open
+        ? 'All seats are in use. Your request for more seats has been sent: Kodo will confirm the new amount.'
+        : 'All seats are in use. To invite someone else, add seats.';
+      document.getElementById('invite-open-btn').disabled = full;
 
       const active  = members.filter(m => m.status === 'active'  && m.role !== 'owner');
       const invited = members.filter(m => m.status === 'invited');
@@ -408,6 +428,25 @@
     const res = await fetch(`/api/organisation/members/${uid}`, { method: 'DELETE' });
     if (!res.ok) { const d = await res.json(); alert(d.error || 'Failed.'); return; }
     await loadTeam();
+  }
+
+  // "Add seats": a request to Kodo (seats are changed by Kodo, the amount follows the pricing)
+  async function requestSeats() {
+    const cur = (window._seats && window._seats.total) || 1;
+    const v = prompt(`How many seats do you need in total? (now ${cur})`, String(cur + 1));
+    if (v === null) return;
+    const n = parseInt(v, 10);
+    const msg = document.getElementById('seats-msg');
+    msg.style.display = 'inline';
+    if (!(n > cur)) { msg.className = 'acc-msg acc-msg--err'; msg.textContent = `Enter a number above ${cur}.`; return; }
+    try {
+      const res = await fetch('/api/organisation/seat-request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seats: n }) });
+      const data = await res.json();
+      if (!res.ok) { msg.className = 'acc-msg acc-msg--err'; msg.textContent = data.error || 'Request failed.'; return; }
+      msg.className = 'acc-msg acc-msg--ok';
+      msg.textContent = `Request sent: ${n} seats, ${data.request.amount != null ? data.request.amount.toLocaleString('en') + ' MAD per month' : 'custom amount'}. Kodo will confirm.`;
+      loadTeam();
+    } catch { msg.className = 'acc-msg acc-msg--err'; msg.textContent = 'Request failed — please try again.'; }
   }
 
   function openInviteModal() {

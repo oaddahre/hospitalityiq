@@ -29,6 +29,9 @@ admin upload panel in the Rates panel:
     .users.json        Accounts (users.json, organisations.json; kodo-users-1):
                        a list of named operations, each idempotent (see
                        _apply_users); the summary names the accounts changed
+    .billing.json      Pricing settings (billing.json; kodo-billing-1):
+                       "set_if_missing" keys are written only when absent,
+                       so a value changed in Admin > Billing is never overwritten
     .news.json         Remove articles from news.json (kodo-news-1:
                        {"remove": [{"id", "slug"}]}): an article is removed
                        only when both its id and slug match
@@ -65,7 +68,7 @@ from run_lock import acquire_lock
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 MIGRATIONS_DIR = os.path.join(APP_DIR, 'data_migrations')
-NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json|columns\.json|flags\.json|users\.json)$')
+NAME_RE = re.compile(r'^(\d{4})_[a-z0-9_]+\.(hotels\.csv|owners\.json|coordinates\.csv|ids\.json|news\.json|profiles\.json|columns\.json|flags\.json|users\.json|billing\.json)$')
 OFF = {'off', '0', 'false', 'no'}
 
 
@@ -93,6 +96,7 @@ def paths(data_dir):
         'flags': os.path.join(data_dir, 'hotel_flags.json'),
         'users': os.path.join(data_dir, 'users.json'),
         'orgs': os.path.join(data_dir, 'organisations.json'),
+        'billing': os.path.join(data_dir, 'billing.json'),
         'state': os.path.join(data_dir, 'data_migrations_state.json'),
         'lock': os.path.join(data_dir, 'data_migrations.lock'),
     }
@@ -101,7 +105,7 @@ def paths(data_dir):
 # Files each kind can write (copied first, put back on failure)
 TOUCHES = {'hotels.csv': ('hotels', 'pipeline', 'performance', 'comp_sets'), 'owners.json': ('owners',),
            'coordinates.csv': ('hotels',), 'ids.json': ('ids', 'overrides'), 'news.json': ('news',), 'profiles.json': ('owners', 'brand_profiles'),
-           'columns.json': ('performance',), 'flags.json': ('flags',), 'users.json': ('users', 'orgs')}
+           'columns.json': ('performance',), 'flags.json': ('flags',), 'users.json': ('users', 'orgs'), 'billing.json': ('billing',)}
 
 
 def available(migrations_dir=MIGRATIONS_DIR):
@@ -113,7 +117,7 @@ def available(migrations_dir=MIGRATIONS_DIR):
             continue                    # after_v2_switch/: run by model_switch.py when the switch is complete
         m = NAME_RE.match(name)
         if not m:
-            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json|flags.json|users.json>')
+            raise MigrationError(f'data_migrations/{name}: name must be NNNN_what_it_does.<hotels.csv|owners.json|coordinates.csv|ids.json|news.json|profiles.json|columns.json|flags.json|users.json|billing.json>')
         if m.group(1) in seen:
             raise MigrationError(f'data_migrations: number {m.group(1)} used twice ({seen[m.group(1)]}, {name})')
         seen[m.group(1)] = name
@@ -196,6 +200,8 @@ def _apply(kind, path, P, actor):
         return _apply_flags(text, P)
     if kind == 'users.json':
         return _apply_users(text, P)
+    if kind == 'billing.json':
+        return _apply_billing(text, P)
     ids, ovs, rej = CA.read_ids_bundle(text)
     plan = CA.ids_plan(P['hotels'], P['ids'], P['overrides'], ids, ovs, rej)
     _problems(plan, {'import', 'reject', 'already'}, 'Google ID')
@@ -252,7 +258,23 @@ def _write_json(path, data):
     os.replace(tmp, path)
 
 
-USER_OPS = ('grant_staff_to_admin_tier', 'report_accounts', 'observer_to_benchmarker')
+def _apply_billing(text, P):
+    """Pricing settings: write the "set_if_missing" keys that billing.json does
+    not have yet; keys already there (an admin's values) are kept."""
+    spec = json.loads(text)
+    if spec.get('format') != 'kodo-billing-1' or not isinstance(spec.get('set_if_missing'), dict):
+        raise MigrationError('billing migration: format must be kodo-billing-1 with a "set_if_missing" object')
+    cur = _read_json(P['billing'], {})
+    if not isinstance(cur, dict):
+        raise MigrationError('billing migration: billing.json is not an object')
+    new = {k: v for k, v in spec['set_if_missing'].items() if k not in cur}
+    if new:
+        cur.update(new)
+        _write_json(P['billing'], cur)
+    return len(new), len(spec['set_if_missing']) - len(new), [], {'set': len(new), 'kept': len(spec['set_if_missing']) - len(new)}
+
+
+USER_OPS = ('grant_staff_to_admin_tier', 'report_accounts', 'observer_to_benchmarker', 'seats_from_members')
 
 
 def _apply_users(text, P):
@@ -264,6 +286,9 @@ def _apply_users(text, P):
                                 loses or gains admin access; the summary names them
     report_accounts             writes nothing: the summary counts the accounts
                                 by plan and status (as they are before the next op)
+    seats_from_members          every organisation without seats_purchased gets
+                                its current number of users (active, invited or
+                                waiting), at least 1; the summary names those with more than 1
     observer_to_benchmarker     users and organisations on "observer" move to
                                 "benchmarker": access only, the status (payment)
                                 is not touched
@@ -304,6 +329,22 @@ def _apply_users(text, P):
                 k = f"{o.get('plan') or '?'}/{o.get('status') or '?'}"
                 ob[k] = ob.get(k, 0) + 1
             counts['organisations by plan/status'] = ' '.join(f'{k}={v}' for k, v in sorted(ob.items())) or 'none'
+        elif op == 'seats_from_members':
+            multi, n = [], 0
+            for o in (org_list or []):
+                if o.get('seats_purchased'):
+                    already += 1
+                    continue
+                members = [u for u in users if u.get('organisation_id') == o.get('id')
+                           and u.get('status') in ('active', 'invited', 'pending_approval', 'pending_verification')]
+                o['seats_purchased'] = max(1, len(members))
+                orgs_dirty = True
+                n += 1
+                if len(members) > 1:
+                    multi.append(f"{o.get('name', '?')}={len(members)}")
+            changed += n
+            counts['organisations given seats'] = n
+            counts['multi-user organisations'] = ' '.join(sorted(multi)) or 'none'
         elif op == 'observer_to_benchmarker':
             uo = [u for u in users if u.get('tier') == 'observer']
             for u in uo:

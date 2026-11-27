@@ -83,6 +83,7 @@
     <button class="list-pill active" data-section="overview">Overview</button>
     <button class="list-pill" data-section="users">Users</button>
     <button class="list-pill" data-section="orgs">Organisations</button>
+    <button class="list-pill" data-section="billing">Billing</button>
     <button class="list-pill" data-section="news">News</button>
     <button class="list-pill" data-section="uploads">Uploads</button>
     <button class="list-pill" data-section="rates">Rates</button>
@@ -162,6 +163,16 @@
   </section>
 
   <!-- ══════════════════ ORGANISATIONS ══════════════════ -->
+  <section class="adm-section" id="section-billing" style="display:none">
+    <h1 class="adm-section-title">Billing</h1>
+    <p class="adm-section-desc">Prices, payment instructions and every account's payment status. Payments are recorded by hand (bank transfer) for now.</p>
+    <div id="billing-warning"></div>
+    <p class="adm-list-filter-label" style="margin-top:18px">Accounts</p>
+    <div class="adm-ledger" id="billing-accounts"><p class="adm-empty">Loading…</p></div>
+    <p class="adm-list-filter-label" style="margin-top:28px">Prices and payment instructions</p>
+    <div id="billing-settings"></div>
+  </section>
+
   <section class="adm-section" id="section-orgs" style="display:none">
     <h1 class="adm-section-title">Organisations</h1>
     <p class="adm-section-desc">Plan, seats and members for every organisation.</p>

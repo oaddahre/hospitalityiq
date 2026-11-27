@@ -221,6 +221,12 @@
     .top-bar-logo-img.logo-light { display: none; }
     :root:not([data-theme="dark"]) .top-bar-logo-img.logo-dark { display: none; }
     :root:not([data-theme="dark"]) .top-bar-logo-img.logo-light { display: block; }
+      .pay-box { border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin: 18px 0 0; text-align: left; }
+    .pay-box__label { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); margin: 0 0 6px; }
+    .pay-box__amount { font-size: 1.5rem; font-weight: 700; color: var(--text); margin: 0; }
+    .pay-box__amount span { font-size: 0.875rem; font-weight: 400; color: var(--text-2); }
+    .pay-box__rule { font-size: 0.8125rem; color: var(--text-2); margin: 6px 0 0; }
+    .pay-box__text { font-size: 0.875rem; color: var(--text); line-height: 1.6; margin: 0; white-space: pre-line; }
   </style>
 </head>
 <body>
@@ -235,32 +241,34 @@
 
 <div class="main-wrap">
   <div class="card">
-    <div class="check-icon">✓</div>
-    <p class="eyebrow">Account Created</p>
+    <p class="eyebrow">Payment pending</p>
     <h1 class="heading">Almost there.</h1>
     <p class="body-text">
-      Your Kodo Observer account has been created. Complete your subscription to activate platform access.
+      {% if account_email %}Your account ({{ account_email }}) is created and your email is confirmed.{% else %}Your account is created.{% endif %}
+      Access opens as soon as your payment is confirmed: we will email you.
     </p>
 
-    <ul class="features">
-      <li>45 branded hotels tracked across 7 Moroccan cities</li>
-      <li>National KPIs, city and segment breakdowns</li>
-      <li>Full hotel directory with performance data</li>
-      <li>Morocco hospitality market news</li>
-      <li>10 AI Analyst queries per month</li>
-    </ul>
+    {% if amount %}
+    <div class="pay-box">
+      <p class="pay-box__label">Benchmarker · {{ seats }} seat{{ 's' if seats != 1 else '' }}</p>
+      <p class="pay-box__amount">{{ amount }} {{ currency }} <span>per month</span></p>
+      <p class="pay-box__rule">{{ price_rule }}</p>
+      {% if reference %}<p class="pay-box__rule">Reference: <strong>{{ reference }}</strong></p>{% endif %}
+    </div>
+    {% endif %}
 
-    <div class="coming-soon">
-      <p class="coming-soon__label">Stripe Payment · Coming Soon</p>
-      <p class="coming-soon__title">Set up payment → MAD 990/month</p>
-      <p class="coming-soon__text">Secure card billing via Stripe is being integrated. In the meantime, contact us to activate your account manually.</p>
+    <div class="pay-box">
+      <p class="pay-box__label">How to pay</p>
+      {% if instructions %}
+      <p class="pay-box__text">{{ instructions }}</p>
+      {% else %}
+      <p class="pay-box__text">The payment details are being prepared: Kodo will email them to you.</p>
+      {% endif %}
     </div>
 
-    <button class="btn-disabled" disabled>Set up payment (coming soon)</button>
-
     <p class="help-text">
-      To activate your account now, email us at <a href="mailto:hello@kodo.ma">hello@kodo.ma</a> with your registration email. We'll activate your account within one business day.<br><br>
-      Already have an account? <a href="/login">Sign in →</a>
+      Questions about your subscription: <a href="mailto:contact@kodohospitality.com">contact@kodohospitality.com</a>.<br><br>
+      Already paid? Your access opens once the payment is confirmed. <a href="/login">Sign in →</a>
     </p>
   </div>
 </div>

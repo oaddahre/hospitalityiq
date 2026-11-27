@@ -1,0 +1,12 @@
+{
+  "format": "kodo-billing-1",
+  "note": "Pricing settings (billing.json), editable in Admin > Billing. Only missing keys are written: a value an admin has changed is never overwritten. Benchmarker: 990 MAD per seat per month for the first 3 seats, 590 MAD for each additional seat; Advisory: custom. The payment instructions are empty until an admin fills them in.",
+  "set_if_missing": {
+    "currency": "MAD",
+    "benchmarker_first_seats": 3,
+    "benchmarker_first_seat_price": 990,
+    "benchmarker_extra_seat_price": 590,
+    "advisory_custom": true,
+    "payment_instructions": ""
+  }
+}

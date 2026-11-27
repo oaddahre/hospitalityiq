@@ -41,6 +41,7 @@ from hotel_flags import CLOSED_CLIENT_NOTE as HFL_CLOSED_NOTE
 import events_db as EV
 import tourism_data as TD
 import rates_store as RS
+import billing as BL
 import live_kpis as LK
 from utils import (day_label, NA, safe_float, safe_int, safe_text, fmt_num, period_label,
                    NOT_AVAILABLE)
@@ -99,6 +100,19 @@ print(
     f"secure={app.config.get('SESSION_COOKIE_SECURE')}, "
     f"secret_key_set={bool(os.environ.get('SECRET_KEY'))}"
 )
+
+@app.context_processor
+def inject_pricing():
+    """The pricing settings for every page (billing.json, Admin > Billing):
+    {{ pricing().first_price }} etc., so no page writes a price itself."""
+    def pricing():
+        st = BL.load_settings(DATA_DIR)
+        return {"currency": st.get("currency", "MAD"), "first_seats": int(st["benchmarker_first_seats"]),
+                "first_price": BL.fmt(st["benchmarker_first_seat_price"]), "extra_price": BL.fmt(st["benchmarker_extra_seat_price"]),
+                "first_price_n": int(st["benchmarker_first_seat_price"]), "extra_price_n": int(st["benchmarker_extra_seat_price"]),
+                "rule": BL.price_rule(st)}
+    return {"pricing": pricing}
+
 
 @app.context_processor
 def inject_kodo_flags():
@@ -227,7 +241,8 @@ VERIFICATION_TOKENS_FILE = os.path.join(DATA_DIR, "verification_tokens.json")
 # Benchmarker); an unknown value gets no paid access.
 TIER_ORDER  = {"benchmarker": 1, "advisory": 1}
 PAID_TIERS  = ("benchmarker", "advisory")
-PLAN_SEATS  = {"benchmarker": 3, "advisory": 5}
+# Seats and prices: billing.py (seats_purchased on the organisation; the
+# prices in DATA_DIR/billing.json, Admin > Billing)
 
 _login_failures: dict = {}   # {email: {"count": int, "since": datetime}}
 _reset_requests: dict = {}   # {email: datetime of last forgot-password request} — spam cooldown
@@ -688,6 +703,56 @@ def _reset_email_html(reset_url: str) -> str:
                  "If the button does not work copy and paste this link into your browser:<br>"
                  + _email_link(reset_url),
     )
+
+
+def _payment_email_html(name: str, seats: int, amount, instructions: str) -> str:
+    """Registration received: the amount and the payment instructions (Admin > Billing)."""
+    settings = BL.load_settings(DATA_DIR)
+    cur = settings.get("currency", "MAD")
+    amount_line = (f"{seats} seat{'s' if seats != 1 else ''}: <strong>{BL.fmt(amount)} {cur} per month</strong> "
+                   f"({html.escape(BL.price_rule(settings))})." if amount is not None else
+                   "Your amount is agreed with Kodo (Advisory).")
+    paras = [f"Hi {name}, thank you for registering. Your email is confirmed and your account is waiting for its first payment.",
+             amount_line]
+    if instructions.strip():
+        paras.append("How to pay:<br>" + html.escape(instructions.strip()).replace("\n", "<br>"))
+    else:
+        paras.append("Kodo will send you the payment details shortly.")
+    paras.append("Your access opens as soon as the payment is confirmed: we will email you.")
+    return _email_layout(
+        heading="Registration received",
+        paragraphs=paras,
+        button_label="Payment details",
+        button_url=f"{SITE_URL}/payment-pending",
+        footnote="Questions about your subscription: reply to this email or write to contact@kodohospitality.com.",
+    )
+
+
+def _access_email_html(name: str, paid_until: str) -> str:
+    """Payment confirmed: access activated."""
+    until = f" Your subscription is paid until {html.escape(paid_until)}." if paid_until else ""
+    return _email_layout(
+        heading="Payment confirmed",
+        paragraphs=[f"Hi {name}, your payment is confirmed and your access to Kodo is active.{until}",
+                    "Log in to start: the market overview, hotels, brands, owners, pipeline, benchmarking, reports and the valuation tool are all open to you."],
+        button_label="Log in",
+        button_url=f"{SITE_URL}/login",
+        footnote="Questions about your subscription: reply to this email or write to contact@kodohospitality.com.",
+    )
+
+
+def _send_account_email(to: str, subject: str, html_body: str) -> bool:
+    resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if not resend.api_key or not to:
+        app.logger.error(f"Account email not sent (no RESEND_API_KEY or address): {subject}")
+        return False
+    try:
+        resend.Emails.send({"from": "Kodo Hospitality <contact@kodohospitality.com>", "to": to,
+                            "subject": subject, "html": html_body})
+        return True
+    except Exception as e:
+        app.logger.error(f"Account email error ({subject}): {e}")
+        return False
 
 
 def _welcome_email_html(name: str, active: bool) -> str:
@@ -1219,12 +1284,17 @@ def login_page():
                     error = "Please verify your email before logging in."
                     show_resend = True
                     resend_email = email
+                elif user.status == "pending_approval" or (
+                        user.organisation_id and (find_org_by_id(user.organisation_id) or {}).get("status") == "pending"):
+                    # waiting for the first payment: the amount and instructions
+                    session["pending_account_user"] = user.id
+                    return redirect(url_for("payment_pending"))
                 elif user.status not in ("active",):
                     error = "Your account is pending activation. Check your email or contact support."
                 else:
                     org = find_org_by_id(user.organisation_id) if user.organisation_id else None
                     if org and org.get("status") == "suspended":
-                        error = "Your organisation account has been suspended. Contact support."
+                        error = "Your account's access is suspended (subscription unpaid). Contact contact@kodohospitality.com."
                     else:
                         _login_failures.pop(email, None)
                         update_user_field(user.id, {"last_login": datetime.utcnow().isoformat()})
@@ -1419,11 +1489,35 @@ def register_page():
             _log_registration_attempt("duplicate_email")
         else:
             reg_tier = "benchmarker"           # the one plan (Advisory is assigned by an admin)
+            seats = BL.clean_seats(request.form.get("seats", "1"))
             # Every self-registered account starts pending_verification and is
             # never logged in automatically; once the email is confirmed it
             # waits for its payment (pending_approval, see api_verify_email).
+            # The account is an organisation the user owns, with the seats
+            # chosen here (billing.py); its payment status starts "pending".
+            uid_new = str(uuid.uuid4())
+            org_id_new = str(uuid.uuid4())
+            amount = BL.monthly_amount(seats, BL.load_settings(DATA_DIR))
+            odb = load_orgs_db()
+            odb["organisations"].append({
+                "id":              org_id_new,
+                "name":            org or name,
+                "plan":            reg_tier,
+                "seats_purchased": seats,
+                "seats_used":      1,
+                "owner_id":        uid_new,
+                "status":          "pending",          # access opens when the payment is recorded
+                "created_at":      datetime.utcnow().strftime("%Y-%m-%d"),
+                "billing_email":   email,
+                "billing":         {"status": "pending", "paid_until": None,
+                                    "history": [{"at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                                                 "action": "registered", "seats": seats, "amount": amount, "by": "self"}]},
+            })
+            save_orgs_db(odb)
             new_user_data = {
-                "id":               str(uuid.uuid4()),
+                "id":               uid_new,
+                "organisation_id":  org_id_new,
+                "role":             "owner",
                 "email":            email,
                 "password_hash":    generate_password_hash(password),
                 "name":             name,
@@ -1456,9 +1550,31 @@ def register_page():
     return render_template("register.html", error=error)
 
 
+def _pending_account(user_id):
+    """(user, organisation, seats, amount) of an account waiting for its
+    payment, for the payment page; None when there is none."""
+    u = find_user_by_id(user_id) if user_id else None
+    if not u:
+        return None
+    org = find_org_by_id(u.organisation_id) if u.organisation_id else None
+    seats = BL.account_seats(org)
+    plan = (org or {}).get("plan") or u.tier
+    return u, org, seats, BL.monthly_amount(seats, BL.load_settings(DATA_DIR), plan)
+
+
 @app.route("/payment-pending")
 def payment_pending():
-    return render_template("payment_pending.html")
+    """The amount and the payment instructions (Admin > Billing) for the
+    account that just registered or tried to log in; the generic page otherwise."""
+    settings = BL.load_settings(DATA_DIR)
+    acc = _pending_account(session.get("pending_account_user"))
+    ctx = {"instructions": (settings.get("payment_instructions") or "").strip(),
+           "price_rule": BL.price_rule(settings), "currency": settings.get("currency", "MAD")}
+    if acc:
+        u, org, seats, amount = acc
+        ctx.update(account_email=u.email, seats=seats, amount=BL.fmt(amount) if amount is not None else None,
+                   reference=(org or {}).get("id", u.id)[:8].upper())
+    return render_template("payment_pending.html", **ctx)
 
 
 @app.route("/accept-invite", methods=["GET"])
@@ -1617,18 +1733,14 @@ def api_verify_email():
     })
     _log_registration_attempt("verified", email=email)
 
-    resend.api_key = os.environ.get("RESEND_API_KEY", "").strip()
-    if resend.api_key:
-        try:
-            resend.Emails.send({
-                "from":    "Kodo Hospitality <contact@kodohospitality.com>",
-                "to":      email,
-                "subject": "Welcome to Kodo Hospitality",
-                "html":    _welcome_email_html(html.escape(user.name), False),
-            })
-        except Exception as e:
-            app.logger.error(f"Welcome email error: {e}")
-
+    # Registration received: the amount and the payment instructions
+    acc = _pending_account(user.id)
+    if acc:
+        _, _, seats, amount = acc
+        _send_account_email(email, "Kodo: registration received, payment details",
+                            _payment_email_html(html.escape(user.name), seats, amount,
+                                                BL.load_settings(DATA_DIR).get("payment_instructions") or ""))
+    session["pending_account_user"] = user.id
     return jsonify({"success": True, "redirect": "/payment-pending"})
 
 
@@ -1910,7 +2022,42 @@ def api_organisation():
         {k: v for k, v in m.items() if k not in ("password_hash", "invite_token")}
         for m in org_members(current_user.organisation_id)
     ]
-    return jsonify({"organisation": org, "members": safe_members})
+    seats = BL.account_seats(org)
+    settings = BL.load_settings(DATA_DIR)
+    org_out = {k: v for k, v in org.items() if k != "billing"}
+    org_out.update(seats_purchased=seats, seats_used=BL.seats_used(org_members(current_user.organisation_id)),
+                   seats_total=seats,                # older name, same value
+                   monthly_amount=BL.monthly_amount(seats, settings, org.get("plan")),
+                   currency=settings.get("currency", "MAD"), price_rule=BL.price_rule(settings),
+                   billing_status=BL.billing_state(org)["status"], paid_until=BL.billing_state(org)["paid_until"],
+                   seat_request_open=any(r.get("status") == "open" for r in org.get("seat_requests") or []))
+    return jsonify({"organisation": org_out, "members": safe_members})
+
+
+@app.route("/api/organisation/seat-request", methods=["POST"])
+@login_required
+def api_org_seat_request():
+    """"Add seats": the owner asks for more seats; an admin changes them in
+    Admin > Billing (the amount follows the pricing settings)."""
+    if not current_user.organisation_id or current_user.role != "owner":
+        return jsonify({"error": "Only the account owner can ask for seats"}), 403
+    data = request.get_json(silent=True) or {}
+    db = load_orgs_db()
+    org = next((o for o in db["organisations"] if o["id"] == current_user.organisation_id), None)
+    if not org:
+        return jsonify({"error": "Organisation not found"}), 404
+    want = BL.clean_seats(data.get("seats"), BL.account_seats(org) + 1)
+    if want <= BL.account_seats(org):
+        return jsonify({"error": "Ask for more seats than you have."}), 400
+    settings = BL.load_settings(DATA_DIR)
+    req = {"at": datetime.utcnow().isoformat(timespec="seconds") + "Z", "by": current_user.email, "seats": want,
+           "amount": BL.monthly_amount(want, settings, org.get("plan")), "status": "open"}
+    org.setdefault("seat_requests", []).append(req)
+    save_orgs_db(db)
+    _send_alert(f"Seat request: {org.get('name')} wants {want} seats",
+                f"<p>{html.escape(current_user.email)} asks for <strong>{want} seats</strong> "
+                f"(now {BL.account_seats(org)}). Change them in Admin &gt; Billing.</p>")
+    return jsonify({"ok": True, "request": req})
 
 
 @app.route("/api/organisation/members")
@@ -1943,11 +2090,10 @@ def api_org_invite():
     if find_user_by_email(email):
         return jsonify({"error": "A user with this email already exists"}), 409
 
-    seats_limit = org.get("seats_total") or PLAN_SEATS.get(org["plan"], 1)
-    active_count = len([m for m in org_members(current_user.organisation_id)
-                        if m.get("status") in ("active", "invited")])
-    if active_count >= seats_limit:
-        return jsonify({"error": f"No seats available. Your plan allows {seats_limit} seats."}), 400
+    seats_limit = BL.account_seats(org)
+    if BL.seats_used(org_members(current_user.organisation_id)) >= seats_limit:
+        return jsonify({"error": f"All {seats_limit} seat{'s' if seats_limit != 1 else ''} are in use. "
+                                 "Add seats to invite someone else.", "seats_full": True}), 400
 
     token   = str(uuid.uuid4())
     expires = (datetime.utcnow() + timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S")
@@ -3188,11 +3334,12 @@ def admin_orgs_update(org_id):
     db   = load_orgs_db()
     for o in db["organisations"]:
         if o["id"] == org_id:
-            if "seats_total" in data:
+            if "seats_total" in data or "seats_purchased" in data:
                 try:
-                    o["seats_total"] = max(1, int(data["seats_total"]))
+                    n = max(1, int(data.get("seats_purchased", data.get("seats_total"))))
                 except (ValueError, TypeError):
-                    return jsonify({"error": "Invalid seats_total"}), 400
+                    return jsonify({"error": "Invalid seats"}), 400
+                o["seats_purchased"] = o["seats_total"] = n
             if "status" in data and data["status"] in ("active", "suspended"):
                 o["status"] = data["status"]
             if "plan" in data and data["plan"] in TIER_ORDER:
@@ -3205,6 +3352,199 @@ def admin_orgs_update(org_id):
             save_orgs_db(db)
             return jsonify(o)
     return jsonify({"error": "Not found"}), 404
+
+
+# ─── Admin: billing (manual payments, billing.py) ───────────────────────────
+
+def _billing_accounts():
+    """Every account: each organisation, and each user with no organisation
+    (an account of one seat). Staff-only accounts are listed too."""
+    settings = BL.load_settings(DATA_DIR)
+    users = load_users_db()["users"]
+    out = []
+    for o in load_orgs_db()["organisations"]:
+        members = [u for u in users if u.get("organisation_id") == o["id"] and u.get("status") != "removed"]
+        owner = next((u for u in users if u["id"] == o.get("owner_id")), None)
+        st = BL.billing_state(o)
+        seats = BL.account_seats(o)
+        out.append({"kind": "org", "id": o["id"], "name": o.get("name") or "—", "owner_email": (owner or {}).get("email") or o.get("billing_email") or "—",
+                    "plan": o.get("plan") or "benchmarker", "seats": seats, "seats_used": BL.seats_used(members),
+                    "monthly_amount": BL.monthly_amount(seats, settings, o.get("plan")), "access": o.get("status"),
+                    "status": st["status"], "paid_until": st["paid_until"], "history": st["history"][-20:],
+                    "seat_requests": [r for r in o.get("seat_requests") or [] if r.get("status") == "open"],
+                    "users": [{"email": u.get("email"), "status": u.get("status"), "role": u.get("role")} for u in members],
+                    "created_at": o.get("created_at")})
+    for u in users:
+        if u.get("organisation_id") or u.get("status") == "removed":
+            continue
+        st = BL.billing_state(u)
+        out.append({"kind": "user", "id": u["id"], "name": u.get("organisation") or u.get("name") or "—", "owner_email": u.get("email"),
+                    "plan": u.get("tier") or "benchmarker", "seats": 1, "seats_used": 1,
+                    "monthly_amount": BL.monthly_amount(1, settings, u.get("tier")), "access": u.get("status"),
+                    "status": st["status"], "paid_until": st["paid_until"], "history": st["history"][-20:],
+                    "seat_requests": [], "users": [{"email": u.get("email"), "status": u.get("status"), "role": "owner"}],
+                    "created_at": u.get("created_at")})
+    order = {"pending": 0, "unpaid": 1, "paid": 2}
+    out.sort(key=lambda a: (order.get(a["status"], 3), a.get("created_at") or ""))
+    return out
+
+
+@app.route("/admin/billing")
+@admin_required
+def admin_billing():
+    settings = BL.load_settings(DATA_DIR)
+    return jsonify({"settings": settings, "instructions_ready": BL.instructions_ready(settings),
+                    "price_rule": BL.price_rule(settings), "examples": {n: BL.monthly_amount(n, settings) for n in (1, 2, 3, 4, 5, 10)},
+                    "accounts": _billing_accounts(), "method": BL.PAYMENTS.name})
+
+
+@app.route("/admin/billing/settings", methods=["PUT"])
+@admin_required
+def admin_billing_settings():
+    data = request.get_json(silent=True) or {}
+    settings = BL.load_settings(DATA_DIR)
+    for k in ("benchmarker_first_seats", "benchmarker_first_seat_price", "benchmarker_extra_seat_price"):
+        if k in data:
+            try:
+                v = int(data[k])
+            except (TypeError, ValueError):
+                return jsonify({"error": f"{k} must be a whole number"}), 400
+            if v < 1:
+                return jsonify({"error": f"{k} must be at least 1"}), 400
+            settings[k] = v
+    if "payment_instructions" in data:
+        settings["payment_instructions"] = str(data["payment_instructions"] or "")[:4000]
+    BL.save_settings(DATA_DIR, settings)
+    _log_admin_action("billing_settings", "", ", ".join(sorted(k for k in data)))
+    return jsonify({"settings": settings, "instructions_ready": BL.instructions_ready(settings), "price_rule": BL.price_rule(settings)})
+
+
+def _billing_target(kind, acc_id):
+    """(db, record, save) for an organisation or a user account."""
+    if kind == "org":
+        db = load_orgs_db()
+        rec = next((o for o in db["organisations"] if o["id"] == acc_id), None)
+        return db, rec, lambda: save_orgs_db(db)
+    if kind == "user":
+        db = load_users_db()
+        rec = next((u for u in db["users"] if u["id"] == acc_id and not u.get("organisation_id")), None)
+        return db, rec, lambda: save_users_db(db)
+    return None, None, None
+
+
+@app.route("/admin/billing/<kind>/<acc_id>/paid", methods=["POST"])
+@admin_required
+def admin_billing_paid(kind, acc_id):
+    """Mark as paid: records the payment (paid until, amount, note, who and
+    when) and opens the access of the account and its waiting users."""
+    data = request.get_json(silent=True) or {}
+    paid_until = (data.get("paid_until") or "").strip()
+    try:
+        datetime.strptime(paid_until, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Paid until must be a date (YYYY-MM-DD)."}), 400
+    try:
+        amount = int(data.get("amount"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Amount must be a whole number of MAD."}), 400
+    db, rec, save = _billing_target(kind, acc_id)
+    if rec is None:
+        return jsonify({"error": "Account not found"}), 404
+    BL.PAYMENTS.record_payment(rec, amount=amount, paid_until=paid_until, note=data.get("note"), by=current_user.email)
+    rec["status"] = "active"
+    save()
+    owner_email, owner_name = None, ""
+    udb = load_users_db()
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    for u in udb["users"]:
+        mine = (kind == "org" and u.get("organisation_id") == acc_id) or (kind == "user" and u["id"] == acc_id)
+        if not mine:
+            continue
+        if u.get("status") in ("pending_approval", "pending_payment", "suspended") and u.get("email_verified", True):
+            u["status"] = "active"
+            u["approved_at"] = u.get("approved_at") or today
+        if kind == "user" or u["id"] == rec.get("owner_id"):
+            owner_email, owner_name = u.get("email"), u.get("name") or ""
+    save_users_db(udb)
+    if kind == "org":
+        recalc_seats(acc_id)
+    _log_admin_action("billing_paid", owner_email or acc_id, f"{amount} MAD until {paid_until}")
+    if owner_email:
+        _send_account_email(owner_email, "Kodo: payment confirmed, access active",
+                            _access_email_html(html.escape(owner_name), paid_until))
+    return jsonify({"ok": True, "billing": BL.billing_state(rec)})
+
+
+@app.route("/admin/billing/<kind>/<acc_id>/unpaid", methods=["POST"])
+@admin_required
+def admin_billing_unpaid(kind, acc_id):
+    """Mark as unpaid / suspend: the account's access closes (its data and
+    users are kept); Mark as paid opens it again."""
+    data = request.get_json(silent=True) or {}
+    db, rec, save = _billing_target(kind, acc_id)
+    if rec is None:
+        return jsonify({"error": "Account not found"}), 404
+    if kind == "user" and acc_id == current_user.id or (kind == "org" and acc_id == current_user.organisation_id):
+        return jsonify({"error": "You can't suspend your own account."}), 400
+    BL.PAYMENTS.mark_unpaid(rec, note=data.get("note"), by=current_user.email)
+    rec["status"] = "suspended"
+    save()
+    _log_admin_action("billing_unpaid", acc_id, data.get("note") or "")
+    return jsonify({"ok": True, "billing": BL.billing_state(rec)})
+
+
+@app.route("/admin/billing/org/<org_id>/seats", methods=["PUT"])
+@admin_required
+def admin_billing_seats(org_id):
+    """Change the seats of an account; the monthly amount follows the pricing settings."""
+    data = request.get_json(silent=True) or {}
+    db, org, save = _billing_target("org", org_id)
+    if org is None:
+        return jsonify({"error": "Account not found"}), 404
+    seats = BL.clean_seats(data.get("seats"), 0)
+    if seats < 1:
+        return jsonify({"error": "Seats must be at least 1."}), 400
+    used = BL.seats_used(org_members(org_id))
+    if seats < used:
+        return jsonify({"error": f"{used} seats are in use: remove users first."}), 400
+    before = BL.account_seats(org)
+    org["seats_purchased"] = seats
+    org["seats_total"] = seats                       # older name, kept in step
+    for r in org.get("seat_requests") or []:
+        if r.get("status") == "open" and r.get("seats", 0) <= seats:
+            r["status"] = "done"
+    BL.PAYMENTS.note(org, "seats", by=current_user.email, seats_before=before, seats=seats,
+                     amount=BL.monthly_amount(seats, BL.load_settings(DATA_DIR), org.get("plan")))
+    save()
+    _log_admin_action("billing_seats", org.get("name", org_id), f"{before} -> {seats}")
+    return jsonify({"ok": True, "seats": seats})
+
+
+@app.route("/admin/billing/<kind>/<acc_id>/plan", methods=["PUT"])
+@admin_required
+def admin_billing_plan(kind, acc_id):
+    """Assign Advisory (custom; adds service, same access) or Benchmarker."""
+    plan = (request.get_json(silent=True) or {}).get("plan")
+    if plan not in PAID_TIERS:
+        return jsonify({"error": "Plan must be benchmarker or advisory."}), 400
+    db, rec, save = _billing_target(kind, acc_id)
+    if rec is None:
+        return jsonify({"error": "Account not found"}), 404
+    before = rec.get("plan") if kind == "org" else rec.get("tier")
+    if kind == "org":
+        rec["plan"] = plan
+    else:
+        rec["tier"] = plan
+    BL.PAYMENTS.note(rec, "plan", by=current_user.email, plan_before=before, plan=plan)
+    save()
+    if kind == "org":
+        udb = load_users_db()
+        for u in udb["users"]:
+            if u.get("organisation_id") == acc_id:
+                u["tier"] = plan
+        save_users_db(udb)
+    _log_admin_action("billing_plan", acc_id, f"{before} -> {plan}")
+    return jsonify({"ok": True, "plan": plan})
 
 
 @app.route("/admin/organisations/<org_id>/members")

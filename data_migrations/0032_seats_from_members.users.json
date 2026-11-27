@@ -1,0 +1,5 @@
+{
+  "format": "kodo-users-1",
+  "note": "Seats: every organisation gets seats_purchased = its current number of users (active, invited or waiting), at least 1. Organisations that already have it are left as they are. The summary names the multi-user organisations.",
+  "ops": ["seats_from_members"]
+}

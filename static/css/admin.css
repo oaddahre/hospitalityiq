@@ -857,3 +857,13 @@ body.light .adm-nav-logo-img.logo-light { display: block; }
 .adm-section code { background: transparent; border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; }
 .adm-log, .adm-backup-row { background: transparent; border: 1px solid var(--line); }
 .adm-card, .adm-panel { background: var(--card-bg); }
+
+/* Billing */
+.adm-warning { border: 1px solid var(--text); padding: 10px 14px; font-size: 13px; color: var(--text); margin-top: 8px; }
+.adm-bill-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.adm-bill-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.adm-bill-actions .adm-btn { padding: 5px 10px; font-size: 11px; }
+.adm-bill-hist { width: 100%; font-size: 11px; color: var(--text-2); }
+.adm-bill-hist ul { margin: 6px 0 0 16px; }
+.adm-bill-settings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 900px; }
+@media (max-width: 767px) { .adm-bill-row, .adm-bill-settings { grid-template-columns: 1fr; } }

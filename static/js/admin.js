@@ -66,11 +66,12 @@ document.getElementById('admMobileClose').addEventListener('click', () => mobile
 mobileOverlay.addEventListener('click', e => { if (e.target === mobileOverlay) mobileOverlay.classList.remove('open'); });
 
 // ─── Section navigation (last section remembered in localStorage) ────────
-const SECTIONS = ['overview', 'users', 'orgs', 'news', 'uploads', 'rates', 'occupancy', 'events', 'coverage', 'health', 'system'];
+const SECTIONS = ['overview', 'users', 'orgs', 'billing', 'news', 'uploads', 'rates', 'occupancy', 'events', 'coverage', 'health', 'system'];
 const SECTION_LOADERS = {
   overview: loadOverview,
   users: loadUsers,
   orgs: loadOrgs,
+  billing: loadBilling,
   news: loadArticles,
   uploads: () => { loadHotelsForDI(); loadRecentUploads(); loadFiguresLoaded(); },
   rates: () => { loadScraperStatus(); loadScrapeCoverage(); populateHotelSelect(); loadIdOverrides(); loadCoordHistory(); loadRatesStore(false); },
@@ -2450,3 +2451,121 @@ document.getElementById('dh-calibrate').addEventListener('click', async () => {
   msg.textContent = r.ok ? (d.message || 'Done.') : (d.error || 'Calibration failed.');
   if (r.ok) loadDataHealth(false);
 });
+
+
+// ════════════════════════ BILLING (manual payments) ═══════════════════
+// The prices come from billing.json (edited here); an account's monthly
+// amount is always computed from them. Mark as paid opens the access and
+// emails the owner; Mark as unpaid / suspend closes it.
+let billingData = null;
+const BILL_STATUS = { pending: 'Payment pending', paid: 'Paid', unpaid: 'Unpaid · suspended' };
+const madFmt = n => n == null ? 'custom' : Number(n).toLocaleString('en') + ' MAD';
+
+async function loadBilling() {
+  const box = document.getElementById('billing-accounts');
+  try {
+    const res = await fetch('/admin/billing', { headers: authHeaders() });
+    if (!res.ok) { box.innerHTML = '<p class="adm-empty adm-error">Could not load billing.</p>'; return; }
+    billingData = await res.json();
+    renderBilling();
+  } catch { box.innerHTML = '<p class="adm-empty adm-error">Error loading billing.</p>'; }
+}
+
+function renderBilling() {
+  const d = billingData, st = d.settings;
+  document.getElementById('billing-warning').innerHTML = d.instructions_ready ? '' :
+    `<div class="adm-warning"><strong>Payment instructions are empty.</strong> New accounts see "The payment details are being prepared" and get no bank details by email. Fill them in below.</div>`;
+  const rows = d.accounts.map((a, i) => {
+    const req = (a.seat_requests || []).map(r => `<div class="adm-row-sub">Asks for ${r.seats} seats (${madFmt(r.amount)} per month) · ${escHtml(r.by || '')}</div>`).join('');
+    const hist = (a.history || []).slice().reverse().map(h => `<li>${escHtml((h.at || '').slice(0, 16).replace('T', ' '))} · ${escHtml(h.action)}`
+      + (h.amount != null ? ` · ${madFmt(h.amount)}` : '') + (h.paid_until ? ` · until ${escHtml(h.paid_until)}` : '')
+      + (h.seats ? ` · ${h.seats} seats` : '') + (h.plan ? ` · ${escHtml(h.plan)}` : '') + (h.note ? ` · ${escHtml(h.note)}` : '')
+      + ` · ${escHtml(h.by || '')}</li>`).join('');
+    return `<div class="adm-row adm-bill-row">
+      <div><div class="adm-row-name">${escHtml(a.name)}</div><div class="adm-row-sub">${escHtml(a.owner_email)} · ${a.users.length} user${a.users.length !== 1 ? 's' : ''}</div>${req}</div>
+      <div><span class="adm-pill">${BILL_STATUS[a.status] || escHtml(a.status)}</span>${a.paid_until ? `<div class="adm-row-sub">until ${escHtml(a.paid_until)}</div>` : ''}</div>
+      <div class="adm-row-meta">${a.plan === 'advisory' ? 'Advisory (custom)' : 'Benchmarker'}<br>${a.seats_used} of ${a.seats} seats<br>${madFmt(a.monthly_amount)}${a.monthly_amount != null ? ' / month' : ''}</div>
+      <div class="adm-bill-actions">
+        <button class="adm-btn adm-btn-primary" data-bill="paid" data-i="${i}">Mark as paid</button>
+        <button class="adm-btn adm-btn-secondary" data-bill="unpaid" data-i="${i}">Mark unpaid / suspend</button>
+        ${a.kind === 'org' ? `<button class="adm-btn adm-btn-secondary" data-bill="seats" data-i="${i}">Seats</button>` : ''}
+        <button class="adm-btn adm-btn-secondary" data-bill="plan" data-i="${i}">${a.plan === 'advisory' ? 'Set Benchmarker' : 'Assign Advisory'}</button>
+        ${hist ? `<details class="adm-bill-hist"><summary>History</summary><ul>${hist}</ul></details>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('billing-accounts').innerHTML = rows || '<p class="adm-empty">No accounts.</p>';
+  const ex = Object.entries(d.examples).map(([n, v]) => `${n}: ${madFmt(v)}`).join(' · ');
+  document.getElementById('billing-settings').innerHTML = `
+    <div class="adm-bill-settings">
+      <div class="adm-field-group"><label class="adm-label">Seats at the first price</label><input class="adm-input" type="number" min="1" id="bs-first-seats" value="${st.benchmarker_first_seats}"></div>
+      <div class="adm-field-group"><label class="adm-label">First price (MAD per seat per month)</label><input class="adm-input" type="number" min="1" id="bs-first-price" value="${st.benchmarker_first_seat_price}"></div>
+      <div class="adm-field-group"><label class="adm-label">Each additional seat (MAD per month)</label><input class="adm-input" type="number" min="1" id="bs-extra-price" value="${st.benchmarker_extra_seat_price}"></div>
+      <p class="adm-row-sub" style="grid-column:1/-1">${escHtml(d.price_rule)} · per month by seats: ${ex}</p>
+      <div class="adm-field-group" style="grid-column:1/-1"><label class="adm-label">Payment instructions (shown on the payment page and in the registration email)</label>
+        <textarea class="adm-textarea" id="bs-instructions" rows="6" placeholder="Bank name, account holder, IBAN / RIB, reference to quote… (fill in before accounts can pay)">${escHtml(st.payment_instructions || '')}</textarea></div>
+      <div class="adm-panel-actions" style="grid-column:1/-1"><button class="adm-btn adm-btn-primary" id="bs-save">Save prices and instructions</button><span class="adm-inline-msg" id="bs-msg"></span></div>
+    </div>`;
+  document.getElementById('bs-save').addEventListener('click', saveBillingSettings);
+}
+
+async function saveBillingSettings() {
+  const body = {
+    benchmarker_first_seats: document.getElementById('bs-first-seats').value,
+    benchmarker_first_seat_price: document.getElementById('bs-first-price').value,
+    benchmarker_extra_seat_price: document.getElementById('bs-extra-price').value,
+    payment_instructions: document.getElementById('bs-instructions').value,
+  };
+  const res = await fetch('/admin/billing/settings', { method: 'PUT', headers: authHeaders(true), body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { toast(data.error || 'Save failed.', 'error'); return; }
+  toast('Saved.', 'success');
+  await loadBilling();
+}
+
+document.getElementById('billing-accounts').addEventListener('click', e => {
+  const b = e.target.closest('[data-bill]');
+  if (!b) return;
+  const a = billingData.accounts[+b.dataset.i];
+  const act = b.dataset.bill;
+  if (act === 'paid') {
+    const next = new Date(); next.setMonth(next.getMonth() + 1);
+    openPanel('Mark as paid · ' + a.name, `
+      <div class="adm-field-group"><label class="adm-label">Paid until</label><input class="adm-input" type="date" id="bp-until" value="${next.toISOString().slice(0, 10)}"></div>
+      <div class="adm-field-group"><label class="adm-label">Amount received (MAD)</label><input class="adm-input" type="number" min="0" id="bp-amount" value="${a.monthly_amount ?? ''}"></div>
+      <div class="adm-field-group"><label class="adm-label">Note (reference, method)</label><input class="adm-input" id="bp-note" placeholder="e.g. transfer ref. 12345"></div>
+      <p class="adm-row-sub">Opens the access of ${escHtml(a.name)} and its waiting users, and emails ${escHtml(a.owner_email)}.</p>
+      <div class="adm-panel-actions"><button class="adm-btn adm-btn-primary" id="bp-save">Mark as paid</button></div>`);
+    document.getElementById('bp-save').addEventListener('click', () => billPost(a, 'paid', {
+      paid_until: document.getElementById('bp-until').value, amount: document.getElementById('bp-amount').value,
+      note: document.getElementById('bp-note').value }));
+  } else if (act === 'unpaid') {
+    const note = prompt(`Mark ${a.name} as unpaid and suspend its access? Note (optional):`, '');
+    if (note === null) return;
+    billPost(a, 'unpaid', { note });
+  } else if (act === 'seats') {
+    const v = prompt(`Seats for ${a.name} (in use: ${a.seats_used}). The monthly amount follows the prices.`, String(a.seats));
+    if (v === null) return;
+    billPut(`/admin/billing/org/${a.id}/seats`, { seats: v });
+  } else if (act === 'plan') {
+    const plan = a.plan === 'advisory' ? 'benchmarker' : 'advisory';
+    if (!confirm(`Set ${a.name} to ${plan === 'advisory' ? 'Advisory (custom: you enter the amount when you mark it paid)' : 'Benchmarker'}?`)) return;
+    billPut(`/admin/billing/${a.kind}/${a.id}/plan`, { plan });
+  }
+});
+
+async function billPost(a, action, body) {
+  const res = await fetch(`/admin/billing/${a.kind}/${a.id}/${action}`, { method: 'POST', headers: authHeaders(true), body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { toast(data.error || 'Failed.', 'error'); return; }
+  closePanel();
+  toast(action === 'paid' ? 'Marked as paid: access open, owner emailed.' : 'Marked unpaid: access suspended.', 'success');
+  await loadBilling();
+}
+async function billPut(url, body) {
+  const res = await fetch(url, { method: 'PUT', headers: authHeaders(true), body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { toast(data.error || 'Failed.', 'error'); return; }
+  toast('Updated.', 'success');
+  await loadBilling();
+}
