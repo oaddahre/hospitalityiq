@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════════════════════════════
+   About, Contact, Methodology, Terms and Privacy on the UI standard
+   (docs/ui-standard.md): black, white and grey, no blue (the logo keeps its
+   dot), no grey fills. Loaded by those five pages only, after marketing.css,
+   so the landing page (which shares marketing.css) stays exactly as it is.
+   Content unchanged: style only.
+   ═══════════════════════════════════════════════════════════════════ */
+/* ─── No blue on these pages: the blue tokens re-pointed at black / white ───
+   Hex values (not var()) because the charts and the Google Maps styles read
+   these through getComputedStyle and need plain colours. */
+:root {
+  --action: #1F1E1C; --action-hover: #3A3936; --action-press: #000000; --action-text: #1F1E1C;
+  --action-tint: #EDEDEB; --action-tint-2: #F6F6F5; --on-action: #FFFFFF;
+  /* the blue, sky and violet families become black and greys */
+  --cat-1-dot: #1F1E1C; --cat-1-text: #1F1E1C; --cat-1-text-lg: #1F1E1C; --cat-1-tint: #EDEDEB;
+  --cat-4-dot: #5F5B55; --cat-4-text: #5F5B55; --cat-4-text-lg: #5F5B55; --cat-4-tint: #F1F0EE;
+  --cat-5-dot: #BDB8B1; --cat-5-text: #5F5B55; --cat-5-text-lg: #5F5B55; --cat-5-tint: #F1F0EE;
+  /* chart series: greys from dark to light (palette.js) */
+  --series-1: #1F1E1C; --series-2: #6F6B66; --series-3: #A8A39C; --series-4: #4A4744; --series-5: #C9C5BF; --series-6: #8A857E;
+  --focus-ring: var(--text);
+}
+:root[data-theme="dark"] {
+  --action: #F2F1EE; --action-hover: #D9D7D2; --action-press: #FFFFFF; --action-text: #F2F1EE;
+  --action-tint: #262625; --action-tint-2: #161616; --on-action: #000000;
+  --cat-1-dot: #F2F1EE; --cat-1-text: #F2F1EE; --cat-1-text-lg: #F2F1EE; --cat-1-tint: #262625;
+  --cat-4-dot: #A8A39C; --cat-4-text: #A8A39C; --cat-4-text-lg: #A8A39C; --cat-4-tint: #1E1E1D;
+  --cat-5-dot: #5F5B55; --cat-5-text: #A8A39C; --cat-5-text-lg: #A8A39C; --cat-5-tint: #1E1E1D;
+  --series-1: #F2F1EE; --series-2: #A8A39C; --series-3: #6F6B66; --series-4: #D0CCC6; --series-5: #4A4744; --series-6: #8A857E;
+}
+
+:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--text) 22%, transparent); color: inherit; }
+
+/* containers: transparent with a 1px edge */
+.lp-about-point { background: transparent; }
+/* tables: one hairline under the header, no row lines, a hover tint */
+.method-table td { border-bottom: 0; }
+.method-table tr:hover td { background: var(--row-hover); }
+.method-table a, .legal-body a, .footer-contact a:hover { color: var(--text); text-decoration: underline; text-decoration-color: var(--border); }
+.method-table a:hover, .legal-body a:hover { text-decoration-color: currentColor; }
+/* no colour-coded labels: neutral pills */
+.pill--blue, .pill--green, .pill--orange, .pill--violet, .pill--sky {
+  --pill-tint: color-mix(in srgb, var(--text) 6%, transparent); --pill-text: var(--text-2); --pill-dot: var(--text-3); }

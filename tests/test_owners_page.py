@@ -150,3 +150,13 @@ class AccountPage(unittest.TestCase):
         for gone in ('var(--cat-2-dot)', "'var(--cat-3-dot)'", 'pill--plan', 'background: var(--action-tint)', 'background: var(--surface);'):
             self.assertNotIn(gone, acc)
         self.assertNotIn('pill--blue', HTML[HTML.index('id="upgrade-modal"'):][:2000])
+
+
+class PublicPages(unittest.TestCase):
+    def test_pages_css_scoped(self):
+        for f in ('about', 'contact', 'methodology', 'terms', 'privacy'):
+            self.assertIn('/static/css/pages.css', read('templates', f + '.html'), f)
+        self.assertNotIn('pages.css', read('templates', 'landing.html'))          # the landing page stays as it is
+        css = read('static', 'css', 'pages.css')
+        self.assertIn('--action: #1F1E1C;', css)
+        self.assertIn('.lp-about-point { background: transparent; }', css)
