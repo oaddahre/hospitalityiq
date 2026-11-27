@@ -141,7 +141,7 @@ function initialsTile(text, size, gap, bg, color) {
 }
 function ownerInitials(ownerName, size, gap = 10) {
   const initials = ownerName.split(/\s+/).filter(w => /[A-Za-zÀ-ÿ]/.test(w[0] || '')).map(w => w[0]).join('').substring(0, 2).toUpperCase();
-  return initialsTile(initials, size, gap);
+  return initialsTile(initials, size, gap, 'var(--bg)', 'var(--text-2)');   // neutral (no colour-coded categories)
 }
 
 function getOwnerLogoImg(ownerName, size) {
@@ -5830,67 +5830,100 @@ var ownerPortfolioSort = { col: null, dir: 1 };
 
 async function initOwners() {
   if (ownersData) { renderOwnerCards(); return; }
-  showLoading(document.getElementById('owners-grid'));
+  document.getElementById('owners-grid').innerHTML = '<tr><td colspan="7" class="k-empty">Loading owners…</td></tr>';
   try {
     const res = await fetch('/api/owners');
     ownersData = await res.json();
     renderOwnerCards();
   } catch(e) {
-    document.getElementById('owners-grid').innerHTML = '<p style="color:var(--text-muted);font-size:12px">Error loading owners.</p>';
+    document.getElementById('owners-grid').innerHTML = '<tr><td colspan="7" class="k-empty">Error loading owners.</td></tr>';
   }
 }
 
+// Owners list: title + one line, four counts, one filter row, one sortable table
+const ownersState = { q: '', type: 'all', sort: 'total_keys', dir: -1 };
+const OWNER_TYPE_TEXT = t => t === 'Undisclosed' || !t ? '—' : t;
 function renderOwnerCards() {
   var owners = ownersData || [];
-  // KPI row
-  var totalKeys = owners.reduce(function(s, o) { return s + (o.total_keys || 0); }, 0);
-  document.getElementById('okpi-count').textContent = owners.length;
-  document.getElementById('okpi-keys').textContent = totalKeys.toLocaleString();
+  const sum = k => owners.reduce((s, o) => s + (o[k] || 0), 0);
+  const set = (id, v) => { document.getElementById(id).textContent = v; };
+  set('okpi-count', owners.length);
+  set('okpi-hotels', sum('total_hotels').toLocaleString('en'));
+  set('okpi-keys', sum('total_keys').toLocaleString('en'));
+  set('okpi-pipe', sum('pipeline_hotels').toLocaleString('en'));
   const ownerTip = KodoPeriod.tip({ source: 'Kodo owner profiles, keys from the Kodo hotel database', note: 'count when this page loaded' });
-  ['okpi-count', 'okpi-keys'].forEach(id => KodoPeriod.set(document.getElementById(id).closest('.kpi-card'), KodoPeriod.today(), ownerTip));
+  ['okpi-count-card', 'okpi-hotels-card', 'okpi-keys-card', 'okpi-pipe-card'].forEach(id => KodoPeriod.set(id, KodoPeriod.today(), ownerTip));
+  const today = KodoPeriod.label(KodoPeriod.today());
+  compactKpiCards([
+    { id: 'okpi-count-card', label: 'Owners tracked', kind: 'keys', line: today },
+    { id: 'okpi-hotels-card', label: 'Hotels', kind: 'keys', line: 'open hotels of these owners' },
+    { id: 'okpi-keys-card', label: 'Keys', kind: 'keys', line: today },
+    { id: 'okpi-pipe-card', label: 'Pipeline', kind: 'keys', line: `hotels not open yet · ${sum('pipeline_keys').toLocaleString('en')} keys` },
+  ], null);
 
-  // Hide detail, show grid
-  document.getElementById('screen-owner-detail').style.display = 'none';
-  document.getElementById('owners-kpi-row').style.display = '';
-  document.getElementById('owners-grid').style.display = '';
-
-  var grid = document.getElementById('owners-grid');
-  if (!owners.length) {
-    grid.innerHTML = '<p style="color:var(--text-muted);font-size:12px">No owners tracked yet.</p>';
-    return;
+  // the type select: the types present
+  const sel = document.getElementById('owners-type');
+  if (sel.options.length < 2) {
+    [...new Set(owners.map(o => o.type).filter(t => t && t !== 'Undisclosed'))].sort().forEach(t => sel.add(new Option(t, t)));
   }
 
-  grid.innerHTML = owners.map(function(o) {
-    var cities = (o.cities || []).slice(0, 3).join(', ') + ((o.cities || []).length > 3 ? ' +' + ((o.cities || []).length - 3) + ' more' : '');
-    var brands = (o.brands_operated || []).slice(0, 3).join(', ') + ((o.brands_operated || []).length > 3 ? ' +' + ((o.brands_operated || []).length - 3) + ' more' : '');
-    return '<div class="owner-card" onclick="showOwnerDetail(\'' + fmt.esc(o.id) + '\')">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between">' +
-        '<div style="display:flex;align-items:center">' +
-          getOwnerLogoImg(o.name, 40) +
-          '<div>' +
-            '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:13px;font-weight:400;text-transform:uppercase;letter-spacing:0.04em;color:var(--text)">' + fmt.esc(o.name) + '</div>' +
-            (o.via ? '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:10px;color:var(--text-muted);margin-top:2px">via ' + fmt.esc(o.via) + '</div>' : '') +
-          '</div>' +
-        '</div>' +
-        ownerTypeBadge(o.type || 'Private') +
-      '</div>' +
-      '<div class="owner-stats-row">' +
-        '<div class="owner-stat-item"><span class="owner-stat-label">Hotels</span><span class="owner-stat-value">' + (o.total_hotels || 0) +
-          (o.pipeline_hotels ? '<span class="owner-stat-pipe" title="' + o.pipeline_hotels + ' not open yet (pipeline), ' + (o.pipeline_keys || 0).toLocaleString() + ' keys">+' + o.pipeline_hotels + ' pipeline</span>' : '') + '</span></div>' +
-        '<div class="owner-stat-item"><span class="owner-stat-label">Keys</span><span class="owner-stat-value">' + (o.total_keys || 0).toLocaleString() + '</span></div>' +
-        '<div class="owner-stat-item"><span class="owner-stat-label">Cities</span><span class="owner-stat-value">' + (o.cities || []).length + '</span></div>' +
-        '<div class="owner-stat-item"><span class="owner-stat-label">Operators</span><span class="owner-stat-value">' + (o.brands_operated || []).length + '</span></div>' +
-      '</div>' +
-      '<div style="font-family:\'Sweet Sans Pro\',sans-serif;font-size:10px;color:var(--text-muted)">' +
-        (cities ? '<span style="color:var(--text-faint)">Cities: </span>' + fmt.esc(cities) : '') +
-      '</div>' +
-    '</div>';
-  }).join('');
+  // Hide detail, show the list
+  document.getElementById('screen-owner-detail').style.display = 'none';
+  document.getElementById('owners-list').style.display = '';
+  renderOwnersTable();
 }
 
+function renderOwnersTable() {
+  const owners = ownersData || [];
+  const q = fold(ownersState.q.trim());
+  const rows = owners.filter(o => (ownersState.type === 'all' || o.type === ownersState.type)
+      && (!q || fold([o.name, o.via, o.full_name, ...(o.cities || []), ...(o.brands_operated || [])].join(' ')).includes(q)));
+  const k = ownersState.sort, dir = ownersState.dir;
+  const val = o => k === 'cities' || k === 'brands_operated' ? (o[k] || []).length : k === 'name' || k === 'type' ? String(o[k] || '') : (o[k] || 0);
+  rows.sort((a, b) => { const x = val(a), y = val(b); return (typeof x === 'string' ? x.localeCompare(y) : x - y) * dir || a.name.localeCompare(b.name); });
+  document.getElementById('owners-count').textContent = `${rows.length} of ${owners.length} owners`;
+  document.querySelectorAll('#owners-table th[data-osort]').forEach(th => {
+    if (th.dataset.osort === k) th.setAttribute('aria-sort', dir === 1 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort');
+  });
+  const sel = document.getElementById('owners-sort');
+  if (sel.querySelector(`option[value="${k}"]`)) sel.value = k;
+  const tbody = document.getElementById('owners-grid');
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="7" class="k-empty">No owner matches these filters.</td></tr>'; return; }
+  const maxKeys = Math.max(0, ...owners.map(o => o.total_keys || 0));
+  tbody.innerHTML = rows.map(o => {
+    const ops = o.brands_operated || [];
+    return `<tr data-owner-id="${escAttr(o.id)}" tabindex="0">
+      <td><span class="k-brand owners-name">${getOwnerLogoImg(o.name, 24)}<span><span class="owners-name-t">${fmt.esc(o.name)}</span>${o.via ? `<span class="owners-via">via ${fmt.esc(o.via)}</span>` : ''}</span></span></td>
+      <td class="col-hide-mobile">${fmt.esc(OWNER_TYPE_TEXT(o.type))}</td>
+      <td class="num">${o.total_hotels || 0}</td>
+      <td class="num cell-metric"><span class="cell-num">${(o.total_keys || 0).toLocaleString('en')}</span>${inlineBar(o.total_keys || 0, maxKeys, false)}</td>
+      <td class="num col-hide-mobile" title="${escAttr((o.cities || []).map(dn).join(', '))}">${(o.cities || []).length}</td>
+      <td class="col-hide-mobile owners-ops">${ops.length ? fmt.esc(ops.slice(0, 2).join(', ')) + (ops.length > 2 ? ` <span class="owners-more" title="${escAttr(ops.join(', '))}">+${ops.length - 2}</span>` : '') : '—'}</td>
+      <td class="num col-hide-mobile">${o.pipeline_hotels ? `${o.pipeline_hotels} / ${(o.pipeline_keys || 0).toLocaleString('en')}` : '<span class="cell-na">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('owners-search').addEventListener('input', e => { ownersState.q = e.target.value; renderOwnersTable(); });
+document.getElementById('owners-type').addEventListener('change', e => { ownersState.type = e.target.value; renderOwnersTable(); });
+document.getElementById('owners-sort').addEventListener('change', e => { ownersState.sort = e.target.value; ownersState.dir = e.target.value === 'name' ? 1 : -1; renderOwnersTable(); });
+document.getElementById('owners-table').addEventListener('click', e => {
+  const th = e.target.closest('th[data-osort]');
+  if (th) {
+    const c = th.dataset.osort;
+    if (c === ownersState.sort) ownersState.dir *= -1; else { ownersState.sort = c; ownersState.dir = c === 'name' || c === 'type' ? 1 : -1; }
+    renderOwnersTable();
+    return;
+  }
+  const row = e.target.closest('tr[data-owner-id]');
+  if (row) showOwnerDetail(row.dataset.ownerId);
+});
+document.getElementById('owners-table').addEventListener('keydown', e => {
+  const row = e.target.closest && e.target.closest('tr[data-owner-id]');
+  if (row && e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showOwnerDetail(row.dataset.ownerId); }
+});
+
 async function showOwnerDetail(ownerId) {
-  document.getElementById('owners-kpi-row').style.display = 'none';
-  document.getElementById('owners-grid').style.display = 'none';
+  document.getElementById('owners-list').style.display = 'none';
   var detail = document.getElementById('screen-owner-detail');
   detail.style.display = '';
   scrollMainToTop();
@@ -5990,8 +6023,7 @@ function renderOwnerDetail(o) {
   // Back button
   document.getElementById('owner-back-btn').onclick = function() {
     document.getElementById('screen-owner-detail').style.display = 'none';
-    document.getElementById('owners-kpi-row').style.display = '';
-    document.getElementById('owners-grid').style.display = '';
+    document.getElementById('owners-list').style.display = '';
   };
 }
 

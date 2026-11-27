@@ -6738,3 +6738,31 @@ body .kpi-nodata-pill { font-size: 11px; padding: 4px 10px; font-weight: 600; wh
   .brand-hotels-card, .brand-pipe-card { padding: 0 8px 8px; }
   .brand-hotels-table .cell-metric { width: auto; }
 }
+
+/* ─── Owners on the UI standard (docs/ui-standard.md) ─── */
+#screen-owners .kpi-card, #screen-owners .chart-card, #screen-owners .table-card { background: var(--card-bg); }
+#screen-owners .owners-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
+.owners-filters .k-search { flex: 0 1 280px; min-width: 160px; }
+.owners-count { margin-left: auto; }
+.owners-main { padding: 0 16px 10px; }
+.k-table.owners-table { table-layout: auto; border-collapse: separate; border-spacing: 0; }
+.owners-table thead th { position: sticky; top: -28px; z-index: 2; background: var(--bg); border-top: 28px solid var(--bg); padding-top: 0; }
+.owners-table th.num, .owners-table td.num { text-align: right; }
+.owners-table th.num .k-th-sort { text-align: right; }
+.owners-table tbody tr { cursor: pointer; }
+.owners-table tbody tr:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+.owners-name .logo-tile { margin-right: 0 !important; }
+.owners-name-t { display: block; font-weight: 500; }
+.owners-via { display: block; margin-top: 1px; font-size: 11px; color: var(--text-2); }
+.owners-ops { color: var(--text-2); }
+.owners-more { color: var(--text-3); }
+.owners-table .cell-metric { width: 18%; }
+.owners-table .cell-na { color: var(--text-3); }
+@media (max-width: 1100px) { #screen-owners .owners-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767px) {
+  .owners-filters .k-search, .owners-filters .k-select { min-width: 0; width: 100%; flex: 1 1 100%; }
+  .owners-count { margin-left: 0; }
+  .owners-table .col-hide-mobile { display: none; }
+  .owners-main { padding: 0 8px 8px; }
+  .owners-table .cell-metric { width: auto; }
+}

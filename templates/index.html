@@ -889,18 +889,45 @@
 
       <!-- ── Owners ── -->
       <section class="screen" id="screen-owners">
-        <div class="screen-header">
-          <h1>Ownership Intelligence</h1>
-          <p class="screen-sub-tags">Morocco · Institutional Owners</p>
+        <div id="owners-list">
+          <div class="k-head">
+            <h1 class="k-title">Owners</h1>
+            <p class="k-line">Owners of Morocco's hotels in Kodo's owner profiles, with their hotels and keys from Kodo's hotel database.</p>
+          </div>
+          <div class="kpi-grid kpi-compact owners-kpis" id="owners-kpi-row">
+            <div class="kpi-card" id="okpi-count-card"><span class="kpi-label">Owners tracked</span><span class="kpi-value" id="okpi-count">—</span></div>
+            <div class="kpi-card" id="okpi-hotels-card"><span class="kpi-label">Hotels</span><span class="kpi-value" id="okpi-hotels">—</span></div>
+            <div class="kpi-card" id="okpi-keys-card"><span class="kpi-label">Keys</span><span class="kpi-value" id="okpi-keys">—</span></div>
+            <div class="kpi-card" id="okpi-pipe-card"><span class="kpi-label">Pipeline</span><span class="kpi-value" id="okpi-pipe">—</span></div>
+          </div>
+          <div class="k-filters owners-filters">
+            <input type="search" id="owners-search" class="k-search" placeholder="Search owners" autocomplete="off" aria-label="Search owners, operators, destinations">
+            <select id="owners-type" class="k-select" aria-label="Owner type"><option value="all">All types</option></select>
+            <select id="owners-sort" class="k-select" aria-label="Sort">
+              <option value="total_keys">Sort: Keys ↓</option>
+              <option value="total_hotels">Sort: Hotels ↓</option>
+              <option value="pipeline_keys">Sort: Pipeline keys ↓</option>
+              <option value="name">Sort: Name A–Z</option>
+            </select>
+            <span class="hotels-count owners-count" id="owners-count"></span>
+          </div>
+          <div class="k-card owners-main">
+            <table class="k-table owners-table" id="owners-table">
+              <thead>
+                <tr>
+                  <th scope="col" data-osort="name"><button type="button" class="k-th-sort">Owner</button></th>
+                  <th scope="col" data-osort="type" class="col-hide-mobile"><button type="button" class="k-th-sort">Type</button></th>
+                  <th scope="col" data-osort="total_hotels" class="num"><button type="button" class="k-th-sort">Hotels</button></th>
+                  <th scope="col" data-osort="total_keys" class="num" aria-sort="descending"><button type="button" class="k-th-sort">Keys</button></th>
+                  <th scope="col" data-osort="cities" class="num col-hide-mobile"><button type="button" class="k-th-sort">Destinations</button></th>
+                  <th scope="col" data-osort="brands_operated" class="col-hide-mobile"><button type="button" class="k-th-sort">Operators</button></th>
+                  <th scope="col" data-osort="pipeline_keys" class="num col-hide-mobile"><button type="button" class="k-th-sort" data-tip="Hotels not open yet / their keys; not counted in the totals.">Pipeline</button></th>
+                </tr>
+              </thead>
+              <tbody id="owners-grid"></tbody>
+            </table>
+          </div>
         </div>
-        <!-- KPI row -->
-        <div class="owners-kpi-row" id="owners-kpi-row">
-          <div class="kpi-card"><span class="kpi-label">Owners Tracked</span><span class="kpi-value" id="okpi-count">—</span></div>
-          <div class="kpi-card"><span class="kpi-label">Keys Under Coverage</span><span class="kpi-value" id="okpi-keys">—</span></div>
-          <div class="kpi-card"><span class="kpi-label">Portfolio Types</span><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"><span class="owner-type-badge pill--grey">State</span><span class="owner-type-badge pill--blue">Listed</span><span class="owner-type-badge pill--green">Private</span><span class="owner-type-badge pill--orange">Family</span></div></div>
-        </div>
-        <!-- Owner cards grid -->
-        <div class="owners-grid" id="owners-grid"></div>
         <!-- Owner detail (hidden by default) -->
         <div id="screen-owner-detail" style="display:none">
           <button class="back-btn" id="owner-back-btn">← Ownership Intelligence</button>
