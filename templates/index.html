@@ -1678,12 +1678,12 @@
 
   <!-- Upgrade modal -->
   <div id="upgrade-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:var(--overlay);display:none;align-items:center;justify-content:center;padding:20px">
-    <div id="upgrade-card" style="background:var(--surface);border:1px solid var(--border);max-width:420px;width:100%;padding:36px;position:relative">
+    <div id="upgrade-card" style="background:var(--menu-bg);border:1px solid var(--line);max-width:420px;width:100%;padding:36px;position:relative">
       <button onclick="closeUpgradeModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-2);line-height:1">×</button>
-      <p style="margin-bottom:10px"><span class="pill--blue" style="font-family:'Sweet Sans Pro', sans-serif;font-size:0.6875rem;letter-spacing:0.1em;text-transform:uppercase">Upgrade Required</span></p>
+      <p style="margin-bottom:10px"><span class="k-pill">Upgrade required</span></p>
       <h2 id="upgrade-title" style="font-family:'Sweet Sans Pro',sans-serif;font-size:1.5rem;font-weight:400;letter-spacing:0;margin-bottom:10px;color:var(--text)">This feature requires Benchmarker</h2>
       <p id="upgrade-body" style="font-size:0.875rem;color:var(--text-2);line-height:1.6;margin-bottom:20px">Upgrade to unlock pipeline data, the rate benchmark, reports and exports.</p>
-      <div style="background:var(--bg);border:1px solid var(--border);padding:16px;margin-bottom:20px">
+      <div style="background:transparent;border:1px solid var(--line);padding:16px;margin-bottom:20px">
         <p style="font-family:'Sweet Sans Pro', sans-serif;font-size:0.6875rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2);margin-bottom:8px">Benchmarker includes</p>
         <ul style="list-style:none;font-size:0.8125rem;color:var(--text-2);line-height:1.9">
           <li>✓ &nbsp;Development pipeline — {{ public_stats().pipeline }} projects</li>

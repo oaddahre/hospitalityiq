@@ -141,3 +141,12 @@ class AiPage(unittest.TestCase):
         self.assertNotIn('chatThread.scrollTop = chatThread.scrollHeight', JS)
         css = read('static', 'css', 'style.css')
         self.assertIn('#screen-ai .chat-thread { overflow: visible;', css)
+
+
+class AccountPage(unittest.TestCase):
+    def test_account(self):
+        acc = read('templates', 'account.html')
+        self.assertIn('<h1 class="k-title">Account</h1>', acc)
+        for gone in ('var(--cat-2-dot)', "'var(--cat-3-dot)'", 'pill--plan', 'background: var(--action-tint)', 'background: var(--surface);'):
+            self.assertNotIn(gone, acc)
+        self.assertNotIn('pill--blue', HTML[HTML.index('id="upgrade-modal"'):][:2000])
